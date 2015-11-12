@@ -47,6 +47,8 @@ module Yast
       Yast.import "Mode"
       Yast.import "Arch"
       Yast.import "Storage"
+      Yast.import "LanItems"
+      Yast.import "Profile"
 
       Yast.include self, "network/routines.rb"
       Yast.include self, "network/complex.rb"
@@ -188,14 +190,14 @@ module Yast
         log.info("File #{udev_rules_destdir} exists")
       end
 
-      if !FileUtils.Exists(net_destfile)
+      if !Mode.update
         log.info("Copying #{net_srcfile} to the installed system ")
         WFM.Execute(
           path(".local.bash"),
           "/bin/cp -p '#{udev_rules_srcdir}/#{net_srcfile}' '#{net_destfile}'"
         )
       else
-        log.info("Not copying file #{net_destfile} - it already exists")
+        log.info("Not copying file #{net_destfile} - update mode")
       end
 
       nil
@@ -211,7 +213,8 @@ module Yast
       new_SCR = WFM.SCROpen("chroot=/:scr", false)
       WFM.SCRSetDefault(new_SCR)
 
-      # --------------------------------------------------------------
+      ay_mode_configuration if Mode.autoinst
+
       # Copy DHCP client cache so that we can request the same IP (#43974).
       WFM.Execute(
         path(".local.bash"),
@@ -260,6 +263,52 @@ module Yast
       )
 
       nil
+    end
+
+    # Applies part of AY configuration at the end of first stage
+    #
+    # Intended mainly for steps which cannot be done in AY's second stage
+    #
+    # FIXME: Currently used only for applying udev rules during network
+    # installations (ssh, vnc, ...). It was introduced as a quick fix for
+    # bnc#944349, so it is currently limited only on {ssh|vnc} installations.
+    # Once properly analyzed and tested then starting of whole network second
+    # stage can be moved here.
+    def ay_mode_configuration
+      # TODO: run only when in {ssh|vnc} mode of AY
+      # TODO: support for changing udev rule option (mac <-> busid)
+
+      ay_profile = Profile.current
+
+      log.info("Applying udev rules according AY profile")
+
+      return if ay_profile.nil? || ay_profile.empty?
+      return if ay_profile["networking"].nil? || ay_profile["networking"].empty?
+
+      udev_rules = ay_profile["networking"]["net-udev"]
+      log.info("- udev rules: #{udev_rules}")
+
+      return if udev_rules.nil? || udev_rules.empty?
+
+      LanItems.Read
+
+      udev_rules.each do |rule|
+        name_to = rule["name"]
+        key = rule["value"].upcase
+        # currently we're interrested only on those interfaces which are already
+        # configured - such interfaces cannot be restarted during second stage
+        matching_item = LanItems.Items.find { |_, i| i["hwinfo"]["busid"].upcase == key || i["hwinfo"]["mac"].upcase == key }
+        next if !matching_item
+
+        name_from = matching_item[1]["ifcfg"]
+
+        log.info("- renaming <#{name_from}> -> <#{name_to}>")
+
+        LanItems.FindAndSelect(name_from)
+        LanItems.rename(name_to)
+      end
+
+      LanItems.write
     end
 
     # this replaces bash script create_interface

@@ -645,7 +645,7 @@ module Yast
           # - remove it completely
           # removing is less error prone when tracking name changes, so it was chosen.
           item_udev_net = RemoveKeyFromUdevRule(item_udev_net, "KERNEL")
-          SetLinkDown(dev_name)
+          SetLinkDown(dev_name) if !Mode.autoinst
 
           @force_restart = true
         end
@@ -736,7 +736,7 @@ module Yast
         SetItemName(item_id, renamed_to(item_id))
       end
 
-      LanItems.WriteUdevRules if !Mode.autoinst && LanUdevAuto.AllowUdevModify
+      LanItems.WriteUdevRules if LanUdevAuto.AllowUdevModify
 
       # FIXME: hack: no "netcard" filter as biosdevname names it diferently (bnc#712232)
       NetworkInterfaces.Write("")
