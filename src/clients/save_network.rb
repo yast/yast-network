@@ -276,7 +276,7 @@ module Yast
     # stage can be moved here.
     def ay_mode_configuration
       # TODO: run only when in {ssh|vnc} mode of AY
-      # TODO: support for changing udev rule option (mac <-> busid)
+      return if !Mode.autoinst
 
       ay_profile = Profile.current
 
@@ -294,10 +294,11 @@ module Yast
 
       udev_rules.each do |rule|
         name_to = rule["name"]
-        key = rule["value"].upcase
+        attr = rule["rule"]
+        key = rule["value"].downcase
         # currently we're interrested only on those interfaces which are already
         # configured - such interfaces cannot be restarted during second stage
-        matching_item = LanItems.Items.find { |_, i| i["hwinfo"]["busid"].upcase == key || i["hwinfo"]["mac"].upcase == key }
+        matching_item = LanItems.Items.find { |_, i| i["hwinfo"]["busid"].downcase == key || i["hwinfo"]["mac"].downcase == key }
         next if !matching_item
 
         name_from = matching_item[1]["ifcfg"]
@@ -305,6 +306,15 @@ module Yast
         log.info("- renaming <#{name_from}> -> <#{name_to}>")
 
         LanItems.FindAndSelect(name_from)
+
+        # find out what attribude is currently used for setting device name and
+        # change it if needed. Currently mac is used by default. So, we check is it is
+        # the other one (busid). If no we defaults to mac.
+        bus_attr = LanItems.GetItemUdev("KERNELS")
+        current_attr = bus_attr.empty? ? "ATTR{address}" : "KERNELS"
+
+        # make sure that we base renaming on defined attribute with value given in AY profile
+        LanItems.ReplaceItemUdev(current_attr, attr, key)
         LanItems.rename(name_to)
       end
 
