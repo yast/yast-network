@@ -299,10 +299,10 @@ module Yast
         key = rule["value"].downcase
         # currently we're interrested only on those interfaces which are already
         # configured - such interfaces cannot be restarted during second stage
-        matching_item = LanItems.Items.find { |_, i| i["hwinfo"]["busid"].downcase == key || i["hwinfo"]["mac"].downcase == key }
+        _, matching_item = LanItems.Items.find { |_, i| i["hwinfo"]["busid"].downcase == key || i["hwinfo"]["mac"].downcase == key }
         next if !matching_item
 
-        name_from = matching_item[1]["ifcfg"]
+        name_from = matching_item["ifcfg"]
 
         log.info("- renaming <#{name_from}> -> <#{name_to}>")
 
