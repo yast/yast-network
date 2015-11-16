@@ -1,4 +1,14 @@
 -------------------------------------------------------------------
+Mon Nov 16 05:52:07 UTC 2015 - mfilka@suse.com
+
+- bnc#944349
+  - do not set links down when running AY installation over vnc.
+    VNC installation do not freeze.
+  - renaming network devices during ssh/vnc installation is
+    supported
+-3.1.135
+
+-------------------------------------------------------------------
 Sun Nov  8 20:55:53 UTC 2015 - mfilka@suse.com
 
 - bnc#944349
