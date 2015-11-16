@@ -49,6 +49,7 @@ module Yast
       Yast.import "Storage"
       Yast.import "LanItems"
       Yast.import "Profile"
+      Yast.import "Linuxrc"
 
       Yast.include self, "network/routines.rb"
       Yast.include self, "network/complex.rb"
@@ -275,8 +276,8 @@ module Yast
     # Once properly analyzed and tested then starting of whole network second
     # stage can be moved here.
     def ay_mode_configuration
-      # TODO: run only when in {ssh|vnc} mode of AY
       return if !Mode.autoinst
+      return if !(Linuxrc.usessh || Linuxrc.vnc)
 
       ay_profile = Profile.current
 
