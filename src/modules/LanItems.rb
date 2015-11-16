@@ -733,7 +733,9 @@ module Yast
     def write
       renamed_items = @Items.keys.select { |item_id| renamed?(item_id) }
       renamed_items.each do |item_id|
-        NetworkInterfaces.Change2(renamed_to(item_id), GetDeviceMap(item_id), false)
+        devmap = GetDeviceMap(item_id)
+        # change configuration name if device is configured
+        NetworkInterfaces.Change2(renamed_to(item_id), devmap, false) if devmap
         SetItemName(item_id, renamed_to(item_id))
       end
 
