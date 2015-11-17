@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Nov 16 21:33:18 UTC 2015 - mfilka@suse.com
+
+- bnc#955217
+  - do not raise internal error during AY installation with profile
+    containing  device renaming rule for unconfigured interface
+- 3.1.136
+
+-------------------------------------------------------------------
 Mon Nov 16 05:52:07 UTC 2015 - mfilka@suse.com
 
 - bnc#944349

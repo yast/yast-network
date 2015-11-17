@@ -297,16 +297,15 @@ module Yast
         name_to = rule["name"]
         attr = rule["rule"]
         key = rule["value"].downcase
-        # currently we're interrested only on those interfaces which are already
-        # configured - such interfaces cannot be restarted during second stage
-        _, matching_item = LanItems.Items.find { |_, i| i["hwinfo"]["busid"].downcase == key || i["hwinfo"]["mac"].downcase == key }
+        item, matching_item = LanItems.Items.find { |_, i| i["hwinfo"]["busid"].downcase == key || i["hwinfo"]["mac"].downcase == key }
         next if !matching_item
 
-        name_from = matching_item["ifcfg"]
-
+        # for logging only
+        name_from = matching_item["ifcfg"] || matching_item["dev_name"]
         log.info("- renaming <#{name_from}> -> <#{name_to}>")
 
-        LanItems.FindAndSelect(name_from)
+        # selecting according device name is unreliable (selects only in between configured devices)
+        LanItems.current = item
 
         # find out what attribude is currently used for setting device name and
         # change it if needed. Currently mac is used by default. So, we check is it is
