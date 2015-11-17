@@ -297,8 +297,6 @@ module Yast
         name_to = rule["name"]
         attr = rule["rule"]
         key = rule["value"].downcase
-        # currently we're interrested only on those interfaces which are already
-        # configured - such interfaces cannot be restarted during second stage
         item, matching_item = LanItems.Items.find { |_, i| i["hwinfo"]["busid"].downcase == key || i["hwinfo"]["mac"].downcase == key }
         next if !matching_item
 
