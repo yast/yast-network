@@ -64,6 +64,7 @@ interface =
     element bonding_slave7 { text }? &
     element bonding_slave8 { text }? &
     element bonding_slave9 { text }? &
+    element bonding_module_opts { text }? &
     element aliases        { Anything }? &
     broadcast? &
     network? &
@@ -75,7 +76,13 @@ interface =
     wireless? &
     wifi_settings? &
 
-    dhclient_set_down_link?
+    bridge_settings? &
+    vlan_settings? &
+
+    dhclient_set_down_link? &
+    dhclient_set_default_route? &
+
+    element firewall { "yes" | "no" }?
   }
 
 
@@ -112,6 +119,7 @@ remote_ipaddr = element remote_ipaddr { text }
 bootproto = element bootproto { text }
 broadcast = element broadcast { text }
 dhclient_set_down_link = element dhclient_set_down_link { text }
+dhclient_set_default_route = element dhclient_set_default_route { "yes" | "no" }
 ipaddr = element ipaddr { text }
 prefixlen = element prefixlen { text }
 usercontrol = element usercontrol { text }
@@ -182,6 +190,24 @@ wireless_wpa_anonid = element wireless_wpa_anonid { text }
 wireless_wpa_identity = element wireless_wpa_identity { text }
 wireless_wpa_password = element wireless_wpa_password { text }
 wireless_wpa_psk = element wireless_wpa_psk { text }
+
+#
+# Bridge
+#
+bridge_settings = (
+  element bridge              { "yes" | "no" }? &
+  element bridge_ports        { text }? &
+  element bridge_stp          { "on" | "off" }? &
+  element bridge_forwarddelay { text }?
+)
+
+#
+# VLAN
+#
+vlan_settings = (
+  element etherdevice { text }? &
+  element vlan_id     { text }?
+)
 
 #
 # MODULES
