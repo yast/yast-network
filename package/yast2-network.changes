@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Nov 19 18:59:50 UTC 2015 - igonzalezsosa@suse.com
+
+- Fix validation of AutoYaST profiles (bsc#954412)
+
+-------------------------------------------------------------------
 Mon Nov 16 21:33:18 UTC 2015 - mfilka@suse.com
 
 - bnc#955217
