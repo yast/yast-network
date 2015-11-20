@@ -1,5 +1,0 @@
-Read	.target.tmpdir nil
-Log	Failed to set temporary directory: nil
-Read	.probe.architecture "i386"
-Read	.sysconfig.console.CONSOLE_ENCODING nil
-Execute	.target.bash_output "locale -k charmap" $["exit":0, "stderr":"", "stdout":""]

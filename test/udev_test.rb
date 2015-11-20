@@ -8,7 +8,7 @@ Yast.import "LanItems"
 Yast.import "Stage"
 
 # mock class only for testing include
-class NetworkLanComplexUdev
+class NetworkLanComplexUdev < Yast::Module
   def initialize
     Yast.include self, "network/lan/udev"
   end
@@ -50,5 +50,50 @@ describe "NetworkLanUdevInclude#update_udev_rule_key" do
       "value"
     )
     expect(updated_rule).to eq default_rule
+  end
+end
+
+describe "NetworkLanUdevInclude#AddToUdevRule" do
+  subject(:udev) { NetworkLanComplexUdev.new }
+
+  let(:rule) { ["KERNELS=\"invalid\"", "KERNEL=\"eth*\"", "NAME=\"eth1\""] }
+
+  it "adds new tripled into existing rule" do
+    updated_rule = udev.AddToUdevRule(rule, "ENV{MODALIAS}==\"e1000\"")
+    expect(updated_rule).to include "ENV{MODALIAS}==\"e1000\""
+  end
+end
+
+describe "NetworkLanUdevInclude#RemoveKeyFromUdevRule" do
+  subject(:udev) { NetworkLanComplexUdev.new }
+
+  let(:rule) { ["KERNELS=\"invalid\"", "KERNEL=\"eth*\"", "NAME=\"eth1\""] }
+
+  it "removes tripled from existing rule" do
+    updated_rule = udev.RemoveKeyFromUdevRule(rule, "KERNEL")
+    expect(updated_rule).not_to include "KERNEL=\"eth*\""
+  end
+end
+
+describe "LanItems#ReplaceItemUdev" do
+  Yast.import "LanItems"
+
+  it "replaces triplet in the rule as requested" do
+    allow(Yast::LanItems)
+      .to receive(:getUdevFallback)
+      .and_return(
+        [
+          "KERNELS=\"invalid\"",
+          "KERNEL=\"eth*\"",
+          "NAME=\"eth1\""
+        ]
+      )
+
+    updated_rule = Yast::LanItems.ReplaceItemUdev(
+      "KERNELS",
+      "ATTR{address}",
+      "xx:01:02:03:04:05"
+    )
+    expect(updated_rule).to include "ATTR{address}==\"xx:01:02:03:04:05\""
   end
 end

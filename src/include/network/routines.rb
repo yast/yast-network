@@ -37,12 +37,10 @@ module Yast
 
       textdomain "network"
 
-      Yast.import "Call"
       Yast.import "Popup"
       Yast.import "Progress"
       Yast.import "String"
       Yast.import "NetworkService"
-      Yast.import "PackageSystem"
       Yast.import "NetworkInterfaces"
       Yast.import "Arch"
       Yast.import "Confirm"
@@ -104,19 +102,6 @@ module Yast
       end
 
       nil
-    end
-
-    # Query UI widget only if it exists
-    # @param [Yast::Term] id widget id
-    # @param [Symbol] param widget parameter
-    # @param [Object] value previous parameter value
-    # @return widget value if exists, previous value otherwise
-    def QueryWidgetIfExists(id, param, value)
-      id = deep_copy(id)
-      value = deep_copy(value)
-      return UI.QueryWidget(id, param) if UI.WidgetExists(id)
-      Builtins.y2debug("Not changing: %1", id)
-      deep_copy(value)
     end
 
     # Check if required packages are installed and install them if they're not
@@ -190,15 +175,8 @@ module Yast
     # @param [Fixnum] selected selected item (0 for the first)
     # @return a list of items
     # @example [ "x", "y" ] -&gt; [ `item(`id(0), "x"), `item(`id(1), "y") ]
-    def list2items(l, selected)
-      l = deep_copy(l)
-      items = []
-      n = 0
-      Builtins.foreach(l) do |i|
-        items = Builtins.add(items, Item(Id(n), i, n == selected))
-        n = Ops.add(n, 1)
-      end
-      deep_copy(items)
+    def list2items(descriptions, selected_index)
+      descriptions.map.with_index { |d, i| Item(Id(i), d, i == selected_index) }
     end
 
     # Create a list of items for UI from the given hardware list.
@@ -212,18 +190,13 @@ module Yast
     # @param [Array<Hash>] l given list for conversion
     # @param [Fixnum] selected selected item (0 for the first)
     # @return a list of items
-    def hwlist2items(l, selected)
-      l = deep_copy(l)
-      items = []
-      n = 0
-      Builtins.foreach(l) do |i|
-        # Table field (Unknown device)
-        hwname = Ops.get_locale(i, "name", _("Unknown"))
-        num = Ops.get_integer(i, "num", n) # num for detected, n for manual
-        items = Builtins.add(items, Item(Id(num), hwname, num == selected))
-        n = Ops.add(n, 1)
+    def hwlist2items(descriptions, selected_index)
+      descriptions.map.with_index do |d, i|
+        hwname = d["name"] || _("Unknown")
+        num = d["num"] || i
+
+        Item(Id(num), hwname, num == selected_index)
       end
-      deep_copy(items)
     end
 
     # For s390 hwinfo gives us a multitude of types but some are handled
