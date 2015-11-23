@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Nov 23 09:54:34 UTC 2015 - mfilka@suse.com
+
+- bnc#956012
+  - When exporting AutoYaST profile, it contains route definitions
+    even when these routes were configured using linuxrc.
+- 3.1.137
+
+-------------------------------------------------------------------
 Mon Nov 16 21:33:18 UTC 2015 - mfilka@suse.com
 
 - bnc#955217
