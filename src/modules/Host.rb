@@ -84,7 +84,7 @@ module Yast
 
     # Add another name to the list for address (which may be empty so far)
     def add_name(address, name)
-      @hosts[address] = [] if @hosts[address].nil?
+      @hosts[address] ||= []
       @hosts[address] << name
 
       @modified = true

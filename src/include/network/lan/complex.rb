@@ -448,10 +448,8 @@ module Yast
           when :delete
 
             # warn user when device to delete has STARTMODE=nfsroot (bnc#433867)
-            if NetworkInterfaces.GetValue(
-                Ops.get_string(LanItems.getCurrentItem, "ifcfg", ""),
-                "STARTMODE"
-              ) == "nfsroot"
+            devmap = LanItems.GetCurrentMap
+            if devmap && devmap["STARTMODE"] == "nfsroot"
               if !Popup.YesNoHeadline(
                   Label.WarningMsg,
                   _("Device you select has STARTMODE=nfsroot. Really delete?")
