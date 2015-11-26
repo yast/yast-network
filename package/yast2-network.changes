@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Nov 25 21:01:49 UTC 2015 - mfilka@suse.com
+
+- bnc#956605
+  - Write udev rules for renamed devices for non ssh / vnc AutoYaST
+    installations
+- 3.1.138
+
+-------------------------------------------------------------------
 Mon Nov 23 09:54:34 UTC 2015 - mfilka@suse.com
 
 - bnc#956012
