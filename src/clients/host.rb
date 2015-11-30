@@ -98,9 +98,7 @@ module Yast
       ret = HostsMainDialog(true)
       Builtins.y2debug("ret == %1", ret)
 
-      if ret == :next && Host.GetModified
-        Host.Write
-      end
+      Host.Write if ret == :next && Host.GetModified
 
       UI.CloseDialog
       deep_copy(ret)

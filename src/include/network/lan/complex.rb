@@ -405,7 +405,7 @@ module Yast
                     "\n" \
                     "If you edit the settings for this interface here,\n" \
                     "the interface will no longer be managed by NetworkManager.\n"
-                )
+                  )
                 )
                 # y2r: cannot break from middle of switch
                 # but in this function return will do
@@ -437,30 +437,30 @@ module Yast
                 LanItems.getCurrentItem,
                 ["hwinfo", "dev_name"],
                 ""
-              )
+                )
               )
               return :init_s390
             end
           end
 
-            return :edit
+          return :edit
 
-          when :delete
-            # warn user when device to delete has STARTMODE=nfsroot (bnc#433867)
-            devmap = LanItems.GetCurrentMap
-            if devmap && devmap["STARTMODE"] == "nfsroot"
-              if !Popup.YesNoHeadline(
-                  Label.WarningMsg,
-                  _("Device you select has STARTMODE=nfsroot. Really delete?")
-                )
-                # y2r: cannot break from middle of switch
-                # but in this function return will do
-                return nil
-              end
+        when :delete
+          # warn user when device to delete has STARTMODE=nfsroot (bnc#433867)
+          devmap = LanItems.GetCurrentMap
+          if devmap && devmap["STARTMODE"] == "nfsroot"
+            if !Popup.YesNoHeadline(
+              Label.WarningMsg,
+              _("Device you select has STARTMODE=nfsroot. Really delete?")
+              )
+              # y2r: cannot break from middle of switch
+              # but in this function return will do
+              return nil
             end
+          end
 
-            LanItems.DeleteItem
-            initOverview("")
+          LanItems.DeleteItem
+          initOverview("")
         end
       end
       if Builtins.size(LanItems.Items) == 0

@@ -137,7 +137,6 @@ module Yast
 
       # EOF
     end
-
   end
 end
 

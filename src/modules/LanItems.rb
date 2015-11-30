@@ -572,7 +572,7 @@ module Yast
         lan_items[itemId].delete("udev")
       end
 
-      if lan_items[itemId].has_key?("ifcfg")
+      if lan_items[itemId].key?("ifcfg")
         NetworkInterfaces.Delete2(lan_items[itemId]["ifcfg"])
         lan_items[itemId]["ifcfg"] = name.to_s
       end
@@ -2572,7 +2572,7 @@ module Yast
     # Removes all records connected to the ip from /etc/hosts
     def drop_hosts(ip)
       log.info("Deleting hostnames assigned to #{ip} from /etc/hosts")
-      Host.set_names(ip, []);
+      Host.set_names(ip, [])
     end
 
     public
