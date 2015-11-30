@@ -57,10 +57,37 @@ module Yast
       # "hosts" file location
       @hosts_file = "/etc/hosts"
 
-      # Only write configuration
-      @write_only = false
-
       @initialized = false
+    end
+
+    # Remove all entries from the host table.
+    def clear
+      @hosts = {}
+      @modified = true
+    end
+
+    # @return [hash] address->list of names
+    def name_map
+      @hosts
+    end
+
+    # @return [array] names for that address
+    def names(address)
+      @hosts[address] || []
+    end
+
+    # Give address a new list of names.
+    def set_names(address, names)
+      @hosts[address] = names
+      @modified = true
+    end
+
+    # Add another name to the list for address (which may be empty so far)
+    def add_name(address, name)
+      @hosts[address] ||= []
+      @hosts[address] << name
+
+      @modified = true
     end
 
     def NeedDummyIP
@@ -340,6 +367,7 @@ module Yast
     def GetModified
       @modified
     end
+
     # Function sets internal variable, which indicates, that any
     # settings were modified, to "true"
     def SetModified
@@ -348,9 +376,6 @@ module Yast
       nil
     end
 
-    publish variable: :hosts, type: "map <string, list <string>>"
-    publish variable: :modified, type: "boolean"
-    publish variable: :write_only, type: "boolean"
     publish function: :NeedDummyIP, type: "boolean ()"
     publish function: :EnsureHostnameResolvable, type: "void ()"
     publish function: :Read, type: "boolean ()"

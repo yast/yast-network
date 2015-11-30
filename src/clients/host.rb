@@ -86,12 +86,6 @@ module Yast
       # EOF
     end
 
-    # Return a modification status
-    # @return true if data was modified
-    def Modified
-      Host.modified
-    end
-
     # Main hosts GUI
     def HostGUI
       Host.Read
@@ -104,9 +98,8 @@ module Yast
       ret = HostsMainDialog(true)
       Builtins.y2debug("ret == %1", ret)
 
-      if ret == :next && Host.modified
+      if ret == :next && Host.GetModified
         Host.Write
-        # Not needed? RestartNetwork();
       end
 
       UI.CloseDialog

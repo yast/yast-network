@@ -54,6 +54,7 @@ module Yast
       Yast.import "ProductFeatures"
       Yast.import "NetworkConfig"
       Yast.import "NetworkStorage"
+      Yast.import "Host"
       Yast.import "Storage"
       Yast.import "Stage"
       Yast.include self, "network/complex.rb"
@@ -571,7 +572,7 @@ module Yast
         lan_items[itemId].delete("udev")
       end
 
-      if lan_items[itemId].key?("ifcfg")
+      if lan_items[itemId].has_key?("ifcfg")
         NetworkInterfaces.Delete2(lan_items[itemId]["ifcfg"])
         lan_items[itemId]["ifcfg"] = name.to_s
       end
@@ -2314,10 +2315,9 @@ module Yast
 
       log.info("DeleteItem: #{@Items[@current]}")
 
-      if IsCurrentConfigured()
-        SetCurrentName("")
-        NetworkInterfaces.Commit
-      end
+      devmap = GetCurrentMap()
+      drop_hosts(devmap["IPADDR"]) if devmap
+      SetCurrentName("")
 
       current_item = @Items[@current]
 
@@ -2567,6 +2567,12 @@ module Yast
       return false if lladdr.strip == "00:00:00:00:00:00"
 
       true
+    end
+
+    # Removes all records connected to the ip from /etc/hosts
+    def drop_hosts(ip)
+      log.info("Deleting hostnames assigned to #{ip} from /etc/hosts")
+      Host.set_names(ip, []);
     end
 
     public

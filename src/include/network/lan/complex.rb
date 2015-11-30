@@ -443,26 +443,24 @@ module Yast
             end
           end
 
-          return :edit
-        when :delete
+            return :edit
 
-          # warn user when device to delete has STARTMODE=nfsroot (bnc#433867)
-          if NetworkInterfaces.GetValue(
-            Ops.get_string(LanItems.getCurrentItem, "ifcfg", ""),
-            "STARTMODE"
-            ) == "nfsroot"
-            if !Popup.YesNoHeadline(
-              Label.WarningMsg,
-              _("Device you select has STARTMODE=nfsroot. Really delete?")
-              )
-              # y2r: cannot break from middle of switch
-              # but in this function return will do
-              return nil
+          when :delete
+            # warn user when device to delete has STARTMODE=nfsroot (bnc#433867)
+            devmap = LanItems.GetCurrentMap
+            if devmap && devmap["STARTMODE"] == "nfsroot"
+              if !Popup.YesNoHeadline(
+                  Label.WarningMsg,
+                  _("Device you select has STARTMODE=nfsroot. Really delete?")
+                )
+                # y2r: cannot break from middle of switch
+                # but in this function return will do
+                return nil
+              end
             end
-          end
 
-          LanItems.DeleteItem
-          initOverview("")
+            LanItems.DeleteItem
+            initOverview("")
         end
       end
       if Builtins.size(LanItems.Items) == 0
