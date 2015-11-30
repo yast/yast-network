@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Mon Nov 30 09:05:24 UTC 2015 - mfilka@suse.com
+
+- bnc#951330
+  - drop record from /etc/hosts when deleting nic configuration
+- bsc#954412 (igonzalezsosa@suse.com)
+  - Fix validation of AutoYaST profiles
+- 3.1.139
+
+-------------------------------------------------------------------
 Wed Nov 25 21:01:49 UTC 2015 - mfilka@suse.com
 
 - bnc#956605
