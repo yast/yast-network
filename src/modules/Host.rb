@@ -207,11 +207,11 @@ module Yast
     # Dump the Hosts settings to a map, for autoinstallation use.
     # @return autoinstallation settings
     def Export
-      if Ops.greater_than(Builtins.size(@hosts), 0)
+      if Ops.greater_than(Builtins.size(Host.hosts), 0)
         # Filter out IPs with empty hostname (so that valid autoyast
         # profile is created)(#335120)
-        @hosts = Builtins.filter(@hosts) { |_ip, names| names != [] }
-        return { "hosts" => Builtins.eval(@hosts) }
+        Host.hosts = Builtins.filter(Host.hosts) { |_ip, names| names != [] }
+        return { "hosts" => Builtins.eval(Host.hosts) }
       else
         return {}
       end
