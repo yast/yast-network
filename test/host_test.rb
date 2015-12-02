@@ -19,7 +19,7 @@ describe "Host" do
 
     it "Successfully exports stored mapping" do
       allow(host).to receive(:hosts).and_return(etc_hosts)
-      expect(host.Export).to eql({ "hosts" => etc_hosts })
+      expect(host.Export).to eql("hosts" => etc_hosts)
     end
   end
 
@@ -32,7 +32,7 @@ describe "Host" do
     end
 
     it "doesn't drop records with two spaces" do
-      host.Import({ "hosts" => etc_hosts })
+      host.Import("hosts" => etc_hosts)
       host.Update("", "newname", ["10.0.0.42"])
 
       tested_ip = "10.0.0.1"
