@@ -46,45 +46,8 @@ module Yast
       TEST(-> { Host.Read }, [@READ], nil)
 
       DUMP("Write")
-      # TEST(``(Host::Write()), [], nil);
-
-      @lan_settings = {
-        "dns"        => {
-          "dhcp_hostname" => false,
-          "domain"        => "suse.com",
-          "hostname"      => "nashif",
-          "nameservers"   => ["10.0.0.1"],
-          "searchlist"    => ["suse.com"]
-        },
-        "interfaces" => [
-          {
-            "STARTMODE" => "onboot",
-            "BOOTPROTO" => "static",
-            "BROADCAST" => "10.10.1.255",
-            "IPADDR"    => "10.10.1.1",
-            "NETMASK"   => "255.255.255.0",
-            "NETWORK"   => "10.10.1.0",
-            "UNIQUE"    => "",
-            "device"    => "eth0",
-            "module"    => "",
-            "options"   => ""
-          }
-        ],
-        "routing"    => {
-          "routes"        => [
-            {
-              "destination" => "default",
-              "device"      => "",
-              "gateway"     => "10.10.0.8",
-              "netmask"     => "0.0.0.0"
-            }
-          ],
-          "ip_forwarding" => false
-        }
-      }
 
       DUMP("Import")
-      # TEST(``(Host::Import(lan_settings)), [], nil);
 
       DUMP("Export")
       TEST(-> { Host.Export }, [], nil)
