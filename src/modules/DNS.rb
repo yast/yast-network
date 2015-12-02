@@ -516,6 +516,11 @@ module Yast
     # @return autoinstallation settings
     def Export
       expdns = {}
+
+      # It should be case only for installer (1st stage). When resolver / hostname
+      # was configured via linuxrc, yast needn't to be aware of it. bnc#957377
+      Read() if !@initialized
+
       if Ops.greater_than(Builtins.size(@hostname), 0)
         Ops.set(expdns, "hostname", @hostname)
       end
