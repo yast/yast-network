@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Dec  2 13:26:12 UTC 2015 - mfilka@suse.com
+
+- bnc#957377
+  - When exporting AutoYaST profile, it contains dns configuration
+    even when this config was provided via linuxrc.
+- 3.1.112.13
+
+-------------------------------------------------------------------
 Wed Nov 25 08:02:22 UTC 2015 - mfilka@suse.com
 
 - bnc#951330
