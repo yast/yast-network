@@ -252,7 +252,6 @@ module Yast
       nick = Ops.get(Hostname.SplitFQ(newhn), 0, "")
 
       # Remove old hostname from hosts
-      #    list oldhnlist = [];
       if !oldhn.empty?
         Builtins.foreach(@hosts) do |ip, hs|
           wrk = Builtins.maplist(hs) { |s| Builtins.splitstring(s, " ") }
@@ -274,8 +273,6 @@ module Yast
       # Add hostname/ip for all ips
       nickadded = false
       Builtins.maplist(ips) do |ip|
-        # Only add if not present yet
-        #		if(haskey(hosts, ip)) return;
         # Omit some IP addresses
         next if ip == "" || ip.nil? || ip == "127.0.0.1"
         name = newhn
