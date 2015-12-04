@@ -1,7 +1,0 @@
-Read	.target.tmpdir "/tmp"
-Dump	Read
-Read	.target.size "/etc/hosts" 1
-Dir	.etc.hosts: ["10.0.0.1", "127.0.0.1"]
-Read	.etc.hosts."10.0.0.1" ["somehost.example.com  notice-two-spaces"]
-Read	.etc.hosts."127.0.0.1" ["localhost localhost.localdomain"]
-Return	true

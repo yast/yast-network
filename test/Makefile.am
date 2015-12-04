@@ -28,6 +28,7 @@ TESTS = \
   suse_firewall_4_network_test.rb \
   udev_test.rb \
   widgets_test.rb \
+  host_test.rb \
   yaml_defaults_test.rb
 
 TEST_EXTENSIONS = .rb
