@@ -48,18 +48,40 @@ module Yast
     describe "#GetBondableInterfaces" do
       let(:expected_bondable) { ["eth4", "eth5", "eth11", "eth12"] }
 
-      before(:each) do
-        # FindAndSelect initializes internal state of LanItems it
-        # is used internally by some helpers
-        LanItems.FindAndSelect("bond1")
+      context "on common architectures" do
+        before(:each) do
+          expect(Arch).to receive(:s390).at_least(:once).and_return false
+          # FindAndSelect initializes internal state of LanItems it
+          # is used internally by some helpers
+          LanItems.FindAndSelect("bond1")
+        end
+
+        it "returns list of slave candidates" do
+          expect(
+            LanItems
+              .GetBondableInterfaces(LanItems.GetCurrentName)
+              .map { |i| LanItems.GetDeviceName(i) }
+          ).to match_array expected_bondable
+        end
       end
 
-      it "returns list of slave candidates" do
-        expect(
-          LanItems
-            .GetBondableInterfaces(LanItems.GetCurrentName)
-            .map { |i| LanItems.GetDeviceName(i) }
-        ).to match_array expected_bondable
+      context "on s390" do
+        before(:each) do
+          expect(Arch).to receive(:s390).at_least(:once).and_return true
+        end
+
+        it "returns list of slave candidates" do
+          expect(LanItems).to receive(:s390_ReadQethConfig).with("eth4")
+            .and_return("QETH_LAYER2" => "yes")
+          expect(LanItems).to receive(:s390_ReadQethConfig).with(::String)
+            .at_least(:once).and_return("QETH_LAYER2" => "no")
+
+          expect(
+            LanItems
+              .GetBondableInterfaces(LanItems.GetCurrentName)
+              .map { |i| LanItems.GetDeviceName(i) }
+          ).to match_array ["eth4"]
+        end
       end
     end
 
