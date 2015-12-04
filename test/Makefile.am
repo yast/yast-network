@@ -1,14 +1,15 @@
 TESTS = \
   alias_dialog_test.rb \
-  bridge_test.rb \
   bond_test.rb \
+  bridge_test.rb \
   build_lan_overview_test.rb \
   complex_test.rb \
   default_route_test.rb \
-  dns_test.rb \
   dns_service_test.rb \
+  dns_test.rb \
   edit_nic_name_test.rb \
   firewall_stage1_proposal_test.rb \
+  host_test.rb \
   ifroute_test.rb \
   install_inf_convertor_test.rb \
   lan_items_helpers_test.rb \
@@ -28,7 +29,6 @@ TESTS = \
   suse_firewall_4_network_test.rb \
   udev_test.rb \
   widgets_test.rb \
-  host_test.rb \
   yaml_defaults_test.rb
 
 TEST_EXTENSIONS = .rb
