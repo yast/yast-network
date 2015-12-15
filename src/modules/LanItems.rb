@@ -55,8 +55,10 @@ module Yast
       Yast.import "ProductFeatures"
       Yast.import "NetworkConfig"
       Yast.import "NetworkStorage"
+      Yast.import "Host"
       Yast.import "Storage"
       Yast.import "Directory"
+      Yast.import "Stage"
       Yast.include self, "network/complex.rb"
       Yast.include self, "network/routines.rb"
       Yast.include self, "network/lan/s390.rb"
@@ -560,7 +562,8 @@ module Yast
           # - remove it completely
           # removing is less error prone when tracking name changes, so it was chosen.
           item_udev_net = RemoveKeyFromUdevRule(item_udev_net, "KERNEL")
-          SetLinkDown(dev_name)
+          # setting links down during AY is forbidden bcs it can freeze ssh installation
+          SetLinkDown(dev_name) if !Mode.autoinst
 
           @force_restart = true
         end
@@ -647,11 +650,22 @@ module Yast
     def write
       renamed_items = @Items.keys.select { |item_id| renamed?(item_id) }
       renamed_items.each do |item_id|
-        NetworkInterfaces.Change2(renamed_to(item_id), GetDeviceMap(item_id), false)
+        devmap = GetDeviceMap(item_id)
+        # change configuration name if device is configured
+        NetworkInterfaces.Change2(renamed_to(item_id), devmap, false) if devmap
         SetItemName(item_id, renamed_to(item_id))
       end
 
-      LanItems.WriteUdevRules if !Mode.autoinst && LanUdevAuto.AllowUdevModify
+      # FIXME: in case of AY, writing udev rules was partly moved into first stage
+      # (bnc#955217). However, it is so only in case of ssh / vnc installation.
+      # Otherwise, udev rules are written in second stage in *LanUdevAuto* module
+      # and it breaks consistency of data stored in Items. So, moving writing
+      # udev rules into first stage should be completed ASAP even fo non-ssh / vnc
+      # AY installations and LanUdevAuto module should be dropped.
+      # When refactored at least these use cases need to be retested:
+      # - bnc#955217
+      # - bnc#956605
+      LanItems.WriteUdevRules if !Stage.cont && LanUdevAuto.AllowUdevModify
 
       # FIXME: hack: no "netcard" filter as biosdevname names it diferently (bnc#712232)
       NetworkInterfaces.Write("")
@@ -2194,10 +2208,9 @@ module Yast
 
       log.info("DeleteItem: #{@Items[@current]}")
 
-      if IsCurrentConfigured()
-        SetCurrentName("")
-        NetworkInterfaces.Commit
-      end
+      devmap = GetCurrentMap()
+      drop_hosts(devmap["IPADDR"]) if devmap
+      SetCurrentName("")
 
       current_item = @Items[@current]
 
@@ -2447,6 +2460,12 @@ module Yast
       return false if lladdr.strip == "00:00:00:00:00:00"
 
       true
+    end
+
+    # Removes all records connected to the ip from /etc/hosts
+    def drop_hosts(ip)
+      log.info("Deleting hostnames assigned to #{ip} from /etc/hosts")
+      Host.set_names(ip, [])
     end
 
     public

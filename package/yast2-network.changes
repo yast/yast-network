@@ -1,4 +1,63 @@
 -------------------------------------------------------------------
+Wed Dec  2 13:26:12 UTC 2015 - mfilka@suse.com
+
+- bnc#957377
+  - When exporting AutoYaST profile, it contains dns configuration
+    even when this config was provided via linuxrc.
+- 3.1.140
+
+-------------------------------------------------------------------
+Mon Nov 30 09:05:24 UTC 2015 - mfilka@suse.com
+
+- bnc#951330
+  - drop record from /etc/hosts when deleting nic configuration
+- bsc#954412 (igonzalezsosa@suse.com)
+  - Fix validation of AutoYaST profiles
+- 3.1.139
+
+-------------------------------------------------------------------
+Wed Nov 25 21:01:49 UTC 2015 - mfilka@suse.com
+
+- bnc#956605
+  - Write udev rules for renamed devices for non ssh / vnc AutoYaST
+    installations
+- 3.1.138
+
+-------------------------------------------------------------------
+Mon Nov 23 09:54:34 UTC 2015 - mfilka@suse.com
+
+- bnc#956012
+  - When exporting AutoYaST profile, it contains route definitions
+    even when these routes were configured using linuxrc.
+- 3.1.137
+
+-------------------------------------------------------------------
+Mon Nov 16 21:33:18 UTC 2015 - mfilka@suse.com
+
+- bnc#955217
+  - do not raise internal error during AY installation with profile
+    containing  device renaming rule for unconfigured interface
+- 3.1.136
+
+-------------------------------------------------------------------
+Mon Nov 16 05:52:07 UTC 2015 - mfilka@suse.com
+
+- bnc#944349
+  - do not set links down when running AY installation over vnc.
+    VNC installation do not freeze.
+  - renaming network devices during ssh/vnc installation is
+    supported
+-3.1.135
+
+-------------------------------------------------------------------
+Sun Nov  8 20:55:53 UTC 2015 - mfilka@suse.com
+
+- bnc#944349
+  - do not set links down when running AY installation over ssh.
+    SSH installation do not freeze.
+- 3.1.134
+
+-------------------------------------------------------------------
 Thu Oct  8 12:02:44 UTC 2015 - mvidner@suse.com
 
 - Fixed "Relax-NG parser error : Some defines for ipv6_forward
