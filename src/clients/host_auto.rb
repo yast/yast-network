@@ -72,7 +72,6 @@ module Yast
         @ret = Host.Summary
       # Reset configuration
       elsif @func == "Reset"
-        Host.modified = false
         Host.Import({})
         @ret = {}
       # Change configuration (run AutoSequence)
@@ -119,7 +118,6 @@ module Yast
       elsif @func == "Write"
         Yast.import "Progress"
         @progress_orig = Progress.set(false)
-        Host.write_only = true
         @ret = Host.Write
         Progress.set(@progress_orig)
       elsif @func == "SetModified"
@@ -138,12 +136,6 @@ module Yast
       deep_copy(@ret)
 
       # EOF
-    end
-
-    # Return a modification status
-    # @return true if data was modified
-    def Modified
-      Host.modified
     end
   end
 end

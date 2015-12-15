@@ -46,7 +46,7 @@ describe "Host" do
       host.Update("", "newname", ["10.0.0.42"])
 
       tested_ip = "10.0.0.1"
-      expect(host.hosts[tested_ip]).to eql etc_hosts[tested_ip]
+      expect(host.name_map[tested_ip]).to eql etc_hosts[tested_ip]
     end
   end
 end

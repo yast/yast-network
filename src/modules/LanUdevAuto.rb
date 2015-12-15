@@ -38,6 +38,8 @@ module Yast
       Yast.import "UI"
       Yast.import "LanItems"
       Yast.import "Map"
+      Yast.import "Linuxrc"
+
       Yast.include self, "network/routines.rb"
       Yast.include self, "network/lan/udev.rb"
 
@@ -205,7 +207,7 @@ module Yast
       end
 
       if !rules.empty? && AllowUdevModify()
-        SetAllLinksDown()
+        SetAllLinksDown() if !(Linuxrc.usessh || Linuxrc.vnc)
 
         log.info("Writing AY udev rules for network")
 

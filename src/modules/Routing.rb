@@ -245,6 +245,8 @@ module Yast
 
       ReadFromGateway(NetHwDetection.result["GATEWAY"] || "") if @Routes.empty?
 
+      @initialized = true
+
       true
     end
 
@@ -382,6 +384,7 @@ module Yast
       @Orig_Forward_v6 = nil
 
       @modified = true
+      @initialized = true
 
       true
     end
@@ -390,6 +393,12 @@ module Yast
     # @return autoinstallation settings
     def Export
       exproute = {}
+
+      # It should be case only for installer (1st stage). When routing
+      # was configured via linuxrc, yast needn't to be aware of it. bnc#956012
+      Read() if !@initialized
+
+      log.info("Routing: exporting configuration #{@Routes}")
 
       exproute["routes"] = deep_copy(@Routes) unless @Routes.empty?
       exproute["ipv4_forward"] = @Forward_v4
