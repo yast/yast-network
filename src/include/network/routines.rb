@@ -513,101 +513,101 @@ module Yast
 
         case controller
           # modem
-          when "modem"
-            one["device_name"] = card["dev_name"] || ""
-            one["drivers"] = card["drivers"] || []
+        when "modem"
+          one["device_name"] = card["dev_name"] || ""
+          one["drivers"] = card["drivers"] || []
 
-            speed = Ops.get_integer(resource, ["baud", 0, "speed"], 57_600)
-            # :-) have to check .probe and libhd if this confusion is
-            # really necessary. maybe a pppd bug too? #148893
-            speed = 57_600 if speed == 12_000_000
+          speed = Ops.get_integer(resource, ["baud", 0, "speed"], 57_600)
+          # :-) have to check .probe and libhd if this confusion is
+          # really necessary. maybe a pppd bug too? #148893
+          speed = 57_600 if speed == 12_000_000
 
-            one["speed"] = speed
-            one["init1"] = Ops.get_string(resource, ["init_strings", 0, "init1"], "")
-            one["init2"] = Ops.get_string(resource, ["init_strings", 0, "init2"], "")
-            one["pppd_options"] = Ops.get_string(resource, ["pppd_option", 0, "option"], "")
+          one["speed"] = speed
+          one["init1"] = Ops.get_string(resource, ["init_strings", 0, "init1"], "")
+          one["init2"] = Ops.get_string(resource, ["init_strings", 0, "init2"], "")
+          one["pppd_options"] = Ops.get_string(resource, ["pppd_option", 0, "option"], "")
 
           # isdn card
-          when "isdn"
-            drivers = card["isdn"] || []
-            one["drivers"] = drivers
-            one["sel_drv"] = 0
-            one["bus"] = card["bus"] || ""
-            one["io"] = Ops.get_integer(resource, ["io", 0, "start"], 0)
-            one["irq"] = Ops.get_integer(resource, ["irq", 0, "irq"], 0)
+        when "isdn"
+          drivers = card["isdn"] || []
+          one["drivers"] = drivers
+          one["sel_drv"] = 0
+          one["bus"] = card["bus"] || ""
+          one["io"] = Ops.get_integer(resource, ["io", 0, "start"], 0)
+          one["irq"] = Ops.get_integer(resource, ["irq", 0, "irq"], 0)
 
           # dsl card
-          when "dsl"
-            driver_info = Ops.get_map(card, ["dsl", 0], {})
-            translate_mode = { "capiadsl" => "capi-adsl", "pppoe" => "pppoe" }
-            m = driver_info["mode"] || ""
-            one["pppmode"] = translate_mode[m] || m
+        when "dsl"
+          driver_info = Ops.get_map(card, ["dsl", 0], {})
+          translate_mode = { "capiadsl" => "capi-adsl", "pppoe" => "pppoe" }
+          m = driver_info["mode"] || ""
+          one["pppmode"] = translate_mode[m] || m
 
           # treat the rest as a network card
-          else
-            # drivers:
-            # Although normally there is only one module
-            # (one=$[active:, module:, options:,...]), the generic
-            # situation is: one or more driver variants (exclusive),
-            # each having one or more modules (one[drivers])
+        else
+          # drivers:
+          # Although normally there is only one module
+          # (one=$[active:, module:, options:,...]), the generic
+          # situation is: one or more driver variants (exclusive),
+          # each having one or more modules (one[drivers])
 
-            # only drivers that are not marked as broken (#97540)
-            drivers = Builtins.filter(Ops.get_list(card, "drivers", [])) do |d|
-              # ignoring more modules per driver...
-              module0 = Ops.get_list(d, ["modules", 0], []) # [module, options]
-              brk = broken_modules.include?(module0[0])
+          # only drivers that are not marked as broken (#97540)
+          drivers = Builtins.filter(Ops.get_list(card, "drivers", [])) do |d|
+            # ignoring more modules per driver...
+            module0 = Ops.get_list(d, ["modules", 0], []) # [module, options]
+            brk = broken_modules.include?(module0[0])
 
-              if brk
-                Builtins.y2milestone("In BrokenModules, skipping: %1", module0)
-              end
-
-              !brk
+            if brk
+              Builtins.y2milestone("In BrokenModules, skipping: %1", module0)
             end
 
-            if drivers == []
-              Builtins.y2milestone("No good drivers found")
-            else
-              one["drivers"] = drivers
-
-              driver = drivers[0] || {}
-              one["active"] = driver["active"] || false
-              module0 = Ops.get_list(driver, ["modules", 0], [])
-              one["module"] = module0[0] || ""
-              one["options"] = module0[1] || ""
-            end
-
-            # FIXME: this should be also done for modems and others
-            # FIXME: #13571
-            hp = card["hotplug"] || ""
-            if hp == "pcmcia" || hp == "cardbus"
-              one["hotplug"] = "pcmcia"
-            elsif hp == "usb"
-              one["hotplug"] = "usb"
-            end
-
-            # store the BUS type
-            bus = card["bus_hwcfg"] || card["bus"] || ""
-
-            if bus == "PCI"
-              bus = "pci"
-            elsif bus == "USB"
-              bus = "usb"
-            elsif bus == "Virtual IO"
-              bus = "vio"
-            end
-
-            one["bus"] = bus
-            one["busid"] = card["sysfs_bus_id"] || ""
-            one["mac"] = Ops.get_string(resource, ["hwaddr", 0, "addr"], "")
-            # is the cable plugged in? nil = don't know
-            one["link"] = Ops.get(resource, ["link", 0, "state"])
-
-            # Wireless Card Features
-            one["wl_channels"] = Ops.get(resource, ["wlan", 0, "channels"])
-            one["wl_bitrates"] = Ops.get(resource, ["wlan", 0, "bitrates"])
-            one["wl_auth_modes"] = Ops.get(resource, ["wlan", 0, "auth_modes"])
-            one["wl_enc_modes"] = Ops.get(resource, ["wlan", 0, "enc_modes"])
+            !brk
           end
+
+          if drivers == []
+            Builtins.y2milestone("No good drivers found")
+          else
+            one["drivers"] = drivers
+
+            driver = drivers[0] || {}
+            one["active"] = driver["active"] || false
+            module0 = Ops.get_list(driver, ["modules", 0], [])
+            one["module"] = module0[0] || ""
+            one["options"] = module0[1] || ""
+          end
+
+          # FIXME: this should be also done for modems and others
+          # FIXME: #13571
+          hp = card["hotplug"] || ""
+          if hp == "pcmcia" || hp == "cardbus"
+            one["hotplug"] = "pcmcia"
+          elsif hp == "usb"
+            one["hotplug"] = "usb"
+          end
+
+          # store the BUS type
+          bus = card["bus_hwcfg"] || card["bus"] || ""
+
+          if bus == "PCI"
+            bus = "pci"
+          elsif bus == "USB"
+            bus = "usb"
+          elsif bus == "Virtual IO"
+            bus = "vio"
+          end
+
+          one["bus"] = bus
+          one["busid"] = card["sysfs_bus_id"] || ""
+          one["mac"] = Ops.get_string(resource, ["hwaddr", 0, "addr"], "")
+          # is the cable plugged in? nil = don't know
+          one["link"] = Ops.get(resource, ["link", 0, "state"])
+
+          # Wireless Card Features
+          one["wl_channels"] = Ops.get(resource, ["wlan", 0, "channels"])
+          one["wl_bitrates"] = Ops.get(resource, ["wlan", 0, "bitrates"])
+          one["wl_auth_modes"] = Ops.get(resource, ["wlan", 0, "auth_modes"])
+          one["wl_enc_modes"] = Ops.get(resource, ["wlan", 0, "enc_modes"])
+        end
 
         if controller != "" && !filter_out(card, one["module"])
           Builtins.y2debug("found device: %1", one)
