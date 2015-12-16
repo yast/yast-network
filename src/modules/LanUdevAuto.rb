@@ -29,6 +29,7 @@
 #
 # Representation of the configuration of network cards.
 require "yast"
+require "network/network_autoyast"
 
 module Yast
   class LanUdevAutoClass < Module
@@ -112,26 +113,6 @@ module Yast
     end
 
     #  internal function:
-    #  check if old-style (ifcfg-eth-id-..., ifcfg-eth-bus-... is used) or new-style (ifcfg-eth0)
-    def oldStyle(ay)
-      ay = deep_copy(ay)
-      old_style_found = false
-      Builtins.foreach(Ops.get_list(ay, "interfaces", [])) do |interface|
-        if Builtins.issubstring(Ops.get_string(interface, "device", ""), "-id-")
-          old_style_found = true
-        end
-        if Builtins.issubstring(
-          Ops.get_string(interface, "device", ""),
-          "-bus-"
-          )
-          old_style_found = true
-        end
-      end
-      Builtins.y2milestone("old-style found:%1", old_style_found)
-      old_style_found
-    end
-
-    #  internal function:
     #  for old-slyle create udev rules and rename interface names to new-style
     def createUdevFromIfaceName(interfaces)
       interfaces = deep_copy(interfaces)
@@ -175,7 +156,7 @@ module Yast
     def Import(settings)
       settings = deep_copy(settings)
       Builtins.y2milestone("importing %1", settings)
-      if oldStyle(settings)
+      if NetworkAutoYast.instance.oldStyle(settings)
         Ops.set(
           settings,
           "interfaces",
