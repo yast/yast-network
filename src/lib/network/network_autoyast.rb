@@ -122,7 +122,6 @@ module Yast
     # These names has to be converted into new-style (eth0) and name persistency
     # is enabled using udev rule which is generated later.
     def oldStyle(ay)
-      ay = deep_copy(ay)
       old_style_found = false
       Builtins.foreach(Ops.get_list(ay, "interfaces", [])) do |interface|
         if Builtins.issubstring(Ops.get_string(interface, "device", ""), "-id-")

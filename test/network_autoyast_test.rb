@@ -210,4 +210,33 @@ describe "NetworkAutoYast" do
       end
     end
   end
+
+  describe "#oldStyle" do
+    subject(:network_autoyast) { Yast::NetworkAutoYast.instance }
+
+    let(:ay_old_id) do
+      {
+        "interfaces" => [{"device" => "eth-id-0.0.1111"}]
+      }
+    end
+    let(:ay_old_mac) do
+      {
+        "interfaces" => [{"device" => "eth-bus-00:11:22:33:44:55"}]
+      }
+    end
+    let(:ay_only_new) do
+      {
+        "interfaces" => [{"device" => "eth0"}]
+      }
+    end
+
+    it "detects old style names in profile" do
+      expect(network_autoyast.oldStyle(ay_old_id)).to be true
+      expect(network_autoyast.oldStyle(ay_old_mac)).to be true
+    end
+
+    it "fails when profile contains only new names" do
+      expect(network_autoyast.oldStyle(ay_only_new)).to be false
+    end
+  end
 end
