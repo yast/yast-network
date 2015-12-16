@@ -121,21 +121,19 @@ module Yast
     # OLd style device name format is eth-id-<mac> or eth-bus-<busid>.
     # These names has to be converted into new-style (eth0) and name persistency
     # is enabled using udev rule which is generated later.
+    #
+    # @param [Hash] configuration map
+    #
+    # @return true if configuration contains old style name
     def oldStyle(ay)
-      old_style_found = false
-      Builtins.foreach(Ops.get_list(ay, "interfaces", [])) do |interface|
-        if Builtins.issubstring(Ops.get_string(interface, "device", ""), "-id-")
-          old_style_found = true
-        end
-        if Builtins.issubstring(
-          Ops.get_string(interface, "device", ""),
-          "-bus-"
-          )
-          old_style_found = true
-        end
+      return false if ay.nil? || ay["interfaces"].nil?
+
+      ret = ay["interfaces"].any? do |interface|
+        interface["device"] =~ /.*-id-.*/ || interface["device"] =~ /.*-bus-.*/
       end
-      Builtins.y2milestone("old-style found:%1", old_style_found)
-      old_style_found
+
+      log.info("old-style name found: #{ret}")
+      ret
     end
 
     # Merges two devices map into one.
