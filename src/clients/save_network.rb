@@ -271,8 +271,6 @@ module Yast
     end
 
     # Sets default network service
-    #
-    # Intended for common installation only. AY is handled elswhere
     def set_network_service
       if Mode.autoinst
         NetworkAutoYast.instance.set_network_service

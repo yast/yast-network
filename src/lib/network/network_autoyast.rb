@@ -48,13 +48,8 @@ module Yast
     end
 
     # Creates udev rules according definition from profile
-    #
-    # FIXME: Currently used only for applying udev rules during network
-    # installations (ssh, vnc, ...). It was introduced as a quick fix for
-    # bnc#944349, so it is currently limited only on {ssh|vnc} installations.
     def create_udevs
       return if !Mode.autoinst
-      return if !(Linuxrc.usessh || Linuxrc.vnc)
 
       log.info("Applying udev rules according to AY profile")
 
