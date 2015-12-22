@@ -234,15 +234,15 @@ module Yast
     # Dump the Hosts settings to a map, for autoinstallation use.
     # @return autoinstallation settings
     def Export
-      return {} if hosts.empty?
+      return {} if @hosts.empty?
 
       # Filter out IPs with empty hostname (so that valid autoyast
       # profile is created)(#335120)
       # FIXME: this also removes records with empty names from @hosts. Such
       # side effect is unexpected and should be removed.
-      hosts.keep_if { |_, names| !names.empty? }
+      @hosts.keep_if { |_, names| !names.empty? }
 
-      { "hosts" => hosts }
+      { "hosts" => @hosts }
     end
 
     # Return "system" predefined hosts (should be present all the time)

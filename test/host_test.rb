@@ -18,17 +18,17 @@ describe "Host" do
     end
 
     it "Successfully exports stored mapping" do
-      allow(host).to receive(:hosts).and_return(etc_hosts)
+      host.Import("hosts" => etc_hosts)
       expect(host.Export).to eql("hosts" => etc_hosts)
     end
 
     it "removes empty name lists" do
-      allow(host).to receive(:hosts).and_return("127.0.0.1" => ["localhost"], "10.0.0.1"  => [])
+      host.Import("hosts" => { "127.0.0.1" => ["localhost"], "10.0.0.1"  => [] })
       expect(host.Export).to eql("hosts" => { "127.0.0.1" => ["localhost"] })
     end
 
     it "exports empty hash when no mapping is defined" do
-      allow(host).to receive(:hosts).and_return({})
+      host.Import("hosts" => {})
       expect(host.Export).to be_empty
     end
   end
