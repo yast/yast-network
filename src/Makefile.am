@@ -4,7 +4,6 @@ module_DATA = \
   modules/LanUdevAuto.rb \
   modules/SuSEFirewall4Network.rb \
   modules/Remote.rb \
-  modules/InternetDevices.rb \
   modules/NetworkStorage.rb \
   modules/Host.rb \
   modules/NetHwDetection.rb \
@@ -32,7 +31,6 @@ client_DATA = \
   clients/routing.rb \
   clients/lan.rb \
   clients/host_auto.rb \
-  clients/inst_ask_net_test.rb \
   clients/firewall_stage1_proposal.rb \
   clients/routing_auto.rb \
   clients/remote.rb \
