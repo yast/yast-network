@@ -32,7 +32,6 @@ require "yast"
 
 module Yast
   class NetworkStorageClass < Module
-    
     include Logger
 
     def main
@@ -43,22 +42,19 @@ module Yast
     # @return e.g. /dev/sda2 (or just "nfs")
     def getDevice(mount_point)
       log.info "The mount_point is #{mount_point}"
-      out = SCR.Read(path(".proc.mounts")).find do |m| 
-        m["file"] == mount_point && m["vfstype"] != "rootfs" 
-      end 
-      if out
-        log.info "mounpoint found #{out}"
-        device = case out["vfstype"]
-                 when "nfs", "nfs4"
-                  "nfs"
-                 else
-                   out["spec"]
-                 end
-        log.info "#{mount_point} is on device #{device}"
-        device
-      else
-        ""
+      out = SCR.Read(path(".proc.mounts")).find do |m|
+        m["file"] == mount_point && m["vfstype"] != "rootfs"
       end
+      return "" unless out
+      log.info "mounpoint found #{out}"
+      device = case out["vfstype"]
+               when "nfs", "nfs4"
+                 "nfs"
+               else
+                 out["spec"]
+               end
+      log.info "#{mount_point} is on device #{device}"
+      device
     end
 
     publish function: :getDevice, type: "string (string)"

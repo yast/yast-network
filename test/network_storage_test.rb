@@ -6,12 +6,11 @@ require "yast"
 
 Yast.import "NetworkStorage"
 
-
 describe Yast::NetworkStorage do
   describe ".getDevices" do
     let(:data_dir) { File.join(File.dirname(__FILE__), "data") }
-    
-    around do |example| 
+
+    around do |example|
       change_scr_root(File.join(data_dir, "scr_root"), &example)
     end
 
