@@ -32,6 +32,9 @@ require "yast"
 
 module Yast
   class NetworkStorageClass < Module
+    
+    include Logger
+
     def main
       Yast.import "Storage"
     end
@@ -39,21 +42,23 @@ module Yast
     # Ask /proc/mounts what device a mount point is using.
     # @return e.g. /dev/sda2 (or just "nfs")
     def getDevice(mount_point)
-      cmd = Builtins.sformat(
-        "grep ' %1 ' /proc/mounts|grep -v rootfs|tr -d '\n'",
-        mount_point
-      )
-      out = Convert.to_map(SCR.Execute(path(".target.bash_output"), cmd))
-      Builtins.y2milestone("mountpoint found %1", out)
-      fields = Builtins.splitstring(Ops.get_string(out, "stdout", ""), " ")
-      vfstype = Ops.get(fields, 2, "")
-      device = if vfstype == "nfs" || vfstype == "nfs4"
-                 "nfs"
-               else
-                 Ops.get(fields, 0, "")
-               end
-      Builtins.y2milestone("%1 is on device: %2", mount_point, device)
-      device
+      log.info "The mount_point is #{mount_point}"
+      out = SCR.Read(path(".proc.mounts")).find do |m| 
+        m["file"] == mount_point && m["vfstype"] != "rootfs" 
+      end 
+      if out
+        log.info "mounpoint found #{out}"
+        device = case out["vfstype"]
+                 when "nfs", "nfs4"
+                  "nfs"
+                 else
+                   out["spec"]
+                 end
+        log.info "#{mount_point} is on device #{device}"
+        device
+      else
+        ""
+      end
     end
 
     publish function: :getDevice, type: "string (string)"
