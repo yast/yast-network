@@ -2016,25 +2016,17 @@ module Yast
       true
     end
 
+    # Remove a half-configured item.
+    # @return [true] so that this can be used for the :abort callback
     def Rollback
-      if Ops.get_boolean(getCurrentItem, "commited", true) == false
-        Builtins.y2milestone("rollback item %1", @current)
-        if !Ops.greater_than(
-          Builtins.size(Ops.get_map(getCurrentItem, "hwinfo", {})),
-          0
-          )
-          @Items = Builtins.remove(@Items, @current)
+      if getCurrentItem["commited"] == false
+        log.info "rollback item #{@current}"
+        if getCurrentItem.fetch("hwinfo", {}).empty?
+          @Items.delete(@current)
         else
-          if Builtins.haskey(Ops.get_map(@Items, @current, {}), "ifcfg")
-            if !Builtins.contains(
-              getNetworkInterfaces,
-              Ops.get_string(getCurrentItem, "ifcfg", "")
-              )
-              Ops.set(
-                @Items,
-                @current,
-                Builtins.remove(Ops.get_map(@Items, @current, {}), "ifcfg")
-              )
+          if getCurrentItem.key?("ifcfg")
+            if !getNetworkInterfaces.include?(getCurrentItem["ifcfg"])
+              getCurrentItem.delete("ifcfg")
             end
           end
         end
