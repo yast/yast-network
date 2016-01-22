@@ -13,7 +13,7 @@ Yast.import "DNS"
 Yast.import "LanItems"
 
 describe Yast::YaPI::NETWORK do
-  include NetworkInterfacesStub
+  include YaPINetworkStub
 
   describe ".Write" do
 
