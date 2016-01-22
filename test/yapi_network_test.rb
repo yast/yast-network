@@ -230,10 +230,18 @@ describe Yast::YaPI::NETWORK do
 
   # FIXME: Interfaces parsing still pending
   describe ".Read" do
+    let(:attributes) do
+      {
+        startmode: "manual",
+        bootproto: "static",
+        ipaddr:    "TheIP",
+        prefix:    "24",
+        mtu:       "1234"
+      }.merge(context_attributes)
+    end
 
     before do
       stub_network_reads
-      allow(Yast::LanItems).to receive(:Items) { {} }
       allow(Yast::Routing).to receive(:GetGateway).and_return "TheIP"
       allow(Yast::Hostname).to receive(:CurrentHostname).and_return "Hostname"
       allow(Yast::Hostname).to receive(:CurrentDomain).and_return "TheDomain"
@@ -244,33 +252,123 @@ describe Yast::YaPI::NETWORK do
 
     subject { Yast::YaPI::NETWORK.Read }
 
-    context "with no interfaces"do
-      let(:config) do
-        {
-          "interfaces" => {},
-          "routes"     => {
-            "default" => {
-              "via" => "TheIP"
-            }
-          },
-          "dns"        => {
-            "nameservers" => [],
-            "searches"    => ["suse.com"]
-          },
-          "hostname"   => {
-            "name"          => "Hostname",
-            "domain"        => "TheDomain",
-            "dhcp_hostname" => "Hostname"
+    let(:config) do
+      {
+        "routes"   => {
+          "default"       => {
+            "via" => "TheIP"
           }
+        },
+        "dns"      => {
+          "nameservers" => [],
+          "searches"    => ["suse.com"]
+        },
+        "hostname" => {
+          "name"          => "Hostname",
+          "domain"        => "TheDomain",
+          "dhcp_hostname" => "Hostname"
+        }
+      }.merge(interfaces)
+    end
 
+    context "with no interfaces"do
+      let(:interfaces) do
+        {
+          "interfaces" => {}
         }
       end
 
-      it "returns all parameters correctly" do
+      it "returns the correct hash" do
         expect(Yast::YaPI::NETWORK.Read).to eql(config)
         subject
       end
     end
+
+    context "with a vlan interface" do
+      let(:context_attributes) do
+        {
+          type:             "vlan",
+          vlan_id:          "42",
+          vlan_etherdevice: "eth5"
+        }
+      end
+
+      let(:interfaces) do
+        {
+          "interfaces" => {
+            "eth5.23" => {
+              "startmode"        => "manual",
+              "bootproto"        => "static",
+              "ipaddr"           => "TheIP/24",
+              "mtu"              => "1234",
+              "vlan_id"          => "42",
+              "vlan_etherdevice" => "eth5",
+              "vendor"           => "eth5.23"
+            }
+          }
+        }
+      end
+
+      before do
+        allow(Yast::LanItems).to receive(:Items).with(no_args).and_return("0" => { "ifcfg" => "eth5.23" })
+        allow(Yast::LanItems).to receive(:GetCurrentName).and_return("eth5.23")
+        allow(Yast::LanItems).to receive(:getCurrentItem).and_return(
+          "hwinfo" => { "dev_name" => "eth5.23", "type" => "eth", "name" => "eth5.23" }
+        )
+        allow(Yast::LanItems).to receive(:IsCurrentConfigured).and_return(true)
+        attributes.map do |k, v|
+          allow(Yast::LanItems).to receive(k) { v }
+        end
+        allow(Yast::LanItems).to receive(:SetItem)
+      end
+
+      it "returns the correct hash" do
+        expect(subject).to eql(config)
+      end
+    end
+
+    context "with a bond interface" do
+      let(:context_attributes) do
+        {
+          "type"        => "bond",
+          "bond_slaves" => ["eth1", "eth2", "eth3"],
+          "bond_option" => "mode=active-backup miimon=100"
+        }
+      end
+
+      let(:interfaces) do
+        {
+          "interfaces" => {
+            "bond0" => {
+              "startmode"   => "manual",
+              "bootproto"   => "static",
+              "ipaddr"      => "TheIP/24",
+              "mtu"         => "1234",
+              "bond_slaves" => ["eth1", "eth2", "eth3"],
+              "bond_option" => "mode=active-backup miimon=100"
+            }
+          }
+        }
+      end
+
+      before do
+        allow(Yast::LanItems).to receive(:Items).with(no_args).and_return("0" => { "ifcfg" => "bond0" })
+        allow(Yast::LanItems).to receive(:GetCurrentName).and_return("bond0")
+        allow(Yast::LanItems).to receive(:getCurrentItem).and_return("hwinfo" => { "type" => "bond" })
+        allow(Yast::LanItems).to receive(:IsCurrentConfigured).and_return(true)
+        attributes.map do |k, v|
+          allow(Yast::LanItems).to receive(k) { v }
+        end
+        allow(Yast::LanItems).to receive(:SetItem)
+      end
+
+      it "returns the correct hash" do
+        expect(Yast::YaPI::NETWORK.Read).to eql(config)
+        subject
+      end
+
+    end
+
   end
 
 end
