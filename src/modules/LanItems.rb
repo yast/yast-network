@@ -2022,9 +2022,9 @@ module Yast
       if getCurrentItem["commited"] == false
         log.info "rollback item #{@current}"
         if getCurrentItem.fetch("hwinfo", {}).empty?
-          @Items.delete(@current)
+          LanItems.Items.delete(@current)
         else
-          if getCurrentItem.key?("ifcfg")
+          if IsCurrentConfigured()
             if !getNetworkInterfaces.include?(getCurrentItem["ifcfg"])
               getCurrentItem.delete("ifcfg")
             end
