@@ -16,13 +16,14 @@ describe Yast::YaPI::NETWORK do
   include YaPINetworkStub
 
   describe ".Write" do
+    let(:routing) { Yast::Routing }
 
     context "with routes" do
       # Mock the system to do not break anything
       before do
-        allow(Yast::Routing).to receive(:Read)
-        allow(Yast::Routing).to receive(:Routes)
-        allow(Yast::Routing).to receive(:Write)
+        allow(routing).to receive(:Read)
+        allow(routing).to receive(:Routes)
+        allow(routing).to receive(:Write)
       end
 
       subject { Yast::YaPI::NETWORK.Write("route" => route) }
@@ -37,7 +38,7 @@ describe Yast::YaPI::NETWORK do
         end
 
         it "empties the routes" do
-          expect(Yast::Routing).to receive(:Routes=).with []
+          expect(routing).to receive(:Routes=).with []
           subject
         end
       end
@@ -50,7 +51,7 @@ describe Yast::YaPI::NETWORK do
         end
 
         it "empties the routes" do
-          expect(Yast::Routing).to receive(:Routes=).with []
+          expect(routing).to receive(:Routes=).with []
           subject
         end
       end
@@ -69,7 +70,7 @@ describe Yast::YaPI::NETWORK do
           end
 
           it "correctly modifies the routes" do
-            expect(Yast::Routing).to receive(:Routes=).with(
+            expect(routing).to receive(:Routes=).with(
               [
                 {
                   "destination" => "default",
@@ -89,11 +90,11 @@ describe Yast::YaPI::NETWORK do
           it "returns failure" do
             res = subject
             expect(res["exit"]).to eq "-1"
-            expect(res["error"]).to_not be_empty
+            expect(res["error"]).not_to be_empty
           end
 
           it "doesnt't modify the routes" do
-            expect(Yast::Routing).to_not receive(:Routes=)
+            expect(routing).not_to receive(:Routes=)
             subject
           end
         end
@@ -101,6 +102,7 @@ describe Yast::YaPI::NETWORK do
     end
 
     context "with interfaces" do
+      let(:network_interfaces) { Yast::NetworkInterfaces }
 
       subject { Yast::YaPI::NETWORK.Write("interface" => interface) }
 
@@ -114,7 +116,7 @@ describe Yast::YaPI::NETWORK do
         let(:interface) { { "eth0" => { "bootproto" => "dhcp6", "startmode" => "onboot" } } }
 
         it "sets both parameters correctly" do
-          expect(Yast::NetworkInterfaces).to receive(:Current=).with(
+          expect(network_interfaces).to receive(:Current=).with(
             "BOOTPROTO" => "dhcp6",
             "STARTMODE" => "onboot"
           )
@@ -130,7 +132,7 @@ describe Yast::YaPI::NETWORK do
           let(:netmask) { "255.255.255.0" }
 
           it "converts netmask to CIDR" do
-            expect(Yast::NetworkInterfaces).to receive(:Current=).with(
+            expect(network_interfaces).to receive(:Current=).with(
               "BOOTPROTO" => "static",
               "STARTMODE" => "auto",
               "IPADDR"    => "TheIP/24"
@@ -144,7 +146,7 @@ describe Yast::YaPI::NETWORK do
           let(:netmask) { "16" }
 
           it "keeps netmask untouched" do
-            expect(Yast::NetworkInterfaces).to receive(:Current=).with(
+            expect(network_interfaces).to receive(:Current=).with(
               "BOOTPROTO" => "static",
               "STARTMODE" => "auto",
               "IPADDR"    => "TheIP/#{netmask}"
@@ -169,7 +171,7 @@ describe Yast::YaPI::NETWORK do
         end
 
         it "sets both parameters correctly" do
-          expect(Yast::NetworkInterfaces).to receive(:Current=).with(
+          expect(network_interfaces).to receive(:Current=).with(
             "BOOTPROTO"   => "static",
             "STARTMODE"   => "auto",
             "IPADDR"      => "1.2.3.8/24",
@@ -185,7 +187,7 @@ describe Yast::YaPI::NETWORK do
         let(:interface) { { "bond0" => { "bond" => "yes", "bond_slaves" => "eth1" } } }
 
         it "sets default values" do
-          expect(Yast::NetworkInterfaces).to receive(:Current=).with(
+          expect(network_interfaces).to receive(:Current=).with(
             "BOOTPROTO"           => "static",
             "STARTMODE"           => "auto",
             "BONDING_MASTER"      => "yes",
@@ -209,7 +211,7 @@ describe Yast::YaPI::NETWORK do
         end
 
         it "sets extra parameters correctly" do
-          expect(Yast::NetworkInterfaces).to receive(:Current=).with(
+          expect(network_interfaces).to receive(:Current=).with(
             "BOOTPROTO"           => "static",
             "STARTMODE"           => "auto",
             "BONDING_MASTER"      => "yes",
@@ -239,6 +241,7 @@ describe Yast::YaPI::NETWORK do
         mtu:       "1234"
       }.merge(context_attributes)
     end
+    let(:lan_items) { Yast::LanItems }
 
     before do
       stub_network_reads
@@ -279,8 +282,7 @@ describe Yast::YaPI::NETWORK do
       end
 
       it "returns the correct hash" do
-        expect(Yast::YaPI::NETWORK.Read).to eql(config)
-        subject
+        expect(subject).to eql(config)
       end
     end
 
@@ -310,20 +312,21 @@ describe Yast::YaPI::NETWORK do
       end
 
       before do
-        allow(Yast::LanItems).to receive(:Items).with(no_args).and_return("0" => { "ifcfg" => "eth5.23" })
-        allow(Yast::LanItems).to receive(:GetCurrentName).and_return("eth5.23")
-        allow(Yast::LanItems).to receive(:getCurrentItem).and_return(
+        allow(lan_items).to receive(:Items).with(no_args).and_return("0" => { "ifcfg" => "eth5.23" })
+        allow(lan_items).to receive(:GetCurrentName).and_return("eth5.23")
+        allow(lan_items).to receive(:getCurrentItem).and_return(
           "hwinfo" => { "dev_name" => "eth5.23", "type" => "eth", "name" => "eth5.23" }
         )
-        allow(Yast::LanItems).to receive(:IsCurrentConfigured).and_return(true)
+        allow(lan_items).to receive(:IsCurrentConfigured).and_return(true)
         attributes.map do |k, v|
-          allow(Yast::LanItems).to receive(k) { v }
+          allow(lan_items).to receive(k) { v }
         end
-        allow(Yast::LanItems).to receive(:SetItem)
+        allow(lan_items).to receive(:SetItem)
       end
 
       it "returns the correct hash" do
         expect(subject).to eql(config)
+        subject
       end
     end
 
@@ -352,18 +355,18 @@ describe Yast::YaPI::NETWORK do
       end
 
       before do
-        allow(Yast::LanItems).to receive(:Items).with(no_args).and_return("0" => { "ifcfg" => "bond0" })
-        allow(Yast::LanItems).to receive(:GetCurrentName).and_return("bond0")
-        allow(Yast::LanItems).to receive(:getCurrentItem).and_return("hwinfo" => { "type" => "bond" })
-        allow(Yast::LanItems).to receive(:IsCurrentConfigured).and_return(true)
+        allow(lan_items).to receive(:Items).with(no_args).and_return("0" => { "ifcfg" => "bond0" })
+        allow(lan_items).to receive(:GetCurrentName).and_return("bond0")
+        allow(lan_items).to receive(:getCurrentItem).and_return("hwinfo" => { "type" => "bond" })
+        allow(lan_items).to receive(:IsCurrentConfigured).and_return(true)
         attributes.map do |k, v|
-          allow(Yast::LanItems).to receive(k) { v }
+          allow(lan_items).to receive(k) { v }
         end
-        allow(Yast::LanItems).to receive(:SetItem)
+        allow(lan_items).to receive(:SetItem)
       end
 
       it "returns the correct hash" do
-        expect(Yast::YaPI::NETWORK.Read).to eql(config)
+        expect(subject).to eql(config)
         subject
       end
 
