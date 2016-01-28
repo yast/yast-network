@@ -2026,7 +2026,7 @@ module Yast
         else
           if IsCurrentConfigured()
             if !getNetworkInterfaces.include?(getCurrentItem["ifcfg"])
-              getCurrentItem.delete("ifcfg")
+              LanItems.Items[@current].delete("ifcfg")
             end
           end
         end
