@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Jan 22 13:24:15 UTC 2016 - mvidner@suse.com
+
+- Fixed an Internal error when aborting the configuration of a
+  WiFi interface (bsc#950902).
+- 3.1.141
+
+-------------------------------------------------------------------
 Wed Dec  2 13:26:12 UTC 2015 - mfilka@suse.com
 
 - bnc#957377
