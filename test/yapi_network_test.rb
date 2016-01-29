@@ -15,6 +15,8 @@ Yast.import "LanItems"
 describe Yast::YaPI::NETWORK do
   include YaPINetworkStub
 
+  subject { Yast::YaPI::NETWORK }
+
   describe ".Write" do
     let(:routing) { Yast::Routing }
 
@@ -25,8 +27,6 @@ describe Yast::YaPI::NETWORK do
         allow(routing).to receive(:Routes)
         allow(routing).to receive(:Write)
       end
-
-      subject { Yast::YaPI::NETWORK }
 
       let(:success) { { "error" => "", "exit" => "0" } }
 
@@ -99,8 +99,6 @@ describe Yast::YaPI::NETWORK do
 
     context "with interfaces" do
       let(:network_interfaces) { Yast::NetworkInterfaces }
-
-      subject { Yast::YaPI::NETWORK }
 
       before do
         interface.keys.map do |k|
@@ -248,8 +246,6 @@ describe Yast::YaPI::NETWORK do
       allow(Yast::DNS).to receive(:nameservers).and_return []
       allow(Yast::DNS).to receive(:searchlist).and_return ["suse.com"]
     end
-
-    subject { Yast::YaPI::NETWORK }
 
     let(:config) do
       {
