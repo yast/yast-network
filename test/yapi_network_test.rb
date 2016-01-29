@@ -26,7 +26,7 @@ describe Yast::YaPI::NETWORK do
         allow(routing).to receive(:Write)
       end
 
-      subject { Yast::YaPI::NETWORK.Write("route" => route) }
+      subject { Yast::YaPI::NETWORK }
 
       let(:success) { { "error" => "", "exit" => "0" } }
 
@@ -34,12 +34,12 @@ describe Yast::YaPI::NETWORK do
         let(:route) { { "default" => nil } }
 
         it "returns success" do
-          expect(subject).to eq success
+          expect(subject.Write("route" => route)).to eq success
         end
 
         it "empties the routes" do
           expect(routing).to receive(:Routes=).with []
-          subject
+          subject.Write("route" => route)
         end
       end
 
@@ -47,26 +47,22 @@ describe Yast::YaPI::NETWORK do
         let(:route) { { "default" => { "via" => "" } } }
 
         it "returns success" do
-          expect(subject).to eq success
+          expect(subject.Write("route" => route)).to eq success
         end
 
         it "empties the routes" do
           expect(routing).to receive(:Routes=).with []
-          subject
+          subject.Write("route" => route)
         end
       end
 
       context "with a gateway in the default route" do
-        let(:route) { { "default" => { "via" => "TheIP" } } }
-        before do
-          expect(Yast::IP).to receive(:Check4).with("TheIP").and_return valid
-        end
 
         context "if it's a valid IP4" do
-          let(:valid) { true }
+          let(:route) { { "default" => { "via" => "10.0.0.1" } } }
 
           it "returns success" do
-            expect(subject).to eq success
+            expect(subject.Write("route" => route)).to eq success
           end
 
           it "correctly modifies the routes" do
@@ -74,28 +70,28 @@ describe Yast::YaPI::NETWORK do
               [
                 {
                   "destination" => "default",
-                  "gateway"     => "TheIP",
+                  "gateway"     => "10.0.0.1",
                   "netmask"     => "-",
                   "device"      => "-"
                 }
               ]
             )
-            subject
+            subject.Write("route" => route)
           end
         end
 
         context "if it's not a valid IP4" do
-          let(:valid) { false }
+          let(:route) { { "default" => { "via" => "256.256.256.256" } } }
 
           it "returns failure" do
-            res = subject
+            res = subject.Write("route" => route)
             expect(res["exit"]).to eq "-1"
             expect(res["error"]).not_to be_empty
           end
 
           it "doesnt't modify the routes" do
             expect(routing).not_to receive(:Routes=)
-            subject
+            subject.Write("route" => route)
           end
         end
       end
@@ -104,7 +100,7 @@ describe Yast::YaPI::NETWORK do
     context "with interfaces" do
       let(:network_interfaces) { Yast::NetworkInterfaces }
 
-      subject { Yast::YaPI::NETWORK.Write("interface" => interface) }
+      subject { Yast::YaPI::NETWORK }
 
       before do
         interface.keys.map do |k|
@@ -121,7 +117,7 @@ describe Yast::YaPI::NETWORK do
             "STARTMODE" => "onboot"
           )
           stub_write_interfaces
-          subject
+          subject.Write("interface" => interface)
         end
       end
 
@@ -138,7 +134,7 @@ describe Yast::YaPI::NETWORK do
               "IPADDR"    => "TheIP/24"
             )
             stub_write_interfaces
-            subject
+            subject.Write("interface" => interface)
           end
         end
 
@@ -152,7 +148,7 @@ describe Yast::YaPI::NETWORK do
               "IPADDR"    => "TheIP/#{netmask}"
             )
             stub_write_interfaces
-            subject
+            subject.Write("interface" => interface)
           end
         end
 
@@ -179,7 +175,7 @@ describe Yast::YaPI::NETWORK do
             "VLAN_ID"     => "42"
           )
           stub_write_interfaces
-          subject
+          subject.Write("interface" => interface)
         end
       end
 
@@ -195,7 +191,7 @@ describe Yast::YaPI::NETWORK do
             "BONDING_SLAVE0"      => "eth1"
           )
           stub_write_interfaces
-          subject
+          subject.Write("interface" => interface)
         end
       end
 
@@ -221,7 +217,7 @@ describe Yast::YaPI::NETWORK do
             "BONDING_SLAVE2"      => "eth5"
           )
           stub_write_interfaces
-          subject
+          subject.Write("interface" => interface)
         end
 
       end
@@ -253,7 +249,7 @@ describe Yast::YaPI::NETWORK do
       allow(Yast::DNS).to receive(:searchlist).and_return ["suse.com"]
     end
 
-    subject { Yast::YaPI::NETWORK.Read }
+    subject { Yast::YaPI::NETWORK }
 
     let(:config) do
       {
@@ -282,7 +278,7 @@ describe Yast::YaPI::NETWORK do
       end
 
       it "returns the correct hash" do
-        expect(subject).to eql(config)
+        expect(subject.Read).to eql(config)
       end
     end
 
@@ -325,8 +321,7 @@ describe Yast::YaPI::NETWORK do
       end
 
       it "returns the correct hash" do
-        expect(subject).to eql(config)
-        subject
+        expect(subject.Read).to eql(config)
       end
     end
 
@@ -366,8 +361,7 @@ describe Yast::YaPI::NETWORK do
       end
 
       it "returns the correct hash" do
-        expect(subject).to eql(config)
-        subject
+        expect(subject.Read).to eql(config)
       end
 
     end
