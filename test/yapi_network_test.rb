@@ -59,7 +59,7 @@ describe Yast::YaPI::NETWORK do
       context "with a gateway in the default route" do
 
         context "if it's a valid IP4" do
-          let(:route) { { "default" => { "via" => "10.0.0.1" } } }
+          let(:route) { { "default" => { "via" => "1.2.3.4" } } }
 
           it "returns success" do
             expect(subject.Write("route" => route)).to eq success
@@ -70,7 +70,7 @@ describe Yast::YaPI::NETWORK do
               [
                 {
                   "destination" => "default",
-                  "gateway"     => "10.0.0.1",
+                  "gateway"     => "1.2.3.4",
                   "netmask"     => "-",
                   "device"      => "-"
                 }
@@ -120,7 +120,7 @@ describe Yast::YaPI::NETWORK do
       end
 
       context("setting IP address and netmask") do
-        let(:interface) { { "eth0" => { "ipaddr" => "TheIP/#{netmask}" } } }
+        let(:interface) { { "eth0" => { "ipaddr" => "1.2.3.4/#{netmask}" } } }
 
         context("with valid netmask in dot notation") do
           let(:netmask) { "255.255.255.0" }
@@ -129,7 +129,7 @@ describe Yast::YaPI::NETWORK do
             expect(network_interfaces).to receive(:Current=).with(
               "BOOTPROTO" => "static",
               "STARTMODE" => "auto",
-              "IPADDR"    => "TheIP/24"
+              "IPADDR"    => "1.2.3.4/24"
             )
             stub_write_interfaces
             subject.Write("interface" => interface)
@@ -143,7 +143,7 @@ describe Yast::YaPI::NETWORK do
             expect(network_interfaces).to receive(:Current=).with(
               "BOOTPROTO" => "static",
               "STARTMODE" => "auto",
-              "IPADDR"    => "TheIP/#{netmask}"
+              "IPADDR"    => "1.2.3.4/#{netmask}"
             )
             stub_write_interfaces
             subject.Write("interface" => interface)
@@ -230,7 +230,7 @@ describe Yast::YaPI::NETWORK do
       {
         startmode: "manual",
         bootproto: "static",
-        ipaddr:    "TheIP",
+        ipaddr:    "1.2.3.4",
         prefix:    "24",
         mtu:       "1234"
       }.merge(context_attributes)
@@ -239,7 +239,7 @@ describe Yast::YaPI::NETWORK do
 
     before do
       stub_network_reads
-      allow(Yast::Routing).to receive(:GetGateway).and_return "TheIP"
+      allow(Yast::Routing).to receive(:GetGateway).and_return "1.2.3.4"
       allow(Yast::Hostname).to receive(:CurrentHostname).and_return "Hostname"
       allow(Yast::Hostname).to receive(:CurrentDomain).and_return "TheDomain"
       allow(Yast::DNS).to receive(:dhcp_hostname).and_return "Hostname"
@@ -251,7 +251,7 @@ describe Yast::YaPI::NETWORK do
       {
         "routes"   => {
           "default"       => {
-            "via" => "TheIP"
+            "via" => "1.2.3.4"
           }
         },
         "dns"      => {
@@ -293,7 +293,7 @@ describe Yast::YaPI::NETWORK do
             "eth5.23" => {
               "startmode"        => "manual",
               "bootproto"        => "static",
-              "ipaddr"           => "TheIP/24",
+              "ipaddr"           => "1.2.3.4/24",
               "mtu"              => "1234",
               "vlan_id"          => "42",
               "vlan_etherdevice" => "eth5",
@@ -336,7 +336,7 @@ describe Yast::YaPI::NETWORK do
             "bond0" => {
               "startmode"   => "manual",
               "bootproto"   => "static",
-              "ipaddr"      => "TheIP/24",
+              "ipaddr"      => "1.2.3.4/24",
               "mtu"         => "1234",
               "bond_slaves" => ["eth1", "eth2", "eth3"],
               "bond_option" => "mode=active-backup miimon=100"
