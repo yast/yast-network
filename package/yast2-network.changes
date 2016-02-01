@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Jan 29 15:21:36 UTC 2016 - knut.anderssen@suse.com
+
+- Removed old testsuites tests and autotools, so yast2-testsuite
+  is not required anymore (fate#314695).
+- 3.1.142
+
+-------------------------------------------------------------------
 Fri Jan 22 13:24:15 UTC 2016 - mvidner@suse.com
 
 - Fixed an Internal error when aborting the configuration of a
