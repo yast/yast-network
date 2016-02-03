@@ -6,8 +6,9 @@ require "yast"
 require "network/network_autoyast"
 
 describe "NetworkAutoYast" do
+  subject(:network_autoyast) { Yast::NetworkAutoYast.instance }
+
   describe "#merge_devices" do
-    let(:network_autoyast) { Yast::NetworkAutoYast.instance }
     let(:netconfig_linuxrc) do
       {
         "eth" => { "eth0" => {} }
@@ -90,7 +91,6 @@ describe "NetworkAutoYast" do
         "resolv_conf_policy" => "ay_resolv_conf_policy"
       }
     end
-    let(:network_autoyast) { Yast::NetworkAutoYast.instance }
 
     it "uses values from instsys, when nothing else is defined" do
       result = network_autoyast.send(:merge_dns, instsys_dns_setup, {})
@@ -120,7 +120,6 @@ describe "NetworkAutoYast" do
         "ipv6_forward" => true
       }
     end
-    let(:network_autoyast) { Yast::NetworkAutoYast.instance }
 
     it "uses values from instsys, when nothing else is defined" do
       result = network_autoyast.send(:merge_routing, instsys_routing_setup, {})
@@ -136,7 +135,6 @@ describe "NetworkAutoYast" do
   end
 
   describe "#merge_configs" do
-    let(:network_autoyast) { Yast::NetworkAutoYast.instance }
 
     it "merges all necessary stuff" do
       Yast.import "UI"
@@ -211,36 +209,42 @@ describe "NetworkAutoYast" do
     end
   end
 
-  describe "#oldStyle" do
-    subject(:network_autoyast) { Yast::NetworkAutoYast.instance }
+  context "When AY profile contains old style name" do
+    describe "#oldStyle" do
 
-    let(:ay_old_id) do
-      {
-        "interfaces" => [{"device" => "eth-id-0.0.1111"}]
-      }
-    end
-    let(:ay_old_mac) do
-      {
-        "interfaces" => [{"device" => "eth-bus-00:11:22:33:44:55"}]
-      }
-    end
-    let(:ay_only_new) do
-      {
-        "interfaces" => [{"device" => "eth0"}]
-      }
-    end
-    let(:ay_both_vers) do
-      ay_only_new.merge(ay_old_id) { |_, ni, oi| ni + oi }
-    end
+      let(:ay_old_id) do
+        {
+          "interfaces" => [{"device" => "eth-id-0.0.1111"}]
+        }
+      end
+      let(:ay_old_mac) do
+        {
+          "interfaces" => [{"device" => "eth-bus-00:11:22:33:44:55"}]
+        }
+      end
+      let(:ay_both_vers) do
+        { "interfaces" => ay_old_id["interfaces"] + [{"device" => "eth0"}] }
+      end
 
-    it "detects old style names in profile" do
-      expect(network_autoyast.oldStyle(ay_old_id)).to be true
-      expect(network_autoyast.oldStyle(ay_old_mac)).to be true
-      expect(network_autoyast.oldStyle(ay_both_vers)).to be true
+      it "detects old style names in profile" do
+        expect(network_autoyast.oldStyle(ay_old_id)).to be true
+        expect(network_autoyast.oldStyle(ay_old_mac)).to be true
+        expect(network_autoyast.oldStyle(ay_both_vers)).to be true
+      end
     end
+  end
 
-    it "fails when profile contains only new names" do
-      expect(network_autoyast.oldStyle(ay_only_new)).to be false
+  context "When AY profile doesn't contain old style name" do
+    describe "#oldStyle" do
+      let(:ay_only_new) do
+        {
+          "interfaces" => [{"device" => "eth0"}]
+        }
+      end
+
+      it "fails when profile contains only new names" do
+        expect(network_autoyast.oldStyle(ay_only_new)).to be false
+      end
     end
   end
 end
