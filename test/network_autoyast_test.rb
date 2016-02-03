@@ -229,10 +229,14 @@ describe "NetworkAutoYast" do
         "interfaces" => [{"device" => "eth0"}]
       }
     end
+    let(:ay_both_vers) do
+      ay_only_new.merge(ay_old_id) { |_, ni, oi| ni + oi }
+    end
 
     it "detects old style names in profile" do
       expect(network_autoyast.oldStyle(ay_old_id)).to be true
       expect(network_autoyast.oldStyle(ay_old_mac)).to be true
+      expect(network_autoyast.oldStyle(ay_both_vers)).to be true
     end
 
     it "fails when profile contains only new names" do
