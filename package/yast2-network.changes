@@ -2,7 +2,7 @@
 Thu Jun 09 08:45:48 UTC 2016 - knut.anderssen@suse.com
 
 - bsc#903190
-  - Recognized netcards with subclass 02 as InfiniBand (ib) which
+  - Recognized netcards with subclass 07 as InfiniBand (ib) which
   now are not filtered out.
 - 3.1.155
 
