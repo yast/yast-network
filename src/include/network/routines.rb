@@ -523,7 +523,9 @@ module Yast
           return "atm"
         elsif subclass_id == 4
           return "isdn"
-        elsif subclass_id == 6
+        elsif subclass_id == 6 ## Should be PICMG?
+          return "ib"
+        elsif subclass_id == 7
           return "ib"
         elsif subclass_id == 129
           return "myri"
