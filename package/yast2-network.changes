@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Thu Jun 09 08:45:48 UTC 2016 - knut.anderssen@suse.com
+
+- bsc#903190
+  - Recognized netcards with subclass 02 as InfiniBand (ib) which
+  now are not filtered out.
+- 3.1.155
+
+-------------------------------------------------------------------
+Fri Feb 23 09:56:48 UTC 2016 - knut.anderssen@suse.com
 Wed Jun  1 14:16:08 UTC 2016 - igonzalezsosa@suse.com
 
 - Drop yast2-network-devel-doc package (fate#320356)
@@ -89,7 +98,7 @@ Sun Mar  6 21:15:08 UTC 2016 - mfilka@suse.com
 - bnc#920089
   - fix by Damir Porobic
   - fixed layout of dialog for new route definition
-- 3.1.144 
+- 3.1.144
 
 -------------------------------------------------------------------
 Mon Feb 22 11:52:09 UTC 2016 - mfilka@suse.com
@@ -102,7 +111,6 @@ Mon Feb 22 11:52:09 UTC 2016 - mfilka@suse.com
   - Recognized netcard with sub_class_id 07 as InfiniBand (ib) which
     now are not filtered out (knut.anderssen@suse.com).
 - 3.1.143
-
 -------------------------------------------------------------------
 Fri Jan 29 15:21:36 UTC 2016 - knut.anderssen@suse.com
 
