@@ -4,10 +4,15 @@ module Yast
   # Provides functionality for network AutoYaST client(s)
   class NetworkAutoYast
     include Singleton
+    include Logger
+
+    Yast.import "LanItems"
+    Yast.import "Linuxrc"
+
 
     # Merges existing config from system into given configuration map
     #
-    # @param [Hash, nil] configurtion map
+    # @param [Hash, nil] configuration map
     #
     # @return updated configuration map
     def merge_configs(conf)
@@ -33,6 +38,53 @@ module Yast
       conf["devices"] = merge_devices(devices, conf["devices"])
 
       conf
+    end
+
+    # Creates udev rules according definition from profile
+    #
+    # FIXME: Currently used only for applying udev rules during network
+    # installations (ssh, vnc, ...). It was introduced as a quick fix for
+    # bnc#944349, so it is currently limited only on {ssh|vnc} installations.
+    #
+    # @param AY profile, @see e.g. Profile.current
+    def create_udevs(ay_profile)
+      return if !(Linuxrc.usessh || Linuxrc.vnc)
+
+      log.info("Applying udev rules according AY profile")
+
+      udev_rules = ay_profile["networking"]["net-udev"]
+      log.info("- udev rules: #{udev_rules}")
+
+      return if udev_rules.nil? || udev_rules.empty?
+
+      LanItems.Read
+
+      udev_rules.each do |rule|
+        name_to = rule["name"]
+        attr = rule["rule"]
+        key = rule["value"].downcase
+        item, matching_item = LanItems.Items.find { |_, i| i["hwinfo"]["busid"].downcase == key || i["hwinfo"]["mac"].downcase == key }
+        next if !matching_item
+
+        # for logging only
+        name_from = matching_item["ifcfg"] || matching_item["dev_name"]
+        log.info("- renaming <#{name_from}> -> <#{name_to}>")
+
+        # selecting according device name is unreliable (selects only in between configured devices)
+        LanItems.current = item
+
+        # find out what attribude is currently used for setting device name and
+        # change it if needed. Currently mac is used by default. So, we check is it is
+        # the other one (busid). If no we defaults to mac.
+        bus_attr = LanItems.GetItemUdev("KERNELS")
+        current_attr = bus_attr.empty? ? "ATTR{address}" : "KERNELS"
+
+        # make sure that we base renaming on defined attribute with value given in AY profile
+        LanItems.ReplaceItemUdev(current_attr, attr, key)
+        LanItems.rename(name_to)
+      end
+
+      LanItems.write
     end
 
     private
