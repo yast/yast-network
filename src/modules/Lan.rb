@@ -675,17 +675,6 @@ module Yast
       DNS.Import(settings["dns"] || {})
       Routing.Import(settings["routing"] || {})
 
-      if settings["managed"]
-        if NetworkService.is_backend_available(:network_manager)
-          NetworkService.use_network_manager
-        else
-          Report.Warning(_("AutoYaST setting networking/managed: NetworkManager is not available, Wicked will be used."))
-          NetworkService.use_wicked
-        end
-      else
-        NetworkService.use_wicked
-      end
-
       @ipv6 = settings.fetch("ipv6", true)
 
       true

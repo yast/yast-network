@@ -256,6 +256,8 @@ module Yast
 
       DNS.create_hostname_link
 
+      ay_net_service_configuration
+
       SCR.Execute(path(".target.bash"), "chkconfig network on")
 
       # if portmap running - start it after reboot
@@ -279,6 +281,18 @@ module Yast
       return if ay_profile["networking"].nil? || ay_profile["networking"].empty?
 
       NetworkAutoYast.instance.create_udevs(ay_profile)
+    end
+
+    # Sets network service according the AY profile
+    def ay_net_service_configuration
+      return if !Mode.autoinst
+
+      ay_profile = Profile.current
+
+      return if ay_profile.nil? || ay_profile.empty?
+      return if ay_profile["networking"].nil? || ay_profile["networking"].empty?
+
+      NetworkAutoYast.instance.set_network_service(ay_profile)
     end
 
     # this replaces bash script create_interface
