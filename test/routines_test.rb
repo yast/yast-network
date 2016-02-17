@@ -156,3 +156,139 @@ describe "#physical_port_id?" do
     expect(routines.physical_port_id?("eth0")).to eql(true)
   end
 end
+
+describe "#ControllerType" do
+
+  CONTROLLERS = {
+    2   => "network",
+    7   => "communication",
+    12  => "infiniband",
+    258 => "modem",
+    259 => "isdn",
+    276 => "dsl",
+    263 => "interfaces"
+  }
+
+  SUBCLASSES = {
+    "communication" => {
+      3 => "modem"
+    },
+    "network"       => {
+      0   => "eth",
+      1   => "tr",
+      2   => "fddi",
+      3   => "atm",
+      4   => "isdn",
+      6   => "ib",
+      7   => "ib",
+      129 => "myri",
+      130 => "wlan",
+      131 => "xp",
+      134 => "qeth",
+      135 => "hsi",
+      136 => "ctc",
+      137 => "lcs",
+      142 => "ficon",
+      143 => "escon",
+      144 => "iucv",
+      145 => "usb" # #22739
+    },
+    "interface"     => {
+      1   => "lo",
+      1   => "eth",
+      2   => "tr",
+      3   => "fddi",
+      4   => "ctc",
+      5   => "iucv",
+      6   => "hsi",
+      7   => "qeth",
+      8   => "escon",
+      9   => "myri",
+      10  => "wlan",
+      11  => "xp",
+      12  => "usb",
+      129 => "sit"
+    }
+  }
+
+  subject(:routines) { RoutinesTestClass.new }
+  subject(:hwdevice) { { "class_id" => 2 } }
+
+  context "when network class (2)" do
+
+    before do
+      expect(routines.network_controller? hwdevice["class_id"]).to eql(true)
+    end
+
+    SUBCLASSES["network"].map do |k, v|
+      it "returns #{v} for subclass #{k}" do
+        hwdevice["sub_class_id"] = k
+        expect(routines.ControllerType(hwdevice)).to eql v
+      end
+    end
+
+    it "returns an empty string for subclass 128" do
+      hwdevice["sub_class_id"] = 128
+      expect(routines.ControllerType(hwdevice)).to eql ""
+    end
+  end
+
+  context "when communication class (7)" do
+    subject(:hwdevice) { { "class_id" => 7 } }
+
+    before do
+      expect(routines.communication_controller? hwdevice["class_id"]).to eql(true)
+    end
+
+    SUBCLASSES["communication"].map do |k, v|
+      it "returns #{v} for subclass #{k}" do
+        hwdevice["sub_class_id"] = k
+        expect(routines.ControllerType(hwdevice)).to eql v
+      end
+    end
+
+    it "returns an empty string for subclass 128" do
+      hwdevice["sub_class_id"] = 128
+      expect(routines.ControllerType(hwdevice)).to eql ""
+    end
+  end
+  context "when network interface class (263)" do
+    subject(:hwdevice) { { "class_id" => 263 } }
+
+    before do
+      expect(routines.interface_controller? hwdevice["class_id"]).to eql(true)
+    end
+
+    SUBCLASSES["interface"].map do |k, v|
+      it "returns #{v} for subclass #{k}" do
+        hwdevice["sub_class_id"] = k
+        expect(routines.ControllerType(hwdevice)).to eql v
+      end
+    end
+
+    it "returns an empty string for subclass 128" do
+      hwdevice["sub_class_id"] = 128
+      expect(routines.ControllerType(hwdevice)).to eql ""
+    end
+  end
+  it "returns modem for class 258" do
+    hwdevice["class_id"] = 258
+    expect(routines.modem_controller? hwdevice["class_id"]).to eql(true)
+    expect(routines.ControllerType(hwdevice)).to eql("modem")
+  end
+
+  it "returns isdn for class 259" do
+    hwdevice["class_id"] = 259
+    expect(routines.isdn_controller? hwdevice["class_id"]).to eql(true)
+    expect(routines.ControllerType(hwdevice)).to eql("isdn")
+  end
+
+  it "returns ib for class 2 and subclass 7" do
+    expect(routines.ControllerType("class_id" => 2, "sub_class_id" => 7)).to eql("ib")
+  end
+
+  it "returns an empty string if not knowed class" do
+    expect(routines.ControllerType("class_id" => 200)).to eql("")
+  end
+
+end
