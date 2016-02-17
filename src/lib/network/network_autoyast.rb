@@ -2,13 +2,22 @@ require "yast"
 
 module Yast
   # Provides functionality for network AutoYaST client(s)
+  #
+  # This currently shouldn't replace *::Import methods. In other
+  # words it is intended for functionality which cannot be handled
+  # in 2nd stage properly. Typically:
+  #   - merging configuration provided by linuxrc means and AY profile
+  #     together
+  #   - target network service setup (to avoid need of restarting the
+  #     service during 2nd stage) and all other stuff which could lead
+  #     to the need of restarting the service (e.g. device renaming)
   class NetworkAutoYast
     include Singleton
     include Logger
 
+    Yast.import "Lan"
     Yast.import "LanItems"
     Yast.import "Linuxrc"
-
 
     # Merges existing config from system into given configuration map
     #
@@ -16,8 +25,6 @@ module Yast
     #
     # @return updated configuration map
     def merge_configs(conf)
-      Yast.import "Lan"
-
       # read settings from installation
       Lan.Read(:cache)
       # export settings into AY map
@@ -85,6 +92,29 @@ module Yast
       end
 
       LanItems.write
+    end
+
+    # Sets network service for target
+    def set_network_service(ay_profile)
+      log.info("Setting network service according AY profile")
+
+      use_network_manager = ay_profile["networking"]["managed"]
+      use_network_manager = Lan.UseNetworkManager if use_network_manager.nil?
+
+      nm_available = NetworkService.is_backend_available(:network_manager) if use_network_manager
+
+      if use_network_manager && nm_available
+        log.info("- using NetworkManager")
+
+        NetworkService.use_network_manager
+      else
+        log.info("- using wicked")
+        log.warn("- NetworkManager requested but not available") if use_network_manager
+
+        NetworkService.use_wicked
+      end
+
+      NetworkService.EnableDisableNow
     end
 
     private
