@@ -257,6 +257,7 @@ module Yast
       DNS.create_hostname_link
 
       ay_net_service_configuration
+      set_network_service
 
       SCR.Execute(path(".target.bash"), "chkconfig network on")
 
@@ -293,6 +294,25 @@ module Yast
       return if ay_profile["networking"].nil? || ay_profile["networking"].empty?
 
       NetworkAutoYast.instance.set_network_service(ay_profile)
+    end
+
+    # Sets default network service
+    #
+    # Intended for common installation only. AY is handled elswhere
+    def set_network_service
+      return if Mode.autoinst
+
+      log.info("Setting network service according preferences")
+
+      if Lan.UseNetworkManager
+        log.info("- using NetworkManager")
+        NetworkService.use_network_manager
+      else
+        log.info("- using wicked")
+        NetworkService.use_wicked
+      end
+
+      NetworkService.EnableDisableNow
     end
 
     # this replaces bash script create_interface
