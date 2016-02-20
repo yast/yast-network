@@ -215,6 +215,10 @@ module Yast
       new_SCR = WFM.SCROpen("chroot=/:scr", false)
       WFM.SCRSetDefault(new_SCR)
 
+      # this has to be done here (out of chroot) bcs:
+      # 1) udev agent doesn't not support SetRoot
+      # 2) original ifcfg file is copied otherwise to. It doesn't break things itself
+      # but definitely not looking well ;-)
       ay_mode_configuration if Mode.autoinst
 
       # Copy DHCP client cache so that we can request the same IP (#43974).
