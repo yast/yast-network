@@ -54,12 +54,13 @@ module Yast
     # bnc#944349, so it is currently limited only on {ssh|vnc} installations.
     #
     # @param AY profile, @see e.g. Profile.current
-    def create_udevs(ay_profile)
+    def create_udevs
+      return if !Mode.autoinst
       return if !(Linuxrc.usessh || Linuxrc.vnc)
 
       log.info("Applying udev rules according AY profile")
 
-      udev_rules = ay_profile["networking"]["net-udev"]
+      udev_rules = ay_networking_section["net-udev"]
       log.info("- udev rules: #{udev_rules}")
 
       return if udev_rules.nil? || udev_rules.empty?
@@ -95,10 +96,12 @@ module Yast
     end
 
     # Sets network service for target
-    def set_network_service(ay_profile)
+    def set_network_service
+      return if !Mode.autoinst
+
       log.info("Setting network service according AY profile")
 
-      use_network_manager = ay_profile["networking"]["managed"]
+      use_network_manager = ay_networking_section["managed"]
       use_network_manager = Lan.UseNetworkManager if use_network_manager.nil?
 
       nm_available = NetworkService.is_backend_available(:network_manager) if use_network_manager
@@ -186,6 +189,18 @@ module Yast
       instsys_routing ||= {}
 
       instsys_routing.merge(ay_routing)
+    end
+
+    # Returns networking section of current AY profile
+    def ay_networking_section
+      Yast.import "Profile"
+
+      ay_profile = Profile.current
+
+      return {} if ay_profile.nil? || ay_profile.empty?
+      return {} if ay_profile["networking"].nil?
+
+      return ay_profile["networking"]
     end
   end
 end
