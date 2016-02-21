@@ -48,9 +48,6 @@ module Yast
       Yast.import "Mode"
       Yast.import "Arch"
       Yast.import "Storage"
-      Yast.import "LanItems"
-      Yast.import "Profile"
-      Yast.import "Linuxrc"
 
       Yast.include self, "network/routines.rb"
       Yast.include self, "network/complex.rb"
@@ -219,7 +216,7 @@ module Yast
       # 1) udev agent doesn't not support SetRoot
       # 2) original ifcfg file is copied otherwise to. It doesn't break things itself
       # but definitely not looking well ;-)
-      ay_mode_configuration if Mode.autoinst
+      NetworkAutoYast.instance.create_udevs if Mode.autoinst
 
       # Copy DHCP client cache so that we can request the same IP (#43974).
       WFM.Execute(
@@ -260,7 +257,6 @@ module Yast
 
       DNS.create_hostname_link
 
-      ay_net_service_configuration
       set_network_service
 
       SCR.Execute(path(".target.bash"), "chkconfig network on")
@@ -274,39 +270,16 @@ module Yast
       nil
     end
 
-    # Applies part of AY configuration at the end of first stage
-    #
-    # Intended mainly for steps which cannot be done in AY's second stage
-    def ay_mode_configuration
-      return if !Mode.autoinst
-
-      ay_profile = Profile.current
-
-      return if ay_profile.nil? || ay_profile.empty?
-      return if ay_profile["networking"].nil? || ay_profile["networking"].empty?
-
-      NetworkAutoYast.instance.create_udevs(ay_profile)
-    end
-
-    # Sets network service according the AY profile
-    def ay_net_service_configuration
-      return if !Mode.autoinst
-
-      ay_profile = Profile.current
-
-      return if ay_profile.nil? || ay_profile.empty?
-      return if ay_profile["networking"].nil? || ay_profile["networking"].empty?
-
-      NetworkAutoYast.instance.set_network_service(ay_profile)
-    end
-
     # Sets default network service
     #
     # Intended for common installation only. AY is handled elswhere
     def set_network_service
-      return if Mode.autoinst
+      if Mode.autoinst
+        NetworkAutoYast.instance.set_network_service
+        return
+      end
 
-      log.info("Setting network service according preferences")
+      log.info("Setting network service according product preferences")
 
       if Lan.UseNetworkManager
         log.info("- using NetworkManager")
