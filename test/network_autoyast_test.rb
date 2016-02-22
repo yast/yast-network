@@ -148,4 +148,66 @@ describe "NetworkAutoYast" do
       network_autoyast.merge_configs("dns" => {}, "routing" => {}, "devices" => {})
     end
   end
+
+  describe "#set_network_service" do
+    Yast.import "NetworkService"
+    Yast.import "Mode"
+
+    let(:network_autoyast) { Yast::NetworkAutoYast.instance }
+
+    before(:each) do
+      allow(Yast::Mode).to receive(:autoinst).and_return(true)
+    end
+
+    def product_use_nm(nm_used)
+      allow(Yast::ProductFeatures)
+        .to receive(:GetStringFeature)
+        .with("network", "network_manager")
+        .and_return nm_used
+    end
+
+    def networking_section(net_section)
+      allow(network_autoyast).to receive(:ay_networking_section).and_return(net_section)
+    end
+
+    def nm_installed(installed)
+      allow(Yast::Package)
+        .to receive(:Installed)
+        .and_return installed
+    end
+
+    context "in SLED product" do
+      before(:each) do
+        product_use_nm("always")
+        nm_installed(true)
+        networking_section({ "managed" => true })
+      end
+
+      it "enables NetworkManager" do
+        expect(Yast::NetworkService)
+          .to receive(:is_backend_available)
+          .with(:network_manager)
+          .and_return true
+        expect(Yast::NetworkService).to receive(:use_network_manager).and_return nil
+        expect(Yast::NetworkService).to receive(:EnableDisableNow).and_return nil
+
+        network_autoyast.set_network_service
+      end
+    end
+
+    context "in SLES product" do
+      before(:each) do
+        product_use_nm("never")
+        nm_installed(false)
+        networking_section({})
+      end
+
+      it "enables wicked" do
+        expect(Yast::NetworkService).to receive(:use_wicked).and_return nil
+        expect(Yast::NetworkService).to receive(:EnableDisableNow).and_return nil
+
+        network_autoyast.set_network_service
+      end
+    end
+  end
 end
