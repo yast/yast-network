@@ -828,28 +828,25 @@ module Yast
         "network",
         "network_manager"
       )
-      if nm_feature == ""
-        # compatibility: use the boolean feature
-        # (defaults to false)
-        nm_default = ProductFeatures.GetBooleanFeature(
-          "network",
-          "network_manager_is_default"
-        )
-      elsif nm_feature == "always"
-        nm_default = true
-      elsif nm_feature == "laptop"
-        nm_default = Arch.is_laptop
-        Builtins.y2milestone("Is a laptop: %1", nm_default) # nm_feature == "never"
-      else
-        nm_default = false
+
+      case nm_feature
+        when ""
+          # compatibility: use the boolean feature
+          # (defaults to false)
+          nm_default = ProductFeatures.GetBooleanFeature(
+            "network",
+            "network_manager_is_default"
+          )
+        when "always"
+          nm_default = true
+        when "laptop"
+          nm_default = Arch.is_laptop
+          log.info("Is a laptop: #{nm_default}")
       end
 
       nm_installed = Package.Installed("NetworkManager")
-      Builtins.y2milestone(
-        "NetworkManager wanted: %1, installed: %2",
-        nm_default,
-        nm_installed
-      )
+      log.info("NetworkManager wanted: #{nm_default}, installed: #{nm_installed}")
+
       nm_default && nm_installed
     end
 
