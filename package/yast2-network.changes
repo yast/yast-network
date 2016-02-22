@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Feb 22 11:52:09 UTC 2016 - mfilka@suse.com
+
+- bnc#960703
+  - Moved setting network service into 1st stage
+- 3.1.140.3
+
+-------------------------------------------------------------------
 Mon Feb 22 09:42:38 UTC 2016 - knut.anderssen@suse.com
 
 - Recognized netcard with sub_class_id 07 as InfiniBand (ib) which
