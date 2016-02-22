@@ -30,6 +30,7 @@
 module Yast
   require "network/install_inf_convertor"
   require "network/network_autoconfiguration"
+  require "network/network_autoyast"
 
   class SaveNetworkClient < Client
     include Logger
@@ -47,9 +48,6 @@ module Yast
       Yast.import "Mode"
       Yast.import "Arch"
       Yast.import "Storage"
-      Yast.import "LanItems"
-      Yast.import "Profile"
-      Yast.import "Linuxrc"
 
       Yast.include self, "network/routines.rb"
       Yast.include self, "network/complex.rb"
@@ -214,7 +212,11 @@ module Yast
       new_SCR = WFM.SCROpen("chroot=/:scr", false)
       WFM.SCRSetDefault(new_SCR)
 
-      ay_mode_configuration if Mode.autoinst
+      # this has to be done here (out of chroot) bcs:
+      # 1) udev agent doesn't support SetRoot
+      # 2) original ifcfg file is copied otherwise too. It doesn't break things itself
+      # but definitely not looking well ;-)
+      NetworkAutoYast.instance.create_udevs if Mode.autoinst
 
       # Copy DHCP client cache so that we can request the same IP (#43974).
       WFM.Execute(
@@ -255,6 +257,8 @@ module Yast
 
       DNS.create_hostname_link
 
+      set_network_service
+
       SCR.Execute(path(".target.bash"), "chkconfig network on")
 
       # if portmap running - start it after reboot
@@ -266,59 +270,26 @@ module Yast
       nil
     end
 
-    # Applies part of AY configuration at the end of first stage
+    # Sets default network service
     #
-    # Intended mainly for steps which cannot be done in AY's second stage
-    #
-    # FIXME: Currently used only for applying udev rules during network
-    # installations (ssh, vnc, ...). It was introduced as a quick fix for
-    # bnc#944349, so it is currently limited only on {ssh|vnc} installations.
-    # Once properly analyzed and tested then starting of whole network second
-    # stage can be moved here.
-    def ay_mode_configuration
-      return if !Mode.autoinst
-      return if !(Linuxrc.usessh || Linuxrc.vnc)
-
-      ay_profile = Profile.current
-
-      log.info("Applying udev rules according AY profile")
-
-      return if ay_profile.nil? || ay_profile.empty?
-      return if ay_profile["networking"].nil? || ay_profile["networking"].empty?
-
-      udev_rules = ay_profile["networking"]["net-udev"]
-      log.info("- udev rules: #{udev_rules}")
-
-      return if udev_rules.nil? || udev_rules.empty?
-
-      LanItems.Read
-
-      udev_rules.each do |rule|
-        name_to = rule["name"]
-        attr = rule["rule"]
-        key = rule["value"].downcase
-        item, matching_item = LanItems.Items.find { |_, i| i["hwinfo"]["busid"].downcase == key || i["hwinfo"]["mac"].downcase == key }
-        next if !matching_item
-
-        # for logging only
-        name_from = matching_item["ifcfg"] || matching_item["dev_name"]
-        log.info("- renaming <#{name_from}> -> <#{name_to}>")
-
-        # selecting according device name is unreliable (selects only in between configured devices)
-        LanItems.current = item
-
-        # find out what attribude is currently used for setting device name and
-        # change it if needed. Currently mac is used by default. So, we check is it is
-        # the other one (busid). If no we defaults to mac.
-        bus_attr = LanItems.GetItemUdev("KERNELS")
-        current_attr = bus_attr.empty? ? "ATTR{address}" : "KERNELS"
-
-        # make sure that we base renaming on defined attribute with value given in AY profile
-        LanItems.ReplaceItemUdev(current_attr, attr, key)
-        LanItems.rename(name_to)
+    # Intended for common installation only. AY is handled elswhere
+    def set_network_service
+      if Mode.autoinst
+        NetworkAutoYast.instance.set_network_service
+        return
       end
 
-      LanItems.write
+      log.info("Setting network service according to product preferences")
+
+      if Lan.UseNetworkManager
+        log.info("- using NetworkManager")
+        NetworkService.use_network_manager
+      else
+        log.info("- using wicked")
+        NetworkService.use_wicked
+      end
+
+      NetworkService.EnableDisableNow
     end
 
     # this replaces bash script create_interface
