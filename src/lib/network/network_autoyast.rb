@@ -58,7 +58,7 @@ module Yast
       return if !Mode.autoinst
       return if !(Linuxrc.usessh || Linuxrc.vnc)
 
-      log.info("Applying udev rules according AY profile")
+      log.info("Applying udev rules according to AY profile")
 
       udev_rules = ay_networking_section["net-udev"]
       log.info("- udev rules: #{udev_rules}")
@@ -99,7 +99,7 @@ module Yast
     def set_network_service
       return if !Mode.autoinst
 
-      log.info("Setting network service according AY profile")
+      log.info("Setting network service according to AY profile")
 
       use_network_manager = ay_networking_section["managed"]
       use_network_manager = Lan.UseNetworkManager if use_network_manager.nil?

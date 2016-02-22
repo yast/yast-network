@@ -213,8 +213,8 @@ module Yast
       WFM.SCRSetDefault(new_SCR)
 
       # this has to be done here (out of chroot) bcs:
-      # 1) udev agent doesn't not support SetRoot
-      # 2) original ifcfg file is copied otherwise to. It doesn't break things itself
+      # 1) udev agent doesn't support SetRoot
+      # 2) original ifcfg file is copied otherwise too. It doesn't break things itself
       # but definitely not looking well ;-)
       NetworkAutoYast.instance.create_udevs if Mode.autoinst
 
@@ -279,7 +279,7 @@ module Yast
         return
       end
 
-      log.info("Setting network service according product preferences")
+      log.info("Setting network service according to product preferences")
 
       if Lan.UseNetworkManager
         log.info("- using NetworkManager")
