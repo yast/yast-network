@@ -52,8 +52,6 @@ module Yast
     # FIXME: Currently used only for applying udev rules during network
     # installations (ssh, vnc, ...). It was introduced as a quick fix for
     # bnc#944349, so it is currently limited only on {ssh|vnc} installations.
-    #
-    # @param AY profile, @see e.g. Profile.current
     def create_udevs
       return if !Mode.autoinst
       return if !(Linuxrc.usessh || Linuxrc.vnc)
@@ -71,7 +69,9 @@ module Yast
         name_to = rule["name"]
         attr = rule["rule"]
         key = rule["value"].downcase
-        item, matching_item = LanItems.Items.find { |_, i| i["hwinfo"]["busid"].downcase == key || i["hwinfo"]["mac"].downcase == key }
+        item, matching_item = LanItems.Items.find do |_, i|
+          i["hwinfo"]["busid"].downcase == key || i["hwinfo"]["mac"].downcase == key
+        end
         next if !matching_item
 
         # for logging only
