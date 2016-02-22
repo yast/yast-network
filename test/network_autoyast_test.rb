@@ -180,7 +180,7 @@ describe "NetworkAutoYast" do
       before(:each) do
         product_use_nm("always")
         nm_installed(true)
-        networking_section({ "managed" => true })
+        networking_section("managed" => true)
       end
 
       it "enables NetworkManager" do

@@ -830,18 +830,18 @@ module Yast
       )
 
       case nm_feature
-        when ""
-          # compatibility: use the boolean feature
-          # (defaults to false)
-          nm_default = ProductFeatures.GetBooleanFeature(
-            "network",
-            "network_manager_is_default"
-          )
-        when "always"
-          nm_default = true
-        when "laptop"
-          nm_default = Arch.is_laptop
-          log.info("Is a laptop: #{nm_default}")
+      when ""
+        # compatibility: use the boolean feature
+        # (defaults to false)
+        nm_default = ProductFeatures.GetBooleanFeature(
+          "network",
+          "network_manager_is_default"
+        )
+      when "always"
+        nm_default = true
+      when "laptop"
+        nm_default = Arch.is_laptop
+        log.info("Is a laptop: #{nm_default}")
       end
 
       nm_installed = Package.Installed("NetworkManager")

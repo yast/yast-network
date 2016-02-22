@@ -200,7 +200,7 @@ module Yast
       return {} if ay_profile.nil? || ay_profile.empty?
       return {} if ay_profile["networking"].nil?
 
-      return ay_profile["networking"]
+      ay_profile["networking"]
     end
   end
 end
