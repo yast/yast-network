@@ -675,17 +675,6 @@ module Yast
       DNS.Import(settings["dns"] || {})
       Routing.Import(settings["routing"] || {})
 
-      if settings["managed"]
-        if NetworkService.is_backend_available(:network_manager)
-          NetworkService.use_network_manager
-        else
-          Report.Warning(_("AutoYaST setting networking/managed: NetworkManager is not available, Wicked will be used."))
-          NetworkService.use_wicked
-        end
-      else
-        NetworkService.use_wicked
-      end
-
       @ipv6 = settings.fetch("ipv6", true)
 
       true
@@ -839,28 +828,25 @@ module Yast
         "network",
         "network_manager"
       )
-      if nm_feature == ""
+
+      case nm_feature
+      when ""
         # compatibility: use the boolean feature
         # (defaults to false)
         nm_default = ProductFeatures.GetBooleanFeature(
           "network",
           "network_manager_is_default"
         )
-      elsif nm_feature == "always"
+      when "always"
         nm_default = true
-      elsif nm_feature == "laptop"
+      when "laptop"
         nm_default = Arch.is_laptop
-        Builtins.y2milestone("Is a laptop: %1", nm_default) # nm_feature == "never"
-      else
-        nm_default = false
+        log.info("Is a laptop: #{nm_default}")
       end
 
       nm_installed = Package.Installed("NetworkManager")
-      Builtins.y2milestone(
-        "NetworkManager wanted: %1, installed: %2",
-        nm_default,
-        nm_installed
-      )
+      log.info("NetworkManager wanted: #{nm_default}, installed: #{nm_installed}")
+
       nm_default && nm_installed
     end
 
