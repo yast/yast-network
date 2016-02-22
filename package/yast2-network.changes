@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Feb 22 11:52:09 UTC 2016 - mfilka@suse.com
+
+- bnc#960703
+  - Moved setting network service into 1st stage
+- 3.1.140.2
+-------------------------------------------------------------------
 Fri Jan 22 13:24:15 UTC 2016 - mvidner@suse.com
 
 - Fixed an Internal error when aborting the configuration of a
