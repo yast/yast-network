@@ -26,7 +26,7 @@
 # Summary:	Miscellaneous routines
 # Authors:	Michal Svec <msvec@suse.cz>
 #
-require 'yaml'
+require "yaml"
 
 module Yast
   module NetworkRoutinesInclude
