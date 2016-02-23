@@ -311,11 +311,11 @@ module Yast
       # Network controller
       ret = case class_id
             when 2
-              pci_sub_classes["network"][subclass_id]
+              pci_subclasses["network"][subclass_id]
             when 7
               "ib" if subclass_id == 6
             when 263
-              pci_sub_classes["interface"][subclass_id]
+              pci_subclasses["interface"][subclass_id]
             end
       # Nothing was found
       if IsEmpty(ret)
