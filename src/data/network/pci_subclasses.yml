@@ -1,0 +1,35 @@
+---
+network:
+  0: eth
+  1: tr
+  2: fddi
+  3: atm
+  4: isdn
+  6: ib
+  7: ib
+  129: myri
+  130: wlan
+  131: xp
+  134: qeth
+  135: hsi
+  136: ctc
+  137: lcs
+  142: ficon
+  143: escon
+  144: iucv
+  145: usb # #22739
+interface:
+  0: lo
+  1: eth
+  2: tr
+  3: fddi
+  4: ctc
+  5: iucv
+  6: hsi
+  7: qeth
+  8: escon
+  9: myri
+  10: wlan
+  11: xp
+  12: usb
+  129: sit
