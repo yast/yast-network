@@ -1,4 +1,16 @@
 -------------------------------------------------------------------
+Mon Feb 22 11:52:09 UTC 2016 - mfilka@suse.com
+
+- bnc#960703
+  - sometimes wicked was started instead of NetworkManager in case
+    of AY installation. Moreover it could happen that both services
+    were "half-started" and network setup got broken.
+- bsc#903190
+  - Recognized netcard with sub_class_id 07 as InfiniBand (ib) which
+    now are not filtered out (knut.anderssen@suse.com).
+- 3.1.143
+
+-------------------------------------------------------------------
 Fri Jan 29 15:21:36 UTC 2016 - knut.anderssen@suse.com
 
 - Removed old testsuites tests and autotools, so yast2-testsuite
