@@ -214,16 +214,16 @@ describe "NetworkAutoYast" do
 
       let(:ay_old_id) do
         {
-          "interfaces" => [{"device" => "eth-id-0.0.1111"}]
+          "interfaces" => [{ "device" => "eth-id-0.0.1111" }]
         }
       end
       let(:ay_old_mac) do
         {
-          "interfaces" => [{"device" => "eth-bus-00:11:22:33:44:55"}]
+          "interfaces" => [{ "device" => "eth-bus-00:11:22:33:44:55" }]
         }
       end
       let(:ay_both_vers) do
-        { "interfaces" => ay_old_id["interfaces"] + [{"device" => "eth0"}] }
+        { "interfaces" => ay_old_id["interfaces"] + [{ "device" => "eth0" }] }
       end
 
       it "detects old style names in profile" do
@@ -238,7 +238,7 @@ describe "NetworkAutoYast" do
     describe "#oldStyle" do
       let(:ay_only_new) do
         {
-          "interfaces" => [{"device" => "eth0"}]
+          "interfaces" => [{ "device" => "eth0" }]
         }
       end
 

@@ -879,6 +879,13 @@ module Yast
       end
     end
 
+    # Finds item_id by device name
+    #
+    # If an item is associated with config file of given name (ifcfg-<device>)
+    # then its id is returned
+    #
+    # @param [String] device name (e.g. eth0)
+    # @return index in Items or nil
     def find_configured(device)
       @Items.select { |_k, v| v["ifcfg"] == device }.keys.first
     end
