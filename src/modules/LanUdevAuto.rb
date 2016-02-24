@@ -401,59 +401,11 @@ module Yast
       deep_copy(ay)
     end
 
-    def GetDevnameByMAC(mac)
-      devname = ""
-      if Ops.greater_than(Builtins.size(mac), 0)
-        Builtins.y2milestone("MAC address from 1st stage: %1", mac)
-        Builtins.foreach(@udev_rules) do |rule|
-          if Ops.get_string(rule, "rule", "") == "ATTR{address}"
-            if mac == Ops.get_string(rule, "value", "")
-              devname = Ops.get_string(rule, "name", "")
-              Builtins.y2milestone(
-                "MAC address matched with device:%1",
-                Ops.get_string(rule, "name", "")
-              )
-              raise Break
-            end
-          elsif Ops.get_string(rule, "rule", "") == "KERNELS"
-            Builtins.y2milestone("rule: %1", rule)
-            # input parameter is MAC address, output is BusID of matched device
-            cmd = Convert.to_map(
-              SCR.Execute(
-                path(".target.bash_output"),
-                Builtins.sformat(
-                  "DEVICE=$(grep '%1' /sys/class/net/*/address);KERNELS=$(ls -l \"$(echo ${DEVICE%%/*})/device\");echo ${KERNELS##*/}|tr -d '\n'",
-                  mac
-                )
-              )
-            )
-            if Ops.get_integer(cmd, "exit", -1) == 0
-              Builtins.y2milestone(
-                "cmd output:%1",
-                Ops.get_string(cmd, "stdout", "")
-              )
-              if Ops.get_string(cmd, "stdout", "") ==
-                  Ops.get_string(rule, "value", "")
-                Builtins.y2internal("match!")
-                devname = Ops.get_string(rule, "name", "")
-              end
-            end
-          else
-            Builtins.y2error("Unknown rule for:%1", rule)
-          end
-        end
-      else
-        Builtins.y2warning("No MAC address to compare.")
-      end
-      devname
-    end
-
     publish function: :AllowUdevModify, type: "boolean ()"
     publish function: :getDeviceName, type: "string (string)"
     publish function: :Import, type: "boolean (map)"
     publish function: :Write, type: "boolean ()"
     publish function: :Export, type: "map (map)"
-    publish function: :GetDevnameByMAC, type: "string (string)"
   end
 
   LanUdevAuto = LanUdevAutoClass.new

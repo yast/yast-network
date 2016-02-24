@@ -286,15 +286,8 @@ module Yast
     def dev_name
       netdevice = InstallInf["Netdevice"].to_s
 
-      if Mode.autoinst
-        # if possible, for temporary installation network use same device
-        # with same MAC address (even if devicename changed) (bnc#648270)
-        new_devname = LanUdevAuto.GetDevnameByMAC(InstallInf["HWAddr"])
-
-        netdevice = new_devname if !new_devname.empty?
-      end
-
       log.info("InstInstallInfClient#dev_name:#{netdevice}")
+
       netdevice
     end
 
