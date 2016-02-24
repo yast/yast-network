@@ -920,6 +920,39 @@ module Yast
       ret
     end
 
+    # It finds a new style device name for device name in old fashioned format
+    #
+    # It goes through currently present devices and tries to mach it to given
+    # old fashioned name
+    #
+    # @returns [String] new style name in case of success. Given name otherwise.
+    def getDeviceName(oldname)
+      # TODO: raise an exception when old name could not be matched to existing cfg.
+      newname = oldname
+
+      hardware = ReadHardware("netcard")
+
+      hardware.each do |hw|
+        hw_dev_name = hw["dev_name"] || ""
+        hw_dev_mac = hw["mac"] || ""
+        hw_dev_busid = hw["busid"] || ""
+
+        case oldname
+        when /.*-id-#{hw_dev_mac}/i
+          Builtins.y2milestone("device by ID found: #{oldname}")
+          newname = hw_dev_name
+        when /.*-bus-#{hw_dev_busid}/i
+          Builtins.y2milestone("device by BUS found #{oldname}")
+          newname = hw_dev_name
+        end
+      end
+
+      log = "nothing changed, #{newname} is old style dev_name"
+      Builtins.y2milestone(log) if oldname == newname
+
+      newname
+    end
+
     # preinitializates @Items according info on physically detected network cards
     def ReadHw
       @Items = {}
