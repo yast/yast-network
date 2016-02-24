@@ -36,15 +36,12 @@ module Yast
     include Yast::Logger
 
     def main
-      Yast.import "UI"
       Yast.import "LanItems"
       Yast.import "Map"
       Yast.import "Linuxrc"
 
       Yast.include self, "network/routines.rb"
       Yast.include self, "network/lan/udev.rb"
-
-      textdomain "network"
 
       @udev_rules = []
       @s390_devices = []

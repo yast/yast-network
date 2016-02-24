@@ -1542,32 +1542,6 @@ module Yast
       NetworkInterfaces.GetFreeDevices(type, 10)
     end
 
-    # Return 10 free aliases
-    # @param [String] type device type
-    # @param [Fixnum] num device number
-    # @return [Array] of 10 free devices
-    def FreeAliases(_type, _num)
-      NetworkInterfaces.GetFreeDevices("_aliases", 10)
-    end
-
-    # must be in sync with {#SetDefaultsForHW}
-    def GetDefaultsForHW
-      ret = {}
-      # LCS eth interfaces on s390 need the MTU of 1492. #81815.
-      # TODO: lcs, or eth?
-      # will eth not get mapped to lcs?
-      # Apparently both LCS eth and LCS tr are represented as "lcs"
-      # but it does not hurt to change the default also for tr
-      # #93798: limit to s390 to minimize regressions. Probably it could
-      # be also done by only testing for lcs and not eth but that
-      # would need more testing.
-      if Arch.s390 && Builtins.contains(["lcs", "eth"], @type)
-        Builtins.y2milestone("Adding LCS: setting MTU")
-        ret = Builtins.add(ret, "MTU", "1492")
-      end
-      deep_copy(ret)
-    end
-
     # must be in sync with {#GetDefaultsForHW}
     def SetDefaultsForHW
       Builtins.y2milestone("SetDefaultsForHW type %1", @type)
@@ -2053,138 +2027,6 @@ module Yast
       deep_copy(ayret)
     end
 
-    # Find matching device
-    # Find a device, optionally with some predefined values
-    # @param [Hash] interface interface map
-    # @return [Hash] The map of the matching device.
-    def FindMatchingDevice(interface)
-      interface = deep_copy(interface)
-      tosel = nil
-      # Minimal changes to code to fix both #119592 and #146965
-      # Alternatively we could try to ensure that we never match a
-      # device that got already matched
-      matched_by_module = false
-
-      devs = NetworkInterfaces.List("netcard")
-      Builtins.y2milestone("Configured devices: %1", devs)
-
-      # this condition is always true for SLES9, HEAD uses $[] for proposal
-      if interface != {}
-        # Notes for comments about matching:
-        # - interface["device"] is the key which we look for in the actual hw
-        # - H iterates over Hardware
-        # - patterns are shell-like
-
-        device_id = Builtins.splitstring(
-          Ops.get_string(interface, "device", ""),
-          "-"
-        )
-        # code for eth-id-00:80:c8:f6:48:4c configurations
-        # *-id-$ID => find H["mac"] == $ID
-        if Ops.greater_than(Builtins.size(device_id), 1) &&
-            Ops.get_string(device_id, 1, "") == "id"
-          hwaddr = Ops.get_string(device_id, 2, "")
-          tosel = Builtins.find(@Hardware) do |h|
-            Ops.get_string(h, "mac", "") == hwaddr
-          end if !hwaddr.nil? &&
-              hwaddr != ""
-          Builtins.y2milestone("Rule: matching mac in device name")
-        # code for eth-bus-pci-0000:00:0d.0 configurations
-        # code for eth-bus-vio-30000001 configurations
-        # *-bus-$BUS-$ID => find H["bus"] == $BUS & H["busid"] == $ID
-        elsif Ops.greater_than(Builtins.size(device_id), 2) &&
-            Ops.get_string(device_id, 1, "") == "bus"
-          bus = Ops.get_string(device_id, 2, "")
-          busid = Ops.get_string(device_id, 3, "")
-          if !bus.nil? && bus != "" && !busid.nil? && busid != ""
-            tosel = Builtins.find(@Hardware) do |h|
-              Ops.get_string(h, "busid", "") == busid &&
-                Ops.get_string(h, "bus", "") == bus
-            end
-          end
-          Builtins.y2milestone("Rule: matching bus id in device name")
-        end
-
-        # code for module configuration
-        # join with the modules list of the ay profile according to "device"
-        # if exists => find H["module"] == AH["module"]
-        aymodule = GetModuleForInterface(
-          Ops.get_string(interface, "device", ""),
-          Ops.get_list(@autoinstall_settings, "modules", [])
-        )
-        Builtins.y2milestone("module data: %1", aymodule)
-        if tosel.nil? && aymodule != {}
-          if !aymodule.nil? && Ops.get_string(aymodule, "module", "") != ""
-            tosel = Builtins.find(@Hardware) do |h|
-              Ops.get_string(h, "module", "") ==
-                Ops.get_string(aymodule, "module", "")
-            end
-          end
-          matched_by_module = true if !tosel.nil?
-          Builtins.y2milestone("Rule: matching module configuration")
-        end
-      end
-
-      # First device was already configured, we are now looking for
-      # a second (third,...) one
-      if Ops.greater_than(Builtins.size(devs), 0)
-        # #119592, #146965: this used to be unconditional, overwriting the
-        # results of the above matching.
-        if matched_by_module || tosel.nil?
-          # go thru all devices, check whether there's one that does
-          # not have a configuration yet
-          # and has the same type as the current profile item
-          Builtins.foreach(@Hardware) do |h|
-            Builtins.y2milestone("Checking for device=%1", h)
-            SelectHWMap(h)
-            #		string _device_name = NetworkInterfaces::device_name(NetworkInterfaces::RealType(type, hotplug), device);
-            if !NetworkInterfaces.Check(@device) &&
-                @type ==
-                    NetworkInterfaces.GetType(
-                      Ops.get_string(interface, "device", "")
-                    )
-              Builtins.y2milestone("Selected: %1", h)
-              tosel = deep_copy(h)
-              raise Break
-            end
-          end
-        end
-        Builtins.y2error("Nothing found") if tosel.nil?
-      else
-        # this is the first interface, match the hardware with install.inf
-        # No install.inf -> select the first connected
-        # find H["active"] == true
-        if tosel.nil?
-          tosel = Builtins.find(@Hardware) do |h|
-            Ops.get_boolean(h, ["link", "state"], false)
-          end
-          Builtins.y2milestone("Rule: first connected")
-        end
-
-        # No install.inf driver -> select the first active
-        # find H["active"] == true
-        if tosel.nil?
-          tosel = Builtins.find(@Hardware) do |h|
-            Ops.get_boolean(h, "active", false)
-          end
-          Builtins.y2milestone("Rule: first active")
-        end
-
-        # No active driver -> select the first with a driver
-        # find H["module"] != ""
-        if tosel.nil?
-          Builtins.y2milestone("No active driver found, trying further.")
-          tosel = Builtins.find(@Hardware) do |h|
-            Ops.get_string(h, "module", "") != "" &&
-              Builtins.y2milestone("Using driver: %1", h).nil?
-          end
-          Builtins.y2milestone("Rule: first with driver")
-        end
-      end
-
-      deep_copy(tosel)
-    end
-
     # Deletes item and its configuration
     #
     # Item for deletion is searched using device name
@@ -2574,15 +2416,12 @@ module Yast
     publish function: :SelectHWMap, type: "void (map)"
     publish function: :SelectHW, type: "void (integer)"
     publish function: :FreeDevices, type: "list (string)"
-    publish function: :FreeAliases, type: "list (string, integer)"
-    publish function: :GetDefaultsForHW, type: "map ()"
     publish function: :SetDefaultsForHW, type: "void ()"
     publish function: :SetDeviceVars, type: "void (map, map)"
     publish function: :Select, type: "boolean (string)"
     publish function: :Commit, type: "boolean ()"
     publish function: :Rollback, type: "boolean ()"
     publish function: :GetModuleForInterface, type: "map (string, list <map>)"
-    publish function: :FindMatchingDevice, type: "map (map)"
     publish function: :DeleteItem, type: "void ()"
     publish function: :SetItem, type: "void ()"
     publish function: :ProposeItem, type: "boolean ()"
