@@ -260,8 +260,7 @@ module Yast
 
     def DistinguishedName(name, hwdevice)
       bus = hwdevice["sysfs_bus_id"]
-      name = "#{name} (#{bus})" if !IsEmpty(bus)
-      name
+      IsEmpty(bus) ? name : "#{name} (#{bus})"
     end
 
     # Extract the device 'name'
@@ -328,8 +327,14 @@ module Yast
       ret || ""
     end
 
+    BUS_ID_TO_NAME = {
+      "PCI"        => "pci",
+      "USB"        => "usb",
+      "Virtual IO" => "vio"
+    }
+
     # Read HW netcards information
-    # @param [String] not needed anymore
+    # @param [String] do nothing unless empty or "netcard
     # @return array of hashes describing detected device
     def ReadHardware(hwtype = "netcard")
       if hwtype != "netcard"
@@ -338,8 +343,8 @@ module Yast
       end
       hardware = []
 
-      # Confirmation: label text (detecting hardware: xxx)
-      return [] if !confirmed_detection(hwtype)
+      # Confirm netcard detection
+      confirmed_detection
 
       # read the corresponding hardware
       allcards = SCR.Read(path(".probe.netcard"))
@@ -388,7 +393,7 @@ module Yast
         # only drivers that are not marked as broken (#97540)
         drivers = card["drivers"].select do |d|
           # ignoring more modules per driver...
-          first_module = d.fetch("modules", []).fetch(0, []).fetch(0, []) # [module, options]
+          first_module = d.fetch("modules", []).fetch(0, []).fetch(0, "")
           brk = broken_modules.include?(first_module)
 
           log.info "In BrokenModules, skipping: #{first_module}" if brk
@@ -396,14 +401,14 @@ module Yast
           !brk
         end
 
-        if drivers == []
+        if drivers.empty?
           log.info "No good drivers found"
         else
           one["drivers"] = drivers
 
           driver = drivers[0] || {}
           one["active"] = driver["active"] || false
-          module0 = driver.fetch("modules", []).fetch(0, [])
+          module0 = (driver["modules"] || [])[0] || []
           one["module"] = module0[0] || ""
           one["options"] = module0[1] || ""
         end
@@ -420,19 +425,13 @@ module Yast
         # store the BUS type
         bus = card["bus_hwcfg"] || card["bus"] || ""
 
-        if bus == "PCI"
-          bus = "pci"
-        elsif bus == "USB"
-          bus = "usb"
-        elsif bus == "Virtual IO"
-          bus = "vio"
-        end
+        one["bus"] = BUS_ID_TO_NAME[bus]
 
-        one["bus"] = bus
         one["busid"] = card["sysfs_bus_id"] || ""
-        one["mac"] = resource["hwaddr"][0]["addr"] || ""
+        one["mac"] = resource.fetch("hwaddr", []).fetch(0, {}).fetch("addr", "")
+        ["hwaddr"][0]["addr"] || ""
         # is the cable plugged in? nil = don't know
-        one["link"] = resource["link"][0]["state"]
+        one["link"] = resource.fetch("link", []).fetch(0, {}).fetch("state")
 
         # Wireless Card Features
         wlan = resource.fetch("wlan", []).fetch(0, {})
@@ -677,18 +676,10 @@ module Yast
       false
     end
 
-    # If the user requested manual installation, ask whether to probe hardware of this type
-    def confirmed_detection(hwtype)
+    # If the user requested manual installation, ask whether to probe network cards
+    def confirmed_detection
       # Device type labels.
-      hwstrings = {
-        # Confirmation: label text (detecting hardware: xxx)
-        "netcard" => _(
-          "Network Cards"
-        )
-      }
-
-      hwstring = hwstrings[hwtype] || _("All Network Devices")
-      Confirm.Detection(hwstring, nil)
+      Confirm.Detection(_("Network Cards"), nil)
     end
 
     def set_wlan_first!(hardware)
