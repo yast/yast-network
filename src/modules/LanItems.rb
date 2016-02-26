@@ -927,7 +927,6 @@ module Yast
     #
     # @returns [String] new style name in case of success. Given name otherwise.
     def getDeviceName(oldname)
-      # TODO: raise an exception when old name could not be matched to existing cfg.
       newname = oldname
 
       hardware = ReadHardware("netcard")
@@ -939,16 +938,15 @@ module Yast
 
         case oldname
         when /.*-id-#{hw_dev_mac}/i
-          Builtins.y2milestone("device by ID found: #{oldname}")
+          log.info("device by ID found: #{oldname}")
           newname = hw_dev_name
         when /.*-bus-#{hw_dev_busid}/i
-          Builtins.y2milestone("device by BUS found #{oldname}")
+          log.info("device by BUS found #{oldname}")
           newname = hw_dev_name
         end
       end
 
-      log = "nothing changed, #{newname} is old style dev_name"
-      Builtins.y2milestone(log) if oldname == newname
+      log.info("nothing changed, #{newname} is old style dev_name") if oldname == newname
 
       newname
     end
