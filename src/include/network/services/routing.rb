@@ -151,35 +151,46 @@ module Yast
 
       UI.OpenDialog(
         Opt(:decorated),
+        MinWidth(60,
         VBox(
           HSpacing(1),
           VBox(
             HBox(
-              InputField(
-                Id(:destination),
-                Opt(:hstretch),
-                _("&Destination"),
-                Ops.get_string(entry, 1, "")
+              HWeight(70,
+                InputField(
+                  Id(:destination),
+                  Opt(:hstretch),
+                  _("&Destination"),
+                  Ops.get_string(entry, 1, "")
+                )
               ),
-              InputField(
-                Id(:genmask),
-                Opt(:hstretch),
-                _("Ge&nmask"),
-                Ops.get_string(entry, 3, "-")
+              HSpacing(1),
+              HWeight(30,
+                InputField(
+                  Id(:genmask),
+                  Opt(:hstretch),
+                  _("Ge&nmask"),
+                  Ops.get_string(entry, 3, "-")
+                )
               )
             ),
             HBox(
-              InputField(
-                Id(:gateway),
-                Opt(:hstretch),
-                _("&Gateway"),
-                Ops.get_string(entry, 2, "-")
+              HWeight(70,
+                InputField(
+                  Id(:gateway),
+                  Opt(:hstretch),
+                  _("&Gateway"),
+                  Ops.get_string(entry, 2, "-")
+                )
               ),
-              ComboBox(
-                Id(:device),
-                Opt(:editable, :hstretch),
-                _("De&vice"),
-                devs
+              HSpacing(1),
+              HWeight(30,
+                ComboBox(
+                  Id(:device),
+                  Opt(:editable, :hstretch),
+                  _("De&vice"),
+                  devs
+                )
               )
             ),
             # ComboBox label
@@ -196,6 +207,7 @@ module Yast
             PushButton(Id(:cancel), Label.CancelButton)
           )
         )
+                 )
       )
 
       # Allow declaring route without iface (for gateway) #93996
