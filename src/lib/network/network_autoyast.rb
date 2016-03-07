@@ -2,17 +2,29 @@ require "yast"
 
 module Yast
   # Provides functionality for network AutoYaST client(s)
+  #
+  # This currently shouldn't replace *::Import methods. In other
+  # words it is intended for functionality which cannot be handled
+  # in 2nd stage properly. Typically:
+  #   - merging configuration provided by linuxrc means and AY profile
+  #     together
+  #   - target network service setup (to avoid need of restarting the
+  #     service during 2nd stage) and all other stuff which could lead
+  #     to the need of restarting the service (e.g. device renaming)
   class NetworkAutoYast
     include Singleton
+    include Logger
+
+    Yast.import "Lan"
+    Yast.import "LanItems"
+    Yast.import "Linuxrc"
 
     # Merges existing config from system into given configuration map
     #
-    # @param [Hash, nil] configurtion map
+    # @param [Hash, nil] configuration map
     #
     # @return updated configuration map
     def merge_configs(conf)
-      Yast.import "Lan"
-
       # read settings from installation
       Lan.Read(:cache)
       # export settings into AY map
@@ -33,6 +45,79 @@ module Yast
       conf["devices"] = merge_devices(devices, conf["devices"])
 
       conf
+    end
+
+    # Creates udev rules according definition from profile
+    #
+    # FIXME: Currently used only for applying udev rules during network
+    # installations (ssh, vnc, ...). It was introduced as a quick fix for
+    # bnc#944349, so it is currently limited only on {ssh|vnc} installations.
+    def create_udevs
+      return if !Mode.autoinst
+      return if !(Linuxrc.usessh || Linuxrc.vnc)
+
+      log.info("Applying udev rules according to AY profile")
+
+      udev_rules = ay_networking_section["net-udev"]
+      log.info("- udev rules: #{udev_rules}")
+
+      return if udev_rules.nil? || udev_rules.empty?
+
+      LanItems.Read
+
+      udev_rules.each do |rule|
+        name_to = rule["name"]
+        attr = rule["rule"]
+        key = rule["value"].downcase
+        item, matching_item = LanItems.Items.find do |_, i|
+          i["hwinfo"]["busid"].downcase == key || i["hwinfo"]["mac"].downcase == key
+        end
+        next if !matching_item
+
+        # for logging only
+        name_from = matching_item["ifcfg"] || matching_item["dev_name"]
+        log.info("- renaming <#{name_from}> -> <#{name_to}>")
+
+        # selecting according device name is unreliable (selects only in between configured devices)
+        LanItems.current = item
+
+        # find out what attribude is currently used for setting device name and
+        # change it if needed. Currently mac is used by default. So, we check is it is
+        # the other one (busid). If no we defaults to mac.
+        bus_attr = LanItems.GetItemUdev("KERNELS")
+        current_attr = bus_attr.empty? ? "ATTR{address}" : "KERNELS"
+
+        # make sure that we base renaming on defined attribute with value given in AY profile
+        LanItems.ReplaceItemUdev(current_attr, attr, key)
+        LanItems.rename(name_to)
+      end
+
+      LanItems.write
+    end
+
+    # Sets network service for target
+    def set_network_service
+      return if !Mode.autoinst
+
+      log.info("Setting network service according to AY profile")
+
+      use_network_manager = ay_networking_section["managed"]
+      use_network_manager = Lan.UseNetworkManager if use_network_manager.nil?
+
+      nm_available = NetworkService.is_backend_available(:network_manager) if use_network_manager
+
+      if use_network_manager && nm_available
+        log.info("- using NetworkManager")
+
+        NetworkService.use_network_manager
+      else
+        log.info("- using wicked")
+        log.warn("- NetworkManager requested but not available") if use_network_manager
+
+        NetworkService.use_wicked
+      end
+
+      NetworkService.EnableDisableNow
     end
 
   private
@@ -104,6 +189,18 @@ module Yast
       instsys_routing ||= {}
 
       instsys_routing.merge(ay_routing)
+    end
+
+    # Returns networking section of current AY profile
+    def ay_networking_section
+      Yast.import "Profile"
+
+      ay_profile = Profile.current
+
+      return {} if ay_profile.nil? || ay_profile.empty?
+      return {} if ay_profile["networking"].nil?
+
+      ay_profile["networking"]
     end
   end
 end

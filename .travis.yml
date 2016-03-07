@@ -11,7 +11,3 @@ script:
     - rake check:syntax
     - rake check:pot
     - COVERAGE=1 rake test:unit
-    - make -f Makefile.cvs
-    - make
-    - sudo make install
-    - make check

@@ -544,6 +544,7 @@ module Yast
 
         if ret == :abort || ret == :cancel
           if ReallyAbort()
+            LanItems.Rollback()
             break
           else
             next
@@ -843,6 +844,7 @@ module Yast
 
         if ret == :abort || ret == :cancel
           if ReallyAbort()
+            LanItems.Rollback()
             break
           else
             next
@@ -1074,6 +1076,7 @@ module Yast
 
         if ret == :abort || ret == :cancel
           if ReallyAbort()
+            LanItems.Rollback()
             break
           else
             next
