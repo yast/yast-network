@@ -813,7 +813,7 @@ module Yast
       true
     end
 
-    private
+  private
 
     # Checks if the device should be filtered out in ReadHardware
     def filter_out(device_info, driver)

@@ -2436,7 +2436,7 @@ module Yast
       result
     end
 
-    private
+  private
 
     # This helper allows YARD to extract DSL-defined attributes.
     # Unfortunately YARD has problems with the Capitalized ones,
@@ -2468,7 +2468,7 @@ module Yast
       Host.set_names(ip, [])
     end
 
-    public
+  public
 
     # @attribute Items
     # @return [Hash<Integer, Hash<String, Object> >]

@@ -35,7 +35,7 @@ module Yast
       conf
     end
 
-    private
+  private
 
     # Merges two devices map into one.
     #

@@ -107,7 +107,7 @@ module Yast
       Host.Write
     end
 
-    private
+  private
 
     def network_cards
       LanItems.Read
