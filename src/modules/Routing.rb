@@ -481,7 +481,7 @@ module Yast
     publish function: :SetDevices, type: "boolean (list)"
     publish function: :Summary, type: "string ()"
 
-    private
+  private
 
     def ifroute_term(device)
       raise ArgumentError if device.nil? || device.empty?

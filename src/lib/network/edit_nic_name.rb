@@ -82,7 +82,7 @@ module Yast
       new_name || @old_name
     end
 
-    private
+  private
 
     # Opens dialog for editing NIC name
     def open

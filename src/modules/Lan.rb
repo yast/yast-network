@@ -1111,7 +1111,7 @@ module Yast
     publish function: :AutoPackages, type: "map ()"
     publish function: :HaveXenBridge, type: "boolean ()"
 
-    private
+  private
 
     def activate_network_service
       if LanItems.force_restart

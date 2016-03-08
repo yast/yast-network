@@ -120,7 +120,7 @@ module Yast
       NetworkService.EnableDisableNow
     end
 
-    private
+  private
 
     # Merges two devices map into one.
     #

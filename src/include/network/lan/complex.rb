@@ -567,7 +567,7 @@ module Yast
       ret
     end
 
-    private
+  private
 
     def overview_buttons
       ret = {}
