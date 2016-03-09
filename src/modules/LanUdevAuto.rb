@@ -82,33 +82,26 @@ module Yast
       tmp_interfaces = []
 
       interfaces.each do |interface|
-        if Builtins.issubstring(Ops.get_string(interface, "device", ""), "-id-") ||
-            Builtins.issubstring(
-              Ops.get_string(interface, "device", ""),
-              "-bus-"
-            )
-          value = Ops.get(
-            Builtins.splitstring(Ops.get_string(interface, "device", ""), "-"),
-            2,
-            ""
-          )
+        case interface["device"]
+        when /.*-id-(?<mac>.*)/
+          value = $~[:mac]
           rule = "ATTR{address}"
-          if Ops.get(
-            Builtins.splitstring(Ops.get_string(interface, "device", ""), "-"),
-            1,
-            ""
-            ) == "bus"
-            rule = "KERNELS"
-          end
-          @udev_rules = Builtins.add(
-            @udev_rules,
-            "rule"  => rule,
-            "value" => value,
-            "name"  => LanItems.getDeviceName(Ops.get_string(interface, "device", ""))
-          )
-          tmp_interfaces = Builtins.add(tmp_interfaces, interface)
+        when /.*-bus-(?<busid>.*)/
+          value = $~[:busid]
+          rule = "KERNELS"
+        else
+          next
         end
+
+        @udev_rules << {
+          "rule"  => rule,
+          "value" => value,
+          "name"  => LanItems.getDeviceName(interface["device"])
+        }
+
+        tmp_interfaces << interface
       end
+
       log.info("converted interfaces: #{tmp_interfaces}")
       deep_copy(tmp_interfaces)
     end
