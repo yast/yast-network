@@ -115,7 +115,6 @@ module Yast
       NetworkService.EnableDisableNow
     end
 
-    private
     # Checks if given profile contains device names in old style format
     #
     # OLd style device name format is eth-id-<mac> or eth-bus-<busid>.
@@ -135,6 +134,8 @@ module Yast
       log.info("old-style name found: #{ret}")
       ret
     end
+
+  private
 
     # Merges two devices map into one.
     #

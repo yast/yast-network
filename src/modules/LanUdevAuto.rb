@@ -30,6 +30,7 @@
 # Representation of the configuration of network cards.
 require "yast"
 require "network/network_autoyast"
+require "English"
 
 module Yast
   class LanUdevAutoClass < Module
@@ -84,10 +85,10 @@ module Yast
       interfaces.each do |interface|
         case interface["device"]
         when /.*-id-(?<mac>.*)/
-          value = $~[:mac]
+          value = $LAST_MATCH_INFO[:mac]
           rule = "ATTR{address}"
         when /.*-bus-(?<busid>.*)/
-          value = $~[:busid]
+          value = $LAST_MATCH_INFO[:busid]
           rule = "KERNELS"
         else
           next
