@@ -212,12 +212,12 @@ describe "NetworkAutoYast" do
   context "When AY profile contains old style name" do
     let(:ay_old_id) do
       {
-        "interfaces" => [{ "device" => "eth-id-0.0.1111" }]
+        "interfaces" => [{ "device" => "eth-bus-0.0.1111" }]
       }
     end
     let(:ay_old_mac) do
       {
-        "interfaces" => [{ "device" => "eth-bus-00:11:22:33:44:55" }]
+        "interfaces" => [{ "device" => "eth-id-00:11:22:33:44:55" }]
       }
     end
     let(:ay_both_vers) do
@@ -238,6 +238,10 @@ describe "NetworkAutoYast" do
 
       subject(:lan_udev_auto) { Yast::LanUdevAuto }
 
+      before(:each) do
+        allow(Yast::LanItems).to receive(:getDeviceName).and_return("eth0")
+      end
+
       it "returns list of old-style interface names" do
         ifaces = lan_udev_auto.createUdevFromIfaceName(ay_both_vers["interfaces"])
 
@@ -248,9 +252,7 @@ describe "NetworkAutoYast" do
         lan_udev_auto.createUdevFromIfaceName(ay_both_vers["interfaces"])
         udev_list = lan_udev_auto.instance_variable_get(:@udev_rules)
 
-        allow(Yast::LanItems).to receive(:getDeviceName).and_return("eth0")
-
-        expect(udev_list.first["rule"]).to eql "ATTR{address}"
+        expect(udev_list.first["rule"]).to eql "KERNELS"
         expect(udev_list.first["value"]).to eql "0.0.1111"
         expect(udev_list.first["name"]).to eql "eth0"
       end
