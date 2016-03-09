@@ -79,12 +79,9 @@ module Yast
     #  for old-slyle create udev rules and rename interface names to new-style
     def createUdevFromIfaceName(interfaces)
       interfaces = deep_copy(interfaces)
-      Builtins.y2milestone(
-        "old-style names for interfaces found - convert into new-style"
-      )
-      Builtins.y2milestone("interfaces %1", interfaces)
       tmp_interfaces = []
-      Builtins.foreach(interfaces) do |interface|
+
+      interfaces.each do |interface|
         if Builtins.issubstring(Ops.get_string(interface, "device", ""), "-id-") ||
             Builtins.issubstring(
               Ops.get_string(interface, "device", ""),
@@ -112,7 +109,7 @@ module Yast
           tmp_interfaces = Builtins.add(tmp_interfaces, interface)
         end
       end
-      Builtins.y2milestone("converted interfaces: %1", tmp_interfaces)
+      log.info("converted interfaces: #{tmp_interfaces}")
       deep_copy(tmp_interfaces)
     end
 
