@@ -108,25 +108,23 @@ module Yast
 
     def Import(settings)
       settings = deep_copy(settings)
-      Builtins.y2milestone("importing %1", settings)
+      log.info("importing #{settings}")
+
       # So, if the profile contains old style names, then net-udev section
-      # of the profile is ignored.
+      # of the profile is ignored. Moreover it drops configuration for all
+      # interfaces which do not use old style name
       if NetworkAutoYast.instance.oldStyle(settings)
-        Ops.set(
-          settings,
-          "interfaces",
-          createUdevFromIfaceName(Ops.get_list(settings, "interfaces", []))
-        )
+        settings["interfaces"] = createUdevFromIfaceName(settings["interfaces"] || [])
       else
         @udev_rules = settings["net-udev"] || []
       end
-      @s390_devices = Ops.get_list(settings, "s390-devices", [])
-      Builtins.y2milestone(
-        "interfaces: %1",
-        Ops.get_list(settings, "interfaces", [])
-      )
-      Builtins.y2milestone("net-udev rules:%1", @udev_rules)
-      Builtins.y2milestone("s390-devices rules:%1", @s390_devices)
+
+      @s390_devices = settings["s390-devices"] || []
+
+      log.info("interfaces: #{settings["interfaces"] || []}")
+      log.info("net-udev rules: #{@udev_rules}")
+      log.info("s390-devices rules: #{@s390_devices}")
+
       true
     end
 
