@@ -238,14 +238,16 @@ describe "NetworkAutoYast" do
 
       subject(:lan_udev_auto) { Yast::LanUdevAuto }
 
+      let(:ay_interfaces) { ay_both_vers["interfaces"] + ay_old_mac["interfaces"] }
+
       before(:each) do
         allow(Yast::LanItems).to receive(:getDeviceName).and_return("eth0")
       end
 
       it "returns list of old-style interface names" do
-        ifaces = lan_udev_auto.createUdevFromIfaceName(ay_both_vers["interfaces"])
+        ifaces = lan_udev_auto.createUdevFromIfaceName(ay_interfaces)
 
-        expect(ifaces).to eql ay_old_id["interfaces"]
+        expect(ifaces).to eql ay_old_id["interfaces"] + ay_old_mac["interfaces"]
       end
 
       it "updates udev rules list according old style name" do
