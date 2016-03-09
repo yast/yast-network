@@ -210,40 +210,75 @@ describe "NetworkAutoYast" do
   end
 
   context "When AY profile contains old style name" do
+    let(:ay_old_id) do
+      {
+        "interfaces" => [{ "device" => "eth-id-0.0.1111" }]
+      }
+    end
+    let(:ay_old_mac) do
+      {
+        "interfaces" => [{ "device" => "eth-bus-00:11:22:33:44:55" }]
+      }
+    end
+    let(:ay_both_vers) do
+      { "interfaces" => ay_old_id["interfaces"] + [{ "device" => "eth0" }] }
+    end
+
     describe "#oldStyle" do
-
-      let(:ay_old_id) do
-        {
-          "interfaces" => [{ "device" => "eth-id-0.0.1111" }]
-        }
-      end
-      let(:ay_old_mac) do
-        {
-          "interfaces" => [{ "device" => "eth-bus-00:11:22:33:44:55" }]
-        }
-      end
-      let(:ay_both_vers) do
-        { "interfaces" => ay_old_id["interfaces"] + [{ "device" => "eth0" }] }
-      end
-
       it "detects old style names in profile" do
         expect(network_autoyast.oldStyle(ay_old_id)).to be true
         expect(network_autoyast.oldStyle(ay_old_mac)).to be true
         expect(network_autoyast.oldStyle(ay_both_vers)).to be true
       end
     end
+
+    describe "#createUdevFromIfaceName" do
+      Yast.import "LanUdevAuto"
+      Yast.import "LanItems"
+
+      subject(:lan_udev_auto) { Yast::LanUdevAuto }
+
+      it "returns list of old-style interface names" do
+        ifaces = lan_udev_auto.createUdevFromIfaceName(ay_both_vers["interfaces"])
+
+        expect(ifaces).to eql ay_old_id["interfaces"]
+      end
+
+      it "updates udev rules list according old style name" do
+        lan_udev_auto.createUdevFromIfaceName(ay_both_vers["interfaces"])
+        udev_list = lan_udev_auto.instance_variable_get(:@udev_rules)
+
+        allow(Yast::LanItems).to receive(:getDeviceName).and_return("eth0")
+
+        expect(udev_list.first["rule"]).to eql "ATTR{address}"
+        expect(udev_list.first["value"]).to eql "0.0.1111"
+        expect(udev_list.first["name"]).to eql "eth0"
+      end
+    end
   end
 
   context "When AY profile doesn't contain old style name" do
-    describe "#oldStyle" do
-      let(:ay_only_new) do
-        {
-          "interfaces" => [{ "device" => "eth0" }]
-        }
-      end
+    let(:ay_only_new) do
+      {
+        "interfaces" => [{ "device" => "eth0" }]
+      }
+    end
 
+    describe "#oldStyle" do
       it "fails when profile contains only new names" do
         expect(network_autoyast.oldStyle(ay_only_new)).to be false
+      end
+    end
+
+    describe "#createUdevFromIfaceName" do
+      Yast.import "LanUdevAuto"
+
+      subject(:lan_udev_auto) { Yast::LanUdevAuto }
+
+      it "returns list of old-style interface names" do
+        ifaces = lan_udev_auto.createUdevFromIfaceName(ay_only_new["interfaces"])
+
+        expect(ifaces).to be_empty
       end
     end
   end
