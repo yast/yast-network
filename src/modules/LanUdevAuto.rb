@@ -80,26 +80,21 @@ module Yast
     #  for old-slyle create udev rules and rename interface names to new-style
     def createUdevFromIfaceName(interfaces)
       udev_rules = []
+      attr_map = {
+        "id"  => "ATTR{address}",
+        "bus" => "KERNELS"
+      }
 
       interfaces.keep_if do |interface|
-        case interface["device"]
-        when /.*-id-(?<mac>.*)/
-          value = $LAST_MATCH_INFO[:mac]
-          rule = "ATTR{address}"
-        when /.*-bus-(?<busid>.*)/
-          value = $LAST_MATCH_INFO[:busid]
-          rule = "KERNELS"
-        else
-          next
+        if /.*-(?<attr>id|bus)-(?<value>.*)/ =~ interface["device"]
+          udev_rules << {
+            "rule"  => attr_map[attr],
+            "value" => value,
+            "name"  => LanItems.getDeviceName(interface["device"])
+          }
+
+          interface
         end
-
-        udev_rules << {
-          "rule"  => rule,
-          "value" => value,
-          "name"  => LanItems.getDeviceName(interface["device"])
-        }
-
-        interface
       end
 
       log.info("converted interfaces: #{interfaces}")
