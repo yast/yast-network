@@ -192,7 +192,7 @@ module Yast
               value = deep_copy(t)
             end
           elsif key == "device"
-            value = LanUdevAuto.getDeviceName(Builtins.tostring(value))
+            value = LanItems.getDeviceName(Builtins.tostring(value))
           end
           Ops.set(iface, key, value)
         end
