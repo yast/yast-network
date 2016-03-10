@@ -76,8 +76,16 @@ module Yast
       InstallationParameter("biosdevname") != "1"
     end
 
-    #  internal function:
-    #  for old-slyle create udev rules and rename interface names to new-style
+    #  Creates a list of udev rules for old style named interfaces
+    #
+    #  It takes a whole "interfaces" section of AY profile. Keeps
+    #  only old style named interfaces (e.g. eth-bus-0.0.0000) in it
+    #  and renames them to a new name (e.g. eth0). It also produces
+    #  a list of udev rules to guarantee device naming persistency.
+    #  The rule is base on attributes described in old style name
+    #
+    #  @param [Array] list of hashes describing interfaces in AY profile
+    #  @return [Array] list of hashes for udev rules
     def createUdevFromIfaceName(interfaces)
       udev_rules = []
       attr_map = {
