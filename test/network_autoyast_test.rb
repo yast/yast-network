@@ -236,7 +236,7 @@ describe "NetworkAutoYast" do
       Yast.import "LanUdevAuto"
       Yast.import "LanItems"
 
-      subject(:lan_udev_auto) { Yast::LanUdevAuto }
+      subject(:lan_udev_auto) { Yast::LanItems }
 
       let(:ay_interfaces) { ay_both_vers["interfaces"] + ay_old_mac["interfaces"] }
 
@@ -247,13 +247,13 @@ describe "NetworkAutoYast" do
       it "produces list of old-style interface names" do
         ifaces = ay_interfaces
 
-        lan_udev_auto.createUdevFromIfaceName(ay_interfaces)
+        lan_udev_auto.send(:createUdevFromIfaceName, ay_interfaces)
 
         expect(ifaces).to eql ay_old_id["interfaces"] + ay_old_mac["interfaces"]
       end
 
       it "updates udev rules list according old style name" do
-        udev_list = lan_udev_auto.createUdevFromIfaceName(ay_both_vers["interfaces"])
+        udev_list = lan_udev_auto.send(:createUdevFromIfaceName, ay_both_vers["interfaces"])
 
         expect(udev_list.first["rule"]).to eql "KERNELS"
         expect(udev_list.first["value"]).to eql "0.0.1111"
@@ -278,12 +278,12 @@ describe "NetworkAutoYast" do
     describe "#createUdevFromIfaceName" do
       Yast.import "LanUdevAuto"
 
-      subject(:lan_udev_auto) { Yast::LanUdevAuto }
+      subject(:lan_udev_auto) { Yast::LanItems }
 
       it "produces empty list of interfaces" do
         ifaces = ay_only_new["interfaces"]
 
-        lan_udev_auto.createUdevFromIfaceName(ifaces)
+        lan_udev_auto.send(:createUdevFromIfaceName, ifaces)
 
         expect(ifaces).to be_empty
       end
@@ -291,7 +291,7 @@ describe "NetworkAutoYast" do
       it "returns no udev rules" do
         ifaces = ay_only_new["interfaces"]
 
-        expect(lan_udev_auto.createUdevFromIfaceName(ifaces)).to be_empty
+        expect(lan_udev_auto.send(:createUdevFromIfaceName, ifaces)).to be_empty
       end
     end
   end
