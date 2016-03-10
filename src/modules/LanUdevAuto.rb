@@ -79,10 +79,9 @@ module Yast
     #  internal function:
     #  for old-slyle create udev rules and rename interface names to new-style
     def createUdevFromIfaceName(interfaces)
-      interfaces = deep_copy(interfaces)
-      tmp_interfaces = []
+      udev_rules = []
 
-      interfaces.each do |interface|
+      interfaces.keep_if do |interface|
         case interface["device"]
         when /.*-id-(?<mac>.*)/
           value = $LAST_MATCH_INFO[:mac]
@@ -94,17 +93,18 @@ module Yast
           next
         end
 
-        @udev_rules << {
+        udev_rules << {
           "rule"  => rule,
           "value" => value,
           "name"  => LanItems.getDeviceName(interface["device"])
         }
 
-        tmp_interfaces << interface
+        interface
       end
 
-      log.info("converted interfaces: #{tmp_interfaces}")
-      deep_copy(tmp_interfaces)
+      log.info("converted interfaces: #{interfaces}")
+
+      udev_rules
     end
 
     def Import(settings)
@@ -115,7 +115,7 @@ module Yast
       # of the profile is ignored. Moreover it drops configuration for all
       # interfaces which do not use old style name
       if NetworkAutoYast.instance.oldStyle(settings)
-        settings["interfaces"] = createUdevFromIfaceName(settings["interfaces"] || [])
+        @udev_rules = createUdevFromIfaceName(settings["interfaces"] || [])
       else
         @udev_rules = settings["net-udev"] || []
       end
