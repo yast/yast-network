@@ -15,9 +15,11 @@ module Yast
     include Singleton
     include Logger
 
-    Yast.import "Lan"
-    Yast.import "LanItems"
-    Yast.import "Linuxrc"
+    def initialize
+      Yast.import "Lan"
+      Yast.import "LanItems"
+      Yast.import "Linuxrc"
+    end
 
     # Merges existing config from system into given configuration map
     #
