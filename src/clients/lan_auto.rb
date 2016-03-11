@@ -37,8 +37,6 @@ module Yast
 
       Yast.import "Lan"
       Yast.import "Progress"
-      Yast.import "Arch"
-      Yast.import "Mode"
       Yast.import "Map"
       Yast.import "NetworkInterfaces"
       Yast.import "LanItems"
@@ -57,25 +55,6 @@ module Yast
             Ops.is_map?(WFM.Args(1))
           @param = Convert.to_map(WFM.Args(1))
         end
-      end
-      Builtins.y2debug("func=%1", @func)
-      Builtins.y2debug("param=%1", @param)
-
-      if Mode.test
-        Mode.SetMode("autoinstallation")
-        @param = {
-          "dns"        => { "dhcp_hostname" => false, "dhcp_resolv" => false },
-          "interfaces" => [
-            {
-              "bootproto" => "static",
-              "device"    => "eth0",
-              "ipaddr"    => "192.168.1.233",
-              "startmode" => "onboot"
-            }
-          ],
-          "routing"    => { "ip_forward" => false }
-        }
-        @func = "Import"
       end
 
       Builtins.y2milestone("Lan autoinst callback: #{@func}")

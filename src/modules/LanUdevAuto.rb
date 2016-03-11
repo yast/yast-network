@@ -30,7 +30,6 @@
 # Representation of the configuration of network cards.
 require "yast"
 require "network/network_autoyast"
-require "English"
 
 module Yast
   class LanUdevAutoClass < Module
