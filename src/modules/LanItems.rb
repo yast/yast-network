@@ -2192,8 +2192,17 @@ module Yast
       end
     end
 
-    def createS390Device
-      Builtins.y2milestone("creating device s390 network device")
+    def createS390Device(rule)
+      Builtins.y2milestone("creating device s390 network device, #{rule}")
+
+      Select("")
+      @type = rule["type"] || ""
+      @qeth_chanids = rule["chanids"] || ""
+      @qeth_layer2 = rule.fetch("layer2", false)
+      @qeth_portname = rule["portname"] || ""
+      @chan_mode = rule["protocol"] || ""
+      @iucv_user = rule["router"] || ""
+
       result = true
       # command to create device
       command1 = ""

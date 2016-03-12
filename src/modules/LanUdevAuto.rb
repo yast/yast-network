@@ -124,20 +124,7 @@ module Yast
       # directly. It creates linux emulation for s390 devices.
       if Arch.s390
         @s390_devices.each do |rule|
-          LanItems.Select("")
-          LanItems.type = Ops.get_string(rule, "type", "")
-          LanItems.qeth_chanids = Ops.get_string(rule, "chanids", "")
-          LanItems.qeth_layer2 = Ops.get_boolean(rule, "layer2", false)
-          LanItems.qeth_portname = Ops.get_string(rule, "portname", "")
-          LanItems.chan_mode = Ops.get_string(rule, "protocol", "")
-          LanItems.iucv_user = Ops.get_string(rule, "router", "")
-          Builtins.y2milestone("rule:%1", rule)
-          Builtins.y2milestone("type:%1", LanItems.type)
-          Builtins.y2milestone("chanids:%1", LanItems.qeth_chanids)
-          Builtins.y2milestone("layer2:%1", LanItems.qeth_layer2)
-          Builtins.y2milestone("portname:%1", LanItems.qeth_portname)
-          LanItems.createS390Device
-          Builtins.y2milestone("rule %1", rule)
+          LanItems.createS390Device(rule)
         end
         log.info("Writing s390 rules #{@s390_devices}")
       end
