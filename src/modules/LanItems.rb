@@ -665,7 +665,7 @@ module Yast
       # When refactored at least these use cases need to be retested:
       # - bnc#955217
       # - bnc#956605
-      LanItems.WriteUdevRules if !Stage.cont && LanUdevAuto.AllowUdevModify
+      LanItems.WriteUdevRules if !Stage.cont && InstallInfConvertor.instance.AllowUdevModify
 
       # FIXME: hack: no "netcard" filter as biosdevname names it diferently (bnc#712232)
       NetworkInterfaces.Write("")

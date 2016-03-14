@@ -30,6 +30,7 @@
 # Representation of the configuration of network cards.
 require "yast"
 require "network/network_autoyast"
+require "network/install_inf_convertor"
 
 module Yast
   class LanUdevAutoClass < Module
@@ -37,7 +38,6 @@ module Yast
 
     def main
       Yast.import "LanItems"
-      Yast.import "Map"
       Yast.import "Linuxrc"
 
       Yast.include self, "network/routines.rb"
@@ -45,34 +45,6 @@ module Yast
 
       @udev_rules = []
       @s390_devices = []
-    end
-
-    # @return parameter from /etc/install.inf or nil
-    # @param [String] name parameter name, case sensitive
-    def InstallInfParameter(name)
-      p = Builtins.add(path(".etc.install_inf"), name)
-      Convert.to_string(SCR.Read(p))
-    end
-
-    # @return parameter from the kernel(boot) command line or nil
-    # @param [String] name parameter name, case sensitive
-    def KernelCmdlineParameter(name)
-      cmdline = InstallInfParameter("Cmdline")
-      cmdmap = Map.FromString(cmdline) # handles nil too
-      Ops.get_string(cmdmap, name)
-    end
-
-    # @return installation parameter or nil
-    # @param [String] name parameter name, case sensitive
-    def InstallationParameter(name)
-      value = InstallInfParameter(name)
-      value = KernelCmdlineParameter(name) if value.nil?
-      value
-    end
-
-    # FATE#311332
-    def AllowUdevModify
-      InstallationParameter("biosdevname") != "1"
     end
 
     def Import(settings)
@@ -108,7 +80,7 @@ module Yast
         format(template, opt, value.downcase, devname)
       end
 
-      if !rules.empty? && AllowUdevModify()
+      if !rules.empty? && InstallInfConvertor.instance.AllowUdevModify
         SetAllLinksDown() if !(Linuxrc.usessh || Linuxrc.vnc)
 
         log.info("Writing AY udev rules for network")
@@ -309,7 +281,6 @@ module Yast
       deep_copy(ay)
     end
 
-    publish function: :AllowUdevModify, type: "boolean ()"
     publish function: :Import, type: "boolean (map)"
     publish function: :Write, type: "boolean ()"
     publish function: :Export, type: "map (map)"

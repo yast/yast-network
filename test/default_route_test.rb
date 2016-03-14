@@ -3,13 +3,13 @@
 require_relative "test_helper"
 
 require "yast"
+require "network/install_inf_convertor"
 
 describe "Yast::LanItemsClass" do
   subject { Yast::LanItems }
 
   before do
     Yast.import "LanItems"
-    Yast.import "LanUdevAuto"
 
     @ifcfg_files = SectionKeyValue.new
 
@@ -62,7 +62,7 @@ describe "Yast::LanItemsClass" do
       .and_return nil
     Yast::NetworkInterfaces.instance_variable_set(:@initialized, false)
 
-    allow(Yast::LanUdevAuto)
+    allow(Yast::InstallInfConvertor.instance)
       .to receive(:AllowUdevModify).and_return false
 
     # These "expect" should be "allow", but then it does not work out,
