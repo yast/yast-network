@@ -310,7 +310,6 @@ module Yast
     end
 
     publish function: :AllowUdevModify, type: "boolean ()"
-    publish function: :getDeviceName, type: "string (string)"
     publish function: :Import, type: "boolean (map)"
     publish function: :Write, type: "boolean ()"
     publish function: :Export, type: "map (map)"
