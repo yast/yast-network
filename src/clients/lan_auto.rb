@@ -40,7 +40,6 @@ module Yast
       Yast.import "Map"
       Yast.import "NetworkInterfaces"
       Yast.import "LanItems"
-      Yast.import "LanUdevAuto"
       Yast.include self, "network/lan/wizards.rb"
       Yast.include self, "network/routines.rb"
 
@@ -75,7 +74,6 @@ module Yast
         @new = NetworkAutoYast.instance.merge_configs(@new) if @new["keep_install_network"]
 
         Lan.Import(@new)
-        LanUdevAuto.Import(@new)
         @ret = true
       elsif @func == "Read"
         @progress_orig = Progress.set(false)
@@ -94,10 +92,6 @@ module Yast
         @ret = deep_copy(@autoyast)
       elsif @func == "Write"
         @progress_orig = Progress.set(false)
-
-        result = LanUdevAuto.Write
-        Builtins.y2error("Writing udev rules failed") if !result
-        @ret = result
 
         result = Lan.WriteOnly
         Builtins.y2error("Writing lan config failed") if !result
