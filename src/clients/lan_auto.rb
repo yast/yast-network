@@ -164,8 +164,6 @@ module Yast
               t = Builtins.remove(t, k)
               value = deep_copy(t)
             end
-          elsif key == "device"
-            value = LanItems.getDeviceName(Builtins.tostring(value))
           end
           Ops.set(iface, key, value)
         end
@@ -198,6 +196,8 @@ module Yast
       devices = {}
 
       Builtins.foreach(interfaces) do |devname, if_data|
+        # devname can be in old-style fashion (eth-bus-<pci_id>). So, convert it
+        devname = LanItems.getDeviceName(devname)
         type = NetworkInterfaces.GetType(devname)
         d = Ops.get(devices, type, {})
         Ops.set(d, devname, if_data)
