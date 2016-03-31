@@ -2535,33 +2535,22 @@ module Yast
           end
         end
       else
-        Builtins.foreach(
-          Convert.convert(
-            Items(),
-            from: "map <integer, any>",
-            to:   "map <integer, map <string, any>>"
-          )
-        ) do |id, row|
-          @current = id
-          if Ops.greater_than(
-            Builtins.size(Ops.get_string(row, "ifcfg", "")),
-            0
-            )
-            name = GetItemUdev("NAME")
-            mac_rule = GetItemUdev("ATTR{address}")
-            bus_rule = GetItemUdev("KERNELS")
-            if Builtins.size(mac_rule) == 0 && Builtins.size(bus_rule) == 0
-              Builtins.y2error("No MAC or BusID rule %1", row)
-              next
-            end
-            Ops.set(
-              ay,
-              ["net-udev", name],
-              "rule"  => Ops.greater_than(Builtins.size(mac_rule), 0) ? "ATTR{address}" : "KERNELS",
+        configured = Items().select { |i, _| IsItemConfigured(i) }
+        configured.each do |id, _|
+          @current = id # for GetItemUdev
+
+          name = GetItemUdev("NAME").to_s
+          rule = ["ATTR{address}", "KERNELS"].find { |r| !GetItemUdev(r).to_s.empty? }
+
+          next if !rule || name.empty?
+
+          ay["net-udev"] = {
+            name => {
+              "rule"  => rule,
               "name"  => name,
-              "value" => Ops.greater_than(Builtins.size(mac_rule), 0) ? mac_rule : bus_rule
-            )
-          end
+              "value" => GetItemUdev(rule)
+            }
+          }
         end
       end
 
