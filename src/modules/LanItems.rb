@@ -2325,38 +2325,6 @@ module Yast
       result
     end
 
-  private
-
-    # This helper allows YARD to extract DSL-defined attributes.
-    # Unfortunately YARD has problems with the Capitalized ones,
-    # so those must be done manually.
-    # @!macro [attach] publish_variable
-    #  @!attribute $1
-    #  @return [$2]
-    def self.publish_variable(name, type)
-      publish variable: name, type: type
-    end
-
-    # Checks if given lladdr can be written into ifcfg
-    #
-    # @param lladdr [String] logical link address, usually MAC address in case
-    #                        of qeth device
-    # @return [true, false] check result
-    def s390_correct_lladdr(lladdr)
-      return false if !Arch.s390
-      return false if lladdr.nil?
-      return false if lladdr.empty?
-      return false if lladdr.strip == "00:00:00:00:00:00"
-
-      true
-    end
-
-    # Removes all records connected to the ip from /etc/hosts
-    def drop_hosts(ip)
-      log.info("Deleting hostnames assigned to #{ip} from /etc/hosts")
-      Host.set_names(ip, [])
-    end
-
     #  Creates a list of udev rules for old style named interfaces
     #
     #  It takes a whole "interfaces" section of AY profile. Keeps
@@ -2389,6 +2357,38 @@ module Yast
       log.info("converted interfaces: #{interfaces}")
 
       udev_rules
+    end
+
+  private
+
+    # This helper allows YARD to extract DSL-defined attributes.
+    # Unfortunately YARD has problems with the Capitalized ones,
+    # so those must be done manually.
+    # @!macro [attach] publish_variable
+    #  @!attribute $1
+    #  @return [$2]
+    def self.publish_variable(name, type)
+      publish variable: name, type: type
+    end
+
+    # Checks if given lladdr can be written into ifcfg
+    #
+    # @param lladdr [String] logical link address, usually MAC address in case
+    #                        of qeth device
+    # @return [true, false] check result
+    def s390_correct_lladdr(lladdr)
+      return false if !Arch.s390
+      return false if lladdr.nil?
+      return false if lladdr.empty?
+      return false if lladdr.strip == "00:00:00:00:00:00"
+
+      true
+    end
+
+    # Removes all records connected to the ip from /etc/hosts
+    def drop_hosts(ip)
+      log.info("Deleting hostnames assigned to #{ip} from /etc/hosts")
+      Host.set_names(ip, [])
     end
 
     # Exports udev rules for AY profile

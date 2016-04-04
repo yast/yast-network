@@ -55,39 +55,25 @@ module Yast
 
       log.info("Applying udev rules according to AY profile")
 
-      udev_rules = ay_networking_section["net-udev"]
-      log.info("- udev rules: #{udev_rules}")
+      # get implicitly defined udev rules (via old style names)
+      im_udev_rules = LanItems.createUdevFromIfaceName(ay_networking_section["interfaces"])
+      log.info("- implicitly defined udev rules: #{im_udev_rules}")
 
-      return if udev_rules.nil? || udev_rules.empty?
+      no_rules = im_udev_rules.empty?
+
+      # get explicit udev definition from the profile
+      ex_udev_rules = ay_networking_section["net-udev"]
+      log.info("- explicitly defined udev rules: #{ex_udev_rules}")
+
+      no_rules &&= ex_udev_rules.nil? || ex_udev_rules.empty?
+      return if no_rules
 
       LanItems.Read
 
-      udev_rules.each do |rule|
-        name_to = rule["name"]
-        attr = rule["rule"]
-        key = rule["value"].downcase
-        item, matching_item = LanItems.Items.find do |_, i|
-          i["hwinfo"]["busid"].downcase == key || i["hwinfo"]["mac"].downcase == key
-        end
-        next if !matching_item
-
-        # for logging only
-        name_from = matching_item["ifcfg"] || matching_item["dev_name"]
-        log.info("- renaming <#{name_from}> -> <#{name_to}>")
-
-        # selecting according device name is unreliable (selects only in between configured devices)
-        LanItems.current = item
-
-        # find out what attribude is currently used for setting device name and
-        # change it if needed. Currently mac is used by default. So, we check is it is
-        # the other one (busid). If no we defaults to mac.
-        bus_attr = LanItems.GetItemUdev("KERNELS")
-        current_attr = bus_attr.empty? ? "ATTR{address}" : "KERNELS"
-
-        # make sure that we base renaming on defined attribute with value given in AY profile
-        LanItems.ReplaceItemUdev(current_attr, attr, key)
-        LanItems.rename(name_to)
-      end
+      # implicitly defined udev rules are overwritten by explicit ones in
+      # case of collision.
+      assign_udevs_to_devs(im_udev_rules)
+      assign_udevs_to_devs(ex_udev_rules)
 
       LanItems.write
     end
@@ -218,6 +204,41 @@ module Yast
       return {} if ay_profile["networking"].nil?
 
       ay_profile["networking"]
+    end
+
+    # Takes a list of udev rules and assignes them to corresponding devices.
+    #
+    # If a device has an udev rule defined already, it is overwritten by new one.
+    # Note: initialization of LanItems has to be done outside of this method
+    def assign_udevs_to_devs(udev_rules)
+      return if udev_rules.nil?
+
+      udev_rules.each do |rule|
+        name_to = rule["name"]
+        attr = rule["rule"]
+        key = rule["value"].downcase
+        item, matching_item = LanItems.Items.find do |_, i|
+          i["hwinfo"]["busid"].downcase == key || i["hwinfo"]["mac"].downcase == key
+        end
+        next if !matching_item
+
+        # for logging only
+        name_from = matching_item["ifcfg"] || matching_item["dev_name"]
+        log.info("Matching device found - renaming <#{name_from}> -> <#{name_to}>")
+
+        # selecting according device name is unreliable (selects only in between configured devices)
+        LanItems.current = item
+
+        # find out what attribude is currently used for setting device name and
+        # change it if needed. Currently mac is used by default. So, we check is it is
+        # the other one (busid). If no we defaults to mac.
+        bus_attr = LanItems.GetItemUdev("KERNELS")
+        current_attr = bus_attr.empty? ? "ATTR{address}" : "KERNELS"
+
+        # make sure that we base renaming on defined attribute with value given in AY profile
+        LanItems.ReplaceItemUdev(current_attr, attr, key)
+        LanItems.rename(name_to)
+      end
     end
   end
 end
