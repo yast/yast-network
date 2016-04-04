@@ -233,7 +233,6 @@ describe "NetworkAutoYast" do
     end
 
     describe "#createUdevFromIfaceName" do
-      Yast.import "LanUdevAuto"
       Yast.import "LanItems"
 
       subject(:lan_udev_auto) { Yast::LanItems }
@@ -276,8 +275,6 @@ describe "NetworkAutoYast" do
     end
 
     describe "#createUdevFromIfaceName" do
-      Yast.import "LanUdevAuto"
-
       subject(:lan_udev_auto) { Yast::LanItems }
 
       it "produces empty list of interfaces" do

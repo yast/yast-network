@@ -656,15 +656,6 @@ module Yast
         SetItemName(item_id, renamed_to(item_id))
       end
 
-      # FIXME: in case of AY, writing udev rules was partly moved into first stage
-      # (bnc#955217). However, it is so only in case of ssh / vnc installation.
-      # Otherwise, udev rules are written in second stage in *LanUdevAuto* module
-      # and it breaks consistency of data stored in Items. So, moving writing
-      # udev rules into first stage should be completed ASAP even fo non-ssh / vnc
-      # AY installations and LanUdevAuto module should be dropped.
-      # When refactored at least these use cases need to be retested:
-      # - bnc#955217
-      # - bnc#956605
       LanItems.WriteUdevRules if !Stage.cont && InstallInfConvertor.instance.AllowUdevModify
 
       # FIXME: hack: no "netcard" filter as biosdevname names it diferently (bnc#712232)
