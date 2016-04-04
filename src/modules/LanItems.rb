@@ -1107,6 +1107,13 @@ module Yast
       autoinstall_settings["strict_IP_check_timeout"] = settings.fetch("strict_IP_check_timeout", -1)
       autoinstall_settings["keep_install_network"] = settings.fetch("keep_install_network", false)
 
+      # FIXME: createS390Device does two things, it
+      # - updates internal structures
+      # - creates s390 device eth emulation
+      # So, it belongs partly into Import and partly into Write. Note, that
+      # the code is currently unable to revert already created emulated device.
+      settings.fetch("s390-devices", {}).each { |rule| createS390Device(rule) } if Arch.s390
+
       # settings == {} has special meaning 'Reset' used by AY
       SetModified() if !settings.empty?
 
