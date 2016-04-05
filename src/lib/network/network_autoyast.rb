@@ -104,26 +104,6 @@ module Yast
       NetworkService.EnableDisableNow
     end
 
-    # Checks if given profile contains device names in old style format
-    #
-    # OLd style device name format is eth-id-<mac> or eth-bus-<busid>.
-    # These names has to be converted into new-style (eth0) and name persistency
-    # is enabled using udev rule which is generated later.
-    #
-    # @param [Hash] configuration map
-    #
-    # @return true if configuration contains old style name
-    def oldStyle(ay)
-      return false if ay.nil? || ay["interfaces"].nil?
-
-      ret = ay["interfaces"].any? do |interface|
-        interface["device"] =~ /.*-id-.*/ || interface["device"] =~ /.*-bus-.*/
-      end
-
-      log.info("old-style name found: #{ret}")
-      ret
-    end
-
   private
 
     # Merges two devices map into one.

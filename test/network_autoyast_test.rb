@@ -224,14 +224,6 @@ describe "NetworkAutoYast" do
       { "interfaces" => ay_old_id["interfaces"] + [{ "device" => "eth0" }] }
     end
 
-    describe "#oldStyle" do
-      it "detects old style names in profile" do
-        expect(network_autoyast.oldStyle(ay_old_id)).to be true
-        expect(network_autoyast.oldStyle(ay_old_mac)).to be true
-        expect(network_autoyast.oldStyle(ay_both_vers)).to be true
-      end
-    end
-
     describe "#createUdevFromIfaceName" do
       Yast.import "LanItems"
 
@@ -266,12 +258,6 @@ describe "NetworkAutoYast" do
       {
         "interfaces" => [{ "device" => "eth0" }]
       }
-    end
-
-    describe "#oldStyle" do
-      it "fails when profile contains only new names" do
-        expect(network_autoyast.oldStyle(ay_only_new)).to be false
-      end
     end
 
     describe "#createUdevFromIfaceName" do
