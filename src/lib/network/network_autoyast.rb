@@ -16,6 +16,7 @@ module Yast
     include Logger
 
     def initialize
+      # import has to be done here, there are some collisions otherwise
       Yast.import "Lan"
       Yast.import "LanItems"
       Yast.import "Linuxrc"
@@ -62,10 +63,10 @@ module Yast
       no_rules = im_udev_rules.empty?
 
       # get explicit udev definition from the profile
-      ex_udev_rules = ay_networking_section["net-udev"]
+      ex_udev_rules = ay_networking_section["net-udev"] || []
       log.info("- explicitly defined udev rules: #{ex_udev_rules}")
 
-      no_rules &&= ex_udev_rules.nil? || ex_udev_rules.empty?
+      no_rules &&= ex_udev_rules.empty?
       return if no_rules
 
       LanItems.Read
