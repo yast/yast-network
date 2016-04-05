@@ -284,7 +284,7 @@ describe "InstallInfConvertor" do
     end
   end
 
-  describe "use_biosdevname?" do
+  describe "AllowUdevModify" do
     it "reports if biosdevname was requested" do
       allow(Yast::InstallInfConvertor::InstallInf)
         .to receive(:[])

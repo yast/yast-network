@@ -42,7 +42,7 @@ module Yast
 
     # Reports if user asked for using biosdevname pernament device names
     def AllowUdevModify
-      /biosdevname=1/ =~ InstallInf["Cmdline"] ? false : true
+      /biosdevname=1/ !~ InstallInf["Cmdline"]
     end
 
   private

@@ -2198,6 +2198,9 @@ module Yast
       end
     end
 
+    # Creates eth emulation for s390 devices
+    #
+    # @param [Hash] an s390 device description as obtained from AY profile
     def createS390Device(rule)
       Builtins.y2milestone("creating device s390 network device, #{rule}")
 
