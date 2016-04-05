@@ -2328,9 +2328,7 @@ module Yast
 
     #  Creates a list of udev rules for old style named interfaces
     #
-    #  It takes a whole "interfaces" section of AY profile. Keeps
-    #  only old style named interfaces (e.g. eth-bus-0.0.0000) in it
-    #  and renames them to a new name (e.g. eth0). It also produces
+    #  It takes a whole "interfaces" section of AY profile and produces
     #  a list of udev rules to guarantee device naming persistency.
     #  The rule is base on attributes described in old style name
     #
@@ -2343,15 +2341,13 @@ module Yast
         "bus" => "KERNELS"
       }
 
-      interfaces.keep_if do |interface|
+      interfaces.each do |interface|
         if /.*-(?<attr>id|bus)-(?<value>.*)/ =~ interface["device"]
           udev_rules << {
             "rule"  => attr_map[attr],
             "value" => value,
             "name"  => getDeviceName(interface["device"])
           }
-
-          interface
         end
       end
 

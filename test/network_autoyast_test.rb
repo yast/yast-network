@@ -235,12 +235,13 @@ describe "NetworkAutoYast" do
         allow(Yast::LanItems).to receive(:getDeviceName).and_return("eth0")
       end
 
-      it "produces list of old-style interface names" do
+      it "do not modify list of interfaces" do
         ifaces = ay_interfaces
 
         lan_udev_auto.send(:createUdevFromIfaceName, ay_interfaces)
 
-        expect(ifaces).to eql ay_old_id["interfaces"] + ay_old_mac["interfaces"]
+        # note that this function originally filtered non old style interfaces out.
+        expect(ifaces).to eql ay_interfaces
       end
 
       it "updates udev rules list according old style name" do
@@ -262,14 +263,6 @@ describe "NetworkAutoYast" do
 
     describe "#createUdevFromIfaceName" do
       subject(:lan_udev_auto) { Yast::LanItems }
-
-      it "produces empty list of interfaces" do
-        ifaces = ay_only_new["interfaces"]
-
-        lan_udev_auto.send(:createUdevFromIfaceName, ifaces)
-
-        expect(ifaces).to be_empty
-      end
 
       it "returns no udev rules" do
         ifaces = ay_only_new["interfaces"]
