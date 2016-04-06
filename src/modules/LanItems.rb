@@ -2341,15 +2341,19 @@ module Yast
         "bus" => "KERNELS"
       }
 
+      # rubocop:disable Next
+      # the check is disabled bcs the code uses capture groups. Rewriting
+      # the code would require some tricks to access these groups
       interfaces.each do |interface|
-        next if /.*-(?<attr>id|bus)-(?<value>.*)/ !~ interface["device"]
-
-        udev_rules << {
-          "rule"  => attr_map[attr],
-          "value" => value,
-          "name"  => getDeviceName(interface["device"])
-        }
+        if /.*-(?<attr>id|bus)-(?<value>.*)/ =~ interface["device"]
+          udev_rules << {
+            "rule"  => attr_map[attr],
+            "value" => value,
+            "name"  => getDeviceName(interface["device"])
+          }
+        end
       end
+      # rubocop:enable Next
 
       log.info("converted interfaces: #{interfaces}")
 
