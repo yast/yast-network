@@ -12,6 +12,7 @@ TESTS = \
   host_test.rb \
   ifroute_test.rb \
   install_inf_convertor_test.rb \
+  lan_items_export_test.rb \
   lan_items_helpers_test.rb \
   lan_items_read_test.rb \
   lan_items_rollback_test.rb \
