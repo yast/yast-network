@@ -37,12 +37,9 @@ module Yast
 
       Yast.import "Lan"
       Yast.import "Progress"
-      Yast.import "Arch"
-      Yast.import "Mode"
       Yast.import "Map"
       Yast.import "NetworkInterfaces"
       Yast.import "LanItems"
-      Yast.import "LanUdevAuto"
       Yast.include self, "network/lan/wizards.rb"
       Yast.include self, "network/routines.rb"
 
@@ -57,25 +54,6 @@ module Yast
             Ops.is_map?(WFM.Args(1))
           @param = Convert.to_map(WFM.Args(1))
         end
-      end
-      Builtins.y2debug("func=%1", @func)
-      Builtins.y2debug("param=%1", @param)
-
-      if Mode.test
-        Mode.SetMode("autoinstallation")
-        @param = {
-          "dns"        => { "dhcp_hostname" => false, "dhcp_resolv" => false },
-          "interfaces" => [
-            {
-              "bootproto" => "static",
-              "device"    => "eth0",
-              "ipaddr"    => "192.168.1.233",
-              "startmode" => "onboot"
-            }
-          ],
-          "routing"    => { "ip_forward" => false }
-        }
-        @func = "Import"
       end
 
       Builtins.y2milestone("Lan autoinst callback: #{@func}")
@@ -96,7 +74,6 @@ module Yast
         @new = NetworkAutoYast.instance.merge_configs(@new) if @new["keep_install_network"]
 
         Lan.Import(@new)
-        LanUdevAuto.Import(@new)
         @ret = true
       elsif @func == "Read"
         @progress_orig = Progress.set(false)
@@ -115,10 +92,6 @@ module Yast
         @ret = deep_copy(@autoyast)
       elsif @func == "Write"
         @progress_orig = Progress.set(false)
-
-        result = LanUdevAuto.Write
-        Builtins.y2error("Writing udev rules failed") if !result
-        @ret = result
 
         result = Lan.WriteOnly
         Builtins.y2error("Writing lan config failed") if !result
@@ -191,8 +164,6 @@ module Yast
               t = Builtins.remove(t, k)
               value = deep_copy(t)
             end
-          elsif key == "device"
-            value = LanUdevAuto.getDeviceName(Builtins.tostring(value))
           end
           Ops.set(iface, key, value)
         end
@@ -225,6 +196,8 @@ module Yast
       devices = {}
 
       Builtins.foreach(interfaces) do |devname, if_data|
+        # devname can be in old-style fashion (eth-bus-<pci_id>). So, convert it
+        devname = LanItems.getDeviceName(devname)
         type = NetworkInterfaces.GetType(devname)
         d = Ops.get(devices, type, {})
         Ops.set(d, devname, if_data)

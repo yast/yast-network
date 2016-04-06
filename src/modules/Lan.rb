@@ -59,7 +59,6 @@ module Yast
       Yast.import "LanItems"
       Yast.import "ModuleLoading"
       Yast.import "Linuxrc"
-      Yast.import "LanUdevAuto"
       Yast.import "Report"
 
       Yast.include self, "network/complex.rb"
@@ -688,7 +687,7 @@ module Yast
     # @return dumped settings
     def Export
       devices = NetworkInterfaces.Export("")
-      udev_rules = LanUdevAuto.Export(devices)
+      udev_rules = LanItems.export(devices)
       ay = {
         "dns"                  => DNS.Export,
         "s390-devices"         => Ops.get_map(

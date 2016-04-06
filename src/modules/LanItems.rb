@@ -656,19 +656,18 @@ module Yast
         SetItemName(item_id, renamed_to(item_id))
       end
 
-      # FIXME: in case of AY, writing udev rules was partly moved into first stage
-      # (bnc#955217). However, it is so only in case of ssh / vnc installation.
-      # Otherwise, udev rules are written in second stage in *LanUdevAuto* module
-      # and it breaks consistency of data stored in Items. So, moving writing
-      # udev rules into first stage should be completed ASAP even fo non-ssh / vnc
-      # AY installations and LanUdevAuto module should be dropped.
-      # When refactored at least these use cases need to be retested:
-      # - bnc#955217
-      # - bnc#956605
-      LanItems.WriteUdevRules if !Stage.cont && LanUdevAuto.AllowUdevModify
+      LanItems.WriteUdevRules if !Stage.cont && InstallInfConvertor.instance.AllowUdevModify
 
       # FIXME: hack: no "netcard" filter as biosdevname names it diferently (bnc#712232)
       NetworkInterfaces.Write("")
+    end
+
+    # Exports configuration for use in AY profile
+    #
+    # TODO: it currently exports only udevs (as a consequence of dropping LanUdevAuto)
+    # so once it is extended, all references has to be checked
+    def export(devices)
+      export_udevs(devices)
     end
 
     # Function which returns if the settings were modified
@@ -879,6 +878,13 @@ module Yast
       end
     end
 
+    # Finds item_id by device name
+    #
+    # If an item is associated with config file of given name (ifcfg-<device>)
+    # then its id is returned
+    #
+    # @param [String] device name (e.g. eth0)
+    # @return index in Items or nil
     def find_configured(device)
       @Items.select { |_k, v| v["ifcfg"] == device }.keys.first
     end
@@ -911,6 +917,37 @@ module Yast
       end
 
       ret
+    end
+
+    # It finds a new style device name for device name in old fashioned format
+    #
+    # It goes through currently present devices and tries to mach it to given
+    # old fashioned name
+    #
+    # @returns [String] new style name in case of success. Given name otherwise.
+    def getDeviceName(oldname)
+      newname = oldname
+
+      hardware = ReadHardware("netcard")
+
+      hardware.each do |hw|
+        hw_dev_name = hw["dev_name"] || ""
+        hw_dev_mac = hw["mac"] || ""
+        hw_dev_busid = hw["busid"] || ""
+
+        case oldname
+        when /.*-id-#{hw_dev_mac}/i
+          log.info("device by ID found: #{oldname}")
+          newname = hw_dev_name
+        when /.*-bus-#{hw_dev_busid}/i
+          log.info("device by BUS found #{oldname}")
+          newname = hw_dev_name
+        end
+      end
+
+      log.info("nothing changed, #{newname} is old style dev_name") if oldname == newname
+
+      newname
     end
 
     # preinitializates @Items according info on physically detected network cards
@@ -1060,6 +1097,13 @@ module Yast
       autoinstall_settings["start_immediately"] = settings.fetch("start_immediately", false)
       autoinstall_settings["strict_IP_check_timeout"] = settings.fetch("strict_IP_check_timeout", -1)
       autoinstall_settings["keep_install_network"] = settings.fetch("keep_install_network", false)
+
+      # FIXME: createS390Device does two things, it
+      # - updates internal structures
+      # - creates s390 device eth emulation
+      # So, it belongs partly into Import and partly into Write. Note, that
+      # the code is currently unable to revert already created emulated device.
+      settings.fetch("s390-devices", {}).each { |rule| createS390Device(rule) } if Arch.s390
 
       # settings == {} has special meaning 'Reset' used by AY
       SetModified() if !settings.empty?
@@ -1540,32 +1584,6 @@ module Yast
     # @return [Array] of 10 free devices
     def FreeDevices(type)
       NetworkInterfaces.GetFreeDevices(type, 10)
-    end
-
-    # Return 10 free aliases
-    # @param [String] type device type
-    # @param [Fixnum] num device number
-    # @return [Array] of 10 free devices
-    def FreeAliases(_type, _num)
-      NetworkInterfaces.GetFreeDevices("_aliases", 10)
-    end
-
-    # must be in sync with {#SetDefaultsForHW}
-    def GetDefaultsForHW
-      ret = {}
-      # LCS eth interfaces on s390 need the MTU of 1492. #81815.
-      # TODO: lcs, or eth?
-      # will eth not get mapped to lcs?
-      # Apparently both LCS eth and LCS tr are represented as "lcs"
-      # but it does not hurt to change the default also for tr
-      # #93798: limit to s390 to minimize regressions. Probably it could
-      # be also done by only testing for lcs and not eth but that
-      # would need more testing.
-      if Arch.s390 && Builtins.contains(["lcs", "eth"], @type)
-        Builtins.y2milestone("Adding LCS: setting MTU")
-        ret = Builtins.add(ret, "MTU", "1492")
-      end
-      deep_copy(ret)
     end
 
     # must be in sync with {#GetDefaultsForHW}
@@ -2053,138 +2071,6 @@ module Yast
       deep_copy(ayret)
     end
 
-    # Find matching device
-    # Find a device, optionally with some predefined values
-    # @param [Hash] interface interface map
-    # @return [Hash] The map of the matching device.
-    def FindMatchingDevice(interface)
-      interface = deep_copy(interface)
-      tosel = nil
-      # Minimal changes to code to fix both #119592 and #146965
-      # Alternatively we could try to ensure that we never match a
-      # device that got already matched
-      matched_by_module = false
-
-      devs = NetworkInterfaces.List("netcard")
-      Builtins.y2milestone("Configured devices: %1", devs)
-
-      # this condition is always true for SLES9, HEAD uses $[] for proposal
-      if interface != {}
-        # Notes for comments about matching:
-        # - interface["device"] is the key which we look for in the actual hw
-        # - H iterates over Hardware
-        # - patterns are shell-like
-
-        device_id = Builtins.splitstring(
-          Ops.get_string(interface, "device", ""),
-          "-"
-        )
-        # code for eth-id-00:80:c8:f6:48:4c configurations
-        # *-id-$ID => find H["mac"] == $ID
-        if Ops.greater_than(Builtins.size(device_id), 1) &&
-            Ops.get_string(device_id, 1, "") == "id"
-          hwaddr = Ops.get_string(device_id, 2, "")
-          tosel = Builtins.find(@Hardware) do |h|
-            Ops.get_string(h, "mac", "") == hwaddr
-          end if !hwaddr.nil? &&
-              hwaddr != ""
-          Builtins.y2milestone("Rule: matching mac in device name")
-        # code for eth-bus-pci-0000:00:0d.0 configurations
-        # code for eth-bus-vio-30000001 configurations
-        # *-bus-$BUS-$ID => find H["bus"] == $BUS & H["busid"] == $ID
-        elsif Ops.greater_than(Builtins.size(device_id), 2) &&
-            Ops.get_string(device_id, 1, "") == "bus"
-          bus = Ops.get_string(device_id, 2, "")
-          busid = Ops.get_string(device_id, 3, "")
-          if !bus.nil? && bus != "" && !busid.nil? && busid != ""
-            tosel = Builtins.find(@Hardware) do |h|
-              Ops.get_string(h, "busid", "") == busid &&
-                Ops.get_string(h, "bus", "") == bus
-            end
-          end
-          Builtins.y2milestone("Rule: matching bus id in device name")
-        end
-
-        # code for module configuration
-        # join with the modules list of the ay profile according to "device"
-        # if exists => find H["module"] == AH["module"]
-        aymodule = GetModuleForInterface(
-          Ops.get_string(interface, "device", ""),
-          Ops.get_list(@autoinstall_settings, "modules", [])
-        )
-        Builtins.y2milestone("module data: %1", aymodule)
-        if tosel.nil? && aymodule != {}
-          if !aymodule.nil? && Ops.get_string(aymodule, "module", "") != ""
-            tosel = Builtins.find(@Hardware) do |h|
-              Ops.get_string(h, "module", "") ==
-                Ops.get_string(aymodule, "module", "")
-            end
-          end
-          matched_by_module = true if !tosel.nil?
-          Builtins.y2milestone("Rule: matching module configuration")
-        end
-      end
-
-      # First device was already configured, we are now looking for
-      # a second (third,...) one
-      if Ops.greater_than(Builtins.size(devs), 0)
-        # #119592, #146965: this used to be unconditional, overwriting the
-        # results of the above matching.
-        if matched_by_module || tosel.nil?
-          # go thru all devices, check whether there's one that does
-          # not have a configuration yet
-          # and has the same type as the current profile item
-          Builtins.foreach(@Hardware) do |h|
-            Builtins.y2milestone("Checking for device=%1", h)
-            SelectHWMap(h)
-            #		string _device_name = NetworkInterfaces::device_name(NetworkInterfaces::RealType(type, hotplug), device);
-            if !NetworkInterfaces.Check(@device) &&
-                @type ==
-                    NetworkInterfaces.GetType(
-                      Ops.get_string(interface, "device", "")
-                    )
-              Builtins.y2milestone("Selected: %1", h)
-              tosel = deep_copy(h)
-              raise Break
-            end
-          end
-        end
-        Builtins.y2error("Nothing found") if tosel.nil?
-      else
-        # this is the first interface, match the hardware with install.inf
-        # No install.inf -> select the first connected
-        # find H["active"] == true
-        if tosel.nil?
-          tosel = Builtins.find(@Hardware) do |h|
-            Ops.get_boolean(h, ["link", "state"], false)
-          end
-          Builtins.y2milestone("Rule: first connected")
-        end
-
-        # No install.inf driver -> select the first active
-        # find H["active"] == true
-        if tosel.nil?
-          tosel = Builtins.find(@Hardware) do |h|
-            Ops.get_boolean(h, "active", false)
-          end
-          Builtins.y2milestone("Rule: first active")
-        end
-
-        # No active driver -> select the first with a driver
-        # find H["module"] != ""
-        if tosel.nil?
-          Builtins.y2milestone("No active driver found, trying further.")
-          tosel = Builtins.find(@Hardware) do |h|
-            Ops.get_string(h, "module", "") != "" &&
-              Builtins.y2milestone("Using driver: %1", h).nil?
-          end
-          Builtins.y2milestone("Rule: first with driver")
-        end
-      end
-
-      deep_copy(tosel)
-    end
-
     # Deletes item and its configuration
     #
     # Item for deletion is searched using device name
@@ -2312,8 +2198,20 @@ module Yast
       end
     end
 
-    def createS390Device
-      Builtins.y2milestone("creating device s390 network device")
+    # Creates eth emulation for s390 devices
+    #
+    # @param [Hash] an s390 device description as obtained from AY profile
+    def createS390Device(rule)
+      Builtins.y2milestone("creating device s390 network device, #{rule}")
+
+      Select("")
+      @type = rule["type"] || ""
+      @qeth_chanids = rule["chanids"] || ""
+      @qeth_layer2 = rule.fetch("layer2", false)
+      @qeth_portname = rule["portname"] || ""
+      @chan_mode = rule["protocol"] || ""
+      @iucv_user = rule["router"] || ""
+
       result = true
       # command to create device
       command1 = ""
@@ -2428,6 +2326,40 @@ module Yast
       result
     end
 
+    #  Creates a list of udev rules for old style named interfaces
+    #
+    #  It takes a whole "interfaces" section of AY profile and produces
+    #  a list of udev rules to guarantee device naming persistency.
+    #  The rule is base on attributes described in old style name
+    #
+    #  @param [Array] list of hashes describing interfaces in AY profile
+    #  @return [Array] list of hashes for udev rules
+    def createUdevFromIfaceName(interfaces)
+      udev_rules = []
+      attr_map = {
+        "id"  => "ATTR{address}",
+        "bus" => "KERNELS"
+      }
+
+      # rubocop:disable Next
+      # the check is disabled bcs the code uses capture groups. Rewriting
+      # the code would require some tricks to access these groups
+      interfaces.each do |interface|
+        if /.*-(?<attr>id|bus)-(?<value>.*)/ =~ interface["device"]
+          udev_rules << {
+            "rule"  => attr_map[attr],
+            "value" => value,
+            "name"  => getDeviceName(interface["device"])
+          }
+        end
+      end
+      # rubocop:enable Next
+
+      log.info("converted interfaces: #{interfaces}")
+
+      udev_rules
+    end
+
   private
 
     # This helper allows YARD to extract DSL-defined attributes.
@@ -2458,6 +2390,173 @@ module Yast
     def drop_hosts(ip)
       log.info("Deleting hostnames assigned to #{ip} from /etc/hosts")
       Host.set_names(ip, [])
+    end
+
+    # Exports udev rules for AY profile
+    def export_udevs(devices)
+      devices = deep_copy(devices)
+      ay = { "s390-devices" => {}, "net-udev" => {} }
+      if Arch.s390
+        devs = []
+        Builtins.foreach(
+          Convert.convert(devices, from: "map", to: "map <string, any>")
+        ) do |_type, value|
+          devs = Convert.convert(
+            Builtins.union(devs, Map.Keys(Convert.to_map(value))),
+            from: "list",
+            to:   "list <string>"
+          )
+        end
+        Builtins.foreach(devs) do |device|
+          driver = Convert.convert(
+            SCR.Execute(
+              path(".target.bash_output"),
+              Builtins.sformat(
+                "driver=$(ls -l /sys/class/net/%1/device/driver);echo ${driver##*/}|tr -d '\n'",
+                device
+              )
+            ),
+            from: "any",
+            to:   "map <string, any>"
+          )
+          device_type = ""
+          chanids = ""
+          portname = ""
+          protocol = ""
+          if Ops.get_integer(driver, "exit", -1) == 0
+            case Ops.get_string(driver, "stdout", "")
+            when "qeth"
+              device_type = Ops.get_string(driver, "stdout", "")
+            when "ctcm"
+              device_type = "ctc"
+            when "netiucv"
+              device_type = "iucv"
+            else
+              Builtins.y2error(
+                "unknown driver type :%1",
+                Ops.get_string(driver, "stdout", "")
+              )
+            end
+          else
+            Builtins.y2error("%1", driver)
+            next
+          end
+          chan_ids = Convert.convert(
+            SCR.Execute(
+              path(".target.bash_output"),
+              Builtins.sformat(
+                "for i in $(seq 0 2);do chanid=$(ls -l /sys/class/net/%1/device/cdev$i);echo ${chanid##*/};done|tr '\n' ' '",
+                device
+              )
+            ),
+            from: "any",
+            to:   "map <string, any>"
+          )
+          if Ops.greater_than(
+            Builtins.size(Ops.get_string(chan_ids, "stdout", "")),
+            0
+            )
+            chanids = String.CutBlanks(Ops.get_string(chan_ids, "stdout", ""))
+          end
+          port_name = Convert.convert(
+            SCR.Execute(
+              path(".target.bash_output"),
+              Builtins.sformat(
+                "cat /sys/class/net/%1/device/portname|tr -d '\n'",
+                device
+              )
+            ),
+            from: "any",
+            to:   "map <string, any>"
+          )
+          if Ops.greater_than(
+            Builtins.size(Ops.get_string(port_name, "stdout", "")),
+            0
+            )
+            portname = String.CutBlanks(Ops.get_string(port_name, "stdout", ""))
+          end
+          proto = Convert.convert(
+            SCR.Execute(
+              path(".target.bash_output"),
+              Builtins.sformat(
+                "cat /sys/class/net/%1/device/protocol|tr -d '\n'",
+                device
+              )
+            ),
+            from: "any",
+            to:   "map <string, any>"
+          )
+          if Ops.greater_than(
+            Builtins.size(Ops.get_string(proto, "stdout", "")),
+            0
+            )
+            protocol = String.CutBlanks(Ops.get_string(proto, "stdout", ""))
+          end
+          layer2_ret = SCR.Execute(
+            path(".target.bash"),
+            Builtins.sformat(
+              "grep -q 1 /sys/class/net/%1/device/layer2",
+              device
+          )
+                   )
+          layer2 = layer2_ret == 0
+          Ops.set(ay, ["s390-devices", device], "type" => device_type)
+          if Ops.greater_than(Builtins.size(chanids), 0)
+            Ops.set(ay, ["s390-devices", device, "chanids"], chanids)
+          end
+          if Ops.greater_than(Builtins.size(portname), 0)
+            Ops.set(ay, ["s390-devices", device, "portname"], portname)
+          end
+          if Ops.greater_than(Builtins.size(protocol), 0)
+            Ops.set(ay, ["s390-devices", device, "protocol"], protocol)
+          end
+          Ops.set(ay, ["s390-devices", device, "layer2"], true) if layer2
+          port0 = Convert.convert(
+            SCR.Execute(
+              path(".target.bash_output"),
+              Builtins.sformat(
+                "port0=$(ls -l /sys/class/net/%1/device/cdev0);echo ${port0##*/}|tr -d '\n'",
+                device
+              )
+            ),
+            from: "any",
+            to:   "map <string, any>"
+          )
+          Builtins.y2milestone("port0 %1", port0)
+          if Ops.greater_than(
+            Builtins.size(Ops.get_string(port0, "stdout", "")),
+            0
+            )
+            value = Ops.get_string(port0, "stdout", "")
+            Ops.set(
+              ay,
+              ["net-udev", device],
+              "rule" => "KERNELS", "name" => device, "value" => value
+            )
+          end
+        end
+      else
+        configured = Items().select { |i, _| IsItemConfigured(i) }
+        configured.each do |id, _|
+          @current = id # for GetItemUdev
+
+          name = GetItemUdev("NAME").to_s
+          rule = ["ATTR{address}", "KERNELS"].find { |r| !GetItemUdev(r).to_s.empty? }
+
+          next if !rule || name.empty?
+
+          ay["net-udev"] = {
+            name => {
+              "rule"  => rule,
+              "name"  => name,
+              "value" => GetItemUdev(rule)
+            }
+          }
+        end
+      end
+
+      Builtins.y2milestone("AY profile %1", ay)
+      deep_copy(ay)
     end
 
   public
@@ -2574,15 +2673,12 @@ module Yast
     publish function: :SelectHWMap, type: "void (map)"
     publish function: :SelectHW, type: "void (integer)"
     publish function: :FreeDevices, type: "list (string)"
-    publish function: :FreeAliases, type: "list (string, integer)"
-    publish function: :GetDefaultsForHW, type: "map ()"
     publish function: :SetDefaultsForHW, type: "void ()"
     publish function: :SetDeviceVars, type: "void (map, map)"
     publish function: :Select, type: "boolean (string)"
     publish function: :Commit, type: "boolean ()"
     publish function: :Rollback, type: "boolean ()"
     publish function: :GetModuleForInterface, type: "map (string, list <map>)"
-    publish function: :FindMatchingDevice, type: "map (map)"
     publish function: :DeleteItem, type: "void ()"
     publish function: :SetItem, type: "void ()"
     publish function: :ProposeItem, type: "boolean ()"

@@ -283,4 +283,16 @@ describe "InstallInfConvertor" do
         .to eql "LLADDR='#{HWADDR}'"
     end
   end
+
+  describe "AllowUdevModify" do
+    it "reports if biosdevname was requested" do
+      allow(Yast::InstallInfConvertor::InstallInf)
+        .to receive(:[])
+        .with("Cmdline")
+        .and_return("splash=silent biosdevname=1")
+
+      expect(Yast::InstallInfConvertor.instance.AllowUdevModify)
+        .to be false
+    end
+  end
 end

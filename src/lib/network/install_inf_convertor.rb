@@ -27,13 +27,9 @@ module Yast
       Yast.import "NetworkInterfaces"
       Yast.import "FileUtils"
       Yast.import "Netmask"
-      Yast.import "NetworkStorage"
       Yast.import "Proxy"
-      Yast.import "Installation"
       Yast.import "String"
-      Yast.import "Mode"
       Yast.import "Arch"
-      Yast.import "LanUdevAuto"
 
       Yast.include self, "network/routines.rb"
       Yast.include self, "network/complex.rb"
@@ -42,6 +38,11 @@ module Yast
     def write_netconfig
       write_ifcfg(create_ifcfg)
       write_global_netconfig
+    end
+
+    # Reports if user asked for using biosdevname pernament device names
+    def AllowUdevModify
+      /biosdevname=1/ !~ InstallInf["Cmdline"]
     end
 
   private
@@ -286,15 +287,8 @@ module Yast
     def dev_name
       netdevice = InstallInf["Netdevice"].to_s
 
-      if Mode.autoinst
-        # if possible, for temporary installation network use same device
-        # with same MAC address (even if devicename changed) (bnc#648270)
-        new_devname = LanUdevAuto.GetDevnameByMAC(InstallInf["HWAddr"])
-
-        netdevice = new_devname if !new_devname.empty?
-      end
-
       log.info("InstInstallInfClient#dev_name:#{netdevice}")
+
       netdevice
     end
 
@@ -387,7 +381,7 @@ module Yast
 
       return false if device_name.empty?
 
-      if !LanUdevAuto.AllowUdevModify
+      if !AllowUdevModify()
         # bnc#821427: use same options as in /lib/udev/rules.d/71-biosdevname.rules
         cmd = "biosdevname --policy physical --smbios 2.6 --nopirq -i #{dev_name}"
         out = String.FirstChunk(stdout_of(cmd), "\n")
