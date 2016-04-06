@@ -45,6 +45,8 @@ describe "LanItemsClass#export_udevs" do
       ay = subject.send(:export_udevs, devices)
 
       expect(ay["s390-devices"]).not_to be_empty
+      # check if the export builds correct map
+      expect(ay["s390-devices"]["eth0"]["type"]).to eql "qeth"
     end
   end
 end
