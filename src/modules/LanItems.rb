@@ -2342,13 +2342,13 @@ module Yast
       }
 
       interfaces.each do |interface|
-        if /.*-(?<attr>id|bus)-(?<value>.*)/ =~ interface["device"]
-          udev_rules << {
-            "rule"  => attr_map[attr],
-            "value" => value,
-            "name"  => getDeviceName(interface["device"])
-          }
-        end
+        next if /.*-(?<attr>id|bus)-(?<value>.*)/ !~ interface["device"]
+
+        udev_rules << {
+          "rule"  => attr_map[attr],
+          "value" => value,
+          "name"  => getDeviceName(interface["device"])
+        }
       end
 
       log.info("converted interfaces: #{interfaces}")
