@@ -235,6 +235,11 @@ describe "NetworkAutoYast" do
         allow(Yast::LanItems).to receive(:getDeviceName).and_return("eth0")
       end
 
+      it "returns empty list when no interfaces are provided" do
+        expect(lan_udev_auto.createUdevFromIfaceName(nil)).to be_empty
+        expect(lan_udev_auto.createUdevFromIfaceName([])).to be_empty
+      end
+
       it "do not modify list of interfaces" do
         ifaces = ay_interfaces
 
