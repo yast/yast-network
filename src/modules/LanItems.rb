@@ -23,6 +23,7 @@
 # **************************************************************************
 require "yast"
 require "yaml"
+require "network/install_inf_convertor"
 
 module Yast
   # Does way too many things.
