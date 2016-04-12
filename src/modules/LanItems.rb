@@ -2336,6 +2336,8 @@ module Yast
     #  @param [Array] list of hashes describing interfaces in AY profile
     #  @return [Array] list of hashes for udev rules
     def createUdevFromIfaceName(interfaces)
+      return [] if !interfaces || interfaces.empty?
+
       udev_rules = []
       attr_map = {
         "id"  => "ATTR{address}",
