@@ -60,14 +60,6 @@ module Yast
 
       Yast.include self, "network/routines.rb"
 
-      # security types supported by Xvnc
-      @SEC_NONE = "none"
-      @SEC_VNCAUTH = "vncauth"
-
-      @SEC_TYPES = [@SEC_NONE, @SEC_VNCAUTH]
-
-      @SEC_OPT_SECURITYTYPE = "securitytypes"
-
       # Currently, all attributes (enablement of remote access)
       # are applied on vnc1 even vnchttpd1 configuration
 
@@ -187,20 +179,6 @@ module Yast
       String.CutBlanks(new_server_args)
     end
 
-    # Appends option for particular security type.
-    #
-    # @param [String] server_args   string with server options as written in xinetd cfg file
-    # @param [String] sec_type      a security type supported by Xvnc (see man xvnc)
-    #
-    # @return              server_args with appended option for particular sec_type
-    #                      if sec_type is valid. Unchanged server_args otherwise.
-    def SetSecurityType(server_args, sec_type)
-      # validate sec_type
-      return server_args if !@SEC_TYPES.include?(sec_type)
-
-      SetServerArgsOpt(server_args, @SEC_OPT_SECURITYTYPE, sec_type)
-    end
-
     # Read the current status
     # @return true on success
     def Read
@@ -264,18 +242,6 @@ module Yast
         next deep_copy(m) if !(s == "vnc1" || s == "vnchttpd1")
         Ops.set(m, "changed", true)
         Ops.set(m, "enabled", @allow_administration)
-        server_args = Ops.get_string(m, "server_args", "")
-        if IsEnabled()
-          # use none authentication, xdm will take care of it
-          Ops.set(m, "server_args", SetSecurityType(server_args, @SEC_NONE))
-        else
-          # switch back to default when remote administration is disallowed.
-          Ops.set(
-            m,
-            "server_args",
-            ServerArgsRemoveOpt(server_args, @SEC_OPT_SECURITYTYPE, true)
-          )
-        end
         log.info "Updated xinet cfg: #{m}"
         deep_copy(m)
       end
