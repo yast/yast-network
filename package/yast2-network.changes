@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Apr 12 08:04:07 UTC 2016 - mfilka@suse.com
+
+- bnc#974910
+  - fixed internal error when no "interfaces" group is found in an
+    AY profile
+- 3.1.147 
+
+-------------------------------------------------------------------
 Mon Apr 11 09:42:20 UTC 2016 - mfilka@suse.com
 
 - bnc#955217, bnc#956605
