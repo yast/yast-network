@@ -121,64 +121,6 @@ module Yast
       nil
     end
 
-    # Removes all options <option> (and its value) from <server_args>
-    #
-    # Note: server_args has to be valid. In case of incorrect input (e.g. -opt1= -opt2)
-    # is result undefined.
-    #
-    # @param [String] server_args   list of options as provided by server_args attribute in
-    #                      /etc/xinet.d/vnc
-    # @param [String] option        option name. Typically alphanumeric string. If a regexp special
-    #                      characters are used behavior is undefined.
-    # @param [Boolean] has_value     if true then option is expected to be followed by a value
-    #
-    # @return              modified server_args string in case of success unchanged
-    #                      server_args otherwise
-    def ServerArgsRemoveOpt(server_args, option, has_value)
-      return server_args if IsEmpty(server_args) || IsEmpty(option)
-
-      # Note: value (e.g. filename in -passwdfile) cannot be quoted (a bug in Xvnc ?).
-      # valid forms are:
-      # e.g. -file=path_to_file or
-      # e.g. -file path_to_file
-      value_pattern_nquote = "[=[:space:]][^[:space:]]+"
-      pattern = Builtins.sformat(
-        "[[:space:]]*[-]{0,2}%1%2",
-        option,
-        has_value ? value_pattern_nquote : ""
-      )
-
-      # Xvnc:
-      # - is case insensitive to option names.
-      # - option can be prefixed by 0 or up to 2 dashes
-      # - option and value can be separated by space or =
-      new_server_args = server_args.downcase
-
-      new_server_args = String.CutRegexMatch(new_server_args, pattern, true)
-
-      new_server_args
-    end
-
-    # Add given option and its value to server_args.
-    #
-    # If option is present already then all occurences of option are removed.
-    # New option value pair is added subsequently.
-    def SetServerArgsOpt(server_args, option, value)
-      new_server_args = ServerArgsRemoveOpt(
-        server_args,
-        option,
-        IsNotEmpty(value)
-      )
-      new_server_args = Builtins.sformat(
-        "%1 -%2 %3",
-        new_server_args,
-        option,
-        value
-      )
-
-      String.CutBlanks(new_server_args)
-    end
-
     # Read the current status
     # @return true on success
     def Read
