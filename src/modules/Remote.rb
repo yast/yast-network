@@ -42,10 +42,8 @@ module Yast
     GRAPHICAL_TARGET = "graphical"
 
     def main
-      Yast.import "UI"
       textdomain "network"
 
-      Yast.import "Label"
       Yast.import "Mode"
       Yast.import "Package"
       Yast.import "Packages"
@@ -53,20 +51,10 @@ module Yast
       Yast.import "SuSEFirewall"
       Yast.import "Progress"
       Yast.import "Linuxrc"
-      Yast.import "String"
-      Yast.import "FileUtils"
       Yast.import "Message"
       Yast.import "SystemdTarget"
 
       Yast.include self, "network/routines.rb"
-
-      # security types supported by Xvnc
-      @SEC_NONE = "none"
-      @SEC_VNCAUTH = "vncauth"
-
-      @SEC_TYPES = [@SEC_NONE, @SEC_VNCAUTH]
-
-      @SEC_OPT_SECURITYTYPE = "securitytypes"
 
       # Currently, all attributes (enablement of remote access)
       # are applied on vnc1 even vnchttpd1 configuration
@@ -127,78 +115,6 @@ module Yast
       Reset() if !@already_proposed
 
       nil
-    end
-
-    # Removes all options <option> (and its value) from <server_args>
-    #
-    # Note: server_args has to be valid. In case of incorrect input (e.g. -opt1= -opt2)
-    # is result undefined.
-    #
-    # @param [String] server_args   list of options as provided by server_args attribute in
-    #                      /etc/xinet.d/vnc
-    # @param [String] option        option name. Typically alphanumeric string. If a regexp special
-    #                      characters are used behavior is undefined.
-    # @param [Boolean] has_value     if true then option is expected to be followed by a value
-    #
-    # @return              modified server_args string in case of success unchanged
-    #                      server_args otherwise
-    def ServerArgsRemoveOpt(server_args, option, has_value)
-      return server_args if IsEmpty(server_args) || IsEmpty(option)
-
-      # Note: value (e.g. filename in -passwdfile) cannot be quoted (a bug in Xvnc ?).
-      # valid forms are:
-      # e.g. -file=path_to_file or
-      # e.g. -file path_to_file
-      value_pattern_nquote = "[=[:space:]][^[:space:]]+"
-      pattern = Builtins.sformat(
-        "[[:space:]]*[-]{0,2}%1%2",
-        option,
-        has_value ? value_pattern_nquote : ""
-      )
-
-      # Xvnc:
-      # - is case insensitive to option names.
-      # - option can be prefixed by 0 or up to 2 dashes
-      # - option and value can be separated by space or =
-      new_server_args = server_args.downcase
-
-      new_server_args = String.CutRegexMatch(new_server_args, pattern, true)
-
-      new_server_args
-    end
-
-    # Add given option and its value to server_args.
-    #
-    # If option is present already then all occurences of option are removed.
-    # New option value pair is added subsequently.
-    def SetServerArgsOpt(server_args, option, value)
-      new_server_args = ServerArgsRemoveOpt(
-        server_args,
-        option,
-        IsNotEmpty(value)
-      )
-      new_server_args = Builtins.sformat(
-        "%1 -%2 %3",
-        new_server_args,
-        option,
-        value
-      )
-
-      String.CutBlanks(new_server_args)
-    end
-
-    # Appends option for particular security type.
-    #
-    # @param [String] server_args   string with server options as written in xinetd cfg file
-    # @param [String] sec_type      a security type supported by Xvnc (see man xvnc)
-    #
-    # @return              server_args with appended option for particular sec_type
-    #                      if sec_type is valid. Unchanged server_args otherwise.
-    def SetSecurityType(server_args, sec_type)
-      # validate sec_type
-      return server_args if !@SEC_TYPES.include?(sec_type)
-
-      SetServerArgsOpt(server_args, @SEC_OPT_SECURITYTYPE, sec_type)
     end
 
     # Read the current status
@@ -264,18 +180,6 @@ module Yast
         next deep_copy(m) if !(s == "vnc1" || s == "vnchttpd1")
         Ops.set(m, "changed", true)
         Ops.set(m, "enabled", @allow_administration)
-        server_args = Ops.get_string(m, "server_args", "")
-        if IsEnabled()
-          # use none authentication, xdm will take care of it
-          Ops.set(m, "server_args", SetSecurityType(server_args, @SEC_NONE))
-        else
-          # switch back to default when remote administration is disallowed.
-          Ops.set(
-            m,
-            "server_args",
-            ServerArgsRemoveOpt(server_args, @SEC_OPT_SECURITYTYPE, true)
-          )
-        end
         log.info "Updated xinet cfg: #{m}"
         deep_copy(m)
       end
@@ -408,10 +312,6 @@ module Yast
       IsEnabled() ? _("Remote administration is enabled.") : _("Remote administration is disabled.")
     end
 
-    publish variable: :SEC_NONE, type: "const string"
-    publish variable: :SEC_VNCAUTH, type: "const string"
-    publish variable: :SEC_TYPES, type: "list <string>"
-    publish variable: :SEC_OPT_SECURITYTYPE, type: "const string"
     publish variable: :default_dm, type: "string"
     publish function: :IsEnabled, type: "boolean ()"
     publish function: :IsDisabled, type: "boolean ()"
