@@ -42,10 +42,8 @@ module Yast
     GRAPHICAL_TARGET = "graphical"
 
     def main
-      Yast.import "UI"
       textdomain "network"
 
-      Yast.import "Label"
       Yast.import "Mode"
       Yast.import "Package"
       Yast.import "Packages"
@@ -53,8 +51,6 @@ module Yast
       Yast.import "SuSEFirewall"
       Yast.import "Progress"
       Yast.import "Linuxrc"
-      Yast.import "String"
-      Yast.import "FileUtils"
       Yast.import "Message"
       Yast.import "SystemdTarget"
 
@@ -316,10 +312,6 @@ module Yast
       IsEnabled() ? _("Remote administration is enabled.") : _("Remote administration is disabled.")
     end
 
-    publish variable: :SEC_NONE, type: "const string"
-    publish variable: :SEC_VNCAUTH, type: "const string"
-    publish variable: :SEC_TYPES, type: "list <string>"
-    publish variable: :SEC_OPT_SECURITYTYPE, type: "const string"
     publish variable: :default_dm, type: "string"
     publish function: :IsEnabled, type: "boolean ()"
     publish function: :IsDisabled, type: "boolean ()"
