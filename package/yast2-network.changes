@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Tue Apr 19 08:01:16 UTC 2016 - mfilka@suse.com
+
+- bnc#966694
+  - TigerVNC Viewer Error: No matching security types. Do not touch
+    VNC arguments when enabling or disabling it. Thanks to 
+    msrb@suse.com for the patch.
+- 3.1.148
+
+-------------------------------------------------------------------
 Tue Apr 12 08:04:07 UTC 2016 - mfilka@suse.com
 
 - bnc#974910
