@@ -36,8 +36,6 @@ module Yast
     include Logger
 
     def main
-      Yast.import "UI"
-
       textdomain "network"
 
       Yast.import "DNS"
