@@ -245,15 +245,27 @@ module Yast
       nil
     end
 
+    # Creates DNS configuration on target
+    def configure_dns
+      if Mode.autoinst
+        NetworkAutoYast.instance.configure_dns
+      else
+        NetworkAutoconfiguration.instance.configure_dns
+      end
+
+      DNS.create_hostname_link
+    end
+
     # It does an automatic configuration of installed system
     #
     # Basically, it runs several proposals.
     def configure_target
       NetworkAutoconfiguration.instance.configure_virtuals
-      NetworkAutoconfiguration.instance.configure_dns
-      NetworkAutoconfiguration.instance.configure_hosts
 
-      DNS.create_hostname_link
+      configure_dns
+
+      # this depends on DNS configuration
+      NetworkAutoconfiguration.instance.configure_hosts
 
       set_network_service
 

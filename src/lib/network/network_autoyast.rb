@@ -15,6 +15,7 @@ module Yast
     include Singleton
     include Logger
 
+    Yast.import "DNS"
     Yast.import "Lan"
     Yast.import "LanItems"
     Yast.import "Linuxrc"
@@ -118,6 +119,19 @@ module Yast
       end
 
       NetworkService.EnableDisableNow
+    end
+
+    # Initializates DNS setup according AY profile
+    def configure_dns
+      ay_dns_config = ay_networking_section["dns"]
+
+      return if !ay_dns_config
+
+      DNS.Import(ay_dns_config)
+
+      log.info("NetworkAutoYast: DNS / Hostname configuration")
+      log.info("dhcp hostname: #{DNS.dhcp_hostname}")
+      log.info("write hostname: #{DNS.write_hostname}")
     end
 
     private
