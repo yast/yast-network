@@ -84,6 +84,8 @@ module Yast
     SYSCONFIG = "/etc/sysconfig/network/"
 
     def CopyConfiguredNetworkFiles
+      return if Mode.autoinst && !NetworkAutoYast.instance.keep_net_config?
+
       log.info(
         "Copy network configuration files from 1st stage into installed system"
       )

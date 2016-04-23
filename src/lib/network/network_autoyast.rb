@@ -134,6 +134,15 @@ module Yast
       log.info("write hostname: #{DNS.write_hostname}")
     end
 
+    # Checks if the profile asks for keeping installation network configuration
+    def keep_net_config?
+      ret = ay_networking_section["keep_install_network"]
+
+      log.info("NetworkAutoYast: keep installation network: #{ret}")
+
+      ret
+    end
+
     private
 
     # Merges two devices map into one.
