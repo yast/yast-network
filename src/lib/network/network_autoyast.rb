@@ -143,7 +143,7 @@ module Yast
       ret
     end
 
-    private
+  private
 
     # Merges two devices map into one.
     #

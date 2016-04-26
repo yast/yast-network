@@ -44,7 +44,7 @@ module Yast
       write_global_netconfig
     end
 
-    private
+  private
 
     def create_ifcfg
       ifcfg = ""

@@ -277,7 +277,7 @@ module Yast
       Convert.to_symbol(dialog_ret)
     end
 
-    private
+  private
 
     def preformatted_proposal
       firewall_proposal = if SuSEFirewall4Network.Enabled1stStage
