@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Tue Apr 26 20:19:12 UTC 2016 - mfilka@suse.com
+
+- bnc#971175
+  - /etc/hosts is correctly updated with static address, hostname
+    when static net configuration is done via linuxrc and hostname
+    is provided by AY profile
+- 3.1.140.4 
+
+-------------------------------------------------------------------
 Mon Feb 22 11:52:09 UTC 2016 - mfilka@suse.com
 
 - bnc#960703
