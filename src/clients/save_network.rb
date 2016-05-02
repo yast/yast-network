@@ -247,13 +247,14 @@ module Yast
       nil
     end
 
-    # Creates DNS configuration on target
+    # Creates target's default DNS configuration
+    #
+    # It uses DNS configuration as defined in AY profile (if any) or
+    # proposes a predefined default values.
     def configure_dns
-      if Mode.autoinst
-        NetworkAutoYast.instance.configure_dns
-      else
-        NetworkAutoconfiguration.instance.configure_dns
-      end
+      ret = false
+      ret = NetworkAutoYast.instance.configure_dns if Mode.autoinst
+      ret = NetworkAutoconfiguration.instance.configure_dns if !ret
 
       DNS.create_hostname_link
     end
