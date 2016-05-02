@@ -254,7 +254,7 @@ module Yast
     def configure_dns
       ret = false
       ret = NetworkAutoYast.instance.configure_dns if Mode.autoinst
-      ret = NetworkAutoconfiguration.instance.configure_dns if !ret
+      NetworkAutoconfiguration.instance.configure_dns if !ret
 
       DNS.create_hostname_link
     end

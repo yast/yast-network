@@ -125,7 +125,7 @@ module Yast
     #
     # FIXME: it currently don't write DNS configuration. It is used for initialization
     # of DNS setup according AY profile in 1st stage as part of network setup was moved
-    # here already and some parts of network configuration needs to know it. DNS write 
+    # here already and some parts of network configuration needs to know it. DNS write
     # is still done in 2nd stage.
     def configure_dns
       ay_dns_config = ay_networking_section["dns"]
@@ -138,7 +138,7 @@ module Yast
       log.info("dhcp hostname: #{DNS.dhcp_hostname}")
       log.info("write hostname: #{DNS.write_hostname}")
 
-      return true
+      true
     end
 
     # Checks if the profile asks for keeping installation network configuration
