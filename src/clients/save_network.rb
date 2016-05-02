@@ -252,9 +252,9 @@ module Yast
     # It uses DNS configuration as defined in AY profile (if any) or
     # proposes a predefined default values.
     def configure_dns
-      ret = false
-      ret = NetworkAutoYast.instance.configure_dns if Mode.autoinst
-      NetworkAutoconfiguration.instance.configure_dns if !ret
+      configured = false
+      configured = NetworkAutoYast.instance.configure_dns if Mode.autoinst
+      NetworkAutoconfiguration.instance.configure_dns if !configured
 
       DNS.create_hostname_link
     end

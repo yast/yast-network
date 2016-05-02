@@ -123,10 +123,12 @@ module Yast
 
     # Initializates DNS setup according AY profile
     #
-    # FIXME: it currently don't write DNS configuration. It is used for initialization
+    # FIXME: it currently doesn't write DNS configuration. It is used for initialization
     # of DNS setup according AY profile in 1st stage as part of network setup was moved
     # here already and some parts of network configuration needs to know it. DNS write
     # is still done in 2nd stage.
+    #
+    # @return [Boolean] true when configuration was present and loaded from the profile
     def configure_dns
       ay_dns_config = ay_networking_section["dns"]
 
