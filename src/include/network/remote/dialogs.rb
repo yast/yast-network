@@ -91,8 +91,7 @@ module Yast
               "<p>If this feature is enabled, you can\n" \
               "administer this machine remotely from another machine. Use a VNC\n" \
               "client, such as krdc (connect to <tt>&lt;hostname&gt;:%1</tt>), or\n" \
-              "a Java-capable Web browser (connect to <tt>http://&lt;hostname&gt;:%2/</tt>).\n" \
-              "This form of remote administration is less secure than using SSH.</p>\n"
+              "a Java-capable Web browser (connect to <tt>https://&lt;hostname&gt;:%2/</tt>).\n"
           ),
           5901,
           5801
