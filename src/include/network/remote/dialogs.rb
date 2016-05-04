@@ -60,9 +60,17 @@ module Yast
           # RadioButton label
           Left(
             RadioButton(
-              Id(:allow),
-              _("&Allow Remote Administration"),
-              Remote.IsEnabled
+              Id(:allow_vncmanager),
+              _("&Allow Remote Administration With Session Management"),
+              Remote.Mode == :vncmanager
+            )
+          ),
+          # RadioButton label
+          Left(
+            RadioButton(
+              Id(:allow_xinetd),
+              _("&Allow Remote Administration Without Session Management"),
+              Remote.Mode == :xinetd
             )
           ),
           # RadioButton label
@@ -70,7 +78,7 @@ module Yast
             RadioButton(
               Id(:disallow),
               _("&Do Not Allow Remote Administration"),
-              Remote.IsDisabled
+              Remote.Mode == :disabled
             )
           )
         )
@@ -141,12 +149,15 @@ module Yast
       if ret == :next
         CWMFirewallInterfaces.OpenFirewallStore(firewall_widget, "", event)
 
-        allowed = Convert.to_boolean(UI.QueryWidget(Id(:allow), :Value))
+        allowed_xinetd = Convert.to_boolean(UI.QueryWidget(Id(:allow_xinetd), :Value))
+        allowed_vncmanager = Convert.to_boolean(UI.QueryWidget(Id(:allow_vncmanager), :Value))
 
-        if allowed
-          Remote.Enable
+        if allowed_xinetd
+          Remote.SetMode :xinetd
+        elsif allowed_vncmanager
+          Remote.SetMode :vncmanager
         else
-          Remote.Disable
+          Remote.SetMode :disabled
         end
       end
 
