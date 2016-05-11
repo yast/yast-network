@@ -200,9 +200,6 @@ module Yast
         "datagram"  => _("datagram")
       }
 
-      # propose options
-      @proposal_valid = false
-
       Yast.include self, "network/hardware.rb"
 
       # Default values used when creating an emulated NIC for physical s390 hardware.
