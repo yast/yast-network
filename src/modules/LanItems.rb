@@ -670,6 +670,7 @@ module Yast
     def GetModified
       @modified
     end
+
     # Function sets internal variable, which indicates, that any
     # settings were modified, to "true"
     def SetModified
@@ -2014,21 +2015,21 @@ module Yast
       end
 
       if GetCurrentMap() != newdev
-        NetworkInterfaces.Name = Ops.get_string(@Items, [@current, "ifcfg"], "")
+        NetworkInterfaces.Name = Items()[@current]["ifcfg"] || ""
         NetworkInterfaces.Current = deep_copy(newdev)
 
         # bnc#752464 - can leak wireless passwords
         # useful only for debugging. Writes huge struct mostly filled by defaults.
         Builtins.y2debug("%1", NetworkInterfaces.ConcealSecrets1(newdev))
 
-        Ops.set(@Items, [@current, "ifcfg"], "") if !NetworkInterfaces.Commit
+        Items()[@current]["ifcfg"] = "" if !NetworkInterfaces.Commit
 
         # configure bridge ports
         if @bridge_ports
           @bridge_ports.split.each { |bp| configure_as_bridge_port(bp) }
         end
 
-        @modified = true
+        SetModified()
       end
 
       @operation = nil
