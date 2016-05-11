@@ -203,9 +203,6 @@ module Yast
       # propose options
       @proposal_valid = false
 
-      # NetworkModules:: name
-      @nm_name = ""
-
       Yast.include self, "network/hardware.rb"
 
       # Default values used when creating an emulated NIC for physical s390 hardware.
@@ -2642,7 +2639,6 @@ module Yast
     publish_variable :tunnel_set_owner, "string"
     publish_variable :tunnel_set_group, "string"
     publish_variable :proposal_valid, "boolean"
-    publish_variable :nm_name, "string"
     publish function: :GetLanItem, type: "map (integer)"
     publish function: :getCurrentItem, type: "map ()"
     publish function: :IsItemConfigured, type: "boolean (integer)"

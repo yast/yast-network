@@ -1157,11 +1157,6 @@ module Yast
           break
         elsif ret == :next
           if LanItems.type == "iucv"
-            # #176330, must be static
-            LanItems.nm_name = Ops.add(
-              "static-iucv-id-",
-              Convert.to_string(UI.QueryWidget(Id(:iucv_user), :Value))
-            )
             LanItems.device = Ops.add(
               "id-",
               Convert.to_string(UI.QueryWidget(Id(:iucv_user), :Value))
