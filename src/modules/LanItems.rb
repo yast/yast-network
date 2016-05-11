@@ -1811,7 +1811,8 @@ module Yast
     # Sets device map items related to dhclient
     def setup_dhclient_options(devmap)
       if isCurrentDHCP
-        devmap["DHCLIENT_SET_DEFAULT_ROUTE"] = TRISTATE_TO_S.fetch(@set_default_route)
+        val = TRISTATE_TO_S.fetch(@set_default_route)
+        devmap["DHCLIENT_SET_DEFAULT_ROUTE"] = val if val
       end
       devmap
     end
@@ -1825,7 +1826,7 @@ module Yast
       devmap["STARTMODE"] = @startmode
       devmap["IFPLUGD_PRIORITY"] = @ifplugd_priority.to_i if @startmode == "ifplugd"
       devmap["BOOTPROTO"] = @bootproto
-      devmap["_aliases"] = @aliases
+      devmap["_aliases"] = @aliases if @aliases && !@aliases.empty?
 
       log.info("aliases #{@aliases}")
 
@@ -2012,21 +2013,24 @@ module Yast
         newdev["INTERFACETYPE"] = @type
       end
 
-      NetworkInterfaces.Name = Ops.get_string(@Items, [@current, "ifcfg"], "")
-      NetworkInterfaces.Current = deep_copy(newdev)
+      if GetCurrentMap() != newdev
+        NetworkInterfaces.Name = Ops.get_string(@Items, [@current, "ifcfg"], "")
+        NetworkInterfaces.Current = deep_copy(newdev)
 
-      # bnc#752464 - can leak wireless passwords
-      # useful only for debugging. Writes huge struct mostly filled by defaults.
-      Builtins.y2debug("%1", NetworkInterfaces.ConcealSecrets1(newdev))
+        # bnc#752464 - can leak wireless passwords
+        # useful only for debugging. Writes huge struct mostly filled by defaults.
+        Builtins.y2debug("%1", NetworkInterfaces.ConcealSecrets1(newdev))
 
-      Ops.set(@Items, [@current, "ifcfg"], "") if !NetworkInterfaces.Commit
+        Ops.set(@Items, [@current, "ifcfg"], "") if !NetworkInterfaces.Commit
 
-      # configure bridge ports
-      if @bridge_ports
-        @bridge_ports.split.each { |bp| configure_as_bridge_port(bp) }
+        # configure bridge ports
+        if @bridge_ports
+          @bridge_ports.split.each { |bp| configure_as_bridge_port(bp) }
+        end
+
+        @modified = true
       end
 
-      @modified = true
       @operation = nil
       true
     end
