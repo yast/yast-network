@@ -99,6 +99,8 @@ describe "LanItems#ReplaceItemUdev" do
         ]
       )
 
+    expect(Yast::LanItems).to receive(:SetModified)
+
     updated_rule = Yast::LanItems.ReplaceItemUdev(
       "KERNELS",
       "ATTR{address}",
