@@ -443,6 +443,8 @@ module Yast
         # copied anyway
         new_rule = deep_copy(current_rule)
         new_rule[i] = "#{new_key}#{operator}\"#{new_val}\""
+
+        SetModified()
       end
 
       log.info("LanItems#ReplaceItemUdev: #{current_rule} -> #{new_rule}")
@@ -497,6 +499,7 @@ module Yast
     def rename(name)
       if (GetCurrentName() != name)
         @Items[@current]["renamed_to"] = name
+        SetModified()
       else
         @Items[@current].delete("renamed_to")
       end
