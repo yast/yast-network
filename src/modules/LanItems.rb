@@ -428,6 +428,15 @@ module Yast
       value
     end
 
+    # It replaces a tuple identified by replace_key in current item's udev rule
+    #
+    # Note that the tuple is identified by key only. However modification flag is
+    # set only if value was changed (in case when replace_key == new_key)
+    #
+    # @param replace_key [string] udev key which identifies tuple to be replaced
+    # @param new_key     [string] new key to by used
+    # @param new_val     [string] value for new key
+    # @return updated rule when replace_key is found, current rule otherwise
     def ReplaceItemUdev(replace_key, new_key, new_val)
       new_rule = []
       # udev syntax distinguishes among others:
@@ -435,6 +444,9 @@ module Yast
       # ==   for equality checks
       operator = new_key == "NAME" ? "=" : "=="
       current_rule = getUdevFallback
+
+      return current_rule if !new_key || new_key.empty?
+      return current_rule if !new_val || new_val.empty?
 
       if i = current_rule.find_index { |tuple| tuple =~ /#{replace_key}/ }
         # deep_copy is most probably not neccessary because getUdevFallback does
