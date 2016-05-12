@@ -448,7 +448,8 @@ module Yast
       return current_rule if !new_key || new_key.empty?
       return current_rule if !new_val || new_val.empty?
 
-      if i = current_rule.find_index { |tuple| tuple =~ /#{replace_key}/ }
+      i = current_rule.find_index { |tuple| tuple =~ /#{replace_key}/ }
+      if i
         # deep_copy is most probably not neccessary because getUdevFallback does
         # deep_copy on return value. However, getUdevFallback will be subect of refactoring
         # so caution is must. Moreover new_rule is also return value so it should be

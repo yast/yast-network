@@ -85,7 +85,7 @@ describe "LanItems#ReplaceItemUdev" do
     # during Read
     allow(Yast::LanItems)
       .to receive(:Items)
-      .and_return(0 => { "udev" => {"net" => [] } })
+      .and_return(0 => { "udev" => { "net" => [] } })
   end
 
   it "replaces triplet in the rule as requested" do
@@ -120,11 +120,11 @@ describe "LanItems#ReplaceItemUdev" do
         ]
       )
 
-      Yast::LanItems.ReplaceItemUdev(
-        "KERNELS",
-        "ATTR{address}",
-        "xx:01:02:03:04:05"
-      )
+    Yast::LanItems.ReplaceItemUdev(
+      "KERNELS",
+      "ATTR{address}",
+      "xx:01:02:03:04:05"
+    )
 
     expect(Yast::LanItems).not_to receive(:SetModified)
   end
