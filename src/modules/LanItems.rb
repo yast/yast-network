@@ -1835,6 +1835,11 @@ module Yast
     end
 
     # Commit pending operation
+    #
+    # It commits *only* content of the corresponding ifcfg into NetworkInterfaces.
+    # All other stuff which is managed by LanItems (like udev's, ...) is handled
+    # elsewhere
+    #
     # @return true if success
     def Commit
       if @operation != :add && @operation != :edit
