@@ -93,7 +93,7 @@ describe "LanItems#ReplaceItemUdev" do
       .to receive(:getUdevFallback)
       .and_return(
         [
-          "KERNELS=\"invalid\"",
+          "KERNELS==\"invalid\"",
           "KERNEL=\"eth*\"",
           "NAME=\"eth1\""
         ]
@@ -107,5 +107,25 @@ describe "LanItems#ReplaceItemUdev" do
       "xx:01:02:03:04:05"
     )
     expect(updated_rule).to include "ATTR{address}==\"xx:01:02:03:04:05\""
+  end
+
+  it "do not set modification flag in case of no change" do
+    allow(Yast::LanItems)
+      .to receive(:getUdevFallback)
+      .and_return(
+        [
+          "ATTR{address}==\"xx:01:02:03:04:05\"",
+          "KERNEL=\"eth*\"",
+          "NAME=\"eth1\""
+        ]
+      )
+
+      Yast::LanItems.ReplaceItemUdev(
+        "KERNELS",
+        "ATTR{address}",
+        "xx:01:02:03:04:05"
+      )
+
+    expect(Yast::LanItems).not_to receive(:SetModified)
   end
 end

@@ -444,7 +444,7 @@ module Yast
         new_rule = deep_copy(current_rule)
         new_rule[i] = "#{new_key}#{operator}\"#{new_val}\""
 
-        SetModified()
+        SetModified() if current_rule != new_rule
       end
 
       log.info("LanItems#ReplaceItemUdev: #{current_rule} -> #{new_rule}")
