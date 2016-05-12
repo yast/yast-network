@@ -78,6 +78,16 @@ end
 describe "LanItems#ReplaceItemUdev" do
   Yast.import "LanItems"
 
+  before(:each) do
+    Yast::LanItems.current = 0
+
+    # LanItems should create "udev" and "net" subkeys for each item
+    # during Read
+    allow(Yast::LanItems)
+      .to receive(:Items)
+      .and_return(0 => { "udev" => {"net" => [] } })
+  end
+
   it "replaces triplet in the rule as requested" do
     allow(Yast::LanItems)
       .to receive(:getUdevFallback)
