@@ -787,7 +787,7 @@ module Yast
     end
 
     def devname_from_hw_dialog
-      UI.QueryWidget(Id(:ifcfg_name), :Value)
+      UI.QueryWidget(Id(:ifcfg_name), :Value) if UI.WidgetExists(Id(:ifcfg_name))
     end
 
     def validate_hw(_key, _event)
