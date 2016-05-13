@@ -121,3 +121,38 @@ describe "hwlist2items" do
       .to match_array([Item(Id(0), "x", false), Item(Id(1), "y", true)])
   end
 end
+
+describe "physical_port_id" do
+  subject(:routines) { RoutinesTestClass.new }
+  let(:phys_port_id) { "physical_port_id" }
+
+  before do
+    allow(Yast::SCR).to receive(:Read)
+      .with(Yast::Path.new(".target.string"), "/sys/class/net/eth0/phys_port_id")
+      .and_return(phys_port_id)
+  end
+
+  context "when the module driver support it" do
+    it "returns ethernet physical port id" do
+      expect(routines.physical_port_id("eth0")).to eql("physical_port_id")
+    end
+  end
+
+  context "when the module driver doesn't support it" do
+    let(:phys_port_id) { nil }
+
+    it "returns an empty string" do
+      expect(routines.physical_port_id("eth0")).to be_empty
+    end
+  end
+end
+
+describe "#has_physical_port_id?" do
+  subject(:routines) { RoutinesTestClass.new }
+
+  it "returns true if physical port id is not empty" do
+    allow(routines).to receive(:physical_port_id).with("eth0") { "physical_port_id" }
+
+    expect(routines.has_physical_port_id?("eth0")).to eql(true)
+  end
+end

@@ -746,6 +746,17 @@ module Yast
       ).to_i != 0
     end
 
+    def has_physical_port_id?(dev_name)
+      !physical_port_id(dev_name).empty?
+    end
+
+    def physical_port_id(dev_name)
+      SCR.Read(
+        path(".target.string"),
+        "/sys/class/net/#{dev_name}/phys_port_id"
+      ).to_s.strip
+    end
+
     # Checks if device is physically connected to a network
     #
     # It does neccessary steps which might be needed for proper initialization
