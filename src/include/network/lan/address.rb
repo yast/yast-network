@@ -747,43 +747,48 @@ module Yast
       message = ""
 
       physical_port_ids.each do |port, devs|
-        message << "PhysicalPortID (#{port}):\n"
-        message << "#{devices_to_s(devs)}\n"
+        label =  "PhysicalPortID (#{port}): "
+
+        message << wrap_text(devs.join(", "), 76, prepend_text: label)
+        message << "\n"
       end
 
       Popup.YesNoHeadline(
         Label.WarningMsg,
-        _("The interfaces selected for bonding map to same physical port and \n" \
-          "bonding them may not have the desire result.\n\n%s\n" \
+        _("The interfaces selected for bonding map to same physical port and " \
+          "bonding them \nmay not have the desire result.\n\n%s\n" \
           "Really continue?\n") % message
       )
     end
 
-    # Given a list of devices it returns wrap text with devices joined by
-    # a space.
+    # Wrap given text breaking lines longer than given wrap size. It supports
+    # cusom separator, max number of lines to split in and cut text to add
+    # as last line if cut was needed.
     #
-    # @param [Array<String>] device names
+    # @param [String>] text to be wrapped
     # @param [String] wrap size
-    # @param [Fixnum] max number of lines to return
-    # @param [String] optional text to add at the end in case of lines cut
-    # @return [String] wrap text with devices joined by a space
-    def devices_to_s(devices, wrap = 78, n_lines = nil, cut_text = nil)
+    # @param [Hash <String>] optional parameters as separator and prepend_text.
+    # @return [String] wrap text
+    def wrap_text(text, wrap = 78, options = {})
+      separator = (options[:separator] || " ")
       lines = []
-      message_line = ""
-      devices.map do |d|
-        if !message_line.empty? && "#{message_line}#{d}".size > wrap
+      message_line = options[:prepend_text].to_s
+      text.split(/\s+/).each_with_index do |t, i|
+        if !message_line.empty? && "#{message_line}#{t}".size > wrap
           lines << message_line
           message_line = ""
         end
 
-        message_line << " " if !message_line.empty?
-        message_line << d
+        message_line << separator if !message_line.empty? && i != 0
+        message_line << t
       end
+
       lines << message_line if !message_line.empty?
 
+      n_lines = options[:n_lines]
       if n_lines && lines.size > n_lines
         lines = lines[0..n_lines - 1]
-        lines << cut_text if cut_text
+        lines << options[:cut_text] if options[:cut_text]
       end
 
       lines.join("\n")

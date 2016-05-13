@@ -23,10 +23,10 @@ describe "NetworkLanAddressInclude" do
 
   end
 
-  describe "devices_to_s" do
+  describe "wrap_text" do
     subject(:routines) { DummyClass.new }
     let(:devices) do
-      [ "eth0", "eth1", "eth2", "eth3", "a_very_long_device_name" ]
+      ["eth0", "eth1", "eth2", "eth3", "a_very_long_device_name"]
     end
     let(:more_devices) do
       [
@@ -35,31 +35,32 @@ describe "NetworkLanAddressInclude" do
       ]
     end
 
-    context "given a list of devices" do
-      it "returns given devices joined by a space" do
-        text = "eth0 eth1 eth2 eth3 a_very_long_device_name"
+    context "given a text" do
+      it "returns same text if not exceed wrap size" do
+        text = "eth0, eth1, eth2, eth3, a_very_long_device_name"
 
-        expect(routines.devices_to_s(devices)).to eql(text)
+        expect(routines.wrap_text(devices.join(", "))).to eql(text)
       end
 
       context "given a line size" do
-        it "returns given devices wrapped by line size" do
-          text = "eth0 eth1 eth2\n"         \
-                 "eth3\n"                   \
+        it "returns given text splited in lines by given line size" do
+          text = "eth0, eth1, eth2,\n"         \
+                 "eth3,\n"                   \
                  "a_very_long_device_name"
 
-          expect(routines.devices_to_s(devices, 15)).to eql(text)
+          expect(routines.wrap_text(devices.join(", "), 16)).to eql(text)
         end
       end
 
       context "given a number of lines and '...' as cut text" do
         it "returns wrapped text until given line adding '...' as a new line" do
-          text = "eth0 eth1 eth2\n"         \
-                 "eth3\n"                   \
-                 "a_very_long_device_name\n"  \
+          devices_s = (devices + more_devices).join(", ")
+          text = "eth0, eth1, eth2,\n"         \
+                 "eth3,\n"                    \
+                 "a_very_long_device_name,\n" \
                  "..."
 
-          expect(routines.devices_to_s(devices+more_devices, 15,3,"...")).to eql(text)
+          expect(routines.wrap_text(devices_s, 20, n_lines: 3, cut_text: "...")).to eql(text)
         end
       end
 
