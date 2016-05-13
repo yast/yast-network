@@ -574,6 +574,8 @@ module Yast
         selected = false
         selected = enslavedIfaces.include?(dev_name) if enslavedIfaces
 
+        description << " (Port ID: #{physical_port_id(dev_name)})" if has_physical_port_id?(dev_name)
+
         items << Item(
           Id(dev_name),
           "#{dev_name} - #{description}",
