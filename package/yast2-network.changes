@@ -1,4 +1,17 @@
 -------------------------------------------------------------------
+Fri May 13 10:19:39 UTC 2016 - knut.anderssen@suse.com
+
+- fate#315995
+  - Added physical port id to device overview and bond slaves item
+    description if supported.
+  - Warn the user when two or more bonded interfaces share the
+    same physical port.
+  - Available interfaces for bonding in bond slaves tab are now
+    sorted and moving them up or down maintain the interface
+    selected.
+- 3.1.150
+
+-------------------------------------------------------------------
 Mon May  2 11:35:45 UTC 2016 - mfilka@suse.com
 
 - bnc#977953
