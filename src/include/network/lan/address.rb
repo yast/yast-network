@@ -755,8 +755,8 @@ module Yast
 
       Popup.YesNoHeadline(
         Label.WarningMsg,
-        _("The interfaces selected for bonding map to same physical port and " \
-          "bonding them \nmay not have the desire result.\n\n%s\n" \
+        _("The interfaces selected share the same physical port and bonding " \
+          "them \nmay not have the desired effect of redundancy.\n\n%s\n" \
           "Really continue?\n") % message
       )
     end
