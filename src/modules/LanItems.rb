@@ -813,7 +813,7 @@ module Yast
 
       result = []
 
-      Builtins.foreach(@Items) do |itemId, _attribs|
+      LanItems.Items.each do |itemId, _attribs|
         if @current != itemId && validator.call(master, itemId)
           result = Builtins.add(result, itemId)
         else
@@ -1407,9 +1407,11 @@ module Yast
 
         mac_dev = HTML.Bold("MAC : ") + item_hwinfo["mac"].to_s + "<br>"
         bus_id  = HTML.Bold("BusID : ") + item_hwinfo["busid"].to_s + "<br>"
+        physical_port_id = HTML.Bold("PhysicalPortID : ") + physical_port_id(ifcfg_name) + "<br>"
 
         rich << " " << conn << "<br>" << mac_dev if IsNotEmpty(item_hwinfo["mac"])
         rich << bus_id if IsNotEmpty(item_hwinfo["busid"])
+        rich << physical_port_id if physical_port_id?(ifcfg_name)
         # display it only if we need it, don't duplicate "ifcfg_name" above
         if IsNotEmpty(item_hwinfo["dev_name"]) && ifcfg_name.empty?
           dev_name = _("Device Name: %s") %  item_hwinfo["dev_name"]

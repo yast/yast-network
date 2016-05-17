@@ -28,6 +28,8 @@
 #
 module Yast
   module NetworkLanAddressInclude
+    include Yast::Logger
+
     def initialize_network_lan_address(include_target)
       Yast.import "UI"
 
@@ -226,8 +228,8 @@ module Yast
           "help"          => Ops.get_string(@help, "etherdevice", "")
         },
         "BONDSLAVE"    => {
-          "widget"        => :custom,
-          "custom_widget" => Frame(
+          "widget"            => :custom,
+          "custom_widget"     => Frame(
             _("Bond Slaves and Order"),
             VBox(
               MultiSelectionBox(Id(:msbox_items), Opt(:notify), "", []),
@@ -237,18 +239,23 @@ module Yast
               )
             )
           ),
-          "label"         => _("Bond &Slaves"),
+          "label"             => _("Bond &Slaves"),
           #        "opt": [`shrinkable],
-          "init"          => fun_ref(
+          "init"              => fun_ref(
             method(:InitSlave),
             "void (string)"
           ),
-          "handle"        => fun_ref(
+          "handle"            => fun_ref(
             method(:HandleSlave),
             "symbol (string, map)"
           ),
-          "store"         => fun_ref(method(:StoreSlave), "void (string, map)"),
-          "help"          => Ops.get_string(@help, "bondslave", "")
+          "validate_type"     => :function,
+          "validate_function" => fun_ref(
+            method(:validate_bond),
+            "boolean (string, map)"
+          ),
+          "store"             => fun_ref(method(:StoreSlave), "void (string, map)"),
+          "help"              => @help["bondslave"].to_s
         },
         "BONDOPTION"   => {
           "widget" => :combobox,
@@ -576,22 +583,14 @@ module Yast
       nil
     end
 
+    # Given a device name returns the position in the bond slaves table
+    # or -1 if not present
+    #
+    # @param [String] slave name
+    # @return [Integer] index of the given slave in msbox_items table
     def getISlaveIndex(slave)
-      items = Convert.convert(
-        UI.QueryWidget(:msbox_items, :Items),
-        from: "any",
-        to:   "list <term>"
-      )
-      index = -1
-      pos = 0
-      Builtins.foreach(items) do |it|
-        if Ops.get_string(it, [0, 0], "") == slave
-          index = pos
-          raise Break
-        end
-        pos = Ops.add(pos, 1)
-      end
-      index
+      items = UI.QueryWidget(:msbox_items, :Items)
+      items.index { |i| i[0][0] == slave } || -1
     end
 
     def enableSlaveButtons
@@ -615,14 +614,14 @@ module Yast
     # Default function to init the value of slave devices box for bonding.
     # @param [String] key	id of the widget
     def InitSlave(_key)
-      Ops.set(@settings, "SLAVES", LanItems.bond_slaves)
+      @settings["SLAVES"] =  LanItems.bond_slaves || []
       UI.ChangeWidget(
         :msbox_items,
         :SelectedItems,
-        Ops.get_list(@settings, "SLAVES", [])
+        @settings["SLAVES"]
       )
 
-      Ops.set(@settings, "BONDOPTION", LanItems.bond_option)
+      @settings["BONDOPTION"] = LanItems.bond_option
 
       items = CreateSlaveItems(
         LanItems.GetBondableInterfaces(LanItems.GetCurrentName),
@@ -630,95 +629,59 @@ module Yast
       )
 
       # reorder the items
-      l2 = []
-      l1 = []
-      Builtins.foreach(
-        Convert.convert(items, from: "list", to: "list <term>")
-      ) do |t|
-        if Builtins.contains(
-          Ops.get_list(@settings, "SLAVES", []),
-          Ops.get_string(t, [0, 0], "")
-          )
-          l1 = Builtins.add(l1, t)
-        else
-          l2 = Builtins.add(l2, t)
-        end
-      end
+      l1, l2 = items.partition { |t| @settings["SLAVES"].include? t[0][0] }
 
-      items = []
-      Builtins.foreach(Ops.get_list(@settings, "SLAVES", [])) do |s|
-        Builtins.foreach(
-          Convert.convert(l1, from: "list", to: "list <term>")
-        ) do |t|
-          items = Builtins.add(items, t) if Ops.get_string(t, [0, 0], "") == s
-        end
-      end
+      items = l1 + l2.sort_by { |t| justify_dev_name(t[0][0]) }
 
-      items = Builtins.union(items, l2)
       UI.ChangeWidget(:msbox_items, :Items, items)
       enableSlaveButtons
 
       nil
     end
 
-    def HandleSlave(_key, event)
-      event = deep_copy(event)
-      if Ops.get_string(event, "EventReason", "") == "SelectionChanged"
-        enableSlaveButtons
-      elsif Ops.get_string(event, "EventReason", "") == "Activated" &&
-          Ops.get(event, "WidgetClass") == :PushButton
-        items = Convert.convert(
-          UI.QueryWidget(:msbox_items, :Items),
-          from: "any",
-          to:   "list <term>"
-        )
-        current = Builtins.tostring(UI.QueryWidget(:msbox_items, :CurrentItem))
-        index = getISlaveIndex(current)
-        new_items = []
-        pos = 0
-        case Ops.get_symbol(event, "ID", :nil)
-        when :up
-          while Ops.greater_than(index, Ops.add(pos, 1))
-            new_items = Builtins.add(new_items, Ops.get(items, pos))
-            pos = Ops.add(pos, 1)
-          end
-          new_items = Builtins.add(new_items, Ops.get(items, index))
-          new_items = Builtins.add(
-            new_items,
-            Ops.get(items, Ops.subtract(index, 1))
-          )
-          new_items = Convert.convert(
-            Builtins.union(new_items, Builtins.sublist(items, index)),
-            from: "list",
-            to:   "list <term>"
-          )
-        when :down
-          while Ops.greater_than(index, pos)
-            new_items = Builtins.add(new_items, Ops.get(items, pos))
-            pos = Ops.add(pos, 1)
-          end
-          new_items = Builtins.add(
-            new_items,
-            Ops.get(items, Ops.add(index, 1))
-          )
-          new_items = Builtins.add(new_items, Ops.get(items, index))
-          new_items = Convert.convert(
-            Builtins.union(
-              new_items,
-              Builtins.sublist(items, Ops.add(index, 1))
-            ),
-            from: "list",
-            to:   "list <term>"
-          )
+    # A helper for sort devices by name. It justify at right with 0's numeric parts of given
+    # device name until 5 digits.
+    #
+    # ==== Examples
+    #
+    #   justify_dev_name("eth0") # => "eth00000"
+    #   justify_dev_name("eth111") # => "eth00111"
+    #   justify_dev_name("enp0s25") # => "enp00000s00025"
+    #
+    # @param name [String] device name
+    # @return [String] given name with numbers justified at right
+    def justify_dev_name(name)
+      splited_dev_name = name.scan(/\p{Alpha}+|\p{Digit}+/)
+      splited_dev_name.map! do |d|
+        if d.match(/\p{Digit}+/)
+          d.rjust(5, "0")
         else
-          Builtins.y2warning("unknown action")
+          d
+        end
+      end.join
+    end
+
+    def HandleSlave(_key, event)
+      if event["EventReason"] == "SelectionChanged"
+        enableSlaveButtons
+      elsif event["EventReason"] == "Activated" && event["WidgetClass"] == :PushButton
+        items = UI.QueryWidget(:msbox_items, :Items) || []
+        current = UI.QueryWidget(:msbox_items, :CurrentItem).to_s
+        index = getISlaveIndex(current)
+        case event["ID"]
+        when :up
+          items[index], items[index - 1] = items[index - 1], items[index]
+        when :down
+          items[index], items[index + 1] = items[index + 1], items[index]
+        else
+          log.warn("unknown action")
           return nil
         end
-        items = deep_copy(new_items)
         UI.ChangeWidget(:msbox_items, :Items, items)
+        UI.ChangeWidget(:msbox_items, :CurrentItem, current)
         enableSlaveButtons
       else
-        Builtins.y2debug("event:%1", event)
+        log.debug("event:#{event}")
       end
 
       nil
@@ -728,34 +691,68 @@ module Yast
     # @param [String] key	id of the widget
     # @param [String] key id of the widget
     def StoreSlave(_key, _event)
-      configured_slaves = Ops.get_list(@settings, "SLAVES", [])
+      configured_slaves = @settings["SLAVES"] || []
 
-      Ops.set(
-        @settings,
-        "SLAVES",
-        Convert.convert(
-          UI.QueryWidget(:msbox_items, :SelectedItems),
-          from: "any",
-          to:   "list <string>"
-        )
-      )
-      Ops.set(@settings, "BONDOPTION", UI.QueryWidget(Id("BONDOPTION"), :Value))
+      @settings["SLAVES"] = get_selected_slaves
 
-      LanItems.bond_slaves = Ops.get_list(@settings, "SLAVES", [])
-      LanItems.bond_option = Ops.get_string(@settings, "BONDOPTION", "")
+      @settings["BONDOPTION"] = UI.QueryWidget(Id("BONDOPTION"), :Value).to_s
+
+      LanItems.bond_slaves = @settings["SLAVES"]
+      LanItems.bond_option = @settings["BONDOPTION"]
 
       # create list of "unconfigured" slaves
-      new_slaves = Builtins.filter(Ops.get_list(@settings, "SLAVES", [])) do |slave|
-        !Builtins.contains(configured_slaves, slave)
+      new_slaves = @settings["SLAVES"].select do |slave|
+        !configured_slaves.include? slave
       end
 
-      Lan.bond_autoconf_slaves = Convert.convert(
-        Builtins.toset(Builtins.merge(Lan.bond_autoconf_slaves, new_slaves)),
-        from: "list",
-        to:   "list <string>"
-      )
+      Lan.bond_autoconf_slaves = (Lan.bond_autoconf_slaves + new_slaves).uniq.sort
 
       nil
+    end
+
+    # Validates created bonding. Currently just prevent the user to create a
+    # bond with more than one interface sharing the same physical port id
+    #
+    # @param [String] key the widget being validated
+    # @param [Hash] event the event being handled
+    # @return true if valid or user decision if not
+    def validate_bond(_key, _event)
+      physical_ports = repeated_physical_port_ids(get_selected_slaves)
+
+      physical_ports.empty? ? true : continue_with_duplicates?(physical_ports)
+    end
+
+    # FIXME: This method should be moved to a more generic class.
+    # Wrap given text breaking lines longer than given wrap size. It supports
+    # custom separator, max number of lines to split in and cut text to add
+    # as last line if cut was needed.
+    #
+    # @param [String] text to be wrapped
+    # @param [String] wrap size
+    # @param [Hash <String>] optional parameters as separator and prepend_text.
+    # @return [String] wrap text
+    def wrap_text(text, wrap = 78, separator: " ", prepend_text: "",
+                  n_lines: nil, cut_text: nil)
+      lines = []
+      message_line = prepend_text
+      text.split(/\s+/).each_with_index do |t, i|
+        if !message_line.empty? && "#{message_line}#{t}".size > wrap
+          lines << message_line
+          message_line = ""
+        end
+
+        message_line << separator if !message_line.empty? && i != 0
+        message_line << t
+      end
+
+      lines << message_line if !message_line.empty?
+
+      if n_lines && lines.size > n_lines
+        lines = lines[0..n_lines - 1]
+        lines << cut_text if cut_text
+      end
+
+      lines.join("\n")
     end
 
     def initTunnel(_key)
@@ -1599,6 +1596,53 @@ module Yast
       Routing.SetDevices(NetworkInterfaces.List("")) if ret == :routing
 
       deep_copy(ret)
+    end
+
+  private
+
+    def get_selected_slaves
+      UI.QueryWidget(:msbox_items, :SelectedItems) || []
+    end
+
+    # Given a map of duplicated port ids with device names, aks the user if he
+    # would like to continue or not.
+    #
+    # @param [Hash{String => Array<String>}] hash of duplicated physical port ids
+    # mapping to an array of device names
+    # @return [Boolean] true if continue with duplicates, otherwise false
+    def continue_with_duplicates?(physical_ports)
+      message = physical_ports.map do |port, slave|
+        label =  "PhysicalPortID (#{port}): "
+        wrap_text(slave.join(", "), 76, prepend_text: label)
+      end.join("\n")
+
+      Popup.YesNoHeadline(
+        Label.WarningMsg,
+        # Translators: Warn the user about not desired effect
+        _("The interfaces selected share the same physical port and bonding " \
+          "them \nmay not have the desired effect of redundancy.\n\n%s\n\n" \
+          "Really continue?\n") % message
+      )
+    end
+
+    # Given a list of device names returns a hash of physical port ids mapping
+    # device names if at least two devices shared the same physical port id
+    #
+    # @param [Array<String] bonding slaves
+    # @return [Hash{String => Array<String>}] of duplicated physical port ids
+    def repeated_physical_port_ids(slaves)
+      physical_port_ids = {}
+
+      slaves.each do |slave|
+        if physical_port_id?(slave)
+          p = physical_port_ids[physical_port_id(slave)] ||= []
+          p << slave
+        end
+      end
+
+      physical_port_ids.select! { |_k, v| v.size > 1 }
+
+      physical_port_ids
     end
   end
 end
