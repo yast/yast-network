@@ -23,9 +23,7 @@ describe "NetworkLanAddressInclude" do
 
   describe "wrap_text" do
     subject(:routines) { DummyClass.new }
-    let(:devices) do
-      ["eth0", "eth1", "eth2", "eth3", "a_very_long_device_name"]
-    end
+    let(:devices) { ["eth0", "eth1", "eth2", "eth3", "a_very_long_device_name"] }
     let(:more_devices) do
       [
         "enp5s0", "enp5s1", "enp5s2", "enp5s3",
@@ -76,9 +74,7 @@ describe "NetworkLanAddressInclude" do
     end
 
     before do
-      allow(Yast::UI).to receive(:QueryWidget)
-        .with(:msbox_items, :Items)
-        .and_return(msbox_items)
+      allow(Yast::UI).to receive(:QueryWidget).with(:msbox_items, :Items).and_return(msbox_items)
     end
 
     it "returns the index position of the given slave in the mbox_items table" do
@@ -99,9 +95,7 @@ describe "NetworkLanAddressInclude" do
     end
 
     context "when there is not more than one physical port id per interface" do
-      let(:msbox_items) do
-        ["eth0", "eth1", "eth2", "eth3"]
-      end
+      let(:msbox_items) { ["eth0", "eth1", "eth2", "eth3"] }
 
       it "returns true" do
         allow(subject).to receive(:physical_port_id?).with("eth0").and_return(false)

@@ -255,7 +255,7 @@ module Yast
             "boolean (string, map)"
           ),
           "store"             => fun_ref(method(:StoreSlave), "void (string, map)"),
-          "help"              => Ops.get_string(@help, "bondslave", "")
+          "help"              => @help["bondslave"].to_s
         },
         "BONDOPTION"   => {
           "widget" => :combobox,
