@@ -209,6 +209,47 @@ describe "NetworkAutoYast" do
     end
   end
 
+  describe "#configure_dns" do
+    let(:network_autoyast) { Yast::NetworkAutoYast.instance }
+
+    it "imports DNS configuration when available in profile" do
+      Yast.import "DNS"
+
+      allow(network_autoyast)
+        .to receive(:ay_networking_section)
+        .and_return("dns" => { "dhcp_hostname" => false })
+
+      expect(Yast::DNS).to receive(:Import)
+
+      network_autoyast.configure_dns
+    end
+  end
+
+  describe "#keep_net_config?" do
+    let(:network_autoyast) { Yast::NetworkAutoYast.instance }
+
+    def keep_install_network_value(value)
+      allow(network_autoyast)
+        .to receive(:ay_networking_section)
+        .and_return(value)
+    end
+
+    it "succeedes when keep_install_network is set in AY profile" do
+      keep_install_network_value("keep_install_network" => true)
+      expect(network_autoyast.keep_net_config?).to be true
+    end
+
+    it "fails when keep_install_network is not set in AY profile" do
+      keep_install_network_value("keep_install_network" => false)
+      expect(network_autoyast.keep_net_config?).to be false
+    end
+
+    it "fails when keep_install_network is not present in AY profile" do
+      keep_install_network_value({})
+      expect(network_autoyast.keep_net_config?).to be false
+    end
+  end
+
   context "When AY profile contains old style name" do
     let(:ay_old_id) do
       {

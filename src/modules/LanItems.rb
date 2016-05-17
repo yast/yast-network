@@ -2286,7 +2286,7 @@ module Yast
         SCR.Execute(path(".target.bash_output"), command1),
         from: "any",
         to:   "map <string, any>"
-      )
+    )
       if Ops.get_integer(output1, "exit", -1) == 0 &&
           Builtins.size(Ops.get_string(output1, "stderr", "")) == 0
         Builtins.y2milestone("Success : %1", output1)
