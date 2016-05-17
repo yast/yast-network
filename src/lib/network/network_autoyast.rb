@@ -104,6 +104,37 @@ module Yast
       NetworkService.EnableDisableNow
     end
 
+    # Initializates DNS setup according AY profile
+    #
+    # FIXME: it currently doesn't write DNS configuration. It is used for initialization
+    # of DNS setup according AY profile in 1st stage as part of network setup was moved
+    # here already and some parts of network configuration needs to know it. DNS write
+    # is still done in 2nd stage.
+    #
+    # @return [Boolean] true when configuration was present and loaded from the profile
+    def configure_dns
+      ay_dns_config = ay_networking_section["dns"]
+
+      return false if !ay_dns_config
+
+      DNS.Import(ay_dns_config)
+
+      log.info("NetworkAutoYast: DNS / Hostname configuration")
+      log.info("dhcp hostname: #{DNS.dhcp_hostname}")
+      log.info("write hostname: #{DNS.write_hostname}")
+
+      true
+    end
+
+    # Checks if the profile asks for keeping installation network configuration
+    def keep_net_config?
+      ret = ay_networking_section.fetch("keep_install_network", false)
+
+      log.info("NetworkAutoYast: keep installation network: #{ret}")
+
+      ret
+    end
+
   private
 
     # Merges two devices map into one.

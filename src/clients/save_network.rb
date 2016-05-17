@@ -36,8 +36,6 @@ module Yast
     include Logger
 
     def main
-      Yast.import "UI"
-
       textdomain "network"
 
       Yast.import "DNS"
@@ -86,6 +84,8 @@ module Yast
     SYSCONFIG = "/etc/sysconfig/network/"
 
     def CopyConfiguredNetworkFiles
+      return if Mode.autoinst && !NetworkAutoYast.instance.keep_net_config?
+
       log.info(
         "Copy network configuration files from 1st stage into installed system"
       )
@@ -247,15 +247,28 @@ module Yast
       nil
     end
 
+    # Creates target's default DNS configuration
+    #
+    # It uses DNS configuration as defined in AY profile (if any) or
+    # proposes a predefined default values.
+    def configure_dns
+      configured = false
+      configured = NetworkAutoYast.instance.configure_dns if Mode.autoinst
+      NetworkAutoconfiguration.instance.configure_dns if !configured
+
+      DNS.create_hostname_link
+    end
+
     # It does an automatic configuration of installed system
     #
     # Basically, it runs several proposals.
     def configure_target
       NetworkAutoconfiguration.instance.configure_virtuals
-      NetworkAutoconfiguration.instance.configure_dns
-      NetworkAutoconfiguration.instance.configure_hosts
 
-      DNS.create_hostname_link
+      configure_dns
+
+      # this depends on DNS configuration
+      NetworkAutoconfiguration.instance.configure_hosts
 
       set_network_service
 
