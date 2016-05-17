@@ -670,7 +670,7 @@ module Yast
       nil
     end
 
-    private
+  private
 
     def read_hostname_from_install_inf
       install_inf_hostname = SCR.Read(path(".etc.install_inf.Hostname")) || ""
