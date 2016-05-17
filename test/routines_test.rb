@@ -147,12 +147,12 @@ describe "physical_port_id" do
   end
 end
 
-describe "#has_physical_port_id?" do
+describe "#physical_port_id?" do
   subject(:routines) { RoutinesTestClass.new }
 
   it "returns true if physical port id is not empty" do
     allow(routines).to receive(:physical_port_id).with("eth0") { "physical_port_id" }
 
-    expect(routines.has_physical_port_id?("eth0")).to eql(true)
+    expect(routines.physical_port_id?("eth0")).to eql(true)
   end
 end

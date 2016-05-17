@@ -746,15 +746,23 @@ module Yast
       ).to_i != 0
     end
 
-    def has_physical_port_id?(dev_name)
-      !physical_port_id(dev_name).empty?
-    end
-
+    # With NPAR and SR-IOV capabilities, one device could divide a ethernet
+    # port in various. If the driver module support it, we can check the phys
+    # port id via sysfs reading the /sys/class/net/$dev_name/phys_port_id
+    #
+    # @param [String] device name to check
+    # @return [String] physical port id if supported or a empty string if not
     def physical_port_id(dev_name)
       SCR.Read(
         path(".target.string"),
         "/sys/class/net/#{dev_name}/phys_port_id"
       ).to_s.strip
+    end
+
+    # @return [boolean] true if the physical port id is not empty
+    # @see #physical_port_id
+    def physical_port_id?(dev_name)
+      !physical_port_id(dev_name).empty?
     end
 
     # Checks if device is physically connected to a network

@@ -2,8 +2,6 @@
 
 require_relative "test_helper"
 
-require "yast"
-
 Yast.import "UI"
 
 class DummyClass < Yast::Module
@@ -36,16 +34,16 @@ describe "NetworkLanAddressInclude" do
     end
 
     context "given a text" do
-      it "returns same text if not exceed wrap size" do
+      it "returns same text if it does not exceed wrap size" do
         text = "eth0, eth1, eth2, eth3, a_very_long_device_name"
 
         expect(routines.wrap_text(devices.join(", "))).to eql(text)
       end
 
       context "given a line size" do
-        it "returns given text splited in lines by given line size" do
-          text = "eth0, eth1, eth2,\n"         \
-                 "eth3,\n"                   \
+        it "returns given text splitted in lines by given line size" do
+          text = "eth0, eth1, eth2,\n"     \
+                 "eth3,\n"                 \
                  "a_very_long_device_name"
 
           expect(routines.wrap_text(devices.join(", "), 16)).to eql(text)
@@ -53,9 +51,9 @@ describe "NetworkLanAddressInclude" do
       end
 
       context "given a number of lines and '...' as cut text" do
-        it "returns wrapped text until given line adding '...' as a new line" do
+        it "returns wrapped text until given line's number adding '...' as a new line" do
           devices_s = (devices + more_devices).join(", ")
-          text = "eth0, eth1, eth2,\n"         \
+          text = "eth0, eth1, eth2,\n"        \
                  "eth3,\n"                    \
                  "a_very_long_device_name,\n" \
                  "..."
@@ -79,7 +77,8 @@ describe "NetworkLanAddressInclude" do
 
     before do
       allow(Yast::UI).to receive(:QueryWidget)
-        .with(:msbox_items, :Items) { msbox_items }
+        .with(:msbox_items, :Items)
+        .and_return(msbox_items)
     end
 
     it "returns the index position of the given slave in the mbox_items table" do
@@ -92,16 +91,11 @@ describe "NetworkLanAddressInclude" do
     end
   end
 
-  describe "#ValidateBond" do
-    let(:msbox_items) do
-      ["eth0", "eth1", "eth2", "eth3", "eth4", "eth5", "eth6", "eth7",
-       "enp0sp25", "enp0sp26", "enp0sp27", "enp0sp28", "enp0sp29"]
-    end
-
+  describe "#validate_bond" do
     before do
       allow(Yast::UI).to receive(:QueryWidget)
-        .with(:msbox_items, :SelectedItems) { msbox_items }
-
+        .with(:msbox_items, :SelectedItems)
+        .and_return(msbox_items)
     end
 
     context "when there is not more than one physical port id per interface" do
@@ -109,35 +103,33 @@ describe "NetworkLanAddressInclude" do
         ["eth0", "eth1", "eth2", "eth3"]
       end
 
-      before do
-        allow(Yast::UI).to receive(:QueryWidget)
-          .with(:msbox_items, :SelectedItems) { msbox_items }
-        allow(subject).to receive(:has_physical_id?).with("eth0") { false }
-        allow(subject).to receive(:has_physical_id?).with("eth1") { false }
-        allow(subject).to receive(:has_physical_id?).with("eth2") { true }
-        allow(subject).to receive(:has_physical_id?).with("eth3") { true }
-        allow(subject).to receive(:has_physical_id).with("eth2") { "00010486fd348" }
-        allow(subject).to receive(:has_physical_id).with("eth3") { "00010486fd34a" }
-      end
-
       it "returns true" do
-        expect(subject.ValidateBond("key", "Event")).to eql(true)
+        allow(subject).to receive(:physical_port_id?).with("eth0").and_return(false)
+        allow(subject).to receive(:physical_port_id?).with("eth1").and_return(false)
+        allow(subject).to receive(:physical_port_id?).with("eth2").and_return(true)
+        allow(subject).to receive(:physical_port_id?).with("eth3").and_return(true)
+        allow(subject).to receive(:physical_port_id).with("eth2").and_return("00010486fd348")
+        allow(subject).to receive(:physical_port_id).with("eth3").and_return("00010486fd34a")
+
+        expect(subject.validate_bond("key", "Event")).to eql(true)
       end
     end
 
     context "when there is more than one physical port id per interface" do
-      before do
+      let(:msbox_items) do
         ["eth0", "eth1", "eth2", "eth3", "eth4", "eth5", "eth6", "eth7",
-         "enp0sp25", "enp0sp26", "enp0sp27", "enp0sp28", "enp0sp29"].map do |i|
-          allow(subject).to receive(:has_physical_port_id?).with(i) { true }
-          allow(subject).to receive(:physical_port_id).with(i) { "00010486fd348" }
-        end
+         "enp0sp25", "enp0sp26", "enp0sp27", "enp0sp28", "enp0sp29"]
       end
 
-      it "warns the user and request confirmation for continue" do
-        expect(Yast::Popup).to receive(:YesNoHeadline) { :request_answer }
+      it "warns the user and request confirmation to continue" do
+        msbox_items.map do |i|
+          allow(subject).to receive(:physical_port_id?).with(i).and_return(true)
+          allow(subject).to receive(:physical_port_id).with(i).and_return("00010486fd348")
+        end
 
-        expect(subject.ValidateBond("key", "Event")).to eql(:request_answer)
+        expect(Yast::Popup).to receive(:YesNoHeadline).and_return(:request_answer)
+
+        expect(subject.validate_bond("key", "Event")).to eql(:request_answer)
       end
     end
   end

@@ -28,6 +28,8 @@
 #
 module Yast
   module NetworkLanAddressInclude
+    include Yast::Logger
+
     def initialize_network_lan_address(include_target)
       Yast.import "UI"
 
@@ -249,7 +251,7 @@ module Yast
           ),
           "validate_type"     => :function,
           "validate_function" => fun_ref(
-            method(:ValidateBond),
+            method(:validate_bond),
             "boolean (string, map)"
           ),
           "store"             => fun_ref(method(:StoreSlave), "void (string, map)"),
@@ -588,7 +590,7 @@ module Yast
     # @return [Integer] index of the given slave in msbox_items table
     def getISlaveIndex(slave)
       items = UI.QueryWidget(:msbox_items, :Items)
-      items.index { |it| Ops.get_string(it, [0, 0], "") == slave } || -1
+      items.index { |i| i[0][0] == slave } || -1
     end
 
     def enableSlaveButtons
@@ -627,24 +629,9 @@ module Yast
       )
 
       # reorder the items
-      l2 = []
-      l1 = []
-      items.each do |t|
-        if @settings["SLAVES"].include? Ops.get_string(t, [0, 0], "")
-          l1 << t
-        else
-          l2 << t
-        end
-      end
+      l1, l2 = items.partition { |t| @settings["SLAVES"].include? t[0][0] }
 
-      items = []
-      @settings["SLAVES"].each do |s|
-        l1.each do |t|
-          items << t if Ops.get_string(t, [0, 0], "") == s
-        end
-      end
-
-      items += l2.sort_by { |t| justify_dev_name(t[0][0]) }
+      items = l1 + l2.sort_by { |t| justify_dev_name(t[0][0]) }
 
       UI.ChangeWidget(:msbox_items, :Items, items)
       enableSlaveButtons
@@ -687,14 +674,14 @@ module Yast
         when :down
           items[index], items[index + 1] = items[index + 1], items[index]
         else
-          log.info("unknown action")
+          log.warn("unknown action")
           return nil
         end
         UI.ChangeWidget(:msbox_items, :Items, items)
         UI.ChangeWidget(:msbox_items, :CurrentItem, current)
         enableSlaveButtons
       else
-        log.debug "event:#{event}"
+        log.debug("event:#{event}")
       end
 
       nil
@@ -706,7 +693,7 @@ module Yast
     def StoreSlave(_key, _event)
       configured_slaves = @settings["SLAVES"] || []
 
-      @settings["SLAVES"] = UI.QueryWidget(:msbox_items, :SelectedItems) || []
+      @settings["SLAVES"] = get_selected_slaves
 
       @settings["BONDOPTION"] = UI.QueryWidget(Id("BONDOPTION"), :Value).to_s
 
@@ -729,50 +716,25 @@ module Yast
     # @param [String] key the widget being validated
     # @param [Hash] event the event being handled
     # @return true if valid or user decision if not
-    def ValidateBond(_key, _event)
-      items = UI.QueryWidget(:msbox_items, :SelectedItems) || []
-      physical_port_ids = {}
+    def validate_bond(_key, _event)
+      physical_ports = repeated_physical_port_ids(get_selected_slaves)
 
-      items.each do |i|
-        if has_physical_port_id?(i)
-          p = physical_port_ids[physical_port_id(i)] ||= []
-          p << i
-        end
-      end
-
-      physical_port_ids.select! { |_k, v| v.size > 1 }
-
-      return true if physical_port_ids.empty?
-
-      message = ""
-
-      physical_port_ids.each do |port, devs|
-        label =  "PhysicalPortID (#{port}): "
-
-        message << wrap_text(devs.join(", "), 76, prepend_text: label)
-        message << "\n"
-      end
-
-      Popup.YesNoHeadline(
-        Label.WarningMsg,
-        _("The interfaces selected share the same physical port and bonding " \
-          "them \nmay not have the desired effect of redundancy.\n\n%s\n" \
-          "Really continue?\n") % message
-      )
+      physical_ports.empty? ? true : continue_with_duplicates?(physical_ports)
     end
 
+    # FIXME: This method should be moved to a more generic class.
     # Wrap given text breaking lines longer than given wrap size. It supports
-    # cusom separator, max number of lines to split in and cut text to add
+    # custom separator, max number of lines to split in and cut text to add
     # as last line if cut was needed.
     #
-    # @param [String>] text to be wrapped
+    # @param [String] text to be wrapped
     # @param [String] wrap size
     # @param [Hash <String>] optional parameters as separator and prepend_text.
     # @return [String] wrap text
-    def wrap_text(text, wrap = 78, options = {})
-      separator = (options[:separator] || " ")
+    def wrap_text(text, wrap = 78, separator: " ", prepend_text: "",
+                  n_lines: nil, cut_text: nil)
       lines = []
-      message_line = options[:prepend_text].to_s
+      message_line = prepend_text
       text.split(/\s+/).each_with_index do |t, i|
         if !message_line.empty? && "#{message_line}#{t}".size > wrap
           lines << message_line
@@ -785,10 +747,9 @@ module Yast
 
       lines << message_line if !message_line.empty?
 
-      n_lines = options[:n_lines]
       if n_lines && lines.size > n_lines
         lines = lines[0..n_lines - 1]
-        lines << options[:cut_text] if options[:cut_text]
+        lines << cut_text if cut_text
       end
 
       lines.join("\n")
@@ -1635,6 +1596,53 @@ module Yast
       Routing.SetDevices(NetworkInterfaces.List("")) if ret == :routing
 
       deep_copy(ret)
+    end
+
+  private
+
+    def get_selected_slaves
+      UI.QueryWidget(:msbox_items, :SelectedItems) || []
+    end
+
+    # Given a map of duplicated port ids with device names, aks the user if he
+    # would like to continue or not.
+    #
+    # @param [Hash{String => Array<String>}] hash of duplicated physical port ids
+    # mapping to an array of device names
+    # @return [Boolean] true if continue with duplicates, otherwise false
+    def continue_with_duplicates?(physical_ports)
+      message = physical_ports.map do |port, slave|
+        label =  "PhysicalPortID (#{port}): "
+        wrap_text(slave.join(", "), 76, prepend_text: label)
+      end.join("\n")
+
+      Popup.YesNoHeadline(
+        Label.WarningMsg,
+        # Translators: Warn the user about not desired effect
+        _("The interfaces selected share the same physical port and bonding " \
+          "them \nmay not have the desired effect of redundancy.\n\n%s\n\n" \
+          "Really continue?\n") % message
+      )
+    end
+
+    # Given a list of device names returns a hash of physical port ids mapping
+    # device names if at least two devices shared the same physical port id
+    #
+    # @param [Array<String] bonding slaves
+    # @return [Hash{String => Array<String>}] of duplicated physical port ids
+    def repeated_physical_port_ids(slaves)
+      physical_port_ids = {}
+
+      slaves.each do |slave|
+        if physical_port_id?(slave)
+          p = physical_port_ids[physical_port_id(slave)] ||= []
+          p << slave
+        end
+      end
+
+      physical_port_ids.select! { |_k, v| v.size > 1 }
+
+      physical_port_ids
     end
   end
 end
