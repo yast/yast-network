@@ -64,9 +64,6 @@ module Yast
       # Remote administration mode, :disabled, :xinetd or :vncmanager
       @mode = :disabled
 
-      # Default display manager
-      @default_dm = "xdm"
-
       # Remote administration has been already proposed
       # Only force-reset can change it
       @already_proposed = false
@@ -141,9 +138,6 @@ module Yast
       dm_ra = Convert.to_string(
         SCR.Read(path(".sysconfig.displaymanager.DISPLAYMANAGER_REMOTE_ACCESS"))
       ) == "yes"
-      @default_dm = Convert.to_string(
-        SCR.Read(path(".sysconfig.displaymanager.DISPLAYMANAGER"))
-      )
 
       xinetd = Service.Enabled(XINETD_SERVICE)
       # are the proper services enabled in xinetd?
@@ -363,7 +357,6 @@ module Yast
       IsEnabled() ? _("Remote administration is enabled.") : _("Remote administration is disabled.")
     end
 
-    publish variable: :default_dm, type: "string"
     publish function: :IsEnabled, type: "boolean ()"
     publish function: :IsDisabled, type: "boolean ()"
     publish function: :Enable, type: "void ()"
