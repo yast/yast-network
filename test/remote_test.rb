@@ -68,7 +68,7 @@ module Yast
         it "recognizes vncmanager mode" do
           Remote.Read
           expect(Remote.IsEnabled).to eql(true)
-          expect(Remote.UsesVncManager).to eql(true)
+          expect(Remote.EnabledVncManager).to eql(true)
         end
       end
 
@@ -88,7 +88,7 @@ module Yast
         it "recognizes xinetd mode" do
           Remote.Read
           expect(Remote.IsEnabled).to eql(true)
-          expect(Remote.UsesVncManager).to eql(false)
+          expect(Remote.EnabledVncManager).to eql(false)
         end
       end
 
@@ -115,12 +115,12 @@ module Yast
     describe ".enable_disable_remote_administration" do
       context "with VNC enabled and with session management" do
         before do
-          Remote.EnableUsingVncManager
+          Remote.EnableVncManager
         end
 
         it "enables vnc without session management" do
           expect(Remote.IsEnabled).to eql(true)
-          expect(Remote.UsesVncManager).to eql(true)
+          expect(Remote.EnabledVncManager).to eql(true)
         end
       end
 
@@ -131,7 +131,7 @@ module Yast
 
         it "enables vnc without session management" do
           expect(Remote.IsEnabled).to eql(true)
-          expect(Remote.UsesVncManager).to eql(false)
+          expect(Remote.EnabledVncManager).to eql(false)
         end
       end
 
@@ -195,7 +195,7 @@ module Yast
 
       context "with VNC enabled with session management" do
         before do
-          Remote.EnableUsingVncManager
+          Remote.EnableVncManager
         end
 
         it "installs packages provided by Packages.vnc_packages" do

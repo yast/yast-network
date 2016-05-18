@@ -87,7 +87,7 @@ module Yast
     end
 
     # Enables remote administration with vnc manager.
-    def EnableUsingVncManager
+    def EnableVncManager
       @mode = :vncmanager
 
       nil
@@ -100,7 +100,7 @@ module Yast
       nil
     end
 
-    def UsesVncManager
+    def EnabledVncManager
       @mode == :vncmanager
     end
 
@@ -152,7 +152,7 @@ module Yast
         if xinetd_vnc1_enabled && !vncmanager
           Enable()
         elsif !xinetd_vnc1_enabled && vncmanager
-          EnableUsingVncManager()
+          EnableVncManager()
         else
           Disable()
         end
@@ -190,7 +190,7 @@ module Yast
       xinetd = xinetd.map do |m|
         case m["service"]
         when "vnc1"
-          m["enabled"] = IsEnabled() && !UsesVncManager()
+          m["enabled"] = IsEnabled() && !EnabledVncManager()
           m["changed"] = true
         when "vnchttpd1"
           m["enabled"] = IsEnabled()
@@ -253,7 +253,7 @@ module Yast
       if IsEnabled()
         # Install required packages
         packages = Packages.vnc_packages
-        packages << PKG_CONTAINING_VNCMANAGER if UsesVncManager()
+        packages << PKG_CONTAINING_VNCMANAGER if EnabledVncManager()
 
         if !Package.InstallAll(packages)
           log.error "Installing of required packages failed"
@@ -263,7 +263,7 @@ module Yast
         services = [
           [XINETD_SERVICE, true],
           [XDM_SERVICE_NAME, true],
-          [VNCMANAGER_SERVICE, UsesVncManager()]
+          [VNCMANAGER_SERVICE, EnabledVncManager()]
         ]
 
         services.each do |service, enable|
@@ -324,7 +324,7 @@ module Yast
 
         Report.Error(Message.CannotRestartService(XINETD_SERVICE)) unless Service.Restart(XINETD_SERVICE)
 
-        if UsesVncManager()
+        if EnabledVncManager()
           Report.Error(Message.CannotRestartService(VNCMANAGER_SERVICE)) unless Service.Restart(VNCMANAGER_SERVICE)
         end
 
