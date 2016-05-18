@@ -135,17 +135,10 @@ module Yast
     # @return true on success
     def Read
       xdm = Service.Enabled(XDM_SERVICE_NAME)
-      dm_ra = Convert.to_string(
-        SCR.Read(path(".sysconfig.displaymanager.DISPLAYMANAGER_REMOTE_ACCESS"))
-      ) == "yes"
-
+      dm_ra = SCR.Read(path(".sysconfig.displaymanager.DISPLAYMANAGER_REMOTE_ACCESS")).to_s == "yes"
       xinetd = Service.Enabled(XINETD_SERVICE)
       # are the proper services enabled in xinetd?
-      xinetd_conf = Convert.convert(
-        SCR.Read(path(".etc.xinetd_conf.services")),
-        from: "any",
-        to:   "list <map>"
-      )
+      xinetd_conf = SCR.Read(path(".etc.xinetd_conf.services")) || {}
 
       xinetd_vnc1_enabled = false
       xinetd_vnchttp1_enabled = false
