@@ -36,8 +36,10 @@ module Yast
 
     XDM_SERVICE_NAME = "display-manager"
     XINETD_SERVICE = "xinetd"
+    VNCMANAGER_SERVICE = "vncmanager"
 
     PKG_CONTAINING_FW_SERVICES = "xorg-x11-Xvnc"
+    PKG_CONTAINING_VNCMANAGER = "vncmanager"
 
     GRAPHICAL_TARGET = "graphical"
 
@@ -59,8 +61,8 @@ module Yast
       # Currently, all attributes (enablement of remote access)
       # are applied on vnc1 even vnchttpd1 configuration
 
-      # Allow remote administration
-      @allow_administration = false
+      # Remote administration mode, :disabled, :xinetd or :vncmanager
+      @mode = :disabled
 
       # Default display manager
       @default_dm = "xdm"
@@ -72,26 +74,37 @@ module Yast
 
     # Checks if remote administration is currently allowed
     def IsEnabled
-      @allow_administration
+      !IsDisabled()
     end
 
     # Checks if remote administration is currently disallowed
     def IsDisabled
-      !IsEnabled()
+      @mode == :disabled
     end
 
-    # Enables remote administration.
+    # Enables remote administration without vnc manager.
     def Enable
-      @allow_administration = true
+      @mode = :xinetd
+
+      nil
+    end
+
+    # Enables remote administration with vnc manager.
+    def EnableUsingVncManager
+      @mode = :vncmanager
 
       nil
     end
 
     # Disables remote administration.
     def Disable
-      @allow_administration = false
+      @mode = :disabled
 
       nil
+    end
+
+    def UsesVncManager
+      @mode == :vncmanager
     end
 
     # Reset all module data.
@@ -99,11 +112,15 @@ module Yast
       @already_proposed = true
 
       # Bugzilla #135605 - enabling Remote Administration when installing using VNC
-      @allow_administration = Linuxrc.vnc
+      if Linuxrc.vnc
+        Enable()
+      else
+        Disable()
+      end
 
       Builtins.y2milestone(
         "Remote Administration was proposed as: %1",
-        @allow_administration ? "enabled" : "disabled"
+        IsEnabled() ? "enabled" : "disabled"
       )
 
       nil
@@ -135,18 +152,26 @@ module Yast
         from: "any",
         to:   "list <map>"
       )
-      vnc_conf = Builtins.filter(xinetd_conf) do |m|
-        s = Ops.get_string(m, "service", "")
-        s == "vnc1" || s == "vnchttpd1"
-      end
-      vnc = Builtins.size(vnc_conf) == 2 &&
-        Ops.get_boolean(vnc_conf, [0, "enabled"], false) &&
-        Ops.get_boolean(vnc_conf, [1, "enabled"], false)
+
+      xinetd_vnc1 = xinetd_conf.find { |m| m["service"] == "vnc1" }
+      xinetd_vnc1_enabled = xinetd_vnc1 ? xinetd_vnc1["enabled"] : false
 
       log.info "#{XDM_SERVICE_NAME}: #{xdm}, DM_R_A: #{dm_ra}"
-      log.info "xinetd: #{xinetd}, VNC: #{vnc}"
+      log.info "xinetd: #{xinetd}, VNC1: #{xinetd_vnc1_enabled}"
 
-      @allow_administration = xdm && dm_ra && xinetd && vnc
+      vncmanager = Service.Enabled(VNCMANAGER_SERVICE)
+
+      if xdm && dm_ra && xinetd
+        if xinetd_vnc1_enabled && !vncmanager
+          Enable()
+        elsif !xinetd_vnc1_enabled && vncmanager
+          EnableUsingVncManager()
+        else
+          Disable()
+        end
+      else
+        Disable()
+      end
 
       # Package containing SuSEfirewall2 services has to be installed before
       # reading SuSEFirewall, otherwise exception is thrown by firewall
@@ -175,12 +200,17 @@ module Yast
         to:   "list <map>"
       )
 
-      xinetd = Builtins.maplist(xinetd) do |m|
-        s = Ops.get_string(m, "service", "")
-        next deep_copy(m) if !(s == "vnc1" || s == "vnchttpd1")
-        Ops.set(m, "changed", true)
-        Ops.set(m, "enabled", @allow_administration)
-        log.info "Updated xinet cfg: #{m}"
+      xinetd = xinetd.map do |m|
+        case m["service"]
+        when "vnc1"
+          m["enabled"] = IsEnabled() && !UsesVncManager()
+          m["changed"] = true
+        when "vnchttpd1"
+          m["enabled"] = IsEnabled()
+          m["changed"] = true
+        end
+
+        log.info "Updated xinet cfg: #{m}" if m["changed"]
         deep_copy(m)
       end
 
@@ -235,25 +265,36 @@ module Yast
     def configure_display_manager
       if IsEnabled()
         # Install required packages
-        if !Package.InstallAll(Packages.vnc_packages)
+        packages = Packages.vnc_packages
+        packages << PKG_CONTAINING_VNCMANAGER if UsesVncManager()
+
+        if !Package.InstallAll(packages)
           log.error "Installing of required packages failed"
           return false
         end
 
-        # Enable xinetd
-        if !Service.Enable(XINETD_SERVICE)
-          Report.Error(
-            _("Enabling service %{service} has failed") % { service: XINETD_SERVICE }
-          )
-          return false
-        end
+        services = [
+          [XINETD_SERVICE, true],
+          [XDM_SERVICE_NAME, true],
+          [VNCMANAGER_SERVICE, UsesVncManager()]
+        ]
 
-        # Enable XDM
-        if !Service.Enable(XDM_SERVICE_NAME)
-          Report.Error(
-            _("Enabling service %{service} has failed") % { service: XDM_SERVICE_NAME }
-          )
-          return false
+        services.each do |service, enable|
+          if enable
+            if !Service.Enable(service)
+              Report.Error(
+                _("Enabling service %{service} has failed") % { service: service }
+              )
+              return false
+            end
+          else
+            if !Service.Disable(service)
+              Report.Error(
+                _("Disabling service %{service} has failed") % { service: service }
+              )
+              return false
+            end
+          end
         end
       end
 
@@ -296,12 +337,18 @@ module Yast
 
         Report.Error(Message.CannotRestartService(XINETD_SERVICE)) unless Service.Restart(XINETD_SERVICE)
 
+        if UsesVncManager()
+          Report.Error(Message.CannotRestartService(VNCMANAGER_SERVICE)) unless Service.Restart(VNCMANAGER_SERVICE)
+        end
+
         restart_display_manager
       else
         # xinetd may be needed for other services so we never turn it
         # off. It will exit anyway if no services are configured.
         # If it is running, restart it.
         Service.Reload(XINETD_SERVICE) if Service.active?(XINETD_SERVICE)
+
+        Service.Stop(VNCMANAGER_SERVICE)
       end
     end
 
