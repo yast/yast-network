@@ -153,19 +153,15 @@ module Yast
         to:   "list <map>"
       )
 
-      xinetd_vnc1_enabled = false
-      xinetd_vnchttp1_enabled = false
-      xinetd_conf.each do |m|
-        xinetd_vnc1_enabled = m["enabled"] if m["service"] == "vnc1"
-        xinetd_vnchttp1_enabled = m["enabled"] if m["service"] == "vnchttpd1"
-      end
+      xinetd_vnc1 = xinetd_conf.find { |m| m["service"] == "vnc1" }
+      xinetd_vnc1_enabled = xinetd_vnc1 ? xinetd_vnc1["enabled"] : false
 
       log.info "#{XDM_SERVICE_NAME}: #{xdm}, DM_R_A: #{dm_ra}"
-      log.info "xinetd: #{xinetd}, VNC1: #{xinetd_vnc1_enabled}, VNCHTTP1: #{xinetd_vnchttp1_enabled}"
+      log.info "xinetd: #{xinetd}, VNC1: #{xinetd_vnc1_enabled}"
 
       vncmanager = Service.Enabled(VNCMANAGER_SERVICE)
 
-      if xdm && dm_ra && xinetd && xinetd_vnchttp1_enabled
+      if xdm && dm_ra && xinetd
         if xinetd_vnc1_enabled && !vncmanager
           Enable()
         elsif !xinetd_vnc1_enabled && vncmanager
