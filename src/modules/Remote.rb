@@ -140,12 +140,8 @@ module Yast
       # are the proper services enabled in xinetd?
       xinetd_conf = SCR.Read(path(".etc.xinetd_conf.services")) || {}
 
-      xinetd_vnc1_enabled = false
-      xinetd_vnchttp1_enabled = false
-      xinetd_conf.each do |m|
-        xinetd_vnc1_enabled = m["enabled"] if m["service"] == "vnc1"
-        xinetd_vnchttp1_enabled = m["enabled"] if m["service"] == "vnchttpd1"
-      end
+      xinetd_vnc1_enabled = xinetd_conf.any? { |c| c["service"] == "vnc1" && c["enabled"] }
+      xinetd_vnchttp1_enabled = xinetd_conf.any? { |c| c["service"] == "vnchttpd1" && c["enabled"] }
 
       log.info "#{XDM_SERVICE_NAME}: #{xdm}, DM_R_A: #{dm_ra}"
       log.info "xinetd: #{xinetd}, VNC1: #{xinetd_vnc1_enabled}, VNCHTTP1: #{xinetd_vnchttp1_enabled}"
