@@ -137,18 +137,17 @@ module Yast
       xdm = Service.Enabled(XDM_SERVICE_NAME)
       dm_ra = SCR.Read(path(".sysconfig.displaymanager.DISPLAYMANAGER_REMOTE_ACCESS")).to_s == "yes"
       xinetd = Service.Enabled(XINETD_SERVICE)
+
       # are the proper services enabled in xinetd?
       xinetd_conf = SCR.Read(path(".etc.xinetd_conf.services")) || {}
-
       xinetd_vnc1_enabled = xinetd_conf.any? { |c| c["service"] == "vnc1" && c["enabled"] }
-      xinetd_vnchttp1_enabled = xinetd_conf.any? { |c| c["service"] == "vnchttpd1" && c["enabled"] }
 
       log.info "#{XDM_SERVICE_NAME}: #{xdm}, DM_R_A: #{dm_ra}"
-      log.info "xinetd: #{xinetd}, VNC1: #{xinetd_vnc1_enabled}, VNCHTTP1: #{xinetd_vnchttp1_enabled}"
+      log.info "xinetd: #{xinetd}, VNC1: #{xinetd_vnc1_enabled}"
 
       vncmanager = Service.Enabled(VNCMANAGER_SERVICE)
 
-      if xdm && dm_ra && xinetd && xinetd_vnchttp1_enabled
+      if xdm && dm_ra && xinetd
         if xinetd_vnc1_enabled && !vncmanager
           Enable()
         elsif !xinetd_vnc1_enabled && vncmanager
