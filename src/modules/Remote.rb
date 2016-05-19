@@ -134,27 +134,18 @@ module Yast
     # Read the current status
     # @return true on success
     def Read
-      xdm = Service.Enabled(XDM_SERVICE_NAME)
-      dm_ra = SCR.Read(path(".sysconfig.displaymanager.DISPLAYMANAGER_REMOTE_ACCESS")).to_s == "yes"
-      xinetd = Service.Enabled(XINETD_SERVICE)
-
       # are the proper services enabled in xinetd?
       xinetd_conf = SCR.Read(path(".etc.xinetd_conf.services")) || {}
       xinetd_vnc1_enabled = xinetd_conf.any? { |c| c["service"] == "vnc1" && c["enabled"] }
 
-      log.info "#{XDM_SERVICE_NAME}: #{xdm}, DM_R_A: #{dm_ra}"
-      log.info "xinetd: #{xinetd}, VNC1: #{xinetd_vnc1_enabled}"
+      log.info "VNC1 enabled: #{xinetd_vnc1_enabled}"
 
       vncmanager = Service.Enabled(VNCMANAGER_SERVICE)
+      vnc_service_running = xinetd_vnc1_enabled || vncmanager
 
-      if xdm && dm_ra && xinetd
-        if xinetd_vnc1_enabled && !vncmanager
-          Enable()
-        elsif !xinetd_vnc1_enabled && vncmanager
-          EnableVncManager()
-        else
-          Disable()
-        end
+      if xinet_ready? && vnc_service_running
+        Enable() if xinetd_vnc1_enabled
+        EnableVncManager() if vncmanager
       else
         Disable()
       end
@@ -354,6 +345,23 @@ module Yast
     publish function: :Read, type: "boolean ()"
     publish function: :Write, type: "boolean ()"
     publish function: :Summary, type: "string ()"
+
+  private
+
+    # Checks and reports if system is configured for remote access
+    #
+    # @return [true,false] true when all necessarry services are running
+    # and sysconfig is configured properly, false otherwise
+    def xinet_ready?
+      xdm = Service.Enabled(XDM_SERVICE_NAME)
+      dm_ra = SCR.Read(path(".sysconfig.displaymanager.DISPLAYMANAGER_REMOTE_ACCESS")).to_s == "yes"
+      xinetd = Service.Enabled(XINETD_SERVICE)
+
+      log.info "#{XDM_SERVICE_NAME}: #{xdm}, DM_R_A configured: #{dm_ra}"
+
+      xdm && dm_ra && xinetd
+    end
+
   end
 
   Remote = RemoteClass.new
