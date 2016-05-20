@@ -17,7 +17,7 @@
 
 
 Name:           yast2-network
-Version:        3.1.149
+Version:        3.1.152
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -31,6 +31,7 @@ BuildRequires:  update-desktop-files
 BuildRequires:  yast2-devtools >= 3.1.15
 BuildRequires:  yast2-country
 BuildRequires:  yast2-proxy
+Requires:       yast2-proxy
 #for install task
 BuildRequires:  rubygem(yast-rake)
 

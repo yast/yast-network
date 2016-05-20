@@ -4,7 +4,38 @@ Thu May 19 21:53:16 UTC 2016 - mfilka@suse.com
 - fate#319319
   - implemented support for vncmanager in Remote module. Thanks to
     msrb@suse.cz.
-- 3.1.149 
+- 3.1.152
+
+-------------------------------------------------------------------
+Tue May 17 16:04:49 UTC 2016 - mfilka@suse.com
+
+- bnc#971175
+  - /etc/hosts is correctly updated with static address, hostname
+    when static net configuration is done via linuxrc and hostname
+    is provided by AY profile
+- 3.1.151
+
+-------------------------------------------------------------------
+Fri May 13 10:19:39 UTC 2016 - knut.anderssen@suse.com
+
+- fate#315995
+  - Added physical port id to device overview and bond slaves item
+    description if supported.
+  - Warn the user when two or more bonded interfaces share the
+    same physical port.
+  - Available interfaces for bonding in bond slaves tab are now
+    sorted and moving them up or down maintain the interface
+    selected.
+- 3.1.150
+
+-------------------------------------------------------------------
+Mon May  2 11:35:45 UTC 2016 - mfilka@suse.com
+
+- bnc#977953
+  - added dependency on yast2-proxy. "yast2 lan" won't fail with
+    internal error (missing Proxy module), when yast2-network is
+    installed into a minimal server installation.
+- 3.1.149
 
 -------------------------------------------------------------------
 Tue Apr 19 08:01:16 UTC 2016 - mfilka@suse.com
