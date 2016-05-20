@@ -361,7 +361,6 @@ module Yast
 
       xdm && dm_ra && xinetd
     end
-
   end
 
   Remote = RemoteClass.new
