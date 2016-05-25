@@ -62,7 +62,7 @@ module Yast
             RadioButton(
               Id(:allow_with_vncmanager),
               _("&Allow Remote Administration With Session Management"),
-              Remote.IsEnabled && Remote.UsesVncManager
+              Remote.IsEnabled && Remote.EnabledVncManager
             )
           ),
           # RadioButton label
@@ -70,7 +70,7 @@ module Yast
             RadioButton(
               Id(:allow_without_vncmanager),
               _("&Allow Remote Administration Without Session Management"),
-              Remote.IsEnabled && !Remote.UsesVncManager
+              Remote.IsEnabled && !Remote.EnabledVncManager
             )
           ),
           # RadioButton label
@@ -154,7 +154,7 @@ module Yast
         allow_without_vncmanager = UI.QueryWidget(Id(:allow_without_vncmanager), :Value)
 
         if allow_with_vncmanager
-          Remote.EnableUsingVncManager
+          Remote.EnableVncManager
         elsif allow_without_vncmanager
           Remote.Enable
         else

@@ -115,10 +115,7 @@ module Yast
         Disable()
       end
 
-      Builtins.y2milestone(
-        "Remote Administration was proposed as: %1",
-        IsEnabled() ? "enabled" : "disabled"
-      )
+      log.info("Remote Administration was proposed as: #{@mode}")
 
       nil
     end
