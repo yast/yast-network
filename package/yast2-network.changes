@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu May 19 21:53:16 UTC 2016 - mfilka@suse.com
+
+- fate#319319
+  - implemented support for vncmanager in Remote module. Thanks to
+    msrb@suse.cz.
+- 3.1.152
+
+-------------------------------------------------------------------
 Tue May 17 16:04:49 UTC 2016 - mfilka@suse.com
 
 - bnc#971175
