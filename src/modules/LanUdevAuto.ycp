@@ -157,6 +157,7 @@ y2milestone("importing %1", settings);
    if (AllowUdevModify()){
     SCR::Write(.udev_persistent.rules_comment, comment);
     SCR::Write(.udev_persistent.rules, rules);
+    SCR::Write(.udev_persistent.nil, []);
    }
   } else
      y2milestone("No udev rules defined by AY, nothing to write (keep original file)");
