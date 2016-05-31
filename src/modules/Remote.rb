@@ -249,9 +249,10 @@ module Yast
 
         services = [
           [XINETD_SERVICE, true],
-          [XDM_SERVICE_NAME, true],
-          [VNCMANAGER_SERVICE, EnabledVncManager()]
+          [XDM_SERVICE_NAME, true]
         ]
+
+        services << [VNCMANAGER_SERVICE, EnabledVncManager()] if Package.Installed("vncmanager")
 
         services.each do |service, enable|
           if enable
