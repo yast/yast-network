@@ -151,7 +151,7 @@ module Yast
       before do
         stub_scr_write
         stub_scr_read(".etc.xinetd_conf.services")
-        allow(Package).to receive(:Installed).with("xinetd").and_return true
+        allow(Package).to receive(:Installed).and_return true
       end
 
       context "with VNC enabled without session management" do
