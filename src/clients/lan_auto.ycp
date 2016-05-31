@@ -420,12 +420,13 @@ else if (func == "Export") {
 }
 else if (func == "Write") {
     boolean progress_orig = Progress::set (false);
-    ret = LanUdevAuto::Write();
-
-    if(!(boolean) ret) y2error("Writing udev rules failed");
 
     ret = Lan::WriteOnly() && (boolean) ret;
     if(!(boolean) ret) y2error("Writing lan config failed");
+
+    ret = LanUdevAuto::Write();
+
+    if(!(boolean) ret) y2error("Writing udev rules failed");
 
     if (LanItems::autoinstall_settings["strict_IP_check_timeout"]:nil != nil)
      {

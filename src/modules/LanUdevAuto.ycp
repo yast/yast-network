@@ -154,6 +154,7 @@ y2milestone("importing %1", settings);
   });
   if (size(rules)>0){
    y2milestone("Writing AY udev rules for network (will replace original rules from 1st stage)");
+    y2milestone("rules: %1", rules);
    if (AllowUdevModify()){
     SCR::Write(.udev_persistent.rules_comment, comment);
     SCR::Write(.udev_persistent.rules, rules);
