@@ -1,10 +1,16 @@
 -------------------------------------------------------------------
+Wed Jun  1 14:16:08 UTC 2016 - igonzalezsosa@suse.com
+
+- Drop yast2-network-devel-doc package (fate#320356)
+- 3.1.154
+
+-------------------------------------------------------------------
 Tue May 31 11:31:22 UTC 2016 - mfilka@suse.com
 
 - bnc#981842
   - enable / disable vncmanager only when installed to avoid
     failures in systemd calls
-- 3.1.153 
+- 3.1.153
 
 -------------------------------------------------------------------
 Thu May 19 21:53:16 UTC 2016 - mfilka@suse.com
