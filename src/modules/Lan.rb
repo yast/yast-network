@@ -96,10 +96,14 @@ module Yast
     # Return a modification status
     # @return true if data was modified
     def Modified
-      ret = LanItems.GetModified || DNS.modified || Routing.Modified ||
-        NetworkConfig.Modified ||
-        NetworkService.Modified
-      ret
+      return true if LanItems.GetModified
+      return true if DNS.modified
+      return true if Routing.Modified
+      return true if NetworkConfig.Modified
+      return true if NetworkService.Modified
+      return true if SuSEFirewall.GetModified
+
+      false
     end
 
     # function for use from autoinstallation (Fate #301032)
