@@ -230,8 +230,8 @@ module Yast
       # Removing protection
       else
         # removing from all known zones
-        zones = SuSEFirewall.GetKnownFirewallZones.select do |zone|
-          SuSEFirewall.GetInterfacesInZone(zone).include?(interface)
+        zones = SuSEFirewall.GetKnownFirewallZones.select do |fw_zone|
+          SuSEFirewall.GetInterfacesInZone(fw_zone).include?(interface)
         end
         zones.each do |remove_from_zone|
           SuSEFirewall.RemoveInterfaceFromZone(interface, remove_from_zone)
@@ -239,8 +239,7 @@ module Yast
         # if there are no other interfaces in configuration, stop firewall
         # and remove it from boot process
         if !AnyInterfacesHandledByFirewall()
-          log.info("Disabling firewall, no interfaces are protected."
-)
+          log.info("Disabling firewall, no interfaces are protected.")
           SuSEFirewall.SetEnableService(false)
           SuSEFirewall.SetStartService(false)
         end
