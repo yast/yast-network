@@ -205,6 +205,23 @@ module Yast
       Ops.greater_than(Builtins.size(interfaces), 0)
     end
 
+    # Checks if interface of given name is assigned to given FW zone
+    def iface_in_zone?(interface, zone)
+      SuSEFirewall.GetInterfacesInZone(zone).include?(interface)
+    end
+
+    # Enables and starts fw service
+    def start_fw_service
+      SuSEFirewall.SetEnableService(true)
+      SuSEFirewall.SetStartService(true)
+    end
+
+    # Disables and stops fw service
+    def stop_fw_service
+      SuSEFirewall.SetEnableService(false)
+      SuSEFirewall.SetStartService(false)
+    end
+
     # Functions sets protection of interface by the protect-status.<br>
     # protect==true  -> add interface into selected firewall zone, sets firewall
     #			 to be started and enabled when booting.<br>
@@ -221,18 +238,13 @@ module Yast
       if protect_status
         log.info("Enabling firewall because of '#{interface}' interface")
 
-        if !SuSEFirewall.GetInterfacesInZone(zone).include?(interface)
-          SuSEFirewall.AddInterfaceIntoZone(interface, zone)
-        end
+        SuSEFirewall.AddInterfaceIntoZone(interface, zone) if !iface_in_zone?(interface, zone)
 
-        SuSEFirewall.SetEnableService(true)
-        SuSEFirewall.SetStartService(true)
+        start_fw_service
       # Removing protection
       else
         # removing from all known zones
-        zones = SuSEFirewall.GetKnownFirewallZones.select do |fw_zone|
-          SuSEFirewall.GetInterfacesInZone(fw_zone).include?(interface)
-        end
+        zones = SuSEFirewall.GetKnownFirewallZones.select { |fw_zone| iface_in_zone?(interface, fw_zone) }
         zones.each do |remove_from_zone|
           SuSEFirewall.RemoveInterfaceFromZone(interface, remove_from_zone)
         end
@@ -240,8 +252,7 @@ module Yast
         # and remove it from boot process
         if !AnyInterfacesHandledByFirewall()
           log.info("Disabling firewall, no interfaces are protected.")
-          SuSEFirewall.SetEnableService(false)
-          SuSEFirewall.SetStartService(false)
+          stop_fw_service
         end
       end
 
