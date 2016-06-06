@@ -218,26 +218,29 @@ module Yast
     # @return	[Boolean] if successful
     def ProtectByFirewall(interface, zone, protect_status)
       # Adding protection
-      if protect_status == true
-        Builtins.y2milestone(
-          "Enabling firewall because of '%1' interface",
-          interface
-        )
-        SuSEFirewall.AddInterfaceIntoZone(interface, zone)
+      if protect_status
+        log.info("Enabling firewall because of '#{interface}' interface")
+
+        if !SuSEFirewall.GetInterfacesInZone(zone).include?(interface)
+          SuSEFirewall.AddInterfaceIntoZone(interface, zone)
+        end
+
         SuSEFirewall.SetEnableService(true)
         SuSEFirewall.SetStartService(true)
-        # Removing protection
+      # Removing protection
       else
         # removing from all known zones
-        Builtins.foreach(SuSEFirewall.GetKnownFirewallZones) do |remove_from_zone|
+        zones = SuSEFirewall.GetKnownFirewallZones.select do |zone|
+          SuSEFirewall.GetInterfacesInZone(zone).include?(interface)
+        end
+        zones.each do |remove_from_zone|
           SuSEFirewall.RemoveInterfaceFromZone(interface, remove_from_zone)
         end
         # if there are no other interfaces in configuration, stop firewall
         # and remove it from boot process
         if !AnyInterfacesHandledByFirewall()
-          Builtins.y2milestone(
-            "Disabling firewall, no interfaces are protected."
-          )
+          log.info("Disabling firewall, no interfaces are protected."
+)
           SuSEFirewall.SetEnableService(false)
           SuSEFirewall.SetStartService(false)
         end
