@@ -2032,7 +2032,9 @@ module Yast
       current_map = (GetCurrentMap() || {}).select { |_, v| !v.nil? && !v.empty? }
       new_map = newdev.select { |_, v| !v.nil? && !v.empty? }
 
-      if current_map != new_map
+      # CanonicalizeIP is called to get new device map into the same shape as
+      # NetworkInterfaces provides the current one.
+      if current_map != NetworkInterfaces.CanonicalizeIP(new_map)
         NetworkInterfaces.Name = Items()[@current]["ifcfg"] || ""
         NetworkInterfaces.Current = deep_copy(newdev)
 
