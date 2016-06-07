@@ -39,7 +39,7 @@ describe "NetworkLanComplexInclude::input_done?" do
 
     it "asks user for abort confirmation for input equal to :abort and user did modifications" do
       allow(Yast::LanItems)
-        .to receive(:modified)
+        .to receive(:GetModified)
         .and_return(true)
 
       expect(subject)

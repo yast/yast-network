@@ -507,7 +507,7 @@ module Yast
       if Stage.initial
         return Popup.ConfirmAbort(:painless)
       else
-        return ReallyAbort() if LanItems.modified
+        return ReallyAbort() if LanItems.GetModified
         return true
       end
     end

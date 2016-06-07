@@ -416,7 +416,6 @@ module Yast
       Builtins.sleep(sl)
 
       return false if Abort()
-      LanItems.modified = false
       @initialized = true
 
       Progress.Finish if @gui
@@ -992,7 +991,7 @@ module Yast
             configure_as_bridge_port(ifcfg)
 
             Ops.set(LanItems.Items, [current, "ifcfg"], new_ifcfg)
-            LanItems.modified = true
+            LanItems.SetModified
             LanItems.force_restart = true
             Builtins.y2internal("List %1", NetworkInterfaces.List(""))
             # re-read configuration to see new items in UI
