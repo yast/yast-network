@@ -374,7 +374,7 @@ module Yast
               if Ops.greater_than(
                 Builtins.size(Ops.get_string(@driver_options, driver, "")),
                 0
-                )
+              )
                 " "
               else
                 ""
@@ -510,7 +510,7 @@ module Yast
 
     # Sets new device name for current item
     def rename(name)
-      if (GetCurrentName() != name)
+      if GetCurrentName() != name
         @Items[@current]["renamed_to"] = name
         SetModified()
       else
@@ -1138,12 +1138,12 @@ module Yast
               @Items,
               [key, "table_descr", "rich_descr"],
               ""
-),
+            ),
             "table_descr" => Ops.get_list(
               @Items,
               [key, "table_descr", "table_descr"],
               []
-)
+            )
           )
         end
       end
@@ -1156,7 +1156,7 @@ module Yast
         if Builtins.haskey(
           @request_firmware,
           Ops.get_string(@Items, [@current, "hwinfo", "driver"], "")
-          )
+        )
           need = true
         end
       else
@@ -1166,7 +1166,7 @@ module Yast
           if Builtins.haskey(
             @request_firmware,
             Ops.get_string(driver, ["modules", 0, 0], "")
-            )
+          )
             Builtins.y2milestone(
               "driver %1 needs firmware",
               Ops.get_string(driver, ["modules", 0, 0], "")
@@ -1185,7 +1185,7 @@ module Yast
         if Builtins.haskey(
           @request_firmware,
           Ops.get_string(@Items, [@current, "hwinfo", "driver"], "")
-          )
+        )
           kernel_module = Ops.get_string(
             @Items,
             [@current, "hwinfo", "driver"],
@@ -1199,7 +1199,7 @@ module Yast
           if Builtins.haskey(
             @request_firmware,
             Ops.get_string(driver, ["modules", 0, 0], "")
-            )
+          )
             kernel_module = Ops.get_string(driver, ["modules", 0, 0], "")
             raise Break
           end
@@ -1419,7 +1419,7 @@ module Yast
         rich << physical_port_id if physical_port_id?(ifcfg_name)
         # display it only if we need it, don't duplicate "ifcfg_name" above
         if IsNotEmpty(item_hwinfo["dev_name"]) && ifcfg_name.empty?
-          dev_name = _("Device Name: %s") %  item_hwinfo["dev_name"]
+          dev_name = _("Device Name: %s") % item_hwinfo["dev_name"]
           rich << HTML.Bold(dev_name) << "<br>"
         end
         rich = HTML.Bold(descr) + rich
@@ -1460,11 +1460,7 @@ module Yast
     # Is current device hotplug or not? I.e. is connected via usb/pcmci?
     def isCurrentHotplug
       hotplugtype = Ops.get_string(getCurrentItem, ["hwinfo", "hotplug"], "")
-      if hotplugtype == "usb" || hotplugtype == "pcmci"
-        return true
-      else
-        return false
-      end
+      hotplugtype == "usb" || hotplugtype == "pcmci"
     end
 
     # Check if currently edited device gets its IP address
@@ -1559,17 +1555,17 @@ module Yast
           ),
           4
         )
-        if DriverType(@type) == "ctc" || DriverType(@type) == "lcs"
-          @qeth_chanids = Builtins.sformat("%1%2 %1%3", devstr, devid0, devid1)
-        else
-          @qeth_chanids = Builtins.sformat(
-            "%1%2 %1%3 %1%4",
-            devstr,
-            devid0,
-            devid1,
-            devid2
-          )
-        end
+        @qeth_chanids = if DriverType(@type) == "ctc" || DriverType(@type) == "lcs"
+                          Builtins.sformat("%1%2 %1%3", devstr, devid0, devid1)
+                        else
+                          Builtins.sformat(
+                            "%1%2 %1%3 %1%4",
+                            devstr,
+                            devid0,
+                            devid1,
+                            devid2
+                          )
+                        end
       end
 
       nil
@@ -1748,18 +1744,18 @@ module Yast
 
       Builtins.y2milestone("Startmode by product: #{product_startmode}")
 
-      case product_startmode
-      when "ifplugd"
-        if replace_ifplugd?
-          startmode = hotplug_usable? ? "hotplug" : "auto"
-        else
-          startmode = product_startmode
-        end
-      when "auto"
-        startmode = "auto"
-      else
-        startmode = hotplug_usable? ? "hotplug" : "auto"
-      end
+      startmode = case product_startmode
+                  when "ifplugd"
+                    if replace_ifplugd?
+                      hotplug_usable? ? "hotplug" : "auto"
+                    else
+                      product_startmode
+                    end
+                  when "auto"
+                    "auto"
+                  else
+                    hotplug_usable? ? "hotplug" : "auto"
+                  end
 
       Builtins.y2milestone("New device startmode: #{startmode}")
 
@@ -2063,11 +2059,9 @@ module Yast
         log.info "rollback item #{@current}"
         if getCurrentItem.fetch("hwinfo", {}).empty?
           LanItems.Items.delete(@current)
-        else
-          if IsCurrentConfigured()
-            if !getNetworkInterfaces.include?(getCurrentItem["ifcfg"])
-              LanItems.Items[@current].delete("ifcfg")
-            end
+        elsif IsCurrentConfigured()
+          if !getNetworkInterfaces.include?(getCurrentItem["ifcfg"])
+            LanItems.Items[@current].delete("ifcfg")
           end
         end
       end
@@ -2305,7 +2299,7 @@ module Yast
         SCR.Execute(path(".target.bash_output"), command1),
         from: "any",
         to:   "map <string, any>"
-    )
+      )
       if Ops.get_integer(output1, "exit", -1) == 0 &&
           Builtins.size(Ops.get_string(output1, "stderr", "")) == 0
         Builtins.y2milestone("Success : %1", output1)
@@ -2384,8 +2378,6 @@ module Yast
       udev_rules
     end
 
-  private
-
     # This helper allows YARD to extract DSL-defined attributes.
     # Unfortunately YARD has problems with the Capitalized ones,
     # so those must be done manually.
@@ -2395,6 +2387,8 @@ module Yast
     def self.publish_variable(name, type)
       publish variable: name, type: type
     end
+
+  private
 
     # Checks if given lladdr can be written into ifcfg
     #
@@ -2479,7 +2473,7 @@ module Yast
           if Ops.greater_than(
             Builtins.size(Ops.get_string(chan_ids, "stdout", "")),
             0
-            )
+          )
             chanids = String.CutBlanks(Ops.get_string(chan_ids, "stdout", ""))
           end
           port_name = Convert.convert(
@@ -2496,7 +2490,7 @@ module Yast
           if Ops.greater_than(
             Builtins.size(Ops.get_string(port_name, "stdout", "")),
             0
-            )
+          )
             portname = String.CutBlanks(Ops.get_string(port_name, "stdout", ""))
           end
           proto = Convert.convert(
@@ -2513,7 +2507,7 @@ module Yast
           if Ops.greater_than(
             Builtins.size(Ops.get_string(proto, "stdout", "")),
             0
-            )
+          )
             protocol = String.CutBlanks(Ops.get_string(proto, "stdout", ""))
           end
           layer2_ret = SCR.Execute(
@@ -2521,8 +2515,8 @@ module Yast
             Builtins.sformat(
               "grep -q 1 /sys/class/net/%1/device/layer2",
               device
+            )
           )
-                   )
           layer2 = layer2_ret == 0
           Ops.set(ay, ["s390-devices", device], "type" => device_type)
           if Ops.greater_than(Builtins.size(chanids), 0)
@@ -2550,7 +2544,7 @@ module Yast
           if Ops.greater_than(
             Builtins.size(Ops.get_string(port0, "stdout", "")),
             0
-            )
+          )
             value = Ops.get_string(port0, "stdout", "")
             Ops.set(
               ay,
