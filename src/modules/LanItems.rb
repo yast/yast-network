@@ -2029,7 +2029,10 @@ module Yast
         newdev["INTERFACETYPE"] = @type
       end
 
-      if GetCurrentMap() != newdev
+      current_map = (GetCurrentMap() || {}).select { |_, v| !v.nil? && !v.empty? }
+      new_map = newdev.select { |_, v| !v.nil? && !v.empty? }
+
+      if current_map != new_map
         NetworkInterfaces.Name = Items()[@current]["ifcfg"] || ""
         NetworkInterfaces.Current = deep_copy(newdev)
 
