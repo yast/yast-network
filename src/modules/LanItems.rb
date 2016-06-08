@@ -2574,8 +2574,6 @@ module Yast
       deep_copy(ay)
     end
 
-  public
-
     # @attribute Items
     # @return [Hash<Integer, Hash<String, Object> >]
     # Each item, indexed by an Integer in a Hash, aggregates several aspects
