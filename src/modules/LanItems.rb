@@ -415,6 +415,11 @@ module Yast
     # Note that the tuple is identified by key only. However modification flag is
     # set only if value was changed (in case when replace_key == new_key)
     #
+    # It also contain a logic on tuple operators. When the new_key is "NAME"
+    # then assignment operator (=) is used. Otherwise equality operator (==) is used.
+    # Thats bcs this function is currently used for touching "NAME", "KERNELS" and
+    # "ATTR{address}" keys only
+    #
     # @param replace_key [string] udev key which identifies tuple to be replaced
     # @param new_key     [string] new key to by used
     # @param new_val     [string] value for new key
