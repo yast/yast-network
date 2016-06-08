@@ -2031,7 +2031,9 @@ module Yast
       # CanonicalizeIP is called to get new device map into the same shape as
       # NetworkInterfaces provides the current one.
       if current_map != NetworkInterfaces.CanonicalizeIP(new_map)
-        Items()[@current]["ifcfg"] = "" if !NetworkInterfaces.Change2(Items()[@current]["ifcfg"], newdev, false)
+        keep_existing = false
+        ifcfg_name = Items()[@current]["ifcfg"]
+        ifcfg_name.replace("") if !NetworkInterfaces.Change2(ifcfg_name, newdev, keep_existing)
 
         # bnc#752464 - can leak wireless passwords
         # useful only for debugging. Writes huge struct mostly filled by defaults.
