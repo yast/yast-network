@@ -405,6 +405,7 @@ module Yast
       deep_copy(udev_rules)
     end
 
+    # It returns a value for the particular key of udev rule belonging to the current item.
     def GetItemUdev(key)
       value = ""
 
