@@ -27,14 +27,12 @@ describe "LanItemsClass#IsItemConfigured" do
 end
 
 describe "LanItemsClass#delete_dev" do
-  MOCKED_ITEMS_DEL = {
-    0 => {
-      "ifcfg" => "enp0s3"
-    }
-  }
-
   before(:each) do
-    Yast::LanItems.Items = MOCKED_ITEMS_DEL
+    Yast::LanItems.Items = {
+      0 => {
+        "ifcfg" => "enp0s3"
+      }
+    }
   end
 
   it "removes device config when found" do
@@ -124,5 +122,47 @@ describe "LanItemsClass#s390_correct_lladdr" do
 
   it "succeeds if given lladdr contains valid MAC" do
     expect(Yast::LanItems.send(:s390_correct_lladdr, "0a:00:27:00:00:00")).to be true
+  end
+end
+
+describe "LanItems#GetItemUdev" do
+  def check_GetItemUdev(key, expected_value)
+    expect(Yast::LanItems.GetItemUdev(key)).to eql expected_value
+  end
+
+  context "when current item has an udev rule associated" do
+    BUSID = "0000:00:00.0".freeze
+
+    before(:each) do
+      allow(Yast::LanItems)
+        .to receive(:getCurrentItem)
+        .and_return("udev" => { "net" => ["KERNELS==\"#{BUSID}\""] })
+    end
+
+    it "returns proper value when key exists" do
+      check_GetItemUdev("KERNELS", BUSID)
+    end
+
+    it "returns an empty string when key doesn't exist" do
+      check_GetItemUdev("NAME", "")
+    end
+  end
+
+  context "when current item doesn't have an udev rule associated" do
+    MAC = "00:11:22:33:44:55".freeze
+
+    before(:each) do
+      allow(Yast::LanItems)
+        .to receive(:GetLanItem)
+        .and_return("hwinfo" => { "mac" => MAC }, "ifcfg" => "eth0")
+    end
+
+    it "returns proper value when key exists" do
+      check_GetItemUdev("ATTR{address}", MAC)
+    end
+
+    it "returns an empty string when key doesn't exist" do
+      check_GetItemUdev("KERNELS", "")
+    end
   end
 end
