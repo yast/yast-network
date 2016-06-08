@@ -107,6 +107,7 @@ describe "LanItems#ReplaceItemUdev" do
       "xx:01:02:03:04:05"
     )
     expect(updated_rule).to include "ATTR{address}==\"xx:01:02:03:04:05\""
+    expect(updated_rule).not_to include "KERNELS"
   end
 
   it "do not set modification flag in case of no change" do
