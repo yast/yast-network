@@ -499,6 +499,20 @@ module Yast
       udev_key_value(getUdevFallback, key)
     end
 
+    # It replaces a tuple identified by replace_key in current item's udev rule
+    #
+    # Note that the tuple is identified by key only. However modification flag is
+    # set only if value was changed (in case when replace_key == new_key)
+    #
+    # It also contain a logic on tuple operators. When the new_key is "NAME"
+    # then assignment operator (=) is used. Otherwise equality operator (==) is used.
+    # Thats bcs this function is currently used for touching "NAME", "KERNELS" and
+    # "ATTR{address}" keys only
+    #
+    # @param replace_key [string] udev key which identifies tuple to be replaced
+    # @param new_key     [string] new key to by used
+    # @param new_val     [string] value for new key
+    # @return updated rule when replace_key is found, current rule otherwise
     def ReplaceItemUdev(replace_key, new_key, new_val)
       # =    for assignment
       # ==   for equality checks
