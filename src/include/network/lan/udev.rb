@@ -45,6 +45,23 @@ module Yast
       rule
     end
 
+    # Returns a value of the particular key in the rule
+    #
+    # @return [string] value corresponding to the key or empty string
+    def udev_key_value(rule, key)
+      raise ArgumentError if rule.nil?
+
+      rule.each do |tuple|
+        # note that when using =~ then named capture groups (?<name>...) currently
+        # cannot be used together with interpolation (#{})
+        # see http://stackoverflow.com/questions/15890729/why-does-capturing-named-groups-in-ruby-result-in-undefined-local-variable-or-m
+        matches = tuple.match(/#{key}={1,2}"?(?<value>[^[:space:]"]*)/)
+        return matches[:value] if matches
+      end
+
+      ""
+    end
+
     # Writes new persistent udev net rules and tells udevd to update its configuration
     def write_update_udevd(udev_rules)
       SCR.Write(path(".udev_persistent.rules"), udev_rules)

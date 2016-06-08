@@ -407,25 +407,7 @@ module Yast
 
     # It returns a value for the particular key of udev rule belonging to the current item.
     def GetItemUdev(key)
-      value = ""
-
-      Builtins.foreach(getUdevFallback) do |row|
-        if Builtins.issubstring(row, key)
-          items = Builtins.filter(Builtins.splitstring(row, "=")) do |s|
-            Ops.greater_than(Builtins.size(s), 0)
-          end
-          if Builtins.size(items) == 2 && Ops.get_string(items, 0, "") == key
-            value = Builtins.deletechars(Ops.get_string(items, 1, ""), "\"")
-          else
-            Builtins.y2warning(
-              "udev items %1 doesn't match the key %2",
-              items,
-              key
-            )
-          end
-        end
-      end
-      value
+      udev_key_value(getUdevFallback, key)
     end
 
     # It replaces a tuple identified by replace_key in current item's udev rule
