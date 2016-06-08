@@ -90,6 +90,9 @@ describe "LanItems#ReplaceItemUdev" do
 
   it "replaces triplet in the rule as requested" do
     allow(Yast::LanItems)
+      .to receive(:Items)
+      .and_return(0 => {})
+    allow(Yast::LanItems)
       .to receive(:getUdevFallback)
       .and_return(
         [
@@ -100,6 +103,9 @@ describe "LanItems#ReplaceItemUdev" do
       )
 
     expect(Yast::LanItems).to receive(:SetModified)
+
+    # internally used in ReplaceItemUdev, needed to be able to mock its usage
+    Yast::LanItems.current = 0
 
     updated_rule = Yast::LanItems.ReplaceItemUdev(
       "KERNELS",
