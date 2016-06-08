@@ -495,25 +495,7 @@ module Yast
     end
 
     def GetItemUdev(key)
-      value = ""
-
-      Builtins.foreach(getUdevFallback) do |row|
-        if Builtins.issubstring(row, key)
-          items = Builtins.filter(Builtins.splitstring(row, "=")) do |s|
-            Ops.greater_than(Builtins.size(s), 0)
-          end
-          if Builtins.size(items) == 2 && Ops.get_string(items, 0, "") == key
-            value = Builtins.deletechars(Ops.get_string(items, 1, ""), "\"")
-          else
-            Builtins.y2warning(
-              "udev items %1 doesn't match the key %2",
-              items,
-              key
-            )
-          end
-        end
-      end
-      value
+      udev_key_value(getUdevFallback, key)
     end
 
     def ReplaceItemUdev(replace_key, new_key, new_val)
