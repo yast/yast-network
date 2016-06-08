@@ -499,35 +499,23 @@ module Yast
     end
 
     def ReplaceItemUdev(replace_key, new_key, new_val)
-      new_rules = []
-      # udev syntax distinguishes among others:
       # =    for assignment
       # ==   for equality checks
       operator = new_key == "NAME" ? "=" : "=="
+      current_rule = getUdevFallback
+      rule = RemoveKeyFromUdevRule(getUdevFallback, replace_key)
+      new_rule = AddToUdevRule(rule, "#{new_key}#{operator}\"#{new_val}\"")
 
-      Builtins.foreach(getUdevFallback) do |row|
-        if Builtins.issubstring(row, replace_key)
-          row = Builtins.sformat("%1%2\"%3\"", new_key, operator, new_val)
-        end
-        new_rules = Builtins.add(new_rules, row)
+      log.info("ReplaceItemUdev: new udev rule = #{new_rule}")
+
+      if current_rule.sort != new_rule.sort
+        SetModified()
+
+        Items()[@current]["udev"] = { "net" => {} } if !Items()[@current]["udev"]
+        Items()[@current]["udev"]["net"] = new_rule
       end
 
-      Builtins.y2debug(
-        "LanItems::ReplaceItemUdev: udev rules %1",
-        Ops.get_list(@Items, [@current, "udev", "net"], [])
-      )
-
-      Ops.set(@Items, [@current, "udev", "net"], new_rules)
-
-      Builtins.y2debug(
-        "LanItems::ReplaceItemUdev(%1, %2, %3) %4",
-        replace_key,
-        new_key,
-        new_val,
-        new_rules
-      )
-
-      deep_copy(new_rules)
+      deep_copy(new_rule)
     end
 
     # Updates device name.
