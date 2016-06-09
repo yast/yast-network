@@ -62,6 +62,8 @@ Conflicts:      yast2-core < 2.10.6
 
 Requires:       yast2-ruby-bindings >= 1.0.0
 
+Obsoletes:      yast2-network-devel-doc
+
 Summary:        YaST2 - Network Configuration
 
 %description 
