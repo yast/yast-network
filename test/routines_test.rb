@@ -3,6 +3,7 @@
 require_relative "test_helper"
 
 require "yast"
+require "yaml"
 
 class RoutinesTestClass
   include Yast::UIShortcuts
@@ -155,4 +156,57 @@ describe "#physical_port_id?" do
 
     expect(routines.physical_port_id?("eth0")).to eql(true)
   end
+end
+
+describe "#ControllerType" do
+
+  subject(:routines) { RoutinesTestClass.new }
+  subject(:hwdevice) { { "class_id" => 2 } }
+
+  context "when network class (2)" do
+
+    it "returns eth for subclass 0" do
+      hwdevice["sub_class_id"] = 0
+      expect(routines.ControllerType(hwdevice)).to eql "eth"
+    end
+
+    it "returns ib for subclass 7" do
+      hwdevice["sub_class_id"] = 7
+      expect(routines.ControllerType(hwdevice)).to eql "ib"
+    end
+
+    it "returns an empty string for subclass 128" do
+      hwdevice["sub_class_id"] = 128
+      expect(routines.ControllerType(hwdevice)).to eql ""
+    end
+  end
+
+  context "when network interface class (263)" do
+    subject(:hwdevice) { { "class_id" => 263 } }
+
+    it "returns <lo> for subclass <0>" do
+      hwdevice["sub_class_id"] = 0
+      expect(routines.ControllerType(hwdevice)).to eql "lo"
+    end
+
+    it "returns <qeth> for subclass <7>" do
+      hwdevice["sub_class_id"] = 7
+      expect(routines.ControllerType(hwdevice)).to eql "qeth"
+    end
+
+    it "returns <sit> for subclass <129>" do
+      hwdevice["sub_class_id"] = 129
+      expect(routines.ControllerType(hwdevice)).to eql "sit"
+    end
+
+    it "returns an empty string for subclass 128" do
+      hwdevice["sub_class_id"] = 128
+      expect(routines.ControllerType(hwdevice)).to eql ""
+    end
+  end
+
+  it "returns an empty string if not knowed class" do
+    expect(routines.ControllerType("class_id" => 200)).to eql("")
+  end
+
 end
