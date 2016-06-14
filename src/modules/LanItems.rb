@@ -2215,17 +2215,24 @@ module Yast
 
     # Creates eth emulation for s390 devices
     #
-    # @param [Hash] an s390 device description as obtained from AY profile
-    def createS390Device(rule)
-      Builtins.y2milestone("creating device s390 network device, #{rule}")
+    # @param [Hash] an s390 device description (e.g. as obtained from AY profile).
+    # if not present then initialization of S390 specific LanItems' variables is
+    # expected to be done out of this function.
+    def createS390Device(dev_attrs = {})
+      Builtins.y2milestone("creating device s390 network device, #{dev_attrs}")
 
-      Select("")
-      @type = rule["type"] || ""
-      @qeth_chanids = rule["chanids"] || ""
-      @qeth_layer2 = rule.fetch("layer2", false)
-      @qeth_portname = rule["portname"] || ""
-      @chan_mode = rule["protocol"] || ""
-      @iucv_user = rule["router"] || ""
+      # FIXME: leftover from dropping LanUdevAuto module. This was its way how to
+      # configure s390 specific globals. When running in "normal" mode these attributes
+      # are initialized elsewhere (see S390Dialog in include/network/lan/hardware.rb)
+      if !dev_attrs.empty?
+        Select("")
+        @type = dev_attrs["type"] || ""
+        @qeth_chanids = dev_attrs["chanids"] || ""
+        @qeth_layer2 = dev_attrs.fetch("layer2", false)
+        @qeth_portname = dev_attrs["portname"] || ""
+        @chan_mode = dev_attrs["protocol"] || ""
+        @iucv_user = dev_attrs["router"] || ""
+      end
 
       result = true
       # command to create device
