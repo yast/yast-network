@@ -200,12 +200,6 @@ module Yast
         "datagram"  => _("datagram")
       }
 
-      # propose options
-      @proposal_valid = false
-
-      # NetworkModules:: name
-      @nm_name = ""
-
       Yast.include self, "network/hardware.rb"
 
       # Default values used when creating an emulated NIC for physical s390 hardware.
@@ -380,7 +374,7 @@ module Yast
               if Ops.greater_than(
                 Builtins.size(Ops.get_string(@driver_options, driver, "")),
                 0
-                )
+              )
                 " "
               else
                 ""
@@ -434,36 +428,43 @@ module Yast
       value
     end
 
+    # It replaces a tuple identified by replace_key in current item's udev rule
+    #
+    # Note that the tuple is identified by key only. However modification flag is
+    # set only if value was changed (in case when replace_key == new_key)
+    #
+    # @param replace_key [string] udev key which identifies tuple to be replaced
+    # @param new_key     [string] new key to by used
+    # @param new_val     [string] value for new key
+    # @return updated rule when replace_key is found, current rule otherwise
     def ReplaceItemUdev(replace_key, new_key, new_val)
-      new_rules = []
+      new_rule = []
       # udev syntax distinguishes among others:
       # =    for assignment
       # ==   for equality checks
       operator = new_key == "NAME" ? "=" : "=="
+      current_rule = getUdevFallback
 
-      Builtins.foreach(getUdevFallback) do |row|
-        if Builtins.issubstring(row, replace_key)
-          row = Builtins.sformat("%1%2\"%3\"", new_key, operator, new_val)
-        end
-        new_rules = Builtins.add(new_rules, row)
+      return current_rule if !new_key || new_key.empty?
+      return current_rule if !new_val || new_val.empty?
+
+      i = current_rule.find_index { |tuple| tuple =~ /#{replace_key}/ }
+      if i
+        # deep_copy is most probably not neccessary because getUdevFallback does
+        # deep_copy on return value. However, getUdevFallback will be subect of refactoring
+        # so caution is must. Moreover new_rule is also return value so it should be
+        # copied anyway
+        new_rule = deep_copy(current_rule)
+        new_rule[i] = "#{new_key}#{operator}\"#{new_val}\""
+
+        SetModified() if current_rule != new_rule
       end
 
-      Builtins.y2debug(
-        "LanItems::ReplaceItemUdev: udev rules %1",
-        Ops.get_list(@Items, [@current, "udev", "net"], [])
-      )
+      log.info("LanItems#ReplaceItemUdev: #{current_rule} -> #{new_rule}")
 
-      Ops.set(@Items, [@current, "udev", "net"], new_rules)
+      Items()[@current]["udev"]["net"] = new_rule
 
-      Builtins.y2debug(
-        "LanItems::ReplaceItemUdev(%1, %2, %3) %4",
-        replace_key,
-        new_key,
-        new_val,
-        new_rules
-      )
-
-      deep_copy(new_rules)
+      new_rule
     end
 
     # Updates device name.
@@ -509,8 +510,9 @@ module Yast
 
     # Sets new device name for current item
     def rename(name)
-      if (GetCurrentName() != name)
+      if GetCurrentName() != name
         @Items[@current]["renamed_to"] = name
+        SetModified()
       else
         @Items[@current].delete("renamed_to")
       end
@@ -676,6 +678,7 @@ module Yast
     def GetModified
       @modified
     end
+
     # Function sets internal variable, which indicates, that any
     # settings were modified, to "true"
     def SetModified
@@ -1012,6 +1015,8 @@ module Yast
     # It is full outer join in -> you can have hwinfo part with no coresponding
     # netconfig part (or vice versa) in @Items when the method is done.
     def Read
+      reset_cache
+
       ReadHw()
       NetworkInterfaces.Read
       NetworkInterfaces.CleanHotplugSymlink
@@ -1133,12 +1138,12 @@ module Yast
               @Items,
               [key, "table_descr", "rich_descr"],
               ""
-),
+            ),
             "table_descr" => Ops.get_list(
               @Items,
               [key, "table_descr", "table_descr"],
               []
-)
+            )
           )
         end
       end
@@ -1151,7 +1156,7 @@ module Yast
         if Builtins.haskey(
           @request_firmware,
           Ops.get_string(@Items, [@current, "hwinfo", "driver"], "")
-          )
+        )
           need = true
         end
       else
@@ -1161,7 +1166,7 @@ module Yast
           if Builtins.haskey(
             @request_firmware,
             Ops.get_string(driver, ["modules", 0, 0], "")
-            )
+          )
             Builtins.y2milestone(
               "driver %1 needs firmware",
               Ops.get_string(driver, ["modules", 0, 0], "")
@@ -1180,7 +1185,7 @@ module Yast
         if Builtins.haskey(
           @request_firmware,
           Ops.get_string(@Items, [@current, "hwinfo", "driver"], "")
-          )
+        )
           kernel_module = Ops.get_string(
             @Items,
             [@current, "hwinfo", "driver"],
@@ -1194,7 +1199,7 @@ module Yast
           if Builtins.haskey(
             @request_firmware,
             Ops.get_string(driver, ["modules", 0, 0], "")
-            )
+          )
             kernel_module = Ops.get_string(driver, ["modules", 0, 0], "")
             raise Break
           end
@@ -1414,7 +1419,7 @@ module Yast
         rich << physical_port_id if physical_port_id?(ifcfg_name)
         # display it only if we need it, don't duplicate "ifcfg_name" above
         if IsNotEmpty(item_hwinfo["dev_name"]) && ifcfg_name.empty?
-          dev_name = _("Device Name: %s") %  item_hwinfo["dev_name"]
+          dev_name = _("Device Name: %s") % item_hwinfo["dev_name"]
           rich << HTML.Bold(dev_name) << "<br>"
         end
         rich = HTML.Bold(descr) + rich
@@ -1455,11 +1460,7 @@ module Yast
     # Is current device hotplug or not? I.e. is connected via usb/pcmci?
     def isCurrentHotplug
       hotplugtype = Ops.get_string(getCurrentItem, ["hwinfo", "hotplug"], "")
-      if hotplugtype == "usb" || hotplugtype == "pcmci"
-        return true
-      else
-        return false
-      end
+      hotplugtype == "usb" || hotplugtype == "pcmci"
     end
 
     # Check if currently edited device gets its IP address
@@ -1554,17 +1555,17 @@ module Yast
           ),
           4
         )
-        if DriverType(@type) == "ctc" || DriverType(@type) == "lcs"
-          @qeth_chanids = Builtins.sformat("%1%2 %1%3", devstr, devid0, devid1)
-        else
-          @qeth_chanids = Builtins.sformat(
-            "%1%2 %1%3 %1%4",
-            devstr,
-            devid0,
-            devid1,
-            devid2
-          )
-        end
+        @qeth_chanids = if DriverType(@type) == "ctc" || DriverType(@type) == "lcs"
+                          Builtins.sformat("%1%2 %1%3", devstr, devid0, devid1)
+                        else
+                          Builtins.sformat(
+                            "%1%2 %1%3 %1%4",
+                            devstr,
+                            devid0,
+                            devid1,
+                            devid2
+                          )
+                        end
       end
 
       nil
@@ -1743,18 +1744,18 @@ module Yast
 
       Builtins.y2milestone("Startmode by product: #{product_startmode}")
 
-      case product_startmode
-      when "ifplugd"
-        if replace_ifplugd?
-          startmode = hotplug_usable? ? "hotplug" : "auto"
-        else
-          startmode = product_startmode
-        end
-      when "auto"
-        startmode = "auto"
-      else
-        startmode = hotplug_usable? ? "hotplug" : "auto"
-      end
+      startmode = case product_startmode
+                  when "ifplugd"
+                    if replace_ifplugd?
+                      hotplug_usable? ? "hotplug" : "auto"
+                    else
+                      product_startmode
+                    end
+                  when "auto"
+                    "auto"
+                  else
+                    hotplug_usable? ? "hotplug" : "auto"
+                  end
 
       Builtins.y2milestone("New device startmode: #{startmode}")
 
@@ -1817,7 +1818,8 @@ module Yast
     # Sets device map items related to dhclient
     def setup_dhclient_options(devmap)
       if isCurrentDHCP
-        devmap["DHCLIENT_SET_DEFAULT_ROUTE"] = TRISTATE_TO_S.fetch(@set_default_route)
+        val = TRISTATE_TO_S.fetch(@set_default_route)
+        devmap["DHCLIENT_SET_DEFAULT_ROUTE"] = val if val
       end
       devmap
     end
@@ -1831,7 +1833,7 @@ module Yast
       devmap["STARTMODE"] = @startmode
       devmap["IFPLUGD_PRIORITY"] = @ifplugd_priority.to_i if @startmode == "ifplugd"
       devmap["BOOTPROTO"] = @bootproto
-      devmap["_aliases"] = @aliases
+      devmap["_aliases"] = @aliases if @aliases && !@aliases.empty?
 
       log.info("aliases #{@aliases}")
 
@@ -1839,6 +1841,11 @@ module Yast
     end
 
     # Commit pending operation
+    #
+    # It commits *only* content of the corresponding ifcfg into NetworkInterfaces.
+    # All other stuff which is managed by LanItems (like udev's, ...) is handled
+    # elsewhere
+    #
     # @return true if success
     def Commit
       if @operation != :add && @operation != :edit
@@ -2018,21 +2025,28 @@ module Yast
         newdev["INTERFACETYPE"] = @type
       end
 
-      NetworkInterfaces.Name = Ops.get_string(@Items, [@current, "ifcfg"], "")
-      NetworkInterfaces.Current = deep_copy(newdev)
+      current_map = (GetCurrentMap() || {}).select { |_, v| !v.nil? && !v.empty? }
+      new_map = newdev.select { |_, v| !v.nil? && !v.empty? }
 
-      # bnc#752464 - can leak wireless passwords
-      # useful only for debugging. Writes huge struct mostly filled by defaults.
-      Builtins.y2debug("%1", NetworkInterfaces.ConcealSecrets1(newdev))
+      # CanonicalizeIP is called to get new device map into the same shape as
+      # NetworkInterfaces provides the current one.
+      if current_map != NetworkInterfaces.CanonicalizeIP(new_map)
+        keep_existing = false
+        ifcfg_name = Items()[@current]["ifcfg"]
+        ifcfg_name.replace("") if !NetworkInterfaces.Change2(ifcfg_name, newdev, keep_existing)
 
-      Ops.set(@Items, [@current, "ifcfg"], "") if !NetworkInterfaces.Commit
+        # bnc#752464 - can leak wireless passwords
+        # useful only for debugging. Writes huge struct mostly filled by defaults.
+        Builtins.y2debug("%1", NetworkInterfaces.ConcealSecrets1(newdev))
 
-      # configure bridge ports
-      if @bridge_ports
-        @bridge_ports.split.each { |bp| configure_as_bridge_port(bp) }
+        # configure bridge ports
+        if @bridge_ports
+          @bridge_ports.split.each { |bp| configure_as_bridge_port(bp) }
+        end
+
+        SetModified()
       end
 
-      @modified = true
       @operation = nil
       true
     end
@@ -2044,11 +2058,9 @@ module Yast
         log.info "rollback item #{@current}"
         if getCurrentItem.fetch("hwinfo", {}).empty?
           LanItems.Items.delete(@current)
-        else
-          if IsCurrentConfigured()
-            if !getNetworkInterfaces.include?(getCurrentItem["ifcfg"])
-              LanItems.Items[@current].delete("ifcfg")
-            end
+        elsif IsCurrentConfigured()
+          if !getNetworkInterfaces.include?(getCurrentItem["ifcfg"])
+            LanItems.Items[@current].delete("ifcfg")
           end
         end
       end
@@ -2286,7 +2298,7 @@ module Yast
         SCR.Execute(path(".target.bash_output"), command1),
         from: "any",
         to:   "map <string, any>"
-    )
+      )
       if Ops.get_integer(output1, "exit", -1) == 0 &&
           Builtins.size(Ops.get_string(output1, "stderr", "")) == 0
         Builtins.y2milestone("Success : %1", output1)
@@ -2365,8 +2377,6 @@ module Yast
       udev_rules
     end
 
-  private
-
     # This helper allows YARD to extract DSL-defined attributes.
     # Unfortunately YARD has problems with the Capitalized ones,
     # so those must be done manually.
@@ -2376,6 +2386,8 @@ module Yast
     def self.publish_variable(name, type)
       publish variable: name, type: type
     end
+
+  private
 
     # Checks if given lladdr can be written into ifcfg
     #
@@ -2460,7 +2472,7 @@ module Yast
           if Ops.greater_than(
             Builtins.size(Ops.get_string(chan_ids, "stdout", "")),
             0
-            )
+          )
             chanids = String.CutBlanks(Ops.get_string(chan_ids, "stdout", ""))
           end
           port_name = Convert.convert(
@@ -2477,7 +2489,7 @@ module Yast
           if Ops.greater_than(
             Builtins.size(Ops.get_string(port_name, "stdout", "")),
             0
-            )
+          )
             portname = String.CutBlanks(Ops.get_string(port_name, "stdout", ""))
           end
           proto = Convert.convert(
@@ -2494,7 +2506,7 @@ module Yast
           if Ops.greater_than(
             Builtins.size(Ops.get_string(proto, "stdout", "")),
             0
-            )
+          )
             protocol = String.CutBlanks(Ops.get_string(proto, "stdout", ""))
           end
           layer2_ret = SCR.Execute(
@@ -2502,8 +2514,8 @@ module Yast
             Builtins.sformat(
               "grep -q 1 /sys/class/net/%1/device/layer2",
               device
+            )
           )
-                   )
           layer2 = layer2_ret == 0
           Ops.set(ay, ["s390-devices", device], "type" => device_type)
           if Ops.greater_than(Builtins.size(chanids), 0)
@@ -2531,7 +2543,7 @@ module Yast
           if Ops.greater_than(
             Builtins.size(Ops.get_string(port0, "stdout", "")),
             0
-            )
+          )
             value = Ops.get_string(port0, "stdout", "")
             Ops.set(
               ay,
@@ -2564,8 +2576,6 @@ module Yast
       deep_copy(ay)
     end
 
-  public
-
     # @attribute Items
     # @return [Hash<Integer, Hash<String, Object> >]
     # Each item, indexed by an Integer in a Hash, aggregates several aspects
@@ -2581,7 +2591,6 @@ module Yast
     publish_variable :udev_net_rules, "map <string, any>"
     publish_variable :driver_options, "map <string, any>"
     publish_variable :autoinstall_settings, "map"
-    publish_variable :modified, "boolean"
     publish_variable :operation, "symbol"
     publish_variable :force_restart, "boolean"
     publish_variable :description, "string"
@@ -2642,7 +2651,6 @@ module Yast
     publish_variable :tunnel_set_owner, "string"
     publish_variable :tunnel_set_group, "string"
     publish_variable :proposal_valid, "boolean"
-    publish_variable :nm_name, "string"
     publish function: :GetLanItem, type: "map (integer)"
     publish function: :getCurrentItem, type: "map ()"
     publish function: :IsItemConfigured, type: "boolean (integer)"

@@ -171,7 +171,6 @@ module Yast
     def WriteDialog
       return :next if !Lan.Modified
 
-      LanItems.SetModified
       Wizard.RestoreHelp(Ops.get_string(@help, "write", ""))
       Lan.AbortFunction = -> { PollAbort() && ReallyAbort() }
       ret = Lan.Write
@@ -508,7 +507,7 @@ module Yast
       if Stage.initial
         return Popup.ConfirmAbort(:painless)
       else
-        return ReallyAbort() if LanItems.modified
+        return ReallyAbort() if LanItems.GetModified
         return true
       end
     end

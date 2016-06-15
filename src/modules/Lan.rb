@@ -96,10 +96,14 @@ module Yast
     # Return a modification status
     # @return true if data was modified
     def Modified
-      ret = LanItems.GetModified || DNS.modified || Routing.Modified ||
-        NetworkConfig.Modified ||
-        NetworkService.Modified
-      ret
+      return true if LanItems.GetModified
+      return true if DNS.modified
+      return true if Routing.Modified
+      return true if NetworkConfig.Modified
+      return true if NetworkService.Modified
+      return true if SuSEFirewall.GetModified
+
+      false
     end
 
     # function for use from autoinstallation (Fate #301032)
@@ -412,7 +416,6 @@ module Yast
       Builtins.sleep(sl)
 
       return false if Abort()
-      LanItems.modified = false
       @initialized = true
 
       Progress.Finish if @gui
@@ -988,7 +991,7 @@ module Yast
             configure_as_bridge_port(ifcfg)
 
             Ops.set(LanItems.Items, [current, "ifcfg"], new_ifcfg)
-            LanItems.modified = true
+            LanItems.SetModified
             LanItems.force_restart = true
             Builtins.y2internal("List %1", NetworkInterfaces.List(""))
             # re-read configuration to see new items in UI

@@ -63,5 +63,41 @@ module Yast
         end
       end
     end
+
+    describe "ProtectByFirewall" do
+      Yast.import "SuSEFirewall"
+
+      context "when interface is not in fw zone" do
+        before(:each) do
+          allow(SuSEFirewall)
+            .to receive(:SetEnableService)
+          allow(SuSEFirewall)
+            .to receive(:SetStartService)
+        end
+
+        it "doesn't cause modification flag to be set when protect status is true" do
+          allow(SuSEFirewall)
+            .to receive(:GetInterfacesInZone)
+            .and_return(["eth0"])
+
+          SuSEFirewall4Network.ProtectByFirewall("eth0", "INT", true)
+
+          # interface is in the zone already => no adding / modification needed
+          expect(SuSEFirewall.GetModified).to be false
+        end
+
+        it "doesn't cause modification flag to be set when protect status is false" do
+          allow(SuSEFirewall)
+            .to receive(:GetInterfacesInZone)
+            .and_return([])
+
+          # Note: zone is not important in this case
+          SuSEFirewall4Network.ProtectByFirewall("eth0", "INT", false)
+
+          # every zone is empty => no removal / modification needed
+          expect(SuSEFirewall.GetModified).to be false
+        end
+      end
+    end
   end
 end

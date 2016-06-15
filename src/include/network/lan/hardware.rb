@@ -787,7 +787,7 @@ module Yast
     end
 
     def devname_from_hw_dialog
-      UI.QueryWidget(Id(:ifcfg_name), :Value)
+      UI.QueryWidget(Id(:ifcfg_name), :Value) if UI.WidgetExists(Id(:ifcfg_name))
     end
 
     def validate_hw(_key, _event)
@@ -1157,11 +1157,6 @@ module Yast
           break
         elsif ret == :next
           if LanItems.type == "iucv"
-            # #176330, must be static
-            LanItems.nm_name = Ops.add(
-              "static-iucv-id-",
-              Convert.to_string(UI.QueryWidget(Id(:iucv_user), :Value))
-            )
             LanItems.device = Ops.add(
               "id-",
               Convert.to_string(UI.QueryWidget(Id(:iucv_user), :Value))

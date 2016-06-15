@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Jun 13 17:48:52 UTC 2016 - mfilka@suse.com
+
+- fate#318787
+  - detect modifications when closing module, do not restart when
+    not needed.
+- 3.1.155
+
+-------------------------------------------------------------------
 Wed Jun  1 14:16:08 UTC 2016 - igonzalezsosa@suse.com
 
 - Drop yast2-network-devel-doc package (fate#320356)

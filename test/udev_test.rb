@@ -78,16 +78,28 @@ end
 describe "LanItems#ReplaceItemUdev" do
   Yast.import "LanItems"
 
+  before(:each) do
+    Yast::LanItems.current = 0
+
+    # LanItems should create "udev" and "net" subkeys for each item
+    # during Read
+    allow(Yast::LanItems)
+      .to receive(:Items)
+      .and_return(0 => { "udev" => { "net" => [] } })
+  end
+
   it "replaces triplet in the rule as requested" do
     allow(Yast::LanItems)
       .to receive(:getUdevFallback)
       .and_return(
         [
-          "KERNELS=\"invalid\"",
+          "KERNELS==\"invalid\"",
           "KERNEL=\"eth*\"",
           "NAME=\"eth1\""
         ]
       )
+
+    expect(Yast::LanItems).to receive(:SetModified)
 
     updated_rule = Yast::LanItems.ReplaceItemUdev(
       "KERNELS",
@@ -95,5 +107,25 @@ describe "LanItems#ReplaceItemUdev" do
       "xx:01:02:03:04:05"
     )
     expect(updated_rule).to include "ATTR{address}==\"xx:01:02:03:04:05\""
+  end
+
+  it "do not set modification flag in case of no change" do
+    allow(Yast::LanItems)
+      .to receive(:getUdevFallback)
+      .and_return(
+        [
+          "ATTR{address}==\"xx:01:02:03:04:05\"",
+          "KERNEL=\"eth*\"",
+          "NAME=\"eth1\""
+        ]
+      )
+
+    Yast::LanItems.ReplaceItemUdev(
+      "KERNELS",
+      "ATTR{address}",
+      "xx:01:02:03:04:05"
+    )
+
+    expect(Yast::LanItems).not_to receive(:SetModified)
   end
 end
