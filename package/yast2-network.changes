@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Jun 14 05:43:26 UTC 2016 - mfilka@suse.com
+
+- bnc#983201
+  - do not crash with internal error when configuring new device on
+    s390
+- 3.1.156
+
+-------------------------------------------------------------------
 Mon Jun 13 17:48:52 UTC 2016 - mfilka@suse.com
 
 - fate#318787
