@@ -2216,8 +2216,10 @@ module Yast
     # Creates eth emulation for s390 devices
     #
     # @param [Hash] an s390 device description (e.g. as obtained from AY profile).
-    # if not present then initialization of S390 specific LanItems' variables is
-    # expected to be done out of this function.
+    # If it contains s390 device attributes definition, then these definitions takes
+    # precendence over values assigned to corresponding LanItems' global variables
+    # before the method invocation. Hash keys are strings named after LanItems'
+    # s390 globals.
     def createS390Device(dev_attrs = {})
       Builtins.y2milestone("creating device s390 network device, #{dev_attrs}")
 
