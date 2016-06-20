@@ -244,9 +244,9 @@ describe "NetworkAutoYast" do
       expect(network_autoyast.keep_net_config?).to be false
     end
 
-    it "fails when keep_install_network is not present in AY profile" do
+    it "succeedes when keep_install_network is not present in AY profile" do
       keep_install_network_value({})
-      expect(network_autoyast.keep_net_config?).to be false
+      expect(network_autoyast.keep_net_config?).to be true
     end
   end
 
