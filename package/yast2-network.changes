@@ -4,6 +4,8 @@ Tue Jun 21 05:37:31 UTC 2016 - igonzalezsosa@suse.com
 - bsc#984146
   - set AutoYaST keep_install_network parameter to 'true' by
     default
+  - restore the default behavior present in SLE 12 SP1 and
+    openSUSE Leap 42.1
 - 3.1.157
 
 -------------------------------------------------------------------
