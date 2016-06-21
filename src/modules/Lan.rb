@@ -712,7 +712,7 @@ module Yast
         "keep_install_network" => Ops.get_boolean(
           LanItems.autoinstall_settings,
           "keep_install_network",
-          false
+          true
         )
       }
       Builtins.y2milestone("Exported map: %1", ay)

@@ -363,7 +363,7 @@ module Yast
       Ops.set(
         ret,
         "keep_install_network",
-        Ops.get_boolean(settings, "keep_install_network", false)
+        Ops.get_boolean(settings, "keep_install_network", true)
       )
       if Ops.greater_than(Builtins.size(modules), 0)
         Ops.set(ret, "modules", modules)

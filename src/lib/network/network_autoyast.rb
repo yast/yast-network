@@ -128,7 +128,7 @@ module Yast
 
     # Checks if the profile asks for keeping installation network configuration
     def keep_net_config?
-      ret = ay_networking_section.fetch("keep_install_network", false)
+      ret = ay_networking_section.fetch("keep_install_network", true)
 
       log.info("NetworkAutoYast: keep installation network: #{ret}")
 
