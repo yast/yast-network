@@ -43,7 +43,6 @@ module Yast
         path(".target.bash"),
         "/usr/lib/sendmail.d/update 2>/dev/null"
       )
-      SCR.Execute(path(".target.bash"), "/usr/sbin/config.postfix 2>/dev/null")
     end
   end
 end

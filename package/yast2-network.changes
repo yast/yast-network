@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Jun 23 06:54:43 UTC 2016 - mfilka@suse.com
+
+- bnc#970320, bnc#865132, bnc#852604
+  - do not overwrite Postfix MTA configuration when saving network
+    setup
+- 3.1.140.5
+
+-------------------------------------------------------------------
 Tue Apr 26 20:19:12 UTC 2016 - mfilka@suse.com
 
 - bnc#971175
