@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Jul 12 10:41:58 CEST 2016 - schubi@suse.de
+
+- Added entry "dhclient_set_hostname" to the AutoYaST schema file.
+  Bug similar bnc#954412.
+- 3.1.159
+
+-------------------------------------------------------------------
 Thu Jun 23 06:54:43 UTC 2016 - mfilka@suse.com
 
 - bnc#970320, bnc#865132, bnc#852604
