@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Jul 13 11:56:25 UTC 2016 - ancor@suse.com
+
+- storage-ng: commented installation-related code relying on the
+  old yast2-storage
+- Version temporarily bumped to 3.2.x to prioritize this branch
+- 3.2.1
+
+-------------------------------------------------------------------
 Tue Jul 12 10:41:58 CEST 2016 - schubi@suse.de
 
 - Added entry "dhclient_set_hostname" to the AutoYaST schema file.
