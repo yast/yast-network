@@ -383,15 +383,14 @@ module Yast
 
         ret = UI.UserInput
 
-        if ret == :ok
-          break
-        elsif ret == :selector
-          selected_menu_item = Convert.to_integer(
-            UI.QueryWidget(Id(:selector), :Value)
-          )
+        break if ret == :ok
 
-          filename = Ops.get(file_index, selected_menu_item, "none")
-        end
+        next unless ret == :selector
+        selected_menu_item = Convert.to_integer(
+          UI.QueryWidget(Id(:selector), :Value)
+        )
+
+        filename = Ops.get(file_index, selected_menu_item, "none")
       end
 
       UI.CloseDialog

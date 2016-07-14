@@ -2,11 +2,11 @@
 
 require_relative "test_helper"
 
-HWINFO_DEVICE_DESC = "Intel Ethernet controller"
-HWINFO_DEVICE_MAC = "00:01:02:03:04:05"
-HWINFO_DEVICE_BUS = "pci"
-HWINFO_DEVICE_BUSID = "0000:00:19.0"
-HWINFO_DEVICE_NAME = "eth11"
+HWINFO_DEVICE_DESC = "Intel Ethernet controller".freeze
+HWINFO_DEVICE_MAC = "00:01:02:03:04:05".freeze
+HWINFO_DEVICE_BUS = "pci".freeze
+HWINFO_DEVICE_BUSID = "0000:00:19.0".freeze
+HWINFO_DEVICE_NAME = "eth11".freeze
 # hwinfo is based on real hwinfo netcard output
 MOCKED_ITEMS = {
   # present but unconfigured devices
@@ -65,7 +65,7 @@ MOCKED_ITEMS = {
       "dev_name" => "enp0s3"
     }
   }
-}
+}.freeze
 
 require "yast"
 

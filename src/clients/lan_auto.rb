@@ -178,10 +178,10 @@ module Yast
         # uppercase map keys
         newk = nil
         interface = Builtins.mapmap(interface) do |k, v|
-          if k == "aliases"
-            newk = "_aliases"
+          newk = if k == "aliases"
+            "_aliases"
           else
-            newk = Builtins.toupper(k)
+            Builtins.toupper(k)
           end
           { newk => v }
         end
@@ -375,7 +375,7 @@ module Yast
       if Ops.greater_than(
         Builtins.size(Ops.get_map(settings, "routing", {})),
         0
-        )
+      )
         Ops.set(ret, "routing", Ops.get_map(settings, "routing", {}))
       end
       if Ops.greater_than(Builtins.size(interfaces), 0)

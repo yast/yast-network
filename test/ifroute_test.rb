@@ -15,7 +15,7 @@ describe "Yast::Routing#Read" do
       "gateway"     => "1.1.1.1",
       "netmask"     => "-"
     }
-  ]
+  ].freeze
   IFROUTE_FILE = [
     {
       "destination" => "default",
@@ -23,7 +23,7 @@ describe "Yast::Routing#Read" do
       "gateway"     => "1.1.1.1",
       "netmask"     => "-"
     }
-  ]
+  ].freeze
 
   before(:each) do
     allow(Yast::NetworkInterfaces)
@@ -91,7 +91,7 @@ describe "Yast::Routing#write_routes" do
       "gateway"     => "2.2.2.2",
       "netmask"     => "-"
     }
-  ]
+  ].freeze
 
   it "writes device assigned routes into correct ifroute file" do
     allow(Yast::FileUtils)
@@ -152,7 +152,7 @@ describe "Yast::Routing#Write" do
         }
       ]
     }
-  ]
+  ].freeze
 
   AY_ROUTES.each_with_index do |ay_test, i|
     it "does write route configuration files, ##{i}" do

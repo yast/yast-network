@@ -56,10 +56,10 @@ module Yast
 
       log.info("Configured network found: #{@@network_configured}")
 
-      if @@network_configured && !manual_conf_request
-        ret = GetInstArgs.going_back ? :back : :next
+      ret = if @@network_configured && !manual_conf_request
+        GetInstArgs.going_back ? :back : :next
       else
-        ret = LanSequence()
+        LanSequence()
       end
 
       log.info("Lan module finished, ret = #{ret}")

@@ -250,7 +250,7 @@ describe Yast::YaPI::NETWORK do
     let(:config) do
       {
         "routes"   => {
-          "default"       => {
+          "default" => {
             "via" => "1.2.3.4"
           }
         },
@@ -266,7 +266,7 @@ describe Yast::YaPI::NETWORK do
       }.merge(interfaces)
     end
 
-    context "with no interfaces"do
+    context "with no interfaces" do
       let(:interfaces) do
         {
           "interfaces" => {}

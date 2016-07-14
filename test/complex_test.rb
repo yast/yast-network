@@ -16,7 +16,7 @@ end
 describe "NetworkLanComplexInclude::input_done?" do
   subject { NetworkLanComplexIncludeClass.new }
 
-  BOOLEAN_PLACEHOLDER = "placeholder (true or false)"
+  BOOLEAN_PLACEHOLDER = "placeholder (true or false)".freeze
 
   context "when not running in installer" do
     before(:each) do

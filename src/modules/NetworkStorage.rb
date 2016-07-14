@@ -48,11 +48,12 @@ module Yast
       return "" unless out
       log.info "mounpoint found #{out}"
       device = case out["vfstype"]
-               when "nfs", "nfs4"
-                 "nfs"
-               else
-                 out["spec"]
-               end
+      when "nfs", "nfs4"
+        "nfs"
+      else
+        out["spec"]
+      end
+
       log.info "#{mount_point} is on device #{device}"
       device
     end

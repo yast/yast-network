@@ -35,7 +35,7 @@ module Yast
   class DNSClass < Module
     include Logger
 
-    HOSTNAME_FILE = "hostname"
+    HOSTNAME_FILE = "hostname".freeze
     HOSTNAME_PATH = "/etc/" + HOSTNAME_FILE
 
     def main
@@ -459,11 +459,11 @@ module Yast
       )
 
       # user-defined value has higher priority - FaTE#305281
-      if Builtins.haskey(settings, "write_hostname")
-        @write_hostname = Ops.get_boolean(settings, "write_hostname", false)
+      @write_hostname = if Builtins.haskey(settings, "write_hostname")
+        Ops.get_boolean(settings, "write_hostname", false)
       else
         # otherwise, use control.xml default
-        @write_hostname = DefaultWriteHostname()
+        DefaultWriteHostname()
       end
 
       # user-defined <hostname>
@@ -610,7 +610,7 @@ module Yast
       if Ops.greater_than(
         Builtins.size(NetworkInterfaces.Locate("BOOTPROTO", "dhcp")),
         0
-        ) || @dhcp_hostname
+      ) || @dhcp_hostname
         dhcp_data = GetDHCPHostnameIP()
         Builtins.y2milestone("Got DHCP-configured data: %1", dhcp_data)
       end
@@ -631,7 +631,7 @@ module Yast
         if Ops.greater_than(
           Builtins.size(NetworkInterfaces.Locate("IPADDR", check_host)),
           0
-          ) ||
+        ) ||
             Ops.get(dhcp_data, "ip", "") == check_host
           return true
         end
@@ -646,12 +646,10 @@ module Yast
             Ops.get(dhcp_data, "hostname_short", "") == check_host
           return true
         end
-      else
-        if Builtins.tolower(check_host) ==
-            Builtins.tolower(Ops.add(Ops.add(@hostname, "."), @domain)) ||
-            Ops.get(dhcp_data, "hostname_fq", "") == check_host
-          return true
-        end
+      elsif Builtins.tolower(check_host) ==
+          Builtins.tolower(Ops.add(Ops.add(@hostname, "."), @domain)) ||
+          Ops.get(dhcp_data, "hostname_fq", "") == check_host
+        return true
       end
       false
     end

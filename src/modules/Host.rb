@@ -108,10 +108,10 @@ module Yast
           local_ip,
           [Ops.add(Ops.add(fqhostname, " "), DNS.hostname)]
         )
-      else
+      elsif Builtins.haskey(@hosts, local_ip)
         # Do not add it if product default says no
         # and remove 127.0.02 entry if it exists
-        Ops.set(@hosts, local_ip, []) if Builtins.haskey(@hosts, local_ip)
+        Ops.set(@hosts, local_ip, [])
       end
       @modified = true
 
