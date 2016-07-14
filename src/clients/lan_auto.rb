@@ -297,7 +297,7 @@ module Yast
               end
             end
           end
-          newmap[NetworkInterfaces.GetType(device)] = device
+          newmap["device"] = device
           interfaces = Builtins.add(interfaces, newmap)
         end
       end
