@@ -297,11 +297,7 @@ module Yast
               end
             end
           end
-          if Builtins.deletechars(device, "0123456789") == ""
-            Ops.set(newmap, "device", device)
-          else
-            Ops.set(newmap, "device", device)
-          end
+          newmap[NetworkInterfaces.GetType(device)] = device
           interfaces = Builtins.add(interfaces, newmap)
         end
       end
