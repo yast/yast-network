@@ -239,7 +239,7 @@ describe Yast::Routing do
           allow(Yast::SCR).to receive(:Read) { nil }
           expect(Yast::SCR)
             .to receive(:Read)
-              .with(path(".routes")) { MOCKED_ROUTES }
+              .with(path(".routes")) { MOCKED_ROUTES.dup }
           expect(Yast::SCR)
             .to receive(:Read)
               .with(SYSCTL_IPV4_PATH) { ipv4 }

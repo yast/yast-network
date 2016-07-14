@@ -34,7 +34,7 @@ describe "LanItemsClass#delete_dev" do
   }.freeze
 
   before(:each) do
-    Yast::LanItems.Items = MOCKED_ITEMS_DEL
+    Yast::LanItems.Items = MOCKED_ITEMS_DEL.dup
   end
 
   it "removes device config when found" do

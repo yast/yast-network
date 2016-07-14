@@ -46,7 +46,7 @@ describe "Yast::Routing#Read" do
     expect(Yast::SCR)
       .to receive(:Read)
       .with(path(".ifroute-eth0"))
-      .and_return(IFROUTE_FILE)
+      .and_return(IFROUTE_FILE.dup)
     expect(Yast::Routing.Read).to be true
     expect(Yast::Routing.Routes).not_to be_empty
   end
@@ -55,7 +55,7 @@ describe "Yast::Routing#Read" do
     expect(Yast::SCR)
       .to receive(:Read)
       .with(path(".ifroute-eth0"))
-      .and_return(IFROUTE_FILE)
+      .and_return(IFROUTE_FILE.dup)
     expect(Yast::Routing.Read).to be true
     # check if implicit device name "-" is rewritten according device name
     # which ifroute belongs to
@@ -67,11 +67,11 @@ describe "Yast::Routing#Read" do
     expect(Yast::SCR)
       .to receive(:Read)
       .with(path(".routes"))
-      .and_return(ROUTES_FILE)
+      .and_return(ROUTES_FILE.dup)
     expect(Yast::SCR)
       .to receive(:Read)
       .with(path(".ifroute-eth0"))
-      .and_return(IFROUTE_FILE)
+      .and_return(IFROUTE_FILE.dup)
     expect(Yast::Routing.Read).to be true
     expect(Yast::Routing.Routes.size).to eql 1
   end
