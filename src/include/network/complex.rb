@@ -379,7 +379,7 @@ module Yast
           end
 
           # Network card status (%1 is device, %2 is address, %3 is address)
-          Builtins.sformat(
+          return Builtins.sformat(
             _("Configured as %1 with address %2 (remote %3)"),
             devname,
             addr,

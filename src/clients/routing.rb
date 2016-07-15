@@ -403,7 +403,7 @@ module Yast
       options = deep_copy(options)
       found = false
       Routing.Routes = Builtins.maplist(Routing.Routes) do |m|
-        next deep_copy(m) if Ops.get(m, "destination") == Ops.get(options, "dest")
+        next deep_copy(m) if Ops.get(m, "destination") != Ops.get(options, "dest")
 
         found = true
       end
