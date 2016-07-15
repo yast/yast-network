@@ -22,21 +22,21 @@ module Yast
           "eth6" => { "BOOTPROTO" => "static", "STARTMODE" => "ifplugd" }
         },
         "tun"  => {
-          "tun0"  => {
+          "tun0" => {
             "BOOTPROTO" => "static",
             "STARTMODE" => "onboot",
             "TUNNEL"    => "tun"
           }
         },
         "tap"  => {
-          "tap0"  => {
+          "tap0" => {
             "BOOTPROTO" => "static",
             "STARTMODE" => "onboot",
             "TUNNEL"    => "tap"
           }
         },
         "br"   => {
-          "br0"   => { "BOOTPROTO" => "dhcp" }
+          "br0" => { "BOOTPROTO" => "dhcp" }
         },
         "bond" => {
           "bond0" => {

@@ -7,16 +7,16 @@ require "yast"
 describe "LanItems#getDeviceName" do
   Yast.import "LanItems"
 
-  NEW_STYLE_NAME = "spec0"
-  MAC_BASED_NAME = "spec-id-00:11:22:33:44:FF"
-  BUS_BASED_NAME = "spec-bus-0000:00:19.0"
+  NEW_STYLE_NAME = "spec0".freeze
+  MAC_BASED_NAME = "spec-id-00:11:22:33:44:FF".freeze
+  BUS_BASED_NAME = "spec-bus-0000:00:19.0".freeze
 
-  LCASE_MAC_NAME = "spec-id-00:11:22:33:44:ff"
+  LCASE_MAC_NAME = "spec-id-00:11:22:33:44:ff".freeze
 
-  UNKNOWN_MAC_NAME = "spec-id-00:00:00:00:00:00"
-  UNKNOWN_BUS_NAME = "spec-bus-0000:00:00.0"
+  UNKNOWN_MAC_NAME = "spec-id-00:00:00:00:00:00".freeze
+  UNKNOWN_BUS_NAME = "spec-bus-0000:00:00.0".freeze
 
-  INVALID_NAME = "some funny string"
+  INVALID_NAME = "some funny string".freeze
 
   subject(:lan_items) { Yast::LanItems }
 

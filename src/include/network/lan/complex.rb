@@ -158,7 +158,7 @@ module Yast
             ),
             "/usr/share/doc/packages/xen/README.SuSE"
           )
-          )
+        )
           ret = false
         end
       end
@@ -232,7 +232,7 @@ module Yast
             _(
               "For successful firmware installation, the 'install_bcm43xx_firmware' script needs to be executed. Execute it now?"
             )
-            )
+          )
             command = Convert.convert(
               SCR.Execute(
                 path(".target.bash_output"),
@@ -404,8 +404,8 @@ module Yast
                     "\n" \
                     "If you edit the settings for this interface here,\n" \
                     "the interface will no longer be managed by NetworkManager.\n"
-                  )
                 )
+              )
                 # y2r: cannot break from middle of switch
                 # but in this function return will do
                 return nil # means cancel
@@ -436,8 +436,8 @@ module Yast
                 LanItems.getCurrentItem,
                 ["hwinfo", "dev_name"],
                 ""
-                )
               )
+            )
               return :init_s390
             end
           end
@@ -451,7 +451,7 @@ module Yast
             if !Popup.YesNoHeadline(
               Label.WarningMsg,
               _("Device you select has STARTMODE=nfsroot. Really delete?")
-              )
+            )
               # y2r: cannot break from middle of switch
               # but in this function return will do
               return nil
@@ -483,7 +483,7 @@ module Yast
         # Network setup method dialog caption
         "caption"            => _(
           "Network Setup Method"
-),
+        ),
         "back_button"        => Label.BackButton,
         "abort_button"       => Label.CancelButton,
         "next_button"        => Label.OKButton,
@@ -504,12 +504,11 @@ module Yast
     def input_done?(ret)
       return true if ret != :abort
 
-      if Stage.initial
-        return Popup.ConfirmAbort(:painless)
-      else
-        return ReallyAbort() if LanItems.GetModified
-        return true
-      end
+      return Popup.ConfirmAbort(:painless) if Stage.initial
+
+      return ReallyAbort() if LanItems.GetModified
+
+      true
     end
 
     def MainDialog(init_tab)

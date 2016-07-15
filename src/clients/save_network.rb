@@ -80,8 +80,8 @@ module Yast
       )
     end
 
-    ETC = "/etc/"
-    SYSCONFIG = "/etc/sysconfig/network/"
+    ETC = "/etc/".freeze
+    SYSCONFIG = "/etc/sysconfig/network/".freeze
 
     def CopyConfiguredNetworkFiles
       return if Mode.autoinst && !NetworkAutoYast.instance.keep_net_config?

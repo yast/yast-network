@@ -101,10 +101,10 @@ module Yast
         @ret2 = Builtins.maplist(@hosts) do |hostaddress, names|
           { "host_address" => hostaddress, "names" => names }
         end
-        if Ops.greater_than(Builtins.size(@ret2), 0)
-          @ret = { "hosts" => @ret2 }
+        @ret = if Ops.greater_than(Builtins.size(@ret2), 0)
+          { "hosts" => @ret2 }
         else
-          @ret = {}
+          {}
         end
       # Read current state
       elsif @func == "Read"

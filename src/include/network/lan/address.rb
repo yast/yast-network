@@ -101,7 +101,7 @@ module Yast
                     _("Netmask")
                   ),
                   []
-                 ),
+                ),
                 Left(
                   HBox(
                     # PushButton label
@@ -113,10 +113,10 @@ module Yast
                   )
                 ),
                 VSpacing(0.49)
-               ),
+              ),
               HSpacing(3)
-             )
-            ),
+            )
+          ),
           "help"          => Ops.get_string(@help, "additional", ""),
           "init"          => fun_ref(method(:initAdditional), "void (string)"),
           "handle"        => fun_ref(
@@ -614,7 +614,7 @@ module Yast
     # Default function to init the value of slave devices box for bonding.
     # @param [String] key	id of the widget
     def InitSlave(_key)
-      @settings["SLAVES"] =  LanItems.bond_slaves || []
+      @settings["SLAVES"] = LanItems.bond_slaves || []
       UI.ChangeWidget(
         :msbox_items,
         :SelectedItems,
@@ -653,7 +653,7 @@ module Yast
     def justify_dev_name(name)
       splited_dev_name = name.scan(/\p{Alpha}+|\p{Digit}+/)
       splited_dev_name.map! do |d|
-        if d.match(/\p{Digit}+/)
+        if d =~ /\p{Digit}+/
           d.rjust(5, "0")
         else
           d
@@ -732,7 +732,7 @@ module Yast
     # @param [Hash <String>] optional parameters as separator and prepend_text.
     # @return [String] wrap text
     def wrap_text(text, wrap = 78, separator: " ", prepend_text: "",
-                  n_lines: nil, cut_text: nil)
+      n_lines: nil, cut_text: nil)
       lines = []
       message_line = prepend_text
       text.split(/\s+/).each_with_index do |t, i|
@@ -827,7 +827,7 @@ module Yast
         if Ops.greater_than(
           Builtins.size(Ops.get_string(@settings, "PREFIXLEN", "")),
           0
-          )
+        )
           UI.ChangeWidget(
             Id(:netmask),
             :Value,
@@ -928,11 +928,8 @@ module Yast
         if Builtins.substring(@mask, 0, 1) == "/"
           Ops.set(@settings, "PREFIXLEN", Builtins.substring(@mask, 1))
         else
-          if Netmask.Check6(@mask)
-            Ops.set(@settings, "PREFIXLEN", @mask)
-          else
-            Ops.set(@settings, "NETMASK", @mask)
-          end
+          param = Netmask.Check6(@mask) ? "PREFIXLEN" : "NETMASK"
+          Ops.set(@settings, param, @mask)
         end
         Ops.set(
           @settings,
@@ -1035,7 +1032,7 @@ module Yast
                 "that has been detected. This only makes sense\n" \
                 "if you know that the detection is wrong."
             )
-            )
+          )
             return false
           end
         end
@@ -1113,21 +1110,19 @@ module Yast
             UI.SetFocus(:hostname)
             return false
           end
-        else
-          # There'll be no 127.0.0.2 -> remind user to define some hostname
-          if !Host.NeedDummyIP &&
-              !Popup.YesNo(
-                _(
-                  "No hostname has been specified. We recommend to associate \n" \
-                    "a hostname with a static IP, otherwise the machine name will \n" \
-                    "not be resolvable without an active network connection.\n" \
-                    "\n" \
-                    "Really leave the hostname blank?\n"
-                )
+        # There'll be no 127.0.0.2 -> remind user to define some hostname
+        elsif !Host.NeedDummyIP &&
+            !Popup.YesNo(
+              _(
+                "No hostname has been specified. We recommend to associate \n" \
+                  "a hostname with a static IP, otherwise the machine name will \n" \
+                  "not be resolvable without an active network connection.\n" \
+                  "\n" \
+                  "Really leave the hostname blank?\n"
               )
-            UI.SetFocus(:hostname)
-            return false
-          end
+            )
+          UI.SetFocus(:hostname)
+          return false
         end
 
         # validate duplication
@@ -1137,7 +1132,7 @@ module Yast
           if !Popup.YesNoHeadline(
             Label.WarningMsg,
             _("Duplicate IP address detected.\nReally continue?\n")
-            )
+          )
             return false
           end
         end
@@ -1232,8 +1227,8 @@ module Yast
       # TODO: dynamic for dummy. or add dummy from outside?
       no_dhcp =
         is_ptp ||
-          type == "dummy" ||
-          LanItems.alias != ""
+        type == "dummy" ||
+        LanItems.alias != ""
 
       address_p2p_contents = Frame(
         "", # labelless frame
@@ -1253,12 +1248,12 @@ module Yast
 
       address_dhcp_contents = VBox("BOOTPROTO")
       just_address_contents = if is_ptp
-                                address_p2p_contents
-                              elsif no_dhcp
-                                address_static_contents
-                              else
-                                address_dhcp_contents
-                              end
+        address_p2p_contents
+      elsif no_dhcp
+        address_static_contents
+      else
+        address_dhcp_contents
+      end
 
       label = HBox(
         HSpacing(0.5),
@@ -1273,10 +1268,10 @@ module Yast
         type == "vlan" ? VBox("ETHERDEVICE") : Empty()
       )
 
-      if ["tun", "tap"].include?(LanItems.type)
-        address_contents = VBox(Left(label), "TUNNEL")
+      address_contents = if ["tun", "tap"].include?(LanItems.type)
+        VBox(Left(label), "TUNNEL")
       else
-        address_contents = VBox(
+        VBox(
           Left(label),
           just_address_contents,
           "AD_ADDRESSES"
@@ -1402,7 +1397,7 @@ module Yast
         # Combo box label - when to activate device (e.g. on boot, manually, never,..)
         "label"   => _(
           "Ifplugd Priority"
-),
+        ),
         "help"    =>
                      # Device activation main help. The individual parts will be
                      # substituted as %1
@@ -1412,7 +1407,7 @@ module Yast
                          " used mutually exclusive. If more then one of these interfaces is <b>On Cable Connection</b>\n" \
                          " then we need a way to decide which interface to take up. Therefore we have to\n" \
                          " set the priority of each interface.  </p>\n"
-  ),
+                     ),
         "init"    => fun_ref(method(:initIfplugdPriority), "void (string)")
       )
 
@@ -1612,7 +1607,7 @@ module Yast
     # @return [Boolean] true if continue with duplicates, otherwise false
     def continue_with_duplicates?(physical_ports)
       message = physical_ports.map do |port, slave|
-        label =  "PhysicalPortID (#{port}): "
+        label = "PhysicalPortID (#{port}): "
         wrap_text(slave.join(", "), 76, prepend_text: label)
       end.join("\n")
 

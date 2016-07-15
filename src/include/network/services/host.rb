@@ -56,12 +56,12 @@ module Yast
       # Warning popup text 1/2
       text = Builtins.sformat(_("The host %1 is a system host.") + "\n", host)
 
-      if delete
+      text = if delete
         # Warning popup text 2/2
-        text = Ops.add(text, _("Really delete it?"))
+        Ops.add(text, _("Really delete it?"))
       else
         # Warning popup text 2/2
-        text = Ops.add(text, _("Really change it?"))
+        Ops.add(text, _("Really change it?"))
       end
 
       Popup.AnyQuestion("", text, Label.YesButton, Label.NoButton, :focus_no)
@@ -195,11 +195,7 @@ module Yast
 
         # abort?
         if ret == :abort || ret == :cancel
-          if ReallyAbortCond(Host.GetModified)
-            break
-          else
-            next
-          end
+          ReallyAbortCond(Host.GetModified) ? break : next
         # add host
         elsif ret == :add
           item = HostDialog(max, term(:empty))
