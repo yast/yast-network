@@ -31,7 +31,7 @@ describe "NetworkLanComplexInclude::input_done?" do
 
     it "returns true for input equal to :abort in case of no user modifications" do
       allow(Yast::LanItems)
-        .to receive(:modified)
+        .to receive(:GetModified)
         .and_return(false)
 
       expect(subject.input_done?(:abort)).to eql true
