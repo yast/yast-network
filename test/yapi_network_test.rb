@@ -274,6 +274,7 @@ describe Yast::YaPI::NETWORK do
       end
 
       it "returns the correct hash" do
+        allow(lan_items).to receive(:Items).with(no_args).and_return({})
         expect(subject.Read).to eql(config)
       end
     end
