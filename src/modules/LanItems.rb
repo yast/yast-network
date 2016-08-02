@@ -1830,7 +1830,7 @@ module Yast
       devmap["MTU"] = @mtu
       devmap["ETHTOOL_OPTIONS"] = @ethtool_options
       devmap["STARTMODE"] = @startmode
-      devmap["IFPLUGD_PRIORITY"] = @ifplugd_priority.to_i if @startmode == "ifplugd"
+      devmap["IFPLUGD_PRIORITY"] = @ifplugd_priority if @startmode == "ifplugd"
       devmap["BOOTPROTO"] = @bootproto
       devmap["_aliases"] = @aliases if @aliases && !@aliases.empty?
 
