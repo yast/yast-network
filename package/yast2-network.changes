@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Aug 10 16:07:26 UTC 2016 - mfilka@suse.com
+
+- bnc#991486
+  - Do not allow creating device with oversized configuration name.
+- 3.1.163
+
+-------------------------------------------------------------------
 Tue Aug  9 12:29:35 UTC 2016 - schubi@suse.de
 
 - Added entry "s390-devices" to the AutoYaST schema file.
