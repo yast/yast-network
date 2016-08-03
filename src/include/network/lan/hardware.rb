@@ -792,13 +792,13 @@ module Yast
 
       ret = if UsedNicName(nm)
         Popup.Error(
-          _("Configuration name %s already exists.\nChoose a different one." % nm)
+          format(_("Configuration name %s already exists.\nChoose a different one.", nm))
         )
 
         false
       elsif !ValidNicName(nm)
         Popup.Error(
-          _("Configuration name %s is invalid.\nChoose a different one." % nm)
+          format(_("Configuration name %s is invalid.\nChoose a different one.", nm))
         )
 
         false
@@ -808,7 +808,7 @@ module Yast
 
       UI.SetFocus(Id(:ifcfg_name)) if !ret
 
-      return ret
+      ret
     end
 
     VLAN_SIZE = 4 # size of vlanN prefix without number
