@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Aug  8 14:40:57 UTC 2016 - kanderssen@suse.com
+
+- In case of rename an interface and with 'Wicked' as backend, set
+  down and delete the renamed interface. (bsc#991694)
+- 3.1.161
+
+-------------------------------------------------------------------
 Tue Aug  2 12:40:53 UTC 2016 - mfilka@suse.com
 
 - bnc#991382
