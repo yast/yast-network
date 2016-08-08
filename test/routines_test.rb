@@ -156,3 +156,37 @@ describe "#physical_port_id?" do
     expect(routines.physical_port_id?("eth0")).to eql(true)
   end
 end
+
+describe "SetLinkDown" do
+  subject(:routines) { RoutinesTestClass.new }
+
+  let(:interface) { "ifname0" }
+
+  context "when the NetworkService is wicked" do
+    before do
+      allow(Yast::NetworkService).to receive(:is_wicked).and_return(true)
+    end
+
+    it "sets down the interface given by default with iptools" do
+      expect(routines).to receive(:Run).with("ip link set #{interface} down")
+
+      routines.SetLinkDown(interface)
+    end
+
+    context "when second argument is true" do
+      it "sets down the interface given with wicked ifdown and --delete option " do
+        expect(routines).to receive(:Run).with("wicked ifdown --delete #{interface}")
+
+        routines.SetLinkDown(interface, true)
+      end
+    end
+  end
+
+  context "when the NetworkService is not wicked" do
+    it "sets down the interface with iptools" do
+      expect(routines).to receive(:Run).with("ip link set #{interface} down")
+
+      routines.SetLinkDown(interface)
+    end
+  end
+end

@@ -712,9 +712,14 @@ module Yast
       Run("ip link set #{dev_name} up")
     end
 
-    def SetLinkDown(dev_name)
-      log.info("Setting link down for interface #{dev_name}")
-      Run("ip link set #{dev_name} down")
+    def SetLinkDown(dev_name, delete = false)
+      if delete && NetworkService.is_wicked
+        log.info("Setting link down and deleting interface #{dev_name}")
+        Run("wicked ifdown --delete #{dev_name}")
+      else
+        log.info("Setting link down for interface #{dev_name}")
+        Run("ip link set #{dev_name} down")
+      end
     end
 
     # Tries to set all available interfaces up
