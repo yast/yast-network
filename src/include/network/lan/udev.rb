@@ -49,7 +49,7 @@ module Yast
     #
     # @return [string] value corresponding to the key or empty string
     def udev_key_value(rule, key)
-      raise ArgumentError if rule.nil?
+      raise ArgumentError, "Rule must not be nil when querying a key value" if rule.nil?
 
       rule.each do |tuple|
         # note that when using =~ then named capture groups (?<name>...) currently
