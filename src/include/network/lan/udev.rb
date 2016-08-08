@@ -84,7 +84,7 @@ module Yast
         path(".target.bash"),
         "udevadm trigger --subsystem-match=net --action=add"
       )
-      ret == 0
+      ret.zero?
     end
 
     # Removes (key,operator,value) tripplet from given udev rule.
