@@ -29,6 +29,8 @@
 
 require "network/edit_nic_name"
 
+include Yast::UIShortcuts
+
 module Yast
   module NetworkLanHardwareInclude
     def initialize_network_lan_hardware(include_target)
@@ -792,13 +794,13 @@ module Yast
 
       ret = if UsedNicName(nm)
         Popup.Error(
-          format(_("Configuration name %s already exists.\nChoose a different one.", nm))
+          format(_("Configuration name %s already exists.\nChoose a different one."), nm)
         )
 
         false
       elsif !ValidNicName(nm)
         Popup.Error(
-          format(_("Configuration name %s is invalid.\nChoose a different one.", nm))
+          format(_("Configuration name %s is invalid.\nChoose a different one."), nm)
         )
 
         false
