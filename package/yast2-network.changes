@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Aug  9 12:29:35 UTC 2016 - schubi@suse.de
+
+- Added entry "s390-devices" to the AutoYaST schema file.
+  Bug similar bnc#954412.
+- 3.1.162
+
+-------------------------------------------------------------------
 Tue Aug  9 12:25:01 UTC 2016 - mfilka@suse.com
 
 - bnc#991920
