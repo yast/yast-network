@@ -17,7 +17,7 @@
 
 
 Name:           yast2-network
-Version:        3.2.1
+Version:        3.2.2
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -45,9 +45,6 @@ Requires:       sysconfig >= 0.80.0
 #GetLanguageCountry
 #(in newly created yast2-country-data)
 Requires:       yast2-country-data >= 2.16.3
-# Storage::IsDeviceOnNetwork
-BuildRequires:  yast2-storage >= 2.21.11
-Requires:       yast2-storage >= 2.21.11
 # Packages::vnc_packages
 BuildRequires:  yast2-packager >= 3.1.47
 Requires:       yast2-packager >= 3.1.47
