@@ -45,7 +45,11 @@ module Yast
       Yast.import "String"
       Yast.import "Mode"
       Yast.import "Arch"
+# storage-ng
+# rubocop:disable Style/BlockComments
+=begin
       Yast.import "Storage"
+=end
 
       Yast.include self, "network/routines.rb"
       Yast.include self, "network/complex.rb"
@@ -62,6 +66,9 @@ module Yast
     end
 
     def adjust_for_network_disks(file)
+      # storage-ng
+      remote_access = :no
+=begin
       # Check if installation is targeted to a remote destination.
       # Discover remote access method here - { :nfs, :iscsi, :fcoe }
       # or :no when no remote storage
@@ -70,6 +77,7 @@ module Yast
       )
 
       log.info("Network based device: #{remote_access}")
+=end
 
       return if remote_access == :no
 
