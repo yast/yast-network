@@ -53,6 +53,23 @@ describe "NetworkLanUdevInclude#update_udev_rule_key" do
   end
 end
 
+describe "#udev_rule_key" do
+  let(:rule) { ["KERNELS=\"invalid\"", "KERNEL=\"eth*\"", "NAME=\"eth1\""] }
+
+  it "raises ArgumentError if given rule is empty" do
+    expect { Yast::LanItems.udev_key_value(nil, "KERNEL") }
+      .to raise_error(ArgumentError, "Rule must not be nil when querying a key value")
+  end
+
+  it "returns value of the first attribute which matches given key" do
+    expect(Yast::LanItems.udev_key_value(rule, "KERNEL")).to eql("eth*")
+  end
+
+  it "returns an empty string if no rule matches" do
+    expect(Yast::LanItems.udev_key_value(rule, "ATTR{address}")).to eql("")
+  end
+end
+
 describe "NetworkLanUdevInclude#AddToUdevRule" do
   subject(:udev) { NetworkLanComplexUdev.new }
 
@@ -90,6 +107,9 @@ describe "LanItems#ReplaceItemUdev" do
 
   it "replaces triplet in the rule as requested" do
     allow(Yast::LanItems)
+      .to receive(:Items)
+      .and_return(0 => {})
+    allow(Yast::LanItems)
       .to receive(:getUdevFallback)
       .and_return(
         [
@@ -101,12 +121,16 @@ describe "LanItems#ReplaceItemUdev" do
 
     expect(Yast::LanItems).to receive(:SetModified)
 
+    # internally used in ReplaceItemUdev, needed to be able to mock its usage
+    Yast::LanItems.current = 0
+
     updated_rule = Yast::LanItems.ReplaceItemUdev(
       "KERNELS",
       "ATTR{address}",
       "xx:01:02:03:04:05"
     )
     expect(updated_rule).to include "ATTR{address}==\"xx:01:02:03:04:05\""
+    expect(updated_rule).not_to include "KERNELS"
   end
 
   it "do not set modification flag in case of no change" do
