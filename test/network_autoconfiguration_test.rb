@@ -66,10 +66,10 @@ describe Yast::NetworkAutoconfiguration do
 
     allow(Yast::SCR).to receive(:Read) do |path|
       if path.to_s =~ /^\.network\.value\."(eth\d+)".(.*)/
-        ifcfg_files.get(Regexp.last_match(1), Regexp.last_match(2))
-      else
-        raise "Unexpected Read #{path}"
+        next ifcfg_files.get(Regexp.last_match(1), Regexp.last_match(2))
       end
+
+      raise "Unexpected Read #{path}"
     end
 
     allow(Yast::SCR).to receive(:Write) do |path, value|

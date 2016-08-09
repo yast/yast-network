@@ -156,16 +156,16 @@ module Yast
       }
 
       ws_start = case action
-                 when "add"
-                   "hardware"
-                 when "init_s390"
-                   # s390 may require configuring additional modules. Which
-                   # enables IBM net cards for linux. Basicaly it creates
-                   # linux devices with common api (e.g. eth0, hsi1, ...)
-                   "s390"
-                 else
-                   "address"
-                 end
+      when "add"
+        "hardware"
+      when "init_s390"
+        # s390 may require configuring additional modules. Which
+        # enables IBM net cards for linux. Basicaly it creates
+        # linux devices with common api (e.g. eth0, hsi1, ...)
+        "s390"
+      else
+        "address"
+      end
 
       Builtins.y2milestone("ws_start %1", ws_start)
 

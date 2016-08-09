@@ -34,14 +34,14 @@ module Yast
   class RemoteClass < Module
     include Yast::Logger
 
-    XDM_SERVICE_NAME = "display-manager"
-    XINETD_SERVICE = "xinetd"
-    VNCMANAGER_SERVICE = "vncmanager"
+    XDM_SERVICE_NAME = "display-manager".freeze
+    XINETD_SERVICE = "xinetd".freeze
+    VNCMANAGER_SERVICE = "vncmanager".freeze
 
-    PKG_CONTAINING_FW_SERVICES = "xorg-x11-Xvnc"
-    PKG_CONTAINING_VNCMANAGER = "vncmanager"
+    PKG_CONTAINING_FW_SERVICES = "xorg-x11-Xvnc".freeze
+    PKG_CONTAINING_VNCMANAGER = "vncmanager".freeze
 
-    GRAPHICAL_TARGET = "graphical"
+    GRAPHICAL_TARGET = "graphical".freeze
 
     def main
       textdomain "network"
@@ -262,13 +262,11 @@ module Yast
               )
               return false
             end
-          else
-            if !Service.Disable(service)
-              Report.Error(
-                _("Disabling service %{service} has failed") % { service: service }
-              )
-              return false
-            end
+          elsif !Service.Disable(service)
+            Report.Error(
+              _("Disabling service %{service} has failed") % { service: service }
+            )
+            return false
           end
         end
       end

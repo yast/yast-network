@@ -23,7 +23,7 @@ describe "Host" do
     end
 
     it "removes empty name lists" do
-      host.Import("hosts" => { "127.0.0.1" => ["localhost"], "10.0.0.1"  => [] })
+      host.Import("hosts" => { "127.0.0.1" => ["localhost"], "10.0.0.1" => [] })
       expect(host.Export).to eql("hosts" => { "127.0.0.1" => ["localhost"] })
     end
 

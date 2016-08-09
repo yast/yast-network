@@ -63,8 +63,7 @@ def probe_netcard
                                  { "active" => true, "length" => 65_536, "start" => 4_008_378_368 },
                                  { "active" => true, "length" => 65_536, "start" => 4_008_312_832 },
                                  { "active" => false, "length" => 262_144, "start" => 4_007_919_616 }
-                               ]
-      },
+                               ] },
       "rev"               => "16",
       "sub_class_id"      => 0,
       "sub_device_id"     => 71_890,
@@ -108,8 +107,7 @@ def probe_netcard
                                  { "active" => true, "length" => 8_388_608, "start" => 4_185_915_392 },
                                  { "active" => true, "length" => 65_536, "start" => 4_185_849_856 },
                                  { "active" => false, "length" => 131_072, "start" => 4_008_706_048 }
-                               ]
-      },
+                               ] },
       "rev"               => "16",
       "storageonly"       => false,
       "sub_class_id"      => 0,

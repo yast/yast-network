@@ -249,7 +249,7 @@ module Yast
                   Builtins.regexptokenize(String.CutBlanks(row), regexp)
                 ),
                 0
-                )
+              )
                 Builtins.y2milestone("IPv6 is disabled by '%1' method.", which)
                 @ipv6 = false
               end
@@ -260,6 +260,7 @@ module Yast
 
       nil
     end
+
     # Read all network settings from the SCR
     # @param [Symbol] cache:
     #  `cache=use cached data,
@@ -328,11 +329,11 @@ module Yast
             )
           ),
           0
-          )
+        )
           Builtins.y2milestone("ndiswrapper: configuration found")
           if Convert.to_integer(
             SCR.Execute(path(".target.bash"), "lsmod |grep -q ndiswrapper")
-            ) != 0 &&
+          ) != 0 &&
               Popup.YesNo(
                 _(
                   "Detected a ndiswrapper configuration,\n" \
@@ -462,7 +463,7 @@ module Yast
             Builtins.regexptokenize(row, "(net.ipv6.conf.all.disable_ipv6)")
           ),
           0
-          )
+        )
           row = sysctl_row
           found = true
         end
@@ -913,7 +914,7 @@ module Yast
       Builtins.foreach(LanItems.Items) do |number, lanitem|
         if IsNotEmpty(
           Ops.get_string(Convert.to_map(lanitem), ["hwinfo", "dev_name"], "")
-          )
+        )
           LanItems.current = number
           valid = Ops.get_boolean(
             LanItems.getCurrentItem,
@@ -922,11 +923,9 @@ module Yast
           ) == true
           if !valid
             Builtins.y2warning("item number %1 has link:false detected", number)
-          else
-            if Ops.get_string(LanItems.getCurrentItem, ["hwinfo", "type"], "") == "wlan"
-              Builtins.y2warning("not proposing WLAN interface")
-              valid = false
-            end
+          elsif Ops.get_string(LanItems.getCurrentItem, ["hwinfo", "type"], "") == "wlan"
+            Builtins.y2warning("not proposing WLAN interface")
+            valid = false
           end
           if !LanItems.IsCurrentConfigured && valid &&
               !Builtins.contains(
@@ -1031,7 +1030,7 @@ module Yast
     # @return [Array] of packages needed when writing the config
     def Packages
       # various device types require some special packages ...
-      type_requires =  {
+      type_requires = {
         # for wlan require iw instead of wireless-tools (bnc#539669)
         "wlan" => "iw",
         "vlan" => "vlan",
@@ -1040,7 +1039,7 @@ module Yast
         "tap"  => "tunctl"
       }
       # ... and some options require special packages as well
-      option_requires =  {
+      option_requires = {
         "WIRELESS_AUTH_MODE" => {
           "psk" => "wpa_supplicant",
           "eap" => "wpa_supplicant"

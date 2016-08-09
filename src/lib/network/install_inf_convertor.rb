@@ -150,7 +150,7 @@ module Yast
 
     def write_gateway
       gateway = InstallInf["Gateway"].to_s
-      ptp =  InstallInf["Pointopoint"].to_s
+      ptp = InstallInf["Pointopoint"].to_s
 
       # create routes file
       if !gateway.empty?
@@ -158,7 +158,8 @@ module Yast
         return SCR.Write(
           path(".target.string"),
           "/etc/sysconfig/network/routes",
-          "default #{gateway} - -\n")
+          "default #{gateway} - -\n"
+        )
       elsif !ptp.empty?
         log.info("Writing Peer-to-Peer route: #{ptp}")
         return SCR.Write(
@@ -316,12 +317,12 @@ module Yast
         ifcfg << "WIRELESS_AUTH_MODE='no-encryption'\n"
 
       when "wep_open", "wep_restricted"
-        if wlan_key_type == "password"
-          type = "h:"
+        type = if wlan_key_type == "password"
+          "h:"
         elsif wlan_key_type == "ascii"
-          type = "s:"
+          "s:"
         else
-          type = wlan_key_type[0] + ":"
+          wlan_key_type[0] + ":"
         end
 
         wlan_auth_mode = wlan_auth == "wep-open" ? "open" : "sharedkey"

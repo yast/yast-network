@@ -52,10 +52,10 @@ module Yast
         if Ops.greater_than(
           Builtins.size(Ops.get_string(LanItems.getCurrentItem, "ifcfg", "")),
           0
-          )
+        )
           next if config_filter == "unconfigured"
-        else
-          next if config_filter == "configured"
+        elsif config_filter == "configured"
+          next
         end
         confList = Builtins.add(
           confList,
@@ -65,17 +65,17 @@ module Yast
               LanItems.getCurrentItem,
               ["table_descr", "rich_descr"],
               ""
-  ),
+            ),
             "descr"      => Ops.get_string(
               LanItems.getCurrentItem,
               ["table_descr", "table_descr", 0],
               ""
-  ),
+            ),
             "addr"       => Ops.get_string(
               LanItems.getCurrentItem,
               ["table_descr", "table_descr", 1],
               ""
-  )
+            )
           }
         )
       end
@@ -93,7 +93,7 @@ module Yast
       if Ops.greater_than(
         Builtins.tointeger(Ops.get(options, "id", "0")),
         Ops.subtract(Builtins.size(config), 1)
-        )
+      )
         Report.Error(
           _(
             "Value of \"id\" is out of range. Use \"list\" option to check max. value of \"id\"."
@@ -182,6 +182,7 @@ module Yast
       end
       true
     end
+
     # Handler for action "add"
     # @param [Hash{String => String}] options action options
     def AddHandler(options)
@@ -294,6 +295,7 @@ module Yast
       ShowHandler(options)
       true
     end
+
     # Handler for action "delete"
     # @param [Hash{String => String}] options action options
     def DeleteHandler(options)

@@ -10,14 +10,14 @@ Yast.import "LanItems"
 describe "LanItemsClass#new_device_startmode" do
   DEVMAP_STARTMODE_INVALID = {
     "STARTMODE" => "invalid"
-  }
+  }.freeze
 
   AVAILABLE_PRODUCT_STARTMODES = [
     "hotplug",
     "manual",
     "off",
     "nfsroot"
-  ]
+  ].freeze
 
   ["hotplug", ""].each do |hwinfo_hotplug|
     expected_startmode = hwinfo_hotplug == "hotplug" ? "hotplug" : "auto"

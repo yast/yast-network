@@ -41,7 +41,6 @@ module Yast
   #
 
   # FIXME: well this class really is not nice
-  # rubocop:disable ClassLength
   class LanItemsClass < Module
     attr_reader :ipoib_modes
     attr_accessor :ipoib_mode
@@ -972,14 +971,14 @@ module Yast
       )
       Builtins.foreach(@Hardware) do |hwitem|
         udev_net = if Ops.get_string(hwitem, "dev_name", "") != ""
-                     Ops.get_list(
-                       @udev_net_rules,
-                       Ops.get_string(hwitem, "dev_name", ""),
-                       []
-                     )
-                   else
-                     []
-                   end
+          Ops.get_list(
+            @udev_net_rules,
+            Ops.get_string(hwitem, "dev_name", ""),
+            []
+          )
+        else
+          []
+        end
         mod = Builtins.deletechars(
           Ops.get(
             Builtins.splitstring(
@@ -1560,16 +1559,16 @@ module Yast
           4
         )
         @qeth_chanids = if DriverType(@type) == "ctc" || DriverType(@type) == "lcs"
-                          Builtins.sformat("%1%2 %1%3", devstr, devid0, devid1)
-                        else
-                          Builtins.sformat(
-                            "%1%2 %1%3 %1%4",
-                            devstr,
-                            devid0,
-                            devid1,
-                            devid2
-                          )
-                        end
+          Builtins.sformat("%1%2 %1%3", devstr, devid0, devid1)
+        else
+          Builtins.sformat(
+            "%1%2 %1%3 %1%4",
+            devstr,
+            devid0,
+            devid1,
+            devid2
+          )
+        end
       end
 
       nil
@@ -1615,10 +1614,10 @@ module Yast
       @remoteip          = d["REMOTE_IPADDR"]
       @netmask           = d["NETMASK"]
       @set_default_route = case d["DHCLIENT_SET_DEFAULT_ROUTE"]
-                           when "yes" then true
-                           when "no" then  false
-                             # all other values! count as unspecified which is default value
-                           end
+      when "yes" then true
+      when "no" then  false
+        # all other values! count as unspecified which is default value
+      end
 
       @mtu               = d["MTU"]
       @ethtool_options   = d["ETHTOOL_OPTIONS"]
@@ -1749,17 +1748,17 @@ module Yast
       Builtins.y2milestone("Startmode by product: #{product_startmode}")
 
       startmode = case product_startmode
-                  when "ifplugd"
-                    if replace_ifplugd?
-                      hotplug_usable? ? "hotplug" : "auto"
-                    else
-                      product_startmode
-                    end
-                  when "auto"
-                    "auto"
-                  else
-                    hotplug_usable? ? "hotplug" : "auto"
-                  end
+      when "ifplugd"
+        if replace_ifplugd?
+          hotplug_usable? ? "hotplug" : "auto"
+        else
+          product_startmode
+        end
+      when "auto"
+        "auto"
+      else
+        hotplug_usable? ? "hotplug" : "auto"
+      end
 
       Builtins.y2milestone("New device startmode: #{startmode}")
 
@@ -1835,7 +1834,7 @@ module Yast
       devmap["MTU"] = @mtu
       devmap["ETHTOOL_OPTIONS"] = @ethtool_options
       devmap["STARTMODE"] = @startmode
-      devmap["IFPLUGD_PRIORITY"] = @ifplugd_priority.to_i if @startmode == "ifplugd"
+      devmap["IFPLUGD_PRIORITY"] = @ifplugd_priority if @startmode == "ifplugd"
       devmap["BOOTPROTO"] = @bootproto
       devmap["_aliases"] = @aliases if @aliases && !@aliases.empty?
 
@@ -2251,20 +2250,20 @@ module Yast
       case @type
       when "hsi", "qeth"
         @portnumber_param = if Ops.greater_than(Builtins.size(@qeth_portnumber), 0)
-                              Builtins.sformat("-n %1", @qeth_portnumber)
-                            else
-                              ""
-                            end
+          Builtins.sformat("-n %1", @qeth_portnumber)
+        else
+          ""
+        end
         @portname_param = if Ops.greater_than(Builtins.size(@qeth_portname), 0)
-                            Builtins.sformat("-p %1", @qeth_portname)
-                          else
-                            ""
-                          end
+          Builtins.sformat("-p %1", @qeth_portname)
+        else
+          ""
+        end
         @options_param = if Ops.greater_than(Builtins.size(@qeth_options), 0)
-                           Builtins.sformat("-o %1", @qeth_options)
-                         else
-                           ""
-                         end
+          Builtins.sformat("-o %1", @qeth_options)
+        else
+          ""
+        end
         command1 = Builtins.sformat(
           "qeth_configure %1 %2 %3 %4 %5 1",
           @options_param,

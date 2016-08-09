@@ -66,7 +66,7 @@ module Yast
         if Ops.greater_than(
           Builtins.size(Ops.get_string(data, "PREFIXLEN", "")),
           0
-          )
+        )
           mask = Builtins.sformat("/%1", Ops.get_string(data, "PREFIXLEN", ""))
         end
         table_items = Builtins.add(
@@ -162,11 +162,8 @@ module Yast
               Builtins.substring(Ops.get_string(e, 3, ""), 1)
             )
           else
-            if Netmask.Check6(Ops.get_string(e, 3, ""))
-              Ops.set(alias_, "PREFIXLEN", Ops.get_string(e, 3, ""))
-            else
-              Ops.set(alias_, "NETMASK", Ops.get_string(e, 3, ""))
-            end
+            param = Netmask.Check6(Ops.get_string(e, 3, "")) ? "PREFIXLEN" : "NETMASK"
+            Ops.set(alias_, param, Ops.get_string(e, 3, ""))
           end
           Ops.set(
             LanItems.aliases,

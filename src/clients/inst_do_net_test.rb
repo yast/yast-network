@@ -529,10 +529,10 @@ module Yast
           if Ops.get_boolean(proxy_ret, ["HTTP", "tested"], true) == true &&
               Ops.get_integer(proxy_ret, ["HTTP", "exit"], 1) == 0
             user_pass = if Proxy.user != ""
-                          Ops.add(Ops.add(Proxy.user, ":"), Proxy.pass)
-                        else
-                          ""
-                        end
+              Ops.add(Ops.add(Proxy.user, ":"), Proxy.pass)
+            else
+              ""
+            end
             proxy = Ops.add(
               Ops.add("--proxy ", Proxy.http),
               if user_pass != ""
@@ -761,9 +761,7 @@ module Yast
           return
         end
 
-        if @already_up
-          @test_stage = :wait # not `copy. NM takes its time. #145153
-        else
+        if !@already_up
           mark_label(1, :arrow)
 
           if !AskForPassword()
@@ -795,9 +793,8 @@ module Yast
             mark_label(1, :dash)
             return
           end
-
-          @test_stage = :wait
         end
+        @test_stage = :wait # not `copy. NM takes its time. #145153
         return
       end
 
@@ -875,34 +872,32 @@ module Yast
             )
           )
           ret = false
-        else
-          if !download_release_notes
-            # return code is not on the blacklist (meaning misconfigured network)
-            # return true if user wants to continue despite the failure, false otherwise
-            if !Builtins.contains(@curl_ret_codes_bad, @curl_ret_code)
-              # popup informing user about the failure to retrieve release notes
-              # most likely due to server-side error
-              ret = Popup.ContinueCancel(
-                _(
-                  "Download of latest release notes failed due to server-side error. \n" \
-                    "This does not necessarily imply a faulty network configuration.\n" \
-                    "\n" \
-                    "Click 'Continue' to proceed to the next installation step. To skip any steps\n" \
-                    "requiring an internet connection or to get back to your network configuration,\n" \
-                    "click 'Cancel'.\n"
-                )
+        elsif !download_release_notes
+          # return code is not on the blacklist (meaning misconfigured network)
+          # return true if user wants to continue despite the failure, false otherwise
+          if !Builtins.contains(@curl_ret_codes_bad, @curl_ret_code)
+            # popup informing user about the failure to retrieve release notes
+            # most likely due to server-side error
+            ret = Popup.ContinueCancel(
+              _(
+                "Download of latest release notes failed due to server-side error. \n" \
+                  "This does not necessarily imply a faulty network configuration.\n" \
+                  "\n" \
+                  "Click 'Continue' to proceed to the next installation step. To skip any steps\n" \
+                  "requiring an internet connection or to get back to your network configuration,\n" \
+                  "click 'Cancel'.\n"
               )
-            else
-              # popup to inform user about the failure
-              Report.Error(
-                _(
-                  "Download of latest release notes failed. View\nthe logs for details."
-                )
+            )
+          else
+            # popup to inform user about the failure
+            Report.Error(
+              _(
+                "Download of latest release notes failed. View\nthe logs for details."
               )
-              ret = false
-            end
-            @test_stage = :close
+            )
+            ret = false
           end
+          @test_stage = :close
         end
         if ret
           install_release_notes

@@ -80,7 +80,7 @@ describe "#DeviceName" do
   end
   let(:hwinfo_generic) do
     {
-      "vendor"     => "vendor"
+      "vendor" => "vendor"
     }
   end
   let(:hwinfo) { hwinfo_generic.merge(hwinfo_details) }
