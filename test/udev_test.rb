@@ -53,6 +53,23 @@ describe "NetworkLanUdevInclude#update_udev_rule_key" do
   end
 end
 
+describe "#udev_rule_key" do
+  let(:rule) { ["KERNELS=\"invalid\"", "KERNEL=\"eth*\"", "NAME=\"eth1\""] }
+
+  it "raises ArgumentError if given rule is empty" do
+    expect { Yast::LanItems.udev_key_value(nil, "KERNEL") }
+      .to raise_error(ArgumentError, "Rule must not be nil when querying a key value")
+  end
+
+  it "returns value of the first attribute which matches given key" do
+    expect(Yast::LanItems.udev_key_value(rule, "KERNEL")).to eql("eth*")
+  end
+
+  it "returns an empty string if no rule matches" do
+    expect(Yast::LanItems.udev_key_value(rule, "ATTR{address}")).to eql("")
+  end
+end
+
 describe "NetworkLanUdevInclude#AddToUdevRule" do
   subject(:udev) { NetworkLanComplexUdev.new }
 
