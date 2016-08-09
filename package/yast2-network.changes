@@ -1,8 +1,24 @@
 -------------------------------------------------------------------
-Tue Jul 19 15:24:35 CEST 2016 - schubi@suse.de
+Tue Aug  9 12:29:35 UTC 2016 - schubi@suse.de
 
 - Added entry "s390-devices" to the AutoYaST schema file.
   Bug similar bnc#954412.
+- 3.1.162
+
+-------------------------------------------------------------------
+Tue Aug  9 12:25:01 UTC 2016 - mfilka@suse.com
+
+- bnc#991920
+  - do not crash with internal error when renaming unconfigured
+    device
+- 3.1.161 
+
+-------------------------------------------------------------------
+Tue Aug  2 12:40:53 UTC 2016 - mfilka@suse.com
+
+- bnc#991382
+  - Do not crash with internal error when using "On Cable
+    Connection" device activation mode.
 - 3.1.160
 
 -------------------------------------------------------------------

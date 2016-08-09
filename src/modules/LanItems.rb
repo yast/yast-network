@@ -405,26 +405,9 @@ module Yast
       deep_copy(udev_rules)
     end
 
+    # It returns a value for the particular key of udev rule belonging to the current item.
     def GetItemUdev(key)
-      value = ""
-
-      Builtins.foreach(getUdevFallback) do |row|
-        if Builtins.issubstring(row, key)
-          items = Builtins.filter(Builtins.splitstring(row, "=")) do |s|
-            Ops.greater_than(Builtins.size(s), 0)
-          end
-          if Builtins.size(items) == 2 && Ops.get_string(items, 0, "") == key
-            value = Builtins.deletechars(Ops.get_string(items, 1, ""), "\"")
-          else
-            Builtins.y2warning(
-              "udev items %1 doesn't match the key %2",
-              items,
-              key
-            )
-          end
-        end
-      end
-      value
+      udev_key_value(getUdevFallback, key)
     end
 
     # It replaces a tuple identified by replace_key in current item's udev rule
@@ -432,38 +415,33 @@ module Yast
     # Note that the tuple is identified by key only. However modification flag is
     # set only if value was changed (in case when replace_key == new_key)
     #
+    # It also contain a logic on tuple operators. When the new_key is "NAME"
+    # then assignment operator (=) is used. Otherwise equality operator (==) is used.
+    # Thats bcs this function is currently used for touching "NAME", "KERNELS" and
+    # "ATTR{address}" keys only
+    #
     # @param replace_key [string] udev key which identifies tuple to be replaced
     # @param new_key     [string] new key to by used
     # @param new_val     [string] value for new key
     # @return updated rule when replace_key is found, current rule otherwise
     def ReplaceItemUdev(replace_key, new_key, new_val)
-      new_rule = []
-      # udev syntax distinguishes among others:
       # =    for assignment
       # ==   for equality checks
       operator = new_key == "NAME" ? "=" : "=="
       current_rule = getUdevFallback
+      rule = RemoveKeyFromUdevRule(getUdevFallback, replace_key)
+      new_rule = AddToUdevRule(rule, "#{new_key}#{operator}\"#{new_val}\"")
 
-      return current_rule if !new_key || new_key.empty?
-      return current_rule if !new_val || new_val.empty?
+      log.info("ReplaceItemUdev: new udev rule = #{new_rule}")
 
-      i = current_rule.find_index { |tuple| tuple =~ /#{replace_key}/ }
-      if i
-        # deep_copy is most probably not neccessary because getUdevFallback does
-        # deep_copy on return value. However, getUdevFallback will be subect of refactoring
-        # so caution is must. Moreover new_rule is also return value so it should be
-        # copied anyway
-        new_rule = deep_copy(current_rule)
-        new_rule[i] = "#{new_key}#{operator}\"#{new_val}\""
+      if current_rule.sort != new_rule.sort
+        SetModified()
 
-        SetModified() if current_rule != new_rule
+        Items()[@current]["udev"] = { "net" => {} } if !Items()[@current]["udev"]
+        Items()[@current]["udev"]["net"] = new_rule
       end
 
-      log.info("LanItems#ReplaceItemUdev: #{current_rule} -> #{new_rule}")
-
-      Items()[@current]["udev"]["net"] = new_rule
-
-      new_rule
+      deep_copy(new_rule)
     end
 
     # Updates device name.
@@ -1830,7 +1808,7 @@ module Yast
       devmap["MTU"] = @mtu
       devmap["ETHTOOL_OPTIONS"] = @ethtool_options
       devmap["STARTMODE"] = @startmode
-      devmap["IFPLUGD_PRIORITY"] = @ifplugd_priority.to_i if @startmode == "ifplugd"
+      devmap["IFPLUGD_PRIORITY"] = @ifplugd_priority if @startmode == "ifplugd"
       devmap["BOOTPROTO"] = @bootproto
       devmap["_aliases"] = @aliases if @aliases && !@aliases.empty?
 
