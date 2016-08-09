@@ -29,6 +29,8 @@
 
 require "network/edit_nic_name"
 
+include Yast::UIShortcuts
+
 module Yast
   module NetworkLanHardwareInclude
     def initialize_network_lan_hardware(include_target)
@@ -790,21 +792,25 @@ module Yast
     def validate_hw(_key, _event)
       nm = devname_from_hw_dialog
 
-      if UsedNicName(nm)
+      ret = if UsedNicName(nm)
         Popup.Error(
-          Builtins.sformat(
-            _(
-              "Configuration name %1 already exists.\nChoose a different one."
-            ),
-            nm
-          )
+          format(_("Configuration name %s already exists.\nChoose a different one."), nm)
         )
-        UI.SetFocus(Id(:ifcfg_name))
 
-        return false
+        false
+      elsif !ValidNicName(nm)
+        Popup.Error(
+          format(_("Configuration name %s is invalid.\nChoose a different one."), nm)
+        )
+
+        false
+      else
+        true
       end
 
-      true
+      UI.SetFocus(Id(:ifcfg_name)) if !ret
+
+      ret
     end
 
     VLAN_SIZE = 4 # size of vlanN prefix without number
