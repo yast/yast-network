@@ -834,7 +834,7 @@ module Yast
         end
         if LanItems.type == "vlan"
           # for vlan devices named vlanN pre-set vlan_id to N, otherwise default to 0
-          LanItems.vlan_id = nm[VLAN_SIZE..-1].to_i.to_s
+          LanItems.vlan_id = nm[VLAN_SIZE..-1]
         end
       end
 
