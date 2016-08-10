@@ -250,7 +250,7 @@ describe Yast::YaPI::NETWORK do
     let(:config) do
       {
         "routes"   => {
-          "default"       => {
+          "default" => {
             "via" => "1.2.3.4"
           }
         },
@@ -266,7 +266,7 @@ describe Yast::YaPI::NETWORK do
       }.merge(interfaces)
     end
 
-    context "with no interfaces"do
+    context "with no interfaces" do
       let(:interfaces) do
         {
           "interfaces" => {}
@@ -274,6 +274,7 @@ describe Yast::YaPI::NETWORK do
       end
 
       it "returns the correct hash" do
+        allow(lan_items).to receive(:Items).with(no_args).and_return({})
         expect(subject.Read).to eql(config)
       end
     end

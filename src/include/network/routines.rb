@@ -150,7 +150,7 @@ module Yast
               "\n" \
               "Try again?\n"
           ) + "\n"
-          )
+        )
           break
         end
       end
@@ -314,43 +314,44 @@ module Yast
 
       # Network controller
       if Ops.get_integer(hwdevice, "class_id", -1) == 2
-        if subclass_id == 0
+        case subclass_id
+        when 0
           return "eth"
-        elsif subclass_id == 1
+        when 1
           return "tr"
-        elsif subclass_id == 2
+        when 2
           return "fddi"
-        elsif subclass_id == 3
+        when 3
           return "atm"
-        elsif subclass_id == 4
+        when 4
           return "isdn"
-        elsif subclass_id == 6 ## Should be PICMG?
+        when 6 ## Should be PICMG?
           return "ib"
-        elsif subclass_id == 7
+        when 7
           return "ib"
-        elsif subclass_id == 129
+        when 129
           return "myri"
-        elsif subclass_id == 130
+        when 130
           return "wlan"
-        elsif subclass_id == 131
+        when 131
           return "xp"
-        elsif subclass_id == 134
+        when 134
           return "qeth"
-        elsif subclass_id == 135
+        when 135
           return "hsi"
-        elsif subclass_id == 136
+        when 136
           return "ctc"
-        elsif subclass_id == 137
+        when 137
           return "lcs"
-        elsif subclass_id == 142
+        when 142
           return "ficon"
-        elsif subclass_id == 143
+        when 143
           return "escon"
-        elsif subclass_id == 144
+        when 144
           return "iucv"
-        elsif subclass_id == 145
+        when 145
           return "usb" # #22739
-        elsif subclass_id == 128
+        when 128
           # Nothing was found
           Builtins.y2error("Unknown network controller type: %1", hwdevice)
           Builtins.y2error(
@@ -370,9 +371,10 @@ module Yast
 
       # Communication controller
       if Ops.get_integer(hwdevice, "class_id", -1) == 7
-        if subclass_id == 3
+        case subclass_id
+        when 3
           return "modem"
-        elsif subclass_id == 128
+        when 128
           # Nothing was found
           Builtins.y2error("Unknown network controller type: %1", hwdevice)
           Builtins.y2error(
@@ -393,40 +395,41 @@ module Yast
       # indeed does not pass this to us
       elsif Ops.get_integer(hwdevice, "class_id", -1) == 263
         Builtins.y2milestone("CLASS 0x107") # this should happen rarely
-        if subclass_id == 0
+        case subclass_id
+        when 0
           return "lo"
-        elsif subclass_id == 1
+        when 1
           return "eth"
-        elsif subclass_id == 2
+        when 2
           return "tr"
-        elsif subclass_id == 3
+        when 3
           return "fddi"
-        elsif subclass_id == 4
+        when 4
           return "ctc"
-        elsif subclass_id == 5
+        when 5
           return "iucv"
-        elsif subclass_id == 6
+        when 6
           return "hsi"
-        elsif subclass_id == 7
+        when 7
           return "qeth"
-        elsif subclass_id == 8
+        when 8
           return "escon"
-        elsif subclass_id == 9
+        when 9
           return "myri"
-        elsif subclass_id == 10
+        when 10
           return "wlan"
-        elsif subclass_id == 11
+        when 11
           return "xp"
-        elsif subclass_id == 12
+        when 12
           return "usb"
-        elsif subclass_id == 128
+        when 128
           # Nothing was found
           Builtins.y2error("Unknown network interface type: %1", hwdevice)
           Builtins.y2error(
             "It's probably missing in hwinfo (src/hd/hd.h:sc_net_if)"
           )
           return ""
-        elsif subclass_id == 129
+        when 129
           return "sit"
         else
           # Nothing was found

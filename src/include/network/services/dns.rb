@@ -32,7 +32,7 @@ module Yast
     CUSTOM_RESOLV_POLICIES = {
       "STATIC"          => "STATIC",
       "STATIC_FALLBACK" => "STATIC_FALLBACK"
-    }
+    }.freeze
 
     def initialize_network_services_dns(include_target)
       textdomain "network"
@@ -607,10 +607,10 @@ module Yast
         UI.QueryWidget(Id("MODIFY_RESOLV"), :Value)
       )
 
-      if UI.QueryWidget(Id("MODIFY_RESOLV"), :Value) == :nomodify
-        @resolver_modifiable = false
+      @resolver_modifiable = if UI.QueryWidget(Id("MODIFY_RESOLV"), :Value) == :nomodify
+        false
       else
-        @resolver_modifiable = true
+        true
       end
 
       initPolicy(key)

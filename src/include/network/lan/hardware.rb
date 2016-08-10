@@ -83,17 +83,17 @@ module Yast
         "<p>Set up hardware-specific options for \nyour network device here.</p>\n"
       )
 
-      if isNewDevice
+      hw_help = if isNewDevice
         # Manual network card setup help 2/4
         # translators: do not translated udev, MAC, BusID
-        hw_help = Ops.add(
+        Ops.add(
           hw_help,
           _(
             "<p><b>Device Type</b>. Various device types are available, select \none according your needs.</p>"
           )
         )
       else
-        hw_help = Ops.add(
+        Ops.add(
           Ops.add(
             hw_help,
             _(
@@ -220,12 +220,12 @@ module Yast
       if Builtins.issubstring(
         Ops.get_string(@hardware, "device", ""),
         "bus-pcmcia"
-        )
+      )
         Ops.set(@hardware, "hotplug", "pcmcia")
       elsif Builtins.issubstring(
         Ops.get_string(@hardware, "device", ""),
         "bus-usb"
-        )
+      )
         Ops.set(@hardware, "hotplug", "usb")
       end
 
@@ -239,7 +239,7 @@ module Yast
       if !Builtins.contains(
         Ops.get_list(@hardware, "devices", []),
         Ops.get_string(@hardware, "device", "")
-        )
+      )
         Ops.set(
           @hardware,
           "devices",
@@ -504,13 +504,10 @@ module Yast
       loop do
         ret = UI.UserInput
 
-        if ret == :abort || ret == :cancel
-          if ReallyAbort()
-            break
-          else
-            next
-          end
-        elsif ret == :search
+        case ret
+        when :abort, :cancel
+          ReallyAbort() ? break : next
+        when :search
           entry = Convert.to_string(UI.QueryWidget(Id(:search), :Value))
 
           l = Builtins.filter(
@@ -539,9 +536,9 @@ module Yast
             Id(:rp),
             SelectionBox(Id(:cards), _("&Network Card"), cards)
           )
-        elsif ret == :back
+        when :back
           break
-        elsif ret == :next
+        when :next
           # FIXME: check_*
           break
         else
@@ -752,7 +749,7 @@ module Yast
         elsif Builtins.contains(
           ["bond", "vlan", "br", "tun", "tap"],
           Ops.get_string(@hardware, "type", "")
-          )
+        )
           UI.ChangeWidget(Id(:hwcfg), :Enabled, false)
           UI.ChangeWidget(Id(:modul), :Enabled, false)
           UI.ChangeWidget(Id(:options), :Enabled, false)
@@ -810,6 +807,8 @@ module Yast
       true
     end
 
+    VLAN_SIZE = 4 # size of vlanN prefix without number
+
     def storeHW(_key, _event)
       if isNewDevice
         nm = devname_from_hw_dialog
@@ -829,7 +828,7 @@ module Yast
         end
         if LanItems.type == "vlan"
           # for vlan devices named vlanN pre-set vlan_id to N, otherwise default to 0
-          LanItems.vlan_id = "#{nm["vlan".size].to_i}"
+          LanItems.vlan_id = nm[VLAN_SIZE].to_i.to_s
         end
       end
 
@@ -1147,15 +1146,12 @@ module Yast
 
         ret = UI.UserInput
 
-        if ret == :abort || ret == :cancel
-          if ReallyAbort()
-            break
-          else
-            next
-          end
-        elsif ret == :back
+        case ret
+        when :abort, :cancel
+          ReallyAbort() ? break : next
+        when :back
           break
-        elsif ret == :next
+        when :next
           if LanItems.type == "iucv"
             LanItems.device = Ops.add(
               "id-",
@@ -1220,7 +1216,7 @@ module Yast
             next
           end
           break
-        elsif ret == :qeth_layer2
+        when :qeth_layer2
           next
         else
           Builtins.y2error("Unexpected return code: %1", ret)

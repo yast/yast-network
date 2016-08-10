@@ -31,10 +31,10 @@ describe "LanItemsClass#delete_dev" do
     0 => {
       "ifcfg" => "enp0s3"
     }
-  }
+  }.freeze
 
   before(:each) do
-    Yast::LanItems.Items = MOCKED_ITEMS_DEL
+    Yast::LanItems.Items = MOCKED_ITEMS_DEL.dup
   end
 
   it "removes device config when found" do
@@ -57,21 +57,21 @@ describe "LanItemsClass#getNetworkInterfaces" do
       "eth6" => { "BOOTPROTO" => "static", "STARTMODE" => "ifplugd" }
     },
     "tun"  => {
-      "tun0"  => {
+      "tun0" => {
         "BOOTPROTO" => "static",
         "STARTMODE" => "onboot",
         "TUNNEL"    => "tun"
       }
     },
     "tap"  => {
-      "tap0"  => {
+      "tap0" => {
         "BOOTPROTO" => "static",
         "STARTMODE" => "onboot",
         "TUNNEL"    => "tap"
       }
     },
     "br"   => {
-      "br0"   => { "BOOTPROTO" => "dhcp" }
+      "br0" => { "BOOTPROTO" => "dhcp" }
     },
     "bond" => {
       "bond0" => {
@@ -81,7 +81,7 @@ describe "LanItemsClass#getNetworkInterfaces" do
         "BONDING_SLAVE1" => "eth2"
       }
     }
-  }
+  }.freeze
 
   EXPECTED_INTERFACES = [
     "eth1",
@@ -93,7 +93,7 @@ describe "LanItemsClass#getNetworkInterfaces" do
     "tap0",
     "br0",
     "bond0"
-  ]
+  ].freeze
 
   it "returns list of known interfaces" do
     allow(Yast::NetworkInterfaces).to receive(:FilterDevices) { NETCONFIG_ITEMS }

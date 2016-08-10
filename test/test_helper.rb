@@ -31,7 +31,7 @@ class SectionKeyValue
   end
 
   def set(section, key, value)
-    section_hash = @sections[section] ||=  {}
+    section_hash = @sections[section] ||= {}
     section_hash[key] = value
   end
 end

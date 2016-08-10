@@ -162,8 +162,7 @@ module Yast
                     Opt(:hstretch),
                     _("&Destination"),
                     Ops.get_string(entry, 1, "")
-                  )
-                ),
+                  )),
                 HSpacing(1),
                 HWeight(30,
                   InputField(
@@ -171,8 +170,7 @@ module Yast
                     Opt(:hstretch),
                     _("Ge&nmask"),
                     Ops.get_string(entry, 3, "-")
-                  )
-                )
+                  ))
               ),
               HBox(
                 HWeight(70,
@@ -181,8 +179,7 @@ module Yast
                     Opt(:hstretch),
                     _("&Gateway"),
                     Ops.get_string(entry, 2, "-")
-                  )
-                ),
+                  )),
                 HSpacing(1),
                 HWeight(30,
                   ComboBox(
@@ -190,8 +187,7 @@ module Yast
                     Opt(:editable, :hstretch),
                     _("De&vice"),
                     devs
-                  )
-                )
+                  ))
               ),
               # ComboBox label
               InputField(
@@ -206,8 +202,7 @@ module Yast
               PushButton(Id(:ok), Opt(:default), Label.OKButton),
               PushButton(Id(:cancel), Label.CancelButton)
             )
-          )
-        )
+          ))
       )
 
       # Allow declaring route without iface (for gateway) #93996
@@ -422,13 +417,11 @@ module Yast
 
     def validateRouting(_key, _event)
       gw = UI.QueryWidget(Id(:gw), :Value)
-      if gw != "" && !IP.Check(gw)
-        Popup.Error(_("The default gateway is invalid."))
-        UI.SetFocus(Id(:gw))
-        return false
-      else
-        return true
-      end
+      return true if gw == "" || IP.Check(gw)
+
+      Popup.Error(_("The default gateway is invalid."))
+      UI.SetFocus(Id(:gw))
+      false
     end
 
     def storeRouting(_key, _event)

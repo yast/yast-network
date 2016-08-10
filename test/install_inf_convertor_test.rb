@@ -184,13 +184,13 @@ describe "InstallInfConvertor" do
             .with(
               path(".sysconfig.network.config"),
               nil
-          ) { true }
+            ) { true }
         expect(Yast::SCR)
           .to receive(:Write)
             .with(
               path(".sysconfig.network.config.NETCONFIG_DNS_STATIC_SERVERS"),
               @nameserver
-          ).once { true }
+            ).once { true }
         expect(@install_inf_convertor.send(:write_dns)).to eql true
       end
     end
@@ -240,8 +240,7 @@ describe "InstallInfConvertor" do
       expect(Yast::Proxy).to receive(:Import) do |config|
         # proxy is enabled and the URL without credentials is set
         expect(config).to include("enabled" => true, "http_proxy" => proxy_url,
-          "proxy_user" => "user", "proxy_password" => "passwd"
-        )
+          "proxy_user" => "user", "proxy_password" => "passwd")
       end
       expect(Yast::Proxy).to receive(:Write).and_return(true)
 
@@ -261,7 +260,7 @@ describe "InstallInfConvertor" do
 
   context "running in system z/VM" do
     it "writes hw address into ifcfg for Layer 2 aware qeth devices" do
-      HWADDR = "02:AA:BB:CC:DD:FF"
+      HWADDR = "02:AA:BB:CC:DD:FF".freeze
 
       allow(Yast::InstallInfConvertor::InstallInf)
         .to receive(:[])

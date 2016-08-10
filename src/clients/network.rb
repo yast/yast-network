@@ -71,10 +71,10 @@ module Yast
       }
 
       # main ui function
-      if @propose
-        @ret = startDialog
+      @ret = if @propose
+        startDialog
       else
-        @ret = CommandLine.Run(@cmdline_description)
+        CommandLine.Run(@cmdline_description)
       end
       Builtins.y2debug("ret=%1", @ret)
 
@@ -130,15 +130,16 @@ module Yast
         ret = UI.UserInput
 
         # abort?
-        if ret == :abort || ret == :cancel
+        case ret
+        when :abort, :cancel
           break
         # next
-        elsif ret == :next || ret == :modules
+        when :next, :modules
           # check_*
           ret = :next
           break
         # back
-        elsif ret == :back
+        when :back
           break
         else
           Builtins.y2error("unexpected retcode: %1", ret)
@@ -158,11 +159,7 @@ module Yast
       Builtins.y2milestone("Network module finished")
       Builtins.y2milestone("----------------------------------------")
 
-      if ret == :next
-        return WFM.CallFunction(launch, WFM.Args)
-      else
-        return :back
-      end
+      ret == :next ? WFM.CallFunction(launch, WFM.Args) : :back
     end
 
     def runHandler(_options)

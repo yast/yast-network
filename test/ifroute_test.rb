@@ -15,7 +15,7 @@ describe "Yast::Routing#Read" do
       "gateway"     => "1.1.1.1",
       "netmask"     => "-"
     }
-  ]
+  ].freeze
   IFROUTE_FILE = [
     {
       "destination" => "default",
@@ -23,7 +23,7 @@ describe "Yast::Routing#Read" do
       "gateway"     => "1.1.1.1",
       "netmask"     => "-"
     }
-  ]
+  ].freeze
 
   before(:each) do
     allow(Yast::NetworkInterfaces)
@@ -46,7 +46,7 @@ describe "Yast::Routing#Read" do
     expect(Yast::SCR)
       .to receive(:Read)
       .with(path(".ifroute-eth0"))
-      .and_return(IFROUTE_FILE)
+      .and_return(IFROUTE_FILE.dup)
     expect(Yast::Routing.Read).to be true
     expect(Yast::Routing.Routes).not_to be_empty
   end
@@ -55,7 +55,7 @@ describe "Yast::Routing#Read" do
     expect(Yast::SCR)
       .to receive(:Read)
       .with(path(".ifroute-eth0"))
-      .and_return(IFROUTE_FILE)
+      .and_return(IFROUTE_FILE.dup)
     expect(Yast::Routing.Read).to be true
     # check if implicit device name "-" is rewritten according device name
     # which ifroute belongs to
@@ -67,11 +67,11 @@ describe "Yast::Routing#Read" do
     expect(Yast::SCR)
       .to receive(:Read)
       .with(path(".routes"))
-      .and_return(ROUTES_FILE)
+      .and_return(ROUTES_FILE.dup)
     expect(Yast::SCR)
       .to receive(:Read)
       .with(path(".ifroute-eth0"))
-      .and_return(IFROUTE_FILE)
+      .and_return(IFROUTE_FILE.dup)
     expect(Yast::Routing.Read).to be true
     expect(Yast::Routing.Routes.size).to eql 1
   end
@@ -91,7 +91,7 @@ describe "Yast::Routing#write_routes" do
       "gateway"     => "2.2.2.2",
       "netmask"     => "-"
     }
-  ]
+  ].freeze
 
   it "writes device assigned routes into correct ifroute file" do
     allow(Yast::FileUtils)
@@ -152,7 +152,7 @@ describe "Yast::Routing#Write" do
         }
       ]
     }
-  ]
+  ].freeze
 
   AY_ROUTES.each_with_index do |ay_test, i|
     it "does write route configuration files, ##{i}" do
