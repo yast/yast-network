@@ -127,8 +127,6 @@ module Yast
       @bond_slaves = []
       @bond_option = ""
 
-      @MAX_BOND_SLAVE = 10
-
       # VLAN option
       @vlan_etherdevice = ""
       @vlan_id = ""
