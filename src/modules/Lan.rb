@@ -990,11 +990,16 @@ module Yast
             configure_as_bridge_port(ifcfg)
 
             Ops.set(LanItems.Items, [current, "ifcfg"], new_ifcfg)
-            LanItems.SetModified
             LanItems.force_restart = true
             Builtins.y2internal("List %1", NetworkInterfaces.List(""))
             # re-read configuration to see new items in UI
             LanItems.Read
+
+            # note: LanItems.Read resets modification flag
+            # the Read is used as a trick how to update LanItems' internal
+            # cache according NetworkInterfaces' one. As NetworkInterfaces'
+            # cache was edited directly, LanItems is not aware of changes.
+            LanItems.SetModified
           end
         else
           Builtins.y2warning("empty ifcfg")
