@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Aug 11 08:23:00 UTC 2016 - mfilka@suse.com
+
+- bnc#988786
+  - Create bridge when proposing configuration for VM host.
+- 3.1.164 
+
+-------------------------------------------------------------------
 Wed Aug 10 18:07:12 UTC 2016 - ancor@suse.com
 
 - Improved parsing of vlan ids that are longer than one character.
