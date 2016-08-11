@@ -1,5 +1,5 @@
 -------------------------------------------------------------------
-Wed Aug 10 08:07:12 UTC 2016 - ancor@suse.com
+Wed Aug 10 18:07:12 UTC 2016 - ancor@suse.com
 
 - Improved parsing of vlan ids that are longer than one character.
 
