@@ -1257,11 +1257,11 @@ module Yast
 
     # Creates list of devices enslaved in any bond device.
     def GetBondSlaves(bond_master)
-      net_cards = NetworkInterfaces.FilterDevices("netcard") || { "bond" => {}}
+      net_cards = NetworkInterfaces.FilterDevices("netcard") || { "bond" => {} }
       bonds = net_cards["bond"] || {}
-      bond_device = bonds[bond_master] || {}
+      bond_map = bonds[bond_master] || {}
 
-      slaves = bond_device.select { |k, v| v if k =~ /BONDING_SLAVE/ }
+      slaves = bond_map.select { |k, _| k =~ /BONDING_SLAVE/ }.values
 
       deep_copy(slaves)
     end
