@@ -102,5 +102,34 @@ module Yast
         expect(LanItems.BuildBondIndex).to match(expected_mapping)
       end
     end
+
+    describe "#setup_bonding" do
+      let(:bonding_map) { { "BONDING_SLAVE0" => "eth0", "BONDING_SLAVE1" => "enp0s3" } }
+
+      it "sets BONDING_MASTER and BONDING_MODULE_OPTS" do
+        option = "bonding_option"
+        expected_map = { "BONDING_MASTER" => "yes", "BONDING_MODULE_OPTS" => option }
+
+        ret = LanItems.setup_bonding({}, [], option)
+
+        expect(ret.select { |k, _| k !~ /BONDING_SLAVE/ }).to match(expected_map)
+      end
+
+      it "sets BONDING_SLAVEx options according given list" do
+        expected_map = bonding_map
+
+        ret = LanItems.setup_bonding({}, ["eth0", "enp0s3"], nil)
+
+        expect(ret.select { |k, v| k =~ /BONDING_SLAVE/ && !v.nil? }).to match expected_map
+      end
+
+      it "clears BONDING_SLAVEx which are not needed anymore" do
+        expected_map = { "BONDING_SLAVE0" => "enp0s3" }
+
+        ret = LanItems.setup_bonding(bonding_map, ["enp0s3"], nil)
+
+        expect(ret.select { |k, v| k =~ /BONDING_SLAVE/ && !v.nil? }).to match expected_map
+      end
+    end
   end
 end

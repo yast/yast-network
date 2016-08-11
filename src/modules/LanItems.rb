@@ -1192,7 +1192,10 @@ module Yast
       firmware
     end
 
-    # Creates list of devices enslaved in any bond device.
+    # Creates list of devices enslaved in the bond device.
+    #
+    # @param bond_master [string] device name of a bond master (e.g. bond0)
+    # @return list of the bond slaves
     def GetBondSlaves(bond_master)
       net_cards = NetworkInterfaces.FilterDevices("netcard") || { "bond" => {} }
       bonds = net_cards["bond"] || {}
@@ -1802,6 +1805,34 @@ module Yast
       devmap
     end
 
+    # Sets bonding specific sysconfig options in given device map
+    #
+    # If any bonding specific option is present already it gets overwritten
+    # by new ones in case of collision
+    #
+    # @param devmap [map] hash of a device's sysconfig variables
+    # @param slaves [array] list of strings, each string is a bond slave name
+    #
+    # @return updated device map
+    def setup_bonding(devmap, slaves, options)
+      i = 0
+      slaves.each do |slave|
+        devmap["BONDING_SLAVE#{i}"] = slave
+        i += 1
+      end
+
+      # assign nil to rest BONDING_SLAVEn to remove them
+      while i < @MAX_BOND_SLAVE
+        devmap["BONDING_SLAVE#{i}"] = nil
+        i += 1
+      end
+
+      devmap["BONDING_MODULE_OPTS"] = options || ""
+      devmap["BONDING_MASTER"] = "yes"
+
+      devmap
+    end
+
     # Commit pending operation
     #
     # It commits *only* content of the corresponding ifcfg into NetworkInterfaces.
@@ -1849,20 +1880,7 @@ module Yast
 
       case @type
       when "bond"
-        i = 0
-        @bond_slaves.each do |slave|
-          newdev["BONDING_SLAVE#{i}"] = slave
-          i += 1
-        end
-
-        # assign nil to rest BONDING_SLAVEn to remove them
-        while i < @MAX_BOND_SLAVE
-          newdev["BONDING_SLAVE#{i}"] = nil
-          i += 1
-        end
-
-        newdev["BONDING_MODULE_OPTS"] = @bond_option
-        newdev["BONDING_MASTER"] = "yes"
+        newdev = setup_bonding(newdev, @bond_slaves, @bond_option)
 
       when "vlan"
         newdev["ETHERDEVICE"] = @vlan_etherdevice
