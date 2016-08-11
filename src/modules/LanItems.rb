@@ -1915,29 +1915,22 @@ module Yast
     # Sets bonding specific sysconfig options in given device map
     #
     # If any bonding specific option is present already it gets overwritten
-    # by new ones in case of collision
+    # by new ones in case of collision. If any BONDING_SLAVEx from devmap
+    # is not set, then its value is set to 'nil'
     #
     # @param devmap [map] hash of a device's sysconfig variables
     # @param slaves [array] list of strings, each string is a bond slave name
     #
     # @return updated device map
     def setup_bonding(devmap, slaves, options)
-      i = 0
-      slaves.each do |slave|
-        devmap["BONDING_SLAVE#{i}"] = slave
-        i += 1
-      end
-
-      # assign nil to rest BONDING_SLAVEn to remove them
-      while i < @MAX_BOND_SLAVE
-        devmap["BONDING_SLAVE#{i}"] = nil
-        i += 1
-      end
+      slave_opts = devmap.select { |k, _| k =~ /BONDING_SLAVE/ }.keys
+      slave_opts.each { |s| devmap[s] = nil }
+      slaves.each_with_index { |s, i| devmap["BONDING_SLAVE#{i}"] = s }
 
       devmap["BONDING_MODULE_OPTS"] = options || ""
       devmap["BONDING_MASTER"] = "yes"
 
-      devmap
+      deep_copy(devmap)
     end
 
     # Commit pending operation
@@ -1982,7 +1975,10 @@ module Yast
 
       case @type
       when "bond"
-        newdev = setup_bonding(newdev, @bond_slaves, @bond_option)
+        # we need current slaves - when some of them is not used anymore we need to
+        # configure it for deletion from ifcfg (SCR expects special value nil)
+        current_slaves = (GetCurrentMap() || {}).select { |k, _| k =~ /BONDING_SLAVE/ }
+        newdev = setup_bonding(newdev.merge(current_slaves), @bond_slaves, @bond_option)
 
       when "vlan"
         newdev["ETHERDEVICE"] = @vlan_etherdevice
