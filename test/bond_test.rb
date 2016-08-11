@@ -115,7 +115,7 @@ module Yast
         expect(ret.select { |k, _| k !~ /BONDING_SLAVE/ }).to match(expected_map)
       end
 
-      it "sets BONDING_SLAVEx options according given list" do
+      it "sets BONDING_SLAVEx options according to given list" do
         expected_map = bonding_map
 
         ret = LanItems.setup_bonding({}, ["eth0", "enp0s3"], nil)
@@ -129,6 +129,10 @@ module Yast
         ret = LanItems.setup_bonding(bonding_map, ["enp0s3"], nil)
 
         expect(ret.select { |k, v| k =~ /BONDING_SLAVE/ && !v.nil? }).to match expected_map
+        # Following is required to get unneeded BONDING_SLAVEx deleted
+        # during write
+        expect(ret).to have_key("BONDING_SLAVE1")
+        expect(ret["BONDING_SLAVE1"]).to be nil
       end
     end
   end
