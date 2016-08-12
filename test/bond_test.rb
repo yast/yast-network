@@ -105,10 +105,11 @@ module Yast
 
     describe "#setup_bonding" do
       let(:bonding_map) { { "BONDING_SLAVE0" => "eth0", "BONDING_SLAVE1" => "enp0s3" } }
+      let(:mandatory_opts) { { "BONDING_MASTER" => "yes", "BONDING_MODULE_OPTS" => option } }
+      let(:option) { "bonding_option" }
 
       it "sets BONDING_MASTER and BONDING_MODULE_OPTS" do
-        option = "bonding_option"
-        expected_map = { "BONDING_MASTER" => "yes", "BONDING_MODULE_OPTS" => option }
+        expected_map = mandatory_opts
 
         ret = LanItems.setup_bonding({}, [], option)
 
@@ -133,6 +134,19 @@ module Yast
         # during write
         expect(ret).to have_key("BONDING_SLAVE1")
         expect(ret["BONDING_SLAVE1"]).to be nil
+      end
+
+      it "clears all BONDING_SLAVESx and sets BONDING_MASTER, BONDING_OPTIONS when no slaves provided" do
+        ret = LanItems.setup_bonding(bonding_map, nil, option)
+        expected_slaves = { "BONDING_SLAVE0" => nil, "BONDING_SLAVE1" => nil }
+        expected_map = mandatory_opts.merge(expected_slaves)
+
+        expect(ret).to match(expected_map)
+      end
+
+      it "raises an exception in case of nil devmap" do
+        expect { LanItems.setup_bonding(nil, nil, nil) }
+          .to raise_error(ArgumentError, "Device map has to be provided.")
       end
     end
   end
