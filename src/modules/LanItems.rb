@@ -1809,11 +1809,16 @@ module Yast
     # by new ones in case of collision. If any BONDING_SLAVEx from devmap
     # is not set, then its value is set to 'nil'
     #
-    # @param devmap [map] hash of a device's sysconfig variables
+    # @param devmap [Hash] hash of a device's sysconfig variables
     # @param slaves [array] list of strings, each string is a bond slave name
     #
-    # @return updated device map
+    # @return [Hash] updated device map
     def setup_bonding(devmap, slaves, options)
+      raise ArgumentError, "Device map has to be provided." if devmap.nil?
+
+      devmap = deep_copy(devmap)
+      slaves ||= []
+
       slave_opts = devmap.select { |k, _| k =~ /BONDING_SLAVE/ }.keys
       slave_opts.each { |s| devmap[s] = nil }
       slaves.each_with_index { |s, i| devmap["BONDING_SLAVE#{i}"] = s }
@@ -1821,7 +1826,7 @@ module Yast
       devmap["BONDING_MODULE_OPTS"] = options || ""
       devmap["BONDING_MASTER"] = "yes"
 
-      deep_copy(devmap)
+      devmap
     end
 
     # Commit pending operation
