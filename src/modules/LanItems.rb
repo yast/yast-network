@@ -127,8 +127,6 @@ module Yast
       @bond_slaves = []
       @bond_option = ""
 
-      @MAX_BOND_SLAVE = 10
-
       # VLAN option
       @vlan_etherdevice = ""
       @vlan_id = ""
@@ -1192,28 +1190,16 @@ module Yast
       firmware
     end
 
-    # Creates list of devices enslaved in any bond device.
+    # Creates list of devices enslaved in the bond device.
+    #
+    # @param bond_master [string] device name of a bond master (e.g. bond0)
+    # @return list of the bond slaves
     def GetBondSlaves(bond_master)
-      slaves = []
-      slave_index = 0
+      net_cards = NetworkInterfaces.FilterDevices("netcard") || { "bond" => {} }
+      bonds = net_cards["bond"] || {}
+      bond_map = bonds[bond_master] || {}
 
-      while Ops.less_than(slave_index, @MAX_BOND_SLAVE)
-        slave = Ops.get_string(
-          NetworkInterfaces.FilterDevices("netcard"),
-          [
-            "bond",
-            bond_master,
-            Builtins.sformat("BONDING_SLAVE%1", slave_index)
-          ],
-          ""
-        )
-
-        if Ops.greater_than(Builtins.size(slave), 0)
-          slaves = Builtins.add(slaves, slave)
-        end
-
-        slave_index = Ops.add(slave_index, 1)
-      end
+      slaves = bond_map.select { |k, _| k.start_with?("BONDING_SLAVE") }.values
 
       deep_copy(slaves)
     end
@@ -1817,6 +1803,32 @@ module Yast
       devmap
     end
 
+    # Sets bonding specific sysconfig options in given device map
+    #
+    # If any bonding specific option is present already it gets overwritten
+    # by new ones in case of collision. If any BONDING_SLAVEx from devmap
+    # is not set, then its value is set to 'nil'
+    #
+    # @param devmap [Hash] hash of a device's sysconfig variables
+    # @param slaves [array] list of strings, each string is a bond slave name
+    #
+    # @return [Hash] updated copy of the device map
+    def setup_bonding(devmap, slaves, options)
+      raise ArgumentError, "Device map has to be provided." if devmap.nil?
+
+      devmap = deep_copy(devmap)
+      slaves ||= []
+
+      slave_opts = devmap.select { |k, _| k.start_with?("BONDING_SLAVE") }.keys
+      slave_opts.each { |s| devmap[s] = nil }
+      slaves.each_with_index { |s, i| devmap["BONDING_SLAVE#{i}"] = s }
+
+      devmap["BONDING_MODULE_OPTS"] = options || ""
+      devmap["BONDING_MASTER"] = "yes"
+
+      devmap
+    end
+
     # Commit pending operation
     #
     # It commits *only* content of the corresponding ifcfg into NetworkInterfaces.
@@ -1864,20 +1876,10 @@ module Yast
 
       case @type
       when "bond"
-        i = 0
-        @bond_slaves.each do |slave|
-          newdev["BONDING_SLAVE#{i}"] = slave
-          i += 1
-        end
-
-        # assign nil to rest BONDING_SLAVEn to remove them
-        while i < @MAX_BOND_SLAVE
-          newdev["BONDING_SLAVE#{i}"] = nil
-          i += 1
-        end
-
-        newdev["BONDING_MODULE_OPTS"] = @bond_option
-        newdev["BONDING_MASTER"] = "yes"
+        # we need current slaves - when some of them is not used anymore we need to
+        # configure it for deletion from ifcfg (SCR expects special value nil)
+        current_slaves = (GetCurrentMap() || {}).select { |k, _| k.start_with?("BONDING_SLAVE") }
+        newdev = setup_bonding(newdev.merge(current_slaves), @bond_slaves, @bond_option)
 
       when "vlan"
         newdev["ETHERDEVICE"] = @vlan_etherdevice
