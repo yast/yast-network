@@ -1262,7 +1262,7 @@ module Yast
       bonds = net_cards["bond"] || {}
       bond_map = bonds[bond_master] || {}
 
-      slaves = bond_map.select { |k, _| k =~ /BONDING_SLAVE/ }.values
+      slaves = bond_map.select { |k, _| k.start_with?("BONDING_SLAVE") }.values
 
       deep_copy(slaves)
     end
@@ -1919,14 +1919,14 @@ module Yast
     # @param devmap [Hash] hash of a device's sysconfig variables
     # @param slaves [array] list of strings, each string is a bond slave name
     #
-    # @return [Hash] updated device map
+    # @return [Hash] updated copy of the device map
     def setup_bonding(devmap, slaves, options)
       raise ArgumentError, "Device map has to be provided." if devmap.nil?
 
       devmap = deep_copy(devmap)
       slaves ||= []
 
-      slave_opts = devmap.select { |k, _| k =~ /BONDING_SLAVE/ }.keys
+      slave_opts = devmap.select { |k, _| k.start_with?("BONDING_SLAVE") }.keys
       slave_opts.each { |s| devmap[s] = nil }
       slaves.each_with_index { |s, i| devmap["BONDING_SLAVE#{i}"] = s }
 
@@ -1980,7 +1980,7 @@ module Yast
       when "bond"
         # we need current slaves - when some of them is not used anymore we need to
         # configure it for deletion from ifcfg (SCR expects special value nil)
-        current_slaves = (GetCurrentMap() || {}).select { |k, _| k =~ /BONDING_SLAVE/ }
+        current_slaves = (GetCurrentMap() || {}).select { |k, _| k.start_with?("BONDING_SLAVE") }
         newdev = setup_bonding(newdev.merge(current_slaves), @bond_slaves, @bond_option)
 
       when "vlan"
