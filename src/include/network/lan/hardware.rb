@@ -63,6 +63,8 @@ module Yast
         "help"          => initHelp
       }
 
+      # validation function currently checks user's input in :ifcfg_name widget
+      # However this widget is present only when adding new device
       if isNewDevice
         widget_descr["validate_type"] = :function
         widget_descr["validate_function"] = fun_ref(method(:validate_hw), "boolean (string, map)")
