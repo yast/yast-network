@@ -42,3 +42,25 @@ describe "#validate_hw" do
     expect(subject.validate_hw(nil, nil)).to be false
   end
 end
+
+describe "#widget_descr_hardware" do
+  subject { HardwareTestClass.new }
+
+  it "sets validation function when invoked for adding device" do
+    allow(subject).to receive(:isNewDevice).and_return(true)
+
+    ret = subject.widget_descr_hardware
+
+    expect(ret["HWDIALOG"]).to have_key("validate_type")
+    expect(ret["HWDIALOG"]).to have_key("validate_function")
+  end
+
+  it "doesn't set validation function when invoked for editing device" do
+    allow(subject).to receive(:isNewDevice).and_return(false)
+
+    ret = subject.widget_descr_hardware
+
+    expect(ret["HWDIALOG"]).not_to have_key("validate_type")
+    expect(ret["HWDIALOG"]).not_to have_key("validate_function")
+  end
+end
