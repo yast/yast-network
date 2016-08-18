@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Aug 18 08:52:41 UTC 2016 - mfilka@suse.com
+
+- bnc#991486
+  - extended fix for this bug from 3.1.163. Do not report invalid
+    names incorrectly
+- 3.1.166  
+
+-------------------------------------------------------------------
 Thu Aug 11 19:02:36 UTC 2016 - mfilka@suse.com
 
 - bnc#985905 
