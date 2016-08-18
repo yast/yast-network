@@ -55,12 +55,12 @@ module Yast
 
     def widget_descr_hardware
       widget_descr = {
-        "widget"            => :custom,
-        "custom_widget"     => ReplacePoint(Id(:hw_content), Empty()),
-        "init"              => fun_ref(method(:initHwDialog), "void (string)"),
-        "handle"            => fun_ref(method(:handleHW), "symbol (string, map)"),
-        "store"             => fun_ref(method(:storeHW), "void (string, map)"),
-        "help"              => initHelp
+        "widget"        => :custom,
+        "custom_widget" => ReplacePoint(Id(:hw_content), Empty()),
+        "init"          => fun_ref(method(:initHwDialog), "void (string)"),
+        "handle"        => fun_ref(method(:handleHW), "symbol (string, map)"),
+        "store"         => fun_ref(method(:storeHW), "void (string, map)"),
+        "help"          => initHelp
       }
 
       if isNewDevice
