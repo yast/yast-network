@@ -48,10 +48,11 @@ module Yast
       fields = Builtins.splitstring(Ops.get_string(out, "stdout", ""), " ")
       vfstype = Ops.get(fields, 2, "")
       device = if vfstype == "nfs" || vfstype == "nfs4"
-                 "nfs"
-               else
-                 Ops.get(fields, 0, "")
-               end
+        "nfs"
+      else
+        Ops.get(fields, 0, "")
+      end
+
       Builtins.y2milestone("%1 is on device: %2", mount_point, device)
       device
     end
