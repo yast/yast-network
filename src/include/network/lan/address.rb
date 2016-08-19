@@ -1174,7 +1174,7 @@ module Yast
       UI.ChangeWidget(
         Id("IFPLUGD_PRIORITY"),
         :Value,
-        Builtins.tointeger(Ops.get_string(@settings, "IFPLUGD_PRIORITY", "0"))
+        @settings["IFPLUGD_PRIORITY"].to_i
       )
 
       nil
