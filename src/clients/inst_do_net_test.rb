@@ -529,10 +529,11 @@ module Yast
           if Ops.get_boolean(proxy_ret, ["HTTP", "tested"], true) == true &&
               Ops.get_integer(proxy_ret, ["HTTP", "exit"], 1) == 0
             user_pass = if Proxy.user != ""
-                          Ops.add(Ops.add(Proxy.user, ":"), Proxy.pass)
-                        else
-                          ""
-                        end
+              Ops.add(Ops.add(Proxy.user, ":"), Proxy.pass)
+            else
+              ""
+            end
+
             proxy = Ops.add(
               Ops.add("--proxy ", Proxy.http),
               if user_pass != ""

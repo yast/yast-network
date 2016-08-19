@@ -1256,12 +1256,12 @@ module Yast
 
       address_dhcp_contents = VBox("BOOTPROTO")
       just_address_contents = if is_ptp
-                                address_p2p_contents
-                              elsif no_dhcp
-                                address_static_contents
-                              else
-                                address_dhcp_contents
-                              end
+        address_p2p_contents
+      elsif no_dhcp
+        address_static_contents
+      else
+        address_dhcp_contents
+      end
 
       label = HBox(
         HSpacing(0.5),

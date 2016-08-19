@@ -281,24 +281,24 @@ module Yast
 
     def preformatted_proposal
       firewall_proposal = if SuSEFirewall4Network.Enabled1stStage
-                            _(
-                              "Firewall will be enabled (<a href=\"%s\">disable</a>)"
-                            ) % LINK_DISABLE_FIREWALL
-                          else
-                            _(
-                              "Firewall will be disabled (<a href=\"%s\">enable</a>)"
-                            ) % LINK_ENABLE_FIREWALL
-                          end
+        _(
+          "Firewall will be enabled (<a href=\"%s\">disable</a>)"
+        ) % LINK_DISABLE_FIREWALL
+      else
+        _(
+          "Firewall will be disabled (<a href=\"%s\">enable</a>)"
+        ) % LINK_ENABLE_FIREWALL
+      end
 
       sshd_proposal = if SuSEFirewall4Network.EnabledSshd
-                        _(
-                          "SSH service will be enabled (<a href=\"%s\">disable</a>)"
-                        ) % LINK_DISABLE_SSHD
-                      else
-                        _(
-                          "SSH service will be disabled (<a href=\"%s\">enable</a>)"
-                        ) % LINK_ENABLE_SSHD
-                      end
+        _(
+          "SSH service will be enabled (<a href=\"%s\">disable</a>)"
+        ) % LINK_DISABLE_SSHD
+      else
+        _(
+          "SSH service will be disabled (<a href=\"%s\">enable</a>)"
+        ) % LINK_ENABLE_SSHD
+      end
 
       # Filter proposals with content and sort them
       proposals = [firewall_proposal, ssh_fw_proposal, sshd_proposal, vnc_fw_proposal].compact

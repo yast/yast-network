@@ -120,12 +120,12 @@ module Yast
       list_items = []
       protected_from_internal = SuSEFirewall.GetProtectFromInternalZone
       nozone = if IsOn()
-                 # item in combo box Firewall Zone
-                 _("Automatically Assigned Zone")
-               else
-                 # item in combo box Firewall Zone
-                 _("Firewall Disabled")
-               end
+        # item in combo box Firewall Zone
+        _("Automatically Assigned Zone")
+      else
+        # item in combo box Firewall Zone
+        _("Firewall Disabled")
+      end
       list_items = Builtins.add(list_items, ["", nozone])
 
       # Listing all known zones

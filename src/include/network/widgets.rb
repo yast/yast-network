@@ -425,12 +425,13 @@ module Yast
       #    device_name = substring (device_name, 0, 27) + "...";
       # }
       ip_addr = if Builtins.issubstring(NetworkInterfaces.GetValue(device_id, "BOOTPROTO"), "dhcp")
-                  # TRANSLATORS: Part of label, device with IP address assigned by DHCP
-                  _("DHCP address")
-                else
-                  # TRANSLATORS: Part of label, device with static IP address
-                  NetworkInterfaces.GetValue(device_id, "IPADDR")
-                end
+        # TRANSLATORS: Part of label, device with IP address assigned by DHCP
+        _("DHCP address")
+      else
+        # TRANSLATORS: Part of label, device with static IP address
+        NetworkInterfaces.GetValue(device_id, "IPADDR")
+      end
+
       if ip_addr.nil? || ip_addr == ""
         # TRANSLATORS: Informs that no IP has been assigned to the device
         ip_addr = _("No IP address assigned")

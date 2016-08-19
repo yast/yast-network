@@ -1015,14 +1015,14 @@ module Yast
       )
       Builtins.foreach(@Hardware) do |hwitem|
         udev_net = if Ops.get_string(hwitem, "dev_name", "") != ""
-                     Ops.get_list(
-                       @udev_net_rules,
-                       Ops.get_string(hwitem, "dev_name", ""),
-                       []
-                     )
-                   else
-                     []
-                   end
+          Ops.get_list(
+            @udev_net_rules,
+            Ops.get_string(hwitem, "dev_name", ""),
+            []
+          )
+        else
+          []
+        end
         mod = Builtins.deletechars(
           Ops.get(
             Builtins.splitstring(
@@ -2439,20 +2439,20 @@ module Yast
       case @type
       when "hsi", "qeth"
         @portnumber_param = if Ops.greater_than(Builtins.size(@qeth_portnumber), 0)
-                              Builtins.sformat("-n %1", @qeth_portnumber)
-                            else
-                              ""
-                            end
+          Builtins.sformat("-n %1", @qeth_portnumber)
+        else
+          ""
+        end
         @portname_param = if Ops.greater_than(Builtins.size(@qeth_portname), 0)
-                            Builtins.sformat("-p %1", @qeth_portname)
-                          else
-                            ""
-                          end
+          Builtins.sformat("-p %1", @qeth_portname)
+        else
+          ""
+        end
         @options_param = if Ops.greater_than(Builtins.size(@qeth_options), 0)
-                           Builtins.sformat("-o %1", @qeth_options)
-                         else
-                           ""
-                         end
+          Builtins.sformat("-o %1", @qeth_options)
+        else
+          ""
+        end
         command1 = Builtins.sformat(
           "qeth_configure %1 %2 %3 %4 %5 1",
           @options_param,
