@@ -393,7 +393,7 @@ module Yast
       Ops.set(
         @widget_descr_local,
         "HWDIALOG",
-        Ops.get(@widget_descr_hardware, "HWDIALOG", {})
+        Ops.get(widget_descr_hardware, "HWDIALOG", {})
       )
     end
 

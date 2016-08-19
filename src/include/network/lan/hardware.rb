@@ -51,19 +51,26 @@ module Yast
       Yast.include include_target, "network/lan/cards.rb"
 
       @hardware = nil
+    end
 
-      @widget_descr_hardware = {
-        "HWDIALOG" => {
-          "widget"            => :custom,
-          "custom_widget"     => ReplacePoint(Id(:hw_content), Empty()),
-          "init"              => fun_ref(method(:initHwDialog), "void (string)"),
-          "handle"            => fun_ref(method(:handleHW), "symbol (string, map)"),
-          "store"             => fun_ref(method(:storeHW), "void (string, map)"),
-          "validate_type"     => :function,
-          "validate_function" => fun_ref(method(:validate_hw), "boolean (string, map)"),
-          "help"              => initHelp
-        }
+    def widget_descr_hardware
+      widget_descr = {
+        "widget"        => :custom,
+        "custom_widget" => ReplacePoint(Id(:hw_content), Empty()),
+        "init"          => fun_ref(method(:initHwDialog), "void (string)"),
+        "handle"        => fun_ref(method(:handleHW), "symbol (string, map)"),
+        "store"         => fun_ref(method(:storeHW), "void (string, map)"),
+        "help"          => initHelp
       }
+
+      # validation function currently checks user's input in :ifcfg_name widget
+      # However this widget is present only when adding new device
+      if isNewDevice
+        widget_descr["validate_type"] = :function
+        widget_descr["validate_function"] = fun_ref(method(:validate_hw), "boolean (string, map)")
+      end
+
+      { "HWDIALOG" => widget_descr }
     end
 
     # Determines if the dialog is used for adding new device or for editing existing one.
@@ -1238,7 +1245,7 @@ module Yast
     def HardwareDialog
       caption = _("Hardware Dialog")
 
-      w = CWM.CreateWidgets(["HWDIALOG"], @widget_descr_hardware)
+      w = CWM.CreateWidgets(["HWDIALOG"], widget_descr_hardware)
       contents = VBox(
         VStretch(),
         HBox(
