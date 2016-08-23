@@ -1415,7 +1415,7 @@ module Yast
                          " set the priority of each interface.  </p>\n"
                      ),
         "init"    => fun_ref(method(:initIfplugdPriority), "void (string)"),
-        "store"    => fun_ref(method(:store_ifplugd_priority), "void (string, map)")
+        "store"   => fun_ref(method(:store_ifplugd_priority), "void (string, map)")
       )
 
       Ops.set(wd, ["IFCFGTYPE", "items"], BuildTypesListCWM(NetworkInterfaces.GetDeviceTypes))
