@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 require "yast"
-require "network/wicked_handlers"
+require "network/wicked"
 
 module Yast
   # The class is responsible for generating / proposing automatic

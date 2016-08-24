@@ -31,7 +31,6 @@
 # Input and output routines.
 require "yast"
 require "network/confirm_virt_proposal"
-require "network/wicked_handlers"
 
 module Yast
   class LanClass < Module
