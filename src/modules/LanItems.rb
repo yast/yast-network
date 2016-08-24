@@ -46,6 +46,7 @@ module Yast
     attr_accessor :ipoib_mode
 
     include Logger
+    include Wicked
 
     def main
       Yast.import "UI"
