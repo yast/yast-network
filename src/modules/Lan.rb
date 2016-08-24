@@ -1134,14 +1134,14 @@ module Yast
         NetworkService.Restart
 
       when :reload_restart
-        log.info "Attempting to reload network service, normal stage " \
-          "#{Stage.normal}, ssh: #{Linuxrc.usessh}"
+        log.info("Attempting to reload network service, normal stage #{Stage.normal}, ssh: #{Linuxrc.usessh}")
 
         NetworkService.ReloadOrRestart if Stage.normal || !Linuxrc.usessh
 
       when :remote_installer
         # last instance handling "special" cases like ssh installation
         # FIXME: most probably not everything will be set properly
+        log.info("Running in ssh/vnc installer -> just setting links up")
         LanItems.reload_config(LanItems.GetAllInterfaces())
       end
     end

@@ -10,7 +10,6 @@ module Yast
     include Wicked
     include Singleton
     include Logger
-    include Yast
 
     Yast.import "Lan"
     Yast.import "LanItems"
@@ -19,8 +18,6 @@ module Yast
     Yast.import "DNS"
     Yast.import "Arch"
     Yast.import "Host"
-
-    BASH_PATH = Path.new(".target.bash")
 
     def configure_dhcp
       Yast.include self, "network/routines.rb"
