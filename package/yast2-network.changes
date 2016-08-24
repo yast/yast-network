@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Aug 24 10:54:55 UTC 2016 - mfilka@suse.com
+
+- bnc#993587
+  - installer is able to newly configured set devices up in case of
+    ssh/vnc installation
+- 3.1.168
+
+-------------------------------------------------------------------
 Fri Aug 19 08:59:14 UTC 2016 - mfilka@suse.com
 
 - bnc#991382 
