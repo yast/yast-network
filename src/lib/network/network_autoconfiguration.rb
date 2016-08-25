@@ -1,14 +1,15 @@
 # encoding: utf-8
 
 require "yast"
+require "network/wicked"
 
 module Yast
   # The class is responsible for generating / proposing automatic
   # configuration during installation workflow
   class NetworkAutoconfiguration
+    include Wicked
     include Singleton
     include Logger
-    include Yast
 
     Yast.import "Lan"
     Yast.import "LanItems"
@@ -17,8 +18,6 @@ module Yast
     Yast.import "DNS"
     Yast.import "Arch"
     Yast.import "Host"
-
-    BASH_PATH = Path.new(".target.bash")
 
     def configure_dhcp
       Yast.include self, "network/routines.rb"
@@ -140,17 +139,6 @@ module Yast
       LanItems.startmode = "auto"
 
       LanItems.Commit
-    end
-
-    # Reloads configuration for each device named in devs
-    #
-    # @devs [Array] list of device names
-    # @return true if configuration was reloaded
-    def reload_config(devs)
-      raise ArgumentError if devs.nil?
-      return true if devs.empty?
-
-      SCR.Execute(BASH_PATH, "wicked ifreload #{devs.join(" ")}") == 0
     end
 
     def delete_config(devname)

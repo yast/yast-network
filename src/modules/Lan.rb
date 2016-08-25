@@ -1120,17 +1120,28 @@ module Yast
   private
 
     def activate_network_service
-      if LanItems.force_restart
+      # If the second installation stage has been called by yast.ssh via
+      # ssh, we should not restart network because systemctl
+      # hangs in that case. (bnc#885640)
+      action = :reload_restart   if Stage.normal || !Linuxrc.usessh
+      action = :force_restart    if LanItems.force_restart
+      action = :remote_installer if Stage.initial && (Linuxrc.usessh || Linuxrc.vnc)
+
+      case action
+      when :force_restart
         log.info("Network service activation forced")
         NetworkService.Restart
-      else
-        log.info "Attempting to reload network service, normal stage " \
-          "#{Stage.normal}, ssh: #{Linuxrc.usessh}"
 
-        # If the second installation stage has been called by yast.ssh via
-        # ssh, we should not restart network cause systemctl
-        # hangs in that case. (bnc#885640)
+      when :reload_restart
+        log.info("Attempting to reload network service, normal stage #{Stage.normal}, ssh: #{Linuxrc.usessh}")
+
         NetworkService.ReloadOrRestart if Stage.normal || !Linuxrc.usessh
+
+      when :remote_installer
+        # last instance handling "special" cases like ssh installation
+        # FIXME: most probably not everything will be set properly
+        log.info("Running in ssh/vnc installer -> just setting links up")
+        LanItems.reload_config(LanItems.GetAllInterfaces())
       end
     end
   end
