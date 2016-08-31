@@ -150,7 +150,7 @@ module Yast
     describe ".configure_display_manager" do
       before do
         stub_scr_write
-        stub_scr_read(".etc.xinetd_conf.services")
+        yaml_stub_scr_read(".etc.xinetd_conf.services")
         allow(Package).to receive(:Installed).and_return true
       end
 

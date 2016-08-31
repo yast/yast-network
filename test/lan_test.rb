@@ -210,3 +210,11 @@ describe "LanClass#Modified" do
     expect(Yast::Lan.Modified).to be false
   end
 end
+
+describe "LanClass#readIPv6" do
+  it "reads IPv6 setup from /etc/sysctl.conf" do
+    string_stub_scr_read("/etc//sysctl.conf")
+    Yast::Lan.readIPv6
+    expect(Yast::Lan.ipv6).to be false
+  end
+end
