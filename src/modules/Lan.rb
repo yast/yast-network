@@ -217,19 +217,13 @@ module Yast
     def readIPv6
       @ipv6 = true
 
-      methods =
-        #         "module" : $[
-        #                 "filelist" : ["ipv6", "50-ipv6.conf"],
-        #                 "filepath" : "/etc/modprobe.d/",
-        #                 "regexp"   : "^[[:space:]]*(install ipv6 /bin/true)"
-        #         ]
-        {
-          "builtin" => {
-            "filelist" => ["sysctl.conf"],
-            "filepath" => "/etc/",
-            "regexp"   => "^[[:space:]]*(net.ipv6.conf.all.disable_ipv6)[[:space:]]*=[[:space:]]*1"
-          }
+      methods = {
+        "builtin" => {
+          "filelist" => ["sysctl.conf"],
+          "filepath" => "/etc",
+          "regexp"   => "^[[:space:]]*(net.ipv6.conf.all.disable_ipv6)[[:space:]]*=[[:space:]]*1"
         }
+      }
 
       Builtins.foreach(methods) do |which, method|
         filelist = Ops.get_list(method, "filelist", [])
