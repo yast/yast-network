@@ -216,7 +216,7 @@ describe "LanClass#readIPv6" do
     string_stub_scr_read("/etc/sysctl.conf")
     allow(Yast::FileUtils).to receive(:Exists).and_return(true)
 
-    Yast::Lan.readIPv6
+    expect { Yast::Lan.readIPv6 }.to_not raise_error # bnc#992821
     expect(Yast::Lan.ipv6).to be false
   end
 end
