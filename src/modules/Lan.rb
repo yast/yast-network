@@ -224,11 +224,11 @@ module Yast
         "builtin" => {
           "filelist" => ["sysctl.conf"],
           "filepath" => "/etc",
-          "regexp"   => "^[[:space:]]*(net.ipv6.conf.all.disable_ipv6)[[:space:]]*=[[:space:]]*1"
+          "regexp"   => /^[[:space:]]*(net.ipv6.conf.all.disable_ipv6)[[:space:]]*=[[:space:]]*1/
         }
       }
 
-      methods.each do |which, method|
+      methods.each do |_, method|
         filelist = method["filelist"] || []
         filepath = method["filepath"] || ""
         regexp = method["regexp"] || ""
@@ -237,24 +237,12 @@ module Yast
           filename = "#{filepath}/#{file}"
           next if !FileUtils.Exists(filename)
 
-          Builtins.foreach(
-            Builtins.splitstring(
-              Convert.to_string(SCR.Read(path(".target.string"), filename)),
-              "\n"
-            )
-          ) do |row|
-            if Ops.greater_than(
-              Builtins.size(
-                Builtins.regexptokenize(String.CutBlanks(row), regexp)
-              ),
-              0
-            )
-              log.info("IPv6 is disabled by '#{which}' method.")
-              @ipv6 = false
-            end
-          end
+          lines = (SCR.Read(path(".target.string"), filename) || []).split("\n")
+          @ipv6 = false if lines.any? { |row| row != regexp }
         end
       end
+
+      log.info("readIPv6: IPv6 is #{@ipv6 ? "enabled" : "disabled"}")
 
       nil
     end
