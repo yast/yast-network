@@ -237,14 +237,22 @@ module Yast
           filename = "#{filepath}/#{file}"
           next if !FileUtils.Exists(filename)
 
-          lines = (SCR.Read(path(".target.string"), filename) || []).split("\n")
-          @ipv6 = false if lines.any? { |row| row != regexp }
+          begin
+            lines = (SCR.Read(path(".target.string"), filename) || []).split("\n")
+          rescue ArgumentError => e
+            log.error("readIPv6: an error when parsing #{filename}")
+            log.error(e.message)
+
+            return false
+          end
+
+          @ipv6 = false if lines.any? { |row| row =~ regexp }
         end
       end
 
       log.info("readIPv6: IPv6 is #{@ipv6 ? "enabled" : "disabled"}")
 
-      nil
+      true
     end
 
     # Read all network settings from the SCR
@@ -360,7 +368,10 @@ module Yast
       ProgressNextStage(_("Reading network configuration...")) if @gui
       NetworkConfig.Read
 
-      readIPv6
+      if !readIPv6
+        msg = _("A configuration file is corrupted. Do you want to continue?")
+        return false if !@gui || !Popup.ContinueCancel(msg)
+      end
 
       Builtins.sleep(sl)
 
