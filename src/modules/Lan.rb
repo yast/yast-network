@@ -225,28 +225,29 @@ module Yast
         }
       }
 
-      Builtins.foreach(methods) do |which, method|
-        filelist = Ops.get_list(method, "filelist", [])
-        filepath = Ops.get_string(method, "filepath", "")
-        regexp = Ops.get_string(method, "regexp", "")
-        Builtins.foreach(filelist) do |file|
-          filename = Builtins.sformat("%1/%2", filepath, file)
-          if FileUtils.Exists(filename)
-            Builtins.foreach(
-              Builtins.splitstring(
-                Convert.to_string(SCR.Read(path(".target.string"), filename)),
-                "\n"
-              )
-            ) do |row|
-              if Ops.greater_than(
-                Builtins.size(
-                  Builtins.regexptokenize(String.CutBlanks(row), regexp)
-                ),
-                0
-              )
-                Builtins.y2milestone("IPv6 is disabled by '%1' method.", which)
-                @ipv6 = false
-              end
+      methods.each do |which, method|
+        filelist = method["filelist"] || []
+        filepath = method["filepath"] || ""
+        regexp = method["regexp"] || ""
+
+        filelist.each do |file|
+          filename = "#{filepath}/#{file}"
+          next if !FileUtils.Exists(filename)
+
+          Builtins.foreach(
+            Builtins.splitstring(
+              Convert.to_string(SCR.Read(path(".target.string"), filename)),
+              "\n"
+            )
+          ) do |row|
+            if Ops.greater_than(
+              Builtins.size(
+                Builtins.regexptokenize(String.CutBlanks(row), regexp)
+              ),
+              0
+            )
+              log.info("IPv6 is disabled by '#{which}' method.")
+              @ipv6 = false
             end
           end
         end
