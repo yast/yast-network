@@ -214,6 +214,9 @@ module Yast
       down
     end
 
+    # Checks local configuration if IPv6 is allowed
+    #
+    # return [Boolean] true when IPv6 is allowed
     def readIPv6
       @ipv6 = true
 
