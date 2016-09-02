@@ -220,35 +220,25 @@ module Yast
     def readIPv6
       @ipv6 = true
 
-      methods = {
-        "builtin" => {
-          "filelist" => ["sysctl.conf"],
-          "filepath" => "/etc",
-          "regexp"   => /^[[:space:]]*(net.ipv6.conf.all.disable_ipv6)[[:space:]]*=[[:space:]]*1/
-        }
-      }
+      sysctl_path = "/etc/sysctl.conf"
+      ipv6_regexp = /^[[:space:]]*(net.ipv6.conf.all.disable_ipv6)[[:space:]]*=[[:space:]]*1/
 
-      methods.each do |_, method|
-        filelist = method["filelist"] || []
-        filepath = method["filepath"] || ""
-        regexp = method["regexp"] || ""
-
-        filelist.each do |file|
-          filename = "#{filepath}/#{file}"
-          next if !FileUtils.Exists(filename)
-
-          begin
-            lines = (SCR.Read(path(".target.string"), filename) || []).split("\n")
-          rescue ArgumentError => e
-            log.error("readIPv6: an error when parsing #{filename}")
-            log.error(e.message)
-
-            return false
-          end
-
-          @ipv6 = false if lines.any? { |row| row =~ regexp }
-        end
+      # sysctl.conf is kind of "mandatory" config file
+      if !FileUtils.Exists(sysctl_path)
+        log.error("readIPv6: #{sysctl_path} is missing")
+        return false
       end
+
+      begin
+        lines = (SCR.Read(path(".target.string"), sysctl_path) || []).split("\n")
+      rescue ArgumentError => e
+        log.error("readIPv6: an error when parsing #{sysctl_path}")
+        log.error(e.message)
+
+        return false
+      end
+
+      @ipv6 = false if lines.any? { |row| row =~ ipv6_regexp }
 
       log.info("readIPv6: IPv6 is #{@ipv6 ? "enabled" : "disabled"}")
 
