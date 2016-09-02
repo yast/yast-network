@@ -24,6 +24,7 @@
 require "yast"
 require "yaml"
 require "network/install_inf_convertor"
+require "network/wicked"
 
 module Yast
   # Does way too many things.
@@ -46,6 +47,7 @@ module Yast
     attr_accessor :ipoib_mode
 
     include Logger
+    include Wicked
 
     def main
       Yast.import "UI"
@@ -126,8 +128,6 @@ module Yast
       # bond options
       @bond_slaves = []
       @bond_option = ""
-
-      @MAX_BOND_SLAVE = 10
 
       # VLAN option
       @vlan_etherdevice = ""
@@ -405,26 +405,9 @@ module Yast
       deep_copy(udev_rules)
     end
 
+    # It returns a value for the particular key of udev rule belonging to the current item.
     def GetItemUdev(key)
-      value = ""
-
-      Builtins.foreach(getUdevFallback) do |row|
-        if Builtins.issubstring(row, key)
-          items = Builtins.filter(Builtins.splitstring(row, "=")) do |s|
-            Ops.greater_than(Builtins.size(s), 0)
-          end
-          if Builtins.size(items) == 2 && Ops.get_string(items, 0, "") == key
-            value = Builtins.deletechars(Ops.get_string(items, 1, ""), "\"")
-          else
-            Builtins.y2warning(
-              "udev items %1 doesn't match the key %2",
-              items,
-              key
-            )
-          end
-        end
-      end
-      value
+      udev_key_value(getUdevFallback, key)
     end
 
     # It replaces a tuple identified by replace_key in current item's udev rule
@@ -432,38 +415,33 @@ module Yast
     # Note that the tuple is identified by key only. However modification flag is
     # set only if value was changed (in case when replace_key == new_key)
     #
+    # It also contain a logic on tuple operators. When the new_key is "NAME"
+    # then assignment operator (=) is used. Otherwise equality operator (==) is used.
+    # Thats bcs this function is currently used for touching "NAME", "KERNELS" and
+    # "ATTR{address}" keys only
+    #
     # @param replace_key [string] udev key which identifies tuple to be replaced
     # @param new_key     [string] new key to by used
     # @param new_val     [string] value for new key
     # @return updated rule when replace_key is found, current rule otherwise
     def ReplaceItemUdev(replace_key, new_key, new_val)
-      new_rule = []
-      # udev syntax distinguishes among others:
       # =    for assignment
       # ==   for equality checks
       operator = new_key == "NAME" ? "=" : "=="
       current_rule = getUdevFallback
+      rule = RemoveKeyFromUdevRule(getUdevFallback, replace_key)
+      new_rule = AddToUdevRule(rule, "#{new_key}#{operator}\"#{new_val}\"")
 
-      return current_rule if !new_key || new_key.empty?
-      return current_rule if !new_val || new_val.empty?
+      log.info("ReplaceItemUdev: new udev rule = #{new_rule}")
 
-      i = current_rule.find_index { |tuple| tuple =~ /#{replace_key}/ }
-      if i
-        # deep_copy is most probably not neccessary because getUdevFallback does
-        # deep_copy on return value. However, getUdevFallback will be subect of refactoring
-        # so caution is must. Moreover new_rule is also return value so it should be
-        # copied anyway
-        new_rule = deep_copy(current_rule)
-        new_rule[i] = "#{new_key}#{operator}\"#{new_val}\""
+      if current_rule.sort != new_rule.sort
+        SetModified()
 
-        SetModified() if current_rule != new_rule
+        Items()[@current]["udev"] = { "net" => {} } if !Items()[@current]["udev"]
+        Items()[@current]["udev"]["net"] = new_rule
       end
 
-      log.info("LanItems#ReplaceItemUdev: #{current_rule} -> #{new_rule}")
-
-      Items()[@current]["udev"]["net"] = new_rule
-
-      new_rule
+      deep_copy(new_rule)
     end
 
     # Updates device name.
@@ -1214,28 +1192,16 @@ module Yast
       firmware
     end
 
-    # Creates list of devices enslaved in any bond device.
+    # Creates list of devices enslaved in the bond device.
+    #
+    # @param bond_master [string] device name of a bond master (e.g. bond0)
+    # @return list of the bond slaves
     def GetBondSlaves(bond_master)
-      slaves = []
-      slave_index = 0
+      net_cards = NetworkInterfaces.FilterDevices("netcard") || { "bond" => {} }
+      bonds = net_cards["bond"] || {}
+      bond_map = bonds[bond_master] || {}
 
-      while Ops.less_than(slave_index, @MAX_BOND_SLAVE)
-        slave = Ops.get_string(
-          NetworkInterfaces.FilterDevices("netcard"),
-          [
-            "bond",
-            bond_master,
-            Builtins.sformat("BONDING_SLAVE%1", slave_index)
-          ],
-          ""
-        )
-
-        if Ops.greater_than(Builtins.size(slave), 0)
-          slaves = Builtins.add(slaves, slave)
-        end
-
-        slave_index = Ops.add(slave_index, 1)
-      end
+      slaves = bond_map.select { |k, _| k.start_with?("BONDING_SLAVE") }.values
 
       deep_copy(slaves)
     end
@@ -1839,6 +1805,32 @@ module Yast
       devmap
     end
 
+    # Sets bonding specific sysconfig options in given device map
+    #
+    # If any bonding specific option is present already it gets overwritten
+    # by new ones in case of collision. If any BONDING_SLAVEx from devmap
+    # is not set, then its value is set to 'nil'
+    #
+    # @param devmap [Hash] hash of a device's sysconfig variables
+    # @param slaves [array] list of strings, each string is a bond slave name
+    #
+    # @return [Hash] updated copy of the device map
+    def setup_bonding(devmap, slaves, options)
+      raise ArgumentError, "Device map has to be provided." if devmap.nil?
+
+      devmap = deep_copy(devmap)
+      slaves ||= []
+
+      slave_opts = devmap.select { |k, _| k.start_with?("BONDING_SLAVE") }.keys
+      slave_opts.each { |s| devmap[s] = nil }
+      slaves.each_with_index { |s, i| devmap["BONDING_SLAVE#{i}"] = s }
+
+      devmap["BONDING_MODULE_OPTS"] = options || ""
+      devmap["BONDING_MASTER"] = "yes"
+
+      devmap
+    end
+
     # Commit pending operation
     #
     # It commits *only* content of the corresponding ifcfg into NetworkInterfaces.
@@ -1886,20 +1878,10 @@ module Yast
 
       case @type
       when "bond"
-        i = 0
-        @bond_slaves.each do |slave|
-          newdev["BONDING_SLAVE#{i}"] = slave
-          i += 1
-        end
-
-        # assign nil to rest BONDING_SLAVEn to remove them
-        while i < @MAX_BOND_SLAVE
-          newdev["BONDING_SLAVE#{i}"] = nil
-          i += 1
-        end
-
-        newdev["BONDING_MODULE_OPTS"] = @bond_option
-        newdev["BONDING_MASTER"] = "yes"
+        # we need current slaves - when some of them is not used anymore we need to
+        # configure it for deletion from ifcfg (SCR expects special value nil)
+        current_slaves = (GetCurrentMap() || {}).select { |k, _| k.start_with?("BONDING_SLAVE") }
+        newdev = setup_bonding(newdev.merge(current_slaves), @bond_slaves, @bond_option)
 
       when "vlan"
         newdev["ETHERDEVICE"] = @vlan_etherdevice

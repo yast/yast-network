@@ -15,6 +15,7 @@ networking =
     dhcp_options? &
     routing? &
     dns? &
+    s390-devices? &
     net-udev?
   }
 

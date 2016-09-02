@@ -393,7 +393,7 @@ module Yast
       Ops.set(
         @widget_descr_local,
         "HWDIALOG",
-        Ops.get(@widget_descr_hardware, "HWDIALOG", {})
+        Ops.get(widget_descr_hardware, "HWDIALOG", {})
       )
     end
 
@@ -1174,10 +1174,16 @@ module Yast
       UI.ChangeWidget(
         Id("IFPLUGD_PRIORITY"),
         :Value,
-        Builtins.tointeger(Ops.get_string(@settings, "IFPLUGD_PRIORITY", "0"))
+        @settings["IFPLUGD_PRIORITY"].to_i
       )
 
       nil
+    end
+
+    # Stores content of IFPLUGD_PRIORITY widget into internal variables
+    def store_ifplugd_priority(_key, _event)
+      ifp_prio = UI.QueryWidget(Id("IFPLUGD_PRIORITY"), :Value).to_s
+      LanItems.ifplugd_priority = ifp_prio if !ifp_prio.empty?
     end
 
     def general_tab
@@ -1408,7 +1414,8 @@ module Yast
                          " then we need a way to decide which interface to take up. Therefore we have to\n" \
                          " set the priority of each interface.  </p>\n"
                      ),
-        "init"    => fun_ref(method(:initIfplugdPriority), "void (string)")
+        "init"    => fun_ref(method(:initIfplugdPriority), "void (string)"),
+        "store"   => fun_ref(method(:store_ifplugd_priority), "void (string, map)")
       )
 
       Ops.set(wd, ["IFCFGTYPE", "items"], BuildTypesListCWM(NetworkInterfaces.GetDeviceTypes))
@@ -1504,12 +1511,6 @@ module Yast
         ifcfgname = Ops.get_string(LanItems.getCurrentItem, "ifcfg", "")
         # general tab
         LanItems.startmode = Ops.get_string(@settings, "STARTMODE", "")
-        if LanItems.startmode == "ifplugd"
-          ifp_prio = Builtins.tostring(
-            UI.QueryWidget(Id("IFPLUGD_PRIORITY"), :Value)
-          )
-          LanItems.ifplugd_priority = ifp_prio if !ifp_prio.nil?
-        end
 
         if SuSEFirewall4Network.IsInstalled
           zone = Ops.get_string(@settings, "FWZONE", "")

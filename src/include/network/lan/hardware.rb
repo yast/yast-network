@@ -29,6 +29,8 @@
 
 require "network/edit_nic_name"
 
+include Yast::UIShortcuts
+
 module Yast
   module NetworkLanHardwareInclude
     def initialize_network_lan_hardware(include_target)
@@ -49,19 +51,26 @@ module Yast
       Yast.include include_target, "network/lan/cards.rb"
 
       @hardware = nil
+    end
 
-      @widget_descr_hardware = {
-        "HWDIALOG" => {
-          "widget"            => :custom,
-          "custom_widget"     => ReplacePoint(Id(:hw_content), Empty()),
-          "init"              => fun_ref(method(:initHwDialog), "void (string)"),
-          "handle"            => fun_ref(method(:handleHW), "symbol (string, map)"),
-          "store"             => fun_ref(method(:storeHW), "void (string, map)"),
-          "validate_type"     => :function,
-          "validate_function" => fun_ref(method(:validate_hw), "boolean (string, map)"),
-          "help"              => initHelp
-        }
+    def widget_descr_hardware
+      widget_descr = {
+        "widget"        => :custom,
+        "custom_widget" => ReplacePoint(Id(:hw_content), Empty()),
+        "init"          => fun_ref(method(:initHwDialog), "void (string)"),
+        "handle"        => fun_ref(method(:handleHW), "symbol (string, map)"),
+        "store"         => fun_ref(method(:storeHW), "void (string, map)"),
+        "help"          => initHelp
       }
+
+      # validation function currently checks user's input in :ifcfg_name widget
+      # However this widget is present only when adding new device
+      if isNewDevice
+        widget_descr["validate_type"] = :function
+        widget_descr["validate_function"] = fun_ref(method(:validate_hw), "boolean (string, map)")
+      end
+
+      { "HWDIALOG" => widget_descr }
     end
 
     # Determines if the dialog is used for adding new device or for editing existing one.
@@ -790,21 +799,25 @@ module Yast
     def validate_hw(_key, _event)
       nm = devname_from_hw_dialog
 
-      if UsedNicName(nm)
+      ret = if UsedNicName(nm)
         Popup.Error(
-          Builtins.sformat(
-            _(
-              "Configuration name %1 already exists.\nChoose a different one."
-            ),
-            nm
-          )
+          format(_("Configuration name %s already exists.\nChoose a different one."), nm)
         )
-        UI.SetFocus(Id(:ifcfg_name))
 
-        return false
+        false
+      elsif !ValidNicName(nm)
+        Popup.Error(
+          format(_("Configuration name %s is invalid.\nChoose a different one."), nm)
+        )
+
+        false
+      else
+        true
       end
 
-      true
+      UI.SetFocus(Id(:ifcfg_name)) if !ret
+
+      ret
     end
 
     VLAN_SIZE = 4 # size of vlanN prefix without number
@@ -828,7 +841,7 @@ module Yast
         end
         if LanItems.type == "vlan"
           # for vlan devices named vlanN pre-set vlan_id to N, otherwise default to 0
-          LanItems.vlan_id = nm[VLAN_SIZE].to_i.to_s
+          LanItems.vlan_id = nm[VLAN_SIZE..-1]
         end
       end
 
@@ -1232,7 +1245,7 @@ module Yast
     def HardwareDialog
       caption = _("Hardware Dialog")
 
-      w = CWM.CreateWidgets(["HWDIALOG"], @widget_descr_hardware)
+      w = CWM.CreateWidgets(["HWDIALOG"], widget_descr_hardware)
       contents = VBox(
         VStretch(),
         HBox(

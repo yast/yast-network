@@ -1,9 +1,72 @@
 -------------------------------------------------------------------
-Mon Aug  8 14:40:57 UTC 2016 - kanderssen@suse.com
+Mon Sep  2 09:40:57 UTC 2016 - kanderssen@suse.com
 
 - Set the link down by wicked if it is the NetworkService.
   (bsc#991694)
-- 3.1.161
+- 3.1.169
+
+Wed Aug 24 10:54:55 UTC 2016 - mfilka@suse.com
+
+- bnc#993587
+  - installer is able to newly configured set devices up in case of
+    ssh/vnc installation
+- 3.1.168
+
+-------------------------------------------------------------------
+Fri Aug 19 08:59:14 UTC 2016 - mfilka@suse.com
+
+- bnc#991382 
+  - init and store IFPLUGD_PRIORITY properly
+- 3.1.167
+
+-------------------------------------------------------------------
+Thu Aug 18 08:52:41 UTC 2016 - mfilka@suse.com
+
+- bnc#991486
+  - extended fix for this bug from 3.1.163. Do not report invalid
+    names incorrectly
+- 3.1.166  
+
+-------------------------------------------------------------------
+Thu Aug 11 19:02:36 UTC 2016 - mfilka@suse.com
+
+- bnc#985905 
+  - do not limit number of bonding slaves to 10
+- 3.1.165
+
+-------------------------------------------------------------------
+Thu Aug 11 08:23:00 UTC 2016 - mfilka@suse.com
+
+- bnc#988786
+  - Create bridge when proposing configuration for VM host.
+- 3.1.164 
+
+-------------------------------------------------------------------
+Wed Aug 10 18:07:12 UTC 2016 - ancor@suse.com
+
+- Improved parsing of vlan ids that are longer than one character.
+
+-------------------------------------------------------------------
+Wed Aug 10 16:07:26 UTC 2016 - mfilka@suse.com
+
+- bnc#991486
+  - Do not allow creating device with oversized configuration name.
+- 3.1.163
+
+-------------------------------------------------------------------
+Tue Aug  9 12:29:35 UTC 2016 - schubi@suse.de
+
+- Added entry "s390-devices" to the AutoYaST schema file.
+  Bug similar bnc#954412.
+- 3.1.162
+
+-------------------------------------------------------------------
+Tue Aug  9 12:25:01 UTC 2016 - mfilka@suse.com
+
+- bnc#991920
+  - do not crash with internal error when renaming unconfigured
+    device
+- 3.1.161 
 
 -------------------------------------------------------------------
 Tue Aug  2 12:40:53 UTC 2016 - mfilka@suse.com
