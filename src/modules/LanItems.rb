@@ -565,7 +565,7 @@ module Yast
           # removing is less error prone when tracking name changes, so it was chosen.
           item_udev_net = RemoveKeyFromUdevRule(item_udev_net, "KERNEL")
           # setting links down during AY is forbidden bcs it can freeze ssh installation
-          SetLinkDown(dev_name) if !Mode.autoinst
+          SetInterfaceDown(dev_name) if !Mode.autoinst
 
           @force_restart = true
         end

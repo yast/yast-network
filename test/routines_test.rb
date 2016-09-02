@@ -157,7 +157,7 @@ describe "#physical_port_id?" do
   end
 end
 
-describe "SetLinkDown" do
+describe "SetInterfaceDown" do
   subject(:routines) { RoutinesTestClass.new }
   let(:interface) { "ifname0" }
   let(:is_wicked) { false }
@@ -172,15 +172,43 @@ describe "SetLinkDown" do
     it "sets down the interface with wicked" do
       expect(Yast::NetworkService).to receive(:run_wicked).with("ifdown", interface)
 
-      routines.SetLinkDown(interface)
+      routines.SetInterfaceDown(interface)
     end
   end
 
   context "when the NetworkService is not wicked" do
-    it "sets down the interface with iproute2 tools" do
-      expect(routines).to receive(:Run).with("ip link set #{interface} down")
+    it "sets down the link of interface with iproute2 utils" do
+      expect(routines).to receive(:SetLinkDown).with(interface)
 
-      routines.SetLinkDown(interface)
+      routines.SetInterfaceDown(interface)
+    end
+  end
+end
+
+describe "SetInterfaceUp" do
+  subject(:routines) { RoutinesTestClass.new }
+  let(:interface) { "ifname0" }
+  let(:is_wicked) { false }
+
+  before do
+    allow(Yast::NetworkService).to receive(:is_wicked).and_return(is_wicked)
+  end
+
+  context "when the NetworkService is wicked" do
+    let(:is_wicked) { true }
+
+    it "sets up the interface with wicked" do
+      expect(Yast::NetworkService).to receive(:run_wicked).with("ifup", interface)
+
+      routines.SetInterfaceUp(interface)
+    end
+  end
+
+  context "when the NetworkService is not wicked" do
+    it "sets up the link of interface with iproute2 utils" do
+      expect(routines).to receive(:SetLinkUp).with(interface)
+
+      routines.SetInterfaceUp(interface)
     end
   end
 end
