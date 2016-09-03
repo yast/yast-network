@@ -19,6 +19,13 @@ module Yast
     Yast.import "Arch"
     Yast.import "Host"
 
+    # Checks if any of available interfaces is configured and active
+    #
+    # returns [Boolean] true when at least one interface is active
+    def any_iface_active?
+      network_cards.any? { |c| configured?(c) && active_config?(c) }
+    end
+
     def configure_dhcp
       Yast.include self, "network/routines.rb"
 
