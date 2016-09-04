@@ -183,7 +183,7 @@ module Yast
     # active device <=> a device which is reported as "up" by wicked
     def active_config?(devname)
       wicked_query = "wicked ifstatus --brief #{devname} | grep 'up$'"
-      SCR.Execute(BASH_PATH, wicked_query) == 0
+      SCR.Execute(BASH_PATH, wicked_query).zero?
     end
 
     # Returns list of servers used for internet reachability test
