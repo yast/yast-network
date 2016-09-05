@@ -753,7 +753,7 @@ module Yast
     # @see SetLinkDown
     def SetInterfaceDown(dev_name)
       if NetworkService.is_wicked
-        bring_down[dev_name]
+        bring_down([dev_name])
       else
         SetLinkDown(dev_name)
       end
@@ -766,7 +766,7 @@ module Yast
     # @see SetLinkUp
     def SetInterfaceUp(dev_name)
       if NetworkService.is_wicked
-        bring_up[dev_name]
+        bring_up([dev_name])
       else
         SetLinkUp(dev_name)
       end

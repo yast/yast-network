@@ -170,7 +170,7 @@ describe "SetInterfaceDown" do
     let(:is_wicked) { true }
 
     it "sets down the interface with wicked" do
-      expect(Yast::NetworkService).to receive(:run_wicked).with("ifdown", interface)
+      expect(routines).to receive(:bring_down).with([interface])
 
       routines.SetInterfaceDown(interface)
     end
@@ -198,7 +198,7 @@ describe "SetInterfaceUp" do
     let(:is_wicked) { true }
 
     it "sets up the interface with wicked" do
-      expect(Yast::NetworkService).to receive(:run_wicked).with("ifup", interface)
+      expect(routines).to receive(:bring_up).with([interface])
 
       routines.SetInterfaceUp(interface)
     end
