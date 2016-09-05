@@ -19,6 +19,13 @@ module Yast
     Yast.import "Arch"
     Yast.import "Host"
 
+    # Checks if any of available interfaces is configured and active
+    #
+    # returns [Boolean] true when at least one interface is active
+    def any_iface_active?
+      network_cards.any? { |c| configured?(c) && active_config?(c) }
+    end
+
     def configure_dhcp
       Yast.include self, "network/routines.rb"
 
@@ -176,7 +183,7 @@ module Yast
     # active device <=> a device which is reported as "up" by wicked
     def active_config?(devname)
       wicked_query = "wicked ifstatus --brief #{devname} | grep 'up$'"
-      SCR.Execute(BASH_PATH, wicked_query) == 0
+      SCR.Execute(BASH_PATH, wicked_query).zero?
     end
 
     # Returns list of servers used for internet reachability test
