@@ -28,6 +28,7 @@
 #
 module Yast
   module NetworkRoutinesInclude
+    include Wicked
     include I18n
     include Yast
     include Logger
@@ -745,14 +746,14 @@ module Yast
       interfaces.all? { |i| SetLinkDown(i) }
     end
 
-    # Calls wicked ifdown if it is the currenct backend, set the link down
+    # Calls wicked ifdown if it is the current backend, set the link down
     # otherwise
     #
     # @param [String] name of interface to put down
     # @see SetLinkDown
     def SetInterfaceDown(dev_name)
       if NetworkService.is_wicked
-        NetworkService.run_wicked("ifdown", dev_name)
+        bring_down[dev_name]
       else
         SetLinkDown(dev_name)
       end
@@ -765,7 +766,7 @@ module Yast
     # @see SetLinkUp
     def SetInterfaceUp(dev_name)
       if NetworkService.is_wicked
-        NetworkService.run_wicked("ifup", dev_name)
+        bring_up[dev_name]
       else
         SetLinkUp(dev_name)
       end
