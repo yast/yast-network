@@ -219,16 +219,6 @@ describe "LanClass#readIPv6" do
   it "reads IPv6 setup from /etc/sysctl.conf" do
     string_stub_scr_read("/etc/sysctl.conf")
 
-    Yast::Lan.readIPv6
-    expect(Yast::Lan.ipv6).to be false
-  end
-
-  it "do not raise an exception when config file contains an unsupported encoding" do
-    allow(Yast::SCR)
-      .to receive(:Read)
-      .with(".target.string", "/etc/sysctl.conf")
-      .and_return("# Adicionado correções Nexpose")
-
-    expect { Yast::Lan.readIPv6 }.to_not raise_error # bnc#992821
+    expect(Yast::Lan.readIPv6).to be false
   end
 end

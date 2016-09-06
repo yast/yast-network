@@ -218,31 +218,23 @@ module Yast
     #
     # return [Boolean] true when IPv6 configuration is loaded properly
     def readIPv6
-      @ipv6 = true
+      ipv6 = true
 
       sysctl_path = "/etc/sysctl.conf"
       ipv6_regexp = /^[[:space:]]*(net.ipv6.conf.all.disable_ipv6)[[:space:]]*=[[:space:]]*1/
 
-      # sysctl.conf is kind of "mandatory" config file
+      # sysctl.conf is kind of "mandatory" config file, use default
       if !FileUtils.Exists(sysctl_path)
         log.error("readIPv6: #{sysctl_path} is missing")
-        return false
+        return true
       end
 
-      begin
-        lines = (SCR.Read(path(".target.string"), sysctl_path) || []).split("\n")
-      rescue ArgumentError => e
-        log.error("readIPv6: an error when parsing #{sysctl_path}")
-        log.error(e.message)
+      lines = (SCR.Read(path(".target.string"), sysctl_path) || []).split("\n")
+      ipv6 = false if lines.any? { |row| row =~ ipv6_regexp }
 
-        return false
-      end
+      log.info("readIPv6: IPv6 is #{ipv6 ? "enabled" : "disabled"}")
 
-      @ipv6 = false if lines.any? { |row| row =~ ipv6_regexp }
-
-      log.info("readIPv6: IPv6 is #{@ipv6 ? "enabled" : "disabled"}")
-
-      true
+      ipv6
     end
 
     # Read all network settings from the SCR
@@ -358,10 +350,7 @@ module Yast
       ProgressNextStage(_("Reading network configuration...")) if @gui
       NetworkConfig.Read
 
-      if !readIPv6
-        msg = _("A configuration file is corrupted. Do you want to continue?")
-        return false if !@gui || !Popup.ContinueCancel(msg)
-      end
+      @ipv6 = readIPv6
 
       Builtins.sleep(sl)
 
