@@ -686,7 +686,7 @@ module Yast
     # @param Shell command to run
     # @return whether command execution succeeds
     def Run(command)
-      ret = SCR.Execute(path(".target.bash"), command) == 0
+      ret = SCR.Execute(path(".target.bash"), command).zero?
 
       Builtins.y2error("Run <%1>: Command execution failed.", command) if !ret
 
@@ -694,9 +694,13 @@ module Yast
     end
     # TODO: end
 
-    # Return list of all interfaces present in the system (not only configured ones as NetworkInterfaces::List does).
+    # Return list of all interfaces present in the system.
+    #
+    # It means all interfaces which exists in the system at the time.
+    # /sys filesystem is used for checking that.
     #
     # @return [Array] of interface names.
+    # FIXME: rename e.g. to sys_interfaces
     def GetAllInterfaces
       result = RunAndRead("ls /sys/class/net")
 
