@@ -848,7 +848,10 @@ module Yast
       GetDeviceNames(GetNetcardInterfaces())
     end
 
-    # get list of all configurations for "netcard" macro in NetworkInterfaces module
+    # Get list of all configured interfaces
+    #
+    # return [Array] list of strings - interface names (eth0, ...)
+    # FIXME: rename e.g. to configured_interfaces
     def getNetworkInterfaces
       configurations = NetworkInterfaces.FilterDevices("netcard")
       devtypes = NetworkInterfaces.CardRegex["netcard"].to_s.split("|")
