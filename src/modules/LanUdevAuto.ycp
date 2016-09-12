@@ -154,9 +154,9 @@ y2milestone("importing %1", settings);
  * more proper (and more complex) fix was available in newer code already. So it
  * is intentionally placed here as it should be the only place of its usage.
  */
-boolean MatchMac(map devmap, string mac)
+boolean MatchMac(map hwmap, string mac)
 {
-    return tolower(devmap["hwinfo", "mac"]:"") == tolower(mac);
+    return tolower(hwmap["mac"]:"") == tolower(mac);
 }
 
 /*
@@ -166,9 +166,9 @@ boolean MatchMac(map devmap, string mac)
  * more proper (and more complex) fix was available in newer code already. So it
  * is intentionally placed here as it should be the only place of its usage.
  */
-boolean MatchBusId(map devmap, string busid)
+boolean MatchBusId(map hwmap, string busid)
 {
-    return tolower(devmap["hwinfo", "busid"]:"") == tolower(busid);
+    return tolower(hwmap["busid"]:"") == tolower(busid);
 }
 
 /*
@@ -182,12 +182,11 @@ global string FindBy(boolean(map, string) validator, string attr)
 {
     string ret = "";
 
-    foreach(integer index, map devmap, (map<integer, map<string, any> >)LanItems::Items,
+    foreach(map hwmap, ReadHardware("netcard"),
     {
-        // we're interested in configured devices only => return ifcfg name
-        if(validator(devmap, attr))
+        if(validator(hwmap, attr))
         {
-            ret = devmap["ifcfg"]:"";
+            ret = hwmap["dev_name"]:"";
             break;
         }
     });
@@ -203,6 +202,8 @@ global define boolean Write()
 			"# You can modify it, as long as you keep each rule on a single line." ];
     list<string> rules = [];
     list<string> devs = [];
+
+    y2milestone("Writing rules: %1", udev_rules);
 
     foreach(map rule, udev_rules,
     {
