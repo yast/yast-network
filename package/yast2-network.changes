@@ -1,10 +1,20 @@
 -------------------------------------------------------------------
-Mon Sep  2 09:40:57 UTC 2016 - kanderssen@suse.com
+Mon Sep 12 09:40:57 UTC 2016 - kanderssen@suse.com
 
 - Set the link down by wicked if it is the NetworkService.
   (bsc#991694)
-- 3.1.169
+- 3.1.170
 
+-------------------------------------------------------------------
+Sat Sep  3 20:02:55 UTC 2016 - mfilka@suse.com
+
+- bnc#988157
+  - disable DHCP autoconfiguration in installer when an interface
+    configuration is provided via linuxrc
+- 3.1.169 
+
+-------------------------------------------------------------------
+>>>>>>> master
 Wed Aug 24 10:54:55 UTC 2016 - mfilka@suse.com
 
 - bnc#993587
