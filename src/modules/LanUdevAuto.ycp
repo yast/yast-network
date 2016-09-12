@@ -15,6 +15,7 @@
  import "LanItems";
  import "Map";
  import "Mode";
+ import "NetworkInterfaces";
 
  include "network/routines.ycp";
  include "network/lan/udev.ycp";
@@ -210,7 +211,7 @@ global define boolean Write()
 
         string dev = rule["rule"]:"" == "KERNELS" ? FindBy(MatchBusId, rule["value"]:"") : FindBy(MatchMac, rule["value"]:"");
 
-        if( !IsEmpty(dev)))
+        if( !IsEmpty(dev))
         {
             y2milestone("Setting down: %1", dev);
             SetLinkDown( dev);
