@@ -17,7 +17,7 @@ module Yast
       SCR.Execute(BASH_PATH, "wicked ifreload #{devs.join(" ")}").zero?
     end
 
-    # Reloads configuration for each device named in devs
+    # Does an ifdown for each device named in devs
     #
     # @devs [Array] list of device names
     # @return [Boolean] true if devices bring down; false otherwise
@@ -28,7 +28,7 @@ module Yast
       SCR.Execute(BASH_PATH, "wicked ifdown #{devs.join(" ")}").zero?
     end
 
-    # Reloads configuration for each device named in devs
+    # Does an ifup for each device named in devs
     #
     # @devs [Array] list of device names
     # @return [Boolean] true if devices bring up; false otherwise
