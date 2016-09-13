@@ -1,7 +1,7 @@
 -------------------------------------------------------------------
 Mon Sep 12 09:40:57 UTC 2016 - kanderssen@suse.com
 
-- Set the link down by wicked if it is the NetworkService.
+- Bring down the interface with Wicked if it is the NetworkService.
   (bsc#991694)
 - 3.1.171
 
