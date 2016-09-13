@@ -8,8 +8,8 @@ module Yast
 
     # Reloads configuration for each device named in devs
     #
-    # @devs [Array] list of device names
-    # @return true if configuration was reloaded
+    # @param [Array] list of device names
+    # @return [Boolean] true if configuration was reloaded; false otherwise
     def reload_config(devs)
       raise ArgumentError if devs.nil?
       return true if devs.empty?
@@ -19,7 +19,7 @@ module Yast
 
     # Does an ifdown for each device named in devs
     #
-    # @devs [Array] list of device names
+    # @param [Array] list of device names
     # @return [Boolean] true if devices bring down; false otherwise
     def bring_down(devs)
       raise ArgumentError if devs.nil?
@@ -30,7 +30,7 @@ module Yast
 
     # Does an ifup for each device named in devs
     #
-    # @devs [Array] list of device names
+    # @param [Array] list of device names
     # @return [Boolean] true if devices bring up; false otherwise
     def bring_up(devs)
       raise ArgumentError if devs.nil?
