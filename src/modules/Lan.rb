@@ -1114,10 +1114,14 @@ module Yast
         NetworkService.ReloadOrRestart if Stage.normal || !Linuxrc.usessh
 
       when :remote_installer
+        ifaces = LanItems.getNetworkInterfaces
+
         # last instance handling "special" cases like ssh installation
         # FIXME: most probably not everything will be set properly
         log.info("Running in ssh/vnc installer -> just setting links up")
-        LanItems.reload_config(LanItems.GetAllInterfaces())
+        log.info("Available interfaces: #{ifaces}")
+
+        LanItems.reload_config(ifaces)
       end
     end
   end
