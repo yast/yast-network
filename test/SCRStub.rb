@@ -50,6 +50,8 @@ module SCRStub
   # Yaml files are stored in the scr_read subdirectory of the data directory
   # and named after the yast path (without the leading '.').
   #
+  # @param path_name [String] an SCR path, eg. ".etc.xinetd_conf.services"
+  #
   # @return Object
   def yaml_stub_scr_read(path_name)
     file = File.join(DATA_PATH, "scr_read", path_name[1..-1] + ".yml")
@@ -60,6 +62,8 @@ module SCRStub
   # Stubs calls to SCR.Read. Returns file content as a list of lines.
   #
   # Should be equivalent to ycp's SCR::Read(".target.string", path)
+  #
+  # @param path_name [String] an absolute filesystem path, eg. "/etc/sysctl.conf"
   #
   # @return [Array] list of lines
   def string_stub_scr_read(path_name)

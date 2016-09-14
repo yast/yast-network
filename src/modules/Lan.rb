@@ -216,7 +216,7 @@ module Yast
 
     # Checks local configuration if IPv6 is allowed
     #
-    # return [Boolean] true when IPv6 configuration is loaded properly
+    # return [Boolean] true when IPv6 is enabled in the system
     def readIPv6
       ipv6 = true
 
