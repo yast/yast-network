@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Wed Sep 21 11:56:38 UTC 2016 - kanderssen@suse.com
+
+- Bridge handling has been improved (bsc#962824).
+  - "NONE" is shown instead of 0.0.0.0 for old bridge configuration
+  - The bridge master is shown in the enslaved interface.
+  - The interfaces overview is updated after a bridge is modified
+- 3.1.170.1
+
+-------------------------------------------------------------------
 Wed Sep  7 11:23:16 UTC 2016 - mfilka@suse.com
 
 - bnc#993587
