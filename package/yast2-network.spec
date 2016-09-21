@@ -25,12 +25,8 @@ Source0:        %{name}-%{version}.tar.bz2
 
 Group:          System/YaST
 License:        GPL-2.0
-# should be required by devtools
-BuildRequires:  perl-XML-Writer pkgconfig rpm
 BuildRequires:  update-desktop-files
 BuildRequires:  yast2-devtools >= 3.1.15
-BuildRequires:  yast2-country
-BuildRequires:  yast2-proxy
 Requires:       yast2-proxy
 #for install task
 BuildRequires:  rubygem(yast-rake)
@@ -39,6 +35,10 @@ BuildRequires:  rubygem(yast-rake)
 BuildRequires:  yast2 >= 3.1.86
 # yast2 v3.1.135: Fixed Hostname API
 Requires:       yast2 >= 3.1.136
+
+# Product control need xml agent
+BuildRequires:  yast2-xml
+Requires:       yast2-xml
 
 #netconfig (FaTE #303618)
 Requires:       sysconfig >= 0.80.0
@@ -49,7 +49,6 @@ Requires:       yast2-country-data >= 2.16.3
 BuildRequires:  yast2-storage >= 2.21.11
 Requires:       yast2-storage >= 2.21.11
 # Packages::vnc_packages
-BuildRequires:  yast2-packager >= 3.1.47
 Requires:       yast2-packager >= 3.1.47
 
 # testsuite
@@ -83,6 +82,7 @@ rake install DESTDIR="%{buildroot}"
 %{yast_ybindir}/*
 %{yast_yncludedir}/network
 %{yast_clientdir}/*.rb
+%dir %{yast_moduledir}/YaPI
 %{yast_moduledir}/YaPI/NETWORK.pm
 %{yast_moduledir}/*.rb
 %{yast_desktopdir}/*.desktop
