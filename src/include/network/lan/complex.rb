@@ -317,7 +317,7 @@ module Yast
         LanItems.Commit
       end
 
-      # Once the interfaces have been configured we should empty the hash to
+      # Once the interfaces have been configured we should empty the list to
       # avoid configure them again in case that some interface is removed from the
       # master.
       Lan.autoconf_slaves = []
