@@ -10,7 +10,6 @@ describe "LanClass#Packages" do
   packages = {
     "iw"           => "wlan",
     "vlan"         => "vlan",
-    "bridge-utils" => "br",
     "tunctl"       => "tun"
   }
 

@@ -34,6 +34,16 @@ module Yast
       textdomain "network"
     end
 
+    # It returns an empty string if given IP is 0.0.0.0, otherwise returns
+    # the given IP
+    #
+    # @param [String] ip
+    # @return [String] empty string if given ip is 0.0.0.0; given ip
+    # otherwise
+    def bridge_ip(ip)
+      ip == "0.0.0.0" ? "" : ip.to_s
+    end
+
     # Immediately updates device's ifcfg to be usable as bridge port.
     #
     # It mainly setups suitable BOOTPROTO an IP related values
@@ -43,7 +53,10 @@ module Yast
       # when using wicked every device which can be bridged
       # can be set to BOOTPROTO=none. No workaround with
       # BOOTPROTO=static required anymore
-      NetworkInterfaces.Edit(device)
+      unless NetworkInterfaces.Edit(device)
+        Lan.autoconf_slaves += [device] unless Lan.autoconf_slaves.include? device
+        return false
+      end
 
       NetworkInterfaces.Current["IPADDR"] = ""
       NetworkInterfaces.Current["NETMASK"] = ""

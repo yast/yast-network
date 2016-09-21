@@ -475,25 +475,9 @@ module Yast
     # @param [String] key	id of the widget
     # @param [String] key id of the widget
     def StoreBridge(key, _event)
-      Ops.set(
-        @settings,
-        "BRIDGE_PORTS",
-        String.CutBlanks(
-          Builtins.mergestring(
-            Convert.convert(
-              UI.QueryWidget(Id("BRIDGE_PORTS"), :SelectedItems),
-              from: "any",
-              to:   "list <string>"
-            ),
-            " "
-          )
-        )
-      )
-      Builtins.y2milestone(
-        "store bridge %1 : %2",
-        key,
-        Ops.get_string(@settings, "BRIDGE_PORTS", "")
-      )
+      @settings["BRIDGE_PORTS"] = get_selected_bridges.join(" ")
+
+      log.info("store bridge with ports: #{@settings['BRIDGE_PORTS']}")
 
       nil
     end
@@ -705,7 +689,7 @@ module Yast
         !configured_slaves.include? slave
       end
 
-      Lan.bond_autoconf_slaves = (Lan.bond_autoconf_slaves + new_slaves).uniq.sort
+      Lan.autoconf_slaves = (Lan.autoconf_slaves + new_slaves).uniq.sort
 
       nil
     end
@@ -1595,6 +1579,10 @@ module Yast
     end
 
   private
+
+    def get_selected_bridges
+      UI.QueryWidget(Id("BRIDGE_PORTS"), :SelectedItems) || []
+    end
 
     def get_selected_slaves
       UI.QueryWidget(:msbox_items, :SelectedItems) || []
