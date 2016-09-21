@@ -4,11 +4,11 @@ require_relative "test_helper"
 
 require "yast"
 
+stub_module "Packages"
+
 module Yast
   import "Remote"
   import "Linuxrc"
-  import "Package"
-  import "Packages"
 
   describe Remote do
     before do
