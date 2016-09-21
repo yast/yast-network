@@ -477,7 +477,7 @@ module Yast
     def StoreBridge(key, _event)
       @settings["BRIDGE_PORTS"] = get_selected_bridges.join(" ")
 
-      log.info("store bridge with ports: #{@settings['BRIDGE_PORTS']}")
+      log.info("store bridge #{key} with ports: #{@settings["BRIDGE_PORTS"]}")
 
       nil
     end

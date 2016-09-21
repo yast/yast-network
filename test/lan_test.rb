@@ -8,9 +8,9 @@ Yast.import "Lan"
 
 describe "LanClass#Packages" do
   packages = {
-    "iw"           => "wlan",
-    "vlan"         => "vlan",
-    "tunctl"       => "tun"
+    "iw"     => "wlan",
+    "vlan"   => "vlan",
+    "tunctl" => "tun"
   }
 
   packages.each do |pkg, type|

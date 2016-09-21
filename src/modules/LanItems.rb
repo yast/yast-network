@@ -1251,7 +1251,7 @@ module Yast
     # @param [String] bridge name
     # @return [Array<String>] a list of interface names
     def bridge_slaves(master)
-      bridge_index.select {|k,v| v == master }.keys
+      bridge_index.select { |_k, v| v == master }.keys
     end
 
     # Creates item's startmode human description
@@ -1354,8 +1354,8 @@ module Yast
           bullets += ip_overview(ip) if ifcfg_conf["STARTMODE"] != "managed"
 
           if ifcfg_type == "wlan" &&
-            ifcfg_conf["WIRELESS_AUTH_MODE"] == "open" &&
-            IsEmpty(ifcfg_conf["WIRELESS_KEY_0"])
+              ifcfg_conf["WIRELESS_AUTH_MODE"] == "open" &&
+              IsEmpty(ifcfg_conf["WIRELESS_KEY_0"])
 
             # avoid colons
             ifcfg_name = ifcfg_name.tr(":", "/")
