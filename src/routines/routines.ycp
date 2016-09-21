@@ -912,12 +912,12 @@ define list<string> GetAllInterfaces()
 
 boolean SetLinkUp( string dev_name)
 {
-    return Run( sformat("ip link set %1 up", dev_name) );
+    return Run( sformat("ifup %1", dev_name) );
 }
 
 boolean SetLinkDown( string dev_name)
 {
-    return Run( sformat("ip link set %1 down", dev_name) );
+    return Run( sformat("ifdown %1", dev_name) );
 }
 
 /**
