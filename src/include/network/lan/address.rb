@@ -1355,6 +1355,19 @@ module Yast
         Ops.set(@settings, "VLAN_ID", Builtins.tointeger(LanItems.vlan_id))
       end
 
+      if LanItems.type == "br"
+        ports = LanItems.bridge_ports.split(" ").select { |p| old_bridge_config?(p) }
+
+        unless ports.empty?
+          message = format(_("The bridge ports listed below are configured in the old way.\n\n" \
+                            "Bridge ports: %s\n\n" \
+                            "Do you want to adapt them now?"), ports.join(", "))
+          if Popup.YesNoHeadline(Label.WarningMsg, message)
+            ports.each { |p| configure_as_bridge_port(p) }
+          end
+        end
+      end
+
       if Builtins.contains(["tun", "tap"], LanItems.type)
         @settings = {
           "BOOTPROTO"        => "static",
@@ -1546,12 +1559,6 @@ module Yast
           # and also: don't delete default GW for usb/pcmcia devices (#307102)
           if LanItems.isCurrentDHCP && !LanItems.isCurrentHotplug
             Routing.RemoveDefaultGw
-          end
-        end
-
-        if LanItems.type == "br"
-          LanItems.bridge_ports.split(" ").each do |ifcfg_name|
-            configure_as_bridge_port(ifcfg_name) if old_bridge_config?(ifcfg_name)
           end
         end
       end

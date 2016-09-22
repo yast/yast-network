@@ -51,17 +51,24 @@ module Yast
     # @return [Boolean] returns true if given enslaved interface is configured
     # in the old way
     def old_bridge_config?(ifcfg_name)
-      return false unless NetworkInterfaces.Select(ifcfg_name)
+      selected_interface = NetworkInterfaces.Current
+      result = false
 
-      current = NetworkInterfaces.Current
+      if NetworkInterfaces.Select(ifcfg_name)
+        current = NetworkInterfaces.Current
+        result = current["BOOTPROTO"] == "static" && current["IPADDR"] == "0.0.0.0"
+      end
 
-      current["BOOTPROTO"] == "static" && current["IPADDR"] == "0.0.0.0"
+      NetworkInterfaces.Current = selected_interface
+
+      result
     end
 
     # Immediately updates device's ifcfg to be usable as bridge port.
     #
     # It mainly setups suitable BOOTPROTO an IP related values
     def configure_as_bridge_port(device)
+      selected_interface = NetworkInterfaces.Current
       log.info("Adapt device #{device} as bridge port")
 
       # when using wicked every device which can be bridged
@@ -87,6 +94,8 @@ module Yast
 
       NetworkInterfaces.Commit
       NetworkInterfaces.Add
+
+      NetworkInterfaces.Current = selected_interface
     end
 
     def ValidateBridge(_key, _event)
