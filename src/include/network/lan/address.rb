@@ -477,6 +477,8 @@ module Yast
     def StoreBridge(key, _event)
       @settings["BRIDGE_PORTS"] = get_selected_bridges.join(" ")
 
+      LanItems.bridge_ports = @settings["BRIDGE_PORTS"]
+
       log.info("store bridge #{key} with ports: #{@settings["BRIDGE_PORTS"]}")
 
       nil
@@ -1553,8 +1555,6 @@ module Yast
         LanItems.vlan_id = Builtins.tostring(
           Ops.get_integer(@settings, "VLAN_ID", 0)
         )
-      elsif LanItems.type == "br"
-        LanItems.bridge_ports = Ops.get_string(@settings, "BRIDGE_PORTS", "")
       elsif Builtins.contains(["tun", "tap"], LanItems.type)
         LanItems.tunnel_set_owner = Ops.get_string(
           @settings,

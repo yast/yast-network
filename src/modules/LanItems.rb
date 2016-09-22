@@ -1351,6 +1351,11 @@ module Yast
 
           bullets << _("Device Name: %s") % ifcfg_name
           bullets += startmode_overview(key)
+
+          if bridge_index[ifcfg_name]
+            ip = bridge_ip(ip).empty? ? "NONE" : bridge_ip(ip)
+          end
+
           bullets += ip_overview(ip) if ifcfg_conf["STARTMODE"] != "managed"
 
           if ifcfg_type == "wlan" &&
@@ -1378,7 +1383,6 @@ module Yast
             else
               master = bridge_index[ifcfg_name]
               master_desc = _("Bridge")
-              ip = bridge_ip(ip).empty? ? "NONE" : bridge_ip(ip)
             end
             note = format(_("enslaved in %s"), master)
             bullets << format("%s: %s", master_desc, master)
