@@ -44,6 +44,20 @@ module Yast
       ip == "0.0.0.0" ? "" : ip.to_s
     end
 
+    # Checks if the given interface is using the old way of config enslaved
+    # interfaces with bootproto as static and 0.0.0.0 as IPADDR
+    #
+    # @param [String] interface name
+    # @return [Boolean] returns true if given enslaved interface is configured
+    # in the old way
+    def old_bridge_config?(ifcfg_name)
+      return false unless NetworkInterfaces.Select(ifcfg_name)
+
+      current = NetworkInterfaces.Current
+
+      current["BOOTPROTO"] == "static" && current["IPADDR"] == "0.0.0.0"
+    end
+
     # Immediately updates device's ifcfg to be usable as bridge port.
     #
     # It mainly setups suitable BOOTPROTO an IP related values

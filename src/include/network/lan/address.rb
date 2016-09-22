@@ -1548,6 +1548,12 @@ module Yast
             Routing.RemoveDefaultGw
           end
         end
+
+        if LanItems.type == "br"
+          LanItems.bridge_ports.split(" ").each do |ifcfg_name|
+            configure_as_bridge_port(ifcfg_name) if old_bridge_config?(ifcfg_name)
+          end
+        end
       end
 
       if LanItems.type == "vlan"
