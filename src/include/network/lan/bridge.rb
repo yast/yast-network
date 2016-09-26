@@ -50,7 +50,7 @@ module Yast
     # @param [String] interface name
     # @return [Boolean] returns true if given enslaved interface is configured
     # in the old way
-    def old_bridge_config?(ifcfg_name)
+    def old_bridge_port_config?(ifcfg_name)
       current = LanItems.GetDeviceMap(LanItems.find_configured(ifcfg_name))
       return false unless current
 
@@ -89,6 +89,19 @@ module Yast
       NetworkInterfaces.Add
 
       NetworkInterfaces.Current = selected_interface
+    end
+
+    # Asks the user about adapt the current bridge port config in case that it
+    # is configured in the old way (BOOTPROTO == static) & (IPADDR == 0.0.0.0).
+    def fix_bridge_port_config?(ports)
+      return false if ports.nil? || ports.empty?
+
+      Popup.YesNoHeadline(
+        Label.WarningMsg,
+        format(_("The bridge ports listed below are configured in the old way.\n\n" \
+                 "Bridge ports: %s\n\n" \
+                 "Do you want to adapt them now?"), ports.join(", "))
+      )
     end
 
     def ValidateBridge(_key, _event)

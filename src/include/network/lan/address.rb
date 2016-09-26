@@ -475,7 +475,7 @@ module Yast
     # @param [String] key	id of the widget
     # @param [String] key id of the widget
     def StoreBridge(key, _event)
-      @settings["BRIDGE_PORTS"] = get_selected_bridges.join(" ")
+      @settings["BRIDGE_PORTS"] = selected_bridge_ports.join(" ")
 
       LanItems.bridge_ports = @settings["BRIDGE_PORTS"]
 
@@ -679,7 +679,7 @@ module Yast
     def StoreSlave(_key, _event)
       configured_slaves = @settings["SLAVES"] || []
 
-      @settings["SLAVES"] = get_selected_slaves
+      @settings["SLAVES"] = selected_slaves
 
       @settings["BONDOPTION"] = UI.QueryWidget(Id("BONDOPTION"), :Value).to_s
 
@@ -703,7 +703,7 @@ module Yast
     # @param [Hash] event the event being handled
     # @return true if valid or user decision if not
     def validate_bond(_key, _event)
-      physical_ports = repeated_physical_port_ids(get_selected_slaves)
+      physical_ports = repeated_physical_port_ids(selected_slaves)
 
       physical_ports.empty? ? true : continue_with_duplicates?(physical_ports)
     end
@@ -1332,56 +1332,9 @@ module Yast
       end
       @hostname_initial = String.FirstChunk(Ops.get(host_list, 0, ""), " \t")
 
-      @settings = {
-        # general tab:
-        "STARTMODE"        => LanItems.startmode,
-        "IFPLUGD_PRIORITY" => LanItems.ifplugd_priority,
-        # problems when renaming the interface?
-        "FWZONE"           => fwzone,
-        "MTU"              => LanItems.mtu,
-        # address tab:
-        "BOOTPROTO"        => LanItems.bootproto,
-        "IPADDR"           => LanItems.ipaddr,
-        "NETMASK"          => LanItems.netmask,
-        "PREFIXLEN"        => LanItems.prefix,
-        "REMOTEIP"         => LanItems.remoteip,
-        "HOSTNAME"         => @hostname_initial,
-        "IFCFGTYPE"        => LanItems.type,
-        "IFCFGID"          => LanItems.device
-      }
+      check_bridge_ports_config
 
-      if LanItems.type == "vlan"
-        Ops.set(@settings, "ETHERDEVICE", LanItems.vlan_etherdevice)
-        Ops.set(@settings, "VLAN_ID", Builtins.tointeger(LanItems.vlan_id))
-      end
-
-      if LanItems.type == "br"
-        ports = LanItems.bridge_ports.split(" ").select { |p| old_bridge_config?(p) }
-
-        unless ports.empty?
-          message = format(_("The bridge ports listed below are configured in the old way.\n\n" \
-                            "Bridge ports: %s\n\n" \
-                            "Do you want to adapt them now?"), ports.join(", "))
-          if Popup.YesNoHeadline(Label.WarningMsg, message)
-            ports.each { |p| configure_as_bridge_port(p) }
-          end
-        end
-      end
-
-      if Builtins.contains(["tun", "tap"], LanItems.type)
-        @settings = {
-          "BOOTPROTO"        => "static",
-          "STARTMODE"        => "auto",
-          "TUNNEL"           => LanItems.type,
-          "TUNNEL_SET_OWNER" => LanItems.tunnel_set_owner,
-          "TUNNEL_SET_GROUP" => LanItems.tunnel_set_group
-        }
-      end
-
-      # #65524
-      if LanItems.operation == :add && @force_static_ip
-        Ops.set(@settings, "BOOTPROTO", "static")
-      end
+      initialize_address_settings
 
       wd = Convert.convert(
         Builtins.union(@widget_descr, @widget_descr_local),
@@ -1593,12 +1546,70 @@ module Yast
 
   private
 
-    def get_selected_bridges
+    # Checks if the current LanItem is a bridge or an enslaved interface part
+    # of a bridge. In case that some configuration is not correct then adapt it
+    # if the user accepts.
+    def check_bridge_ports_config
+      return false unless LanItems.type == "br"
+
+      ports = LanItems.bridge_ports.split(" ").select { |p| old_bridge_port_config?(p) }
+
+      unless ports.empty?
+        ports.each { |p| configure_as_bridge_port(p) } if fix_bridge_port_config?(ports)
+      end
+
+      true
+    end
+
+    # Obtains the ports selected in the 'BRIDGE_PORTS' widget
+    # @return [Array<String>] selected ports
+    def selected_bridge_ports
       UI.QueryWidget(Id("BRIDGE_PORTS"), :SelectedItems) || []
     end
 
-    def get_selected_slaves
+    # Obtains the slaves selected in the 'msbox_items' widget
+    # @return [Array<String>] selected slaves
+    def selected_slaves
       UI.QueryWidget(:msbox_items, :SelectedItems) || []
+    end
+
+    # Initializes the Address Dialog @settings with the corresponding LanItems values
+    def initialize_address_settings
+      @settings = {
+        # general tab:
+        "STARTMODE"        => LanItems.startmode,
+        "IFPLUGD_PRIORITY" => LanItems.ifplugd_priority,
+        # problems when renaming the interface?
+        "FWZONE"           => @fwzone_initial,
+        "MTU"              => LanItems.mtu,
+        # address tab:
+        "BOOTPROTO"        => LanItems.bootproto,
+        "IPADDR"           => LanItems.ipaddr,
+        "NETMASK"          => LanItems.netmask,
+        "PREFIXLEN"        => LanItems.prefix,
+        "REMOTEIP"         => LanItems.remoteip,
+        "HOSTNAME"         => @hostname_initial,
+        "IFCFGTYPE"        => LanItems.type,
+        "IFCFGID"          => LanItems.device
+      }
+
+      if LanItems.type == "vlan"
+        @settings["ETHERDEVICE"] = LanItems.vlan_etherdevice
+        @settings["VLAN_ID"]     = LanItems.vlan_id.to_i
+      end
+
+      if ["tun", "tap"].include?(LanItems.type)
+        @settings = {
+          "BOOTPROTO"        => "static",
+          "STARTMODE"        => "auto",
+          "TUNNEL"           => LanItems.type,
+          "TUNNEL_SET_OWNER" => LanItems.tunnel_set_owner,
+          "TUNNEL_SET_GROUP" => LanItems.tunnel_set_group
+        }
+      end
+
+      # #65524
+      @settings["BOOTPROTO"] = "static" if LanItems.operation == :add && @force_static_ip
     end
 
     # Given a map of duplicated port ids with device names, aks the user if he

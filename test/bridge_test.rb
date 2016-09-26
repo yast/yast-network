@@ -89,7 +89,7 @@ describe Yast::LanItems do
     end
   end
 
-  describe "#old_bridge_config?" do
+  describe "#old_bridge_port_config?" do
     before do
       allow(Yast::NetworkInterfaces).to receive(:FilterDevices).with("") { netconfig_items }
     end
@@ -97,11 +97,11 @@ describe Yast::LanItems do
     it "returns false if the interface is not configured" do
       allow(Yast::NetworkInterfaces).to receive(:FilterDevices).with("") { {} }
 
-      expect(Yast::LanItems.old_bridge_config?("eth0")).to eql(false)
+      expect(Yast::LanItems.old_bridge_port_config?("eth0")).to eql(false)
     end
 
     it "returns true if given interface bootproto is static and IP is 0.0.0.0" do
-      expect(Yast::LanItems.old_bridge_config?("eth4")).to eql(true)
+      expect(Yast::LanItems.old_bridge_port_config?("eth4")).to eql(true)
     end
   end
 
@@ -119,5 +119,18 @@ describe Yast::LanItems do
       expect(Yast::LanItems.bridge_ip("192.168.0.120")).to eql("192.168.0.120")
     end
 
+  end
+
+  describe "#fix_bridge_port_config?" do
+    it "returns false if no given ports" do
+      expect(Yast::LanItems.fix_bridge_port_config?(nil)).to eql(false)
+      expect(Yast::LanItems.fix_bridge_port_config?([])).to eql(false)
+    end
+
+    it "asks the user if he wants to adapt the bridge port config for given ports" do
+      expect(Yast::Popup).to receive(:YesNoHeadline).and_return(true)
+
+      expect(Yast::LanItems.fix_bridge_port_config?(["eth0"])).to eql(true)
+    end
   end
 end
