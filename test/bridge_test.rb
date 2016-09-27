@@ -121,16 +121,45 @@ describe Yast::LanItems do
 
   end
 
-  describe "#fix_bridge_port_config?" do
+  describe "#adapt_bridge_port_config?" do
     it "returns false if no given ports" do
-      expect(Yast::LanItems.fix_bridge_port_config?(nil)).to eql(false)
-      expect(Yast::LanItems.fix_bridge_port_config?([])).to eql(false)
+      expect(Yast::LanItems.adapt_bridge_port_config?(nil)).to eql(false)
+      expect(Yast::LanItems.adapt_bridge_port_config?([])).to eql(false)
     end
 
     it "asks the user if he wants to adapt the bridge port config for given ports" do
       expect(Yast::Popup).to receive(:YesNoHeadline).and_return(true)
 
-      expect(Yast::LanItems.fix_bridge_port_config?(["eth0"])).to eql(true)
+      expect(Yast::LanItems.adapt_bridge_port_config?(["eth0"])).to eql(true)
     end
+  end
+
+  describe "#adapt_bridge_port_config!" do
+    let(:eth1) do
+      {
+        "IPADDR"    => "172.26.0.1",
+        "NETMASK"   => "255.255.255.0",
+        "PREFIXLEN" => "24"
+      }
+    end
+
+    before do
+      allow(Yast::LanItems).to receive(:get_configured).with("eth1").and_return(1)
+      allow(Yast::LanItems).to receive(:get_configured).with("eth2").and_return(-1)
+      allow(Yast::LanItems).to receive(:GetDeviceMap).with(1).and_return(eth1)
+      allow(Yast::LanItems).to receive(:GetDeviceMap).with(-1).and_return(nil)
+    end
+
+    it "returns false if the given interface is not configured" do
+      expect(Yast::LanItems.adapt_bridge_port_config!("eth2")).to eql(false)
+    end
+
+    it "empties the IPADDR, NETMASK and PREFIXLEN of the given interface" do
+      expect(Yast::LanItems).to receive(:SetDeviceMap)
+        .with(1, "IPADDR" => "", "NETMASK" => "", "PREFIXLEN" => "", "BOOTPROTO" => "none")
+
+      Yast::LanItems.adapt_bridge_port_config!("eth1")
+    end
+
   end
 end

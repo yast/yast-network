@@ -93,7 +93,7 @@ module Yast
 
     # Asks the user about adapt the current bridge port config in case that it
     # is configured in the old way (BOOTPROTO == static) & (IPADDR == 0.0.0.0).
-    def fix_bridge_port_config?(ports)
+    def adapt_bridge_port_config?(ports)
       return false if ports.nil? || ports.empty?
 
       Popup.YesNoHeadline(
@@ -102,6 +102,23 @@ module Yast
                  "Bridge ports: %s\n\n" \
                  "Do you want to adapt them now?"), ports.join(", "))
       )
+    end
+
+    def adapt_bridge_port_config!(ifcfg_name)
+      item_id = LanItems.get_configured(ifcfg_name)
+      devmap = LanItems.GetDeviceMap(item_id)
+
+      return false unless devmap
+
+      devmap["IPADDR"] = ""
+      devmap["NETMASK"] = ""
+      devmap["BOOTPROTO"] = "none"
+      # take out PREFIXLEN from old configuration (BNC#735109)
+      devmap["PREFIXLEN"] = ""
+
+      LanItems.SetDeviceMap(item_id, devmap)
+
+      true
     end
 
     def ValidateBridge(_key, _event)
