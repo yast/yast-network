@@ -18,6 +18,7 @@ import "Lan";
 import "Progress";
 import "Arch";
 import "Mode";
+import "Stage";
 import "Map";
 import "NetworkInterfaces";
 import "LanItems";
@@ -36,8 +37,8 @@ if(size(WFM::Args()) > 0 && is(WFM::Args(0), string))
     if(size(WFM::Args()) > 1 && is(WFM::Args(1), map))
 	param = (map) WFM::Args(1);
 }
-y2debug("func=%1", func);
-y2debug("param=%1", param);
+y2milestone("func=%1", func);
+y2milestone("param=%1", param);
 
 // Mode::SetTest("test");
 
@@ -332,6 +333,7 @@ define map ToAY (map settings) {
 
 }
 
+y2milestone("Lan autoinst callback: %1", func);
 
 if(func == "Summary") {
     ret = Lan::Summary("summary")[0]:"";
@@ -349,7 +351,7 @@ else if(func == "Import") {
     // in case keep_install_network is set to true (in AY)
     // we'll keep values from installation
     // and merge with XML data (bnc#712864)
-    if(param["keep_install_network"]:false==true) {
+    if((param["keep_install_network"]:false==true) && (!Stage::normal())) {
         // read settings from installation
         Lan::Read(`cache);
         // export settings into AY map
@@ -394,6 +396,7 @@ else if(func == "Import") {
     }
     map new = FromAY(param);
     Lan::Import(new);
+    LanUdevAuto::Import(new);
     ret = true;
 }
 else if(func == "Read") {
@@ -418,9 +421,14 @@ else if (func == "Export") {
 }
 else if (func == "Write") {
     boolean progress_orig = Progress::set (false);
-//    Lan::PrepareForAutoinst();
-//    Lan::Autoinstall();
-    ret = Lan::WriteOnly();
+
+    ret = Lan::WriteOnly() && (boolean) ret;
+    if(!(boolean) ret) y2error("Writing lan config failed");
+
+    ret = LanUdevAuto::Write();
+
+    if(!(boolean) ret) y2error("Writing udev rules failed");
+
     if (LanItems::autoinstall_settings["strict_IP_check_timeout"]:nil != nil)
      {
       if (Lan::isAnyInterfaceDown()){
