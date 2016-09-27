@@ -104,8 +104,13 @@ module Yast
       )
     end
 
-    def adapt_bridge_port_config!(ifcfg_name)
-      item_id = LanItems.get_configured(ifcfg_name)
+    # Adapts the configuration of the given port from the old way (previous of
+    # SLE12) to the new one. (bsc#962824)
+    #
+    # @param [String] Bridge port to be adapted
+    # @return [Boolean] true if the device map is obtained and modified
+    def adapt_bridge_port_config!(port)
+      item_id = LanItems.get_configured(port)
       devmap = LanItems.GetDeviceMap(item_id)
 
       return false unless devmap

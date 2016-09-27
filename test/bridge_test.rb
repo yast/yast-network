@@ -151,6 +151,7 @@ describe Yast::LanItems do
     end
 
     it "returns false if the given interface is not configured" do
+      expect(Yast::LanItems).not_to receive(:SetDeviceMap)
       expect(Yast::LanItems.adapt_bridge_port_config!("eth2")).to eql(false)
     end
 
@@ -159,6 +160,12 @@ describe Yast::LanItems do
         .with(1, "IPADDR" => "", "NETMASK" => "", "PREFIXLEN" => "", "BOOTPROTO" => "none")
 
       Yast::LanItems.adapt_bridge_port_config!("eth1")
+    end
+
+    it "returns true when adapted" do
+      allow(Yast::LanItems).to receive(:SetDeviceMap)
+
+      expect(Yast::LanItems.adapt_bridge_port_config!("eth1")).to eql(true)
     end
 
   end
