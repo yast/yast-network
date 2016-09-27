@@ -408,7 +408,7 @@ module Yast
       bootproto = devmap["BOOTPROTO"] || "static"
 
       if bootproto.empty? || bootproto == "static"
-        devmap["IPADDR"]
+        devmap["IPADDR"].to_s
       else
         bootproto.upcase
       end
