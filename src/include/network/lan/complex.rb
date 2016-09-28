@@ -306,14 +306,21 @@ module Yast
           # in related sysconfig scripts or makes no sence for bonding slaves (e.g. ip configuration).
           LanItems.netmask = ""
         end
-        LanItems.startmode = "hotplug"
         LanItems.bootproto = "none"
-        # if particular bond slave uses mac based persistency, overwrite to bus id based one. Don't touch otherwise.
-        LanItems.ReplaceItemUdev(
-          "ATTR{address}",
-          "KERNELS",
-          Ops.get_string(LanItems.getCurrentItem, ["hwinfo", "busid"], "")
-        )
+        case current.type
+        when "bond"
+          LanItems.startmode = "hotplug"
+          # if particular bond slave uses mac based persistency, overwrite to bus id based one. Don't touch otherwise.
+          LanItems.ReplaceItemUdev(
+            "ATTR{address}",
+            "KERNELS",
+            Ops.get_string(LanItems.getCurrentItem, ["hwinfo", "busid"], "")
+          )
+        when "br"
+          LanItems.ipaddr = ""
+          LanItems.netmask = ""
+        end
+
         LanItems.Commit
       end
 

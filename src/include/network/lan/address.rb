@@ -1555,7 +1555,7 @@ module Yast
       ports = LanItems.bridge_ports.split(" ").select { |p| old_bridge_port_config?(p) }
 
       unless ports.empty?
-        ports.each { |p| adapt_bridge_port_config!(p) } if adapt_bridge_port_config?(ports)
+        ports.each { |p| configure_as_bridge_port(p) } if adapt_bridge_port_config?(ports)
       end
 
       true

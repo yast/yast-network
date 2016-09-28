@@ -67,28 +67,29 @@ module Yast
       # when using wicked every device which can be bridged
       # can be set to BOOTPROTO=none. No workaround with
       # BOOTPROTO=static required anymore
-      unless NetworkInterfaces.Edit(device)
-        Lan.autoconf_slaves += [device] unless Lan.autoconf_slaves.include? device
-        return false
+      if NetworkInterfaces.Edit(device)
+        NetworkInterfaces.Current["IPADDR"] = ""
+        NetworkInterfaces.Current["NETMASK"] = ""
+        NetworkInterfaces.Current["BOOTPROTO"] = "none"
+        # take out PREFIXLEN from old configuration (BNC#735109)
+        NetworkInterfaces.Current["PREFIXLEN"] = ""
+
+        # remove all aliases (bnc#590167)
+        aliases = NetworkInterfaces.Current["_aliases"] || {}
+        aliases.each do |alias_name, alias_ip|
+          NetworkInterfaces.DeleteAlias(device, alias_name) if alias_ip
+        end
+        NetworkInterfaces.Current["_aliases"] = {}
+
+        NetworkInterfaces.Commit
+        NetworkInterfaces.Add
+
+        NetworkInterfaces.Current = selected_interface
       end
 
-      NetworkInterfaces.Current["IPADDR"] = ""
-      NetworkInterfaces.Current["NETMASK"] = ""
-      NetworkInterfaces.Current["BOOTPROTO"] = "none"
-      # take out PREFIXLEN from old configuration (BNC#735109)
-      NetworkInterfaces.Current["PREFIXLEN"] = ""
+      Lan.autoconf_slaves += [device] unless Lan.autoconf_slaves.include? device
 
-      # remove all aliases (bnc#590167)
-      aliases = NetworkInterfaces.Current["_aliases"] || {}
-      aliases.each do |alias_name, alias_ip|
-        NetworkInterfaces.DeleteAlias(device, alias_name) if alias_ip
-      end
-      NetworkInterfaces.Current["_aliases"] = {}
-
-      NetworkInterfaces.Commit
-      NetworkInterfaces.Add
-
-      NetworkInterfaces.Current = selected_interface
+      true
     end
 
     # Asks the user about adapt the current bridge port config in case that it
@@ -110,7 +111,7 @@ module Yast
     # @param [String] Bridge port to be adapted
     # @return [Boolean] true if the device map is obtained and modified
     def adapt_bridge_port_config!(port)
-      item_id = LanItems.get_configured(port)
+      item_id = LanItems.find_configured(port)
       devmap = LanItems.GetDeviceMap(item_id)
 
       return false unless devmap

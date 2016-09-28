@@ -144,8 +144,8 @@ describe Yast::LanItems do
     end
 
     before do
-      allow(Yast::LanItems).to receive(:get_configured).with("eth1").and_return(1)
-      allow(Yast::LanItems).to receive(:get_configured).with("eth2").and_return(-1)
+      allow(Yast::LanItems).to receive(:find_configured).with("eth1").and_return(1)
+      allow(Yast::LanItems).to receive(:find_configured).with("eth2").and_return(-1)
       allow(Yast::LanItems).to receive(:GetDeviceMap).with(1).and_return(eth1)
       allow(Yast::LanItems).to receive(:GetDeviceMap).with(-1).and_return(nil)
     end
