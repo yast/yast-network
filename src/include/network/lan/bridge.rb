@@ -51,10 +51,10 @@ module Yast
     # @return [Boolean] returns true if given enslaved interface is configured
     # in the old way
     def old_bridge_port_config?(ifcfg_name)
-      current = LanItems.GetDeviceMap(LanItems.find_configured(ifcfg_name))
-      return false unless current
+      devmap = LanItems.GetDeviceMap(LanItems.find_configured(ifcfg_name))
+      return false unless devmap
 
-      current["BOOTPROTO"] == "static" && current["IPADDR"] == "0.0.0.0"
+      devmap["BOOTPROTO"] == "static" && devmap["IPADDR"] == "0.0.0.0"
     end
 
     # Immediately updates device's ifcfg to be usable as bridge port.

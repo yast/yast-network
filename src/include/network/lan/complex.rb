@@ -307,7 +307,7 @@ module Yast
           LanItems.netmask = ""
         end
         LanItems.bootproto = "none"
-        case current.type
+        case LanItems.GetDeviceType(current)
         when "bond"
           LanItems.startmode = "hotplug"
           # if particular bond slave uses mac based persistency, overwrite to bus id based one. Don't touch otherwise.

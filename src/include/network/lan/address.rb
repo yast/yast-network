@@ -1332,7 +1332,7 @@ module Yast
       end
       @hostname_initial = String.FirstChunk(Ops.get(host_list, 0, ""), " \t")
 
-      check_bridge_ports_config
+      check_bridge_ports_config if LanItems.type == "br"
 
       initialize_address_settings
 
@@ -1550,15 +1550,13 @@ module Yast
     # of a bridge. In case that some configuration is not correct then adapt it
     # if the user accepts.
     def check_bridge_ports_config
-      return false unless LanItems.type == "br"
-
       ports = LanItems.bridge_ports.split(" ").select { |p| old_bridge_port_config?(p) }
 
-      unless ports.empty?
-        ports.each { |p| configure_as_bridge_port(p) } if adapt_bridge_port_config?(ports)
-      end
+      return if ports.empty?
 
-      true
+      ports.each { |p| configure_as_bridge_port(p) } if adapt_bridge_port_config?(ports)
+
+      nil
     end
 
     # Obtains the ports selected in the 'BRIDGE_PORTS' widget
