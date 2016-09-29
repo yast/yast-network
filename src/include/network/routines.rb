@@ -717,7 +717,7 @@ module Yast
     #
     # @param [String] name of interface to put down
     def SetIfaceUp(dev_name)
-      log.info("Setting interface #{devname} up")
+      log.info("Setting interface #{dev_name} up")
       Run("ifup #{dev_name} up")
     end
 
@@ -726,7 +726,7 @@ module Yast
     #
     # @param [String] name of interface to put down
     def SetIfaceDown(dev_name)
-      log.info("Setting interface #{devname} down")
+      log.info("Setting interface #{dev_name} down")
       Run("ifdown #{dev_name}")
     end
 
