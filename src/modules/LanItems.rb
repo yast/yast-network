@@ -732,7 +732,7 @@ module Yast
     # @param [Fixnum] itemId        index into LanItems::Items
     # TODO: bridgeMaster is not used yet bcs detection of bridge master
     # for checked device is missing.
-    def IsBridgeable(_bridgeMaster, itemId)
+    def IsBridgeable(bridgeMaster, itemId)
       ifcfg = GetDeviceMap(itemId)
 
       # no netconfig configuration has been found so nothing
@@ -744,6 +744,11 @@ module Yast
 
       if bonded[devname]
         log.debug("Excluding lan item (#{itemId}: #{devname}) - is bonded")
+        return false
+      end
+
+      if bridge_index[devname] && bridge_index[devname] != bridgeMaster
+        log.debug("Excluding lan item (#{itemId}: #{devname}) - is already in a bridge")
         return false
       end
 
@@ -1211,21 +1216,42 @@ module Yast
 
     def BuildBondIndex
       index = {}
-      bond_devs = Convert.convert(
-        Ops.get(NetworkInterfaces.FilterDevices("netcard"), "bond", {}),
-        from: "map",
-        to:   "map <string, map>"
-      )
 
-      Builtins.foreach(bond_devs) do |bond_master, _value|
-        Builtins.foreach(GetBondSlaves(bond_master)) do |slave|
-          index = Builtins.add(index, slave, bond_master)
+      bond_devs = NetworkInterfaces.FilterDevices("netcard").fetch("bond", {})
+
+      bond_devs.each do |bond_master, _value|
+        GetBondSlaves(bond_master).each do |slave|
+          index[slave] = bond_master
         end
       end
 
-      Builtins.y2debug("bond slaves index: %1", index)
+      log.debug("bond slaves index: #{index}")
 
-      deep_copy(index)
+      index
+    end
+
+    # Creates a map where the keys are the interfaces enslaved and the values
+    # are the bridges where them are taking part.
+    def bridge_index
+      index = {}
+
+      bridge_devs = NetworkInterfaces.FilterDevices("netcard").fetch("br", {})
+
+      bridge_devs.each do |bridge_master, value|
+        value.fetch("BRIDGE_PORTS", "").split.map do |if_name|
+          index[if_name] = bridge_master
+        end
+      end
+
+      index
+    end
+
+    # Returns the interfaces that are enslaved in the given bridge
+    #
+    # @param [String] bridge name
+    # @return [Array<String>] a list of interface names
+    def bridge_slaves(master)
+      bridge_index.select { |_k, v| v == master }.keys
     end
 
     # Creates item's startmode human description
@@ -1301,6 +1327,8 @@ module Yast
       overview = []
       links = []
 
+      bond_index = BuildBondIndex()
+
       LanItems.Items.each_key do |key|
         rich = ""
         ip = _("Not configured")
@@ -1311,25 +1339,26 @@ module Yast
         note = ""
         bullets = []
         ifcfg_name = LanItems.Items[key]["ifcfg"] || ""
+        ifcfg_type = NetworkInterfaces.GetType(ifcfg_name)
 
-        LanItems.type = NetworkInterfaces.GetType(ifcfg_name)
         if !ifcfg_name.empty?
           ifcfg_conf = GetDeviceMap(key)
           ifcfg_desc = ifcfg_conf["NAME"]
           descr = ifcfg_desc if !ifcfg_desc.nil? && !ifcfg_desc.empty?
-          descr = CheckEmptyName(LanItems.type, descr)
+          descr = CheckEmptyName(ifcfg_type, descr)
           ip = DeviceProtocol(ifcfg_conf)
-          status = DeviceStatus(
-            LanItems.type,
-            ifcfg_name,
-            ifcfg_conf
-          )
+          status = DeviceStatus(ifcfg_type, ifcfg_name, ifcfg_conf)
 
           bullets << _("Device Name: %s") % ifcfg_name
           bullets += startmode_overview(key)
+
+          if bridge_index[ifcfg_name]
+            ip = bridge_ip(ip).empty? ? "NONE" : bridge_ip(ip)
+          end
+
           bullets += ip_overview(ip) if ifcfg_conf["STARTMODE"] != "managed"
 
-          if LanItems.type == "wlan" &&
+          if ifcfg_type == "wlan" &&
               ifcfg_conf["WIRELESS_AUTH_MODE"] == "open" &&
               IsEmpty(ifcfg_conf["WIRELESS_KEY_0"])
 
@@ -1343,26 +1372,20 @@ module Yast
             links << href
           end
 
-          if LanItems.type == "bond"
-            bond_slaves_desc = format(
-              "%s: %s",
-              _("Bonding slaves"),
-              GetBondSlaves(ifcfg_name).join(" ")
-            )
-            bullets << bond_slaves_desc
+          if ifcfg_type == "bond" || ifcfg_type == "br"
+            bullets << slaves_desc(ifcfg_type, ifcfg_name)
           end
 
-          bond_index = BuildBondIndex()
-          bond_master = Ops.get(
-            bond_index,
-            ifcfg_name,
-            ""
-          )
-
-          if !bond_master.empty?
-            note = format(_("enslaved in %s"), bond_master)
-            bond_master_desc = format("%s: %s", _("Bonding master"), bond_master)
-            bullets << bond_master_desc
+          if enslaved?(ifcfg_name)
+            if bond_index[ifcfg_name]
+              master = bond_index[ifcfg_name]
+              master_desc = _("Bonding master")
+            else
+              master = bridge_index[ifcfg_name]
+              master_desc = _("Bridge")
+            end
+            note = format(_("enslaved in %s"), master)
+            bullets << format("%s: %s", master_desc, master)
           end
 
           if renamed?(key)
@@ -1371,7 +1394,7 @@ module Yast
 
           overview << Summary.Device(descr, status)
         else
-          descr = CheckEmptyName(LanItems.type, descr)
+          descr = CheckEmptyName(ifcfg_type, descr)
           overview << Summary.Device(descr, Summary.NotConfigured)
         end
         conn = ""
@@ -2025,6 +2048,7 @@ module Yast
 
         # configure bridge ports
         if @bridge_ports
+          log.info "Configuring bridge ports #{@bridge_ports} for: #{ifcfg_name}"
           @bridge_ports.split.each { |bp| configure_as_bridge_port(bp) }
         end
 
@@ -2381,6 +2405,34 @@ module Yast
     end
 
   private
+
+    # Returns a formated string with the interfaces that are part of a bridge
+    # or of a bond interface.
+    #
+    # @param [String] ifcfg_type
+    # @param [String] ifcfg_name
+    # @return [String] formated string with the interface type and the interfaces enslaved
+    def slaves_desc(ifcfg_type, ifcfg_name)
+      if ifcfg_type == "bond"
+        slaves = GetBondSlaves(ifcfg_name)
+        desc = _("Bonding slaves")
+      else
+        slaves = bridge_slaves(ifcfg_name)
+        desc = _("Bridge Ports")
+      end
+
+      format("%s: %s", desc, slaves.join(" "))
+    end
+
+    # Check if the given interface is enslaved in a bond or in a bridge
+    #
+    # @return [Boolean] true if enslaved
+    def enslaved?(ifcfg_name)
+      bond_index = BuildBondIndex()
+      return true if bond_index[ifcfg_name] || bridge_index[ifcfg_name]
+
+      false
+    end
 
     # Checks if given lladdr can be written into ifcfg
     #
