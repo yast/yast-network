@@ -28,6 +28,7 @@
 #
 module Yast
   module NetworkRoutinesInclude
+    include Wicked
     include I18n
     include Yast
     include Logger
@@ -711,17 +712,23 @@ module Yast
       end
     end
 
+    # Wrapper to call 'ip link set up' with the given interface
+    #
+    # @param [String] name of interface to 'set link up'
     def SetLinkUp(dev_name)
       log.info("Setting link up for interface #{dev_name}")
       Run("ip link set #{dev_name} up")
     end
 
+    # Wrapper to call 'ip link set down' with the given interface
+    #
+    # @param [String] name of interface to 'set link down'
     def SetLinkDown(dev_name)
       log.info("Setting link down for interface #{dev_name}")
       Run("ip link set #{dev_name} down")
     end
 
-    # Tries to set all available interfaces up
+    # Tries to set up the link of all available interfaces
     #
     # @return [boolean] false if some of interfaces cannot be set up
     def SetAllLinksUp
@@ -732,7 +739,7 @@ module Yast
       interfaces.all? { |i| SetLinkUp(i) }
     end
 
-    # Tries to set all available interfaces down
+    # Tries to set the link down of all available interfaces
     #
     # @return [boolean] false if some of interfaces cannot be set down
     def SetAllLinksDown
@@ -741,6 +748,32 @@ module Yast
       return false if interfaces.empty?
 
       interfaces.all? { |i| SetLinkDown(i) }
+    end
+
+    # Calls wicked ifdown if it is the current backend, set the link down
+    # otherwise
+    #
+    # @param [String] name of interface to put down
+    # @see SetLinkDown
+    def SetInterfaceDown(dev_name)
+      if NetworkService.is_wicked
+        bring_down([dev_name])
+      else
+        SetLinkDown(dev_name)
+      end
+    end
+
+    # Calls wicked ifup if it is the currenct backend, set the link up
+    # otherwise
+    #
+    # @param [String] name of interface to put down
+    # @see SetLinkUp
+    def SetInterfaceUp(dev_name)
+      if NetworkService.is_wicked
+        bring_up([dev_name])
+      else
+        SetLinkUp(dev_name)
+      end
     end
 
     # Checks if given device has carrier
