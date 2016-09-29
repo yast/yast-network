@@ -712,68 +712,44 @@ module Yast
       end
     end
 
-    # Wrapper to call 'ip link set up' with the given interface
+    # Calls wicked ifup if it is the currenct backend, set the link up
+    # otherwise
     #
-    # @param [String] name of interface to 'set link up'
-    def SetLinkUp(dev_name)
-      log.info("Setting link up for interface #{dev_name}")
-      Run("ip link set #{dev_name} up")
-    end
-
-    # Wrapper to call 'ip link set down' with the given interface
-    #
-    # @param [String] name of interface to 'set link down'
-    def SetLinkDown(dev_name)
-      log.info("Setting link down for interface #{dev_name}")
-      Run("ip link set #{dev_name} down")
-    end
-
-    # Tries to set up the link of all available interfaces
-    #
-    # @return [boolean] false if some of interfaces cannot be set up
-    def SetAllLinksUp
-      interfaces = GetAllInterfaces()
-
-      return false if interfaces.empty?
-
-      interfaces.all? { |i| SetLinkUp(i) }
-    end
-
-    # Tries to set the link down of all available interfaces
-    #
-    # @return [boolean] false if some of interfaces cannot be set down
-    def SetAllLinksDown
-      interfaces = GetAllInterfaces()
-
-      return false if interfaces.empty?
-
-      interfaces.all? { |i| SetLinkDown(i) }
+    # @param [String] name of interface to put down
+    def SetIfaceUp(dev_name)
+      log.info("Setting interface #{devname} up")
+      Run("ifup #{dev_name} up")
     end
 
     # Calls wicked ifdown if it is the current backend, set the link down
     # otherwise
     #
     # @param [String] name of interface to put down
-    # @see SetLinkDown
-    def SetInterfaceDown(dev_name)
-      if NetworkService.is_wicked
-        bring_down([dev_name])
-      else
-        SetLinkDown(dev_name)
-      end
+    def SetIfaceDown(dev_name)
+      log.info("Setting interface #{devname} down")
+      Run("ifdown #{dev_name}")
     end
 
-    # Calls wicked ifup if it is the currenct backend, set the link up
-    # otherwise
+    # Tries to set all interfaces up
     #
-    # @param [String] name of interface to put down
-    # @see SetLinkUp
-    def SetInterfaceUp(dev_name)
-      if NetworkService.is_wicked
-        bring_up([dev_name])
-      else
-        SetLinkUp(dev_name)
-      end
+    # @return [boolean] false if some of interfaces cannot be set up
+    def SetAllIfacesUp
+      interfaces = GetAllInterfaces()
+
+      return false if interfaces.empty?
+
+      interfaces.all? { |i| SetIfaceUp(i) }
+    end
+
+    # Tries to set all interfaces down
+    #
+    # @return [boolean] false if some of interfaces cannot be set down
+    def SetAllIfacesDown
+      interfaces = GetAllInterfaces()
+
+      return false if interfaces.empty?
+
+      interfaces.all? { |i| SetIfaceDown(i) }
     end
 
     # Checks if given device has carrier
@@ -814,8 +790,8 @@ module Yast
     def phy_connected?(dev_name)
       return true if has_carrier?(dev_name)
 
-      # SetLinkUp ensures that driver is loaded
-      SetLinkUp(dev_name)
+      # SetIfaceUp ensures that driver is loaded
+      SetIfaceUp(dev_name)
 
       # Wait for driver initialization if needed. bnc#876848
       # 5 secs is minimum proposed by sysconfig guys for intel drivers.
