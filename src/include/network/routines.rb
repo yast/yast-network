@@ -28,7 +28,6 @@
 #
 module Yast
   module NetworkRoutinesInclude
-    include Wicked
     include I18n
     include Yast
     include Logger
