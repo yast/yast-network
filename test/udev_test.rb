@@ -152,4 +152,25 @@ describe "LanItems#ReplaceItemUdev" do
 
     expect(Yast::LanItems).not_to receive(:SetModified)
   end
+
+  # this is an SCR limitation
+  it "contains NAME tuplet at last position" do
+    allow(Yast::LanItems)
+      .to receive(:getUdevFallback)
+      .and_return(
+        [
+          "ATTR{address}==\"xx:01:02:03:04:05\"",
+          "KERNEL=\"eth*\"",
+          "NAME=\"eth1\""
+        ]
+      )
+
+    updated_rule = Yast::LanItems.ReplaceItemUdev(
+      "KERNELS",
+      "ATTR{address}",
+      "xx:01:02:03:04:AA"
+    )
+
+    expect(updated_rule.last).to match(/NAME.*/)
+  end
 end
