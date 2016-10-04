@@ -430,7 +430,13 @@ module Yast
       operator = new_key == "NAME" ? "=" : "=="
       current_rule = getUdevFallback
       rule = RemoveKeyFromUdevRule(getUdevFallback, replace_key)
+
+      # NAME="devname" has to be last in the rule.
+      # otherwise SCR agent .udev_persistent.net returns crap
+      # isn't that fun
+      name_tuple = rule.pop
       new_rule = AddToUdevRule(rule, "#{new_key}#{operator}\"#{new_val}\"")
+      new_rule.push(name_tuple)
 
       log.info("ReplaceItemUdev: new udev rule = #{new_rule}")
 
