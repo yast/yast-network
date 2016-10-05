@@ -53,9 +53,9 @@ module Yast
     # @return successfully finished
     def LanSequence
       aliases = {
-        "read"     => [-> { ReadDialog() }, true],
-        "main"     => -> { MainSequence("") },
-        "write"    => [-> { WriteDialog() }, true]
+        "read"  => [-> { ReadDialog() }, true],
+        "main"  => -> { MainSequence("") },
+        "write" => [-> { WriteDialog() }, true]
       }
 
       if Mode.installation || Mode.update
