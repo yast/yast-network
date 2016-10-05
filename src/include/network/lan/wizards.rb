@@ -53,13 +53,14 @@ module Yast
     # @return successfully finished
     def LanSequence
       aliases = {
-        "read"     => [-> { ReadDialog() }, true],
-        "main"     => -> { MainSequence("") },
-        "packages" => [-> { PackagesInstall(Lan.Packages) }, true],
-        "write"    => [-> { WriteDialog() }, true]
+        "read"  => [-> { ReadDialog() }, true],
+        "main"  => -> { MainSequence("") },
+        "write" => [-> { WriteDialog() }, true]
       }
 
       if Mode.installation || Mode.update
+        aliases["packages"] = [-> { add_pkgs_to_proposal(Lan.Packages) }, true]
+
         sequence = {
           "ws_start" => "read",
           "read"     => { abort: :abort, back: :back, next: "main" },
@@ -70,6 +71,8 @@ module Yast
 
         Wizard.OpenNextBackDialog
       else
+        aliases["packages"] = [-> { PackagesInstall(Lan.Packages) }, true]
+
         sequence = {
           "ws_start" => "read",
           "read"     => { abort: :abort, next: "main" },

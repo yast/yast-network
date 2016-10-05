@@ -50,6 +50,7 @@ module Yast
       Yast.import "IP"
       Yast.import "TypeRepository"
       Yast.import "Stage"
+      Yast.import "PackagesProposal"
     end
 
     # Abort function
@@ -102,6 +103,16 @@ module Yast
       end
 
       nil
+    end
+
+    # Adds the packages to the software proposal to make sure they are available
+    # in the installed system
+    # @param [Array<String>] packages list of required packages (["rpm", "bash"])
+    # @return :next in any case
+    def add_pkgs_to_proposal(packages)
+      log.info "Adding network packages to proposal: #{packages}"
+      PackagesProposal.AddResolvables("network", :package, packages) unless packages.empty?
+      :next
     end
 
     # Check if required packages are installed and install them if they're not
