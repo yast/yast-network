@@ -125,6 +125,11 @@ module Yast
       @wl_default_key = 0
       @wl_nick = ""
 
+      #FIXME: We should unify bridge_ports and bond_slaves variables
+
+      # interfaces attached to bridge (list delimited by ' ')
+      @bridge_ports = ""
+
       # bond options
       @bond_slaves = []
       @bond_option = ""
@@ -133,8 +138,6 @@ module Yast
       @vlan_etherdevice = ""
       @vlan_id = ""
 
-      # interfaces attached to bridge (list delimited by ' ')
-      @bridge_ports = ""
       # wl_wpa_eap aggregates the settings in a map for easier CWM access.
       #
       # **Structure:**
@@ -730,8 +733,6 @@ module Yast
     #
     # @param [String] bridgeMaster  name of master device
     # @param [Fixnum] itemId        index into LanItems::Items
-    # TODO: bridgeMaster is not used yet bcs detection of bridge master
-    # for checked device is missing.
     def IsBridgeable(bridgeMaster, itemId)
       ifcfg = GetDeviceMap(itemId)
 

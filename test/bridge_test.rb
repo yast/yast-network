@@ -103,6 +103,10 @@ describe Yast::LanItems do
     it "returns true if given interface bootproto is static and IP is 0.0.0.0" do
       expect(Yast::LanItems.old_bridge_port_config?("eth4")).to eql(true)
     end
+
+    it "returns false in other cases, for example with bootproto as 'none'" do
+      expect(Yast::LanItems.old_bridge_port_config?("eth1")).to eql(false)
+    end
   end
 
   describe "#bridge_ip" do

@@ -295,17 +295,16 @@ module Yast
         else
           dev_index = LanItems.FindDeviceIndex(dev)
           if dev_index < 0
-            log.error("initOverview: invalid bond slave device name #{dev}")
+            log.error("initOverview: invalid slave device name #{dev}")
             next
           end
           LanItems.current = dev_index
 
           AddInterface()
-
-          # clear defaults, some defaults are invalid for bonding slaves and can cause troubles
-          # in related sysconfig scripts or makes no sence for bonding slaves (e.g. ip configuration).
-          LanItems.netmask = ""
         end
+        # clear defaults, some defaults are invalid for slaves and can cause troubles
+        # in related sysconfig scripts or makes no sence for slaves (e.g. ip configuration).
+        LanItems.netmask = ""
         LanItems.bootproto = "none"
         case LanItems.GetDeviceType(current)
         when "bond"
@@ -318,7 +317,6 @@ module Yast
           )
         when "br"
           LanItems.ipaddr = ""
-          LanItems.netmask = ""
         end
 
         LanItems.Commit

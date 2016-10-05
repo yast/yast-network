@@ -475,6 +475,8 @@ module Yast
     # @param [String] key	id of the widget
     # @param [String] key id of the widget
     def StoreBridge(key, _event)
+      selected_bridge_ports = UI.QueryWidget(Id("BRIDGE_PORTS"), :SelectedItems) || []
+
       @settings["BRIDGE_PORTS"] = selected_bridge_ports.join(" ")
 
       LanItems.bridge_ports = @settings["BRIDGE_PORTS"]
@@ -601,6 +603,7 @@ module Yast
     # @param [String] key	id of the widget
     def InitSlave(_key)
       @settings["SLAVES"] = LanItems.bond_slaves || []
+
       UI.ChangeWidget(
         :msbox_items,
         :SelectedItems,
@@ -679,6 +682,8 @@ module Yast
     def StoreSlave(_key, _event)
       configured_slaves = @settings["SLAVES"] || []
 
+      selected_slaves = UI.QueryWidget(:msbox_items, :SelectedItems) || []
+
       @settings["SLAVES"] = selected_slaves
 
       @settings["BONDOPTION"] = UI.QueryWidget(Id("BONDOPTION"), :Value).to_s
@@ -703,6 +708,8 @@ module Yast
     # @param [Hash] event the event being handled
     # @return true if valid or user decision if not
     def validate_bond(_key, _event)
+      selected_slaves = UI.QueryWidget(:msbox_items, :SelectedItems) || []
+
       physical_ports = repeated_physical_port_ids(selected_slaves)
 
       physical_ports.empty? ? true : continue_with_duplicates?(physical_ports)
@@ -1559,17 +1566,6 @@ module Yast
       nil
     end
 
-    # Obtains the ports selected in the 'BRIDGE_PORTS' widget
-    # @return [Array<String>] selected ports
-    def selected_bridge_ports
-      UI.QueryWidget(Id("BRIDGE_PORTS"), :SelectedItems) || []
-    end
-
-    # Obtains the slaves selected in the 'msbox_items' widget
-    # @return [Array<String>] selected slaves
-    def selected_slaves
-      UI.QueryWidget(:msbox_items, :SelectedItems) || []
-    end
 
     # Initializes the Address Dialog @settings with the corresponding LanItems values
     def initialize_address_settings
