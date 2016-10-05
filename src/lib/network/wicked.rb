@@ -8,8 +8,8 @@ module Yast
 
     # Reloads configuration for each device named in devs
     #
-    # @devs [Array] list of device names
-    # @return true if configuration was reloaded
+    # @param [Array] list of device names
+    # @return [Boolean] true if configuration was reloaded; false otherwise
     def reload_config(devs)
       raise ArgumentError if devs.nil?
       return true if devs.empty?
