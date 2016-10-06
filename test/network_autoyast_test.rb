@@ -2,11 +2,13 @@
 
 require_relative "test_helper"
 
-require "yast"
 require "network/network_autoyast"
 
 describe "NetworkAutoYast" do
   subject(:network_autoyast) { Yast::NetworkAutoYast.instance }
+  before do
+    allow(Yast::NetworkInterfaces).to receive(:adapt_old_config!)
+  end
 
   describe "#merge_devices" do
     let(:netconfig_linuxrc) do
