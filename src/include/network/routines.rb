@@ -722,36 +722,44 @@ module Yast
       end
     end
 
-    def SetLinkUp(dev_name)
-      log.info("Setting link up for interface #{dev_name}")
-      Run("ip link set #{dev_name} up")
+    # Calls wicked ifup if it is the currenct backend, set the link up
+    # otherwise
+    #
+    # @param [String] name of interface to put down
+    def SetIfaceUp(dev_name)
+      log.info("Setting interface #{dev_name} up")
+      Run("ifup #{dev_name} up")
     end
 
-    def SetLinkDown(dev_name)
-      log.info("Setting link down for interface #{dev_name}")
-      Run("ip link set #{dev_name} down")
+    # Calls wicked ifdown if it is the current backend, set the link down
+    # otherwise
+    #
+    # @param [String] name of interface to put down
+    def SetIfaceDown(dev_name)
+      log.info("Setting interface #{dev_name} down")
+      Run("ifdown #{dev_name}")
     end
 
-    # Tries to set all available interfaces up
+    # Tries to set all interfaces up
     #
     # @return [boolean] false if some of interfaces cannot be set up
-    def SetAllLinksUp
+    def SetAllIfacesUp
       interfaces = GetAllInterfaces()
 
       return false if interfaces.empty?
 
-      interfaces.all? { |i| SetLinkUp(i) }
+      interfaces.all? { |i| SetIfaceUp(i) }
     end
 
-    # Tries to set all available interfaces down
+    # Tries to set all interfaces down
     #
     # @return [boolean] false if some of interfaces cannot be set down
-    def SetAllLinksDown
+    def SetAllIfacesDown
       interfaces = GetAllInterfaces()
 
       return false if interfaces.empty?
 
-      interfaces.all? { |i| SetLinkDown(i) }
+      interfaces.all? { |i| SetIfaceDown(i) }
     end
 
     # Checks if given device has carrier
@@ -792,8 +800,8 @@ module Yast
     def phy_connected?(dev_name)
       return true if has_carrier?(dev_name)
 
-      # SetLinkUp ensures that driver is loaded
-      SetLinkUp(dev_name)
+      # SetIfaceUp ensures that driver is loaded
+      SetIfaceUp(dev_name)
 
       # Wait for driver initialization if needed. bnc#876848
       # 5 secs is minimum proposed by sysconfig guys for intel drivers.
