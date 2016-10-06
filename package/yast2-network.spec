@@ -23,10 +23,6 @@ Release:        0
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 Source0:        %{name}-%{version}.tar.bz2
 
-# should be required by devtools
-BuildRequires:  perl-XML-Writer
-BuildRequires:  pkgconfig
-BuildRequires:  rpm
 BuildRequires:  update-desktop-files
 BuildRequires:  yast2-country
 BuildRequires:  yast2-devtools >= 3.1.15
