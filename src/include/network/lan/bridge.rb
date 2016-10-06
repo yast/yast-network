@@ -34,16 +34,6 @@ module Yast
       textdomain "network"
     end
 
-    # It returns an empty string if given IP is 0.0.0.0, otherwise returns
-    # the given IP
-    #
-    # @param [String] ip
-    # @return [String] empty string if given ip is 0.0.0.0; given ip
-    # otherwise
-    def bridge_ip(ip)
-      ip == "0.0.0.0" ? "" : ip.to_s
-    end
-
     # Checks if the given interface is using the old way of config enslaved
     # interfaces with bootproto as static and 0.0.0.0 as IPADDR
     #

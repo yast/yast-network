@@ -109,22 +109,6 @@ describe Yast::LanItems do
     end
   end
 
-  describe "#bridge_ip" do
-
-    it "returns an empty string if no IP is given" do
-      expect(Yast::LanItems.bridge_ip(nil)).to eql("")
-    end
-
-    it "returns an empty string if given IP is 0.0.0.0" do
-      expect(Yast::LanItems.bridge_ip("0.0.0.0")).to eql("")
-    end
-
-    it "returns given IP if it is not 0.0.0.0" do
-      expect(Yast::LanItems.bridge_ip("192.168.0.120")).to eql("192.168.0.120")
-    end
-
-  end
-
   describe "#adapt_bridge_port_config?" do
     it "returns false if no given ports" do
       expect(Yast::LanItems.adapt_bridge_port_config?(nil)).to eql(false)

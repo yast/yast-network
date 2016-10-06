@@ -125,7 +125,7 @@ module Yast
       @wl_default_key = 0
       @wl_nick = ""
 
-      #FIXME: We should unify bridge_ports and bond_slaves variables
+      # FIXME: We should unify bridge_ports and bond_slaves variables
 
       # interfaces attached to bridge (list delimited by ' ')
       @bridge_ports = ""
@@ -1352,11 +1352,6 @@ module Yast
 
           bullets << _("Device Name: %s") % ifcfg_name
           bullets += startmode_overview(key)
-
-          if bridge_index[ifcfg_name]
-            ip = bridge_ip(ip).empty? ? "NONE" : bridge_ip(ip)
-          end
-
           bullets += ip_overview(ip) if ifcfg_conf["STARTMODE"] != "managed"
 
           if ifcfg_type == "wlan" &&
