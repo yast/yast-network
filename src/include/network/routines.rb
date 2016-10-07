@@ -727,20 +727,20 @@ module Yast
       Run("ip link set #{dev_name} down")
     end
 
-    # Calls wicked ifdown with the given interface
-    #
-    # @param [String] name of interface to put down
-    def SetIfaceDown(dev_name)
-      log.info("Setting interface #{dev_name} down")
-      Run("ifdown #{dev_name}")
-    end
-
     # Calls wicked ifup with the given interface
     #
     # @param [String] name of interface to put down
     def SetIfaceUp(dev_name)
       log.info("Setting interface #{dev_name} up")
       Run("ifup #{dev_name}")
+    end
+
+    # Calls wicked ifdown with the given interface
+    #
+    # @param [String] name of interface to put down
+    def SetIfaceDown(dev_name)
+      log.info("Setting interface #{dev_name} down")
+      Run("ifdown #{dev_name}")
     end
 
     # Tries to set all interfaces up
