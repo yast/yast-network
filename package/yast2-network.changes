@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Oct  7 15:12:05 UTC 2016 - ancor@suse.com
+
+- Extra space in the remote administration dialog (bsc#988904)
+
+-------------------------------------------------------------------
 Mon Sep 12 09:40:57 UTC 2016 - kanderssen@suse.com
 
 - Use full interface up / down instead of setting just link 
