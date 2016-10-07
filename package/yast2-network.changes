@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri Oct  7 15:16:11 UTC 2016 - kanderssen@suse.com
+
+- If an interface is not configured yet then just set the interface
+  link, the backend should handle at least the up event.
+  (bsc#991694)
+- 3.1.170.2
+
+-------------------------------------------------------------------
 Fri Oct  7 15:12:05 UTC 2016 - ancor@suse.com
 
 - Extra space in the remote administration dialog (bsc#988904)
@@ -6,10 +14,10 @@ Fri Oct  7 15:12:05 UTC 2016 - ancor@suse.com
 -------------------------------------------------------------------
 Mon Sep 12 09:40:57 UTC 2016 - kanderssen@suse.com
 
-- Use full interface up / down instead of setting just link 
+- Use full interface up / down instead of setting just link
   up / down to allow proper update of interface's configuration.
   (bsc#991694)
-- 3.1.171
+- 3.1.170.1
 
 -------------------------------------------------------------------
 Wed Sep  7 11:23:16 UTC 2016 - mfilka@suse.com

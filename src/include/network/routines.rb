@@ -711,17 +711,31 @@ module Yast
       end
     end
 
-    # Calls wicked ifup if it is the currenct backend, set the link up
-    # otherwise
+    # Wrapper to call 'ip link set up' with the given interface
+    #
+    # @param [String] name of interface to 'set link up'
+    def SetLinkUp(dev_name)
+      log.info("Setting link up for interface #{dev_name}")
+      Run("ip link set #{dev_name} up")
+    end
+
+    # Wrapper to call 'ip link set down' with the given interface
+    #
+    # @param [String] name of interface to 'set link down'
+    def SetLinkDown(dev_name)
+      log.info("Setting link down for interface #{dev_name}")
+      Run("ip link set #{dev_name} down")
+    end
+
+    # Calls wicked ifup with the given interface
     #
     # @param [String] name of interface to put down
     def SetIfaceUp(dev_name)
       log.info("Setting interface #{dev_name} up")
-      Run("ifup #{dev_name} up")
+      Run("ifup #{dev_name}")
     end
 
-    # Calls wicked ifdown if it is the current backend, set the link down
-    # otherwise
+    # Calls wicked ifdown with the given interface
     #
     # @param [String] name of interface to put down
     def SetIfaceDown(dev_name)
@@ -731,24 +745,62 @@ module Yast
 
     # Tries to set all interfaces up
     #
-    # @return [boolean] false if some of interfaces cannot be set up
+    # @return [boolean] false if interfaces are empty or some
+    # interface cannot be bring up
     def SetAllIfacesUp
+      all_up = true
       interfaces = GetAllInterfaces()
 
       return false if interfaces.empty?
 
-      interfaces.all? { |i| SetIfaceUp(i) }
+      interfaces.each { |i| all_up = false if !SetIfaceUp(i) }
+
+      all_up
     end
 
     # Tries to set all interfaces down
     #
-    # @return [boolean] false if some of interfaces cannot be set down
+    # @return [boolean] false if interfaces are empty or some
+    # interface cannot be bring down
     def SetAllIfacesDown
+      all_down = true
       interfaces = GetAllInterfaces()
 
       return false if interfaces.empty?
 
-      interfaces.all? { |i| SetIfaceDown(i) }
+      interfaces.each { |i| all_down = false if !SetIfaceDown(i) }
+
+      all_down
+    end
+
+    # Tries to set up the link of all available interfaces
+    #
+    # @return [boolean] false if interfaces are empty or some
+    # interface cannot be set up
+    def SetAllLinksUp
+      all_up = true
+      interfaces = GetAllInterfaces()
+
+      return false if interfaces.empty?
+
+      interfaces.each { |i| all_up = false if !SetLinkUp(i) }
+
+      all_up
+    end
+
+    # Tries to set the link down of all available interfaces
+    #
+    # @return [boolean] false if interfaces are empty or some
+    # interface cannot be set down
+    def SetAllLinksDown
+      all_down = true
+      interfaces = GetAllInterfaces()
+
+      return false if interfaces.empty?
+
+      interfaces.each { |i| all_down = false if !SetLinkDown(i) }
+
+      all_down
     end
 
     # Checks if given device has carrier
@@ -789,8 +841,8 @@ module Yast
     def phy_connected?(dev_name)
       return true if has_carrier?(dev_name)
 
-      # SetIfaceUp ensures that driver is loaded
-      SetIfaceUp(dev_name)
+      # SetLinkUp ensures that driver is loaded
+      SetLinkUp(dev_name)
 
       # Wait for driver initialization if needed. bnc#876848
       # 5 secs is minimum proposed by sysconfig guys for intel drivers.
