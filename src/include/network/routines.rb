@@ -745,46 +745,62 @@ module Yast
 
     # Tries to set all interfaces up
     #
-    # @return [boolean] false if some of interfaces cannot be set up
+    # @return [boolean] false if interfaces are empty or some
+    # interface cannot be bring up
     def SetAllIfacesUp
+      all_up = true
       interfaces = GetAllInterfaces()
 
       return false if interfaces.empty?
 
-      interfaces.all? { |i| SetIfaceUp(i) }
+      interfaces.each { |i| all_up = false if !SetIfaceUp(i) }
+
+      all_up
     end
 
     # Tries to set all interfaces down
     #
-    # @return [boolean] false if some of interfaces cannot be set down
+    # @return [boolean] false if interfaces are empty or some
+    # interface cannot be bring down
     def SetAllIfacesDown
+      all_down = true
       interfaces = GetAllInterfaces()
 
       return false if interfaces.empty?
 
-      interfaces.all? { |i| SetIfaceDown(i) }
+      interfaces.each { |i| all_down = false if !SetIfaceDown(i) }
+
+      all_down
     end
 
     # Tries to set up the link of all available interfaces
     #
-    # @return [boolean] false if some of interfaces cannot be set up
+    # @return [boolean] false if interfaces are empty or some
+    # interface cannot be set up
     def SetAllLinksUp
+      all_up = true
       interfaces = GetAllInterfaces()
 
       return false if interfaces.empty?
 
-      interfaces.all? { |i| SetLinkUp(i) }
+      interfaces.each { |i| all_up = false if !SetLinkUp(i) }
+
+      all_up
     end
 
     # Tries to set the link down of all available interfaces
     #
-    # @return [boolean] false if some of interfaces cannot be set down
+    # @return [boolean] false if interfaces are empty or some
+    # interface cannot be set down
     def SetAllLinksDown
+      all_down = true
       interfaces = GetAllInterfaces()
 
       return false if interfaces.empty?
 
-      interfaces.all? { |i| SetLinkDown(i) }
+      interfaces.each { |i| all_down = false if !SetLinkDown(i) }
+
+      all_down
     end
 
     # Checks if given device has carrier
