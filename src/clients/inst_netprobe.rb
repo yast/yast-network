@@ -52,7 +52,7 @@ module Yast
 
       if NetHwDetection.running
         # Start interfaces iff running installation. See bnc#395014, bnc#782283 and bnc#792985
-        SetAllIfacesUp()
+        SetAllLinksUp()
       end
 
       Builtins.y2milestone(

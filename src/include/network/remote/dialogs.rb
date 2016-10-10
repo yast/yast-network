@@ -57,6 +57,8 @@ module Yast
 
       allow_buttons = RadioButtonGroup(
         VBox(
+          # Small spacing (bsc#988904)
+          VSpacing(0.3),
           # RadioButton label
           Left(
             RadioButton(
