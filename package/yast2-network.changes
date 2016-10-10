@@ -1,4 +1,15 @@
 -------------------------------------------------------------------
+Mon Oct 17 08:13:38 UTC 2016 - kanderssen@suse.com
+
+- Bridge handling has been improved (bsc#962824).
+  - "NONE" is shown instead of 0.0.0.0 for old bridge configuration
+  - The bridge master is shown in the enslaved interface.
+  - The interfaces overview is updated after a bridge is modified
+  - The interfaces enlsaved are not lost when save in a different
+    tab.
+- 3.2.7
+
+-------------------------------------------------------------------
 Mon Oct 17 07:01:24 UTC 2016 - jreidinger@suse.com
 
 - fix crash when dummy ip is not needed

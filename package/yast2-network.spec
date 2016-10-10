@@ -17,7 +17,7 @@
 
 
 Name:           yast2-network
-Version:        3.2.6
+Version:        3.2.7
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -33,8 +33,8 @@ BuildRequires:  rubygem(yast-rake)
 
 # yast2 v3.1.86: Added ServicesProposal library
 BuildRequires:  yast2 >= 3.1.86
-# yast2 v3.1.135: Fixed Hostname API
-Requires:       yast2 >= 3.1.136
+# Network: Adapt old enslaved interface config
+Requires:       yast2 >= 3.1.206.2
 
 # Product control need xml agent
 BuildRequires:  yast2-xml
