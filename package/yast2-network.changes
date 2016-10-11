@@ -3,7 +3,20 @@ Mon Oct 10 09:11:29 UTC 2016 - mfilka@suse.com
 
 - do not duplicate work of network service at the beginning of
   AutoYaST's second stage - not loading modules and so on.
+- 3.2.4
+
+-------------------------------------------------------------------
+Fri Oct  7 15:16:11 UTC 2016 - kanderssen@suse.com
+
+- If an interface is not configured yet then just set the interface
+  link, the backend should handle at least the up event.
+  (bsc#991694)
 - 3.2.3
+
+-------------------------------------------------------------------
+Fri Oct  7 15:12:05 UTC 2016 - ancor@suse.com
+
+- Extra space in the remote administration dialog (bsc#988904)
 
 -------------------------------------------------------------------
 Thu Oct  6 09:22:25 UTC 2016 - mfilka@suse.com
