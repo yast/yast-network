@@ -1546,7 +1546,7 @@ module Yast
               Host.Update(
                 @hostname_initial,
                 Ops.get_string(@settings, "HOSTNAME", ""),
-                [Ops.get_string(@settings, "IPADDR", "")]
+                Ops.get_string(@settings, "IPADDR", "")
               )
             end
           end
