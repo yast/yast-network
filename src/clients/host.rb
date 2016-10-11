@@ -109,15 +109,9 @@ module Yast
     def ListHandler(_options)
       # Command line output Headline
       # configuration of hosts
-      summary = Ops.add(
-        Ops.add(
-          "\n" + _("Host Configuration Summary:") + "\n\n",
-          RichText.Rich2Plain(Host.Summary)
-        ),
-        "\n"
-      )
+      summary = "\n" + _("Host Configuration Summary:") + "\n\n" +
+        RichText.Rich2Plain(Host.Summary) + "\n"
 
-      Builtins.y2debug("%1", summary)
       CommandLine.Print(summary)
       true
     end

@@ -68,14 +68,9 @@ module Yast
       @hosts.host(address) || []
     end
 
-    # Give address a new list of names.
-    def set_names(address, names)
+    # remove all instances of ip in hosts table
+    def remove_ip(address)
       @hosts.delete_host(address)
-      names.each do |name|
-        canonical, *aliases = name.split(" ")
-        @hosts.add_host(address, canonical, aliases)
-      end
-      @modified = true
     end
 
     # Add another name to the list for address (which may be empty so far)
@@ -338,6 +333,18 @@ module Yast
     publish function: :ResolveHostnameToStaticIPs, type: "void ()"
     publish function: :GetModified, type: "boolean ()"
     publish function: :SetModified, type: "void ()"
+
+  private
+
+    # Give address a new list of names.
+    def set_names(address, names)
+      @hosts.delete_host(address)
+      names.each do |name|
+        canonical, *aliases = name.split(" ")
+        @hosts.add_host(address, canonical, aliases)
+      end
+      @modified = true
+    end
   end
 
   Host = HostClass.new

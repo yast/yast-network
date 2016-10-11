@@ -2396,7 +2396,7 @@ module Yast
     # Removes all records connected to the ip from /etc/hosts
     def drop_hosts(ip)
       log.info("Deleting hostnames assigned to #{ip} from /etc/hosts")
-      Host.set_names(ip, [])
+      Host.remove_ip(ip)
     end
 
     # Exports udev rules for AY profile
