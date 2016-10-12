@@ -54,6 +54,8 @@ Requires:       yast2-packager >= 3.1.47
 # cfa for parsing hosts
 BuildRequires:  rubygem(%rb_default_ruby_abi:cfa)
 Requires:       rubygem(%rb_default_ruby_abi:cfa)
+# lenses are needed to use cfa
+Requires:       augeas-lenses
 
 # testsuite
 BuildRequires:       rubygem(rspec)
