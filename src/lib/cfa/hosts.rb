@@ -15,8 +15,13 @@ module CFA
       super(PARSER, PATH, file_handler: file_handler)
     end
 
+    # returns old format of hosts used in Host module.
+    # @return [Hash<Array<String>>] format is hash where key is ip and value
+    # is array which contain strings and each string represent one line in hosts
+    # table with comma separated hostnames, where first is canonical and rest
+    # are aliases
     def hosts
-      matcher = Matcher.new { |k,v| k =~ /^\d*$/ }
+      matcher = Matcher.new { |k, _v| k =~ /^\d*$/ }
       data.select(matcher).each_with_object({}) do |host, result|
         entry = host[:value]
         result[entry["ipaddr"]] ||= []
@@ -24,6 +29,8 @@ module CFA
       end
     end
 
+    # Returns single entry from hosts for given ip or empty array if not found
+    # @see {#hosts}
     def host(ip)
       hosts = data.select(ip_matcher(ip))
 
@@ -32,6 +39,7 @@ module CFA
       end
     end
 
+    # deletes all occurences of given ip in host table
     def delete_host(ip)
       entries = data.select(ip_matcher(ip))
       if entries.empty?
@@ -95,10 +103,13 @@ module CFA
       data.add(unique_id, entry_line)
     end
 
+    # removes hostname from all entries in hosts table.
+    # if it is only hostname for given ip, ip is removed
+    # if it is canonical part, then first alias is used as canonical hostname
     def remove_hostname(hostname)
       entries = data.select(hostname_matcher(hostname))
-      entries.each do |entry|
-        entry = entry[:value]
+      entries.each do |pair|
+        entry = pair[:value]
         if entry["canonical"] == hostname
           aliases = aliases_for(entry)
           if aliases.empty?
@@ -116,26 +127,32 @@ module CFA
 
   private
 
+    # returns matcher for cfa to find entries with given ip
     def ip_matcher(ip)
-      Matcher.new { |k, v| v["ipaddr"] == ip }
+      Matcher.new { |_k, v| v["ipaddr"] == ip }
     end
 
+    # returns matcher for cfa to find entries with given hostname
     def hostname_matcher(hostname)
-      Matcher.new do |k, v|
+      Matcher.new do |_k, v|
         v["canonical"] == hostname || aliases_for(v).include?(hostname)
       end
     end
 
+    #  returns aliases as array even if there is only one
     def aliases_for(entry)
-      entry["alias[]"] ? entry.collection("alias").map{ |a| a } : [entry["alias"]].compact
+      entry["alias[]"] ? entry.collection("alias").map { |a| a } : [entry["alias"]].compact
     end
 
+    # generate old format string with first canonical and then aliases
+    # all separated by space
     def single_host_entry(entry)
       result = [entry["canonical"]]
       result.concat(aliases_for(entry))
       result.join(" ")
     end
 
+    # helper to generate unique id for cfa entry
     def unique_id
       id = 1
       loop do

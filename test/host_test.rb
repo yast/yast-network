@@ -47,7 +47,7 @@ describe Yast::Host do
   end
 
   describe ".name_map" do
-    # FIXME make value API better
+    # FIXME: make value API better
     it "returns hash with ip as key and hostnames as value" do
       Yast::Host.Read
 
@@ -78,10 +78,10 @@ describe Yast::Host do
       Yast::Host.add_name("10.100.128.72", "test3 test3.suse.cz")
 
       expect(Yast::Host.names("10.100.128.72")).to eq([
-        "pepa.labs.suse.cz pepa pepa2",
-        "test test2.suse.cz",
-        "test3 test3.suse.cz"
-      ])
+                                                        "pepa.labs.suse.cz pepa pepa2",
+                                                        "test test2.suse.cz",
+                                                        "test3 test3.suse.cz"
+                                                      ])
     end
   end
 

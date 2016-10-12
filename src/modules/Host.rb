@@ -21,10 +21,6 @@
 # you may find current contact information at www.novell.com
 #
 # **************************************************************************
-# File:	modules/Host.ycp
-# Package:	Network configuration
-# Summary:	Hosts data (/etc/hosts)
-# Authors:	Michal Svec <msvec@suse.cz>
 #
 require "yast"
 require "yast2/execute"
