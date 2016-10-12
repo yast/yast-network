@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Oct 10 09:11:29 UTC 2016 - mfilka@suse.com
+
+- do not duplicate work of network service at the beginning of
+  AutoYaST's second stage - not loading modules and so on.
+- 3.2.4
+
+-------------------------------------------------------------------
 Fri Oct  7 15:16:11 UTC 2016 - kanderssen@suse.com
 
 - If an interface is not configured yet then just set the interface
