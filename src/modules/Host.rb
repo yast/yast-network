@@ -112,7 +112,6 @@ module Yast
     def Read
       return true if @initialized
 
-
       # read /etc/hosts
       if Ops.greater_than(SCR.Read(path(".target.size"), CFA::Hosts::PATH), 0)
         @hosts = CFA::Hosts.new
@@ -176,7 +175,6 @@ module Yast
       @hosts = CFA::Hosts.new
       imported_hosts = Builtins.eval(Ops.get_map(settings, "hosts", {}))
 
-
       # convert from old format to the new one
       # use ::1 entry as a reference
       if (imported_hosts["::1"] || []).size > 1
@@ -236,12 +234,8 @@ module Yast
       )
       @modified = true
 
-      nick = Ops.get(Hostname.SplitFQ(newhn), 0, "")
-
       # Remove old hostname from hosts
-      if !oldhn.empty?
-        @hosts.remove_hostname(oldhn)
-      end
+      @hosts.remove_hostname(oldhn) if !oldhn.empty?
 
       # Add localhost if missing
       if @hosts.host("127.0.0.1").empty?
@@ -253,12 +247,15 @@ module Yast
       # Omit invalid newhn
       return true if [nil, ""].include?(newhn)
 
+      nick = Hostname.SplitFQ(newhn)[0] || ""
+      nick = nick.empty? ? [] : [nick]
       hosts = @hosts.host(ip)
       if hosts.empty?
-        @hosts.add_host(ip, newhn)
+        @hosts.add_host(ip, newhn, nick)
       else
         canonical, *aliases = hosts.last
         aliases << newhn
+        aliases.concat(nick)
         @hosts.set_host(ip, canonical, aliases)
       end
 

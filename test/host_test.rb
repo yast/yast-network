@@ -71,22 +71,6 @@ describe Yast::Host do
     end
   end
 
-  describe ".set_names" do
-    it "adds new adress with names if address is not yet in hosts table" do
-      Yast::Host.Read
-      Yast::Host.set_names("1.1.1.1", ["test test2.suse.cz"])
-
-      expect(Yast::Host.names("1.1.1.1")).to eq(["test test2.suse.cz"])
-    end
-
-    it "replaces entry with given address if already used" do
-      Yast::Host.Read
-      Yast::Host.set_names("10.100.128.72", ["test test2.suse.cz"])
-
-      expect(Yast::Host.names("10.100.128.72")).to eq(["test test2.suse.cz"])
-    end
-  end
-
   describe ".add_name" do
     it "adds host to hosts entry even if it is already there" do
       Yast::Host.Read
@@ -175,6 +159,14 @@ describe Yast::Host do
 
       tested_ip = "10.0.0.1"
       expect(Yast::Host.name_map[tested_ip]).to eql etc_hosts_new[tested_ip]
+    end
+
+    it "adds alias for added hostname" do
+      Yast::Host.Import("hosts" => etc_hosts)
+      Yast::Host.Update("", "newname.suse.cz", "10.0.0.42")
+
+      tested_ip = "10.0.0.42"
+      expect(Yast::Host.name_map[tested_ip]).to eql ["newname.suse.cz newname"]
     end
   end
 end
