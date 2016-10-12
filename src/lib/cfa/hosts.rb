@@ -6,6 +6,10 @@ require "cfa/matcher"
 require "cfa/augeas_parser"
 
 module CFA
+  # class representings /etc/hosts file model. It provides helper to manipulate
+  # with file. It uses CFA framework and Augeas parser.
+  # @see http://www.rubydoc.info/github/config-files-api/config_files_api/CFA/BaseModel
+  # @see http://www.rubydoc.info/github/config-files-api/config_files_api/CFA/AugeasParser
   class Hosts < BaseModel
     PARSER = AugeasParser.new("hosts.lns")
     PATH = "/etc/hosts".freeze
