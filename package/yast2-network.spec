@@ -51,6 +51,9 @@ Requires:       yast2-storage >= 2.21.11
 # Packages::vnc_packages
 BuildRequires:  yast2-packager >= 3.1.47
 Requires:       yast2-packager >= 3.1.47
+# cfa for parsing hosts
+BuildRequires:  rubygem(%rb_default_ruby_abi:cfa)
+Requires:       rubygem(%rb_default_ruby_abi:cfa)
 
 # testsuite
 BuildRequires:       rubygem(rspec)
