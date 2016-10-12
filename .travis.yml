@@ -11,3 +11,4 @@ script:
     - rake check:syntax
     - rake check:pot
     - COVERAGE=1 rake test:unit
+    - cat ~/.y2log
