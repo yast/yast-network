@@ -44,6 +44,8 @@ module Yast
       @modified = false
 
       @initialized = false
+
+      @hosts = CFA::Hosts.new
     end
 
     # Remove all entries from the host table.
