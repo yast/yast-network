@@ -19,11 +19,27 @@ module CFA
       super(PARSER, PATH, file_handler: file_handler)
     end
 
-    # returns old format of hosts used in Host module.
-    # @return [Hash<Array<String>>] format is hash where key is ip and value
-    # is array which contain strings and each string represent one line in hosts
-    # table with comma separated hostnames, where first is canonical and rest
-    # are aliases
+    # The old format used by {Yast::HostClass}.
+    # @return [Hash{String => Array<String>}] keys are IPs,
+    #   values are lists of lines in /etc/hosts (not names!)
+    #   with whitespace separated hostnames, where the first one is canonical
+    #   and the rest are aliases
+    #
+    #   For example, the file contents
+    #
+    #       1.2.3.4 www.example.org www
+    #       1.2.3.7 log.example.org log
+    #       1.2.3.7 sql.example.org sql
+    #
+    #   is returned as
+    #
+    #       {
+    #         "1.2.3.4" => "www.example.org www"
+    #         "1.2.3.7" => [
+    #           "log.example.org log",
+    #           "sql.example.org sql"
+    #         ]
+    #       }
     def hosts
       matcher = Matcher.new { |k, _v| k =~ /^\d*$/ }
       data.select(matcher).each_with_object({}) do |host, result|
@@ -34,7 +50,8 @@ module CFA
     end
 
     # Returns single entry from hosts for given ip or empty array if not found
-    # @see {#hosts}
+    # @see #hosts
+    # @return [Array<String>]
     def host(ip)
       hosts = data.select(ip_matcher(ip))
 
@@ -44,6 +61,7 @@ module CFA
     end
 
     # deletes all occurences of given ip in host table
+    # @return [void]
     def delete_host(ip)
       entries = data.select(ip_matcher(ip))
       if entries.empty?
@@ -61,8 +79,13 @@ module CFA
       end
     end
 
-    # replaces or adds new host entry. If more then one entry with given ip exists
-    # then replaces the last instance
+    # Replaces or adds a new host entry.
+    # If more than one entry with the given ip exists
+    # then it replaces the last instance.
+    # @param [String] ip
+    # @param [String] canonical
+    # @param [Array<String>] aliases
+    # @return [void]
     def set_host(ip, canonical, aliases = [])
       entries = data.select(ip_matcher(ip))
       if entries.empty?
@@ -86,7 +109,11 @@ module CFA
       end
     end
 
-    # adds new entry, even if it exists
+    # Adds new entry, even if it exists
+    # @param [String] ip
+    # @param [String] canonical
+    # @param [Array<String>] aliases
+    # @return [void]
     def add_host(ip, canonical, aliases = [])
       log.info "adding new entry for ip #{ip}"
       entry_line = AugeasTree.new
@@ -99,9 +126,11 @@ module CFA
       data.add(unique_id, entry_line)
     end
 
-    # removes hostname from all entries in hosts table.
-    # if it is only hostname for given ip, ip is removed
-    # if it is canonical part, then first alias is used as canonical hostname
+    # Removes hostname from all entries in hosts table.
+    # If it is the only hostname for a given ip, the ip is removed
+    # If it is canonical name, then the first alias becomes the canonical hostname
+    # @param [String] hostname
+    # @return [void]
     def remove_hostname(hostname)
       entries = data.select(hostname_matcher(hostname))
       entries.each do |pair|
