@@ -194,8 +194,6 @@ module Yast
 
       # Filter out IPs with empty hostname (so that valid autoyast
       # profile is created)(#335120)
-      # FIXME: this also removes records with empty names from @hosts. Such
-      # side effect is unexpected and should be removed.
       exported_hosts.keep_if { |_, names| !names.empty? }
 
       { "hosts" => exported_hosts }
