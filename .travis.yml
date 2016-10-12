@@ -10,5 +10,6 @@ script:
     - rubocop
     - rake check:syntax
     - rake check:pot
+    - rake test:unit
     - COVERAGE=1 rake test:unit
     - cat ~/.y2log
