@@ -55,6 +55,7 @@ Requires:       yast2-packager >= 3.1.47
 BuildRequires:  rubygem(%rb_default_ruby_abi:cfa)
 Requires:       rubygem(%rb_default_ruby_abi:cfa)
 # lenses are needed to use cfa
+BuildRequires:       augeas-lenses
 Requires:       augeas-lenses
 
 # testsuite
