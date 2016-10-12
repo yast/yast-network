@@ -66,15 +66,7 @@ module CFA
     def set_host(ip, canonical, aliases = [])
       entries = data.select(ip_matcher(ip))
       if entries.empty?
-        log.info "adding new entry for ip #{ip}"
-        entry_line = AugeasTree.new
-        entry_line["ipaddr"] = ip
-        entry_line["canonical"] = canonical
-        aliases_col = entry_line.collection("alias")
-        aliases.each do |a|
-          aliases_col.add(a)
-        end
-        data.add(unique_id, entry_line)
+        add_host(ip, canonical, aliases)
         return
       end
 
