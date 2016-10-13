@@ -78,7 +78,6 @@ describe "NetworkLanComplexInclude" do
     # IPADDR are set just to show that returns the protocol instead of the IP
     let(:dhcp) { { "BOOTPROTO" => "dhcp", "IPADDR" => ipaddr } }
     let(:none) { { "BOOTPROTO" => "none", "IPADDR" => ipaddr } }
-    let(:zero) { { "BOOTPROTO" => "static", "IPADDR" => ipaddr } }
 
     it "returns _('Managed') if the interface is managed by NetworkManager" do
       expect(subject.DeviceProtocol(managed)).to eql(_("Managed"))
