@@ -131,7 +131,7 @@ module CFA
     # If it is canonical name, then the first alias becomes the canonical hostname
     # @param [String] hostname
     # @return [void]
-    def remove_hostname(hostname)
+    def delete_hostname(hostname)
       entries = data.select(hostname_matcher(hostname))
       entries.each do |pair|
         entry = pair[:value]

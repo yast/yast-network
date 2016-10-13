@@ -231,7 +231,7 @@ module Yast
       @modified = true
 
       # Remove old hostname from hosts
-      @hosts.remove_hostname(oldhn) if !oldhn.empty?
+      @hosts.delete_hostname(oldhn) if !oldhn.empty?
 
       # Add localhost if missing
       if @hosts.host("127.0.0.1").empty?
