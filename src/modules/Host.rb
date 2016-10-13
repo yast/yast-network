@@ -51,7 +51,7 @@ module Yast
     # Remove all entries from the host table.
     def clear
       @hosts.hosts.keys.each do |ip|
-        @hosts.delete_host(ip)
+        @hosts.delete_by_ip(ip)
       end
       @modified = true
     end
@@ -68,14 +68,14 @@ module Yast
 
     # remove all instances of ip in hosts table
     def remove_ip(address)
-      @hosts.delete_host(address)
+      @hosts.delete_by_ip(address)
     end
 
     # Add another name to the list for address (which may be empty so far)
     # FIXME: used only in one place, which looks wrong
     def add_name(address, name)
       canonical, *aliases = name.split(" ")
-      @hosts.add_host(address, canonical, aliases)
+      @hosts.add_entry(address, canonical, aliases)
 
       @modified = true
     end
@@ -98,7 +98,7 @@ module Yast
         # Do not add it if product default says no
         # and remove 127.0.02 entry if it exists
 
-        @hosts.delete_host(local_ip)
+        @hosts.delete_by_ip(local_ip)
       end
       @modified = true
 
@@ -235,7 +235,7 @@ module Yast
 
       # Add localhost if missing
       if @hosts.host("127.0.0.1").empty?
-        @hosts.add_host("127.0.0.1", "localhost")
+        @hosts.add_entry("127.0.0.1", "localhost")
       end
 
       # Omit some IP addresses
@@ -247,12 +247,12 @@ module Yast
       nick = nick.empty? ? [] : [nick]
       hosts = @hosts.host(ip)
       if hosts.empty?
-        @hosts.add_host(ip, newhn, nick)
+        @hosts.add_entry(ip, newhn, nick)
       else
         canonical, *aliases = hosts.last
         aliases << newhn
         aliases.concat(nick)
-        @hosts.set_host(ip, canonical, aliases)
+        @hosts.set_entry(ip, canonical, aliases)
       end
 
       true
@@ -331,10 +331,10 @@ module Yast
 
     # Give address a new list of names.
     def set_names(address, names)
-      @hosts.delete_host(address)
+      @hosts.delete_by_ip(address)
       names.each do |name|
         canonical, *aliases = name.split(" ")
-        @hosts.add_host(address, canonical, aliases)
+        @hosts.add_entry(address, canonical, aliases)
       end
       @modified = true
     end

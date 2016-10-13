@@ -62,7 +62,7 @@ module CFA
 
     # deletes all occurences of given ip in host table
     # @return [void]
-    def delete_host(ip)
+    def delete_by_ip(ip)
       entries = data.select(ip_matcher(ip))
       if entries.empty?
         log.info "no entry to delete for ip #{ip}"
@@ -86,10 +86,10 @@ module CFA
     # @param [String] canonical
     # @param [Array<String>] aliases
     # @return [void]
-    def set_host(ip, canonical, aliases = [])
+    def set_entry(ip, canonical, aliases = [])
       entries = data.select(ip_matcher(ip))
       if entries.empty?
-        add_host(ip, canonical, aliases)
+        add_entry(ip, canonical, aliases)
         return
       end
 
@@ -114,7 +114,7 @@ module CFA
     # @param [String] canonical
     # @param [Array<String>] aliases
     # @return [void]
-    def add_host(ip, canonical, aliases = [])
+    def add_entry(ip, canonical, aliases = [])
       log.info "adding new entry for ip #{ip}"
       entry_line = AugeasTree.new
       entry_line["ipaddr"] = ip
