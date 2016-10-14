@@ -70,8 +70,6 @@ Requires:       yast2-ruby-bindings >= 1.0.0
 Obsoletes:      yast2-network-devel-doc
 
 Summary:        YaST2 - Network Configuration
-License:        GPL-2.0
-Group:          System/YaST
 
 %description 
 This package contains the YaST2 component for network configuration.
