@@ -168,5 +168,16 @@ describe Yast::Host do
       tested_ip = "10.0.0.42"
       expect(Yast::Host.name_map[tested_ip]).to eql ["newname.suse.cz newname"]
     end
+
+    it "deletes old hostnames passed as first parameter" do
+      Yast::Host.Read
+      Yast::Host.Update("pepa.labs.suse.cz", "newname.suse.cz", "10.0.0.42")
+      Yast::Host.Write
+
+      content = file.content
+
+      expect(content.lines).to include("10.100.128.72   pepa pepa2\n")
+      expect(content.lines).to include("10.0.0.42\tnewname.suse.cz newname\n")
+    end
   end
 end

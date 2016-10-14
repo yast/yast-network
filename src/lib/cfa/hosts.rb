@@ -140,12 +140,23 @@ module CFA
           if aliases.empty?
             delete_host(entry["ipaddr"])
           else
-            set_host(entry["ipaddr"], aliases.first, aliases[1..-1])
+            entry["canonical"] = aliases.first
+            entry.delete("alias")
+            entry.delete("alias[]")
+            aliases_col = entry.collection("alias")
+            aliases[1..-1].each do |a|
+              aliases_col.add(a)
+            end
           end
         else
           reduced_aliases = aliases_for(entry)
           reduced_aliases.delete(hostname)
-          set_host(entry["ipaddr"], entry["canonical"], reduced_aliases)
+          entry.delete("alias")
+          entry.delete("alias[]")
+          aliases_col = entry.collection("alias")
+          aliases[1..-1].each do |a|
+            aliases_col.add(a)
+          end
         end
       end
     end
