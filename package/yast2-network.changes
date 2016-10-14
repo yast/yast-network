@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Oct 14 14:08:31 UTC 2016 - jreidinger@suse.com
+
+- optimize loading /etc/hosts if there is a lot of entries
+  (bsc#877047)
+- 3.2.0
+
+-------------------------------------------------------------------
 Wed Aug 24 10:54:55 UTC 2016 - mfilka@suse.com
 
 - bnc#993587
