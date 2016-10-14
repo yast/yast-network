@@ -249,7 +249,7 @@ module Yast
       if hosts.empty?
         @hosts.add_entry(ip, newhn, nick)
       else
-        canonical, *aliases = hosts.last
+        canonical, *aliases = hosts.last.split(" ")
         aliases << newhn
         aliases.concat(nick)
         @hosts.set_entry(ip, canonical, aliases)

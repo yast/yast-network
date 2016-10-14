@@ -179,5 +179,15 @@ describe Yast::Host do
       expect(content.lines).to include("10.100.128.72   pepa pepa2\n")
       expect(content.lines).to include("10.0.0.42\tnewname.suse.cz newname\n")
     end
+
+    it "adds hostname as alias if ip have already its entry" do
+      Yast::Host.Read
+      Yast::Host.Update("pepa.labs.suse.cz", "newname.suse.cz", "10.100.128.72")
+      Yast::Host.Write
+
+      content = file.content
+
+      expect(content.lines).to include("10.100.128.72   pepa pepa2 newname.suse.cz newname\n")
+    end
   end
 end
