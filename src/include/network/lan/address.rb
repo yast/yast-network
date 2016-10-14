@@ -1530,7 +1530,7 @@ module Yast
           ip_changed = LanItems.ipaddr !=
             Ops.get_string(@settings, "IPADDR", "")
           if ip_changed
-            Host.set_names(LanItems.ipaddr, [])
+            Host.remove_ip(LanItems.ipaddr)
             Builtins.y2milestone("IP has changed")
           end
 
@@ -1541,12 +1541,12 @@ module Yast
 
           if @hostname_initial != Ops.get_string(@settings, "HOSTNAME", "") || ip_changed
             if Ops.get_string(@settings, "HOSTNAME", "") == ""
-              Host.set_names(LanItems.ipaddr, [])
+              Host.remove_ip(LanItems.ipaddr)
             else
               Host.Update(
                 @hostname_initial,
                 Ops.get_string(@settings, "HOSTNAME", ""),
-                [Ops.get_string(@settings, "IPADDR", "")]
+                Ops.get_string(@settings, "IPADDR", "")
               )
             end
           end
