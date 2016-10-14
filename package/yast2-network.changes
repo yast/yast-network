@@ -3,7 +3,64 @@ Fri Oct 14 14:08:31 UTC 2016 - jreidinger@suse.com
 
 - optimize loading /etc/hosts if there is a lot of entries
   (bsc#877047)
+- 3.2.5
+
+-------------------------------------------------------------------
+Mon Oct 10 09:11:29 UTC 2016 - mfilka@suse.com
+
+- do not duplicate work of network service at the beginning of
+  AutoYaST's second stage - not loading modules and so on.
+- 3.2.4
+
+-------------------------------------------------------------------
+Fri Oct  7 15:16:11 UTC 2016 - kanderssen@suse.com
+
+- If an interface is not configured yet then just set the interface
+  link, the backend should handle at least the up event.
+  (bsc#991694)
+- 3.2.3
+
+-------------------------------------------------------------------
+Fri Oct  7 15:12:05 UTC 2016 - ancor@suse.com
+
+- Extra space in the remote administration dialog (bsc#988904)
+
+-------------------------------------------------------------------
+Thu Oct  6 09:22:25 UTC 2016 - mfilka@suse.com
+
+- Use full interface up / down instead of setting just link
+  up / down to allow proper update of interface's configuration.
+  (bsc#991694)
+- 3.2.2
+
+-------------------------------------------------------------------
+Wed Oct  5 13:49:08 UTC 2016 - ancor@suse.com
+
+- If WIFI is configured during installation, make sure the packages
+  required for WIFI to work are installed in the resulting system
+  (bsc#1002700)
+- 3.2.1
+
+-------------------------------------------------------------------
+Wed Sep 21 09:57:30 UTC 2016 - jreidinger@suse.com
+
+- reduce rpm build time (bsc#999203)
 - 3.2.0
+
+-------------------------------------------------------------------
+Wed Sep  7 11:23:16 UTC 2016 - mfilka@suse.com
+
+- bnc#993587
+  - extended fix from 3.1.168 to cover also virtual interfaces
+- 3.1.170
+
+-------------------------------------------------------------------
+Sat Sep  3 20:02:55 UTC 2016 - mfilka@suse.com
+
+- bnc#988157
+  - disable DHCP autoconfiguration in installer when an interface
+    configuration is provided via linuxrc
+- 3.1.169 
 
 -------------------------------------------------------------------
 Wed Aug 24 10:54:55 UTC 2016 - mfilka@suse.com

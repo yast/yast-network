@@ -11,6 +11,12 @@ RSpec.configure do |c|
   c.include SCRStub
 end
 
+# stub module to prevent its Import
+# Useful for modules from different yast packages, to avoid build dependencies
+def stub_module(name)
+  Yast.const_set name.to_sym, Class.new { def self.fake_method; end }
+end
+
 # A two level section/key => value store
 # to remember values of /etc/sysconfig/network/ifcfg-*
 class SectionKeyValue

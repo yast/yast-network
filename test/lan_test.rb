@@ -210,3 +210,18 @@ describe "LanClass#Modified" do
     expect(Yast::Lan.Modified).to be false
   end
 end
+
+describe "LanClass#readIPv6" do
+  it "reads IPv6 setup from /etc/sysctl.conf" do
+    allow(Yast::FileUtils).to receive(:Exists).and_return(true)
+    string_stub_scr_read("/etc/sysctl.conf")
+
+    expect(Yast::Lan.readIPv6).to be false
+  end
+
+  it "returns true when /etc/sysctl.conf is missing" do
+    allow(Yast::FileUtils).to receive(:Exists).and_return(false)
+
+    expect(Yast::Lan.readIPv6).to be true
+  end
+end

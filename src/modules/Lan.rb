@@ -214,51 +214,27 @@ module Yast
       down
     end
 
+    # Checks local configuration if IPv6 is allowed
+    #
+    # return [Boolean] true when IPv6 is enabled in the system
     def readIPv6
-      @ipv6 = true
+      ipv6 = true
 
-      methods =
-        #         "module" : $[
-        #                 "filelist" : ["ipv6", "50-ipv6.conf"],
-        #                 "filepath" : "/etc/modprobe.d/",
-        #                 "regexp"   : "^[[:space:]]*(install ipv6 /bin/true)"
-        #         ]
-        {
-          "builtin" => {
-            "filelist" => ["sysctl.conf"],
-            "filepath" => "/etc/",
-            "regexp"   => "^[[:space:]]*(net.ipv6.conf.all.disable_ipv6)[[:space:]]*=[[:space:]]*1"
-          }
-        }
+      sysctl_path = "/etc/sysctl.conf"
+      ipv6_regexp = /^[[:space:]]*(net.ipv6.conf.all.disable_ipv6)[[:space:]]*=[[:space:]]*1/
 
-      Builtins.foreach(methods) do |which, method|
-        filelist = Ops.get_list(method, "filelist", [])
-        filepath = Ops.get_string(method, "filepath", "")
-        regexp = Ops.get_string(method, "regexp", "")
-        Builtins.foreach(filelist) do |file|
-          filename = Builtins.sformat("%1/%2", filepath, file)
-          if FileUtils.Exists(filename)
-            Builtins.foreach(
-              Builtins.splitstring(
-                Convert.to_string(SCR.Read(path(".target.string"), filename)),
-                "\n"
-              )
-            ) do |row|
-              if Ops.greater_than(
-                Builtins.size(
-                  Builtins.regexptokenize(String.CutBlanks(row), regexp)
-                ),
-                0
-              )
-                Builtins.y2milestone("IPv6 is disabled by '%1' method.", which)
-                @ipv6 = false
-              end
-            end
-          end
-        end
+      # sysctl.conf is kind of "mandatory" config file, use default
+      if !FileUtils.Exists(sysctl_path)
+        log.error("readIPv6: #{sysctl_path} is missing")
+        return true
       end
 
-      nil
+      lines = (SCR.Read(path(".target.string"), sysctl_path) || []).split("\n")
+      ipv6 = false if lines.any? { |row| row =~ ipv6_regexp }
+
+      log.info("readIPv6: IPv6 is #{ipv6 ? "enabled" : "disabled"}")
+
+      ipv6
     end
 
     # Read all network settings from the SCR
@@ -374,7 +350,7 @@ module Yast
       ProgressNextStage(_("Reading network configuration...")) if @gui
       NetworkConfig.Read
 
-      readIPv6
+      @ipv6 = readIPv6
 
       Builtins.sleep(sl)
 
@@ -1138,10 +1114,14 @@ module Yast
         NetworkService.ReloadOrRestart if Stage.normal || !Linuxrc.usessh
 
       when :remote_installer
+        ifaces = LanItems.getNetworkInterfaces
+
         # last instance handling "special" cases like ssh installation
         # FIXME: most probably not everything will be set properly
         log.info("Running in ssh/vnc installer -> just setting links up")
-        LanItems.reload_config(LanItems.GetAllInterfaces())
+        log.info("Available interfaces: #{ifaces}")
+
+        LanItems.reload_config(ifaces)
       end
     end
   end

@@ -430,7 +430,13 @@ module Yast
       operator = new_key == "NAME" ? "=" : "=="
       current_rule = getUdevFallback
       rule = RemoveKeyFromUdevRule(getUdevFallback, replace_key)
+
+      # NAME="devname" has to be last in the rule.
+      # otherwise SCR agent .udev_persistent.net returns crap
+      # isn't that fun
+      name_tuple = rule.pop
       new_rule = AddToUdevRule(rule, "#{new_key}#{operator}\"#{new_val}\"")
+      new_rule.push(name_tuple)
 
       log.info("ReplaceItemUdev: new udev rule = #{new_rule}")
 
@@ -543,7 +549,7 @@ module Yast
           # removing is less error prone when tracking name changes, so it was chosen.
           item_udev_net = RemoveKeyFromUdevRule(item_udev_net, "KERNEL")
           # setting links down during AY is forbidden bcs it can freeze ssh installation
-          SetLinkDown(dev_name) if !Mode.autoinst
+          SetIfaceDown(dev_name) if !Mode.autoinst
 
           @force_restart = true
         end
@@ -848,7 +854,10 @@ module Yast
       GetDeviceNames(GetNetcardInterfaces())
     end
 
-    # get list of all configurations for "netcard" macro in NetworkInterfaces module
+    # Get list of all configured interfaces
+    #
+    # return [Array] list of strings - interface names (eth0, ...)
+    # FIXME: rename e.g. to configured_interfaces
     def getNetworkInterfaces
       configurations = NetworkInterfaces.FilterDevices("netcard")
       devtypes = NetworkInterfaces.CardRegex["netcard"].to_s.split("|")
