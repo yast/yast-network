@@ -87,6 +87,8 @@ describe Yast::NetworkAutoconfiguration do
       allow(Yast::NetworkInterfaces)
         .to receive(:CleanHotplugSymlink)
       allow(Yast::NetworkInterfaces)
+        .to receive(:adapt_old_config!)
+      allow(Yast::NetworkInterfaces)
         .to receive(:GetTypeFromSysfs).  with(/eth\d+/).      and_return "eth"
       allow(Yast::NetworkInterfaces)
         .to receive(:GetType).           with(/eth\d+/).      and_return "eth"
@@ -165,6 +167,8 @@ describe Yast::NetworkAutoconfiguration do
       allow(Yast::LanItems)
         .to receive(:GetNetcardNames)
         .and_return([IFACE, "enp0s3", "br7"])
+      allow(Yast::NetworkInterfaces)
+        .to receive(:adapt_old_config!)
       allow(Yast::NetworkInterfaces)
         .to receive(:Check)
         .with(IFACE)
