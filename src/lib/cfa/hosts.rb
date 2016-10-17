@@ -161,6 +161,12 @@ module CFA
       end
     end
 
+    # returns true if hosts include entry with given IP
+    def include_ip?(ip)
+      entries = data.select(ip_matcher(ip))
+      !entries.empty?
+    end
+
   private
 
     # returns matcher for cfa to find entries with given ip

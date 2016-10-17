@@ -10,6 +10,7 @@
 #
 
 127.0.0.1       localhost
+127.0.0.2       localhost
 
 # special IPv6 addresses
 ::1             localhost ipv6-localhost ipv6-loopback

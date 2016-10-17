@@ -94,7 +94,7 @@ module Yast
 
         fqhostname = Hostname.MergeFQ(DNS.hostname, DNS.domain)
         set_names(local_ip, ["#{fqhostname} #{DNS.hostname}"])
-      elsif Builtins.haskey(@hosts, local_ip)
+      elsif @hosts.include_ip?(local_ip)
         # Do not add it if product default says no
         # and remove 127.0.02 entry if it exists
 
