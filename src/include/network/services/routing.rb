@@ -140,6 +140,13 @@ module Yast
       }
     end
 
+    def valid_netmask?(netmask)
+      return true if Netmask.Check(netmask)
+      return true if netmask.start_with?("/") && netmask[1..-1] =~ /\A\d+\z/
+
+      return false
+    end
+
     # Route edit dialog
     # @param [Fixnum] id id of the edited route
     # @param [Yast::Term] entry edited entry
@@ -254,7 +261,7 @@ module Yast
         end
         route = Builtins.add(route, val)
         val = Convert.to_string(UI.QueryWidget(Id(:genmask), :Value))
-        if val != "-" && val != "0.0.0.0" && !Netmask.Check(val[1..-1])
+        if val != "-" && val != "0.0.0.0" && !valid_netmask?(val)
           # Popup::Error text
           Popup.Error(_("Subnetmask is invalid."))
           UI.SetFocus(Id(:genmask))
