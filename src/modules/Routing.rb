@@ -205,6 +205,35 @@ module Yast
       write_ipv6_forwarding(@Forward_v6)
     end
 
+    # Converts routes config as read from system into well-defined format
+    #
+    # Expects list of hashes as param. Hash should contain keys "destination",
+    # "gateway", "netmask", "device", "extrapara"
+    #
+    # Currently it converts "destination" in CIDR format (<ip>/<prefix_len>)
+    # and keeps just <ip> part in "destination" and puts "<prefix_len>" into
+    # "netmask"
+    #
+    # @param <List> list of hashes which keeps routes configuration
+    #
+    # @return list of converted hashes
+    def normalize_routes(routes)
+      return routes if routes.nil? || routes.empty?
+
+      routes.map do |route|
+        subnet, prefix = route["destination"].split("/")
+
+        if !prefix.nil?
+          route["destination"] = subnet
+          route["netmask"] = "/#{netmask}"
+        end
+
+        route
+      end
+
+      routes
+    end
+
     # Read routing settings
     # If no routes, sets a default gateway from Detection
     # @return true if success
@@ -234,6 +263,8 @@ module Yast
       end
 
       @Routes.uniq!
+
+      @Routes = normalize_routes(@Routes)
       log.info("Routes=#{@Routes}")
 
       ReadIPForwarding()
