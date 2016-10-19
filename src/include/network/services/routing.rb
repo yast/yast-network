@@ -86,7 +86,7 @@ module Yast
                       # Table header 2/4
                       _("Gateway"),
                       # Table header 3/4
-                      _("Genmask"),
+                      _("Netmask"),
                       # Table header 4/4
                       _("Device"),
                       # Table header 5/4
@@ -168,7 +168,7 @@ module Yast
                   InputField(
                     Id(:genmask),
                     Opt(:hstretch),
-                    _("Ge&nmask"),
+                    _("&Netmask"),
                     Ops.get_string(entry, 3, "-")
                   ))
               ),
