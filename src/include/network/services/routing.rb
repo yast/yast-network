@@ -218,11 +218,8 @@ module Yast
         Ops.add(Ops.add(IP.ValidChars, "default"), "/-")
       )
       UI.ChangeWidget(Id(:gateway), :ValidChars, Ops.add(IP.ValidChars, "-"))
-      UI.ChangeWidget(
-        Id(:genmask),
-        :ValidChars,
-        Ops.add(Netmask.ValidChars, "-")
-      )
+      # user can enter IPv4 netmask or prefix length (has to start with '/')
+      UI.ChangeWidget(Id(:genmask), :ValidChars, Netmask.ValidChars + "-/")
 
       if entry == term(:empty)
         UI.SetFocus(Id(:destination))
@@ -234,7 +231,6 @@ module Yast
       route = nil
 
       loop do
-        route = nil
         ret = UI.UserInput
         break if ret != :ok
 
@@ -258,7 +254,7 @@ module Yast
         end
         route = Builtins.add(route, val)
         val = Convert.to_string(UI.QueryWidget(Id(:genmask), :Value))
-        if val != "-" && val != "0.0.0.0" && !Netmask.Check(val)
+        if val != "-" && val != "0.0.0.0" && !Netmask.Check(val[1..-1])
           # Popup::Error text
           Popup.Error(_("Subnetmask is invalid."))
           UI.SetFocus(Id(:genmask))
