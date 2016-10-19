@@ -424,15 +424,43 @@ module Yast
       false
     end
 
+    # Mangles route definition for storing in routes file
+    #
+    # Basically netmask field is obsolete, so it converts
+    # the record to use CIDR notation if netmask is defined.
+    #
+    # For details see "man routes".
+    def convert_route_conf(route)
+      return route if route["netmask"].empty? || route["netmask"] == "-"
+
+      dest = route["destination"]
+      netmask = route["netmask"]
+
+      if Netmask.Check4(netmask)
+        cidr = Netmask.ToBits(netmask)
+      elsif netmask.start_with?("/")
+        cidr = netmask[1..-1]
+      else
+        # if it is netmask then long netmask is not supported for IPv6
+        # if it is prefix length (CIDR), then prefix it has to be prefixed by '/'
+        raise ArgumentError, "Invalid netmask or prefix length"
+      end
+
+      route["destination"] = "#{dest}/#{cidr}"
+      route["netmask"] = "-"
+
+      route
+    end
+
     def storeRouting(_key, _event)
       route_conf = @r_items.map do |route|
-        {
+        convert_route_conf(
           "destination" => route[1].to_s,
           "gateway"     => route[2].to_s,
           "netmask"     => route[3].to_s,
           "device"      => route[4].to_s,
           "extrapara"   => route[5].to_s
-        }
+        )
       end
 
       @defgw = UI.QueryWidget(Id(:gw), :Value)
@@ -440,27 +468,21 @@ module Yast
       @defgw6 = UI.QueryWidget(Id(:gw6), :Value)
       @defgwdev6 = UI.QueryWidget(Id(:gw6dev), :Value)
 
-      if @defgw != ""
-        route_conf = Builtins.add(
-          route_conf,
-          "destination" => "default",
-          "gateway"     => @defgw,
-          "netmask"     => "-",
-          "device"      => @defgwdev
-        )
-      end
+      route_conf << {
+        "destination" => "default",
+        "gateway"     => @defgw,
+        "netmask"     => "-",
+        "device"      => @defgwdev
+      } if !@defgw.empty?
 
-      if @defgw6 != ""
-        route_conf = Builtins.add(
-          route_conf,
-          "destination" => "default",
-          "gateway"     => @defgw6,
-          "netmask"     => "-",
-          "device"      => @defgwdev6
-        )
-      end
+      route_conf << {
+        "destination" => "default",
+        "gateway"     => @defgw6,
+        "netmask"     => "-",
+        "device"      => @defgwdev6
+      } if !@defgw6.empty?
 
-      Routing.Routes = deep_copy(route_conf)
+      Routing.Routes = route_conf
       Routing.Forward_v4 = UI.QueryWidget(Id(:forward_v4), :Value)
       Routing.Forward_v6 = UI.QueryWidget(Id(:forward_v6), :Value)
 
