@@ -228,7 +228,10 @@ describe Yast::Routing do
       { ip_forward_v4: "1", ip_forward_v6: "0" }
     ].freeze
 
-    MOCKED_ROUTES = [{ "1" => "r1" }, { "2" => "r2" }].freeze
+    MOCKED_ROUTES = [
+      { "destination" => "r1" },
+      { "destination" => "r2" }
+    ].freeze
 
     CONFIGS_OS.each do |config|
       ipv4 = config[:ip_forward_v4]

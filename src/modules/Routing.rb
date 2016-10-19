@@ -225,7 +225,7 @@ module Yast
 
         if !prefix.nil?
           route["destination"] = subnet
-          route["netmask"] = "/#{netmask}"
+          route["netmask"] = "/#{prefix}"
         end
 
         route
