@@ -425,13 +425,13 @@ module Yast
     end
 
     def storeRouting(_key, _event)
-      route_conf = Builtins.maplist(@r_items) do |e|
+      route_conf = @r_items.map do |route|
         {
-          "destination" => Ops.get_string(e, 1, ""),
-          "gateway"     => Ops.get_string(e, 2, ""),
-          "netmask"     => Ops.get_string(e, 3, ""),
-          "device"      => Ops.get_string(e, 4, ""),
-          "extrapara"   => Ops.get_string(e, 5, "")
+          "destination" => route[1].to_s,
+          "gateway"     => route[2].to_s,
+          "netmask"     => route[3].to_s,
+          "device"      => route[4].to_s,
+          "extrapara"   => route[5].to_s
         }
       end
 
