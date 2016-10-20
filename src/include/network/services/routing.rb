@@ -144,7 +144,7 @@ module Yast
       return true if Netmask.Check(netmask)
       return true if netmask.start_with?("/") && netmask[1..-1] =~ /\A\d+\z/
 
-      return false
+      false
     end
 
     # Route edit dialog
