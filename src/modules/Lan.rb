@@ -951,7 +951,7 @@ module Yast
           Ops.set(NetworkInterfaces.Current, "BRIDGE", "yes")
           Ops.set(NetworkInterfaces.Current, "BRIDGE_PORTS", ifcfg)
           Ops.set(NetworkInterfaces.Current, "BRIDGE_STP", "off")
-          Ops.set(NetworkInterfaces.Current, "BRIDGE_FORWARDDELAY", "0")
+          Ops.set(NetworkInterfaces.Current, "BRIDGE_FORWARDDELAY", "2")
           # hardcode startmode (bnc#450670), it can't be ifplugd!
           Ops.set(NetworkInterfaces.Current, "STARTMODE", "auto")
           # remove description - will be replaced by new (real) one
