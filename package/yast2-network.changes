@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Oct 21 11:01:04 UTC 2016 - kanderssen@suse.com
+- Use '2' as the default value for forward delay in bridges created
+  by the virt proposal (bsc#988278)
+- 3.2.8
+
+-------------------------------------------------------------------
 Mon Oct 17 08:13:38 UTC 2016 - kanderssen@suse.com
 
 - Bridge handling has been improved (bsc#962824).
