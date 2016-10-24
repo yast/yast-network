@@ -16,9 +16,9 @@ describe "RoutingHelpers" do
   describe "#convert_route_conf" do
     let(:common_route_conf_part) do
       {
-        "gateway"     => "1.1.1.1",
-        "device"      => "-",
-        "extrapara"   => ""
+        "gateway"   => "1.1.1.1",
+        "device"    => "-",
+        "extrapara" => ""
       }
     end
     let(:correct_route_conf) do
