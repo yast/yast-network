@@ -140,8 +140,15 @@ module Yast
       }
     end
 
+    # Validates user's input obtained from Netmask field
+    #
+    # It currently allows to use netmask for IPv4 (e.g. 255.0.0.0) or
+    # prefix length. If prefix length is used it has to start with '/'.
+    # For IPv6 network, only prefix length is allowed.
+    #
+    # param [string] netmask or /<prefix length>
     def valid_netmask?(netmask)
-      return true if Netmask.Check(netmask)
+      return true if Netmask.Check4(netmask)
       return true if netmask.start_with?("/") && netmask[1..-1] =~ /\A\d+\z/
 
       false
