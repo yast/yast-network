@@ -220,7 +220,7 @@ module Yast
     def normalize_routes(routes)
       return routes if routes.nil? || routes.empty?
 
-      routes.map do |route|
+      deep_copy(routes).map do |route|
         subnet, prefix = route["destination"].split("/")
 
         if !prefix.nil?
@@ -230,8 +230,6 @@ module Yast
 
         route
       end
-
-      routes
     end
 
     # Read routing settings

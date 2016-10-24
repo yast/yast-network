@@ -151,8 +151,9 @@ module Yast
       return false if netmask.nil? || netmask.empty?
       return true if Netmask.Check4(netmask)
 
-      prefix = netmask[1..-1].to_i
-      return true if netmask.start_with?("/") && prefix.between?(1, 128)
+      if netmask.start_with?("/")
+        return true if netmask[1..-1].to_i.between?(1, 128)
+      end
 
       false
     end
@@ -456,7 +457,7 @@ module Yast
       else
         # if it is netmask then long netmask is not supported for IPv6
         # if it is prefix length (CIDR), then prefix it has to be prefixed by '/'
-        raise ArgumentError, "Invalid netmask or prefix length"
+        raise ArgumentError, "Invalid netmask or prefix length: #{netmask}"
       end
 
       route["destination"] = "#{dest}/#{cidr}"
