@@ -148,8 +148,11 @@ module Yast
     #
     # param [string] netmask or /<prefix length>
     def valid_netmask?(netmask)
+      return false if netmask.nil? || netmask.empty?
       return true if Netmask.Check4(netmask)
-      return true if netmask.start_with?("/") && netmask[1..-1] =~ /\A\d+\z/
+
+      prefix = netmask[1..-1].to_i
+      return true if netmask.start_with?("/") && prefix.between?(1, 128)
 
       false
     end
