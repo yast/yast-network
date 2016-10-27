@@ -738,15 +738,14 @@ module Yast
         href_nm = "lan--nm-disable"
         # network mode: the interfaces are controlled by the user
         status_nm = _("Interfaces controlled by NetworkManager")
-        # disable NetworkManager applet
-        link_nm = Hyperlink(href_nm, _("Disable NetworkManager"))
+        # switch from network manager to wicked
+        link_nm = Hyperlink(href_nm, _("Switch to Wicked"))
       else
         href_nm = "lan--nm-enable"
         # network mode
-        status_nm = _("Traditional network setup with NetControl - ifup")
-        # enable NetworkManager applet
-        # for virtual network proposal (bridged) don't show hyperlink to enable networkmanager
-        link_nm = Hyperlink(href_nm, _("Enable NetworkManager"))
+        status_nm = _("Traditional network setup with Wicked")
+        # switch from wicked to network manager
+        link_nm = Hyperlink(href_nm, _("Switch to NetworkManager"))
       end
 
       if @ipv6
@@ -754,13 +753,13 @@ module Yast
         # ipv6 support is enabled
         status_v6 = _("Support for IPv6 protocol is enabled")
         # disable ipv6 support
-        link_v6 = Hyperlink(href_v6, _("Disable IPv6"))
+        link_v6 = Hyperlink(href_v6, _("disable"))
       else
         href_v6 = "ipv6-enable"
         # ipv6 support is disabled
         status_v6 = _("Support for IPv6 protocol is disabled")
         # enable ipv6 support
-        link_v6 = Hyperlink(href_v6, _("Enable IPv6"))
+        link_v6 = Hyperlink(href_v6, _("enable"))
       end
       descr = Builtins.sformat(
         "<ul><li>%1: %2 (%3)</li></ul> \n\t\t\t     <ul><li>%4 (%5)</li></ul>",
