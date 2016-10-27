@@ -723,15 +723,7 @@ module Yast
     # proposal (NetworkManager + ipv6)
     # @return [rich text, links]
     def SummaryGeneral
-      status_nm = nil
-      status_v6 = nil
-      status_virt_net = nil
-      href_nm = nil
-      href_v6 = nil
-      href_virt_net = nil
-      link_nm = nil
-      link_v6 = nil
-      link_virt_net = nil
+      # header for network summary list
       header_nm = _("Network Mode")
 
       if NetworkService.is_network_manager
@@ -769,16 +761,7 @@ module Yast
         status_v6,
         link_v6
       )
-      if !link_virt_net.nil?
-        descr = Builtins.sformat(
-          "%1\n\t\t\t\t\t\t<ul><li>%2 (%3)</li></ul>",
-          descr,
-          status_virt_net,
-          link_virt_net
-        )
-      end
       links = [href_nm, href_v6]
-      links = Builtins.add(links, href_virt_net) if !href_virt_net.nil?
       [descr, links]
     end
 
