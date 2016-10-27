@@ -190,4 +190,41 @@ describe Yast::Host do
       expect(content.lines).to include("10.100.128.72   pepa pepa2 newname.suse.cz newname\n")
     end
   end
+
+  describe ".EnsureHostnameResolvable" do
+    context "need dummy ip" do
+      before do
+        allow(Yast::DNS).to receive(:write_hostname).and_return(true)
+      end
+
+      it "sets entry for 127.0.0.2 to hostname and hostname with domain" do
+        allow(Yast::DNS).to receive(:hostname).and_return("localmachine")
+        allow(Yast::DNS).to receive(:domain).and_return("domain.local")
+        Yast::Host.Read
+        Yast::Host.EnsureHostnameResolvable
+        Yast::Host.Write
+
+        content = file.content
+
+        expect(content.lines).to include("127.0.0.2       localmachine.domain.local localmachine\n")
+      end
+    end
+
+    context "do not need dummy ip" do
+      before do
+        allow(Yast::DNS).to receive(:write_hostname).and_return(false)
+      end
+
+      it "deletes entry for 127.0.0.2" do
+        Yast::Host.Read
+        Yast::Host.EnsureHostnameResolvable
+        Yast::Host.Write
+
+        content = file.content
+
+        expect(content.lines.grep(/^127.0.0.2/)).to be_empty
+      end
+
+    end
+  end
 end
