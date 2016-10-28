@@ -131,7 +131,7 @@ module Yast
         "DHCP_HOSTNAME"   => {
           "widget"        => :custom,
           "custom_widget" => HBox(
-            CheckBox(Id("DHCP_HOSTNAME"), _("&Change Hostname via DHCP"), true),
+            CheckBox(Id("DHCP_HOSTNAME"), _("&Change Hostname via DHCP default"), true),
             ReplacePoint(Id("dh_host_text"), Empty())
           ),
           # help

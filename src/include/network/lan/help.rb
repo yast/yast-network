@@ -123,7 +123,9 @@ module Yast
                                  "also a hostname via DHCP.  The hostname will be set automatically by the DHCP client.\n" \
                                  "However, changing the hostname at runtime may confuse the graphical desktop. \n" \
                                  "Therefore, disable this option if you connect to different networks that assign \n" \
-                                 "different hostnames.</p> "
+                                 "different hostnames. To avoid collisions in multi homed systems, you should enable the \n" \
+                                 "option for just one interface. Default value is used for interfaces which don't have the \n" \
+                                 "option configured.</p> "
                                ),
         "write_hostname"    =>
                                _(
