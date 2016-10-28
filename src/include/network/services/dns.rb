@@ -661,57 +661,6 @@ module Yast
       Popup.ConfirmAbort(:incomplete)
     end
 
-    def HostnameDialog
-      @has_dhcp = true
-
-      @hn_settings = InitSettings()
-
-      functions = {
-        "init"  => fun_ref(method(:InitHnWidget), "void (string)"),
-        "store" => fun_ref(method(:StoreHnWidget), "void (string, map)"),
-        :abort  => fun_ref(method(:ReallyAbortInst), "boolean ()")
-      }
-      contents = HSquash(
-        # Frame label
-        Frame(
-          _("Hostname and Domain Name"),
-          VBox(
-            HBox("HOSTNAME", HSpacing(1), "DOMAIN"),
-            Left("DHCP_HOSTNAME"),
-            Left("WRITE_HOSTNAME")
-          )
-        )
-      )
-
-      ret = CWM.ShowAndRun(
-        "widget_descr"       => @widget_descr_dns,
-        "contents"           => contents,
-        # dialog caption
-        "caption"            => _("Hostname and Domain Name"),
-        "back_button"        => Label.BackButton,
-        "next_button"        => Label.NextButton,
-        "fallback_functions" => functions,
-        "disable_buttons"    => GetInstArgs.enable_back ? [] : ["back_button"]
-      )
-
-      if ret == :next
-        # Pre-populate resolv.conf search list with current domain name
-        # but only if none exists so far
-        current_domain = Ops.get_string(@hn_settings, "DOMAIN", "")
-
-        # Need to modify hn_settings explicitly as SEARCHLIST_S widget
-        # does not exist in this dialog, thus StoreHnWidget won't do it
-        # #438167
-        if DNS.searchlist == [] && current_domain != "site"
-          Ops.set(@hn_settings, "SEARCHLIST_S", current_domain)
-        end
-
-        StoreSettings(@hn_settings)
-      end
-
-      ret
-    end
-
     # Standalone dialog only - embedded one is handled separately
     # via CWMTab
     def DNSMainDialog(_standalone)
