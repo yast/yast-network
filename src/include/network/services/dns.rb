@@ -238,10 +238,17 @@ module Yast
               "HOSTNAME_GLOBAL", # global help, init, store for all dialog
               HSpacing(1),
               "DOMAIN"
-            ),
-            # CheckBox label
-            Left("DHCP_HOSTNAME"),
-            Left("WRITE_HOSTNAME")
+            )
+          )
+        ),
+        Frame(
+          _("Hostname via DHCP"),
+          VBox(
+            HBox(
+              # CheckBox label
+              Left("DHCP_HOSTNAME"),
+              Left("WRITE_HOSTNAME")
+            )
           )
         ),
         VSpacing(0.49),
