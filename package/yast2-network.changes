@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Oct 27 11:55:10 UTC 2016 - jreidinger@suse.com
+
+- Make network summary consistent with other summaries
+  (bsc#745940)
+- 3.2.9
+
+-------------------------------------------------------------------
 Tue Oct 25 13:25:53 UTC 2016 - mvidner@suse.com
 
 - Fixed a hardcoded interface name in a CLI test (bsc#1006799)
