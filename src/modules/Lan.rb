@@ -734,13 +734,13 @@ module Yast
         # network mode: the interfaces are controlled by the user
         status_nm = _("Interfaces controlled by NetworkManager")
         # switch from network manager to wicked
-        link_nm = Hyperlink(href_nm, _("Switch to Wicked"))
+        link_nm = Hyperlink(href_nm, _("switch to Wicked"))
       else
         href_nm = "lan--nm-enable"
         # network mode
         status_nm = _("Traditional network setup with Wicked")
         # switch from wicked to network manager
-        link_nm = Hyperlink(href_nm, _("Switch to NetworkManager"))
+        link_nm = Hyperlink(href_nm, _("switch to NetworkManager"))
       end
 
       if @ipv6
