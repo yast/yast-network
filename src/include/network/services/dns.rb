@@ -131,12 +131,26 @@ module Yast
         "DHCP_HOSTNAME"   => {
           "widget"        => :custom,
           "custom_widget" => HBox(
-            CheckBox(Id("DHCP_HOSTNAME"), _("&Change Hostname via DHCP default"), true),
+            CheckBox(Id("DHCP_HOSTNAME"), _("Change Hostname via DHCP default"), true),
             ReplacePoint(Id("dh_host_text"), Empty())
           ),
           # help
           "help"          => Ops.get_string(@help, "dhcp_hostname", ""),
           "init"          => fun_ref(method(:InitDhcpHostname), "void (string)")
+        },
+        "DHCP_IFACES"     => {
+          "widget"        => :custom,
+          "custom_widget" => HBox(
+            Label(_("&DHCP interface used for hostname setup")),
+            HSpacing(2),
+            ComboBox(
+              Id("DHCP_IFACES"),
+              "",
+              []
+            ),
+            ReplacePoint(Id("dh_host_text"), Empty())
+          ),
+          "init"          => fun_ref(method(:InitDhcpIfaces), "void (string)")
         },
         "WRITE_HOSTNAME"  => {
           "widget" => :checkbox,
@@ -244,9 +258,9 @@ module Yast
         Frame(
           _("Hostname via DHCP"),
           VBox(
-            HBox(
-              # CheckBox label
+            VBox(
               Left("DHCP_HOSTNAME"),
+              Left("DHCP_IFACES"),
               Left("WRITE_HOSTNAME")
             )
           )
@@ -279,6 +293,7 @@ module Yast
             "HOSTNAME_GLOBAL",
             "DOMAIN",
             "DHCP_HOSTNAME",
+            "DHCP_IFACES",
             "WRITE_HOSTNAME",
             "MODIFY_RESOLV",
             "PLAIN_POLICY",
@@ -455,6 +470,11 @@ module Yast
           Ops.get_boolean(@hn_settings, "DHCP_HOSTNAME", true)
         )
       end
+      nil
+    end
+
+    # Init handler for DHCP_IFACES
+    def InitDhcpIfaces(_key)
       nil
     end
 
