@@ -131,17 +131,18 @@ module Yast
         "DHCP_HOSTNAME"   => {
           "widget"        => :custom,
           "custom_widget" => HBox(
-            CheckBox(Id("DHCP_HOSTNAME"), _("Change Hostname via DHCP default"), true),
+            CheckBox(Id("DHCP_HOSTNAME"), Opt(:notify), _("Change Hostname via DHCP"), true),
             ReplacePoint(Id("dh_host_text"), Empty())
           ),
           # help
           "help"          => Ops.get_string(@help, "dhcp_hostname", ""),
-          "init"          => fun_ref(method(:InitDhcpHostname), "void (string)")
+          "init"          => fun_ref(method(:InitDhcpHostname), "void (string)"),
+          "handle"        => fun_ref(method(:HandleDhcpHostname), "symbol (string, map)")
         },
         "DHCP_IFACES"     => {
           "widget"        => :custom,
           "custom_widget" => HBox(
-            Label(_("&DHCP interface used for hostname setup")),
+            Label(_("DHCP interface used for hostname setup")),
             HSpacing(2),
             ComboBox(
               Id("DHCP_IFACES"),
@@ -151,6 +152,20 @@ module Yast
             ReplacePoint(Id("dh_host_text"), Empty())
           ),
           "init"          => fun_ref(method(:InitDhcpIfaces), "void (string)")
+        },
+        "DHCP_DEFAULT"    => {
+          "widget"        => :custom,
+          "custom_widget" => HBox(
+            Label(_("Default for interfaces without explicit setup")),
+            HSpacing(2),
+            ComboBox(
+              Id("DHCP_DEFAULT"),
+              "",
+              []
+            ),
+            ReplacePoint(Id("dh_host_text"), Empty())
+          ),
+          "init"          => fun_ref(method(:InitDhcpDefault), "void (string)")
         },
         "WRITE_HOSTNAME"  => {
           "widget" => :checkbox,
@@ -259,9 +274,10 @@ module Yast
           _("Hostname via DHCP"),
           VBox(
             VBox(
+              Left("WRITE_HOSTNAME"),
               Left("DHCP_HOSTNAME"),
               Left("DHCP_IFACES"),
-              Left("WRITE_HOSTNAME")
+              Left("DHCP_DEFAULT")
             )
           )
         ),
@@ -294,6 +310,7 @@ module Yast
             "DOMAIN",
             "DHCP_HOSTNAME",
             "DHCP_IFACES",
+            "DHCP_DEFAULT",
             "WRITE_HOSTNAME",
             "MODIFY_RESOLV",
             "PLAIN_POLICY",
@@ -459,22 +476,51 @@ module Yast
     # @param event	the event being handled
     # @return nil so that the dialog loops on
     def InitDhcpHostname(_key)
-      UI.ChangeWidget(Id("DHCP_HOSTNAME"), :Enabled, @has_dhcp)
-      if !@has_dhcp
-        UI.ReplaceWidget(Id("dh_host_text"), Label(_("No interface with dhcp")))
-      else
-        # the hostname dialog proposes to update it by DHCP on a laptop (#326102)
-        UI.ChangeWidget(
-          Id("DHCP_HOSTNAME"),
-          :Value,
-          Ops.get_boolean(@hn_settings, "DHCP_HOSTNAME", true)
-        )
-      end
+      UI.ChangeWidget(Id("DHCP_HOSTNAME"), :Enabled, has_dhcp?)
+
+      # TODO: extend this
+      dhcp_hostname = @hn_settings.fetch("DHCP_HOSTNAME", false)
+      UI.ChangeWidget(Id("DHCP_HOSTNAME"), :Value, dhcp_hostname)
+    end
+
+    def HandleDhcpHostname(_key, _event)
+      UI.ChangeWidget(Id("DHCP_IFACES"), :Enabled, use_dhcp_hostname?)
+      UI.ChangeWidget(Id("DHCP_DEFAULT"), :Enabled, use_dhcp_hostname?)
+
       nil
+    end
+
+    def use_dhcp_hostname?
+      UI.QueryWidget(Id("DHCP_HOSTNAME"), :Value)
     end
 
     # Init handler for DHCP_IFACES
     def InitDhcpIfaces(_key)
+      UI.ChangeWidget(Id("DHCP_IFACES"), :Enabled, use_dhcp_hostname?)
+
+      nil
+    end
+
+    # Init handler for DHCP_DEFAULT
+    def InitDhcpDefault(_key)
+      UI.ChangeWidget(Id("DHCP_DEFAULT"), :Enabled, use_dhcp_hostname?)
+
+      items = ["yes", "no"].map do |item|
+        # TODO: fix inconsistency in naming
+        syscfg = @hn_settings.fetch("DHCP_HOSTNAME", false) ? "yes" : "no"
+        Item(
+          Id(item),
+          _(item),
+          syscfg == item
+        )
+      end
+
+      UI.ChangeWidget(
+        Id("DHCP_DEFAULT"),
+        :Items,
+        items
+      )
+
       nil
     end
 
