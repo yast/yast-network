@@ -745,12 +745,12 @@ module Yast
 
       ret
     end
+
+    # Checks if any interface is configured to use DHCP
+    #
+    # @return [Boolean] true when an interface uses DHCP config
+    def has_dhcp?
+      !LanItems.find_dhcp_ifaces.empty?
+    end
   end
-
-  private
-
-  def has_dhcp?
-    !LanItems.find_dhcp_ifaces.empty?
-  end
-
 end
