@@ -65,7 +65,6 @@ module Yast
       @widget_descr_dns = {
         "HOSTNAME"        => {
           "widget"            => :textentry,
-          # textentry label
           "label"             => Label.HostName,
           "opt"               => [],
           "help"              => Ops.get_string(@help, "hostname_global", ""),
@@ -83,7 +82,6 @@ module Yast
         },
         "HOSTNAME_GLOBAL" => {
           "widget" => :empty,
-          # #91202
           "init"   => fun_ref(
             method(:initHostnameGlobal),
             "void (string)"
@@ -95,14 +93,12 @@ module Yast
         },
         "DOMAIN"          => {
           "widget"            => :textentry,
-          # textentry label
           "label"             => _("&Domain Name"),
           "opt"               => [],
           # Do nothing (the widget doesnt have notify anyway)
           # In particular do not disable the host and domain name widgets,
           # setting of FQDN should be possible even if DHCP overrides it.
           # N#28427, N#63423.
-          # "handle": nil,
           "valid_chars"       => Hostname.ValidCharsDomain(
           ),
           "validate_type"     => :function_no_popup,
@@ -122,7 +118,6 @@ module Yast
             CheckBox(Id("DHCP_HOSTNAME"), Opt(:notify), _("Change Hostname via DHCP"), true),
             ReplacePoint(Id("dh_host_text"), Empty())
           ),
-          # help
           "help"          => Ops.get_string(@help, "dhcp_hostname", ""),
           "init"          => fun_ref(method(:InitDhcpHostname), "void (string)"),
           "handle"        => fun_ref(method(:HandleDhcpHostname), "symbol (string, map)")
@@ -157,10 +152,8 @@ module Yast
         },
         "WRITE_HOSTNAME"  => {
           "widget" => :checkbox,
-          # checkbox label
           "label"  => _("&Assign Hostname to Loopback IP"),
           "opt"    => [],
-          # help
           "help"   => Ops.get_string(@help, "write_hostname", "")
         },
         "MODIFY_RESOLV"   => {
@@ -190,7 +183,6 @@ module Yast
         },
         "NAMESERVER_1"    => {
           "widget"            => :textentry,
-          # textentry label
           "label"             => _("Name Server &1"),
           "opt"               => [],
           "help"              => "",
@@ -214,7 +206,6 @@ module Yast
         # NAMESERVER_2 and NAMESERVER_3 are cloned in the dialog function
         "SEARCHLIST_S"    => {
           "widget"            => :multi_line_edit,
-          # textentry label
           "label"             => _("Do&main Search"),
           "opt"               => [],
           "help"              => Ops.get_string(@help, "searchlist_s", ""),
@@ -222,7 +213,6 @@ module Yast
             method(:HandleResolverData),
             "symbol (string, map)"
           ),
-          #	"valid_chars": Hostname::ValidCharsFQ, // TODO: whitespace. unused anyway?
           "validate_type"     => :function,
           "validate_function" => fun_ref(
             method(:ValidateSearchList),
@@ -241,9 +231,7 @@ module Yast
         "NAMESERVER_3",
         Ops.get(@widget_descr_dns, "NAMESERVER_1", {})
       )
-      # text entry label
       Ops.set(@widget_descr_dns, ["NAMESERVER_2", "label"], _("Name Server &2"))
-      # text entry label
       Ops.set(@widget_descr_dns, ["NAMESERVER_3", "label"], _("Name Server &3"))
 
       @dns_contents = VBox(
@@ -271,7 +259,6 @@ module Yast
         ),
         VSpacing(0.49),
         Left(HBox("MODIFY_RESOLV", HSpacing(1), "PLAIN_POLICY")),
-        # Frame label
         Frame(
           _("Name Servers and Domain Search List"),
           VBox(
@@ -469,6 +456,7 @@ module Yast
       UI.ChangeWidget(Id("DHCP_HOSTNAME"), :Value, dhcp_hostname)
     end
 
+    # Handler for DHCP_HOSTNAME checkbox
     def HandleDhcpHostname(_key, _event)
       UI.ChangeWidget(Id("DHCP_IFACES"), :Enabled, use_dhcp_hostname?)
       UI.ChangeWidget(Id("DHCP_DEFAULT"), :Enabled, use_dhcp_hostname?)
@@ -476,6 +464,7 @@ module Yast
       nil
     end
 
+    # Checks whether setting hostname via DHCP is allowed
     def use_dhcp_hostname?
       UI.QueryWidget(Id("DHCP_HOSTNAME"), :Value)
     end
@@ -666,11 +655,7 @@ module Yast
         UI.QueryWidget(Id("MODIFY_RESOLV"), :Value)
       )
 
-      @resolver_modifiable = if UI.QueryWidget(Id("MODIFY_RESOLV"), :Value) == :nomodify
-        false
-      else
-        true
-      end
+      @resolver_modifiable = UI.QueryWidget(Id("MODIFY_RESOLV"), :Value) != :nomodify
 
       initPolicy(key)
 
