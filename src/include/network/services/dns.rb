@@ -39,28 +39,16 @@ module Yast
 
       Yast.import "CWM"
       Yast.import "DNS"
-      Yast.import "GetInstArgs"
-      Yast.import "Host"
       Yast.import "Hostname"
       Yast.import "IP"
       Yast.import "Label"
-      Yast.import "Lan"
-      Yast.import "NetworkConfig"
+      Yast.import "LanItems"
       Yast.import "Popup"
       Yast.import "Map"
-      Yast.import "CWMTab"
 
       Yast.include include_target, "network/routines.rb"
       Yast.include include_target, "network/widgets.rb"
       Yast.include include_target, "network/lan/help.rb"
-
-      # If we know that there are no interfaces with DHCP, we can disable
-      # the check boxes.
-      # Each dialog must set this variable.
-      # HostnameDialog does not know yet whether we will have DHCP so it
-      # assumes yes.
-      # DNSMainDialog can query Lan::.
-      @has_dhcp = true
 
       # If there's a process modifying resolv.conf, we warn the user before
       # letting him change things that will be overwritten anyway.
@@ -396,8 +384,6 @@ module Yast
 
     # Initialize internal state according current system configuration.
     def InitHnSettings
-      @has_dhcp = Lan.AnyDHCPDevice
-
       @hn_settings = InitSettings()
 
       nil
@@ -543,7 +529,7 @@ module Yast
     # @param [Hash] event	the event being handled
     # @return whether valid
     def ValidateHostname(key, _event)
-      dhn = @has_dhcp &&
+      dhn = has_dhcp? &&
         Convert.to_boolean(UI.QueryWidget(Id("DHCP_HOSTNAME"), :Value))
       # If the names are set by dhcp, the user may enter backup values
       # here - N#28427. That is, host and domain name are optional then.
@@ -559,7 +545,7 @@ module Yast
     # @param [Hash] event	the event being handled
     # @return whether valid
     def ValidateDomain(key, _event)
-      dhn = @has_dhcp && UI.QueryWidget(Id("DHCP_HOSTNAME"), :Value) == true
+      dhn = has_dhcp? && UI.QueryWidget(Id("DHCP_HOSTNAME"), :Value) == true
       return true if dhn
 
       value = UI.QueryWidget(Id(key), :Value).to_s
@@ -760,4 +746,11 @@ module Yast
       ret
     end
   end
+
+  private
+
+  def has_dhcp?
+    !LanItems.find_dhcp_ifaces.empty?
+  end
+
 end

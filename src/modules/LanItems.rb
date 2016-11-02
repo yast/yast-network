@@ -917,6 +917,19 @@ module Yast
       GetDeviceNames(GetNetcardInterfaces())
     end
 
+    # Finds all NICs configured with DHCP
+    #
+    # @return [Array] list of NIC names which are configured to use (any) dhcp
+    def find_dhcp_ifaces
+      items = GetNetcardInterfaces().select do |iface|
+        ifcfg = GetDeviceMap(iface) || {}
+
+        ["dhcp4", "dhcp6", "dhcp", "dhcp+autoip"].include?(ifcfg["BOOTPROTO"])
+      end
+
+      GetDeviceNames(items)
+    end
+
     # Get list of all configured interfaces
     #
     # return [Array] list of strings - interface names (eth0, ...)
