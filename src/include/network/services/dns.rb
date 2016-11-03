@@ -310,7 +310,7 @@ module Yast
       settings = {
         "HOSTNAME"       => DNS.hostname,
         "DOMAIN"         => DNS.domain,
-        "DHCP_HOSTNAME"  => DNS.dhcp_hostname,
+        "DHCP_DEFAULT"   => DNS.dhcp_hostname,
         "WRITE_HOSTNAME" => DNS.write_hostname,
         "PLAIN_POLICY"   => DNS.resolv_conf_policy
       }
@@ -351,7 +351,7 @@ module Yast
       DNS.domain = Ops.get_string(settings, "DOMAIN", "")
       DNS.nameservers = NonEmpty(nameservers)
       DNS.searchlist = NonEmpty(searchlist)
-      DNS.dhcp_hostname = Ops.get_boolean(settings, "DHCP_HOSTNAME", false)
+      DNS.dhcp_hostname = settings["DHCP_DEFAULT"]
       DNS.write_hostname = Ops.get_boolean(settings, "WRITE_HOSTNAME", true)
       DNS.resolv_conf_policy = settings["PLAIN_POLICY"]
 
@@ -452,7 +452,7 @@ module Yast
       UI.ChangeWidget(Id("DHCP_HOSTNAME"), :Enabled, has_dhcp?)
 
       # TODO: extend this
-      dhcp_hostname = @hn_settings.fetch("DHCP_HOSTNAME", false)
+      dhcp_hostname = @hn_settings.fetch("DHCP_DEFAULT", false)
       UI.ChangeWidget(Id("DHCP_HOSTNAME"), :Value, dhcp_hostname)
     end
 
@@ -486,12 +486,12 @@ module Yast
     def InitDhcpDefault(_key)
       UI.ChangeWidget(Id("DHCP_DEFAULT"), :Enabled, use_dhcp_hostname?)
 
-      items = ["yes", "no"].map do |item|
+      items = [true, false].map do |item|
         # TODO: fix inconsistency in naming
-        syscfg = @hn_settings.fetch("DHCP_HOSTNAME", false) ? "yes" : "no"
+        syscfg = @hn_settings.fetch("DHCP_DEFAULT", false)
         Item(
           Id(item),
-          _(item),
+          item ? _("yes") : _("no"),
           syscfg == item
         )
       end
