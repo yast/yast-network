@@ -473,6 +473,12 @@ module Yast
     def InitDhcpIfaces(_key)
       UI.ChangeWidget(Id("DHCP_IFACES"), :Enabled, use_dhcp_hostname?)
 
+      items = LanItems.find_dhcp_ifaces.map do |iface|
+        Item(Id(iface), iface, false)
+      end
+
+      UI.ChangeWidget(Id("DHCP_IFACES"), :Items, items)
+
       nil
     end
 
@@ -490,11 +496,7 @@ module Yast
         )
       end
 
-      UI.ChangeWidget(
-        Id("DHCP_DEFAULT"),
-        :Items,
-        items
-      )
+      UI.ChangeWidget(Id("DHCP_DEFAULT"), :Items, items)
 
       nil
     end
