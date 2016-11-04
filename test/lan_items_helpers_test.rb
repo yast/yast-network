@@ -266,4 +266,49 @@ describe "#update_item_udev_rule!" do
     end
   end
 
+describe "LanItems#find_dhcp_ifaces" do
+  DHCP_MAPS = {
+    "eth0" => { "BOOTPROTO" => "dhcp" },
+    "eth1" => { "BOOTPROTO" => "dhcp4" },
+    "eth2" => { "BOOTPROTO" => "dhcp6" },
+    "eth3" => { "BOOTPROTO" => "dhcp+autoip" }
+  }.freeze
+
+  NON_DHCP_MAPS = {
+    "eth4" => { "BOOTPROTO" => "static" },
+    "eth5" => { "BOOTPROTO" => "none" }
+  }.freeze
+
+  def mock_items(dev_maps)
+    # mock LanItems#Items
+    item_maps = dev_maps.keys.map { |dev| { "ifcfg" => dev } }
+    lan_items = [*0..dev_maps.keys.size - 1].zip(item_maps).to_h
+    allow(Yast::LanItems)
+      .to receive(:Items)
+      .and_return(lan_items)
+
+    # mock each device sysconfig map
+    allow(Yast::LanItems)
+      .to receive(:GetDeviceMap)
+      .and_return({})
+
+    lan_items.each_pair do |index, item_map|
+      allow(Yast::LanItems)
+        .to receive(:GetDeviceMap)
+        .with(index)
+        .and_return(dev_maps[item_map["ifcfg"]])
+    end
+  end
+
+  it "finds all dhcp aware interfaces" do
+    mock_items(DHCP_MAPS.merge(NON_DHCP_MAPS))
+
+    expect(Yast::LanItems.find_dhcp_ifaces).to eql ["eth0", "eth1", "eth2", "eth3"]
+  end
+
+  it "returns empty array when no dhcp configuration is present" do
+    mock_items(NON_DHCP_MAPS)
+
+    expect(Yast::LanItems.find_dhcp_ifaces).to eql []
+  end
 end

@@ -220,7 +220,7 @@ module Yast
     #
     # @param itemId [Integer] a key for {#Items}
     def GetLanItem(itemId)
-      Ops.get_map(@Items, itemId, {})
+      Items()[itemId] || {}
     end
 
     # Returns configuration for currently modified item.
@@ -909,7 +909,7 @@ module Yast
     # It means list of item ids of all netcards which are detected and/or
     # configured in the system
     def GetNetcardInterfaces
-      @Items.keys
+      Items().keys
     end
 
     # Creates list of names of all known netcards configured even unconfigured
