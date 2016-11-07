@@ -2473,7 +2473,25 @@ module Yast
         SetItemSysconfigOpt(item_id, "DHCLIENT_SET_HOSTNAME", "no")
       end
 
-      ret && SetItemSysconfigOpt(find_configured(device), "DHCLIENT_SET_HOSTNAME", "yes")
+      ret &&= SetItemSysconfigOpt(find_configured(device), "DHCLIENT_SET_HOSTNAME", "yes")
+
+      SetModified()
+
+      ret
+    end
+
+    # Removes DHCLIENT_SET_HOSTNAME from all ifcfgs
+    def clear_set_hostname
+      GetNetcardInterfaces().each do |item_id|
+        dev_map = GetDeviceMap(item_id)
+        next if dev_map.nil? || dev_map.empty?
+        next if !dev_map["DHCLIENT_SET_HOSTNAME"]
+
+        dev_map["DHCLIENT_SET_HOSTNAME"] = nil
+
+        SetDeviceMap(item_id, dev_map)
+        SetModified()
+      end
     end
 
     # This helper allows YARD to extract DSL-defined attributes.

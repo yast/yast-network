@@ -435,7 +435,7 @@ module Yast
     # Checks whether setting hostname via DHCP is allowed
     def use_dhcp_hostname?
       ret = UI.QueryWidget(Id("DHCP_DEFAULT"), :Value) == "yes"
-      ret = ret || UI.QueryWidget(Id("DHCP_DEFAULT"), :Value) != "none"
+      ret ||= UI.QueryWidget(Id("DHCP_DEFAULT"), :Value) != "none"
       ret
     end
 
@@ -464,7 +464,14 @@ module Yast
       return if !UI.QueryWidget(Id("DHCP_IFACES"), :Enabled)
 
       device = UI.QueryWidget(Id("DHCP_IFACES"), :Value)
-      LanItems.conf_set_hostname(device)
+
+      if device == "none"
+        LanItems.clear_set_hostname
+      else
+        LanItems.conf_set_hostname(device)
+      end
+
+      nil
     end
 
     # Init handler for DHCP_DEFAULT
