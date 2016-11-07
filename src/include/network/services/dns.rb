@@ -449,7 +449,7 @@ module Yast
       none_label = "none"
       items = [Item(Id(none_label), _(none_label), hostname_ifaces.empty?)]
 
-      items += LanItems.find_dhcp_ifaces.map do |iface|
+      items += LanItems.find_dhcp_ifaces.sort.map do |iface|
         selected = hostname_ifaces.first == iface
         Item(Id(iface), iface, selected)
       end
