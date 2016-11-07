@@ -112,16 +112,6 @@ module Yast
             Hostname.ValidDomain
           )
         },
-        "DHCP_HOSTNAME"   => {
-          "widget"        => :custom,
-          "custom_widget" => HBox(
-            CheckBox(Id("DHCP_HOSTNAME"), Opt(:notify), _("Change Hostname via DHCP"), true),
-            ReplacePoint(Id("dh_host_text"), Empty())
-          ),
-          "help"          => Ops.get_string(@help, "dhcp_hostname", ""),
-          "init"          => fun_ref(method(:InitDhcpHostname), "void (string)"),
-          "handle"        => fun_ref(method(:HandleDhcpHostname), "symbol (string, map)")
-        },
         "DHCP_IFACES"     => {
           "widget"        => :custom,
           "custom_widget" => HBox(
@@ -252,7 +242,6 @@ module Yast
           VBox(
             VBox(
               Left("WRITE_HOSTNAME"),
-              Left("DHCP_HOSTNAME"),
               Left("DHCP_IFACES"),
               Left("DHCP_DEFAULT")
             )
@@ -284,7 +273,6 @@ module Yast
             "HOSTNAME",
             "HOSTNAME_GLOBAL",
             "DOMAIN",
-            "DHCP_HOSTNAME",
             "DHCP_IFACES",
             "DHCP_DEFAULT",
             "WRITE_HOSTNAME",
@@ -444,35 +432,16 @@ module Yast
       nil
     end
 
-    # Init handler for DHCP_HOSTNAME.
-    # enable or disable: is DHCP available?
-    # @param [String] key	the widget receiving the event
-    # @param event	the event being handled
-    # @return nil so that the dialog loops on
-    def InitDhcpHostname(_key)
-      UI.ChangeWidget(Id("DHCP_HOSTNAME"), :Enabled, has_dhcp?)
-
-      # TODO: extend this
-      dhcp_hostname = @hn_settings.fetch("DHCP_DEFAULT", false)
-      UI.ChangeWidget(Id("DHCP_HOSTNAME"), :Value, dhcp_hostname)
-    end
-
-    # Handler for DHCP_HOSTNAME checkbox
-    def HandleDhcpHostname(_key, _event)
-      UI.ChangeWidget(Id("DHCP_IFACES"), :Enabled, use_dhcp_hostname?)
-      UI.ChangeWidget(Id("DHCP_DEFAULT"), :Enabled, use_dhcp_hostname?)
-
-      nil
-    end
-
     # Checks whether setting hostname via DHCP is allowed
     def use_dhcp_hostname?
-      UI.QueryWidget(Id("DHCP_HOSTNAME"), :Value)
+      ret = UI.QueryWidget(Id("DHCP_DEFAULT"), :Value) == "yes"
+      ret = ret || UI.QueryWidget(Id("DHCP_DEFAULT"), :Value) != "none"
+      ret
     end
 
     # Init handler for DHCP_IFACES
     def InitDhcpIfaces(_key)
-      UI.ChangeWidget(Id("DHCP_IFACES"), :Enabled, use_dhcp_hostname?)
+      UI.ChangeWidget(Id("DHCP_IFACES"), :Enabled, has_dhcp?)
 
       hostname_ifaces = LanItems.find_set_hostname_ifaces
 
@@ -500,7 +469,7 @@ module Yast
 
     # Init handler for DHCP_DEFAULT
     def InitDhcpDefault(_key)
-      UI.ChangeWidget(Id("DHCP_DEFAULT"), :Enabled, use_dhcp_hostname?)
+      UI.ChangeWidget(Id("DHCP_DEFAULT"), :Enabled, has_dhcp?)
 
       items = [true, false].map do |item|
         # TODO: fix inconsistency in naming
@@ -536,8 +505,7 @@ module Yast
     # @param [Hash] event	the event being handled
     # @return whether valid
     def ValidateHostname(key, _event)
-      dhn = has_dhcp? &&
-        Convert.to_boolean(UI.QueryWidget(Id("DHCP_HOSTNAME"), :Value))
+      dhn = has_dhcp? && use_dhcp_hostname?
       # If the names are set by dhcp, the user may enter backup values
       # here - N#28427. That is, host and domain name are optional then.
       # For static config, they are mandatory.
@@ -552,7 +520,7 @@ module Yast
     # @param [Hash] event	the event being handled
     # @return whether valid
     def ValidateDomain(key, _event)
-      dhn = has_dhcp? && UI.QueryWidget(Id("DHCP_HOSTNAME"), :Value) == true
+      dhn = has_dhcp? && use_dhcp_hostname?
       return true if dhn
 
       value = UI.QueryWidget(Id(key), :Value).to_s
