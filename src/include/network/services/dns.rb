@@ -474,8 +474,15 @@ module Yast
     def InitDhcpIfaces(_key)
       UI.ChangeWidget(Id("DHCP_IFACES"), :Enabled, use_dhcp_hostname?)
 
-      items = LanItems.find_dhcp_ifaces.map do |iface|
-        Item(Id(iface), iface, false)
+      hostname_ifaces = LanItems.find_set_hostname_ifaces
+
+      # translators: no device selected placeholder
+      none_label = "none"
+      items = [Item(Id(none_label), _(none_label), hostname_ifaces.empty?)]
+
+      items += LanItems.find_dhcp_ifaces.map do |iface|
+        selected = hostname_ifaces.first == iface
+        Item(Id(iface), iface, selected)
       end
 
       UI.ChangeWidget(Id("DHCP_IFACES"), :Items, items)

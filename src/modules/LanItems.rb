@@ -930,6 +930,19 @@ module Yast
       GetDeviceNames(items)
     end
 
+    # Finds all devices which has DHCLIENT_SET_HOSTNAME set to "yes"
+    #
+    # @return [Array] list of NIC names which has the option set to "yes"
+    def find_set_hostname_ifaces
+      items = GetNetcardInterfaces().select do |iface|
+        ifcfg = GetDeviceMap(iface) || {}
+
+        ifcfg["DHCLIENT_SET_HOSTNAME"] == "yes"
+      end
+
+      GetDeviceNames(items)
+    end
+
     # Get list of all configured interfaces
     #
     # return [Array] list of strings - interface names (eth0, ...)
