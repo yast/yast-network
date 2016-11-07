@@ -134,7 +134,8 @@ module Yast
             ),
             ReplacePoint(Id("dh_host_text"), Empty())
           ),
-          "init"          => fun_ref(method(:InitDhcpIfaces), "void (string)")
+          "init"          => fun_ref(method(:InitDhcpIfaces), "void (string)"),
+          "store"         => fun_ref(method(:StoreDhcpIfaces), "voide (string, map)")
         },
         "DHCP_DEFAULT"    => {
           "widget"        => :custom,
@@ -480,6 +481,14 @@ module Yast
       UI.ChangeWidget(Id("DHCP_IFACES"), :Items, items)
 
       nil
+    end
+
+    # Store handler for DHCP_IFACES
+    def StoreDhcpIfaces(_key, _event)
+      return if !UI.QueryWidget(Id("DHCP_IFACES"), :Enabled)
+
+      device = UI.QueryWidget(Id("DHCP_IFACES"), :Value)
+      LanItems.conf_set_hostname(device)
     end
 
     # Init handler for DHCP_DEFAULT

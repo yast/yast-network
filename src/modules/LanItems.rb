@@ -2439,6 +2439,30 @@ module Yast
       udev_rules
     end
 
+    # Configures available devices for obtaining hostname via specified device
+    #
+    # This is related to setting system's hostname via DHCP. Apart of global
+    # DHCLIENT_SET_HOSTNAME which is set in /etc/sysconfig/network/dhcp and is
+    # used as default, one can specify the option even per interface. To avoid
+    # collisions / undeterministic behavior the system should be configured so,
+    # that just one DHCP interface can update the hostname. E.g. all but one DHCP
+    # interfaces can have this obtion set to "no" and only one to "yes".
+    #
+    # @param [String] device name where should be hostname configuration active
+    # @return [Boolean] false when the configuration cannot be set for a device
+    def conf_set_hostname(device)
+      dhcp_devs = find_dhcp_ifaces
+
+      return false if !dhcp_devs.include?(device)
+
+      ret = (dhcp_devs - [device]).all? do |dev|
+        item_id = find_configured(dev)
+        SetItemSysconfigOpt(item_id, "DHCLIENT_SET_HOSTNAME", "no")
+      end
+
+      ret && SetItemSysconfigOpt(find_configured(device), "DHCLIENT_SET_HOSTNAME", "yes")
+    end
+
     # This helper allows YARD to extract DSL-defined attributes.
     # Unfortunately YARD has problems with the Capitalized ones,
     # so those must be done manually.
