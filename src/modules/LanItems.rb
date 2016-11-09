@@ -1612,15 +1612,6 @@ module Yast
       nil
     end
 
-    # Select the hardware component
-    # @param [Fixnum] which index of the component
-
-    def SelectHW(which)
-      SelectHWMap(FindHardware(@Hardware, which))
-
-      nil
-    end
-
     #-------------------
     # PRIVATE FUNCTIONS
 
@@ -2831,7 +2822,6 @@ module Yast
     publish function: :isCurrentDHCP, type: "boolean ()"
     publish function: :GetItemDescription, type: "string ()"
     publish function: :SelectHWMap, type: "void (map)"
-    publish function: :SelectHW, type: "void (integer)"
     publish function: :FreeDevices, type: "list (string)"
     publish function: :SetDefaultsForHW, type: "void ()"
     publish function: :SetDeviceVars, type: "void (map, map)"
