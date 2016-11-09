@@ -335,4 +335,27 @@ describe "DHCLIENT_SET_HOSTNAME helpers" do
       expect(Yast::LanItems.find_set_hostname_ifaces).to be_empty
     end
   end
+
+  describe "LanItems#clear_set_hostname" do
+    DHCP_YES_MAPS = {
+      "eth0" => { "DHCLIENT_SET_HOSTNAME" => "yes" }
+    }.freeze
+    DHCP_NO_MAPS = {
+      "eth1" => { "DHCLIENT_SET_HOSTNAME" => "no" }
+    }.freeze
+
+    it "clears all DHCLIENT_SET_HOSTNAME options" do
+      mock_items(DHCP_YES_MAPS.merge(DHCP_NO_MAPS))
+
+      expect(Yast::LanItems)
+        .to receive(:SetDeviceMap)
+        .with(kind_of(Integer), "DHCLIENT_SET_HOSTNAME" => nil)
+        .twice
+      expect(Yast::LanItems)
+        .to receive(:SetModified)
+        .at_least(:once)
+
+      Yast::LanItems.clear_set_hostname
+    end
+  end
 end
