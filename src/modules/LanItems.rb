@@ -921,26 +921,18 @@ module Yast
     #
     # @return [Array] list of NIC names which are configured to use (any) dhcp
     def find_dhcp_ifaces
-      items = GetNetcardInterfaces().select do |iface|
-        ifcfg = GetDeviceMap(iface) || {}
-
+      find_by_sysconfig do |ifcfg|
         ["dhcp4", "dhcp6", "dhcp", "dhcp+autoip"].include?(ifcfg["BOOTPROTO"])
       end
-
-      GetDeviceNames(items)
     end
 
     # Finds all devices which has DHCLIENT_SET_HOSTNAME set to "yes"
     #
     # @return [Array] list of NIC names which has the option set to "yes"
     def find_set_hostname_ifaces
-      items = GetNetcardInterfaces().select do |iface|
-        ifcfg = GetDeviceMap(iface) || {}
-
+      find_by_sysconfig do |ifcfg|
         ifcfg["DHCLIENT_SET_HOSTNAME"] == "yes"
       end
-
-      GetDeviceNames(items)
     end
 
     # Get list of all configured interfaces
@@ -2719,6 +2711,16 @@ module Yast
 
       Builtins.y2milestone("AY profile %1", ay)
       deep_copy(ay)
+    end
+
+    def find_by_sysconfig
+      items = GetNetcardInterfaces().select do |iface|
+        ifcfg = GetDeviceMap(iface) || {}
+
+        yield(ifcfg)
+      end
+
+      GetDeviceNames(items)
     end
 
     # @attribute Items
