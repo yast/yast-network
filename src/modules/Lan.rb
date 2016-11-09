@@ -59,7 +59,6 @@ module Yast
       Yast.import "LanItems"
       Yast.import "ModuleLoading"
       Yast.import "Linuxrc"
-      Yast.import "Report"
 
       Yast.include self, "network/complex.rb"
       Yast.include self, "network/runtime.rb"
@@ -370,6 +369,10 @@ module Yast
       # Progress step 3/9 - multiple devices may be present, really plural
       ProgressNextStage(_("Reading device configuration...")) if @gui
       LanItems.Read
+
+      devs = LanItems.find_set_hostname_ifaces
+      fix_dhclient_warning(devs) if @gui && devs.size > 1
+
       Builtins.sleep(sl)
 
       return false if Abort()
@@ -1098,7 +1101,6 @@ module Yast
     publish function: :HaveXenBridge, type: "boolean ()"
 
   private
-
     def activate_network_service
       # If the second installation stage has been called by yast.ssh via
       # ssh, we should not restart network because systemctl

@@ -447,11 +447,21 @@ module Yast
 
       # translators: no device selected placeholder
       none_label = "none"
-      items = [Item(Id(none_label), _(none_label), hostname_ifaces.empty?)]
+      fix_requested = hostname_ifaces.size > 1 && fix_dhclient_yesno(hostname_ifaces)
+      items = []
+
+      if hostname_ifaces.size == 1
+        selected = hostname_iface.first
+      elsif fix_requested || hostname_ifaces.empty?
+        selected = none_label
+      else
+        items = [Item(Id("dont_touch"), "", true)]
+      end
+      items << Item(Id(none_label), _(none_label), hostname_ifaces.empty?)
 
       items += LanItems.find_dhcp_ifaces.sort.map do |iface|
         selected = hostname_ifaces.first == iface
-        Item(Id(iface), iface, selected)
+        Item(Id(iface), iface, iface == selected)
       end
 
       UI.ChangeWidget(Id("DHCP_IFACES"), :Items, items)
@@ -465,8 +475,11 @@ module Yast
 
       device = UI.QueryWidget(Id("DHCP_IFACES"), :Value)
 
-      if device == "none"
+      case device
+      when "none"
         LanItems.clear_set_hostname
+      when "dont_touch"
+        nil
       else
         LanItems.conf_set_hostname(device)
       end

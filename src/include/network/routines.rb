@@ -989,5 +989,34 @@ module Yast
       hwstring = hwstrings[hwtype] || _("All Network Devices")
       Confirm.Detection(hwstring, nil)
     end
+
+    def fix_dhclient_msg(devs)
+      _(
+        format(
+          "DHCLIENT_SET_HOSTNAME option is set for more than one interface.\n" \
+          "This causes indeterministic behavior.\n" \
+          "Affected devices:\n" \
+          "%s\n",
+          devs.join(" ")
+        )
+      )
+    end
+
+    # A popup informing user that incorrent DHCLIENT_SET_HOSTNAME was detected
+    def fix_dhclient_warning(devs)
+      message = _(
+        fix_dhclient_msg(devs) + _("Use Hostname/DNS tab to fix it.")
+      )
+
+      Popup.Warning(message)
+    end
+
+    def fix_dhclient_yesno(devs)
+      message = _(
+        fix_dhclient_msg(devs) + _("Do you want to fix it?")
+      )
+
+      Popup.YesNo(message)
+    end
   end
 end
