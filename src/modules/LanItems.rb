@@ -919,7 +919,7 @@ module Yast
 
     # Finds all NICs configured with DHCP
     #
-    # @return [Array] list of NIC names which are configured to use (any) dhcp
+    # @return [Array<String>] list of NIC names which are configured to use (any) dhcp
     def find_dhcp_ifaces
       find_by_sysconfig do |ifcfg|
         ["dhcp4", "dhcp6", "dhcp", "dhcp+autoip"].include?(ifcfg["BOOTPROTO"])
@@ -928,7 +928,7 @@ module Yast
 
     # Finds all devices which has DHCLIENT_SET_HOSTNAME set to "yes"
     #
-    # @return [Array] list of NIC names which has the option set to "yes"
+    # @return [Array<String>] list of NIC names which has the option set to "yes"
     def find_set_hostname_ifaces
       find_by_sysconfig do |ifcfg|
         ifcfg["DHCLIENT_SET_HOSTNAME"] == "yes"
@@ -2464,6 +2464,8 @@ module Yast
     end
 
     # Removes DHCLIENT_SET_HOSTNAME from all ifcfgs
+    #
+    # @return [void]
     def clear_set_hostname
       GetNetcardInterfaces().each do |item_id|
         dev_map = GetDeviceMap(item_id)

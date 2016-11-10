@@ -990,6 +990,11 @@ module Yast
       Confirm.Detection(hwstring, nil)
     end
 
+    # Returns a generic message informing user that incorrect DHCLIENT_SET_HOSTNAME
+    # setup was detected.
+    #
+    # @param [Array<String>] list of incorrectly configured devices
+    # @return [String] a message stating that incorrect DHCLIENT_SET_HOSTNAME setup was detected
     def fix_dhclient_msg(devs)
       _(
         format(
@@ -1003,6 +1008,9 @@ module Yast
     end
 
     # A popup informing user that incorrent DHCLIENT_SET_HOSTNAME was detected
+    #
+    # @param [Array<String>] list of incorrectly configured devices
+    # @return [void]
     def fix_dhclient_warning(devs)
       message = _(
         fix_dhclient_msg(devs) + _("Use Hostname/DNS tab to fix it.")
@@ -1011,6 +1019,10 @@ module Yast
       Popup.Warning(message)
     end
 
+    # A yes-no pop-up
+    #
+    # @param [Array<String>] list of incorrectly configured devices
+    # @return [Boolean]
     def fix_dhclient_yesno(devs)
       message = _(
         fix_dhclient_msg(devs) + _("Do you want to fix it?")
