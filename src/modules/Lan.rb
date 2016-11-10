@@ -1101,6 +1101,7 @@ module Yast
     publish function: :HaveXenBridge, type: "boolean ()"
 
   private
+
     def activate_network_service
       # If the second installation stage has been called by yast.ssh via
       # ssh, we should not restart network because systemctl
