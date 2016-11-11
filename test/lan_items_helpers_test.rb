@@ -290,62 +290,79 @@ describe "DHCLIENT_SET_HOSTNAME helpers" do
   end
 
   describe "LanItems#find_dhcp_ifaces" do
-    DHCP_MAPS = {
-      "eth0" => { "BOOTPROTO" => "dhcp" },
-      "eth1" => { "BOOTPROTO" => "dhcp4" },
-      "eth2" => { "BOOTPROTO" => "dhcp6" },
-      "eth3" => { "BOOTPROTO" => "dhcp+autoip" }
-    }.freeze
-
-    NON_DHCP_MAPS = {
-      "eth4" => { "BOOTPROTO" => "static" },
-      "eth5" => { "BOOTPROTO" => "none" }
-    }.freeze
+    let(:dhcp_maps) do
+      {
+        "eth0" => { "BOOTPROTO" => "dhcp" },
+        "eth1" => { "BOOTPROTO" => "dhcp4" },
+        "eth2" => { "BOOTPROTO" => "dhcp6" },
+        "eth3" => { "BOOTPROTO" => "dhcp+autoip" }
+      }.freeze
+    end
+    let(:non_dhcp_maps) do
+      {
+        "eth4" => { "BOOTPROTO" => "static" },
+        "eth5" => { "BOOTPROTO" => "none" }
+      }.freeze
+    end
+    let(:dhcp_invalid_maps) do
+      { "eth6" => { "BOOT" => "dhcp" } }.freeze
+    end
 
     it "finds all dhcp aware interfaces" do
-      mock_items(DHCP_MAPS.merge(NON_DHCP_MAPS))
+      mock_items(dhcp_maps.merge(non_dhcp_maps.merge(dhcp_invalid_maps)))
 
       expect(Yast::LanItems.find_dhcp_ifaces).to eql ["eth0", "eth1", "eth2", "eth3"]
     end
 
     it "returns empty array when no dhcp configuration is present" do
-      mock_items(NON_DHCP_MAPS)
+      mock_items(non_dhcp_maps.merge(dhcp_invalid_maps))
 
       expect(Yast::LanItems.find_dhcp_ifaces).to eql []
     end
   end
 
   describe "LanItems#find_set_hostname_ifaces" do
-    DHCP_YES_MAPS = {
-      "eth0" => { "DHCLIENT_SET_HOSTNAME" => "yes" }
-    }.freeze
-    DHCP_NO_MAPS = {
-      "eth1" => { "DHCLIENT_SET_HOSTNAME" => "no" }
-    }.freeze
+    let(:dhcp_yes_maps) do
+      {
+        "eth0" => { "DHCLIENT_SET_HOSTNAME" => "yes" }
+      }.freeze
+    end
+    let(:dhcp_no_maps) do
+      {
+        "eth1" => { "DHCLIENT_SET_HOSTNAME" => "no" }
+      }.freeze
+    end
+    let(:dhcp_invalid_maps) do
+      { "eth2" => { "DHCP_SET_HOSTNAME" => "yes" } }.freeze
+    end
 
     it "returns a list of all devices with DHCLIENT_SET_HOSTNAME=\"yes\"" do
-      mock_items(DHCP_YES_MAPS.merge(DHCP_NO_MAPS))
+      mock_items(dhcp_yes_maps.merge(dhcp_no_maps.merge(dhcp_invalid_maps)))
 
       expect(Yast::LanItems.find_set_hostname_ifaces).to eql ["eth0"]
     end
 
     it "returns empty list when no DHCLIENT_SET_HOSTNAME=\"yes\" is found" do
-      mock_items(DHCP_NO_MAPS)
+      mock_items(dhcp_no_maps.merge(dhcp_invalid_maps))
 
       expect(Yast::LanItems.find_set_hostname_ifaces).to be_empty
     end
   end
 
   describe "LanItems#clear_set_hostname" do
-    DHCP_YES_MAPS = {
-      "eth0" => { "DHCLIENT_SET_HOSTNAME" => "yes" }
-    }.freeze
-    DHCP_NO_MAPS = {
-      "eth1" => { "DHCLIENT_SET_HOSTNAME" => "no" }
-    }.freeze
+    let(:dhcp_yes_maps) do
+      {
+        "eth0" => { "DHCLIENT_SET_HOSTNAME" => "yes" }
+      }.freeze
+    end
+    let(:dhcp_no_maps) do
+      {
+        "eth1" => { "DHCLIENT_SET_HOSTNAME" => "no" }
+      }.freeze
+    end
 
     it "clears all DHCLIENT_SET_HOSTNAME options" do
-      mock_items(DHCP_YES_MAPS.merge(DHCP_NO_MAPS))
+      mock_items(dhcp_yes_maps.merge(dhcp_no_maps))
 
       expect(Yast::LanItems)
         .to receive(:SetDeviceMap)
