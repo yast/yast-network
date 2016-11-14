@@ -1,4 +1,15 @@
 -------------------------------------------------------------------
+Thu Nov 17 16:00:48 UTC 2016 - kanderssen@suse.com
+
+- When an interface is enslaved in a bond the udev rule is modified
+  using the bus_id instead of the mac address but some multiport
+  cards could use the same bus_id. In such cases also the dev_port
+  is needed. Taking this in account the dev_port will be added
+  always when a udev rule based on bus_id is written. (bsc#1007172)
+- backport for SP1 (bsc#1005721)
+- 3.1.140.9
+
+-------------------------------------------------------------------
 Thu Nov 17 15:03:29 CET 2016 - schubi@suse.de
 
 - Added missing entries in RNC file.
