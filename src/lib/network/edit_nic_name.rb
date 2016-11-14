@@ -63,12 +63,16 @@ module Yast
           next
         end
 
+        current_rule = LanItems.GetItemUdevRule(LanItems.current)
+
         if UI.QueryWidget(:udev_type, :CurrentButton) == :mac
           rule_key = MAC_UDEV_ATTR
           rule_value = @mac
+          LanItems.RemoveKeyFromUdevRule(current_rule, "ATTR{dev_port}")
         else
           rule_key = BUSID_UDEV_ATTR
           rule_value = @bus_id
+          LanItems.ReplaceItemUdev("ATTR{dev_port}", "ATTR{dev_port}", dev_port(@old_name))
         end
 
         # update udev rules and other config

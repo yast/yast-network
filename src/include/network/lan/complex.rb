@@ -285,6 +285,25 @@ module Yast
       nil
     end
 
+    # Updates the udev rule of the current Lan Item, adding the dev_port and
+    # using the bus_id instead ot the mac address.
+    def use_udev_rule_for_bonding!
+      # Update or insert the dev_port if the sysfs dev_port attribute is present
+      LanItems.ReplaceItemUdev(
+        "ATTR{dev_port}",
+        "ATTR{dev_port}",
+        LanItems.dev_port(LanItems.GetCurrentName)
+      ) if LanItems.dev_port?(LanItems.GetCurrentName)
+
+      # Iff particular bond slave uses mac based persistency,
+      # overwrite to bus id based one. Don't touch otherwise.
+      LanItems.ReplaceItemUdev(
+        "ATTR{address}",
+        "KERNELS",
+        LanItems.getCurrentItem.fetch("hwinfo", {}).fetch("busid", "")
+      )
+    end
+
     # Automatically configures slaves when user enslaves them into a bond or bridge device
     def UpdateSlaves
       current = LanItems.current
@@ -309,12 +328,7 @@ module Yast
         case LanItems.GetDeviceType(current)
         when "bond"
           LanItems.startmode = "hotplug"
-          # if particular bond slave uses mac based persistency, overwrite to bus id based one. Don't touch otherwise.
-          LanItems.ReplaceItemUdev(
-            "ATTR{address}",
-            "KERNELS",
-            Ops.get_string(LanItems.getCurrentItem, ["hwinfo", "busid"], "")
-          )
+          use_udev_rule_for_bonding!
         when "br"
           LanItems.ipaddr = ""
         end
