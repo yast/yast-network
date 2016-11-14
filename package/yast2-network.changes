@@ -1,4 +1,14 @@
 -------------------------------------------------------------------
+Fri Nov 09 09:20:48 UTC 2016 - kanderssen@suse.com
+
+- When an interface is enslaved in a bond the udev rule is modified
+  using the bus_id instead of the mac address but some multiport
+  cards could use the same bus_id. In such cases also the dev_port
+  is needed. Taking this in account the dev_port will be added
+  always when a udev rule based on bus_id is written. (bsc#1007172)
+- 3.1.170.4
+
+-------------------------------------------------------------------
 Mon Oct 10 11:56:38 UTC 2016 - kanderssen@suse.com
 
 - Bridge handling has been improved (bsc#962824).
