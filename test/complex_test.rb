@@ -104,40 +104,4 @@ describe "NetworkLanComplexInclude" do
       expect(subject.DeviceProtocol(dhcp)).to eql("DHCP")
     end
   end
-
-  describe "#use_udev_rule_for_bonding!" do
-    before do
-      Yast::LanItems.current = 0
-      Yast::LanItems.Items = {
-        0 => {
-          "hwinfo" => {
-            "dev_name" => "test0",
-            "busid"    => "00:08:00"
-          },
-          "udev"   => {
-            "net" => ["ATTR{address}==\"01:02:03:04:05\"", "KERNEL==\"eth*\"", "NAME=\"test0\""]
-          }
-        }
-      }
-      allow(Yast::LanItems).to receive(:dev_port).and_return("0")
-    end
-
-    it "uses KERNELS attribute with busid match instead of mac address" do
-      allow(Yast::LanItems).to receive(:dev_port?).and_return(false)
-      expect(Yast::LanItems.Items[0]["udev"]["net"])
-        .to eql(["ATTR{address}==\"01:02:03:04:05\"", "KERNEL==\"eth*\"", "NAME=\"test0\""])
-      subject.use_udev_rule_for_bonding!
-      expect(Yast::LanItems.Items[0]["udev"]["net"])
-        .to eql(["KERNEL==\"eth*\"", "KERNELS==\"00:08:00\"", "NAME=\"test0\""])
-    end
-
-    it "adds the dev_port to the current rule if present in sysfs" do
-      allow(Yast::LanItems).to receive(:dev_port?).and_return(true)
-      expect(Yast::LanItems.Items[0]["udev"]["net"])
-        .to eql(["ATTR{address}==\"01:02:03:04:05\"", "KERNEL==\"eth*\"", "NAME=\"test0\""])
-      subject.use_udev_rule_for_bonding!
-      expect(Yast::LanItems.Items[0]["udev"]["net"])
-        .to eql(["KERNEL==\"eth*\"", "ATTR{dev_port}==\"0\"", "KERNELS==\"00:08:00\"", "NAME=\"test0\""])
-    end
-  end
 end
