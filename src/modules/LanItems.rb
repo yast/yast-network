@@ -499,6 +499,66 @@ module Yast
       udev_key_value(getUdevFallback, key)
     end
 
+    # It deletes the given key from the udev rule of the current item.
+    #
+    # @param key [string] udev key which identifies the tuple to be removed
+    # @return [Object, nil] the current item's udev rule without the given key; nil if
+    # there is not udev rules for the current item
+    def RemoveItemUdev(key)
+      current_rule = LanItems.GetItemUdevRule(LanItems.current)
+
+      return nil if current_rule.empty?
+
+      log.info("Removing #{key} from #{current_rule}")
+      Items()[@current]["udev"]["net"] =
+        LanItems.RemoveKeyFromUdevRule(current_rule, key)
+    end
+
+    # Updates the udev rule of the current Lan Item based on the key given
+    # which currently could be mac or bus_id.
+    #
+    # In case of bus_id the dev_port will be always added to avoid cases where
+    # the interfaces shared the same bus_id (i.e. Multiport cards using the
+    # same function to all the ports) (bsc#1007172)
+    #
+    # @param based_on [Symbol] principal key to be matched, `:mac` or `:bus_id`
+    # @return [Boolean] true if updated, false otherwise
+    def update_item_udev_rule!(based_on = :mac)
+      case based_on
+      when :mac
+        LanItems.RemoveItemUdev("ATTR{dev_port}")
+
+        # FIXME: While the user is able to modify the udev rule using the
+        # mac address instead of bus_id when bonding, could be that the
+        # mac in use was not the permanent one. We could read it with
+        # ethtool -P dev_name}
+        LanItems.ReplaceItemUdev(
+          "KERNELS",
+          "ATTR{address}",
+          LanItems.getCurrentItem.fetch("hwinfo", {}).fetch("mac", "")
+        )
+      when :bus_id
+        # Update or insert the dev_port if the sysfs dev_port attribute is present
+        LanItems.ReplaceItemUdev(
+          "ATTR{dev_port}",
+          "ATTR{dev_port}",
+          LanItems.dev_port(LanItems.GetCurrentName)
+        ) if LanItems.dev_port?(LanItems.GetCurrentName)
+
+        # If the current rule is mac based, overwrite to bus id. Don't touch otherwise.
+        LanItems.ReplaceItemUdev(
+          "ATTR{address}",
+          "KERNELS",
+          LanItems.getCurrentItem.fetch("hwinfo", {}).fetch("busid", "")
+        )
+      else
+        log.error("The key given for udev rule #{based_on} is not mac or bus_id.")
+        return false
+      end
+
+      true
+    end
+
     # It replaces a tuple identified by replace_key in current item's udev rule
     #
     # Note that the tuple is identified by key only. However modification flag is

@@ -964,7 +964,7 @@ module Yast
       !physical_port_id(dev_name).empty?
     end
 
-    # Dev port of of the given interface from /sys/class/net/$dev_name/dev_port
+    # Dev port of the given interface from /sys/class/net/$dev_name/dev_port
     #
     # @param [String] device name to check
     # @return [String] dev port or an empty string if not
