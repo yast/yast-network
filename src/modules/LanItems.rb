@@ -436,7 +436,7 @@ module Yast
     # same function to all the ports) (bsc#1007172)
     #
     # @param based_on [Symbol] principal key to be matched, `:mac` or `:bus_id`
-    # @return [Boolean] true if updated, false otherwise
+    # @return [void]
     def update_item_udev_rule!(based_on = :mac)
       case based_on
       when :mac
@@ -466,11 +466,8 @@ module Yast
           LanItems.getCurrentItem.fetch("hwinfo", {}).fetch("busid", "")
         )
       else
-        log.error("The key given for udev rule #{based_on} is not mac or bus_id.")
-        return false
+        raise ArgumentError, "The key given for udev rule #{based_on} is not supported"
       end
-
-      true
     end
 
     # It replaces a tuple identified by replace_key in current item's udev rule

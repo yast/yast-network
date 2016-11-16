@@ -206,26 +206,26 @@ describe "#update_item_udev_rule!" do
   before do
     Yast::LanItems.Items = rule
     Yast::LanItems.current = 0
-    allow(Yast::LanItems).to receive(:dev_port).and_return("0")
+    # The current item hasn't got a dev_port
+    allow(Yast::LanItems).to receive(:dev_port).and_return("")
   end
 
   context "when the given rule key is :bus_id" do
     it "uses KERNELS attribute with busid match instead of mac address" do
-      allow(Yast::LanItems).to receive(:dev_port?).and_return(false)
-      expect(Yast::LanItems.Items[0]["udev"]["net"])
-        .to eql(["ATTR{address}==\"01:02:03:04:05\"", "KERNEL==\"eth*\"", "NAME=\"test0\""])
+      expect(Yast::LanItems.Items[0]["udev"]["net"]).to eql(udev_net)
       Yast::LanItems.update_item_udev_rule!(:bus_id)
       expect(Yast::LanItems.Items[0]["udev"]["net"])
         .to eql(["KERNEL==\"eth*\"", "KERNELS==\"00:08:00\"", "NAME=\"test0\""])
     end
 
-    it "adds the dev_port to the current rule if present in sysfs" do
-      allow(Yast::LanItems).to receive(:dev_port?).and_return(true)
-      expect(Yast::LanItems.Items[0]["udev"]["net"])
-        .to eql(["ATTR{address}==\"01:02:03:04:05\"", "KERNEL==\"eth*\"", "NAME=\"test0\""])
-      Yast::LanItems.update_item_udev_rule!(:bus_id)
-      expect(Yast::LanItems.Items[0]["udev"]["net"])
-        .to eql(["KERNEL==\"eth*\"", "ATTR{dev_port}==\"0\"", "KERNELS==\"00:08:00\"", "NAME=\"test0\""])
+    context "and the dev_port is available via sysfs" do
+      it "also adds the dev_port to the current rule" do
+        allow(Yast::LanItems).to receive(:dev_port).and_return("0")
+        expect(Yast::LanItems.Items[0]["udev"]["net"]).to eql(udev_net)
+        Yast::LanItems.update_item_udev_rule!(:bus_id)
+        expect(Yast::LanItems.Items[0]["udev"]["net"])
+          .to eql(["KERNEL==\"eth*\"", "ATTR{dev_port}==\"0\"", "KERNELS==\"00:08:00\"", "NAME=\"test0\""])
+      end
     end
   end
 
@@ -233,9 +233,7 @@ describe "#update_item_udev_rule!" do
     let(:udev_net) { ["KERNEL==\"eth*\"", "KERNELS==\"00:08:00\"", "NAME=\"test0\""] }
 
     it "uses mac attribute" do
-      allow(Yast::LanItems).to receive(:dev_port?).and_return(false)
-      expect(Yast::LanItems.Items[0]["udev"]["net"])
-        .to eql(["KERNEL==\"eth*\"", "KERNELS==\"00:08:00\"", "NAME=\"test0\""])
+      expect(Yast::LanItems.Items[0]["udev"]["net"]).to eql(udev_net)
       Yast::LanItems.update_item_udev_rule!(:mac)
       expect(Yast::LanItems.Items[0]["udev"]["net"])
         .to eql(["KERNEL==\"eth*\"", "ATTR{address}==\"01:02:03:04:05\"", "NAME=\"test0\""])
@@ -245,13 +243,27 @@ describe "#update_item_udev_rule!" do
       let(:udev_net) { ["KERNEL==\"eth*\"", "ATTR{dev_port}==\"0\"", "KERNELS==\"00:08:00\"", "NAME=\"test0\""] }
 
       it "removes the dev_port from current rule if present" do
-        allow(Yast::LanItems).to receive(:dev_port?).and_return(true)
-        expect(Yast::LanItems.Items[0]["udev"]["net"])
-          .to eql(["KERNEL==\"eth*\"", "ATTR{dev_port}==\"0\"", "KERNELS==\"00:08:00\"", "NAME=\"test0\""])
+        expect(Yast::LanItems.Items[0]["udev"]["net"]).to eql(udev_net)
         Yast::LanItems.update_item_udev_rule!(:mac)
         expect(Yast::LanItems.Items[0]["udev"]["net"])
           .to eql(["KERNEL==\"eth*\"", "ATTR{address}==\"01:02:03:04:05\"", "NAME=\"test0\""])
       end
     end
   end
+
+  context "when not supported key is given" do
+    it "raises an ArgumentError exception" do
+      expect { Yast::LanItems.update_item_udev_rule!(:other) }.to raise_error(ArgumentError)
+    end
+  end
+
+  context "when no parameters is given" do
+    it "uses :mac as default" do
+      expect(Yast::LanItems).to receive(:RemoveItemUdev).with("ATTR{dev_port}")
+      expect(Yast::LanItems).to receive(:ReplaceItemUdev)
+
+      Yast::LanItems.update_item_udev_rule!
+    end
+  end
+
 end
