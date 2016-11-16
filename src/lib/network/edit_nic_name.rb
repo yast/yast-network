@@ -63,18 +63,11 @@ module Yast
           next
         end
 
-        if UI.QueryWidget(:udev_type, :CurrentButton) == :mac
-          rule_key = MAC_UDEV_ATTR
-          rule_value = @mac
-        else
-          rule_key = BUSID_UDEV_ATTR
-          rule_value = @bus_id
-        end
+        udev_type = UI.QueryWidget(:udev_type, :CurrentButton)
 
-        # update udev rules and other config
         # FIXME: it changes udev key used for device identification
         #  and / or its value only, name is changed elsewhere
-        LanItems.ReplaceItemUdev(@old_key, rule_key, rule_value)
+        LanItems.update_item_udev_rule!(udev_type)
       end
 
       close
