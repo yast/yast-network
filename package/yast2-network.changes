@@ -1,7 +1,7 @@
 -------------------------------------------------------------------
 Thu Nov 17 15:03:29 CET 2016 - schubi@suse.de
 
-- Adapt missing entries in RNC file.
+- Added missing entries in RNC file.
   (addition fix for bnc#954412)
 - 3.1.140.8
 
