@@ -370,9 +370,6 @@ module Yast
       ProgressNextStage(_("Reading device configuration...")) if @gui
       LanItems.Read
 
-      devs = LanItems.find_set_hostname_ifaces
-      fix_dhclient_warning(devs) if @gui && devs.size > 1
-
       Builtins.sleep(sl)
 
       return false if Abort()
@@ -424,6 +421,8 @@ module Yast
 
       return false if Abort()
       @initialized = true
+
+      fix_dhclient_warning(LanItems.find_set_hostname_ifaces) if @gui && !DNS.valid_dhcp_cfg?
 
       Progress.Finish if @gui
 

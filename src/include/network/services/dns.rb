@@ -115,7 +115,7 @@ module Yast
         "DHCP_IFACES"     => {
           "widget"        => :custom,
           "custom_widget" => HBox(
-            Label(_("DHCP interface used for hostname setup")),
+            Label(_("Set Hostname via DHCP")),
             HSpacing(2),
             ComboBox(
               Id("DHCP_IFACES"),
@@ -126,20 +126,6 @@ module Yast
           ),
           "init"          => fun_ref(method(:InitDhcpIfaces), "void (string)"),
           "store"         => fun_ref(method(:StoreDhcpIfaces), "voide (string, map)")
-        },
-        "DHCP_DEFAULT"    => {
-          "widget"        => :custom,
-          "custom_widget" => HBox(
-            Label(_("Default for interfaces without explicit setup")),
-            HSpacing(2),
-            ComboBox(
-              Id("DHCP_DEFAULT"),
-              "",
-              []
-            ),
-            ReplacePoint(Id("dh_host_text"), Empty())
-          ),
-          "init"          => fun_ref(method(:InitDhcpDefault), "void (string)")
         },
         "WRITE_HOSTNAME"  => {
           "widget" => :checkbox,
@@ -234,16 +220,10 @@ module Yast
               "HOSTNAME_GLOBAL", # global help, init, store for all dialog
               HSpacing(1),
               "DOMAIN"
-            )
-          )
-        ),
-        Frame(
-          _("Hostname via DHCP"),
-          VBox(
+            ),
             VBox(
               Left("WRITE_HOSTNAME"),
-              Left("DHCP_IFACES"),
-              Left("DHCP_DEFAULT")
+              Left("DHCP_IFACES")
             )
           )
         ),
@@ -274,7 +254,6 @@ module Yast
             "HOSTNAME_GLOBAL",
             "DOMAIN",
             "DHCP_IFACES",
-            "DHCP_DEFAULT",
             "WRITE_HOSTNAME",
             "MODIFY_RESOLV",
             "PLAIN_POLICY",
@@ -299,7 +278,6 @@ module Yast
       settings = {
         "HOSTNAME"       => DNS.hostname,
         "DOMAIN"         => DNS.domain,
-        "DHCP_DEFAULT"   => DNS.dhcp_hostname,
         "WRITE_HOSTNAME" => DNS.write_hostname,
         "PLAIN_POLICY"   => DNS.resolv_conf_policy
       }
@@ -340,7 +318,6 @@ module Yast
       DNS.domain = Ops.get_string(settings, "DOMAIN", "")
       DNS.nameservers = NonEmpty(nameservers)
       DNS.searchlist = NonEmpty(searchlist)
-      DNS.dhcp_hostname = settings["DHCP_DEFAULT"]
       DNS.write_hostname = Ops.get_boolean(settings, "WRITE_HOSTNAME", true)
       DNS.resolv_conf_policy = settings["PLAIN_POLICY"]
 
@@ -434,37 +411,42 @@ module Yast
 
     # Checks whether setting hostname via DHCP is allowed
     def use_dhcp_hostname?
-      ret = UI.QueryWidget(Id("DHCP_DEFAULT"), :Value) == "yes"
-      ret ||= UI.QueryWidget(Id("DHCP_DEFAULT"), :Value) != "none"
-      ret
+      UI.QueryWidget(Id("DHCP_IFACES"), :Value) != "none"
     end
+
+    NONE_LABEL = "no".freeze
+    ANY_LABEL = "any".freeze
+    NO_CHANGE_LABEL = "no_change".freeze
 
     # Init handler for DHCP_IFACES
     def InitDhcpIfaces(_key)
       UI.ChangeWidget(Id("DHCP_IFACES"), :Enabled, has_dhcp?)
 
       hostname_ifaces = LanItems.find_set_hostname_ifaces
-
-      # translators: no device selected placeholder
-      none_label = "none"
-      fix_requested = hostname_ifaces.size > 1 && fix_dhclient_yesno(hostname_ifaces)
+      selected = DNS.dhcp_hostname ? ANY_LABEL : NONE_LABEL
       items = []
 
-      if hostname_ifaces.size == 1
-        selected = hostname_iface.first
-      elsif fix_requested || hostname_ifaces.empty?
-        selected = none_label
-      else
-        items = [Item(Id("dont_touch"), "", true)]
+      if !DNS.valid_dhcp_cfg?
+        fix_dhclient_warning(hostname_ifaces)
+
+        selected = NO_CHANGE_LABEL
+        items = [Item(Id(NO_CHANGE_LABEL), "", true)]
+      elsif hostname_ifaces.size == 1
+        selected = hostname_ifaces.first
       end
-      items << Item(Id(none_label), _(none_label), hostname_ifaces.empty?)
+      # translators: no device selected placeholder
+      items << Item(Id(NONE_LABEL), _(NONE_LABEL), selected == NONE_LABEL)
+      # translators: placeholder for "set hostname via any DHCP aware device"
+      items << Item(Id(ANY_LABEL), _("yes: " + ANY_LABEL), selected == ANY_LABEL)
 
       items += LanItems.find_dhcp_ifaces.sort.map do |iface|
-        selected = hostname_ifaces.first == iface
-        Item(Id(iface), iface, iface == selected)
+        # translators: label is in form yes: <device name>
+        Item(Id(iface), _(format("yes: %s", iface)), iface == selected)
       end
 
       UI.ChangeWidget(Id("DHCP_IFACES"), :Items, items)
+
+      log.info("InitDhcpIfaces: preselected item = #{selected}")
 
       nil
     end
@@ -476,32 +458,24 @@ module Yast
       device = UI.QueryWidget(Id("DHCP_IFACES"), :Value)
 
       case device
-      when "none"
+      when NONE_LABEL
         LanItems.clear_set_hostname
-      when "dont_touch"
+
+        DNS.modified = true if DNS.dhcp_hostname
+        DNS.dhcp_hostname = false
+      when ANY_LABEL
+        LanItems.clear_set_hostname
+
+        DNS.modified = true if !DNS.dhcp_hostname
+        DNS.dhcp_hostname = true
+      when NO_CHANGE_LABEL
         nil
       else
         LanItems.conf_set_hostname(device)
+
+        DNS.modified = true if DNS.dhcp_hostname
+        DNS.dhcp_hostname = false
       end
-
-      nil
-    end
-
-    # Init handler for DHCP_DEFAULT
-    def InitDhcpDefault(_key)
-      UI.ChangeWidget(Id("DHCP_DEFAULT"), :Enabled, has_dhcp?)
-
-      items = [true, false].map do |item|
-        # TODO: fix inconsistency in naming
-        syscfg = @hn_settings.fetch("DHCP_DEFAULT", false)
-        Item(
-          Id(item),
-          item ? _("yes") : _("no"),
-          syscfg == item
-        )
-      end
-
-      UI.ChangeWidget(Id("DHCP_DEFAULT"), :Items, items)
 
       nil
     end

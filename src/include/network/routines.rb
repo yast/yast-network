@@ -998,8 +998,9 @@ module Yast
     def fix_dhclient_msg(devs)
       _(
         format(
-          "DHCLIENT_SET_HOSTNAME option is set for more than one interface.\n" \
-          "This causes indeterministic behavior.\n" \
+          "DHCLIENT_SET_HOSTNAME option is set for more than one interface,\n" \
+          "or global default is set incorrectly.\n" \
+          "This causes indeterministic behavior.\n\n" \
           "Affected devices:\n" \
           "%s\n",
           devs.join(" ")
@@ -1012,23 +1013,7 @@ module Yast
     # @param [Array<String>] list of incorrectly configured devices
     # @return [void]
     def fix_dhclient_warning(devs)
-      message = _(
-        fix_dhclient_msg(devs) + _("Use Hostname/DNS tab to fix it.")
-      )
-
-      Popup.Warning(message)
-    end
-
-    # A yes-no pop-up
-    #
-    # @param [Array<String>] list of incorrectly configured devices
-    # @return [Boolean]
-    def fix_dhclient_yesno(devs)
-      message = _(
-        fix_dhclient_msg(devs) + _("Do you want to fix it?")
-      )
-
-      Popup.YesNo(message)
+      Popup.Warning(fix_dhclient_msg(devs))
     end
   end
 end
