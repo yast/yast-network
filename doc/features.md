@@ -50,3 +50,12 @@ Devices
 - for wireless it allows to configure mode in which operating, encryption, essid of network and so on
 - for infiniband it allows set IPoIB connected x datagram
 
+
+s390 Devices
+============
+
+- allows layer 2 and 3 devices
+- support channel ids for devices
+- allow layer 2 devices to be in bond
+- recognized types - qeth, lcs, ctc
+
