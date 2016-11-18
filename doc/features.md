@@ -42,6 +42,11 @@ Devices
 
 - allows to setup it without setup (for bondings), dhcp or static ( with ip, hostname, mask )
 - allows to add additional ips to device
-- supported devices: eth, wlan, token ring
+- supported devices: eth, wlan, token ring, infiniband, tun, tap, bridge,vlan, bond, arcnet, bluetooth, dummy, fddi, usb, myrinet (usb and bluetooth looks strange )
 - for eth and token ring - allow to specify kernel module needed for device, if it is pcmci or usb and ethtool options
+- for each devices it can be specified when activate device, ifplugd priority, firewall zone and MTU
+- for bridge it allow to specify any physical devices ( so e.g. tap and tun are filtered out )
+- for bonding it allows to specify over which device it bonding
+- for wireless it allows to configure mode in which operating, encryption, essid of network and so on
+- for infiniband it allows set IPoIB connected x datagram
 
