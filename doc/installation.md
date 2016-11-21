@@ -1,0 +1,85 @@
+## Introduction
+
+The workflow of the installation is customized via the [control
+file](https://github.com/yast/yast-installation/blob/master/doc/control-file.md), and below we have the principal steps concerning network configuration:
+
+  - Linuxrc
+  - inst_install_inf (What is still needed)
+  - inst_dhcp
+  - manual_configuration (openSUSE only in Addons)
+  - network_finish
+    - save_network
+
+### Linuxrc 
+
+As the [documentation](https://github.com/openSUSE/linuxrc) of the project explains, it is the very early part of the 
+SuSE Installation before YaST runs which means that it is the first
+responsable of the network config.
+
+We can pass many options to the installation process that will be parsed by
+linuxrc configuring our interfaces according to that options, or forwarding
+the given information through the install.inf file.
+
+By default linuxrc does not configure any interface except in the case that we
+specify some special options as for example enabling **vnc**, **ssh** or
+with the ifcfg option `ifcfg=*=dhcp`. If any of this options is given, linuxrc
+will create a ifcfg file per interface with this options:
+
+```
+BOOTPROTO='dhcp'
+STARTMODE='auto'
+DHCLIENT_SET_HOSTNAME='yes'
+```
+
+Or a static config if it is specified so by ifcfg option, for example:
+
+```
+ifcfg=eth0=192.168.122.100/24,192.168.122.1,192.168,122.1,suse.de
+```
+
+Will create ifcfg-eth0 with:
+```
+BOOTPROTO='static'
+STARTMODE='auto'
+IPADDR='192.168.122.100/24'
+DHCLIENT_SET_HOSTNAME='yes'
+```
+
+ifroute-eth0:
+```
+default 192.168.122.1 - eth0
+```
+
+and network/config:
+```
+NETCONFIG_DNS_STATIC_SEARCH_LIST="suse.de"
+NETCONFIG_DNS_STATIC_SERVERS="192.168.122.1"
+```
+
+
+## inst_install_inf
+
+This client basically reads the content of /etc/install.inf which is an
+interface between YaST and linuxrc and configure some network parameters.
+
+Currently it just sets the
+[hostname](https://github.com/openSUSE/linuxrc/blob/master/linuxrc_hostname.md) and the ProxyUrl if given. 
+All the network configuration that was exported previously by linuxrc is now written directly by it.
+
+
+## inst_dhcp
+
+This client will try to configure dhcp in all the connected cards that haven't been configured yet.
+
+## Manual Configuration (lan client)
+
+In case that the network was not configured then the **lan** client will be
+launched after the welcome dialog as you can see
+[here](https://www.suse.com/documentation/sled-12/singlehtml/book_sle_deployment/book_sle_deployment.html#sec.i.yast2.network) 
+and also will be available in some steps during the installation (in Leap 42.2 only for Addons).
+
+## network_finish -> save_network
+
+In this step is when the configuration is really copied from the running
+system to the installed one.
+
