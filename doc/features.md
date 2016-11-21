@@ -40,7 +40,9 @@ Routing
 Devices
 =======
 
-- allows to setup it without setup (for bondings), dhcp or static ( with ip, hostname, mask )
+- allows to setup it without setup (for bondings), dhcp or static ( with ip, hostname, mask and iBFT )
+- manage udev names, allowing renaming of devices when needed
+- blinking of device via ethtool for easier device identification
 - allows to add additional ips to device
 - supported devices: eth, wlan, token ring, infiniband, tun, tap, bridge,vlan, bond, arcnet, bluetooth, dummy, fddi, usb, myrinet (usb and bluetooth looks strange )
 - for eth and token ring - allow to specify kernel module needed for device, if it is pcmci or usb and ethtool options
@@ -64,4 +66,9 @@ Firewall parts
 
 - stage1 proposal + write it down ( firewall enable/disable, sshd enable/disable, ssh port open/close, vnc enable/disable)
 - assign network device to firewall zone
+
+Network Devices
+===============
+
+- ability to check what device is on mount point and if device is network one
 
