@@ -1140,9 +1140,9 @@ module Yast
         LanItems.Items[current] = { "ifcfg" => device }
       end
 
-      autoinstall_settings["start_immediately"] = settings.fetch("start_immediately", false)
-      autoinstall_settings["strict_IP_check_timeout"] = settings.fetch("strict_IP_check_timeout", -1)
-      autoinstall_settings["keep_install_network"] = settings.fetch("keep_install_network", true)
+      @autoinstall_settings["start_immediately"] = settings.fetch("start_immediately", false)
+      @autoinstall_settings["strict_IP_check_timeout"] = settings.fetch("strict_IP_check_timeout", -1)
+      @autoinstall_settings["keep_install_network"] = settings.fetch("keep_install_network", true)
 
       # FIXME: createS390Device does two things, it
       # - updates internal structures
