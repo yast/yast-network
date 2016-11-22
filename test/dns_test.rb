@@ -102,5 +102,40 @@ module Yast
         end
       end
     end
+
+    describe "#valid_dhcp_cfg?" do
+      def mock_dhcp_setup(ifaces, global)
+        allow(LanItems)
+          .to receive(:find_set_hostname_ifaces)
+          .and_return(ifaces)
+        allow(DNS)
+          .to receive(:dhcp_hostname)
+          .and_return(global)
+      end
+
+      it "fails when DHCLIENT_SET_HOSTNAME is set for multiple ifaces" do
+        mock_dhcp_setup(["eth0", "eth1"], false)
+
+        expect(DNS.valid_dhcp_cfg?).to be false
+      end
+
+      it "fails when DHCLIENT_SET_HOSTNAME is set globaly even in an ifcfg" do
+        mock_dhcp_setup(["eth0"], true)
+
+        expect(DNS.valid_dhcp_cfg?).to be false
+      end
+
+      it "succeedes when DHCLIENT_SET_HOSTNAME is set for one iface" do
+        mock_dhcp_setup(["eth0"], false)
+
+        expect(DNS.valid_dhcp_cfg?).to be true
+      end
+
+      it "succeededs when only global DHCLIENT_SET_HOSTNAME is set" do
+        mock_dhcp_setup([], true)
+
+        expect(DNS.valid_dhcp_cfg?).to be true
+      end
+    end
   end
 end
