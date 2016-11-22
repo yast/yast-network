@@ -112,20 +112,20 @@ module Yast
             Hostname.ValidDomain
           )
         },
-        "DHCP_IFACES"     => {
+        "DHCP_HOSTNAME"     => {
           "widget"        => :custom,
           "custom_widget" => HBox(
             Label(_("Set Hostname via DHCP")),
             HSpacing(2),
             ComboBox(
-              Id("DHCP_IFACES"),
+              Id("DHCP_HOSTNAME"),
               "",
               []
             ),
             ReplacePoint(Id("dh_host_text"), Empty())
           ),
-          "init"          => fun_ref(method(:InitDhcpIfaces), "void (string)"),
-          "store"         => fun_ref(method(:StoreDhcpIfaces), "voide (string, map)")
+          "init"          => fun_ref(method(:InitDhcpHostname), "void (string)"),
+          "store"         => fun_ref(method(:StoreDhcpHostname), "void (string, map)")
         },
         "WRITE_HOSTNAME"  => {
           "widget" => :checkbox,
@@ -223,7 +223,7 @@ module Yast
             ),
             VBox(
               Left("WRITE_HOSTNAME"),
-              Left("DHCP_IFACES")
+              Left("DHCP_HOSTNAME")
             )
           )
         ),
@@ -253,7 +253,7 @@ module Yast
             "HOSTNAME",
             "HOSTNAME_GLOBAL",
             "DOMAIN",
-            "DHCP_IFACES",
+            "DHCP_HOSTNAME",
             "WRITE_HOSTNAME",
             "MODIFY_RESOLV",
             "PLAIN_POLICY",
@@ -409,18 +409,18 @@ module Yast
       nil
     end
 
-    # Checks whether setting hostname via DHCP is allowed
-    def use_dhcp_hostname?
-      UI.QueryWidget(Id("DHCP_IFACES"), :Value) != "none"
-    end
-
     NONE_LABEL = "no".freeze
     ANY_LABEL = "any".freeze
     NO_CHANGE_LABEL = "no_change".freeze
 
-    # Init handler for DHCP_IFACES
-    def InitDhcpIfaces(_key)
-      UI.ChangeWidget(Id("DHCP_IFACES"), :Enabled, has_dhcp?)
+    # Checks whether setting hostname via DHCP is allowed
+    def use_dhcp_hostname?
+      UI.QueryWidget(Id("DHCP_HOSTNAME"), :Value) != NONE_LABEL
+    end
+
+    # Init handler for DHCP_HOSTNAME
+    def InitDhcpHostname(_key)
+      UI.ChangeWidget(Id("DHCP_HOSTNAME"), :Enabled, has_dhcp?)
 
       hostname_ifaces = LanItems.find_set_hostname_ifaces
       selected = DNS.dhcp_hostname ? ANY_LABEL : NONE_LABEL
@@ -435,27 +435,27 @@ module Yast
         selected = hostname_ifaces.first
       end
       # translators: no device selected placeholder
-      items << Item(Id(NONE_LABEL), _(NONE_LABEL), selected == NONE_LABEL)
+      items << Item(Id(NONE_LABEL), _("no"), selected == NONE_LABEL)
       # translators: placeholder for "set hostname via any DHCP aware device"
-      items << Item(Id(ANY_LABEL), _("yes: " + ANY_LABEL), selected == ANY_LABEL)
+      items << Item(Id(ANY_LABEL), _("yes: any"), selected == ANY_LABEL)
 
       items += LanItems.find_dhcp_ifaces.sort.map do |iface|
         # translators: label is in form yes: <device name>
-        Item(Id(iface), _(format("yes: %s", iface)), iface == selected)
+        Item(Id(iface), format(_("yes: %s"), iface), iface == selected)
       end
 
-      UI.ChangeWidget(Id("DHCP_IFACES"), :Items, items)
+      UI.ChangeWidget(Id("DHCP_HOSTNAME"), :Items, items)
 
-      log.info("InitDhcpIfaces: preselected item = #{selected}")
+      log.info("InitDhcpHostname: preselected item = #{selected}")
 
       nil
     end
 
-    # Store handler for DHCP_IFACES
-    def StoreDhcpIfaces(_key, _event)
-      return if !UI.QueryWidget(Id("DHCP_IFACES"), :Enabled)
+    # Store handler for DHCP_HOSTNAME
+    def StoreDhcpHostname(_key, _event)
+      return if !UI.QueryWidget(Id("DHCP_HOSTNAME"), :Enabled)
 
-      device = UI.QueryWidget(Id("DHCP_IFACES"), :Value)
+      device = UI.QueryWidget(Id("DHCP_HOSTNAME"), :Value)
 
       case device
       when NONE_LABEL

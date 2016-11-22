@@ -996,15 +996,18 @@ module Yast
     # @param [Array<String>] list of incorrectly configured devices
     # @return [String] a message stating that incorrect DHCLIENT_SET_HOSTNAME setup was detected
     def fix_dhclient_msg(devs)
-      _(
-        format(
-          "DHCLIENT_SET_HOSTNAME option is set for more than one interface,\n" \
-          "or global default is set incorrectly.\n" \
-          "This causes indeterministic behavior.\n\n" \
+      format(
+        _(
+          "Setting hostname over DHCP is set incorrectly.\n\n" \
+          "Either it is set for multiple interfaces or\n" \
+          "global default is set incorrectly.\n" \
+          "Select just one device and / or do not set global\n" \
+          "value. You can pick up proper configuration in\n" \
+          "\"Set Hostname via DHCP\" widget.\n\n" \
           "Affected devices:\n" \
-          "%s\n",
-          devs.join(" ")
-        )
+          "%s\n"
+        ),
+        devs.join(" ")
       )
     end
 
