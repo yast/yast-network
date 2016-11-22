@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Nov 22 12:30:06 UTC 2016 - igonzalezsosa@suse.com
+
+- Do not crash when removing an entry from the /etc/hosts file
+  (bsc#1010994)
+- 3.2.11
+
+-------------------------------------------------------------------
 Tue Nov 22 11:34:08 UTC 2016 - jreidinger@suse.com
 
 - do not crash when on command line is passed non-number id
