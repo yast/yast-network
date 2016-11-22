@@ -23,3 +23,5 @@ ff02::2         ipv6-allrouters
 ff02::3         ipv6-allhosts
 10.100.128.72   pepa.labs.suse.cz pepa pepa2
 10.254.128.1   pepa1.labs.suse.cz pepa1
+10.100.128.1    gw.labs.suse.cz
+10.100.128.1    gw1.labs.suse.cz gw1
