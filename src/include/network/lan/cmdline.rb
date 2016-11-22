@@ -96,9 +96,9 @@ module Yast
       end
 
       if id >= config.size
-        Report.Error(_(
-          "Value of \"id\" is out of range. Use \"list\" option to check max. value of \"id\"."
-        ))
+        Report.Error(
+          _("Value of \"id\" is out of range. Use \"list\" option to check max. value of \"id\".")
+        )
         return false
       end
       true
