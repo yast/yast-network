@@ -17,7 +17,7 @@
 
 
 Name:           yast2-network
-Version:        3.1.140.8
+Version:        3.1.140.9
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -49,6 +49,8 @@ Requires:       yast2-storage >= 2.21.11
 # Packages::vnc_packages
 BuildRequires:  yast2-packager >= 3.1.47
 Requires:       yast2-packager >= 3.1.47
+# BusID of all the cards with the same one (bsc#1007172)
+Requires:       hwinfo         >= 21.35
 
 # testsuite
 BuildRequires:       rubygem(rspec)

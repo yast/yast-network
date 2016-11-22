@@ -312,12 +312,8 @@ module Yast
         end
         LanItems.startmode = "hotplug"
         LanItems.bootproto = "none"
-        # if particular bond slave uses mac based persistency, overwrite to bus id based one. Don't touch otherwise.
-        LanItems.ReplaceItemUdev(
-          "ATTR{address}",
-          "KERNELS",
-          Ops.get_string(LanItems.getCurrentItem, ["hwinfo", "busid"], "")
-        )
+
+        LanItems.update_item_udev_rule!(:bus_id)
         LanItems.Commit
       end
 

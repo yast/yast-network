@@ -494,58 +494,106 @@ module Yast
       deep_copy(udev_rules)
     end
 
+    # It returns a value for the particular key of udev rule belonging to the current item.
     def GetItemUdev(key)
-      value = ""
-
-      Builtins.foreach(getUdevFallback) do |row|
-        if Builtins.issubstring(row, key)
-          items = Builtins.filter(Builtins.splitstring(row, "=")) do |s|
-            Ops.greater_than(Builtins.size(s), 0)
-          end
-          if Builtins.size(items) == 2 && Ops.get_string(items, 0, "") == key
-            value = Builtins.deletechars(Ops.get_string(items, 1, ""), "\"")
-          else
-            Builtins.y2warning(
-              "udev items %1 doesn't match the key %2",
-              items,
-              key
-            )
-          end
-        end
-      end
-      value
+      udev_key_value(getUdevFallback, key)
     end
 
+    # It deletes the given key from the udev rule of the current item.
+    #
+    # @param key [string] udev key which identifies the tuple to be removed
+    # @return [Object, nil] the current item's udev rule without the given key; nil if
+    # there is not udev rules for the current item
+    def RemoveItemUdev(key)
+      current_rule = LanItems.GetItemUdevRule(LanItems.current)
+
+      return nil if current_rule.empty?
+
+      log.info("Removing #{key} from #{current_rule}")
+      Items()[@current]["udev"]["net"] =
+        LanItems.RemoveKeyFromUdevRule(current_rule, key)
+    end
+
+    # Updates the udev rule of the current Lan Item based on the key given
+    # which currently could be mac or bus_id.
+    #
+    # In case of bus_id the dev_port will be always added to avoid cases where
+    # the interfaces shared the same bus_id (i.e. Multiport cards using the
+    # same function to all the ports) (bsc#1007172)
+    #
+    # @param based_on [Symbol] principal key to be matched, `:mac` or `:bus_id`
+    # @return [void]
+    def update_item_udev_rule!(based_on = :mac)
+      case based_on
+      when :mac
+        LanItems.RemoveItemUdev("ATTR{dev_port}")
+
+        # FIXME: While the user is able to modify the udev rule using the
+        # mac address instead of bus_id when bonding, could be that the
+        # mac in use was not the permanent one. We could read it with
+        # ethtool -P dev_name}
+        LanItems.ReplaceItemUdev(
+          "KERNELS",
+          "ATTR{address}",
+          LanItems.getCurrentItem.fetch("hwinfo", {}).fetch("mac", "")
+        )
+      when :bus_id
+        # Update or insert the dev_port if the sysfs dev_port attribute is present
+        LanItems.ReplaceItemUdev(
+          "ATTR{dev_port}",
+          "ATTR{dev_port}",
+          LanItems.dev_port(LanItems.GetCurrentName)
+        ) if LanItems.dev_port?(LanItems.GetCurrentName)
+
+        # If the current rule is mac based, overwrite to bus id. Don't touch otherwise.
+        LanItems.ReplaceItemUdev(
+          "ATTR{address}",
+          "KERNELS",
+          LanItems.getCurrentItem.fetch("hwinfo", {}).fetch("busid", "")
+        )
+      else
+        raise ArgumentError, "The key given for udev rule #{based_on} is not supported"
+      end
+    end
+
+    # It replaces a tuple identified by replace_key in current item's udev rule
+    #
+    # Note that the tuple is identified by key only. However modification flag is
+    # set only if value was changed (in case when replace_key == new_key)
+    #
+    # It also contain a logic on tuple operators. When the new_key is "NAME"
+    # then assignment operator (=) is used. Otherwise equality operator (==) is used.
+    # Thats bcs this function is currently used for touching "NAME", "KERNELS" and
+    # "ATTR{address}" keys only
+    #
+    # @param replace_key [string] udev key which identifies tuple to be replaced
+    # @param new_key     [string] new key to by used
+    # @param new_val     [string] value for new key
+    # @return updated rule when replace_key is found, current rule otherwise
     def ReplaceItemUdev(replace_key, new_key, new_val)
-      new_rules = []
-      # udev syntax distinguishes among others:
       # =    for assignment
       # ==   for equality checks
       operator = new_key == "NAME" ? "=" : "=="
+      current_rule = getUdevFallback
+      rule = RemoveKeyFromUdevRule(getUdevFallback, replace_key)
 
-      Builtins.foreach(getUdevFallback) do |row|
-        if Builtins.issubstring(row, replace_key)
-          row = Builtins.sformat("%1%2\"%3\"", new_key, operator, new_val)
-        end
-        new_rules = Builtins.add(new_rules, row)
+      # NAME="devname" has to be last in the rule.
+      # otherwise SCR agent .udev_persistent.net returns crap
+      # isn't that fun
+      name_tuple = rule.pop
+      new_rule = AddToUdevRule(rule, "#{new_key}#{operator}\"#{new_val}\"")
+      new_rule.push(name_tuple)
+
+      log.info("ReplaceItemUdev: new udev rule = #{new_rule}")
+
+      if current_rule.sort != new_rule.sort
+        SetModified()
+
+        Items()[@current]["udev"] = { "net" => {} } if !Items()[@current]["udev"]
+        Items()[@current]["udev"]["net"] = new_rule
       end
 
-      Builtins.y2debug(
-        "LanItems::ReplaceItemUdev: udev rules %1",
-        Ops.get_list(@Items, [@current, "udev", "net"], [])
-      )
-
-      Ops.set(@Items, [@current, "udev", "net"], new_rules)
-
-      Builtins.y2debug(
-        "LanItems::ReplaceItemUdev(%1, %2, %3) %4",
-        replace_key,
-        new_key,
-        new_val,
-        new_rules
-      )
-
-      deep_copy(new_rules)
+      deep_copy(new_rule)
     end
 
     # Updates device name.
