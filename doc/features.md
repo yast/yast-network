@@ -7,6 +7,7 @@ Network Services
 - wicked
 - Network Manager
 - no network service
+- still support old netconfig ( but no guarantie )
 
 IPv6
 ==============
@@ -16,16 +17,15 @@ IPv6
 DHCP Client options
 ====================
 
-- set hostname according to dhcp response
+- send back to dhcp server hostname
 - set machine identifier for asking dhcp
 - allow to set specific option for hostname to send for dhcpd client ( how often it is used? )
 
 DNS
 ===================
 
-- set hostname
-- set domain
-- change hostname with dhcp ( looks same as in dhcp client options )
+- set hostname and domain, combining them into FQDN writting into /etc/hostname
+- change hostname with dhcp
 - assign hostname to local ip ( so own hostname is always resolvable )
 - modify /etc/resolv.conf, keep it manage automatic or modify it manually with selected values
 
@@ -40,7 +40,7 @@ Routing
 Devices
 =======
 
-- allows to setup it without setup (for bondings), dhcp or static ( with ip, hostname, mask and iBFT )
+- allows to setup it without setup (for bondings and iBFT), dhcp or static ( with ip, hostname, mask )
 - manage udev names, allowing renaming of devices when needed
 - blinking of device via ethtool for easier device identification
 - allows to add additional ips to device
@@ -59,7 +59,8 @@ s390 Devices
 - allows layer 2 and 3 devices
 - support channel ids for devices
 - allow layer 2 devices to be in bond
-- recognized types - qeth, lcs, ctc
+- recognized types - qeth, lcs, ctc, iucv
+- allows to set logical link address for layer 2 qeth devices
 
 Firewall parts
 ==============
