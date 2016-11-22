@@ -83,21 +83,21 @@ module Yast
     end
 
     def validateId(options, config)
-      options = deep_copy(options)
-      config = deep_copy(config)
-      if Ops.get(options, "id").nil?
+      if !options["id"]
         Report.Error(_("Use \"id\" option to determine device."))
         return false
       end
 
-      if Ops.greater_than(
-        Builtins.tointeger(Ops.get(options, "id", "0")),
-        Ops.subtract(Builtins.size(config), 1)
-      )
+      begin
+        id = Integer(options["id"])
+      rescue ArgumentError
+        Report.Error(_("Invalid value '%s' for \"id\" option.") % options["id"])
+        return false
+      end
+
+      if id >= config.size
         Report.Error(
-          _(
-            "Value of \"id\" is out of range. Use \"list\" option to check max. value of \"id\"."
-          )
+          _("Value of \"id\" is out of range. Use \"list\" option to check max. value of \"id\".")
         )
         return false
       end
