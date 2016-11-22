@@ -138,7 +138,7 @@ module CFA
         if entry["canonical"] == hostname
           aliases = aliases_for(entry)
           if aliases.empty?
-            delete_host(entry["ipaddr"])
+            delete_by_ip(entry["ipaddr"])
           else
             entry["canonical"] = aliases.first
             entry.delete("alias")
@@ -154,7 +154,7 @@ module CFA
           entry.delete("alias")
           entry.delete("alias[]")
           aliases_col = entry.collection("alias")
-          aliases[1..-1].each do |a|
+          reduced_aliases.each do |a|
             aliases_col.add(a)
           end
         end
