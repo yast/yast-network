@@ -2461,22 +2461,17 @@ module Yast
     # DHCLIENT_SET_HOSTNAME which is set in /etc/sysconfig/network/dhcp and is
     # used as default, one can specify the option even per interface. To avoid
     # collisions / undeterministic behavior the system should be configured so,
-    # that just one DHCP interface can update the hostname. E.g. all but one DHCP
-    # interfaces can have this obtion set to "no" and only one to "yes".
+    # that just one DHCP interface can update the hostname. E.g. global option
+    # can be set to "no" and just only one ifcfg can have the option set to "yes".
     #
     # @param [String] device name where should be hostname configuration active
     # @return [Boolean] false when the configuration cannot be set for a device
     def conf_set_hostname(device)
-      dhcp_devs = find_dhcp_ifaces
+      return false if !find_dhcp_ifaces.include?(device)
 
-      return false if !dhcp_devs.include?(device)
+      clear_set_hostname
 
-      ret = (dhcp_devs - [device]).all? do |dev|
-        item_id = find_configured(dev)
-        SetItemSysconfigOpt(item_id, "DHCLIENT_SET_HOSTNAME", "no")
-      end
-
-      ret &&= SetItemSysconfigOpt(find_configured(device), "DHCLIENT_SET_HOSTNAME", "yes")
+      ret = SetItemSysconfigOpt(find_configured(device), "DHCLIENT_SET_HOSTNAME", "yes")
 
       SetModified()
 
