@@ -935,6 +935,16 @@ module Yast
       end
     end
 
+    # Checks if system DHCLIENT_SET_HOSTNAME is valid
+    #
+    # @return [Boolean]
+    def valid_dhcp_cfg?
+      return false if LanItems.find_set_hostname_ifaces.size > 1
+      return false if !LanItems.find_set_hostname_ifaces.empty? && DNS.dhcp_hostname
+
+      true
+    end
+
     # Get list of all configured interfaces
     #
     # return [Array] list of strings - interface names (eth0, ...)

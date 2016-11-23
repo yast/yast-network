@@ -422,7 +422,7 @@ module Yast
       return false if Abort()
       @initialized = true
 
-      fix_dhclient_warning(LanItems.find_set_hostname_ifaces) if @gui && !DNS.valid_dhcp_cfg?
+      fix_dhclient_warning(LanItems.find_set_hostname_ifaces) if @gui && !LanItems.valid_dhcp_cfg?
 
       Progress.Finish if @gui
 

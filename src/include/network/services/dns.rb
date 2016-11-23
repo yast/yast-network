@@ -426,7 +426,7 @@ module Yast
       selected = DNS.dhcp_hostname ? ANY_LABEL : NONE_LABEL
       items = []
 
-      if !DNS.valid_dhcp_cfg?
+      if !LanItems.valid_dhcp_cfg?
         fix_dhclient_warning(hostname_ifaces)
 
         selected = NO_CHANGE_LABEL

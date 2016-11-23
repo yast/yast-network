@@ -668,16 +668,6 @@ module Yast
       nil
     end
 
-    # Checks if system DHCLIENT_SET_HOSTNAME is valid
-    #
-    # @return [Boolean]
-    def valid_dhcp_cfg?
-      return false if LanItems.find_set_hostname_ifaces.size > 1
-      return false if !LanItems.find_set_hostname_ifaces.empty? && DNS.dhcp_hostname
-
-      true
-    end
-
   private
 
     def read_hostname_from_install_inf
