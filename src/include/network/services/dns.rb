@@ -430,7 +430,7 @@ module Yast
         fix_dhclient_warning(hostname_ifaces)
 
         selected = NO_CHANGE_LABEL
-        items = [Item(Id(NO_CHANGE_LABEL), "", true)]
+        items << [Item(Id(NO_CHANGE_LABEL), _("keep current settings"), true)]
       elsif hostname_ifaces.size == 1
         selected = hostname_ifaces.first
       end

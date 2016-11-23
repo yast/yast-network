@@ -120,12 +120,12 @@ module Yast
         "dhcp_hostname"     =>
                                _(
                                  "<p>If you are using DHCP to get an IP address, check whether you get\n" \
-                                 "also a hostname via DHCP.  The hostname will be set automatically by the DHCP client.\n" \
+                                 "also a hostname via DHCP. The hostname will be set automatically by the DHCP client.\n" \
                                  "However, changing the hostname at runtime may confuse the graphical desktop. \n" \
-                                 "Therefore, disable this option if you connect to different networks that assign \n" \
-                                 "different hostnames. To avoid collisions in multi homed systems, you should enable the \n" \
-                                 "option for just one interface. Default value is used for interfaces which don't have the \n" \
-                                 "option configured.</p> "
+                                 "Therefore, set this option to \"no\" if you connect to different networks that assign \n" \
+                                 "different hostnames. Otherwise you can specify particular interface to use or use a generic \"any\" \n" \
+                                 "option. However this option can lead to strange behavior if you have multihomed system \n" \
+                                 "connected to more DHCP networks.</p>\n" \
                                ),
         "write_hostname"    =>
                                _(
