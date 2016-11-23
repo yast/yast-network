@@ -389,24 +389,31 @@ describe "DHCLIENT_SET_HOSTNAME helpers" do
     it "fails when DHCLIENT_SET_HOSTNAME is set for multiple ifaces" do
       mock_dhcp_setup(["eth0", "eth1"], false)
 
+      expect(Yast::LanItems.invalid_dhcp_cfgs).not_to include("dhcp")
+      expect(Yast::LanItems.invalid_dhcp_cfgs).to include("ifcfg-eth0")
+      expect(Yast::LanItems.invalid_dhcp_cfgs).to include("ifcfg-eth1")
       expect(Yast::LanItems.valid_dhcp_cfg?).to be false
     end
 
     it "fails when DHCLIENT_SET_HOSTNAME is set globaly even in an ifcfg" do
       mock_dhcp_setup(["eth0"], true)
 
+      expect(Yast::LanItems.invalid_dhcp_cfgs).to include("dhcp")
+      expect(Yast::LanItems.invalid_dhcp_cfgs).to include("ifcfg-eth0")
       expect(Yast::LanItems.valid_dhcp_cfg?).to be false
     end
 
     it "succeedes when DHCLIENT_SET_HOSTNAME is set for one iface" do
       mock_dhcp_setup(["eth0"], false)
 
+      expect(Yast::LanItems.invalid_dhcp_cfgs).to be_empty
       expect(Yast::LanItems.valid_dhcp_cfg?).to be true
     end
 
-    it "succeededs when only global DHCLIENT_SET_HOSTNAME is set" do
+    it "succeedes when only global DHCLIENT_SET_HOSTNAME is set" do
       mock_dhcp_setup([], true)
 
+      expect(Yast::LanItems.invalid_dhcp_cfgs).to be_empty
       expect(Yast::LanItems.valid_dhcp_cfg?).to be true
     end
   end

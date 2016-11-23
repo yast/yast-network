@@ -935,14 +935,24 @@ module Yast
       end
     end
 
+    # Creates a list of config files which contain corrupted DHCLIENT_SET_HOSTNAME setup
+    #
+    # @return [Array] list of config file names
+    def invalid_dhcp_cfgs
+      devs = LanItems.find_set_hostname_ifaces
+      dev_ifcfgs = devs.map { |d| "ifcfg-#{d}" }
+
+      return dev_ifcfgs if devs.size > 1
+      return dev_ifcfgs << "dhcp" if !devs.empty? && DNS.dhcp_hostname
+
+      []
+    end
+
     # Checks if system DHCLIENT_SET_HOSTNAME is valid
     #
     # @return [Boolean]
     def valid_dhcp_cfg?
-      return false if LanItems.find_set_hostname_ifaces.size > 1
-      return false if !LanItems.find_set_hostname_ifaces.empty? && DNS.dhcp_hostname
-
-      true
+      invalid_dhcp_cfgs.empty?
     end
 
     # Get list of all configured interfaces

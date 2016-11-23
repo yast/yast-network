@@ -427,7 +427,7 @@ module Yast
       items = []
 
       if !LanItems.valid_dhcp_cfg?
-        fix_dhclient_warning(hostname_ifaces)
+        fix_dhclient_warning(invalid_dhcp_cfgs)
 
         selected = NO_CHANGE_LABEL
         items << [Item(Id(NO_CHANGE_LABEL), _("keep current settings"), true)]
