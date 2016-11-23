@@ -1,20 +1,26 @@
 ## Introduction
 
 The workflow of the installation is customized via the [control
-file](https://github.com/yast/yast-installation/blob/master/doc/control-file.md), and below we have the principal steps concerning network configuration:
+file](https://github.com/yast/yast-installation/blob/master/doc/control-file.md), 
+and below we have the principal steps concerning network configuration:
 
   - Linuxrc
   - inst_install_inf (What is still needed)
   - inst_dhcp
   - manual_configuration (openSUSE only in Addons)
-  - network_finish
-    - save_network
+  - finish 
+    - network_finish
+      - save_network
+
+Note: If you are interested in know more about installation process check 
+[this](https://github.com/yast/yast-installation/blob/master/doc/installation_overview.md) 
+documentation.
 
 ### Linuxrc 
 
-As the [documentation](https://github.com/openSUSE/linuxrc) of the project explains, it is the very early part of the 
-SuSE Installation before YaST runs which means that it is the first
-responsable of the network config.
+As the [documentation](https://github.com/openSUSE/linuxrc) of the project 
+explains, it is the very early part of the SuSE Installation before YaST runs
+which means that it is the first responsable of the network config.
 
 We can pass many options to the installation process that will be parsed by
 linuxrc configuring our interfaces according to that options, or forwarding
@@ -63,23 +69,30 @@ This client basically reads the content of /etc/install.inf which is an
 interface between YaST and linuxrc and configure some network parameters.
 
 Currently it just sets the
-[hostname](https://github.com/openSUSE/linuxrc/blob/master/linuxrc_hostname.md) and the ProxyUrl if given. 
-All the network configuration that was exported previously by linuxrc is now written directly by it.
+[hostname](https://github.com/openSUSE/linuxrc/blob/master/linuxrc_hostname.md) 
+and the ProxyUrl if given. 
 
+All the network configuration that was exported previously by linuxrc is now 
+written directly by it.
 
 ## inst_dhcp
 
-This client will try to configure dhcp in all the connected cards that haven't been configured yet.
+This client will try to configure dhcp in all the connected cards that haven't 
+been configured yet but only in the case that linuxrc does not active one
+previously (i.e. with some parameter that implies remote connection)
 
 ## Manual Configuration (lan client)
 
 In case that the network was not configured then the **lan** client will be
 launched after the welcome dialog as you can see
 [here](https://www.suse.com/documentation/sled-12/singlehtml/book_sle_deployment/book_sle_deployment.html#sec.i.yast2.network) 
-and also will be available in some steps during the installation (in Leap 42.2 only for Addons).
+and also will be available in some steps during the installation (in Leap 42.2 
+only for Addons).
 
-## network_finish -> save_network
+## inst_finish
 
 In this step is when the configuration is really copied from the running
-system to the installed one.
+system to the installed one. This client calls more specialized clients to
+procceed with the configuration, in case of networking it will call
+`network_finish` with will call `save_network`.
 
