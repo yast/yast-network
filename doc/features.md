@@ -73,3 +73,13 @@ Network Devices
 
 - ability to check what device is on mount point and if device is network one
 
+
+Shared Features ( in yast2 )
+============================
+
+- Internet test
+- Firewall CWM widgets
+- Bind9 YaPI interface
+- mapping of ports number and its aliases by IANA
+- Part ranges support ( well, it looks like object in ycp way )
+- firewall part support susefirewall and also firewalld
