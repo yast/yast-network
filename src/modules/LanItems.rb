@@ -2726,6 +2726,15 @@ module Yast
       deep_copy(ay)
     end
 
+    # Searches available items according sysconfig option
+    #
+    # Expects a block. The block is provided
+    # with a hash of every item's ifcfg options. Returns
+    # list of device names for whose the block evaluates to true.
+    #
+    # ifcfg hash<string, string> is in form { <sysconfig_key> -> <value> }
+    #
+    # @return [Array] list of device names
     def find_by_sysconfig
       items = GetNetcardInterfaces().select do |iface|
         ifcfg = GetDeviceMap(iface) || {}
