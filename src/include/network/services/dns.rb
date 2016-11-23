@@ -112,7 +112,7 @@ module Yast
             Hostname.ValidDomain
           )
         },
-        "DHCP_HOSTNAME"     => {
+        "DHCP_HOSTNAME"   => {
           "widget"        => :custom,
           "custom_widget" => HBox(
             Label(_("Set Hostname via DHCP")),
