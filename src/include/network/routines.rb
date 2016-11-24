@@ -998,7 +998,7 @@ module Yast
     def fix_dhclient_msg(cfgs)
       format(
         _(
-          "More than one interface asks to control the hostname via DHCP\n" \
+          "More than one interface asks to control the hostname via DHCP.\n" \
           "If you keep the current settings, the behavior is non-deterministic.\n\n" \
           "Involved configuration files:\n" \
           "%s\n"
