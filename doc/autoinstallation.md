@@ -55,11 +55,45 @@ or `semi-automatic` network configuration has been defined in the profile.
 
 ### finish
 
-
 This client will perform various steps, calling other clients to save the
-final configuration which related to networking are:
+final configuration which related to networking area:
 
   - network_finish
-  - ssh_settings_finish
+    - save_network
+
+#### network_finish
+
+This client calls `save_network` which copies udev rules and ifcfg files from
+from the running system which should be the linuxrc config and not the profile
+network configuration. 
+
+Take in account that the copy of the ifcfg files will be done only if 
+`keep_install_network` has not been set to `false` and in case that we need to
+configure the network before _SecondStage_ for registration for example
+`setup_before_proposal` has to be set to `true` as commented in the [autosetup section](#ausosetup), 
+more details about network 
+[here](https://www.suse.com/documentation/sles-12/singlehtml/book_autoyast/book_autoyast.html#CreateProfile.Network)
+
+#### ssh_settings_finish
 
 ## Second Stage
+
+The _SecondStage_, also known as `continue` in the control file, is basically 
+the stage where the configuration should be definitly written.
+
+### autoconfigure
+
+This client will read the 
+[desktop configuration files](https://yastgithubio.readthedocs.io/en/latest/autoyast-development/#desktop-configuration-file)
+and is very probably that will write the configuration of our network calling
+the lan_auto client with the information read in the networking section, but
+as commented, it depents on the information of the desktop files to do its job.
+
+
+
+
+
+
+
+
+
