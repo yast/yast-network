@@ -17,7 +17,7 @@ IPv6
 DHCP Client options
 ====================
 
-- send back to dhcp server hostname
+- Set hostname which is send back to the DHCP server
 - set machine identifier for asking dhcp
 - allow to set specific option for hostname to send for dhcpd client ( how often it is used? )
 
@@ -32,7 +32,7 @@ DNS
 Routing
 =========
 
-- allows to assign gateway for ipv4 and ipv6 and also assign via which device it can be reached
+- allows to assign default gateway for ipv4 and ipv6 and also assign via which device it can be reached
 - allows to enable ipv4 and ipv6 forwarding
 - allows manual edit of routing table
 
