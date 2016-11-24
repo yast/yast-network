@@ -17,7 +17,7 @@
 
 
 Name:           yast2-network
-Version:        3.2.11
+Version:        3.2.12
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -56,6 +56,8 @@ Requires:       rubygem(%rb_default_ruby_abi:cfa)
 # lenses are needed to use cfa
 BuildRequires:       augeas-lenses
 Requires:       augeas-lenses
+# BusID of all the cards with the same one (bsc#1007172)
+Requires:       hwinfo         >= 21.35
 
 # testsuite
 BuildRequires:  rubygem(rspec)
