@@ -220,7 +220,7 @@ module Yast
     #
     # @param itemId [Integer] a key for {#Items}
     def GetLanItem(itemId)
-      Ops.get_map(@Items, itemId, {})
+      Items()[itemId] || {}
     end
 
     # Returns configuration for currently modified item.
@@ -909,12 +909,50 @@ module Yast
     # It means list of item ids of all netcards which are detected and/or
     # configured in the system
     def GetNetcardInterfaces
-      @Items.keys
+      Items().keys
     end
 
     # Creates list of names of all known netcards configured even unconfigured
     def GetNetcardNames
       GetDeviceNames(GetNetcardInterfaces())
+    end
+
+    # Finds all NICs configured with DHCP
+    #
+    # @return [Array<String>] list of NIC names which are configured to use (any) dhcp
+    def find_dhcp_ifaces
+      find_by_sysconfig do |ifcfg|
+        ["dhcp4", "dhcp6", "dhcp", "dhcp+autoip"].include?(ifcfg["BOOTPROTO"])
+      end
+    end
+
+    # Finds all devices which has DHCLIENT_SET_HOSTNAME set to "yes"
+    #
+    # @return [Array<String>] list of NIC names which has the option set to "yes"
+    def find_set_hostname_ifaces
+      find_by_sysconfig do |ifcfg|
+        ifcfg["DHCLIENT_SET_HOSTNAME"] == "yes"
+      end
+    end
+
+    # Creates a list of config files which contain corrupted DHCLIENT_SET_HOSTNAME setup
+    #
+    # @return [Array] list of config file names
+    def invalid_dhcp_cfgs
+      devs = LanItems.find_set_hostname_ifaces
+      dev_ifcfgs = devs.map { |d| "ifcfg-#{d}" }
+
+      return dev_ifcfgs if devs.size > 1
+      return dev_ifcfgs << "dhcp" if !devs.empty? && DNS.dhcp_hostname
+
+      []
+    end
+
+    # Checks if system DHCLIENT_SET_HOSTNAME is valid
+    #
+    # @return [Boolean]
+    def valid_dhcp_cfg?
+      invalid_dhcp_cfgs.empty?
     end
 
     # Get list of all configured interfaces
@@ -1122,9 +1160,9 @@ module Yast
         LanItems.Items[current] = { "ifcfg" => device }
       end
 
-      autoinstall_settings["start_immediately"] = settings.fetch("start_immediately", false)
-      autoinstall_settings["strict_IP_check_timeout"] = settings.fetch("strict_IP_check_timeout", -1)
-      autoinstall_settings["keep_install_network"] = settings.fetch("keep_install_network", true)
+      @autoinstall_settings["start_immediately"] = settings.fetch("start_immediately", false)
+      @autoinstall_settings["strict_IP_check_timeout"] = settings.fetch("strict_IP_check_timeout", -1)
+      @autoinstall_settings["keep_install_network"] = settings.fetch("keep_install_network", true)
 
       # FIXME: createS390Device does two things, it
       # - updates internal structures
@@ -1590,15 +1628,6 @@ module Yast
           )
         end
       end
-
-      nil
-    end
-
-    # Select the hardware component
-    # @param [Fixnum] which index of the component
-
-    def SelectHW(which)
-      SelectHWMap(FindHardware(@Hardware, which))
 
       nil
     end
@@ -2426,6 +2455,45 @@ module Yast
       udev_rules
     end
 
+    # Configures available devices for obtaining hostname via specified device
+    #
+    # This is related to setting system's hostname via DHCP. Apart of global
+    # DHCLIENT_SET_HOSTNAME which is set in /etc/sysconfig/network/dhcp and is
+    # used as default, one can specify the option even per interface. To avoid
+    # collisions / undeterministic behavior the system should be configured so,
+    # that just one DHCP interface can update the hostname. E.g. global option
+    # can be set to "no" and just only one ifcfg can have the option set to "yes".
+    #
+    # @param [String] device name where should be hostname configuration active
+    # @return [Boolean] false when the configuration cannot be set for a device
+    def conf_set_hostname(device)
+      return false if !find_dhcp_ifaces.include?(device)
+
+      clear_set_hostname
+
+      ret = SetItemSysconfigOpt(find_configured(device), "DHCLIENT_SET_HOSTNAME", "yes")
+
+      SetModified()
+
+      ret
+    end
+
+    # Removes DHCLIENT_SET_HOSTNAME from all ifcfgs
+    #
+    # @return [void]
+    def clear_set_hostname
+      GetNetcardInterfaces().each do |item_id|
+        dev_map = GetDeviceMap(item_id)
+        next if dev_map.nil? || dev_map.empty?
+        next if !dev_map["DHCLIENT_SET_HOSTNAME"]
+
+        dev_map["DHCLIENT_SET_HOSTNAME"] = nil
+
+        SetDeviceMap(item_id, dev_map)
+        SetModified()
+      end
+    end
+
     # This helper allows YARD to extract DSL-defined attributes.
     # Unfortunately YARD has problems with the Capitalized ones,
     # so those must be done manually.
@@ -2653,6 +2721,25 @@ module Yast
       deep_copy(ay)
     end
 
+    # Searches available items according sysconfig option
+    #
+    # Expects a block. The block is provided
+    # with a hash of every item's ifcfg options. Returns
+    # list of device names for whose the block evaluates to true.
+    #
+    # ifcfg hash<string, string> is in form { <sysconfig_key> -> <value> }
+    #
+    # @return [Array] list of device names
+    def find_by_sysconfig
+      items = GetNetcardInterfaces().select do |iface|
+        ifcfg = GetDeviceMap(iface) || {}
+
+        yield(ifcfg)
+      end
+
+      GetDeviceNames(items)
+    end
+
     # @attribute Items
     # @return [Hash<Integer, Hash<String, Object> >]
     # Each item, indexed by an Integer in a Hash, aggregates several aspects
@@ -2761,7 +2848,6 @@ module Yast
     publish function: :isCurrentDHCP, type: "boolean ()"
     publish function: :GetItemDescription, type: "string ()"
     publish function: :SelectHWMap, type: "void (map)"
-    publish function: :SelectHW, type: "void (integer)"
     publish function: :FreeDevices, type: "list (string)"
     publish function: :SetDefaultsForHW, type: "void ()"
     publish function: :SetDeviceVars, type: "void (map, map)"

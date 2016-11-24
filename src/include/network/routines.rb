@@ -989,5 +989,30 @@ module Yast
       hwstring = hwstrings[hwtype] || _("All Network Devices")
       Confirm.Detection(hwstring, nil)
     end
+
+    # Returns a generic message informing user that incorrect DHCLIENT_SET_HOSTNAME
+    # setup was detected.
+    #
+    # @param [Array<String>] list of incorrectly configured devices
+    # @return [String] a message stating that incorrect DHCLIENT_SET_HOSTNAME setup was detected
+    def fix_dhclient_msg(cfgs)
+      format(
+        _(
+          "More than one interface asks to control the hostname via DHCP.\n" \
+          "If you keep the current settings, the behavior is non-deterministic.\n\n" \
+          "Involved configuration files:\n" \
+          "%s\n"
+        ),
+        cfgs.join(" ")
+      )
+    end
+
+    # A popup informing user that incorrent DHCLIENT_SET_HOSTNAME was detected
+    #
+    # @param [Array<String>] list of incorrectly configured devices
+    # @return [void]
+    def fix_dhclient_warning(devs)
+      Popup.Warning(fix_dhclient_msg(devs))
+    end
   end
 end
