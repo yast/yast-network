@@ -1,4 +1,19 @@
 -------------------------------------------------------------------
+Wed Nov 23 09:18:33 UTC 2016 - mfilka@suse.com
+
+- bsc#984890
+  - new implementation of setting hostname via DHCP. User is
+    allowed to set hostname via particular interface or set a
+    reasonable default value for all interfaces.
+- bsc#1007172 (kanderssen@suse.com)
+  - When an interface is enslaved in a bond the udev rule is modified
+    using the bus_id instead of the mac address but some multiport
+    cards could use the same bus_id. In such cases also the dev_port
+    is needed. Taking this in account the dev_port will be added
+    always when a udev rule based on bus_id is written.
+- 3.2.12
+
+-------------------------------------------------------------------
 Tue Nov 22 12:30:06 UTC 2016 - igonzalezsosa@suse.com
 
 - Do not crash when removing an entry from the /etc/hosts file

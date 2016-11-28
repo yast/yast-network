@@ -788,6 +788,25 @@ module Yast
       !physical_port_id(dev_name).empty?
     end
 
+    # Dev port of the given interface from /sys/class/net/$dev_name/dev_port
+    #
+    # @param [String] device name to check
+    # @return [String] dev port or an empty string if not
+    def dev_port(dev_name)
+      SCR.Read(
+        path(".target.string"),
+        "/sys/class/net/#{dev_name}/dev_port"
+      ).to_s.strip
+    end
+
+    # Checks if the given interface exports its dev port via sysfs
+    #
+    # @return [boolean] true if the dev port is not empty
+    # @see #physical_port_id
+    def dev_port?(dev_name)
+      !dev_port(dev_name).empty?
+    end
+
     # Checks if device is physically connected to a network
     #
     # It does neccessary steps which might be needed for proper initialization
@@ -925,6 +944,31 @@ module Yast
 
       hwstring = hwstrings[hwtype] || _("All Network Devices")
       Confirm.Detection(hwstring, nil)
+    end
+
+    # Returns a generic message informing user that incorrect DHCLIENT_SET_HOSTNAME
+    # setup was detected.
+    #
+    # @param [Array<String>] list of incorrectly configured devices
+    # @return [String] a message stating that incorrect DHCLIENT_SET_HOSTNAME setup was detected
+    def fix_dhclient_msg(cfgs)
+      format(
+        _(
+          "More than one interface asks to control the hostname via DHCP.\n" \
+          "If you keep the current settings, the behavior is non-deterministic.\n\n" \
+          "Involved configuration files:\n" \
+          "%s\n"
+        ),
+        cfgs.join(" ")
+      )
+    end
+
+    # A popup informing user that incorrent DHCLIENT_SET_HOSTNAME was detected
+    #
+    # @param [Array<String>] list of incorrectly configured devices
+    # @return [void]
+    def fix_dhclient_warning(devs)
+      Popup.Warning(fix_dhclient_msg(devs))
     end
   end
 end
