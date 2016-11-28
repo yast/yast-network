@@ -9,13 +9,13 @@ is not needed, in autoinstallation the installation proccess is divided in
 two and in the _Second Stage_ is where and when the system configuration is
 really done.
 
-There are two ways of give a profile to _AutoYaST_, with (`autoyast` or with
-`autoyast2 parameters`), the principal difference from networking point of 
+There are two ways to give a profile to _AutoYaST_, with (`autoyast` or with
+`autoyast2` parameters), the principal difference from networking point of 
 view is that `autoyast` will not fetch the profile which means that doesn't
 need the network configuration at all while for `autoyast2` _Linuxrc_ will try
 to configure it if needed.
 
-The current steps that involves network configuration are:
+The current steps that involve network configuration are:
 
  - _Linuxrc_
  - First Stage
@@ -29,7 +29,7 @@ The current steps that involves network configuration are:
 
 ## Linuxrc
 
-The network configuration is basically the same that for
+The network configuration is basically the same as for the
 [installation](installation.md#Linuxrc), but in case that `autoyast2` is used
 then it will fetch and parse the linuxrc options given in the profile and for
 that as commented previously will configure the network if needed.
@@ -39,12 +39,12 @@ that as commented previously will configure the network if needed.
 
 ### autoinit
 
-Autoinit will call `iSCSI` or `FCOE` clients if them are enable in _Linuxrc_
+Autoinit will call `iSCSI` or `FCOE` clients if they are enabled in _Linuxrc_
 and will try to fetch and process the profile.
 
 ### autosetup
 
-This client basically will read the `networking` section in the general one,
+This client basically will read the `networking` section in the `general` one,
 and also will check if `network` requires manual configuration having an
 entry in the 
 [semi-automatic](https://www.suse.com/documentation/sles-12/singlehtml/book_autoyast/book_autoyast.html#CreateProfile.Register)
@@ -63,18 +63,18 @@ final configuration which related to networking area:
 
 #### network_finish
 
-This client calls `save_network` which copies udev rules and ifcfg files from
+This client calls `save_network` which copies udev rules and ifcfg files
 from the running system which should be the linuxrc config and not the profile
 network configuration. 
 
-Take in account that the copy of the ifcfg files will be done only if 
+Take in account that the copying of the ifcfg files will be done only if 
 `keep_install_network` has not been set to `false` and in case that we need to
 configure the network before _SecondStage_ then `setup_before_proposal` has to
 be set to `true` as commented in the [autosetup section](#ausosetup) more
 details about network
 [here](https://www.suse.com/documentation/sles-12/singlehtml/book_autoyast/book_autoyast.html#CreateProfile.Network)
 
-The `save_network` method, is also the responsable of write several proposals
+The `save_network` method, is also responsible for writing several proposals
 like virtualization, dns and network service.
 
 #### ssh_settings_finish
@@ -82,14 +82,13 @@ like virtualization, dns and network service.
 ## Second Stage
 
 The _SecondStage_, also known as `continue` in the control file, is basically 
-the stage where the configuration should be definitly written.
+the stage where the configuration should be definitively written.
 
 ### autoconfigure
 
 This client will read the [desktop configuration
 files](https://yastgithubio.readthedocs.io/en/latest/autoyast-development/#desktop-configuration-file)
 and is very probably that will write the configuration of our network calling
-the lan_auto client with the information read in the networking section, but
-as commented, it depents on the information of the desktop files to do its
+the `lan_auto` client with the information read in the `networking` section, but
+as mentioned, it depends on the information of the desktop files to do its
 job.
-
