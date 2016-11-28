@@ -7,7 +7,9 @@ and below we have the principal steps concerning network configuration:
   - Linuxrc
   - inst_install_inf (What is still needed)
   - inst_dhcp
-  - manual_configuration (openSUSE only in Addons)
+  - manual_configuration 
+    - SLE (in registration, addons or disk activation)
+    - openSUSE (only in addons or disk activation)
   - finish 
     - network_finish
       - save_network
@@ -94,5 +96,5 @@ only for Addons).
 In this step is when the configuration is really copied from the running
 system to the installed one. This client calls more specialized clients to
 procceed with the configuration, in case of networking it will call
-`network_finish` with will call `save_network`.
+`network_finish` which will call `save_network`.
 

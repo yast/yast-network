@@ -69,10 +69,13 @@ network configuration.
 
 Take in account that the copy of the ifcfg files will be done only if 
 `keep_install_network` has not been set to `false` and in case that we need to
-configure the network before _SecondStage_ for registration for example
-`setup_before_proposal` has to be set to `true` as commented in the [autosetup section](#ausosetup), 
-more details about network 
+configure the network before _SecondStage_ then `setup_before_proposal` has to
+be set to `true` as commented in the [autosetup section](#ausosetup) more
+details about network
 [here](https://www.suse.com/documentation/sles-12/singlehtml/book_autoyast/book_autoyast.html#CreateProfile.Network)
+
+The `save_network` method, is also the responsable of write several proposals
+like virtualization, dns and network service.
 
 #### ssh_settings_finish
 
@@ -83,17 +86,10 @@ the stage where the configuration should be definitly written.
 
 ### autoconfigure
 
-This client will read the 
-[desktop configuration files](https://yastgithubio.readthedocs.io/en/latest/autoyast-development/#desktop-configuration-file)
+This client will read the [desktop configuration
+files](https://yastgithubio.readthedocs.io/en/latest/autoyast-development/#desktop-configuration-file)
 and is very probably that will write the configuration of our network calling
 the lan_auto client with the information read in the networking section, but
-as commented, it depents on the information of the desktop files to do its job.
-
-
-
-
-
-
-
-
+as commented, it depents on the information of the desktop files to do its
+job.
 
