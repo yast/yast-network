@@ -1366,13 +1366,14 @@ module Yast
       [startmode_descr]
     end
 
-    # Creates details for device overvies based on ip configuration type
+    # Creates details for device's overview based on ip configuration type
     #
     # Produces list of strings. Strings are intended for "bullet" list, e.g.:
     # * <string1>
     # * <string2>
     #
-    # return [Array] list of strings, one string is intended for one "bullet"
+    # @param [Hash] dev_map a device's sysconfig map (in form "option" => "value")
+    # @return [Array] list of strings, one string is intended for one "bullet"
     def ip_overview(dev_map)
       bullets = []
 
@@ -1423,6 +1424,8 @@ module Yast
 
         if !ifcfg_name.empty?
           ifcfg_conf = GetDeviceMap(key)
+          log.error("BuildLanOverview: devmap for #{key}/#{ifcfg_name} is nil") if ifcfg_conf.nil?
+
           ifcfg_desc = ifcfg_conf["NAME"]
           descr = ifcfg_desc if !ifcfg_desc.nil? && !ifcfg_desc.empty?
           descr = CheckEmptyName(ifcfg_type, descr)
