@@ -10,10 +10,10 @@ two and in the _Second Stage_ is where and when the system configuration is
 really done.
 
 There are two ways to give a profile to _AutoYaST_, with (`autoyast` or with
-`autoyast2` parameters), the principal difference from networking point of 
-view is that `autoyast` will not fetch the profile which means that doesn't
-need the network configuration at all while for `autoyast2` _Linuxrc_ will try
-to configure it if needed.
+`autoyast2` parameters), the principal difference is that `autoyast` leaves
+the fetching of the profile to YaST wich which means _Linuxrc_ does not need
+to configure the network, while for `autoyast` _Linuxrc_ fetches the profile
+and may need to configure the network.
 
 The current steps that involve network configuration are:
 
@@ -68,11 +68,14 @@ from the running system which should be the linuxrc config and not the profile
 network configuration. 
 
 Take in account that the copying of the ifcfg files will be done only if 
-`keep_install_network` has not been set to `false` and in case that we need to
-configure the network before _SecondStage_ then `setup_before_proposal` has to
-be set to `true` as commented in the [autosetup section](#ausosetup) more
-details about network
-[here](https://www.suse.com/documentation/sles-12/singlehtml/book_autoyast/book_autoyast.html#CreateProfile.Network)
+`keep_install_network` has not been set to `false`, being `true` the default
+value. More details and examples
+[here](https://www.suse.com/documentation/sles-12/singlehtml/book_autoyast/book_autoyast.html#CreateProfile.Network).
+
+
+In case that we need to use the network configuration declared in the profile
+duing the _SecondStage_ then `setup_before_proposal` has to be set to `true`
+to configure it  as commented in the [autosetup section](#autosetup). 
 
 The `save_network` method, is also responsible for writing several proposals
 like virtualization, dns and network service.
@@ -88,7 +91,11 @@ the stage where the configuration should be definitively written.
 
 This client will read the [desktop configuration
 files](https://yastgithubio.readthedocs.io/en/latest/autoyast-development/#desktop-configuration-file)
-and is very probably that will write the configuration of our network calling
-the `lan_auto` client with the information read in the `networking` section, but
-as mentioned, it depends on the information of the desktop files to do its
-job.
+of all the installed modules and will parse the section as well will launch
+the corresponding client based on what was defined in the file. 
+
+Concerning to networking the most important one is the lan.desktop file which
+defines the `networking` profile's resource to be parsed and as it does not
+define a specific client to be called it will use the default value `lan_auto`.
+
+And finally `lan_auto` will write our network config.

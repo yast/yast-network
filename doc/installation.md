@@ -4,17 +4,16 @@ The workflow of the installation is customized via the [control
 file](https://github.com/yast/yast-installation/blob/master/doc/control-file.md), 
 and below we have the principal steps concerning network configuration:
 
-  - Linuxrc
-  - inst_install_inf (What is still needed)
-  - inst_dhcp
-  - manual_configuration 
-    - SLE (in registration, addons or disk activation)
-    - openSUSE (only in addons or disk activation)
-  - finish 
-    - network_finish
-      - save_network
+  1. Linuxrc
+  2. inst_dhcp
+  3. inst_lan
+  4. manual_configuration
+    - SLE (in registration, addons or disks activation)
+    - openSUSE (only in addons or disks activation)
+  5. finish 
+    - network_finish -> save_network
 
-Note: If you are interested in knowing more about the installation process check 
+**Note:** If you are interested in knowing more about the installation process check 
 [this](https://github.com/yast/yast-installation/blob/master/doc/installation_overview.md) 
 documentation.
 
@@ -64,32 +63,34 @@ NETCONFIG_DNS_STATIC_SEARCH_LIST="suse.de"
 NETCONFIG_DNS_STATIC_SERVERS="192.168.122.1"
 ```
 
-
-## inst_install_inf
-
-This client basically reads the content of /etc/install.inf, which is an
-interface between YaST and linuxrc, and configures some network parameters.
-
-Currently it just sets the
-[hostname](https://github.com/openSUSE/linuxrc/blob/master/linuxrc_hostname.md) 
-and the ProxyUrl if given. 
-
-All the network configuration that was exported previously by linuxrc is now 
-written directly by it.
-
 ## inst_dhcp
 
 This client will try to configure dhcp in all the connected cards that haven't 
 been configured yet but only in the case that linuxrc has not activated one
 previously (i.e. with some parameter that implies a remote connection).
 
-## Manual Configuration (lan client)
+## inst_lan
 
 In case that the network was not configured then the **lan** client will be
 launched after the welcome dialog as you can see
-[here](https://www.suse.com/documentation/sled-12/singlehtml/book_sle_deployment/book_sle_deployment.html#sec.i.yast2.network) 
-and also will be available in some steps during the installation (in Leap 42.2 
-only for Addons).
+[here](https://www.suse.com/documentation/sled-12/singlehtml/book_sle_deployment/book_sle_deployment.html#sec.i.yast2.network)
+otherwise the client will be skipped.
+
+## Manual Configuration (lan client)
+
+In some scenarios, special network configuration is needed, i.e:
+
+  - Network storage environment
+  - Need of a particular vlan
+  - Addons media not available for the configured network.
+  - Wrong configuration
+
+For these reasons, there are some places during the installation that allow us
+to launch the network configuration client.
+
+  - disks_activate
+  - registration (only in SLE)
+  - addons
 
 ## inst_finish
 
