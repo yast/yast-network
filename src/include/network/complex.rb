@@ -401,10 +401,10 @@ module Yast
     # @param [Hash] devmap device map
     # @return textual device protocol
     def DeviceProtocol(devmap)
-      if devmap["STARTMODE"] == "managed"
-        # Abbreviation for "The interface is Managed by NetworkManager"
-        return _("Managed")
-      end
+      return _("Not configured") if devmap.nil? || devmap.empty?
+      # Abbreviation for "The interface is Managed by NetworkManager"
+      return _("Managed") if devmap["STARTMODE"] == "managed"
+
       bootproto = devmap["BOOTPROTO"] || "static"
 
       if bootproto.empty? || bootproto == "static"
