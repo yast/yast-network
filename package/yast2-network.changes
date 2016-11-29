@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Tue Nov 29 12:41:40 UTC 2016 - mfilka@suse.com
+
+- bnc#1012581
+  - do not crash with internal error stating undefined method when
+    switching to "Hostname / DNS" tab when the system contains
+    incorrect configuration of DHCLIENT_SET_HOSTNAME
+- 3.2.14
+
+-------------------------------------------------------------------
 Mon Nov 28 21:15:00 UTC 2016 - mfilka@suse.com
 
 - bnc#1009931
