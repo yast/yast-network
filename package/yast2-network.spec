@@ -42,9 +42,6 @@ Requires:       yast2-xml
 
 #netconfig (FaTE #303618)
 Requires:       sysconfig >= 0.80.0
-#GetLanguageCountry
-#(in newly created yast2-country-data)
-Requires:       yast2-country-data >= 2.16.3
 # Storage::IsDeviceOnNetwork
 BuildRequires:  yast2-storage >= 2.21.11
 Requires:       yast2-storage >= 2.21.11
@@ -54,7 +51,7 @@ Requires:       yast2-packager >= 3.1.47
 BuildRequires:  rubygem(%rb_default_ruby_abi:cfa)
 Requires:       rubygem(%rb_default_ruby_abi:cfa)
 # lenses are needed to use cfa
-BuildRequires:       augeas-lenses
+BuildRequires:  augeas-lenses
 Requires:       augeas-lenses
 # BusID of all the cards with the same one (bsc#1007172)
 Requires:       hwinfo         >= 21.35
