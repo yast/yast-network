@@ -19,6 +19,7 @@
 Name:           yast2-network
 Version:        3.2.14
 Release:        0
+BuildArch:      noarch
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 Source0:        %{name}-%{version}.tar.bz2
