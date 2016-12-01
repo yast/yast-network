@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Nov 30 12:11:44 UTC 2016 - kanderssen@suse.com
+
+- Linuxrc does not export some variables anymore and handles the
+  configuration of network directly, for that reason, some methods
+  or reponsibilities of InstallInfConvertor class are not needed
+  being removed.
+
+-------------------------------------------------------------------
 Wed Nov 30 09:04:58 UTC 2016 - mfilka@suse.com
 
 - bnc#1012764
