@@ -304,13 +304,12 @@ module Yast
       return nil if !IsItemConfigured(itemId)
 
       devname = GetDeviceName(itemId)
-      devtype = NetworkInterfaces.GetType(devname)
 
-      Convert.convert(
-        Ops.get(NetworkInterfaces.FilterDevices("netcard"), [devtype, devname]),
-        from: "any",
-        to:   "map <string, any>"
-      )
+      NetworkInterfaces.FilterDevices("netcard").each do |_dev_type, conf|
+        return conf[devname] if conf[devname]
+      end
+
+      nil
     end
 
     def GetCurrentMap
@@ -824,9 +823,8 @@ module Yast
       when "br"
         log.debug("Excluding lan item (#{itemId}: #{devname}) - is bridge")
         return false
-
-      when "tun"
-        log.debug("Excluding lan item (#{itemId}: #{devname}) - is tun")
+      when "tun", "usb", "wlan"
+        log.debug("Excluding lan item (#{itemId}: #{devname}) - is #{devtype}")
         return false
       end
 

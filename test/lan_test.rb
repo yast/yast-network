@@ -224,3 +224,168 @@ describe "LanClass#readIPv6" do
     expect(Yast::Lan.readIPv6).to be true
   end
 end
+
+describe "LanClass#IfcfgsToSkipVirtualizedProposal" do
+  let(:items) do
+    {
+      "0" => { "ifcfg" => "bond0" },
+      "1" => { "ifcfg" => "br0" },
+      "2" => { "ifcfg" => "eth0" },
+      "3" => { "ifcfg" => "eth1" },
+      "4" => { "ifcfg" => "wlan0" },
+      "5" => { "ifcfg" => "wlan1" }
+    }
+  end
+
+  let(:current_interface) do
+    {
+      "ONBOOT"       => "yes",
+      "BOOTPROTO"    => "dhcp",
+      "DEVICE"       => "br1",
+      "BRIDGE"       => "yes",
+      "BRIDGE_PORTS" => "eth1",
+      "BRIDGE_STP"   => "off",
+      "IPADDR"       => "10.0.0.1",
+      "NETMASK"      => "255.255.255.0"
+    }
+  end
+
+  context "when various interfaces are present in the system" do
+    before do
+      allow(Yast::NetworkInterfaces).to receive(:GetType).with("br0").and_return("br")
+      allow(Yast::NetworkInterfaces).to receive(:GetType).with("bond0").and_return("bond")
+      allow(Yast::NetworkInterfaces).to receive(:GetType).with("eth0").and_return("eth")
+      allow(Yast::NetworkInterfaces).to receive(:GetType).with("eth1").and_return("eth")
+      allow(Yast::NetworkInterfaces).to receive(:GetType).with("wlan0").and_return("usb")
+      allow(Yast::NetworkInterfaces).to receive(:GetType).with("wlan1").and_return("wlan")
+      allow(Yast::NetworkInterfaces).to receive(:Current).and_return(current_interface)
+      allow(Yast::NetworkInterfaces).to receive(:GetValue).and_return(nil)
+      allow(Yast::LanItems).to receive(:Items).and_return(items)
+    end
+
+    context "and one of them is a bridge" do
+      it "returns an array containining the bridge interface" do
+        (expect Yast::Lan.IfcfgsToSkipVirtualizedProposal).to include("br0")
+      end
+
+      it "returns an array containing the bridged interfaces" do
+        allow(Yast::NetworkInterfaces).to receive(:GetValue)
+          .with("br0", "BRIDGE_PORTS").and_return("eth1")
+
+        expect(Yast::Lan.IfcfgsToSkipVirtualizedProposal).to include("eth1")
+        expect(Yast::Lan.IfcfgsToSkipVirtualizedProposal).to_not include("eth0")
+      end
+    end
+
+    context "and one of them is a bond" do
+      let(:current_interface) do
+        {
+          "BOOTPROTO"      => "static",
+          "BONDING_MASTER" => "yes",
+          "DEVICE"         => "bond0",
+          "BONDING_SLAVE"  => "eth0"
+        }
+      end
+
+      it "returns an array containing the bonded interfaces" do
+        expect(Yast::Lan.IfcfgsToSkipVirtualizedProposal).not_to include("bond0")
+      end
+    end
+
+    context "and one  of them is an usb or a wlan interface" do
+      it "returns an array containing the interface" do
+        expect(Yast::Lan.IfcfgsToSkipVirtualizedProposal).to include("wlan0", "wlan1")
+      end
+    end
+
+    context "and the interface startmode is 'nfsroot'" do
+      it "returns an array containing the interface" do
+        allow(Yast::NetworkInterfaces).to receive(:GetValue)
+          .with("eth0", "STARTMODE").and_return("nfsroot")
+
+        expect(Yast::Lan.IfcfgsToSkipVirtualizedProposal).to include("eth0")
+      end
+    end
+
+    context "and all the interfaces are bridgeable" do
+      let(:current_item) do
+        {
+          "BOOTPROTO" => "dhcp",
+          "STARTMODE" => "auto"
+        }
+      end
+      it "returns an empty array" do
+        allow(Yast::NetworkInterfaces).to receive(:GetType).and_return("eth")
+        expect(Yast::Lan.IfcfgsToSkipVirtualizedProposal).to eql([])
+      end
+    end
+  end
+
+  context "there is no interfaces in the system" do
+    let(:items) { {} }
+    it "returns an empty array" do
+      expect(Yast::Lan.IfcfgsToSkipVirtualizedProposal).to eql([])
+    end
+  end
+end
+
+describe "LanClass#ProposeVirtualized" do
+
+  before do
+    allow(Yast::NetworkInterfaces).to receive(:GetFreeDevice).with("br").and_return("1")
+    allow(Yast::LanItems).to receive(:IsCurrentConfigured).and_return(true)
+    allow(Yast::Lan).to receive(:configure_as_bridge!)
+    allow(Yast::Lan).to receive(:configure_as_bridge_port)
+
+    allow(Yast::LanItems).to receive(:Items)
+      .and_return(
+        0 => { "ifcfg" => "eth0" }, 1 => { "ifcfg" => "wlan0", 2 => { "ifcfg" => "br0" } }
+      )
+  end
+
+  context "when an interface is not bridgeable" do
+    it "doest not propose the interface" do
+      allow(Yast::LanItems).to receive(:IsBridgeable).with(anything, anything).and_return(false)
+      allow(Yast::LanItems).to receive(:IsCurrentConfigured).and_return(false)
+      expect(Yast::Lan).not_to receive(:propose_current_item!).with("ifcfg" => "wlan0")
+
+      Yast::Lan.ProposeVirtualized
+    end
+  end
+
+  context "when an interface is bridgeable" do
+    before do
+      allow(Yast::LanItems).to receive(:IsBridgeable).with(anything, 0).and_return(true)
+      allow(Yast::LanItems).to receive(:IsBridgeable).with(anything, 1).and_return(false)
+      allow(Yast::LanItems).to receive(:IsBridgeable).with(anything, 2).and_return(false)
+    end
+
+    it "configures the interface with defaults before anything if not configured" do
+      allow(Yast::LanItems).to receive(:IsCurrentConfigured).and_return(false)
+      expect(Yast::Lan).to receive(:propose_current_item!).with("ifcfg" => "eth0")
+
+      Yast::Lan.ProposeVirtualized
+    end
+
+    it "configures a new bridge with the given interface as a bridge port" do
+      expect(Yast::Lan).to receive(:configure_as_bridge!).with("eth0", "br1")
+
+      Yast::Lan.ProposeVirtualized
+    end
+
+    it "configures the given interface as a bridge port" do
+      expect(Yast::Lan).to receive(:configure_as_bridge!).with("eth0", "br1").and_return(true)
+      expect(Yast::Lan).to receive(:configure_as_bridge_port).with("eth0")
+
+      Yast::Lan.ProposeVirtualized
+    end
+
+    it "refresh lan items with the new interfaces" do
+      expect(Yast::Lan).to receive(:configure_as_bridge!).with("eth0", "br1").and_return(true)
+      expect(Yast::Lan).to receive(:configure_as_bridge_port).with("eth0")
+      expect(Yast::Lan).to receive(:refresh_lan_items)
+
+      Yast::Lan.ProposeVirtualized
+    end
+  end
+end
