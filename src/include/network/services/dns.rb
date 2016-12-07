@@ -45,6 +45,7 @@ module Yast
       Yast.import "LanItems"
       Yast.import "Popup"
       Yast.import "Map"
+      Yast.import "NetworkService"
 
       Yast.include include_target, "network/routines.rb"
       Yast.include include_target, "network/widgets.rb"
@@ -420,7 +421,7 @@ module Yast
 
     # Init handler for DHCP_HOSTNAME
     def InitDhcpHostname(_key)
-      UI.ChangeWidget(Id("DHCP_HOSTNAME"), :Enabled, has_dhcp?)
+      UI.ChangeWidget(Id("DHCP_HOSTNAME"), :Enabled, has_dhcp? && NetworkService.is_wicked)
 
       hostname_ifaces = LanItems.find_set_hostname_ifaces
       selected = DNS.dhcp_hostname ? ANY_LABEL : NONE_LABEL
@@ -430,7 +431,7 @@ module Yast
         fix_dhclient_warning(LanItems.invalid_dhcp_cfgs)
 
         selected = NO_CHANGE_LABEL
-        items << [Item(Id(NO_CHANGE_LABEL), _("keep current settings"), true)]
+        items << Item(Id(NO_CHANGE_LABEL), _("keep current settings"), true)
       elsif hostname_ifaces.size == 1
         selected = hostname_ifaces.first
       end
