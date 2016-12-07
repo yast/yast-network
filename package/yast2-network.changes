@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Dec  7 07:43:45 UTC 2016 - mfilka@suse.com
+
+- bnc#1013684
+  - do not crash with internal error when setting static setup for
+    newly added device
+- 3.2.16 
+
+-------------------------------------------------------------------
 Wed Nov 30 12:11:44 UTC 2016 - kanderssen@suse.com
 
 - Linuxrc does not export some variables anymore and handles the
