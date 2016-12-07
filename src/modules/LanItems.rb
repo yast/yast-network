@@ -1382,7 +1382,7 @@ module Yast
       if ip =~ /DHCP/
         bullets << format("%s %s", _("IP address assigned using"), ip)
       elsif IP.Check(ip)
-        prefixlen = dev_map["PREFIXLEN"]
+        prefixlen = dev_map["PREFIXLEN"] || ""
         if !prefixlen.empty?
           bullets << format(_("IP address: %s/%s"), ip, prefixlen)
         else
