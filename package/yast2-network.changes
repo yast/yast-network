@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri Dec  9 09:19:16 UTC 2016 - mfilka@suse.com
+
+- bnc#1013605
+  - Enable DHCP_HOSTNAME listbox only when wicked service is used.
+  - Fixed displaying the "keep current settings" option.
+- 3.2.17
+
+-------------------------------------------------------------------
 Wed Dec  7 07:43:45 UTC 2016 - mfilka@suse.com
 
 - bnc#1013684
