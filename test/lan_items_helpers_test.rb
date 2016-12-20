@@ -286,6 +286,10 @@ describe "DHCLIENT_SET_HOSTNAME helpers" do
         .to receive(:GetDeviceMap)
         .with(index)
         .and_return(dev_maps[item_map["ifcfg"]])
+      allow(Yast::LanItems)
+        .to receive(:GetDeviceName)
+        .with(index)
+        .and_return(item_map["ifcfg"])
     end
   end
 
@@ -360,9 +364,13 @@ describe "DHCLIENT_SET_HOSTNAME helpers" do
         "eth1" => { "DHCLIENT_SET_HOSTNAME" => "no" }
       }.freeze
     end
+    let(:no_dhclient_maps) do
+      { "eth6" => { "BOOT" => "dhcp" } }.freeze
+    end
 
     it "clears all DHCLIENT_SET_HOSTNAME options" do
-      mock_items(dhcp_yes_maps.merge(dhcp_no_maps))
+      dhclient_maps = dhcp_yes_maps.merge(dhcp_no_maps)
+      mock_items(dhclient_maps.merge(no_dhclient_maps))
 
       expect(Yast::LanItems)
         .to receive(:SetDeviceMap)
@@ -372,7 +380,9 @@ describe "DHCLIENT_SET_HOSTNAME helpers" do
         .to receive(:SetModified)
         .at_least(:once)
 
-      Yast::LanItems.clear_set_hostname
+      ret = Yast::LanItems.clear_set_hostname
+
+      expect(ret).to eql dhclient_maps.keys
     end
   end
 
