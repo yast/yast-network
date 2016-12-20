@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Dec 20 07:14:38 UTC 2016 - kanderssen@suse.com
+
+- Improved parsing of vlan ids that are longer than one character.
+  Backport from SP2 (bsc#968692)
+- 3.1.140.10
+
+-------------------------------------------------------------------
 Thu Nov 17 16:00:48 UTC 2016 - kanderssen@suse.com
 
 - When an interface is enslaved in a bond the udev rule is modified
