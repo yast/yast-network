@@ -2499,8 +2499,12 @@ module Yast
 
     # Removes DHCLIENT_SET_HOSTNAME from all ifcfgs
     #
-    # @return [void]
+    # @return [Array<String>] list of names of cleared devices
     def clear_set_hostname
+      log.info("Clearing DHCLIENT_SET_HOSTNAME flag from device configs")
+
+      ret = []
+
       GetNetcardInterfaces().each do |item_id|
         dev_map = GetDeviceMap(item_id)
         next if dev_map.nil? || dev_map.empty?
@@ -2510,7 +2514,13 @@ module Yast
 
         SetDeviceMap(item_id, dev_map)
         SetModified()
+
+        ret << GetDeviceName(item_id)
       end
+
+      log.info("#{ret.inspect} use default DHCLIENT_SET_HOSTNAME")
+
+      ret
     end
 
     # This helper allows YARD to extract DSL-defined attributes.
