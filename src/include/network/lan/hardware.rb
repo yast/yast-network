@@ -810,6 +810,8 @@ module Yast
       true
     end
 
+    VLAN_SIZE = 4 # size of vlanN prefix without number
+
     def storeHW(_key, _event)
       if isNewDevice
         nm = devname_from_hw_dialog
@@ -829,7 +831,7 @@ module Yast
         end
         if LanItems.type == "vlan"
           # for vlan devices named vlanN pre-set vlan_id to N, otherwise default to 0
-          LanItems.vlan_id = "#{nm["vlan".size].to_i}"
+          LanItems.vlan_id = nm[VLAN_SIZE..-1]
         end
       end
 
