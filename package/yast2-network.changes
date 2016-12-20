@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri Dec  9 09:19:16 UTC 2016 - mfilka@suse.com
+
+- bnc#1013605
+  - fixed DHCLIENT_SET_HOSTNAME proposing for automatic
+    installation 
+- 3.2.17
+
+-------------------------------------------------------------------
 Wed Dec  7 07:43:45 UTC 2016 - mfilka@suse.com
 
 - bnc#1013684
