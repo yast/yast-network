@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Dec 22 13:23:47 CET 2016 - schubi@suse.de
+
+- bnc#1016164
+  - AY: Host entries with multiple name entries will be written in
+    one line only.
+- 3.1.172
+
+-------------------------------------------------------------------
 Tue Nov 29 12:41:40 UTC 2016 - mfilka@suse.com
 
 - bnc#1012581
