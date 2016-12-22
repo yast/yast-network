@@ -59,7 +59,6 @@ module Yast
       Yast.import "LanItems"
       Yast.import "ModuleLoading"
       Yast.import "Linuxrc"
-      Yast.import "Report"
 
       Yast.include self, "network/complex.rb"
       Yast.include self, "network/runtime.rb"
@@ -370,6 +369,7 @@ module Yast
       # Progress step 3/9 - multiple devices may be present, really plural
       ProgressNextStage(_("Reading device configuration...")) if @gui
       LanItems.Read
+
       Builtins.sleep(sl)
 
       return false if Abort()
@@ -421,6 +421,8 @@ module Yast
 
       return false if Abort()
       @initialized = true
+
+      fix_dhclient_warning(LanItems.invalid_dhcp_cfgs) if @gui && !LanItems.valid_dhcp_cfg?
 
       Progress.Finish if @gui
 
@@ -1010,29 +1012,6 @@ module Yast
       end
 
       nil
-    end
-
-    # Create a configuration for autoyast
-    # @return true if something was proposed
-    # Check if any device  is configured with DHCP.
-    # @return true if any DHCP device is configured
-    def AnyDHCPDevice
-      # return true if there is at least one device with dhcp4, dhcp6, dhcp or dhcp+autoip
-      Ops.greater_than(
-        Builtins.size(
-          Builtins.union(
-            Builtins.union(
-              NetworkInterfaces.Locate("BOOTPROTO", "dhcp4"),
-              NetworkInterfaces.Locate("BOOTPROTO", "dhcp6")
-            ),
-            Builtins.union(
-              NetworkInterfaces.Locate("BOOTPROTO", "dhcp"),
-              NetworkInterfaces.Locate("BOOTPROTO", "dhcp+autoip")
-            )
-          )
-        ),
-        0
-      )
     end
 
     # @return [Array] of packages needed when writing the config

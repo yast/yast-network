@@ -309,12 +309,8 @@ module Yast
         case LanItems.GetDeviceType(current)
         when "bond"
           LanItems.startmode = "hotplug"
-          # if particular bond slave uses mac based persistency, overwrite to bus id based one. Don't touch otherwise.
-          LanItems.ReplaceItemUdev(
-            "ATTR{address}",
-            "KERNELS",
-            Ops.get_string(LanItems.getCurrentItem, ["hwinfo", "busid"], "")
-          )
+
+          LanItems.update_item_udev_rule!(:bus_id)
         when "br"
           LanItems.ipaddr = ""
         end
@@ -338,7 +334,7 @@ module Yast
     # into bond device and persistence based on bus id is required, then some configuration changes
     # are required in ifcfg and udev. It used to be needed to do it by hand before.
     def AutoUpdateOverview
-      # TODO: allow disabling. E.g. iff bus id based persistency is not requested.
+      # TODO: allow disabling. E.g. if bus id based persistency is not requested.
       UpdateSlaves()
 
       nil
