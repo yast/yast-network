@@ -12,7 +12,7 @@
  *   Read(.etc.hosts."127.0.0.1")
  *   ("localhost")
  **
- *   Write(.etc.hosts."10.20.1.29", "beholder.suse.cz beholder")
+ *   Write(.etc.hosts."10.20.1.29", ["beholder.suse.cz beholder"])
  *   (true)
  *
  * $Id$

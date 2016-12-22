@@ -198,7 +198,7 @@ module Yast
             names,
             Ops.get(@hosts_init, ho)
           )
-          SCR.Write(Builtins.add(path(".etc.hosts"), ho), names)
+          SCR.Write(Builtins.add(path(".etc.hosts"), ho), [names.join(" ")])
         end
         ret = true
       end
