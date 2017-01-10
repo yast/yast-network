@@ -95,6 +95,8 @@ end
 describe "LanItems#ReplaceItemUdev" do
   Yast.import "LanItems"
 
+  let(:items) { { 0 => { "udev" => { "net" => [] } } } }
+
   before(:each) do
     Yast::LanItems.current = 0
 
@@ -102,75 +104,104 @@ describe "LanItems#ReplaceItemUdev" do
     # during Read
     allow(Yast::LanItems)
       .to receive(:Items)
-      .and_return(0 => { "udev" => { "net" => [] } })
+      .and_return(items)
   end
 
-  it "replaces triplet in the rule as requested" do
-    allow(Yast::LanItems)
-      .to receive(:Items)
-      .and_return(0 => {})
-    allow(Yast::LanItems)
-      .to receive(:getUdevFallback)
-      .and_return(
-        [
-          "KERNELS==\"invalid\"",
-          "KERNEL=\"eth*\"",
-          "NAME=\"eth1\""
-        ]
+  context "when the given Item hasn't got an udev rule" do
+    let(:items) { { 0 => {} } }
+
+    it "creates and assings a new rule for the Item given" do
+      allow(Yast::LanItems)
+        .to receive(:Items)
+        .and_return(items)
+      allow(Yast::LanItems)
+        .to receive(:getUdevFallback)
+        .and_return(
+          [
+            "KERNELS==\"invalid\"",
+            "KERNEL=\"eth*\"",
+            "NAME=\"eth1\""
+          ]
+        )
+      expect(Yast::LanItems).to receive(:SetModified)
+
+      updated_rule = Yast::LanItems.ReplaceItemUdev(
+        "KERNELS",
+        "ATTR{address}",
+        "xx:01:02:03:04:05"
       )
+      expect(updated_rule).to include "ATTR{address}==\"xx:01:02:03:04:05\""
+      expect(updated_rule).not_to include "KERNELS"
 
-    expect(Yast::LanItems).to receive(:SetModified)
-
-    # internally used in ReplaceItemUdev, needed to be able to mock its usage
-    Yast::LanItems.current = 0
-
-    updated_rule = Yast::LanItems.ReplaceItemUdev(
-      "KERNELS",
-      "ATTR{address}",
-      "xx:01:02:03:04:05"
-    )
-    expect(updated_rule).to include "ATTR{address}==\"xx:01:02:03:04:05\""
-    expect(updated_rule).not_to include "KERNELS"
+      expect(Yast::LanItems.getCurrentItem["udev"]["net"])
+        .to include "ATTR{address}==\"xx:01:02:03:04:05\""
+    end
   end
 
-  it "do not set modification flag in case of no change" do
-    allow(Yast::LanItems)
-      .to receive(:getUdevFallback)
-      .and_return(
-        [
-          "ATTR{address}==\"xx:01:02:03:04:05\"",
-          "KERNEL=\"eth*\"",
-          "NAME=\"eth1\""
-        ]
+  context "when the given Item has got an udev rule" do
+    it "replaces triplet in the rule as requested" do
+      allow(Yast::LanItems)
+        .to receive(:getUdevFallback)
+        .and_return(
+          [
+            "KERNELS==\"invalid\"",
+            "KERNEL=\"eth*\"",
+            "NAME=\"eth1\""
+          ]
+        )
+
+      expect(Yast::LanItems).to receive(:SetModified)
+
+      updated_rule = Yast::LanItems.ReplaceItemUdev(
+        "KERNELS",
+        "ATTR{address}",
+        "xx:01:02:03:04:05"
+      )
+      expect(updated_rule).to include "ATTR{address}==\"xx:01:02:03:04:05\""
+      expect(updated_rule).not_to include "KERNELS"
+
+      expect(Yast::LanItems.getCurrentItem["udev"]["net"]).to include "ATTR{address}==\"xx:01:02:03:04:05\""
+    end
+
+    it "do not set modification flag in case of no change" do
+      allow(Yast::LanItems)
+        .to receive(:getUdevFallback)
+        .and_return(
+          [
+            "ATTR{address}==\"xx:01:02:03:04:05\"",
+            "KERNEL=\"eth*\"",
+            "NAME=\"eth1\""
+          ]
+        )
+
+      Yast::LanItems.ReplaceItemUdev(
+        "KERNELS",
+        "ATTR{address}",
+        "xx:01:02:03:04:05"
       )
 
-    Yast::LanItems.ReplaceItemUdev(
-      "KERNELS",
-      "ATTR{address}",
-      "xx:01:02:03:04:05"
-    )
+      expect(Yast::LanItems).not_to receive(:SetModified)
+    end
 
-    expect(Yast::LanItems).not_to receive(:SetModified)
-  end
+    # this is an SCR limitation
+    it "contains NAME tuplet at last position" do
+      allow(Yast::LanItems)
+        .to receive(:getUdevFallback)
+        .and_return(
+          [
+            "ATTR{address}==\"xx:01:02:03:04:05\"",
+            "KERNEL=\"eth*\"",
+            "NAME=\"eth1\""
+          ]
+        )
 
-  # this is an SCR limitation
-  it "contains NAME tuplet at last position" do
-    allow(Yast::LanItems)
-      .to receive(:getUdevFallback)
-      .and_return(
-        [
-          "ATTR{address}==\"xx:01:02:03:04:05\"",
-          "KERNEL=\"eth*\"",
-          "NAME=\"eth1\""
-        ]
+      updated_rule = Yast::LanItems.ReplaceItemUdev(
+        "KERNELS",
+        "ATTR{address}",
+        "xx:01:02:03:04:AA"
       )
 
-    updated_rule = Yast::LanItems.ReplaceItemUdev(
-      "KERNELS",
-      "ATTR{address}",
-      "xx:01:02:03:04:AA"
-    )
-
-    expect(updated_rule.last).to match(/NAME.*/)
+      expect(updated_rule.last).to match(/NAME.*/)
+    end
   end
 end
