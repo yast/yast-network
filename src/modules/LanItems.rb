@@ -485,7 +485,7 @@ module Yast
     # @param new_val     [string] value for new key
     # @return updated rule when replace_key is found, current rule otherwise
     def ReplaceItemUdev(replace_key, new_key, new_val)
-      Items()[@current]["udev"] = { "net" => {} } if !Items()[@current]["udev"]
+      Items()[@current]["udev"] = { "net" => [] } if !Items()[@current]["udev"]
       new = Items()[@current]["udev"]["net"].to_a.empty?
 
       # =    for assignment

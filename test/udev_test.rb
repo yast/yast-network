@@ -163,7 +163,7 @@ describe "LanItems#ReplaceItemUdev" do
       expect(Yast::LanItems.getCurrentItem["udev"]["net"]).to include "ATTR{address}==\"xx:01:02:03:04:05\""
     end
 
-    it "do not set modification flag in case of no change" do
+    it "does not set modification flag in case of no change" do
       allow(Yast::LanItems)
         .to receive(:getUdevFallback)
         .and_return(
