@@ -485,13 +485,10 @@ module Yast
     # @param new_val     [string] value for new key
     # @return updated rule when replace_key is found, current rule otherwise
     def ReplaceItemUdev(replace_key, new_key, new_val)
-      Items()[@current]["udev"] = { "net" => [] } if !Items()[@current]["udev"]
-      new = Items()[@current]["udev"]["net"].to_a.empty?
-
       # =    for assignment
       # ==   for equality checks
       operator = new_key == "NAME" ? "=" : "=="
-      current_rule = getUdevFallback
+      current_rule = GetItemUdevRule(@current)
       rule = RemoveKeyFromUdevRule(getUdevFallback, replace_key)
 
       # NAME="devname" has to be last in the rule.
@@ -501,15 +498,12 @@ module Yast
       new_rule = AddToUdevRule(rule, "#{new_key}#{operator}\"#{new_val}\"")
       new_rule.push(name_tuple)
 
-      if new || current_rule.sort != new_rule.sort
+      if current_rule.sort != new_rule.sort
         SetModified()
 
-        if new
-          log.info("Creating a new udev rule for #{LanItems.GetCurrentName}: #{rule}")
-        else
-          log.info("ReplaceItemUdev: new udev rule = #{new_rule}")
-        end
+        log.info("ReplaceItemUdev: new udev rule = #{new_rule}")
 
+        Items()[@current]["udev"] = { "net" => [] } if !Items()[@current]["udev"]
         Items()[@current]["udev"]["net"] = new_rule
       end
 
