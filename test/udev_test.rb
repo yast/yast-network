@@ -54,7 +54,7 @@ describe "NetworkLanUdevInclude#update_udev_rule_key" do
 end
 
 describe "#udev_rule_key" do
-  let(:rule) { ["KERNELS=\"invalid\"", "KERNEL=\"eth*\"", "NAME=\"eth1\""] }
+  let(:rule) { ["KERNELS==\"invalid\"", "KERNEL==\"eth*\"", "NAME=\"eth1\""] }
 
   it "raises ArgumentError if given rule is empty" do
     expect { Yast::LanItems.udev_key_value(nil, "KERNEL") }
@@ -73,7 +73,7 @@ end
 describe "NetworkLanUdevInclude#AddToUdevRule" do
   subject(:udev) { NetworkLanComplexUdev.new }
 
-  let(:rule) { ["KERNELS=\"invalid\"", "KERNEL=\"eth*\"", "NAME=\"eth1\""] }
+  let(:rule) { ["KERNELS==\"invalid\"", "KERNEL==\"eth*\"", "NAME=\"eth1\""] }
 
   it "adds new tripled into existing rule" do
     updated_rule = udev.AddToUdevRule(rule, "ENV{MODALIAS}==\"e1000\"")
@@ -84,7 +84,7 @@ end
 describe "NetworkLanUdevInclude#RemoveKeyFromUdevRule" do
   subject(:udev) { NetworkLanComplexUdev.new }
 
-  let(:rule) { ["KERNELS=\"invalid\"", "KERNEL=\"eth*\"", "NAME=\"eth1\""] }
+  let(:rule) { ["KERNELS==\"invalid\"", "KERNEL==\"eth*\"", "NAME=\"eth1\""] }
 
   it "removes tripled from existing rule" do
     updated_rule = udev.RemoveKeyFromUdevRule(rule, "KERNEL")
@@ -93,113 +93,60 @@ describe "NetworkLanUdevInclude#RemoveKeyFromUdevRule" do
 end
 
 describe "LanItems#ReplaceItemUdev" do
-  Yast.import "LanItems"
-
-  let(:items) { { 0 => { "udev" => { "net" => [] } } } }
+  let(:rule) { [] }
+  let(:items) { { 0 => { "udev" => { "net" => rule } } } }
+  let(:mac_address) { "xx:01:02:03:04:05" }
 
   before(:each) do
     Yast::LanItems.current = 0
 
     # LanItems should create "udev" and "net" subkeys for each item
     # during Read
-    allow(Yast::LanItems)
-      .to receive(:Items)
-      .and_return(items)
+    allow(Yast::LanItems).to receive(:Items).and_return(items)
   end
 
   context "when the given Item hasn't got an udev rule" do
     let(:items) { { 0 => {} } }
+    let(:default_rule) { Yast::LanItems.GetDefaultUdevRule("eth1", mac_address) }
 
-    it "creates and assings a new rule for the Item given" do
-      allow(Yast::LanItems)
-        .to receive(:Items)
-        .and_return(items)
-      allow(Yast::LanItems)
-        .to receive(:getUdevFallback)
-        .and_return(
-          [
-            "KERNELS==\"invalid\"",
-            "KERNEL=\"eth*\"",
-            "NAME=\"eth1\""
-          ]
-        )
+    it "creates and assings a new rule for the given Item" do
+      allow(Yast::LanItems).to receive(:getUdevFallback).and_return(default_rule)
+
       expect(Yast::LanItems).to receive(:SetModified)
 
-      updated_rule = Yast::LanItems.ReplaceItemUdev(
-        "KERNELS",
-        "ATTR{address}",
-        "xx:01:02:03:04:05"
-      )
-      expect(updated_rule).to include "ATTR{address}==\"xx:01:02:03:04:05\""
-      expect(updated_rule).not_to include "KERNELS"
+      updated_rule = Yast::LanItems.ReplaceItemUdev("KERNELS", "ATTR{address}", mac_address)
+      item_rule    = Yast::LanItems.getCurrentItem["udev"]["net"]
 
-      expect(Yast::LanItems.getCurrentItem["udev"]["net"])
-        .to include "ATTR{address}==\"xx:01:02:03:04:05\""
+      expect(updated_rule).to include "ATTR{address}==\"#{mac_address}\""
+      expect(item_rule).to include "ATTR{address}==\"#{mac_address}\""
     end
   end
 
   context "when the given Item has got an udev rule" do
-    it "replaces triplet in the rule as requested" do
-      allow(Yast::LanItems)
-        .to receive(:getUdevFallback)
-        .and_return(
-          [
-            "KERNELS==\"invalid\"",
-            "KERNEL=\"eth*\"",
-            "NAME=\"eth1\""
-          ]
-        )
+    let(:rule) { ["ATTR==\"#{mac_address}\"", "KERNEL==\"eth*\"", "NAME=\"eth1\""] }
+    let(:bus_id) { "0000:08:00.0" }
 
+    it "replaces triplet in the rule as requested" do
       expect(Yast::LanItems).to receive(:SetModified)
 
-      updated_rule = Yast::LanItems.ReplaceItemUdev(
-        "KERNELS",
-        "ATTR{address}",
-        "xx:01:02:03:04:05"
-      )
-      expect(updated_rule).to include "ATTR{address}==\"xx:01:02:03:04:05\""
-      expect(updated_rule).not_to include "KERNELS"
+      updated_rule = Yast::LanItems.ReplaceItemUdev("ATTR{address}", "KERNELS", bus_id)
+      item_rule    = Yast::LanItems.getCurrentItem["udev"]["net"]
 
-      expect(Yast::LanItems.getCurrentItem["udev"]["net"]).to include "ATTR{address}==\"xx:01:02:03:04:05\""
+      expect(updated_rule).to include "KERNELS==\"#{bus_id}\""
+      expect(updated_rule).not_to include "ATTR{address}==\"#{mac_address}\""
+      expect(item_rule).to include "KERNELS==\"#{bus_id}\""
+      expect(item_rule).not_to include "ATTR{address}==\"#{mac_address}\""
     end
 
     it "does not set modification flag in case of no change" do
-      allow(Yast::LanItems)
-        .to receive(:getUdevFallback)
-        .and_return(
-          [
-            "ATTR{address}==\"xx:01:02:03:04:05\"",
-            "KERNEL=\"eth*\"",
-            "NAME=\"eth1\""
-          ]
-        )
-
-      Yast::LanItems.ReplaceItemUdev(
-        "KERNELS",
-        "ATTR{address}",
-        "xx:01:02:03:04:05"
-      )
+      Yast::LanItems.ReplaceItemUdev("ATTR{address}", "ATTR{address}", mac_address)
 
       expect(Yast::LanItems).not_to receive(:SetModified)
     end
 
     # this is an SCR limitation
     it "contains NAME tuplet at last position" do
-      allow(Yast::LanItems)
-        .to receive(:getUdevFallback)
-        .and_return(
-          [
-            "ATTR{address}==\"xx:01:02:03:04:05\"",
-            "KERNEL=\"eth*\"",
-            "NAME=\"eth1\""
-          ]
-        )
-
-      updated_rule = Yast::LanItems.ReplaceItemUdev(
-        "KERNELS",
-        "ATTR{address}",
-        "xx:01:02:03:04:AA"
-      )
+      updated_rule = Yast::LanItems.ReplaceItemUdev("ATTR{address}", "KERNELS", bus_id)
 
       expect(updated_rule.last).to match(/NAME.*/)
     end
