@@ -488,7 +488,7 @@ module Yast
       # =    for assignment
       # ==   for equality checks
       operator = new_key == "NAME" ? "=" : "=="
-      current_rule = getUdevFallback
+      current_rule = GetItemUdevRule(@current)
       rule = RemoveKeyFromUdevRule(getUdevFallback, replace_key)
 
       # NAME="devname" has to be last in the rule.
@@ -498,12 +498,12 @@ module Yast
       new_rule = AddToUdevRule(rule, "#{new_key}#{operator}\"#{new_val}\"")
       new_rule.push(name_tuple)
 
-      log.info("ReplaceItemUdev: new udev rule = #{new_rule}")
-
       if current_rule.sort != new_rule.sort
         SetModified()
 
-        Items()[@current]["udev"] = { "net" => {} } if !Items()[@current]["udev"]
+        log.info("ReplaceItemUdev: new udev rule = #{new_rule}")
+
+        Items()[@current]["udev"] = { "net" => [] } if !Items()[@current]["udev"]
         Items()[@current]["udev"]["net"] = new_rule
       end
 

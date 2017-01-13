@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Jan 11 00:56:09 UTC 2017 - kanderssen@suse.com
+
+- Fixed the assignment of udev rules to Lan Items when a previous
+  one does not exist (bsc#996879).
+- 3.2.18
+
+-------------------------------------------------------------------
 Fri Dec  9 09:19:16 UTC 2016 - mfilka@suse.com
 
 - bnc#1013605
