@@ -1,18 +1,11 @@
-language: cpp
-compiler:
-    - gcc
+sudo: required
+language: bash
+services:
+  - docker
+
 before_install:
-    # disable rvm, use system Ruby
-    - rvm reset
-    # install newer augeasget repo with newer augeas, otherwise ruby-augeas fails (see https://github.com/yast/yast-network/pull/454#issuecomment-253795507)
-    - sudo add-apt-repository -y ppa:raphink/augeas
-    - sudo apt-get update
-    - sudo apt-get install libaugeas-dev libxml2-dev
-    # end of augeas install
-    - wget https://raw.githubusercontent.com/yast/yast-devtools/master/travis-tools/travis_setup.sh
-    - sh ./travis_setup.sh -p "ruby2.1-dev augeas-lenses libaugeas0 rake yast2-devtools yast2-testsuite yast2 yast2-storage yast2-proxy yast2-country yast2-packager" -g "rspec:3.3.0 yast-rake gettext rubocop:0.41.2 simplecov:0.10.0 coveralls cfa cheetah"
+  - docker build -t yast-network-image .
 script:
-    - rubocop
-    - rake check:syntax
-    - rake check:pot
-    - COVERAGE=1 rake test:unit
+  # the "yast-travis-ruby" script is included in the base yastdevel/ruby image
+  # see https://github.com/yast/docker-yast-ruby/blob/master/yast-travis-ruby
+  - docker run -it -e TRAVIS=1 -e TRAVIS_JOB_ID="$TRAVIS_JOB_ID" yast-network-image yast-travis-ruby
