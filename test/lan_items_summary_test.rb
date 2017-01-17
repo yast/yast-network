@@ -6,6 +6,8 @@ require "network/lan_items_summary"
 Yast.import "LanItems"
 
 describe Yast::LanItemsSummary do
+  MULTIPLE_INTERFACES = N_("Multiple Interfaces")
+
   let(:dhcp_maps) do
     [
       { "BOOTPROTO" => "dhcp" },
@@ -19,9 +21,8 @@ describe Yast::LanItemsSummary do
       0 => { "ifcfg" => "eth0" },
       1 => { "ifcfg" => "eth1" },
       2 => { "ifcfg" => "br0" }
-    }
+    }.freeze
   end
-  let(:no_interfaces) { _("Not configured") }
 
   before do
     allow(Yast::LanItems).to receive(:Items).and_return(items)
@@ -32,7 +33,7 @@ describe Yast::LanItemsSummary do
   end
 
   describe "#default" do
-    it "retuns a Richtext summary of the configured interfaces" do
+    it "returns a Richtext summary of the configured interfaces" do
       expect(subject.default)
         .to eql "<ul>" \
                 "<li><p>eth0<br>DHCP</p></li>" \
@@ -50,13 +51,13 @@ describe Yast::LanItemsSummary do
 
   describe "#one_line" do
     it "returns a plain text summary of the configured interfaces in one line" do
-      expect(subject.one_line).to eql "Multiple Interfaces"
+      expect(subject.one_line).to eql(MULTIPLE_INTERFACES)
     end
 
     context "when there are no configured interfaces" do
       let(:items) { {} }
-      it "returns 'Not configured'" do
-        expect(subject.one_line).to eql(no_interfaces)
+      it "returns Summary.NotConfigured" do
+        expect(subject.one_line).to eql(Yast::Summary.NotConfigured)
       end
     end
 
@@ -75,7 +76,7 @@ describe Yast::LanItemsSummary do
         let(:dhcp_maps) { [{ "BOOTPROTO" => "dhcp" }, { "BOOTPROTO" => "dhcp" }] }
 
         it "returns the bootproto and 'Multiple Interfaces'" do
-          expect(subject.one_line).to eql "DHCP / Multiple Interfaces"
+          expect(subject.one_line).to eql("DHCP / #{MULTIPLE_INTERFACES}")
         end
       end
 
@@ -83,7 +84,7 @@ describe Yast::LanItemsSummary do
         let(:dhcp_maps) { [{ "BOOTPROTO" => "DHCP" }, { "IPADDR" => "1.2.3.4" }] }
 
         it "returns 'Multiple Interfaces'" do
-          expect(subject.one_line).to eql "Multiple Interfaces"
+          expect(subject.one_line).to eql(MULTIPLE_INTERFACES)
         end
       end
     end
