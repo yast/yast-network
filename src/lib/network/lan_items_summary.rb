@@ -47,7 +47,6 @@ module Yast
         next if !Yast::LanItems.IsItemConfigured(item)
 
         ifcfg = LanItems.GetDeviceMap(item) || {}
-
         items << Summary.Device(conf["ifcfg"], ifcfg_protocol(ifcfg))
       end
 
@@ -56,7 +55,7 @@ module Yast
       Summary.DevicesList(items)
     end
 
-    # Generates a one line text summary showing the .
+    # Generates a one line text summary for the configured interfaces.
     #
     # @example with one configured interface
     #   LanItemsSummary.new.one_line
@@ -76,7 +75,6 @@ module Yast
         next if !LanItems.IsItemConfigured(item)
 
         ifcfg = LanItems.GetDeviceMap(item) || {}
-
         protocols << ifcfg_protocol(ifcfg)
 
         configured << conf["ifcfg"]
@@ -86,11 +84,12 @@ module Yast
 
       case configured.size
       when 0
-        return _("Not configured")
+        return Summary.NotConfigured
       when 1
         output << configured.join(", ")
       else
-        output << "Multiple Interfaces"
+        # TRANSLATORS: informs that multiple interfaces are configured
+        output << _("Multiple Interfaces")
       end
 
       output.join(" / ")
