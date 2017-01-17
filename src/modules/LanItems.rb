@@ -1374,8 +1374,8 @@ module Yast
     # @see LanItemsSummary
     # @param options [Hash] summary options
     # @return [String] summary of the configured items
-    def summary(options = {})
-      LanItemsSummary.new(options).summary
+    def summary(type = "default")
+      LanItemsSummary.new.send(type)
     end
 
     # Creates details for device's overview based on ip configuration type

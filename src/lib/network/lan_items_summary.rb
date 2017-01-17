@@ -24,109 +24,89 @@ require "yast"
 module Yast
   # This class creates a summary of the configured lan items supporting
   # different types of summaries.
-  #
-  # @example
-  #   LanItemsSummary.new.summary
-  #   => "<ul><li><p>eth0<br>DHCP</p></li><li><p>eth1<br>NONE</p></li></ul>"
-  # @example
-  #   LanItemsSummary.new(:type => 'one_line').summary
-  #   => "Multiple Interfaces"
   class LanItemsSummary
-    attr_accessor :summary_type, :options
+    include I18n
 
-    def initialize(options = {})
+    def initialize
       Yast.import "LanItems"
       Yast.import "Summary"
-
-      @summary_type =
-        case options[:type]
-        when "", nil
-          Default
-        when "one_line"
-          OneLine
-        else
-          raise NotImplementedError,
-            "The LanItems summary #{options[:type]} has not been implemented yet"
-        end
-      @options = options.reject { |k, _| k == :type }
     end
 
-    # Delegates the summary to the specific class depending on the specific.
-    # Uses Default if no type is given.
-    def summary
-      @summary_type.send(:new, @options).summary
-    end
+    # Generates a summary in RichText format for the configured interfaces
+    #
+    # @example
+    #   LanItemsSummary.new.default
+    #   => "<ul><li><p>eth0<br>DHCP</p></li><li><p>eth1<br>NONE</p></li></ul>"
+    #
+    # @see Summary
+    # @return [String] summary in RichText
+    def default
+      items = []
 
-    class Base
-      include I18n
+      LanItems.Items.each do |item, conf|
+        next if !Yast::LanItems.IsItemConfigured(item)
 
-      attr_accessor :options
+        ifcfg = LanItems.GetDeviceMap(item) || {}
 
-      def initialize(options)
-        @options = options
-      end
-    end
-
-    # This class generates a one line text summary.
-    class OneLine < Base
-      def initialize(options = {})
-        @options = options
+        items << Summary.Device(conf["ifcfg"], ifcfg_protocol(ifcfg))
       end
 
-      def summary
-        protocols  = []
-        configured = []
-        output     = []
+      return Summary.NotConfigured if items.empty?
 
-        Yast::LanItems.Items.each do |item, conf|
-          next if !LanItems.IsItemConfigured(item)
-
-          ifcfg = LanItems.GetDeviceMap(item) || {}
-
-          protocol = LanItems.DeviceProtocol(ifcfg)
-
-          protocols <<
-            if protocol =~ /DHCP/
-              "DHCP"
-            elsif IP.Check(protocol)
-              "STATIC"
-            else
-              LanItems.DeviceProtocol(ifcfg)
-            end
-
-          configured << conf["ifcfg"]
-        end
-
-        output << protocols.first if protocols.uniq.size == 1
-
-        case configured.size
-        when 0
-          _("Not configured yet.")
-        when 1
-          output << configured.first
-        else
-          output << "Multiple Interfaces"
-        end
-
-        output.join(" / ")
-      end
+      Summary.DevicesList(items)
     end
 
-    # This class is the default summary using RichText format
-    class Default < Base
-      def summary
-        items = []
+    # Generates a one line text summary showing the .
+    #
+    # @example with one configured interface
+    #   LanItemsSummary.new.one_line
+    #   => "DHCP / eth1"
+    #
+    # @example with many configured interfaces
+    #   LanItemsSummary.new.one_line
+    #   => "Multiple Interfaces"
+    #
+    # @return [String] summary in just one line and in plain text
+    def one_line
+      protocols  = []
+      configured = []
+      output     = []
 
-        LanItems.Items.each do |item, conf|
-          next if !Yast::LanItems.IsItemConfigured(item)
+      Yast::LanItems.Items.each do |item, conf|
+        next if !LanItems.IsItemConfigured(item)
 
-          ifcfg = LanItems.GetDeviceMap(item) || {}
-          protocol = LanItems.DeviceProtocol(ifcfg)
+        ifcfg = LanItems.GetDeviceMap(item) || {}
 
-          items << Summary.Device(conf["ifcfg"], protocol)
-        end
+        protocols << ifcfg_protocol(ifcfg)
 
-        Summary.DevicesList(items)
+        configured << conf["ifcfg"]
+      end
+
+      output << protocols.first if protocols.uniq.size == 1
+
+      case configured.size
+      when 0
+        return _("Not configured")
+      when 1
+        output << configured.join(", ")
+      else
+        output << "Multiple Interfaces"
+      end
+
+      output.join(" / ")
+    end
+
+  private
+
+    def ifcfg_protocol(ifcfg)
+      protocol = LanItems.DeviceProtocol(ifcfg)
+
+      if protocol =~ /DHCP/
+        "DHCP"
+      elsif IP.Check(protocol)
+        "STATIC"
+      else
+        LanItems.DeviceProtocol(ifcfg)
       end
     end
   end
