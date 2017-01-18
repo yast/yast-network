@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Jan 18 07:54:01 UTC 2017 - kanderssen@suse.com
+
+- Added summaries for the configured interfaces, particulary an one
+  line summary. (fate#322328)
+- 3.2.19
+
+-------------------------------------------------------------------
 Wed Jan 11 00:56:09 UTC 2017 - kanderssen@suse.com
 
 - Fixed the assignment of udev rules to Lan Items when a previous
