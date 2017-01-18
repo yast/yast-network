@@ -1,4 +1,15 @@
 -------------------------------------------------------------------
+Wed Jan 18 07:54:01 UTC 2017 - kanderssen@suse.com
+
+- Added summaries for the configured interfaces, particulary an one
+  line summary. (fate#322328)
+- Backported
+  - update item's overview with freshly edited values (bnc#1009931)
+  - do not crash with internal error when setting static setup for
+    newly added device (bnc#1013684)
+- 3.1.173
+
+-------------------------------------------------------------------
 Wed Jan 11 00:56:09 UTC 2017 - kanderssen@suse.com
 
 - Fixed the assignment of udev rules to Lan Items when a previous
