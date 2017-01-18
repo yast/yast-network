@@ -25,6 +25,7 @@ require "yast"
 require "yaml"
 require "network/install_inf_convertor"
 require "network/wicked"
+require "network/lan_items_summary"
 
 module Yast
   # Does way too many things.
@@ -1366,26 +1367,44 @@ module Yast
       [startmode_descr]
     end
 
-    def ip_overview(ip)
+    # Creates a summary of the configured items.
+    #
+    # It supports differents types of summaries depending on the options[:type]
+    #
+    # @see LanItemsSummary
+    # @param options [Hash] summary options
+    # @return [String] summary of the configured items
+    def summary(type = "default")
+      LanItemsSummary.new.send(type)
+    end
+
+    # Creates details for device's overview based on ip configuration type
+    #
+    # Produces list of strings. Strings are intended for "bullet" list, e.g.:
+    # * <string1>
+    # * <string2>
+    #
+    # @param [Hash] dev_map a device's sysconfig map (in form "option" => "value")
+    # @return [Array] list of strings, one string is intended for one "bullet"
+    def ip_overview(dev_map)
       bullets = []
 
-      case ip
-      when "NONE", ""
-      # do nothing
-      when /DHCP/
+      ip = DeviceProtocol(dev_map)
+
+      if ip =~ /DHCP/
         bullets << format("%s %s", _("IP address assigned using"), ip)
-      else
-        prefixlen = NetworkInterfaces.Current["PREFIXLEN"]
-        if prefixlen
+      elsif IP.Check(ip)
+        prefixlen = dev_map["PREFIXLEN"] || ""
+        if !prefixlen.empty?
           bullets << format(_("IP address: %s/%s"), ip, prefixlen)
         else
-          subnetmask = NetworkInterfaces.Current["NETMASK"]
+          subnetmask = dev_map["NETMASK"]
           bullets << format(_("IP address: %s, subnet mask %s"), ip, subnetmask)
         end
       end
 
       # build aliases overview
-      item_aliases = NetworkInterfaces.Current["_aliases"] || {}
+      item_aliases = dev_map["_aliases"] || {}
       if !item_aliases.empty? && !NetworkService.is_network_manager
         item_aliases.each do |_key2, desc|
           parameters = format("%s/%s", desc["IPADDR"], desc["PREFIXLEN"])
@@ -1406,7 +1425,6 @@ module Yast
 
       LanItems.Items.each_key do |key|
         rich = ""
-        ip = _("Not configured")
 
         item_hwinfo = LanItems.Items[key]["hwinfo"] || {}
         descr = item_hwinfo["name"] || ""
@@ -1418,15 +1436,16 @@ module Yast
 
         if !ifcfg_name.empty?
           ifcfg_conf = GetDeviceMap(key)
+          log.error("BuildLanOverview: devmap for #{key}/#{ifcfg_name} is nil") if ifcfg_conf.nil?
+
           ifcfg_desc = ifcfg_conf["NAME"]
           descr = ifcfg_desc if !ifcfg_desc.nil? && !ifcfg_desc.empty?
           descr = CheckEmptyName(ifcfg_type, descr)
-          ip = DeviceProtocol(ifcfg_conf)
           status = DeviceStatus(ifcfg_type, ifcfg_name, ifcfg_conf)
 
           bullets << _("Device Name: %s") % ifcfg_name
           bullets += startmode_overview(key)
-          bullets += ip_overview(ip) if ifcfg_conf["STARTMODE"] != "managed"
+          bullets += ip_overview(ifcfg_conf) if ifcfg_conf["STARTMODE"] != "managed"
 
           if ifcfg_type == "wlan" &&
               ifcfg_conf["WIRELESS_AUTH_MODE"] == "open" &&
@@ -1505,7 +1524,7 @@ module Yast
         end
         LanItems.Items[key]["table_descr"] = {
           "rich_descr"  => rich,
-          "table_descr" => [descr, ip, ifcfg_name, note]
+          "table_descr" => [descr, DeviceProtocol(ifcfg_conf), ifcfg_name, note]
         }
       end
       [Summary.DevicesList(overview), links]
