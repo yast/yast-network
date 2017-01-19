@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Jan 19 15:22:03 UTC 2017 - kanderssen@suse.com
+
+- Added network proposal using the new summary api and the new
+  proposal_client flag 'label_proposal' for CASP special formmating
+  (fate#322328).
+- 3.1.173.1
+
+-------------------------------------------------------------------
 Wed Jan 18 07:54:01 UTC 2017 - kanderssen@suse.com
 
 - Added summaries for the configured interfaces, particulary an one
