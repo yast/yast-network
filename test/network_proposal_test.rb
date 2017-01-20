@@ -2,27 +2,14 @@ require_relative "test_helper"
 
 require "network/clients/network_proposal"
 
-class DummyLanItems
-  def summary(params)
-    params == "one_line" ? "one line summary" : "rich_text_summary"
-  end
-end
-
-class DummyLan
-  def Summary(_)
-    ["rich_text_summary"]
-  end
-end
-
 describe Yast::NetworkProposal do
-  subject { Yast::NetworkProposal.new }
-
-  let(:lan_items_mock) { DummyLanItems.new }
-  let(:lan_mock) { DummyLan.new }
+  Yast.import "LanItems"
+  Yast.import "Lan"
 
   before do
-    stub_const("Yast::LanItems", lan_items_mock)
-    stub_const("Yast::Lan", lan_mock)
+    stub_const("Yast::Wizard", double.as_null_object)
+    allow(Yast::LanItems).to receive(:summary).with("one_line").and_return("one_line_summary")
+    allow(Yast::Lan).to receive(:Summary).with("summary").and_return(["rich_text_summary"])
   end
 
   describe "#description" do
@@ -33,7 +20,7 @@ describe Yast::NetworkProposal do
 
   describe "#make_proposal" do
     it "returns a map with 'label_proposal' as an array with one line summary'" do
-      expect(subject.make_proposal({})["label_proposal"]).to eql(["one line summary"])
+      expect(subject.make_proposal({})["label_proposal"]).to eql(["one_line_summary"])
     end
 
     it "returns a map with 'preformatted_proposal' as an array with the network summary'" do
@@ -42,12 +29,6 @@ describe Yast::NetworkProposal do
   end
 
   describe "#ask_user" do
-    Yast.import "Wizard"
-
-    before do
-      allow(Yast::Wizard)
-    end
-
     it "launchs the inst_lan client forcing the manual configuration" do
       expect(Yast::WFM).to receive(:CallFunction).with("inst_lan", [{ "skip_detection" => true }])
       subject.ask_user({})
