@@ -14,8 +14,6 @@ module Yast
       textdomain "installation"
     end
 
-  protected
-
     def description
       {
         "rich_text_title" => _("Network Configuration"),
