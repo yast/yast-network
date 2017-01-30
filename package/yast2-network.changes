@@ -4,7 +4,7 @@ Tue Jan 24 15:38:14 UTC 2017 - kanderssen@suse.com
 - Backport fix for bnc#1013605
   - Enable DHCP_HOSTNAME listbox only when wicked service is used.
   - Fixed displaying the "keep current settings" option.
-- 3.1.173.2
+- 3.1.174
 
 -------------------------------------------------------------------
 Thu Jan 19 15:22:03 UTC 2017 - kanderssen@suse.com
