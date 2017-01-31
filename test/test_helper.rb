@@ -5,9 +5,14 @@ ENV["Y2DIR"] = y2dirs.unshift(srcdir).join(":")
 require "yast"
 require "yast/rspec"
 
+# Ensure the tests runs with english locales
+ENV["LC_ALL"] = "en_US.UTF-8"
+
 require_relative "SCRStub"
 
 RSpec.configure do |c|
+  c.extend Yast::I18n # available in context/describe
+  c.include Yast::I18n
   c.include SCRStub
 end
 

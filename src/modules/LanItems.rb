@@ -25,6 +25,7 @@ require "yast"
 require "yaml"
 require "network/install_inf_convertor"
 require "network/wicked"
+require "network/lan_items_summary"
 
 module Yast
   # Does way too many things.
@@ -1364,6 +1365,17 @@ module Yast
       startmode_descr = startmode_descrs[ifcfg["STARTMODE"].to_s] || _("Started manually")
 
       [startmode_descr]
+    end
+
+    # Creates a summary of the configured items.
+    #
+    # It supports differents types of summaries depending on the options[:type]
+    #
+    # @see LanItemsSummary
+    # @param options [Hash] summary options
+    # @return [String] summary of the configured items
+    def summary(type = "default")
+      LanItemsSummary.new.send(type)
     end
 
     # Creates details for device's overview based on ip configuration type
