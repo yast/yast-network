@@ -1,6 +1,7 @@
 YaST Network Module
 ======================
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/e463adbd816c4e6eb1b012ec3b0dc1c8)](https://www.codacy.com/app/mchf/yast-network?utm_source=github.com&utm_medium=referral&utm_content=yast/yast-network&utm_campaign=badger)
 [![Travis Build](https://travis-ci.org/yast/yast-network.svg?branch=master)](https://travis-ci.org/yast/yast-network)
 [![Jenkins Build](http://img.shields.io/jenkins/s/https/ci.opensuse.org/yast-network-master.svg)](https://ci.opensuse.org/view/Yast/job/yast-network-master/)
 [![Code Climate](https://codeclimate.com/github/yast/yast-network/badges/gpa.svg)](https://codeclimate.com/github/yast/yast-network)
