@@ -1,6 +1,3 @@
-require "yast"
-require "network/network_autoconfiguration"
+require "network/clients/inst_setup_dhcp"
 
-Yast::NetworkAutoconfiguration.instance.configure_dhcp
-
-:next
+Yast::SetupDhcp.instance.main

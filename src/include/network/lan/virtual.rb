@@ -66,7 +66,7 @@ module Yast
         if Ops.greater_than(
           Builtins.size(Ops.get_string(data, "PREFIXLEN", "")),
           0
-          )
+        )
           mask = Builtins.sformat("/%1", Ops.get_string(data, "PREFIXLEN", ""))
         end
         table_items = Builtins.add(
@@ -162,11 +162,8 @@ module Yast
               Builtins.substring(Ops.get_string(e, 3, ""), 1)
             )
           else
-            if Netmask.Check6(Ops.get_string(e, 3, ""))
-              Ops.set(alias_, "PREFIXLEN", Ops.get_string(e, 3, ""))
-            else
-              Ops.set(alias_, "NETMASK", Ops.get_string(e, 3, ""))
-            end
+            param = Netmask.Check6(Ops.get_string(e, 3, "")) ? "PREFIXLEN" : "NETMASK"
+            Ops.set(alias_, param, Ops.get_string(e, 3, ""))
           end
           Ops.set(
             LanItems.aliases,
@@ -187,9 +184,6 @@ module Yast
 
       nil
     end
-
-    # max length of device / interface filename lenght supported by kernel
-    IFACE_LABEL_MAX = 16
 
     # Open a dialog to edit a name-ipaddr-netmask triple.
     # @param id    [Integer]    an id for the table item to be returned
@@ -242,7 +236,7 @@ module Yast
         host = Item(Id(id))
         val = UI.QueryWidget(Id(:name), :Value)
 
-        if LanItems.device.size + val.size + 1 > IFACE_LABEL_MAX
+        if !ValidNicName("#{LanItems.device}.#{val}")
           # Popup::Error text
           Popup.Error(_("Label is too long."))
           UI.SetFocus(Id(:name))

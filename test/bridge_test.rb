@@ -6,9 +6,9 @@ require "yast"
 
 Yast.import "LanItems"
 
-module Yast
-  describe LanItems do
-    NETCONFIG_ITEMS = {
+describe Yast::LanItems do
+  let(:netconfig_items) do
+    {
       "eth"  => {
         "eth1" => { "BOOTPROTO" => "none" },
         "eth2" => { "BOOTPROTO" => "none" },
@@ -21,21 +21,21 @@ module Yast
         "eth6" => { "BOOTPROTO" => "static", "STARTMODE" => "ifplugd" }
       },
       "tun"  => {
-        "tun0"  => {
+        "tun0" => {
           "BOOTPROTO" => "static",
           "STARTMODE" => "onboot",
           "TUNNEL"    => "tun"
         }
       },
       "tap"  => {
-        "tap0"  => {
+        "tap0" => {
           "BOOTPROTO" => "static",
           "STARTMODE" => "onboot",
           "TUNNEL"    => "tap"
         }
       },
       "br"   => {
-        "br0"   => { "BOOTPROTO" => "dhcp" }
+        "br0" => { "BOOTPROTO" => "dhcp" }
       },
       "bond" => {
         "bond0" => {
@@ -46,41 +46,47 @@ module Yast
         }
       }
     }
+  end
 
-    HWINFO_ITEMS = [
+  let(:hwinfo_items) do
+    [
       { "dev_name" => "eth11" },
       { "dev_name" => "eth12" }
     ]
+  end
 
-    EXPECTED_BRIDGEABLE = [
+  let(:expected_bridgeable) do
+    [
       "bond0",
       "eth4",
       "eth11",
       "eth12",
       "tap0"
     ]
+  end
 
+  before(:each) do
+    allow(Yast::NetworkInterfaces).to receive(:FilterDevices).with("netcard") { netconfig_items }
+    allow(Yast::NetworkInterfaces).to receive(:adapt_old_config!)
+
+    allow(Yast::LanItems).to receive(:ReadHardware) { hwinfo_items }
+
+    Yast::LanItems.Read
+  end
+
+  describe "#GetBridgeableInterfaces" do
     before(:each) do
-      allow(NetworkInterfaces).to receive(:FilterDevices).with("netcard") { NETCONFIG_ITEMS }
-
-      allow(LanItems).to receive(:ReadHardware) { HWINFO_ITEMS }
-      LanItems.Read
+      # FindAndSelect initializes internal state of LanItems it
+      # is used internally by some helpers
+      Yast::LanItems.FindAndSelect("br0")
     end
 
-    describe "#GetBridgeableInterfaces" do
-      before(:each) do
-        # FindAndSelect initializes internal state of LanItems it
-        # is used internally by some helpers
-        LanItems.FindAndSelect("br0")
-      end
-
-      it "returns list of slave candidates" do
-        expect(
-          LanItems
-            .GetBridgeableInterfaces(LanItems.GetCurrentName)
-            .map { |i| LanItems.GetDeviceName(i) }
-        ).to match_array EXPECTED_BRIDGEABLE
-      end
+    it "returns list of slave candidates" do
+      expect(
+        Yast::LanItems
+          .GetBridgeableInterfaces(Yast::LanItems.GetCurrentName)
+          .map { |i| Yast::LanItems.GetDeviceName(i) }
+      ).to match_array expected_bridgeable
     end
   end
 end

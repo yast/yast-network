@@ -31,24 +31,24 @@ require "yast"
 module Yast
   # Configuration of fw in 1st stage
   class FirewallStage1ProposalClient < Client
-    PROPOSAL_ID = "fw_1ststage"
+    PROPOSAL_ID = "fw_1ststage".freeze
 
-    LINK_ENABLE_FIREWALL = "firewall--enable_firewall_in_proposal"
-    LINK_DISABLE_FIREWALL = "firewall--disable_firewall_in_proposal"
-    LINK_OPEN_SSH_PORT = "firewall--enable_ssh_port_in_proposal"
-    LINK_BLOCK_SSH_PORT = "firewall--disable_ssh_port_in_proposal"
-    LINK_ENABLE_SSHD = "firewall--enable_sshd_in_proposal"
-    LINK_DISABLE_SSHD = "firewall--disable_sshd_in_proposal"
-    LINK_ENABLE_VNC = "firewall--enable_vnc_in_proposal"
-    LINK_DISABLE_VNC = "firewall--disable_vnc_in_proposal"
-    LINK_FIREWALL_DIALOG = "firewall_stage1"
+    LINK_ENABLE_FIREWALL = "firewall--enable_firewall_in_proposal".freeze
+    LINK_DISABLE_FIREWALL = "firewall--disable_firewall_in_proposal".freeze
+    LINK_OPEN_SSH_PORT = "firewall--enable_ssh_port_in_proposal".freeze
+    LINK_BLOCK_SSH_PORT = "firewall--disable_ssh_port_in_proposal".freeze
+    LINK_ENABLE_SSHD = "firewall--enable_sshd_in_proposal".freeze
+    LINK_DISABLE_SSHD = "firewall--disable_sshd_in_proposal".freeze
+    LINK_ENABLE_VNC = "firewall--enable_vnc_in_proposal".freeze
+    LINK_DISABLE_VNC = "firewall--disable_vnc_in_proposal".freeze
+    LINK_FIREWALL_DIALOG = "firewall_stage1".freeze
 
     # Namespace for UI constants
     module ID
-      SSH_PORT = "open_ssh_port"
-      VNC_PORT = "open_vnc_port"
-      ENABLE_FW = "enable_fw"
-      ENABLE_SSHD = "enable_sshd"
+      SSH_PORT = "open_ssh_port".freeze
+      VNC_PORT = "open_vnc_port".freeze
+      ENABLE_FW = "enable_fw".freeze
+      ENABLE_SSHD = "enable_sshd".freeze
     end
 
     include Yast::Logger

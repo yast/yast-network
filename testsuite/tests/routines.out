@@ -1,5 +1,0 @@
-Read	.target.tmpdir "/tmp"
-Dump	list2items
-Return	[`item (`id (0), "x", true), `item (`id (1), "y", false)]
-Dump	hwlist2items
-Return	[`item (`id (0), "x", true), `item (`id (1), "y", false)]

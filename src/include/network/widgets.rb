@@ -60,7 +60,7 @@ module Yast
                           "A recommended value is <tt>[09]?</tt>, allowing <tt>0</tt>, <tt>9</tt>,\n" \
                           "and the empty prefix. If the expression is empty, users are not allowed\n" \
                           "to change the prefix.</p>\n"
-            )
+                      )
         },
         # obsoleted by BOOTPROTO_*
         "BOOTPROTO"       => {
@@ -192,7 +192,7 @@ module Yast
                         "<p>Choose when to bring up the network interface. <b>At Boot Time</b> activates it during system boot, \n" \
                         "<b>Never</b> does not start the device.\n" \
                         "%1</p>\n"
-          )
+                    )
       }
       helps = ""
       items = Builtins.maplist(ids) do |id|
@@ -344,7 +344,8 @@ module Yast
               "NetworkManager is controlled by desktop applet\n" \
               "(KDE plasma widget and nm-applet for GNOME).\n" \
               "Be sure it's running and if not, start it manually."
-           ))
+            )
+          )
         end
       end
 
@@ -431,7 +432,6 @@ module Yast
         # TRANSLATORS: Part of label, device with static IP address
         NetworkInterfaces.GetValue(device_id, "IPADDR")
       end
-
       if ip_addr.nil? || ip_addr == ""
         # TRANSLATORS: Informs that no IP has been assigned to the device
         ip_addr = _("No IP address assigned")
@@ -574,6 +574,8 @@ module Yast
 
         selected = false
         selected = enslavedIfaces.include?(dev_name) if enslavedIfaces
+
+        description << " (Port ID: #{physical_port_id(dev_name)})" if physical_port_id?(dev_name)
 
         items << Item(
           Id(dev_name),

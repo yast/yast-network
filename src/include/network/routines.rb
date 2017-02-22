@@ -37,12 +37,10 @@ module Yast
 
       textdomain "network"
 
-      Yast.import "Call"
       Yast.import "Popup"
       Yast.import "Progress"
       Yast.import "String"
       Yast.import "NetworkService"
-      Yast.import "PackageSystem"
       Yast.import "NetworkInterfaces"
       Yast.import "Arch"
       Yast.import "Confirm"
@@ -106,19 +104,6 @@ module Yast
       nil
     end
 
-    # Query UI widget only if it exists
-    # @param [Yast::Term] id widget id
-    # @param [Symbol] param widget parameter
-    # @param [Object] value previous parameter value
-    # @return widget value if exists, previous value otherwise
-    def QueryWidgetIfExists(id, param, value)
-      id = deep_copy(id)
-      value = deep_copy(value)
-      return UI.QueryWidget(id, param) if UI.WidgetExists(id)
-      Builtins.y2debug("Not changing: %1", id)
-      deep_copy(value)
-    end
-
     # Check if required packages are installed and install them if they're not
     # @param [Array<String>] packages list of required packages (["rpm", "bash"])
     # @return `next if packages installation is successfull, `abort otherwise
@@ -165,46 +150,12 @@ module Yast
               "\n" \
               "Try again?\n"
           ) + "\n"
-          )
+        )
           break
         end
       end
 
       ret == true ? :next : :abort
-    end
-
-    # Create comment for changed file
-    # @param [String] modul YaST2 module changing the file
-    # @return comment
-    # @example ChangedComment("lan") -> # Changed by YaST2 module lan 1.1.2000"
-    def ChangedComment(modul)
-      ret = "\n# Changed by YaST2"
-      if !modul.nil? && modul != ""
-        ret = Ops.add(Ops.add(ret, " module "), modul)
-      end
-      out = Convert.to_map(
-        SCR.Execute(path(".target.bash_output"), "/bin/date '+%x'")
-      )
-      date = Ops.get_string(out, "stdout", "")
-      ret = Ops.add(Ops.add(ret, " "), date) if date != ""
-      ret
-    end
-
-    # Show busy popup (for proposal)
-    # @param [String] message label to be shown
-    def BusyPopup(message)
-      UI.BusyCursor
-      UI.OpenDialog(VBox(Label(message)))
-
-      nil
-    end
-
-    # Close busy popup
-    # @see #BusyPopup
-    def BusyPopupClose
-      UI.CloseDialog
-
-      nil
     end
 
     # Checks if given value is emtpy.
@@ -224,15 +175,8 @@ module Yast
     # @param [Fixnum] selected selected item (0 for the first)
     # @return a list of items
     # @example [ "x", "y" ] -&gt; [ `item(`id(0), "x"), `item(`id(1), "y") ]
-    def list2items(l, selected)
-      l = deep_copy(l)
-      items = []
-      n = 0
-      Builtins.foreach(l) do |i|
-        items = Builtins.add(items, Item(Id(n), i, n == selected))
-        n = Ops.add(n, 1)
-      end
-      deep_copy(items)
+    def list2items(descriptions, selected_index)
+      descriptions.map.with_index { |d, i| Item(Id(i), d, i == selected_index) }
     end
 
     # Create a list of items for UI from the given hardware list.
@@ -246,95 +190,13 @@ module Yast
     # @param [Array<Hash>] l given list for conversion
     # @param [Fixnum] selected selected item (0 for the first)
     # @return a list of items
-    def hwlist2items(l, selected)
-      l = deep_copy(l)
-      items = []
-      n = 0
-      Builtins.foreach(l) do |i|
-        # Table field (Unknown device)
-        hwname = Ops.get_locale(i, "name", _("Unknown"))
-        num = Ops.get_integer(i, "num", n) # num for detected, n for manual
-        items = Builtins.add(items, Item(Id(num), hwname, num == selected))
-        n = Ops.add(n, 1)
+    def hwlist2items(descriptions, selected_index)
+      descriptions.map.with_index do |d, i|
+        hwname = d["name"] || _("Unknown")
+        num = d["num"] || i
+
+        Item(Id(num), hwname, num == selected_index)
       end
-      deep_copy(items)
-      # return list2items(maplist(map h, l, { return h["name"]:_("Unknown Device"); }), selected);
-    end
-
-    # Display the finished popup and possibly run another module.
-    # If not modified, don't do anything.
-    # @param [Boolean] modified true if there are any modified data
-    # @param [String] head headline to be shown
-    # @param [String] text text to be shown
-    # @param [String] run module to be run
-    # @param [Array] params parameters to pass to the module
-    # @return always `next
-    def FinishPopup(modified, head, text, run, params)
-      params = deep_copy(params)
-      return :next if !modified
-
-      h = head
-      if h.nil? || h == ""
-        # Popup headline
-        h = _("Configuration Successfully Saved")
-      end
-
-      heads = {
-        # Popup headline
-        "dns"      => _("DNS Configuration Successfully Saved"),
-        # Popup headline
-        "dsl"      => _("DSL Configuration Successfully Saved"),
-        # Popup headline
-        "host"     => _(
-          "Hosts Configuration Successfully Saved"
-        ),
-        # Popup headline
-        "isdn"     => _(
-          "ISDN Configuration Successfully Saved"
-        ),
-        # Popup headline
-        "lan"      => _(
-          "Network Card Configuration Successfully Saved"
-        ),
-        # Popup headline
-        "modem"    => _(
-          "Modem Configuration Successfully Saved"
-        ),
-        # Popup headline
-        "proxy"    => _(
-          "Proxy Configuration Successfully Saved"
-        ),
-        # Popup headline
-        "provider" => _(
-          "Provider Configuration Successfully Saved"
-        ),
-        # Popup headline
-        "routing"  => _(
-          "Routing Configuration Successfully Saved"
-        )
-      }
-      h = Ops.get_string(heads, head, h)
-
-      t = text
-      texts = {
-        # Popup text
-        "mail" => _("Configure mail now?")
-      }
-      t = Ops.get_string(texts, run, text) if t == ""
-      if t == ""
-        # Popup text
-        t = Builtins.sformat(_("Run configuration of %1?"), run)
-      end
-
-      if run != ""
-        ret = Popup.YesNoHeadline(h, t)
-        # FIXME: check for the module presence
-        Call.Function(run, params) if ret == true
-      else
-        Popup.AnyMessage(h, t)
-      end
-
-      :next
     end
 
     # For s390 hwinfo gives us a multitude of types but some are handled
@@ -355,32 +217,6 @@ module Yast
         drvtype = "ctc"
       end
       drvtype
-    end
-
-    def needHwcfg(hw)
-      hw = deep_copy(hw)
-      need = true
-      # if kernel will autoload module for device
-      if IsNotEmpty(Ops.get_string(hw, "modalias", ""))
-        if Ops.greater_than(Builtins.size(Ops.get_list(hw, "drivers", [])), 1)
-          Builtins.y2milestone(
-            "there are more modules available for device, hwcfg is needed"
-          )
-        else
-          Builtins.y2milestone(
-            "Just one autoloadable module available.No need to write hwcfg"
-          )
-          need = false
-        end
-      # not autoload because of built-in driver (compiled in kernel)
-      elsif IsEmpty(Ops.get_string(hw, "driver_module", ""))
-        Builtins.y2milestone(
-          "built-in driver %1",
-          Ops.get_string(hw, "driver", "")
-        )
-        need = false
-      end
-      need
     end
 
     def dev_name_to_sysfs_id(dev_name, hardware)
@@ -420,31 +256,6 @@ module Yast
       needs_persistent
     end
 
-    # map<string, any> getcfg(string options, string device){
-    #  map <string, any> cfg=$[];
-    #  map <string, any> output = (map <string, any>)SCR::Execute(.target.bash_output,
-    # 		sformat("getcfg %1 %2", options, device));
-    #   foreach(string row, splitstring(output["stdout"]:"", "\n"), {
-    #    row=deletechars(row, "\\\"\;");
-    #    list<string> keyval=splitstring(row, "=");
-    #    if (size(keyval)>1) cfg[keyval[0]:""]=keyval[1]:"";
-    #
-    #   });
-    #  y2milestone("%1 %2\n%3", options, device, cfg);
-    #  return cfg;
-    # }
-
-    def getHardware(sysfs_id, hw)
-      hardware = {}
-      Builtins.foreach(hw) do |hw_temp|
-        if sysfs_id ==
-            Builtins.sformat("/sys%1", Ops.get_string(hw_temp, "sysfs_id", ""))
-          hardware = deep_copy(hw_temp)
-        end
-      end
-      deep_copy(hardware)
-    end
-
     def DistinguishedName(name, hwdevice)
       hwdevice = deep_copy(hwdevice)
       if Ops.get_string(hwdevice, "sysfs_bus_id", "") != ""
@@ -461,37 +272,27 @@ module Yast
     # @param [Hash] hwdevice hardware device
     # @return name consisting of vendor and device name
     def DeviceName(hwdevice)
-      hwdevice = deep_copy(hwdevice)
-      delimiter = " " # "\n"; #FIXME: constant
+      device = hwdevice["device"] || ""
+      return device if !device.empty?
 
-      if IsNotEmpty(Ops.get_string(hwdevice, "device", ""))
-        return Ops.get_string(hwdevice, "device", "")
+      model = hwdevice["model"] || ""
+      return model if !model.empty?
+
+      vendor = hwdevice["sub_vendor"] || ""
+      dev = hwdevice["sub_device"] || ""
+
+      if vendor.empty? || dev.empty?
+        vendor = hwdevice["vendor"] || ""
+        dev = hwdevice["device"] || ""
       end
 
-      model = Ops.get_string(hwdevice, "model", "")
-      return model if model != "" && !model.nil?
-
-      vendor = Ops.get_string(hwdevice, "sub_vendor", "")
-      dev = Ops.get_string(hwdevice, "sub_device", "")
-
-      if vendor == "" || dev == ""
-        vendor = Ops.get_string(hwdevice, "vendor", "")
-        dev = Ops.get_string(hwdevice, "device", "")
-      end
-
-      if vendor != ""
-        return Ops.add(Ops.add(vendor, delimiter), dev)
-      else
-        return dev
-      end
+      "#{vendor} #{dev}".strip
     end
 
     # Validates given name for use as a nic name in sysconfig. See bnc#784952
     def ValidNicName(name)
       # 16 is the kernel limit on interface name size (IFNAMSIZ)
-      return false if !Builtins.regexpmatch(name, "^[[:alnum:]._:-]{1,15}$")
-
-      true
+      !(name =~ /^[[:alnum:]._:-]{1,15}\z/).nil?
     end
 
     # Checks if device with the given name is configured already.
@@ -513,43 +314,44 @@ module Yast
 
       # Network controller
       if Ops.get_integer(hwdevice, "class_id", -1) == 2
-        if subclass_id == 0
+        case subclass_id
+        when 0
           return "eth"
-        elsif subclass_id == 1
+        when 1
           return "tr"
-        elsif subclass_id == 2
+        when 2
           return "fddi"
-        elsif subclass_id == 3
+        when 3
           return "atm"
-        elsif subclass_id == 4
+        when 4
           return "isdn"
-        elsif subclass_id == 6 ## Should be PICMG?
+        when 6 ## Should be PICMG?
           return "ib"
-        elsif subclass_id == 7
+        when 7
           return "ib"
-        elsif subclass_id == 129
+        when 129
           return "myri"
-        elsif subclass_id == 130
+        when 130
           return "wlan"
-        elsif subclass_id == 131
+        when 131
           return "xp"
-        elsif subclass_id == 134
+        when 134
           return "qeth"
-        elsif subclass_id == 135
+        when 135
           return "hsi"
-        elsif subclass_id == 136
+        when 136
           return "ctc"
-        elsif subclass_id == 137
+        when 137
           return "lcs"
-        elsif subclass_id == 142
+        when 142
           return "ficon"
-        elsif subclass_id == 143
+        when 143
           return "escon"
-        elsif subclass_id == 144
+        when 144
           return "iucv"
-        elsif subclass_id == 145
+        when 145
           return "usb" # #22739
-        elsif subclass_id == 128
+        when 128
           # Nothing was found
           Builtins.y2error("Unknown network controller type: %1", hwdevice)
           Builtins.y2error(
@@ -569,9 +371,10 @@ module Yast
 
       # Communication controller
       if Ops.get_integer(hwdevice, "class_id", -1) == 7
-        if subclass_id == 3
+        case subclass_id
+        when 3
           return "modem"
-        elsif subclass_id == 128
+        when 128
           # Nothing was found
           Builtins.y2error("Unknown network controller type: %1", hwdevice)
           Builtins.y2error(
@@ -592,40 +395,41 @@ module Yast
       # indeed does not pass this to us
       elsif Ops.get_integer(hwdevice, "class_id", -1) == 263
         Builtins.y2milestone("CLASS 0x107") # this should happen rarely
-        if subclass_id == 0
+        case subclass_id
+        when 0
           return "lo"
-        elsif subclass_id == 1
+        when 1
           return "eth"
-        elsif subclass_id == 2
+        when 2
           return "tr"
-        elsif subclass_id == 3
+        when 3
           return "fddi"
-        elsif subclass_id == 4
+        when 4
           return "ctc"
-        elsif subclass_id == 5
+        when 5
           return "iucv"
-        elsif subclass_id == 6
+        when 6
           return "hsi"
-        elsif subclass_id == 7
+        when 7
           return "qeth"
-        elsif subclass_id == 8
+        when 8
           return "escon"
-        elsif subclass_id == 9
+        when 9
           return "myri"
-        elsif subclass_id == 10
+        when 10
           return "wlan"
-        elsif subclass_id == 11
+        when 11
           return "xp"
-        elsif subclass_id == 12
+        when 12
           return "usb"
-        elsif subclass_id == 128
+        when 128
           # Nothing was found
           Builtins.y2error("Unknown network interface type: %1", hwdevice)
           Builtins.y2error(
             "It's probably missing in hwinfo (src/hd/hd.h:sc_net_if)"
           )
           return ""
-        elsif subclass_id == 129
+        when 129
           return "sit"
         else
           # Nothing was found
@@ -714,101 +518,101 @@ module Yast
 
         case controller
           # modem
-          when "modem"
-            one["device_name"] = card["dev_name"] || ""
-            one["drivers"] = card["drivers"] || []
+        when "modem"
+          one["device_name"] = card["dev_name"] || ""
+          one["drivers"] = card["drivers"] || []
 
-            speed = Ops.get_integer(resource, ["baud", 0, "speed"], 57_600)
-            # :-) have to check .probe and libhd if this confusion is
-            # really necessary. maybe a pppd bug too? #148893
-            speed = 57_600 if speed == 12_000_000
+          speed = Ops.get_integer(resource, ["baud", 0, "speed"], 57_600)
+          # :-) have to check .probe and libhd if this confusion is
+          # really necessary. maybe a pppd bug too? #148893
+          speed = 57_600 if speed == 12_000_000
 
-            one["speed"] = speed
-            one["init1"] = Ops.get_string(resource, ["init_strings", 0, "init1"], "")
-            one["init2"] = Ops.get_string(resource, ["init_strings", 0, "init2"], "")
-            one["pppd_options"] = Ops.get_string(resource, ["pppd_option", 0, "option"], "")
+          one["speed"] = speed
+          one["init1"] = Ops.get_string(resource, ["init_strings", 0, "init1"], "")
+          one["init2"] = Ops.get_string(resource, ["init_strings", 0, "init2"], "")
+          one["pppd_options"] = Ops.get_string(resource, ["pppd_option", 0, "option"], "")
 
           # isdn card
-          when "isdn"
-            drivers = card["isdn"] || []
-            one["drivers"] = drivers
-            one["sel_drv"] = 0
-            one["bus"] = card["bus"] || ""
-            one["io"] = Ops.get_integer(resource, ["io", 0, "start"], 0)
-            one["irq"] = Ops.get_integer(resource, ["irq", 0, "irq"], 0)
+        when "isdn"
+          drivers = card["isdn"] || []
+          one["drivers"] = drivers
+          one["sel_drv"] = 0
+          one["bus"] = card["bus"] || ""
+          one["io"] = Ops.get_integer(resource, ["io", 0, "start"], 0)
+          one["irq"] = Ops.get_integer(resource, ["irq", 0, "irq"], 0)
 
           # dsl card
-          when "dsl"
-            driver_info = Ops.get_map(card, ["dsl", 0], {})
-            translate_mode = { "capiadsl" => "capi-adsl", "pppoe" => "pppoe" }
-            m = driver_info["mode"] || ""
-            one["pppmode"] = translate_mode[m] || m
+        when "dsl"
+          driver_info = Ops.get_map(card, ["dsl", 0], {})
+          translate_mode = { "capiadsl" => "capi-adsl", "pppoe" => "pppoe" }
+          m = driver_info["mode"] || ""
+          one["pppmode"] = translate_mode[m] || m
 
           # treat the rest as a network card
-          else
-            # drivers:
-            # Although normally there is only one module
-            # (one=$[active:, module:, options:,...]), the generic
-            # situation is: one or more driver variants (exclusive),
-            # each having one or more modules (one[drivers])
+        else
+          # drivers:
+          # Although normally there is only one module
+          # (one=$[active:, module:, options:,...]), the generic
+          # situation is: one or more driver variants (exclusive),
+          # each having one or more modules (one[drivers])
 
-            # only drivers that are not marked as broken (#97540)
-            drivers = Builtins.filter(Ops.get_list(card, "drivers", [])) do |d|
-              # ignoring more modules per driver...
-              module0 = Ops.get_list(d, ["modules", 0], []) # [module, options]
-              brk = broken_modules.include?(module0[0])
+          # only drivers that are not marked as broken (#97540)
+          drivers = Builtins.filter(Ops.get_list(card, "drivers", [])) do |d|
+            # ignoring more modules per driver...
+            module0 = Ops.get_list(d, ["modules", 0], []) # [module, options]
+            brk = broken_modules.include?(module0[0])
 
-              if brk
-                Builtins.y2milestone("In BrokenModules, skipping: %1", module0)
-              end
-
-              !brk
+            if brk
+              Builtins.y2milestone("In BrokenModules, skipping: %1", module0)
             end
 
-            if drivers == []
-              Builtins.y2milestone("No good drivers found")
-            else
-              one["drivers"] = drivers
-
-              driver = drivers[0] || {}
-              one["active"] = driver["active"] || false
-              module0 = Ops.get_list(driver, ["modules", 0], [])
-              one["module"] = module0[0] || ""
-              one["options"] = module0[1] || ""
-            end
-
-            # FIXME: this should be also done for modems and others
-            # FIXME: #13571
-            hp = card["hotplug"] || ""
-            if hp == "pcmcia" || hp == "cardbus"
-              one["hotplug"] = "pcmcia"
-            elsif hp == "usb"
-              one["hotplug"] = "usb"
-            end
-
-            # store the BUS type
-            bus = card["bus_hwcfg"] || card["bus"] || ""
-
-            if bus == "PCI"
-              bus = "pci"
-            elsif bus == "USB"
-              bus = "usb"
-            elsif bus == "Virtual IO"
-              bus = "vio"
-            end
-
-            one["bus"] = bus
-            one["busid"] = card["sysfs_bus_id"] || ""
-            one["mac"] = Ops.get_string(resource, ["hwaddr", 0, "addr"], "")
-            # is the cable plugged in? nil = don't know
-            one["link"] = Ops.get(resource, ["link", 0, "state"])
-
-            # Wireless Card Features
-            one["wl_channels"] = Ops.get(resource, ["wlan", 0, "channels"])
-            one["wl_bitrates"] = Ops.get(resource, ["wlan", 0, "bitrates"])
-            one["wl_auth_modes"] = Ops.get(resource, ["wlan", 0, "auth_modes"])
-            one["wl_enc_modes"] = Ops.get(resource, ["wlan", 0, "enc_modes"])
+            !brk
           end
+
+          if drivers == []
+            Builtins.y2milestone("No good drivers found")
+          else
+            one["drivers"] = drivers
+
+            driver = drivers[0] || {}
+            one["active"] = driver["active"] || false
+            module0 = Ops.get_list(driver, ["modules", 0], [])
+            one["module"] = module0[0] || ""
+            one["options"] = module0[1] || ""
+          end
+
+          # FIXME: this should be also done for modems and others
+          # FIXME: #13571
+          hp = card["hotplug"] || ""
+          if hp == "pcmcia" || hp == "cardbus"
+            one["hotplug"] = "pcmcia"
+          elsif hp == "usb"
+            one["hotplug"] = "usb"
+          end
+
+          # store the BUS type
+          bus = card["bus_hwcfg"] || card["bus"] || ""
+
+          if bus == "PCI"
+            bus = "pci"
+          elsif bus == "USB"
+            bus = "usb"
+          elsif bus == "Virtual IO"
+            bus = "vio"
+          end
+
+          one["bus"] = bus
+          one["busid"] = card["sysfs_bus_id"] || ""
+          one["mac"] = Ops.get_string(resource, ["hwaddr", 0, "addr"], "")
+          # is the cable plugged in? nil = don't know
+          one["link"] = Ops.get(resource, ["link", 0, "state"])
+
+          # Wireless Card Features
+          one["wl_channels"] = Ops.get(resource, ["wlan", 0, "channels"])
+          one["wl_bitrates"] = Ops.get(resource, ["wlan", 0, "bitrates"])
+          one["wl_auth_modes"] = Ops.get(resource, ["wlan", 0, "auth_modes"])
+          one["wl_enc_modes"] = Ops.get(resource, ["wlan", 0, "enc_modes"])
+        end
 
         if controller != "" && !filter_out(card, one["module"])
           Builtins.y2debug("found device: %1", one)
@@ -882,7 +686,7 @@ module Yast
     # @param Shell command to run
     # @return whether command execution succeeds
     def Run(command)
-      ret = SCR.Execute(path(".target.bash"), command) == 0
+      ret = SCR.Execute(path(".target.bash"), command).zero?
 
       Builtins.y2error("Run <%1>: Command execution failed.", command) if !ret
 
@@ -890,9 +694,13 @@ module Yast
     end
     # TODO: end
 
-    # Return list of all interfaces present in the system (not only configured ones as NetworkInterfaces::List does).
+    # Return list of all interfaces present in the system.
+    #
+    # It means all interfaces which exists in the system at the time.
+    # /sys filesystem is used for checking that.
     #
     # @return [Array] of interface names.
+    # FIXME: rename e.g. to sys_interfaces
     def GetAllInterfaces
       result = RunAndRead("ls /sys/class/net")
 
@@ -903,36 +711,96 @@ module Yast
       end
     end
 
+    # Wrapper to call 'ip link set up' with the given interface
+    #
+    # @param [String] name of interface to 'set link up'
     def SetLinkUp(dev_name)
       log.info("Setting link up for interface #{dev_name}")
       Run("ip link set #{dev_name} up")
     end
 
+    # Wrapper to call 'ip link set down' with the given interface
+    #
+    # @param [String] name of interface to 'set link down'
     def SetLinkDown(dev_name)
       log.info("Setting link down for interface #{dev_name}")
       Run("ip link set #{dev_name} down")
     end
 
-    # Tries to set all available interfaces up
+    # Calls wicked ifup with the given interface
     #
-    # @return [boolean] false if some of interfaces cannot be set up
-    def SetAllLinksUp
-      interfaces = GetAllInterfaces()
-
-      return false if interfaces.empty?
-
-      interfaces.all? { |i| SetLinkUp(i) }
+    # @param [String] name of interface to put down
+    def SetIfaceUp(dev_name)
+      log.info("Setting interface #{dev_name} up")
+      Run("ifup #{dev_name}")
     end
 
-    # Tries to set all available interfaces down
+    # Calls wicked ifdown with the given interface
     #
-    # @return [boolean] false if some of interfaces cannot be set down
-    def SetAllLinksDown
+    # @param [String] name of interface to put down
+    def SetIfaceDown(dev_name)
+      log.info("Setting interface #{dev_name} down")
+      Run("ifdown #{dev_name}")
+    end
+
+    # Tries to set all interfaces up
+    #
+    # @return [boolean] false if interfaces are empty or some
+    # interface cannot be bring up
+    def SetAllIfacesUp
+      all_up = true
       interfaces = GetAllInterfaces()
 
       return false if interfaces.empty?
 
-      interfaces.all? { |i| SetLinkDown(i) }
+      interfaces.each { |i| all_up = false if !SetIfaceUp(i) }
+
+      all_up
+    end
+
+    # Tries to set all interfaces down
+    #
+    # @return [boolean] false if interfaces are empty or some
+    # interface cannot be bring down
+    def SetAllIfacesDown
+      all_down = true
+      interfaces = GetAllInterfaces()
+
+      return false if interfaces.empty?
+
+      interfaces.each { |i| all_down = false if !SetIfaceDown(i) }
+
+      all_down
+    end
+
+    # Tries to set up the link of all available interfaces
+    #
+    # @return [boolean] false if interfaces are empty or some
+    # interface cannot be set up
+    def SetAllLinksUp
+      all_up = true
+      interfaces = GetAllInterfaces()
+
+      return false if interfaces.empty?
+
+      interfaces.each { |i| all_up = false if !SetLinkUp(i) }
+
+      all_up
+    end
+
+    # Tries to set the link down of all available interfaces
+    #
+    # @return [boolean] false if interfaces are empty or some
+    # interface cannot be set down
+    def SetAllLinksDown
+      all_down = true
+      interfaces = GetAllInterfaces()
+
+      return false if interfaces.empty?
+
+      interfaces.each { |i| all_down = false if !SetLinkDown(i) }
+
+      all_down
     end
 
     # Checks if given device has carrier
@@ -1120,6 +988,31 @@ module Yast
 
       hwstring = hwstrings[hwtype] || _("All Network Devices")
       Confirm.Detection(hwstring, nil)
+    end
+
+    # Returns a generic message informing user that incorrect DHCLIENT_SET_HOSTNAME
+    # setup was detected.
+    #
+    # @param [Array<String>] list of incorrectly configured devices
+    # @return [String] a message stating that incorrect DHCLIENT_SET_HOSTNAME setup was detected
+    def fix_dhclient_msg(cfgs)
+      format(
+        _(
+          "More than one interface asks to control the hostname via DHCP.\n" \
+          "If you keep the current settings, the behavior is non-deterministic.\n\n" \
+          "Involved configuration files:\n" \
+          "%s\n"
+        ),
+        cfgs.join(" ")
+      )
+    end
+
+    # A popup informing user that incorrent DHCLIENT_SET_HOSTNAME was detected
+    #
+    # @param [Array<String>] list of incorrectly configured devices
+    # @return [void]
+    def fix_dhclient_warning(devs)
+      Popup.Warning(fix_dhclient_msg(devs))
     end
   end
 end

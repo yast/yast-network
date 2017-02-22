@@ -5,14 +5,19 @@ TESTS = \
   build_lan_overview_test.rb \
   complex_test.rb \
   default_route_test.rb \
-  dns_test.rb \
   dns_service_test.rb \
+  dns_test.rb \
   edit_nic_name_test.rb \
   firewall_stage1_proposal_test.rb \
+  hardware_test.rb \
+  host_test.rb \
   ifroute_test.rb \
+  inst_setup_dhcp_test.rb \
   install_inf_convertor_test.rb \
+  lan_items_export_test.rb \
   lan_items_helpers_test.rb \
   lan_items_read_test.rb \
+  lan_items_rollback_test.rb \
   lan_test.rb \
   lan_udev_auto_test.rb \
   link_handlers_test.rb \
@@ -27,7 +32,8 @@ TESTS = \
   s390_helpers_test.rb \
   suse_firewall_4_network_test.rb \
   udev_test.rb \
-  widgets_test.rb
+  widgets_test.rb \
+  yaml_defaults_test.rb
 
 TEST_EXTENSIONS = .rb
 RB_LOG_COMPILER = rspec --format doc

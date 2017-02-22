@@ -57,12 +57,22 @@ module Yast
 
       allow_buttons = RadioButtonGroup(
         VBox(
+          # Small spacing (bsc#988904)
+          VSpacing(0.3),
           # RadioButton label
           Left(
             RadioButton(
-              Id(:allow),
-              _("&Allow Remote Administration"),
-              Remote.IsEnabled
+              Id(:allow_with_vncmanager),
+              _("&Allow Remote Administration With Session Management"),
+              Remote.IsEnabled && Remote.EnabledVncManager
+            )
+          ),
+          # RadioButton label
+          Left(
+            RadioButton(
+              Id(:allow_without_vncmanager),
+              _("&Allow Remote Administration Without Session Management"),
+              Remote.IsEnabled && !Remote.EnabledVncManager
             )
           ),
           # RadioButton label
@@ -91,8 +101,12 @@ module Yast
               "<p>If this feature is enabled, you can\n" \
               "administer this machine remotely from another machine. Use a VNC\n" \
               "client, such as krdc (connect to <tt>&lt;hostname&gt;:%1</tt>), or\n" \
-              "a Java-capable Web browser (connect to <tt>http://&lt;hostname&gt;:%2/</tt>).\n" \
-              "This form of remote administration is less secure than using SSH.</p>\n"
+              "a Java-capable Web browser (connect to <tt>https://&lt;hostname&gt;:%2/</tt>).</p>\n" \
+              "<p>Without Session Management, only one user can be connected\n"\
+              "at a time to a session, and that session is terminated when the VNC client\n" \
+              "disconnects.</p>" \
+              "<p>With Session Management, multiple users can interact with a single\n" \
+              "session, and the session may persist even if noone is connected.</p>"
           ),
           5901,
           5801
@@ -142,9 +156,12 @@ module Yast
       if ret == :next
         CWMFirewallInterfaces.OpenFirewallStore(firewall_widget, "", event)
 
-        allowed = Convert.to_boolean(UI.QueryWidget(Id(:allow), :Value))
+        allow_with_vncmanager = UI.QueryWidget(Id(:allow_with_vncmanager), :Value)
+        allow_without_vncmanager = UI.QueryWidget(Id(:allow_without_vncmanager), :Value)
 
-        if allowed
+        if allow_with_vncmanager
+          Remote.EnableVncManager
+        elsif allow_without_vncmanager
           Remote.Enable
         else
           Remote.Disable

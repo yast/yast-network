@@ -151,51 +151,58 @@ module Yast
 
       UI.OpenDialog(
         Opt(:decorated),
-        VBox(
-          HSpacing(1),
+        MinWidth(60,
           VBox(
-            HBox(
-              InputField(
-                Id(:destination),
-                Opt(:hstretch),
-                _("&Destination"),
-                Ops.get_string(entry, 1, "")
+            HSpacing(1),
+            VBox(
+              HBox(
+                HWeight(70,
+                  InputField(
+                    Id(:destination),
+                    Opt(:hstretch),
+                    _("&Destination"),
+                    Ops.get_string(entry, 1, "")
+                  )),
+                HSpacing(1),
+                HWeight(30,
+                  InputField(
+                    Id(:genmask),
+                    Opt(:hstretch),
+                    _("Ge&nmask"),
+                    Ops.get_string(entry, 3, "-")
+                  ))
               ),
+              HBox(
+                HWeight(70,
+                  InputField(
+                    Id(:gateway),
+                    Opt(:hstretch),
+                    _("&Gateway"),
+                    Ops.get_string(entry, 2, "-")
+                  )),
+                HSpacing(1),
+                HWeight(30,
+                  ComboBox(
+                    Id(:device),
+                    Opt(:editable, :hstretch),
+                    _("De&vice"),
+                    devs
+                  ))
+              ),
+              # ComboBox label
               InputField(
-                Id(:genmask),
+                Id(:options),
                 Opt(:hstretch),
-                _("Ge&nmask"),
-                Ops.get_string(entry, 3, "-")
+                Label.Options,
+                Ops.get_string(entry, 5, "")
               )
             ),
+            HSpacing(1),
             HBox(
-              InputField(
-                Id(:gateway),
-                Opt(:hstretch),
-                _("&Gateway"),
-                Ops.get_string(entry, 2, "-")
-              ),
-              ComboBox(
-                Id(:device),
-                Opt(:editable, :hstretch),
-                _("De&vice"),
-                devs
-              )
-            ),
-            # ComboBox label
-            InputField(
-              Id(:options),
-              Opt(:hstretch),
-              Label.Options,
-              Ops.get_string(entry, 5, "")
+              PushButton(Id(:ok), Opt(:default), Label.OKButton),
+              PushButton(Id(:cancel), Label.CancelButton)
             )
-          ),
-          HSpacing(1),
-          HBox(
-            PushButton(Id(:ok), Opt(:default), Label.OKButton),
-            PushButton(Id(:cancel), Label.CancelButton)
-          )
-        )
+          ))
       )
 
       # Allow declaring route without iface (for gateway) #93996
@@ -410,13 +417,11 @@ module Yast
 
     def validateRouting(_key, _event)
       gw = UI.QueryWidget(Id(:gw), :Value)
-      if gw != "" && !IP.Check(gw)
-        Popup.Error(_("The default gateway is invalid."))
-        UI.SetFocus(Id(:gw))
-        return false
-      else
-        return true
-      end
+      return true if gw == "" || IP.Check(gw)
+
+      Popup.Error(_("The default gateway is invalid."))
+      UI.SetFocus(Id(:gw))
+      false
     end
 
     def storeRouting(_key, _event)

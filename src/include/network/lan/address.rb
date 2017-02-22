@@ -29,6 +29,7 @@
 module Yast
   module NetworkLanAddressInclude
     include Yast::Logger
+
     def initialize_network_lan_address(include_target)
       Yast.import "UI"
 
@@ -227,8 +228,8 @@ module Yast
           "help"          => Ops.get_string(@help, "etherdevice", "")
         },
         "BONDSLAVE"    => {
-          "widget"        => :custom,
-          "custom_widget" => Frame(
+          "widget"            => :custom,
+          "custom_widget"     => Frame(
             _("Bond Slaves and Order"),
             VBox(
               MultiSelectionBox(Id(:msbox_items), Opt(:notify), "", []),
@@ -238,18 +239,23 @@ module Yast
               )
             )
           ),
-          "label"         => _("Bond &Slaves"),
+          "label"             => _("Bond &Slaves"),
           #        "opt": [`shrinkable],
-          "init"          => fun_ref(
+          "init"              => fun_ref(
             method(:InitSlave),
             "void (string)"
           ),
-          "handle"        => fun_ref(
+          "handle"            => fun_ref(
             method(:HandleSlave),
             "symbol (string, map)"
           ),
-          "store"         => fun_ref(method(:StoreSlave), "void (string, map)"),
-          "help"          => Ops.get_string(@help, "bondslave", "")
+          "validate_type"     => :function,
+          "validate_function" => fun_ref(
+            method(:validate_bond),
+            "boolean (string, map)"
+          ),
+          "store"             => fun_ref(method(:StoreSlave), "void (string, map)"),
+          "help"              => @help["bondslave"].to_s
         },
         "BONDOPTION"   => {
           "widget" => :combobox,
@@ -387,7 +393,7 @@ module Yast
       Ops.set(
         @widget_descr_local,
         "HWDIALOG",
-        Ops.get(@widget_descr_hardware, "HWDIALOG", {})
+        Ops.get(widget_descr_hardware, "HWDIALOG", {})
       )
     end
 
@@ -469,25 +475,13 @@ module Yast
     # @param [String] key	id of the widget
     # @param [String] key id of the widget
     def StoreBridge(key, _event)
-      Ops.set(
-        @settings,
-        "BRIDGE_PORTS",
-        String.CutBlanks(
-          Builtins.mergestring(
-            Convert.convert(
-              UI.QueryWidget(Id("BRIDGE_PORTS"), :SelectedItems),
-              from: "any",
-              to:   "list <string>"
-            ),
-            " "
-          )
-        )
-      )
-      Builtins.y2milestone(
-        "store bridge %1 : %2",
-        key,
-        Ops.get_string(@settings, "BRIDGE_PORTS", "")
-      )
+      selected_bridge_ports = UI.QueryWidget(Id("BRIDGE_PORTS"), :SelectedItems) || []
+
+      @settings["BRIDGE_PORTS"] = selected_bridge_ports.join(" ")
+
+      LanItems.bridge_ports = @settings["BRIDGE_PORTS"]
+
+      log.info("store bridge #{key} with ports: #{@settings["BRIDGE_PORTS"]}")
 
       nil
     end
@@ -609,6 +603,7 @@ module Yast
     # @param [String] key	id of the widget
     def InitSlave(_key)
       @settings["SLAVES"] = LanItems.bond_slaves || []
+
       UI.ChangeWidget(
         :msbox_items,
         :SelectedItems,
@@ -687,7 +682,10 @@ module Yast
     def StoreSlave(_key, _event)
       configured_slaves = @settings["SLAVES"] || []
 
-      @settings["SLAVES"] = get_selected_slaves
+      selected_slaves = UI.QueryWidget(:msbox_items, :SelectedItems) || []
+
+      @settings["SLAVES"] = selected_slaves
+
       @settings["BONDOPTION"] = UI.QueryWidget(Id("BONDOPTION"), :Value).to_s
 
       LanItems.bond_slaves = @settings["SLAVES"]
@@ -698,9 +696,56 @@ module Yast
         !configured_slaves.include? slave
       end
 
-      Lan.bond_autoconf_slaves = (Lan.bond_autoconf_slaves + new_slaves).uniq.sort
+      Lan.autoconf_slaves = (Lan.autoconf_slaves + new_slaves).uniq.sort
 
       nil
+    end
+
+    # Validates created bonding. Currently just prevent the user to create a
+    # bond with more than one interface sharing the same physical port id
+    #
+    # @param [String] key the widget being validated
+    # @param [Hash] event the event being handled
+    # @return true if valid or user decision if not
+    def validate_bond(_key, _event)
+      selected_slaves = UI.QueryWidget(:msbox_items, :SelectedItems) || []
+
+      physical_ports = repeated_physical_port_ids(selected_slaves)
+
+      physical_ports.empty? ? true : continue_with_duplicates?(physical_ports)
+    end
+
+    # FIXME: This method should be moved to a more generic class.
+    # Wrap given text breaking lines longer than given wrap size. It supports
+    # custom separator, max number of lines to split in and cut text to add
+    # as last line if cut was needed.
+    #
+    # @param [String] text to be wrapped
+    # @param [String] wrap size
+    # @param [Hash <String>] optional parameters as separator and prepend_text.
+    # @return [String] wrap text
+    def wrap_text(text, wrap = 78, separator: " ", prepend_text: "",
+      n_lines: nil, cut_text: nil)
+      lines = []
+      message_line = prepend_text
+      text.split(/\s+/).each_with_index do |t, i|
+        if !message_line.empty? && "#{message_line}#{t}".size > wrap
+          lines << message_line
+          message_line = ""
+        end
+
+        message_line << separator if !message_line.empty? && i != 0
+        message_line << t
+      end
+
+      lines << message_line if !message_line.empty?
+
+      if n_lines && lines.size > n_lines
+        lines = lines[0..n_lines - 1]
+        lines << cut_text if cut_text
+      end
+
+      lines.join("\n")
     end
 
     def initTunnel(_key)
@@ -775,7 +820,7 @@ module Yast
         if Ops.greater_than(
           Builtins.size(Ops.get_string(@settings, "PREFIXLEN", "")),
           0
-          )
+        )
           UI.ChangeWidget(
             Id(:netmask),
             :Value,
@@ -876,11 +921,8 @@ module Yast
         if Builtins.substring(@mask, 0, 1) == "/"
           Ops.set(@settings, "PREFIXLEN", Builtins.substring(@mask, 1))
         else
-          if Netmask.Check6(@mask)
-            Ops.set(@settings, "PREFIXLEN", @mask)
-          else
-            Ops.set(@settings, "NETMASK", @mask)
-          end
+          param = Netmask.Check6(@mask) ? "PREFIXLEN" : "NETMASK"
+          Ops.set(@settings, param, @mask)
         end
         Ops.set(
           @settings,
@@ -983,7 +1025,7 @@ module Yast
                 "that has been detected. This only makes sense\n" \
                 "if you know that the detection is wrong."
             )
-            )
+          )
             return false
           end
         end
@@ -1061,21 +1103,19 @@ module Yast
             UI.SetFocus(:hostname)
             return false
           end
-        else
-          # There'll be no 127.0.0.2 -> remind user to define some hostname
-          if !Host.NeedDummyIP &&
-              !Popup.YesNo(
-                _(
-                  "No hostname has been specified. We recommend to associate \n" \
-                    "a hostname with a static IP, otherwise the machine name will \n" \
-                    "not be resolvable without an active network connection.\n" \
-                    "\n" \
-                    "Really leave the hostname blank?\n"
-                )
+        # There'll be no 127.0.0.2 -> remind user to define some hostname
+        elsif !Host.NeedDummyIP &&
+            !Popup.YesNo(
+              _(
+                "No hostname has been specified. We recommend to associate \n" \
+                  "a hostname with a static IP, otherwise the machine name will \n" \
+                  "not be resolvable without an active network connection.\n" \
+                  "\n" \
+                  "Really leave the hostname blank?\n"
               )
-            UI.SetFocus(:hostname)
-            return false
-          end
+            )
+          UI.SetFocus(:hostname)
+          return false
         end
 
         # validate duplication
@@ -1085,7 +1125,7 @@ module Yast
           if !Popup.YesNoHeadline(
             Label.WarningMsg,
             _("Duplicate IP address detected.\nReally continue?\n")
-            )
+          )
             return false
           end
         end
@@ -1127,10 +1167,16 @@ module Yast
       UI.ChangeWidget(
         Id("IFPLUGD_PRIORITY"),
         :Value,
-        Builtins.tointeger(Ops.get_string(@settings, "IFPLUGD_PRIORITY", "0"))
+        @settings["IFPLUGD_PRIORITY"].to_i
       )
 
       nil
+    end
+
+    # Stores content of IFPLUGD_PRIORITY widget into internal variables
+    def store_ifplugd_priority(_key, _event)
+      ifp_prio = UI.QueryWidget(Id("IFPLUGD_PRIORITY"), :Value).to_s
+      LanItems.ifplugd_priority = ifp_prio if !ifp_prio.empty?
     end
 
     def general_tab
@@ -1180,8 +1226,8 @@ module Yast
       # TODO: dynamic for dummy. or add dummy from outside?
       no_dhcp =
         is_ptp ||
-          type == "dummy" ||
-          LanItems.alias != ""
+        type == "dummy" ||
+        LanItems.alias != ""
 
       address_p2p_contents = Frame(
         "", # labelless frame
@@ -1221,10 +1267,10 @@ module Yast
         type == "vlan" ? VBox("ETHERDEVICE") : Empty()
       )
 
-      if ["tun", "tap"].include?(LanItems.type)
-        address_contents = VBox(Left(label), "TUNNEL")
+      address_contents = if ["tun", "tap"].include?(LanItems.type)
+        VBox(Left(label), "TUNNEL")
       else
-        address_contents = VBox(
+        VBox(
           Left(label),
           just_address_contents,
           "AD_ADDRESSES"
@@ -1293,43 +1339,7 @@ module Yast
       end
       @hostname_initial = String.FirstChunk(Ops.get(host_list, 0, ""), " \t")
 
-      @settings = {
-        # general tab:
-        "STARTMODE"        => LanItems.startmode,
-        "IFPLUGD_PRIORITY" => LanItems.ifplugd_priority,
-        # problems when renaming the interface?
-        "FWZONE"           => fwzone,
-        "MTU"              => LanItems.mtu,
-        # address tab:
-        "BOOTPROTO"        => LanItems.bootproto,
-        "IPADDR"           => LanItems.ipaddr,
-        "NETMASK"          => LanItems.netmask,
-        "PREFIXLEN"        => LanItems.prefix,
-        "REMOTEIP"         => LanItems.remoteip,
-        "HOSTNAME"         => @hostname_initial,
-        "IFCFGTYPE"        => LanItems.type,
-        "IFCFGID"          => LanItems.device
-      }
-
-      if LanItems.type == "vlan"
-        Ops.set(@settings, "ETHERDEVICE", LanItems.vlan_etherdevice)
-        Ops.set(@settings, "VLAN_ID", Builtins.tointeger(LanItems.vlan_id))
-      end
-
-      if Builtins.contains(["tun", "tap"], LanItems.type)
-        @settings = {
-          "BOOTPROTO"        => "static",
-          "STARTMODE"        => "auto",
-          "TUNNEL"           => LanItems.type,
-          "TUNNEL_SET_OWNER" => LanItems.tunnel_set_owner,
-          "TUNNEL_SET_GROUP" => LanItems.tunnel_set_group
-        }
-      end
-
-      # #65524
-      if LanItems.operation == :add && @force_static_ip
-        Ops.set(@settings, "BOOTPROTO", "static")
-      end
+      initialize_address_settings
 
       wd = Convert.convert(
         Builtins.union(@widget_descr, @widget_descr_local),
@@ -1350,7 +1360,7 @@ module Yast
         # Combo box label - when to activate device (e.g. on boot, manually, never,..)
         "label"   => _(
           "Ifplugd Priority"
-),
+        ),
         "help"    =>
                      # Device activation main help. The individual parts will be
                      # substituted as %1
@@ -1360,8 +1370,9 @@ module Yast
                          " used mutually exclusive. If more then one of these interfaces is <b>On Cable Connection</b>\n" \
                          " then we need a way to decide which interface to take up. Therefore we have to\n" \
                          " set the priority of each interface.  </p>\n"
-  ),
-        "init"    => fun_ref(method(:initIfplugdPriority), "void (string)")
+                     ),
+        "init"    => fun_ref(method(:initIfplugdPriority), "void (string)"),
+        "store"   => fun_ref(method(:store_ifplugd_priority), "void (string, map)")
       )
 
       Ops.set(wd, ["IFCFGTYPE", "items"], BuildTypesListCWM(NetworkInterfaces.GetDeviceTypes))
@@ -1457,12 +1468,6 @@ module Yast
         ifcfgname = Ops.get_string(LanItems.getCurrentItem, "ifcfg", "")
         # general tab
         LanItems.startmode = Ops.get_string(@settings, "STARTMODE", "")
-        if LanItems.startmode == "ifplugd"
-          ifp_prio = Builtins.tostring(
-            UI.QueryWidget(Id("IFPLUGD_PRIORITY"), :Value)
-          )
-          LanItems.ifplugd_priority = ifp_prio if !ifp_prio.nil?
-        end
 
         if SuSEFirewall4Network.IsInstalled
           zone = Ops.get_string(@settings, "FWZONE", "")
@@ -1521,8 +1526,6 @@ module Yast
         LanItems.vlan_id = Builtins.tostring(
           Ops.get_integer(@settings, "VLAN_ID", 0)
         )
-      elsif LanItems.type == "br"
-        LanItems.bridge_ports = Ops.get_string(@settings, "BRIDGE_PORTS", "")
       elsif Builtins.contains(["tun", "tap"], LanItems.type)
         LanItems.tunnel_set_owner = Ops.get_string(
           @settings,
@@ -1548,8 +1551,84 @@ module Yast
 
   private
 
-    def get_selected_slaves
-      UI.QueryWidget(:msbox_items, :SelectedItems) || []
+    # Initializes the Address Dialog @settings with the corresponding LanItems values
+    def initialize_address_settings
+      @settings = {
+        # general tab:
+        "STARTMODE"        => LanItems.startmode,
+        "IFPLUGD_PRIORITY" => LanItems.ifplugd_priority,
+        # problems when renaming the interface?
+        "FWZONE"           => @fwzone_initial,
+        "MTU"              => LanItems.mtu,
+        # address tab:
+        "BOOTPROTO"        => LanItems.bootproto,
+        "IPADDR"           => LanItems.ipaddr,
+        "NETMASK"          => LanItems.netmask,
+        "PREFIXLEN"        => LanItems.prefix,
+        "REMOTEIP"         => LanItems.remoteip,
+        "HOSTNAME"         => @hostname_initial,
+        "IFCFGTYPE"        => LanItems.type,
+        "IFCFGID"          => LanItems.device
+      }
+
+      if LanItems.type == "vlan"
+        @settings["ETHERDEVICE"] = LanItems.vlan_etherdevice
+        @settings["VLAN_ID"]     = LanItems.vlan_id.to_i
+      end
+
+      if ["tun", "tap"].include?(LanItems.type)
+        @settings = {
+          "BOOTPROTO"        => "static",
+          "STARTMODE"        => "auto",
+          "TUNNEL"           => LanItems.type,
+          "TUNNEL_SET_OWNER" => LanItems.tunnel_set_owner,
+          "TUNNEL_SET_GROUP" => LanItems.tunnel_set_group
+        }
+      end
+
+      # #65524
+      @settings["BOOTPROTO"] = "static" if LanItems.operation == :add && @force_static_ip
+    end
+
+    # Given a map of duplicated port ids with device names, aks the user if he
+    # would like to continue or not.
+    #
+    # @param [Hash{String => Array<String>}] hash of duplicated physical port ids
+    # mapping to an array of device names
+    # @return [Boolean] true if continue with duplicates, otherwise false
+    def continue_with_duplicates?(physical_ports)
+      message = physical_ports.map do |port, slave|
+        label = "PhysicalPortID (#{port}): "
+        wrap_text(slave.join(", "), 76, prepend_text: label)
+      end.join("\n")
+
+      Popup.YesNoHeadline(
+        Label.WarningMsg,
+        # Translators: Warn the user about not desired effect
+        _("The interfaces selected share the same physical port and bonding " \
+          "them \nmay not have the desired effect of redundancy.\n\n%s\n\n" \
+          "Really continue?\n") % message
+      )
+    end
+
+    # Given a list of device names returns a hash of physical port ids mapping
+    # device names if at least two devices shared the same physical port id
+    #
+    # @param [Array<String] bonding slaves
+    # @return [Hash{String => Array<String>}] of duplicated physical port ids
+    def repeated_physical_port_ids(slaves)
+      physical_port_ids = {}
+
+      slaves.each do |slave|
+        if physical_port_id?(slave)
+          p = physical_port_ids[physical_port_id(slave)] ||= []
+          p << slave
+        end
+      end
+
+      physical_port_ids.select! { |_k, v| v.size > 1 }
+
+      physical_port_ids
     end
   end
 end

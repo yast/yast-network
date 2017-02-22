@@ -59,8 +59,6 @@ module Yast
       Yast.import "LanItems"
       Yast.import "ModuleLoading"
       Yast.import "Linuxrc"
-      Yast.import "LanUdevAuto"
-      Yast.import "Report"
 
       Yast.include self, "network/complex.rb"
       Yast.include self, "network/runtime.rb"
@@ -86,6 +84,9 @@ module Yast
       # list of interface names which were recently assigned as a slave to a bond device
       @bond_autoconf_slaves = []
 
+      # list of interface names which were recently enslaved in a bridge or bond device
+      @autoconf_slaves = []
+
       # Lan::Read (`cache) will do nothing if initialized already.
       @initialized = false
     end
@@ -97,10 +98,14 @@ module Yast
     # Return a modification status
     # @return true if data was modified
     def Modified
-      ret = LanItems.GetModified || DNS.modified || Routing.Modified ||
-        NetworkConfig.Modified ||
-        NetworkService.Modified
-      ret
+      return true if LanItems.GetModified
+      return true if DNS.modified
+      return true if Routing.Modified
+      return true if NetworkConfig.Modified
+      return true if NetworkService.Modified
+      return true if SuSEFirewall.GetModified
+
+      false
     end
 
     # function for use from autoinstallation (Fate #301032)
@@ -246,7 +251,7 @@ module Yast
                   Builtins.regexptokenize(String.CutBlanks(row), regexp)
                 ),
                 0
-                )
+              )
                 Builtins.y2milestone("IPv6 is disabled by '%1' method.", which)
                 @ipv6 = false
               end
@@ -257,6 +262,7 @@ module Yast
 
       nil
     end
+
     # Read all network settings from the SCR
     # @param [Symbol] cache:
     #  `cache=use cached data,
@@ -325,11 +331,11 @@ module Yast
             )
           ),
           0
-          )
+        )
           Builtins.y2milestone("ndiswrapper: configuration found")
           if Convert.to_integer(
             SCR.Execute(path(".target.bash"), "lsmod |grep -q ndiswrapper")
-            ) != 0 &&
+          ) != 0 &&
               Popup.YesNo(
                 _(
                   "Detected a ndiswrapper configuration,\n" \
@@ -363,6 +369,7 @@ module Yast
       # Progress step 3/9 - multiple devices may be present, really plural
       ProgressNextStage(_("Reading device configuration...")) if @gui
       LanItems.Read
+
       Builtins.sleep(sl)
 
       return false if Abort()
@@ -413,8 +420,9 @@ module Yast
       Builtins.sleep(sl)
 
       return false if Abort()
-      LanItems.modified = false
       @initialized = true
+
+      fix_dhclient_warning(LanItems.invalid_dhcp_cfgs) if @gui && !LanItems.valid_dhcp_cfg?
 
       Progress.Finish if @gui
 
@@ -460,7 +468,7 @@ module Yast
             Builtins.regexptokenize(row, "(net.ipv6.conf.all.disable_ipv6)")
           ),
           0
-          )
+        )
           row = sysctl_row
           found = true
         end
@@ -688,7 +696,7 @@ module Yast
     # @return dumped settings
     def Export
       devices = NetworkInterfaces.Export("")
-      udev_rules = LanUdevAuto.Export(devices)
+      udev_rules = LanItems.export(devices)
       ay = {
         "dns"                  => DNS.Export,
         "s390-devices"         => Ops.get_map(
@@ -710,7 +718,7 @@ module Yast
         "keep_install_network" => Ops.get_boolean(
           LanItems.autoinstall_settings,
           "keep_install_network",
-          false
+          true
         )
       }
       Builtins.y2milestone("Exported map: %1", ay)
@@ -911,7 +919,7 @@ module Yast
       Builtins.foreach(LanItems.Items) do |number, lanitem|
         if IsNotEmpty(
           Ops.get_string(Convert.to_map(lanitem), ["hwinfo", "dev_name"], "")
-          )
+        )
           LanItems.current = number
           valid = Ops.get_boolean(
             LanItems.getCurrentItem,
@@ -920,11 +928,9 @@ module Yast
           ) == true
           if !valid
             Builtins.y2warning("item number %1 has link:false detected", number)
-          else
-            if Ops.get_string(LanItems.getCurrentItem, ["hwinfo", "type"], "") == "wlan"
-              Builtins.y2warning("not proposing WLAN interface")
-              valid = false
-            end
+          elsif Ops.get_string(LanItems.getCurrentItem, ["hwinfo", "type"], "") == "wlan"
+            Builtins.y2warning("not proposing WLAN interface")
+            valid = false
           end
           if !LanItems.IsCurrentConfigured && valid &&
               !Builtins.contains(
@@ -989,11 +995,16 @@ module Yast
             configure_as_bridge_port(ifcfg)
 
             Ops.set(LanItems.Items, [current, "ifcfg"], new_ifcfg)
-            LanItems.modified = true
             LanItems.force_restart = true
             Builtins.y2internal("List %1", NetworkInterfaces.List(""))
             # re-read configuration to see new items in UI
             LanItems.Read
+
+            # note: LanItems.Read resets modification flag
+            # the Read is used as a trick how to update LanItems' internal
+            # cache according NetworkInterfaces' one. As NetworkInterfaces'
+            # cache was edited directly, LanItems is not aware of changes.
+            LanItems.SetModified
           end
         else
           Builtins.y2warning("empty ifcfg")
@@ -1003,42 +1014,18 @@ module Yast
       nil
     end
 
-    # Create a configuration for autoyast
-    # @return true if something was proposed
-    # Check if any device  is configured with DHCP.
-    # @return true if any DHCP device is configured
-    def AnyDHCPDevice
-      # return true if there is at least one device with dhcp4, dhcp6, dhcp or dhcp+autoip
-      Ops.greater_than(
-        Builtins.size(
-          Builtins.union(
-            Builtins.union(
-              NetworkInterfaces.Locate("BOOTPROTO", "dhcp4"),
-              NetworkInterfaces.Locate("BOOTPROTO", "dhcp6")
-            ),
-            Builtins.union(
-              NetworkInterfaces.Locate("BOOTPROTO", "dhcp"),
-              NetworkInterfaces.Locate("BOOTPROTO", "dhcp+autoip")
-            )
-          )
-        ),
-        0
-      )
-    end
-
     # @return [Array] of packages needed when writing the config
     def Packages
       # various device types require some special packages ...
-      type_requires =  {
+      type_requires = {
         # for wlan require iw instead of wireless-tools (bnc#539669)
         "wlan" => "iw",
         "vlan" => "vlan",
-        "br"   => "bridge-utils",
         "tun"  => "tunctl",
         "tap"  => "tunctl"
       }
       # ... and some options require special packages as well
-      option_requires =  {
+      option_requires = {
         "WIRELESS_AUTH_MODE" => {
           "psk" => "wpa_supplicant",
           "eap" => "wpa_supplicant"
@@ -1092,6 +1079,7 @@ module Yast
     publish variable: :ipv6, type: "boolean"
     publish variable: :AbortFunction, type: "block <boolean>"
     publish variable: :bond_autoconf_slaves, type: "list <string>"
+    publish variable: :autoconf_slaves, type: "list <string>"
     publish function: :Modified, type: "boolean ()"
     publish function: :isAnyInterfaceDown, type: "boolean ()"
     publish function: :Read, type: "boolean (symbol)"
@@ -1114,17 +1102,32 @@ module Yast
   private
 
     def activate_network_service
-      if LanItems.force_restart
+      # If the second installation stage has been called by yast.ssh via
+      # ssh, we should not restart network because systemctl
+      # hangs in that case. (bnc#885640)
+      action = :reload_restart   if Stage.normal || !Linuxrc.usessh
+      action = :force_restart    if LanItems.force_restart
+      action = :remote_installer if Stage.initial && (Linuxrc.usessh || Linuxrc.vnc)
+
+      case action
+      when :force_restart
         log.info("Network service activation forced")
         NetworkService.Restart
-      else
-        log.info "Attempting to reload network service, normal stage " \
-          "#{Stage.normal}, ssh: #{Linuxrc.usessh}"
 
-        # If the second installation stage has been called by yast.ssh via
-        # ssh, we should not restart network cause systemctl
-        # hangs in that case. (bnc#885640)
+      when :reload_restart
+        log.info("Attempting to reload network service, normal stage #{Stage.normal}, ssh: #{Linuxrc.usessh}")
+
         NetworkService.ReloadOrRestart if Stage.normal || !Linuxrc.usessh
+
+      when :remote_installer
+        ifaces = LanItems.getNetworkInterfaces
+
+        # last instance handling "special" cases like ssh installation
+        # FIXME: most probably not everything will be set properly
+        log.info("Running in ssh/vnc installer -> just setting links up")
+        log.info("Available interfaces: #{ifaces}")
+
+        LanItems.reload_config(ifaces)
       end
     end
   end

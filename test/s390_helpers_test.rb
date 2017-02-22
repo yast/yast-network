@@ -21,7 +21,7 @@ Yast.import "FileUtils"
 
 describe "NetworkLanS390Include::s390_DriverLoaded" do
   subject { NetworkLanS390IncludeTestClient.instance }
-  DEVNAME = "devname"
+  DEVNAME = "devname".freeze
 
   before(:each) do
     allow(Yast::Arch)

@@ -15,10 +15,10 @@ module Yast
     include I18n
 
     # udev rule attribute for MAC address
-    MAC_UDEV_ATTR   = "ATTR{address}"
+    MAC_UDEV_ATTR   = "ATTR{address}".freeze
 
     # udev rule attribute for BUS id
-    BUSID_UDEV_ATTR = "KERNELS"
+    BUSID_UDEV_ATTR = "KERNELS".freeze
 
     def initialize
       textdomain "network"

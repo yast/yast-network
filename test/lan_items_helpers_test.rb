@@ -55,21 +55,21 @@ describe "LanItemsClass#getNetworkInterfaces" do
       "eth6" => { "BOOTPROTO" => "static", "STARTMODE" => "ifplugd" }
     },
     "tun"  => {
-      "tun0"  => {
+      "tun0" => {
         "BOOTPROTO" => "static",
         "STARTMODE" => "onboot",
         "TUNNEL"    => "tun"
       }
     },
     "tap"  => {
-      "tap0"  => {
+      "tap0" => {
         "BOOTPROTO" => "static",
         "STARTMODE" => "onboot",
         "TUNNEL"    => "tap"
       }
     },
     "br"   => {
-      "br0"   => { "BOOTPROTO" => "dhcp" }
+      "br0" => { "BOOTPROTO" => "dhcp" }
     },
     "bond" => {
       "bond0" => {
@@ -79,7 +79,7 @@ describe "LanItemsClass#getNetworkInterfaces" do
         "BONDING_SLAVE1" => "eth2"
       }
     }
-  }
+  }.freeze
 
   EXPECTED_INTERFACES = [
     "eth1",
@@ -91,7 +91,7 @@ describe "LanItemsClass#getNetworkInterfaces" do
     "tap0",
     "br0",
     "bond0"
-  ]
+  ].freeze
 
   it "returns list of known interfaces" do
     allow(Yast::NetworkInterfaces).to receive(:FilterDevices) { NETCONFIG_ITEMS }
@@ -265,5 +265,166 @@ describe "#update_item_udev_rule!" do
       Yast::LanItems.update_item_udev_rule!
     end
   end
+end
 
+describe "DHCLIENT_SET_HOSTNAME helpers" do
+  def mock_items(dev_maps)
+    # mock LanItems#Items
+    item_maps = dev_maps.keys.map { |dev| { "ifcfg" => dev } }
+    lan_items = [*0..dev_maps.keys.size - 1].zip(item_maps).to_h
+    allow(Yast::LanItems)
+      .to receive(:Items)
+      .and_return(lan_items)
+
+    # mock each device sysconfig map
+    allow(Yast::LanItems)
+      .to receive(:GetDeviceMap)
+      .and_return({})
+
+    lan_items.each_pair do |index, item_map|
+      allow(Yast::LanItems)
+        .to receive(:GetDeviceMap)
+        .with(index)
+        .and_return(dev_maps[item_map["ifcfg"]])
+      allow(Yast::LanItems)
+        .to receive(:GetDeviceName)
+        .with(index)
+        .and_return(item_map["ifcfg"])
+    end
+  end
+
+  describe "LanItems#find_dhcp_ifaces" do
+    let(:dhcp_maps) do
+      {
+        "eth0" => { "BOOTPROTO" => "dhcp" },
+        "eth1" => { "BOOTPROTO" => "dhcp4" },
+        "eth2" => { "BOOTPROTO" => "dhcp6" },
+        "eth3" => { "BOOTPROTO" => "dhcp+autoip" }
+      }.freeze
+    end
+    let(:non_dhcp_maps) do
+      {
+        "eth4" => { "BOOTPROTO" => "static" },
+        "eth5" => { "BOOTPROTO" => "none" }
+      }.freeze
+    end
+    let(:dhcp_invalid_maps) do
+      { "eth6" => { "BOOT" => "dhcp" } }.freeze
+    end
+
+    it "finds all dhcp aware interfaces" do
+      mock_items(dhcp_maps.merge(non_dhcp_maps.merge(dhcp_invalid_maps)))
+
+      expect(Yast::LanItems.find_dhcp_ifaces).to eql ["eth0", "eth1", "eth2", "eth3"]
+    end
+
+    it "returns empty array when no dhcp configuration is present" do
+      mock_items(non_dhcp_maps.merge(dhcp_invalid_maps))
+
+      expect(Yast::LanItems.find_dhcp_ifaces).to eql []
+    end
+  end
+
+  describe "LanItems#find_set_hostname_ifaces" do
+    let(:dhcp_yes_maps) do
+      {
+        "eth0" => { "DHCLIENT_SET_HOSTNAME" => "yes" }
+      }.freeze
+    end
+    let(:dhcp_no_maps) do
+      {
+        "eth1" => { "DHCLIENT_SET_HOSTNAME" => "no" }
+      }.freeze
+    end
+    let(:dhcp_invalid_maps) do
+      { "eth2" => { "DHCP_SET_HOSTNAME" => "yes" } }.freeze
+    end
+
+    it "returns a list of all devices with DHCLIENT_SET_HOSTNAME=\"yes\"" do
+      mock_items(dhcp_yes_maps.merge(dhcp_no_maps.merge(dhcp_invalid_maps)))
+
+      expect(Yast::LanItems.find_set_hostname_ifaces).to eql ["eth0"]
+    end
+
+    it "returns empty list when no DHCLIENT_SET_HOSTNAME=\"yes\" is found" do
+      mock_items(dhcp_no_maps.merge(dhcp_invalid_maps))
+
+      expect(Yast::LanItems.find_set_hostname_ifaces).to be_empty
+    end
+  end
+
+  describe "LanItems#clear_set_hostname" do
+    let(:dhcp_yes_maps) do
+      {
+        "eth0" => { "DHCLIENT_SET_HOSTNAME" => "yes" }
+      }.freeze
+    end
+    let(:dhcp_no_maps) do
+      {
+        "eth1" => { "DHCLIENT_SET_HOSTNAME" => "no" }
+      }.freeze
+    end
+    let(:no_dhclient_maps) do
+      { "eth6" => { "BOOT" => "dhcp" } }.freeze
+    end
+
+    it "clears all DHCLIENT_SET_HOSTNAME options" do
+      dhclient_maps = dhcp_yes_maps.merge(dhcp_no_maps)
+      mock_items(dhclient_maps.merge(no_dhclient_maps))
+
+      expect(Yast::LanItems)
+        .to receive(:SetDeviceMap)
+        .with(kind_of(Integer), "DHCLIENT_SET_HOSTNAME" => nil)
+        .twice
+      expect(Yast::LanItems)
+        .to receive(:SetModified)
+        .at_least(:once)
+
+      ret = Yast::LanItems.clear_set_hostname
+
+      expect(ret).to eql dhclient_maps.keys
+    end
+  end
+
+  describe "LanItems#valid_dhcp_cfg?" do
+    def mock_dhcp_setup(ifaces, global)
+      allow(Yast::LanItems)
+        .to receive(:find_set_hostname_ifaces)
+        .and_return(ifaces)
+      allow(Yast::DNS)
+        .to receive(:dhcp_hostname)
+        .and_return(global)
+    end
+
+    it "fails when DHCLIENT_SET_HOSTNAME is set for multiple ifaces" do
+      mock_dhcp_setup(["eth0", "eth1"], false)
+
+      expect(Yast::LanItems.invalid_dhcp_cfgs).not_to include("dhcp")
+      expect(Yast::LanItems.invalid_dhcp_cfgs).to include("ifcfg-eth0")
+      expect(Yast::LanItems.invalid_dhcp_cfgs).to include("ifcfg-eth1")
+      expect(Yast::LanItems.valid_dhcp_cfg?).to be false
+    end
+
+    it "fails when DHCLIENT_SET_HOSTNAME is set globaly even in an ifcfg" do
+      mock_dhcp_setup(["eth0"], true)
+
+      expect(Yast::LanItems.invalid_dhcp_cfgs).to include("dhcp")
+      expect(Yast::LanItems.invalid_dhcp_cfgs).to include("ifcfg-eth0")
+      expect(Yast::LanItems.valid_dhcp_cfg?).to be false
+    end
+
+    it "succeedes when DHCLIENT_SET_HOSTNAME is set for one iface" do
+      mock_dhcp_setup(["eth0"], false)
+
+      expect(Yast::LanItems.invalid_dhcp_cfgs).to be_empty
+      expect(Yast::LanItems.valid_dhcp_cfg?).to be true
+    end
+
+    it "succeedes when only global DHCLIENT_SET_HOSTNAME is set" do
+      mock_dhcp_setup([], true)
+
+      expect(Yast::LanItems.invalid_dhcp_cfgs).to be_empty
+      expect(Yast::LanItems.valid_dhcp_cfg?).to be true
+    end
+  end
 end

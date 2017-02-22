@@ -2,14 +2,13 @@
 
 require_relative "test_helper"
 
-require "yast"
+require "network/install_inf_convertor"
 
 describe "Yast::LanItemsClass" do
   subject { Yast::LanItems }
 
   before do
     Yast.import "LanItems"
-    Yast.import "LanUdevAuto"
 
     @ifcfg_files = SectionKeyValue.new
 
@@ -29,10 +28,10 @@ describe "Yast::LanItemsClass" do
 
     allow(Yast::SCR).to receive(:Read) do |path|
       if path.to_s =~ /^\.network\.value\."(eth\d+)".(.*)/
-        @ifcfg_files.get(Regexp.last_match(1), Regexp.last_match(2))
-      else
-        raise "Unexpected Read #{path}"
+        next @ifcfg_files.get(Regexp.last_match(1), Regexp.last_match(2))
       end
+
+      raise "Unexpected Read #{path}"
     end
 
     allow(Yast::SCR).to receive(:Write) do |path, value|
@@ -49,6 +48,8 @@ describe "Yast::LanItemsClass" do
     allow(Yast::NetworkInterfaces)
       .to receive(:CleanHotplugSymlink)
     allow(Yast::NetworkInterfaces)
+      .to receive(:adapt_old_config!)
+    allow(Yast::NetworkInterfaces)
       .to receive(:GetTypeFromSysfs)
       .with(/eth\d+/)
       .and_return "eth"
@@ -62,7 +63,7 @@ describe "Yast::LanItemsClass" do
       .and_return nil
     Yast::NetworkInterfaces.instance_variable_set(:@initialized, false)
 
-    allow(Yast::LanUdevAuto)
+    allow(Yast::InstallInfConvertor.instance)
       .to receive(:AllowUdevModify).and_return false
 
     # These "expect" should be "allow", but then it does not work out,

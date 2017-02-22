@@ -70,7 +70,7 @@ describe Yast::Routing do
       { ip_forward_v4: false, ip_forward_v6: true },
       { ip_forward_v4: true, ip_forward_v6: true },
       { ip_forward_v4: true, ip_forward_v6: false }
-    ]
+    ].freeze
 
     CONFIGS_UI.each do |config|
       ipv4 = config[:ip_forward_v4]
@@ -92,7 +92,7 @@ describe Yast::Routing do
             .to receive(:QueryWidget)
               .with(Id(:forward_v6), :Value) { ipv6 }
           expect(Yast::UI)
-            .to receive(:WaitForEvent) { { "ID" => :ok }  }
+            .to receive(:WaitForEvent) { { "ID" => :ok } }
 
           Yast.include self, "network/services/routing.rb"
           RoutingMainDialog()
@@ -122,7 +122,7 @@ describe Yast::Routing do
       { "ip_forward_v4" => true, "ip_forward_v6" => true },
       { "ip_forward_v4" => true, "ip_forward_v6" => false },
       { "ip_forward" => true, "ip_forward_v4" => false, "ip_forward_v6" => false }
-    ]
+    ].freeze
 
     AY_CONFIGS.each do |config|
       # default value for ip_forward is false
@@ -196,7 +196,7 @@ describe Yast::Routing do
             "routes"
           ]
         }
-      ]
+      ].freeze
 
       AY_TESTS.each do |ay_test|
         it "Returns hash with proper values" do
@@ -226,9 +226,9 @@ describe Yast::Routing do
       { ip_forward_v4: "0", ip_forward_v6: "1" },
       { ip_forward_v4: "1", ip_forward_v6: "1" },
       { ip_forward_v4: "1", ip_forward_v6: "0" }
-    ]
+    ].freeze
 
-    MOCKED_ROUTES = [{ "1" => "r1" }, { "2" => "r2" }]
+    MOCKED_ROUTES = [{ "1" => "r1" }, { "2" => "r2" }].freeze
 
     CONFIGS_OS.each do |config|
       ipv4 = config[:ip_forward_v4]
@@ -239,7 +239,7 @@ describe Yast::Routing do
           allow(Yast::SCR).to receive(:Read) { nil }
           expect(Yast::SCR)
             .to receive(:Read)
-              .with(path(".routes")) { MOCKED_ROUTES }
+              .with(path(".routes")) { MOCKED_ROUTES.dup }
           expect(Yast::SCR)
             .to receive(:Read)
               .with(SYSCTL_IPV4_PATH) { ipv4 }

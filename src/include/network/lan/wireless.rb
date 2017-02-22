@@ -270,23 +270,19 @@ module Yast
       prefix = { "ascii" => "s:", "passphrase" => "h:", "hex" => "" }
 
       # empty key - don't prepend a type (#40431)
-      if key == ""
-        return ""
-      else
-        return Ops.add(Ops.get(prefix, type, "?:"), key)
-      end
+      key == "" ? "" : Ops.add(Ops.get(prefix, type, "?:"), key)
     end
 
     def ParseWepKey(tkey)
       if Builtins.substring(tkey, 0, 2) == "s:"
-        return { "key" => Builtins.substring(tkey, 2), "type" => "ascii" }
+        { "key" => Builtins.substring(tkey, 2), "type" => "ascii" }
       elsif Builtins.substring(tkey, 0, 2) == "h:"
-        return { "key" => Builtins.substring(tkey, 2), "type" => "passphrase" }
+        { "key" => Builtins.substring(tkey, 2), "type" => "passphrase" }
       # make passphrase the default key type, #40431
       elsif tkey == ""
-        return { "key" => tkey, "type" => "passphrase" }
+        { "key" => tkey, "type" => "passphrase" }
       else
-        return { "key" => tkey, "type" => "hex" }
+        { "key" => tkey, "type" => "hex" }
       end
     end
 
@@ -370,15 +366,15 @@ module Yast
         "wpa-eap"       => _("WPA-EAP (WPA version 1 or 2)")
       }
       ids = { "wpa-psk" => "psk", "wpa-eap" => "eap" }
-      if authmodes.nil?
-        authmodes = Convert.convert(
+      authmodes = if authmodes.nil?
+        Convert.convert(
           Map.Keys(names),
           from: "list",
           to:   "list <string>"
         )
       else
         # keep only those that we know how to handle
-        authmodes = Builtins.filter(authmodes) do |am|
+        Builtins.filter(authmodes) do |am|
           Builtins.haskey(names, am)
         end
       end
@@ -542,16 +538,17 @@ module Yast
         authmode = Convert.to_string(UI.QueryWidget(Id(:authmode), :Value))
         authmode_wpa = authmode == "psk" || authmode == "eap" # shortcut
 
-        if ret == :abort || ret == :cancel
+        case ret
+        when :abort, :cancel
           if ReallyAbort()
             LanItems.Rollback()
             break
-          else
-            next
           end
-        elsif ret == :back
+
+          next
+        when :back
           break
-        elsif ret == :next || ret == :expert || ret == :keys
+        when :next, :expert, :keys
           mode = Convert.to_string(UI.QueryWidget(Id(:mode), :Value))
           # WPA-PSK and WPA-EAP are only allowed for Managed mode
           if authmode_wpa && mode != "Managed"
@@ -642,7 +639,7 @@ module Yast
             end
           end
           break
-        elsif ret == :scan_for_networks
+        when :scan_for_networks
           command = Builtins.sformat(
             "ip link set %1 up && iwlist %1 scan|grep ESSID|cut -d':' -f2|cut -d'\"' -f2|sort -u",
             Ops.get_string(LanItems.Items, [LanItems.current, "ifcfg"], "")
@@ -661,7 +658,9 @@ module Yast
             Builtins.y2milestone("Found networks : %1", networks)
             UI.ChangeWidget(:essid, :Items, networks)
           end
-        elsif ret != :authmode
+        when :authmode
+          # do nothing
+        else
           Builtins.y2error("Unexpected return code: %1", ret)
           next
         end
@@ -842,16 +841,17 @@ module Yast
       loop do
         ret = UI.UserInput
 
-        if ret == :abort || ret == :cancel
+        case ret
+        when :abort, :cancel
           if ReallyAbort()
             LanItems.Rollback()
             break
-          else
-            next
           end
-        elsif ret == :back
+
+          next
+        when :back
           break
-        elsif ret == :next
+        when :next
           # Check
           break
         else
@@ -1074,14 +1074,15 @@ module Yast
         length = Convert.to_string(UI.QueryWidget(Id(:length), :Value))
         rlength = Ops.subtract(Builtins.tointeger(length), 24)
 
-        if ret == :abort || ret == :cancel
+        case ret
+        when :abort, :cancel
           if ReallyAbort()
             LanItems.Rollback()
             break
-          else
-            next
           end
-        elsif ret == :table || ret == :edit || ret == :delete
+
+          next
+        when :table, :edit, :delete
           Ops.set(
             keys,
             current,
@@ -1093,10 +1094,10 @@ module Yast
           )
           defaultk = FindGoodDefault(keys, defaultk)
           UI.ChangeWidget(Id(:table), :Items, WirelessKeysItems(keys, defaultk))
-        elsif ret == :default
+        when :default
           defaultk = FindGoodDefault(keys, current)
           UI.ChangeWidget(Id(:table), :Items, WirelessKeysItems(keys, defaultk))
-        elsif ret == :next || ret == :back
+        when :next, :back
           break
         else
           Builtins.y2error("Unexpected return code: %1", ret)
@@ -1240,13 +1241,11 @@ module Yast
         return true # validated in ValidateWpaEap
       end
 
-      if FileUtils.Exists(file)
-        return true
-      else
-        UI.SetFocus(Id(key))
-        Popup.Error(Message.CannotOpenFile(file))
-        return false
-      end
+      return true if FileUtils.Exists(file)
+
+      UI.SetFocus(Id(key))
+      Popup.Error(Message.CannotOpenFile(file))
+      false
     end
 
     def ValidateCaCertExists(key, event)
@@ -1258,7 +1257,7 @@ module Yast
           _(
             "Not using a Certificate Authority (CA) certificate can result in connections\nto insecure, rogue wireless networks. Continue without CA ?"
           )
-          )
+        )
           ret = false
         end
       end

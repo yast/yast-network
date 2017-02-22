@@ -29,6 +29,8 @@
 
 require "network/edit_nic_name"
 
+include Yast::UIShortcuts
+
 module Yast
   module NetworkLanHardwareInclude
     def initialize_network_lan_hardware(include_target)
@@ -49,19 +51,26 @@ module Yast
       Yast.include include_target, "network/lan/cards.rb"
 
       @hardware = nil
+    end
 
-      @widget_descr_hardware = {
-        "HWDIALOG" => {
-          "widget"            => :custom,
-          "custom_widget"     => ReplacePoint(Id(:hw_content), Empty()),
-          "init"              => fun_ref(method(:initHwDialog), "void (string)"),
-          "handle"            => fun_ref(method(:handleHW), "symbol (string, map)"),
-          "store"             => fun_ref(method(:storeHW), "void (string, map)"),
-          "validate_type"     => :function,
-          "validate_function" => fun_ref(method(:validate_hw), "boolean (string, map)"),
-          "help"              => initHelp
-        }
+    def widget_descr_hardware
+      widget_descr = {
+        "widget"        => :custom,
+        "custom_widget" => ReplacePoint(Id(:hw_content), Empty()),
+        "init"          => fun_ref(method(:initHwDialog), "void (string)"),
+        "handle"        => fun_ref(method(:handleHW), "symbol (string, map)"),
+        "store"         => fun_ref(method(:storeHW), "void (string, map)"),
+        "help"          => initHelp
       }
+
+      # validation function currently checks user's input in :ifcfg_name widget
+      # However this widget is present only when adding new device
+      if isNewDevice
+        widget_descr["validate_type"] = :function
+        widget_descr["validate_function"] = fun_ref(method(:validate_hw), "boolean (string, map)")
+      end
+
+      { "HWDIALOG" => widget_descr }
     end
 
     # Determines if the dialog is used for adding new device or for editing existing one.
@@ -83,17 +92,17 @@ module Yast
         "<p>Set up hardware-specific options for \nyour network device here.</p>\n"
       )
 
-      if isNewDevice
+      hw_help = if isNewDevice
         # Manual network card setup help 2/4
         # translators: do not translated udev, MAC, BusID
-        hw_help = Ops.add(
+        Ops.add(
           hw_help,
           _(
             "<p><b>Device Type</b>. Various device types are available, select \none according your needs.</p>"
           )
         )
       else
-        hw_help = Ops.add(
+        Ops.add(
           Ops.add(
             hw_help,
             _(
@@ -220,12 +229,12 @@ module Yast
       if Builtins.issubstring(
         Ops.get_string(@hardware, "device", ""),
         "bus-pcmcia"
-        )
+      )
         Ops.set(@hardware, "hotplug", "pcmcia")
       elsif Builtins.issubstring(
         Ops.get_string(@hardware, "device", ""),
         "bus-usb"
-        )
+      )
         Ops.set(@hardware, "hotplug", "usb")
       end
 
@@ -239,7 +248,7 @@ module Yast
       if !Builtins.contains(
         Ops.get_list(@hardware, "devices", []),
         Ops.get_string(@hardware, "device", "")
-        )
+      )
         Ops.set(
           @hardware,
           "devices",
@@ -504,13 +513,10 @@ module Yast
       loop do
         ret = UI.UserInput
 
-        if ret == :abort || ret == :cancel
-          if ReallyAbort()
-            break
-          else
-            next
-          end
-        elsif ret == :search
+        case ret
+        when :abort, :cancel
+          ReallyAbort() ? break : next
+        when :search
           entry = Convert.to_string(UI.QueryWidget(Id(:search), :Value))
 
           l = Builtins.filter(
@@ -539,9 +545,9 @@ module Yast
             Id(:rp),
             SelectionBox(Id(:cards), _("&Network Card"), cards)
           )
-        elsif ret == :back
+        when :back
           break
-        elsif ret == :next
+        when :next
           # FIXME: check_*
           break
         else
@@ -752,7 +758,7 @@ module Yast
         elsif Builtins.contains(
           ["bond", "vlan", "br", "tun", "tap"],
           Ops.get_string(@hardware, "type", "")
-          )
+        )
           UI.ChangeWidget(Id(:hwcfg), :Enabled, false)
           UI.ChangeWidget(Id(:modul), :Enabled, false)
           UI.ChangeWidget(Id(:options), :Enabled, false)
@@ -787,27 +793,31 @@ module Yast
     end
 
     def devname_from_hw_dialog
-      UI.QueryWidget(Id(:ifcfg_name), :Value)
+      UI.QueryWidget(Id(:ifcfg_name), :Value) if UI.WidgetExists(Id(:ifcfg_name))
     end
 
     def validate_hw(_key, _event)
       nm = devname_from_hw_dialog
 
-      if UsedNicName(nm)
+      ret = if UsedNicName(nm)
         Popup.Error(
-          Builtins.sformat(
-            _(
-              "Configuration name %1 already exists.\nChoose a different one."
-            ),
-            nm
-          )
+          format(_("Configuration name %s already exists.\nChoose a different one."), nm)
         )
-        UI.SetFocus(Id(:ifcfg_name))
 
-        return false
+        false
+      elsif !ValidNicName(nm)
+        Popup.Error(
+          format(_("Configuration name %s is invalid.\nChoose a different one."), nm)
+        )
+
+        false
+      else
+        true
       end
 
-      true
+      UI.SetFocus(Id(:ifcfg_name)) if !ret
+
+      ret
     end
 
     VLAN_SIZE = 4 # size of vlanN prefix without number
@@ -1149,21 +1159,13 @@ module Yast
 
         ret = UI.UserInput
 
-        if ret == :abort || ret == :cancel
-          if ReallyAbort()
-            break
-          else
-            next
-          end
-        elsif ret == :back
+        case ret
+        when :abort, :cancel
+          ReallyAbort() ? break : next
+        when :back
           break
-        elsif ret == :next
+        when :next
           if LanItems.type == "iucv"
-            # #176330, must be static
-            LanItems.nm_name = Ops.add(
-              "static-iucv-id-",
-              Convert.to_string(UI.QueryWidget(Id(:iucv_user), :Value))
-            )
             LanItems.device = Ops.add(
               "id-",
               Convert.to_string(UI.QueryWidget(Id(:iucv_user), :Value))
@@ -1227,7 +1229,7 @@ module Yast
             next
           end
           break
-        elsif ret == :qeth_layer2
+        when :qeth_layer2
           next
         else
           Builtins.y2error("Unexpected return code: %1", ret)
@@ -1243,7 +1245,7 @@ module Yast
     def HardwareDialog
       caption = _("Hardware Dialog")
 
-      w = CWM.CreateWidgets(["HWDIALOG"], @widget_descr_hardware)
+      w = CWM.CreateWidgets(["HWDIALOG"], widget_descr_hardware)
       contents = VBox(
         VStretch(),
         HBox(

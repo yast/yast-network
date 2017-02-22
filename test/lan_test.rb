@@ -8,10 +8,9 @@ Yast.import "Lan"
 
 describe "LanClass#Packages" do
   packages = {
-    "iw"           => "wlan",
-    "vlan"         => "vlan",
-    "bridge-utils" => "br",
-    "tunctl"       => "tun"
+    "iw"     => "wlan",
+    "vlan"   => "vlan",
+    "tunctl" => "tun"
   }
 
   packages.each do |pkg, type|
@@ -148,7 +147,7 @@ describe "LanClass#Import" do
           }
         }
       }
-    }
+    }.freeze
 
     expect(Yast::Lan.Import(AY_PROFILE)).to be true
     expect(Yast::LanItems.GetModified).to be true
@@ -157,5 +156,56 @@ describe "LanClass#Import" do
     expect(Yast::Lan.Import({})).to be true
     expect(Yast::LanItems.GetModified).to be false
     expect(Yast::LanItems.Items).to be_empty
+  end
+end
+
+describe "LanClass#Modified" do
+  def reset_modification_statuses
+    allow(Yast::LanItems).to receive(:GetModified).and_return false
+    allow(Yast::DNS).to receive(:modified).and_return false
+    allow(Yast::Routing).to receive(:Modified).and_return false
+    allow(Yast::NetworkConfig).to receive(:Modified).and_return false
+    allow(Yast::NetworkService).to receive(:Modified).and_return false
+    allow(Yast::SuSEFirewall).to receive(:GetModified).and_return false
+  end
+
+  def expect_modification_succeedes(modname, method)
+    reset_modification_statuses
+
+    allow(modname)
+      .to receive(method)
+      .and_return true
+
+    expect(modname.send(method)).to be true
+    expect(Yast::Lan.Modified).to be true
+  end
+
+  it "returns true when LanItems module was modified" do
+    expect_modification_succeedes(Yast::LanItems, :GetModified)
+  end
+
+  it "returns true when DNS module was modified" do
+    expect_modification_succeedes(Yast::DNS, :modified)
+  end
+
+  it "returns true when Routing module was modified" do
+    expect_modification_succeedes(Yast::Routing, :Modified)
+  end
+
+  it "returns true when NetworkConfig module was modified" do
+    expect_modification_succeedes(Yast::NetworkConfig, :Modified)
+  end
+
+  it "returns true when NetworkService module was modified" do
+    expect_modification_succeedes(Yast::NetworkService, :Modified)
+  end
+
+  it "returns true when SuSEFirewall module was modified" do
+    expect_modification_succeedes(Yast::SuSEFirewall, :GetModified)
+  end
+
+  it "returns false when no module was modified" do
+    reset_modification_statuses
+    expect(Yast::Lan.Modified).to be false
   end
 end

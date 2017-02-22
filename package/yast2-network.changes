@@ -1,40 +1,191 @@
 -------------------------------------------------------------------
-Tue Dec 20 07:14:38 UTC 2016 - kanderssen@suse.com
+Wed Feb 22 10:49:17 UTC 2017 - mfilka@suse.com
 
-- Improved parsing of vlan ids that are longer than one character.
-  Backport from SP2 (bsc#968692)
-- 3.1.140.10
+- bnc#1020074
+  - when incomplete udev rule is read from the AY profile, it is
+    ignored instead of raising an internal error.
+- 3.1.175
 
 -------------------------------------------------------------------
-Thu Nov 17 16:00:48 UTC 2016 - kanderssen@suse.com
+Thu Jan 19 15:22:03 UTC 2017 - kanderssen@suse.com
+
+- Backported
+  - Added network proposal using the new summary api and the new
+    proposal_client flag 'label_proposal' for CASP special formmating
+    (fate#322328).
+- 3.1.174
+
+-------------------------------------------------------------------
+Wed Jan 18 07:54:01 UTC 2017 - kanderssen@suse.com
+
+- Added summaries for the configured interfaces, particulary an one
+  line summary. (fate#322328)
+- Backported
+  - update item's overview with freshly edited values (bnc#1009931)
+  - do not crash with internal error when setting static setup for
+    newly added device (bnc#1013684)
+- 3.1.173
+
+-------------------------------------------------------------------
+Wed Jan 11 00:56:09 UTC 2017 - kanderssen@suse.com
+
+- Fixed the assignment of udev rules to Lan Items when a previous
+  one does not exist (bsc#996879).
+- 3.1.172
+
+-------------------------------------------------------------------
+Tue Nov 29 12:41:40 UTC 2016 - mfilka@suse.com
+
+- bnc#1012581
+  - do not crash with internal error stating undefined method when
+    switching to "Hostname / DNS" tab when the system contains
+    incorrect configuration of DHCLIENT_SET_HOSTNAME
+- 3.1.171
+
+-------------------------------------------------------------------
+Wed Nov 23 09:18:33 UTC 2016 - mfilka@suse.com
+
+- bsc#984890
+  - new implementation of setting hostname via DHCP. User is
+    allowed to set hostname via particular interface or set a
+    reasonable default value for all interfaces.
+- 3.1.170.5
+
+-------------------------------------------------------------------
+Fri Nov 09 09:20:48 UTC 2016 - kanderssen@suse.com
 
 - When an interface is enslaved in a bond the udev rule is modified
   using the bus_id instead of the mac address but some multiport
   cards could use the same bus_id. In such cases also the dev_port
   is needed. Taking this in account the dev_port will be added
   always when a udev rule based on bus_id is written. (bsc#1007172)
-- backport for SP1 (bsc#1005721)
-- 3.1.140.9
+- 3.1.170.4
 
 -------------------------------------------------------------------
-Thu Nov 17 15:03:29 CET 2016 - schubi@suse.de
+Mon Oct 10 11:56:38 UTC 2016 - kanderssen@suse.com
 
-- Added missing entries in RNC file.
-  (addition fix for bnc#954412)
-- 3.1.140.8
+- Bridge handling has been improved (bsc#962824).
+  - "NONE" is shown instead of 0.0.0.0 for old bridge configuration
+  - The bridge master is shown in the enslaved interface.
+  - The interfaces overview is updated after a bridge is modified
+  - The interfaces enlsaved are not lost when save in a different
+    tab.
+- 3.1.170.3
 
 -------------------------------------------------------------------
-Tue Sep 13 21:18:57 UTC 2016 - kanderssen@suse.com
+Fri Oct  7 15:16:11 UTC 2016 - kanderssen@suse.com
 
-- Fixed sorting of bonding slaves (bsc#991968)
-- 3.1.140.7
+- If an interface is not configured yet then just set the interface
+  link, the backend should handle at least the up event.
+  (bsc#991694)
+- 3.1.170.2
+
+-------------------------------------------------------------------
+Fri Oct  7 15:12:05 UTC 2016 - ancor@suse.com
+
+- Extra space in the remote administration dialog (bsc#988904)
+
+-------------------------------------------------------------------
+Mon Sep 12 09:40:57 UTC 2016 - kanderssen@suse.com
+
+- Use full interface up / down instead of setting just link
+  up / down to allow proper update of interface's configuration.
+  (bsc#991694)
+- 3.1.170.1
+
+-------------------------------------------------------------------
+Wed Sep  7 11:23:16 UTC 2016 - mfilka@suse.com
+
+- bnc#993587
+  - extended fix from 3.1.168 to cover also virtual interfaces
+- 3.1.170
+
+-------------------------------------------------------------------
+Sat Sep  3 20:02:55 UTC 2016 - mfilka@suse.com
+
+- bnc#988157
+  - disable DHCP autoconfiguration in installer when an interface
+    configuration is provided via linuxrc
+- 3.1.169 
+
+-------------------------------------------------------------------
+Wed Aug 24 10:54:55 UTC 2016 - mfilka@suse.com
+
+- bnc#993587
+  - installer is able to newly configured set devices up in case of
+    ssh/vnc installation
+- 3.1.168
+
+-------------------------------------------------------------------
+Fri Aug 19 08:59:14 UTC 2016 - mfilka@suse.com
+
+- bnc#991382 
+  - init and store IFPLUGD_PRIORITY properly
+- 3.1.167
+
+-------------------------------------------------------------------
+Thu Aug 18 08:52:41 UTC 2016 - mfilka@suse.com
+
+- bnc#991486
+  - extended fix for this bug from 3.1.163. Do not report invalid
+    names incorrectly
+- 3.1.166  
 
 -------------------------------------------------------------------
 Thu Aug 11 19:02:36 UTC 2016 - mfilka@suse.com
 
 - bnc#985905 
   - do not limit number of bonding slaves to 10
-- 3.1.140.6
+- 3.1.165
+
+-------------------------------------------------------------------
+Thu Aug 11 08:23:00 UTC 2016 - mfilka@suse.com
+
+- bnc#988786
+  - Create bridge when proposing configuration for VM host.
+- 3.1.164 
+
+-------------------------------------------------------------------
+Wed Aug 10 18:07:12 UTC 2016 - ancor@suse.com
+
+- Improved parsing of vlan ids that are longer than one character.
+
+-------------------------------------------------------------------
+Wed Aug 10 16:07:26 UTC 2016 - mfilka@suse.com
+
+- bnc#991486
+  - Do not allow creating device with oversized configuration name.
+- 3.1.163
+
+-------------------------------------------------------------------
+Tue Aug  9 12:29:35 UTC 2016 - schubi@suse.de
+
+- Added entry "s390-devices" to the AutoYaST schema file.
+  Bug similar bnc#954412.
+- 3.1.162
+
+-------------------------------------------------------------------
+Tue Aug  9 12:25:01 UTC 2016 - mfilka@suse.com
+
+- bnc#991920
+  - do not crash with internal error when renaming unconfigured
+    device
+- 3.1.161 
+
+-------------------------------------------------------------------
+Tue Aug  2 12:40:53 UTC 2016 - mfilka@suse.com
+
+- bnc#991382
+  - Do not crash with internal error when using "On Cable
+    Connection" device activation mode.
+- 3.1.160
+
+-------------------------------------------------------------------
+Tue Jul 12 10:41:58 CEST 2016 - schubi@suse.de
+
+- Added entry "dhclient_set_hostname" to the AutoYaST schema file.
+  Bug similar bnc#954412.
+- 3.1.159
 
 -------------------------------------------------------------------
 Thu Jun 23 06:54:43 UTC 2016 - mfilka@suse.com
@@ -42,16 +193,126 @@ Thu Jun 23 06:54:43 UTC 2016 - mfilka@suse.com
 - bnc#970320, bnc#865132, bnc#852604
   - do not overwrite Postfix MTA configuration when saving network
     setup
-- 3.1.140.5
+- 3.1.158
 
 -------------------------------------------------------------------
-Tue Apr 26 20:19:12 UTC 2016 - mfilka@suse.com
+Tue Jun 21 05:37:31 UTC 2016 - igonzalezsosa@suse.com
+
+- bsc#984146
+  - set AutoYaST keep_install_network parameter to 'true' by
+    default
+  - restore the default behavior present in SLE 12 SP1 and
+    openSUSE Leap 42.1
+- 3.1.157
+
+-------------------------------------------------------------------
+Tue Jun 14 05:43:26 UTC 2016 - mfilka@suse.com
+
+- bnc#983201
+  - do not crash with internal error when configuring new device on
+    s390
+- 3.1.156
+
+-------------------------------------------------------------------
+Mon Jun 13 17:48:52 UTC 2016 - mfilka@suse.com
+
+- fate#318787
+  - detect modifications when closing module, do not restart when
+    not needed.
+- 3.1.155
+
+-------------------------------------------------------------------
+Wed Jun  1 14:16:08 UTC 2016 - igonzalezsosa@suse.com
+
+- Drop yast2-network-devel-doc package (fate#320356)
+- 3.1.154
+
+-------------------------------------------------------------------
+Tue May 31 11:31:22 UTC 2016 - mfilka@suse.com
+
+- bnc#981842
+  - enable / disable vncmanager only when installed to avoid
+    failures in systemd calls
+- 3.1.153
+
+-------------------------------------------------------------------
+Thu May 19 21:53:16 UTC 2016 - mfilka@suse.com
+
+- fate#319319
+  - implemented support for vncmanager in Remote module. Thanks to
+    msrb@suse.cz.
+- 3.1.152
+
+-------------------------------------------------------------------
+Tue May 17 16:04:49 UTC 2016 - mfilka@suse.com
 
 - bnc#971175
   - /etc/hosts is correctly updated with static address, hostname
     when static net configuration is done via linuxrc and hostname
     is provided by AY profile
-- 3.1.140.4 
+- 3.1.151
+
+-------------------------------------------------------------------
+Fri May 13 10:19:39 UTC 2016 - knut.anderssen@suse.com
+
+- fate#315995
+  - Added physical port id to device overview and bond slaves item
+    description if supported.
+  - Warn the user when two or more bonded interfaces share the
+    same physical port.
+  - Available interfaces for bonding in bond slaves tab are now
+    sorted and moving them up or down maintain the interface
+    selected.
+- 3.1.150
+
+-------------------------------------------------------------------
+Mon May  2 11:35:45 UTC 2016 - mfilka@suse.com
+
+- bnc#977953
+  - added dependency on yast2-proxy. "yast2 lan" won't fail with
+    internal error (missing Proxy module), when yast2-network is
+    installed into a minimal server installation.
+- 3.1.149
+
+-------------------------------------------------------------------
+Tue Apr 19 08:01:16 UTC 2016 - mfilka@suse.com
+
+- bnc#966694
+  - TigerVNC Viewer Error: No matching security types. Do not touch
+    VNC arguments when enabling or disabling it. Thanks to 
+    msrb@suse.com for the patch.
+- 3.1.148
+
+-------------------------------------------------------------------
+Tue Apr 12 08:04:07 UTC 2016 - mfilka@suse.com
+
+- bnc#974910
+  - fixed internal error when no "interfaces" group is found in an
+    AY profile
+- 3.1.147 
+
+-------------------------------------------------------------------
+Mon Apr 11 09:42:20 UTC 2016 - mfilka@suse.com
+
+- bnc#955217, bnc#956605
+  - fixed internal error caused by the previous patch
+- 3.1.146
+
+-------------------------------------------------------------------
+Mon Apr  4 17:24:13 UTC 2016 - mfilka@suse.com
+
+- bnc#955217, bnc#956605
+  - unified udev rule handling by always doing it in the 1st stage
+    of installation.
+- 3.1.145
+
+-------------------------------------------------------------------
+Sun Mar  6 21:15:08 UTC 2016 - mfilka@suse.com
+
+- bnc#920089
+  - fix by Damir Porobic
+  - fixed layout of dialog for new route definition
+- 3.1.144 
 
 -------------------------------------------------------------------
 Mon Feb 22 11:52:09 UTC 2016 - mfilka@suse.com
@@ -60,21 +321,24 @@ Mon Feb 22 11:52:09 UTC 2016 - mfilka@suse.com
   - sometimes wicked was started instead of NetworkManager in case
     of AY installation. Moreover it could happen that both services
     were "half-started" and network setup got broken.
-- 3.1.140.3
+- bsc#903190
+  - Recognized netcard with sub_class_id 07 as InfiniBand (ib) which
+    now are not filtered out (knut.anderssen@suse.com).
+- 3.1.143
 
 -------------------------------------------------------------------
-Mon Feb 22 09:42:38 UTC 2016 - knut.anderssen@suse.com
+Fri Jan 29 15:21:36 UTC 2016 - knut.anderssen@suse.com
 
-- Recognized netcard with sub_class_id 07 as InfiniBand (ib) which
-  now are not filtered out. (bsc#903190)
-- 3.1.140.2
+- Removed old testsuites tests and autotools, so yast2-testsuite
+  is not required anymore (fate#314695).
+- 3.1.142
 
 -------------------------------------------------------------------
 Fri Jan 22 13:24:15 UTC 2016 - mvidner@suse.com
 
 - Fixed an Internal error when aborting the configuration of a
   WiFi interface (bsc#950902).
-- 3.1.140.1
+- 3.1.141
 
 -------------------------------------------------------------------
 Wed Dec  2 13:26:12 UTC 2015 - mfilka@suse.com

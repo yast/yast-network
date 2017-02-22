@@ -80,8 +80,8 @@ module Yast
       )
     end
 
-    ETC = "/etc/"
-    SYSCONFIG = "/etc/sysconfig/network/"
+    ETC = "/etc/".freeze
+    SYSCONFIG = "/etc/sysconfig/network/".freeze
 
     def CopyConfiguredNetworkFiles
       return if Mode.autoinst && !NetworkAutoYast.instance.keep_net_config?
@@ -284,8 +284,6 @@ module Yast
     end
 
     # Sets default network service
-    #
-    # Intended for common installation only. AY is handled elswhere
     def set_network_service
       if Mode.autoinst
         NetworkAutoYast.instance.set_network_service

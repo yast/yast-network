@@ -108,10 +108,10 @@ module Yast
           local_ip,
           [Ops.add(Ops.add(fqhostname, " "), DNS.hostname)]
         )
-      else
+      elsif Builtins.haskey(@hosts, local_ip)
         # Do not add it if product default says no
         # and remove 127.0.02 entry if it exists
-        Ops.set(@hosts, local_ip, []) if Builtins.haskey(@hosts, local_ip)
+        Ops.set(@hosts, local_ip, [])
       end
       @modified = true
 
@@ -234,14 +234,15 @@ module Yast
     # Dump the Hosts settings to a map, for autoinstallation use.
     # @return autoinstallation settings
     def Export
-      if Ops.greater_than(Builtins.size(@hosts), 0)
-        # Filter out IPs with empty hostname (so that valid autoyast
-        # profile is created)(#335120)
-        @hosts = Builtins.filter(@hosts) { |_ip, names| names != [] }
-        return { "hosts" => Builtins.eval(@hosts) }
-      else
-        return {}
-      end
+      return {} if @hosts.empty?
+
+      # Filter out IPs with empty hostname (so that valid autoyast
+      # profile is created)(#335120)
+      # FIXME: this also removes records with empty names from @hosts. Such
+      # side effect is unexpected and should be removed.
+      @hosts.keep_if { |_, names| !names.empty? }
+
+      { "hosts" => @hosts }
     end
 
     # Return "system" predefined hosts (should be present all the time)
@@ -280,7 +281,6 @@ module Yast
       nick = Ops.get(Hostname.SplitFQ(newhn), 0, "")
 
       # Remove old hostname from hosts
-      #    list oldhnlist = [];
       if !oldhn.empty?
         Builtins.foreach(@hosts) do |ip, hs|
           wrk = Builtins.maplist(hs) { |s| Builtins.splitstring(s, " ") }
@@ -302,8 +302,6 @@ module Yast
       # Add hostname/ip for all ips
       nickadded = false
       Builtins.maplist(ips) do |ip|
-        # Only add if not present yet
-        #		if(haskey(hosts, ip)) return;
         # Omit some IP addresses
         next if ip == "" || ip.nil? || ip == "127.0.0.1"
         name = newhn

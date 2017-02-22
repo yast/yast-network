@@ -165,15 +165,15 @@ module Yast
       return [summary, links] if !split
 
       # add headers
-      if Ops.greater_than(Builtins.size(configured), 0)
+      summary = if Ops.greater_than(Builtins.size(configured), 0)
         # Summary text
-        summary = Ops.add(
+        Ops.add(
           Summary.AddHeader("", _("Already Configured Devices:")),
           summary
         )
       else
         # Summary text
-        summary = Summary.AddHeader("", _("Nothing is configured"))
+        Summary.AddHeader("", _("Nothing is configured"))
       end
 
       # FIXME: OtherDevices(devs, type);
@@ -240,12 +240,10 @@ module Yast
         "wlan-usb"     => _("USB Wireless Network Card")
       }
 
-      if Builtins.haskey(device_names, devtype)
-        return Ops.get_string(device_names, devtype, "")
-      else
-        descr = NetworkInterfaces.GetDevTypeDescription(devtype, true)
-        return descr if IsNotEmpty(descr)
-      end
+      return Ops.get_string(device_names, devtype, "") if Builtins.haskey(device_names, devtype)
+
+      descr = NetworkInterfaces.GetDevTypeDescription(devtype, true)
+      return descr if IsNotEmpty(descr)
 
       if Builtins.haskey(device_names, Ops.add(devtype, "-"))
         Builtins.y2warning("- device found: %1, %2", devtype, hwname)
@@ -307,17 +305,15 @@ module Yast
       if devtype == "ppp" || devtype == "modem" || devtype == "dsl"
         nam = ProviderName(Ops.get_string(devmap, "PROVIDER", ""))
 
-        if nam == "" || nam.nil?
-          # Modem status (%1 is device)
-          return Builtins.sformat(_("Configured as %1"), devname)
-        else
-          # Modem status (%1 is device, %2 is provider)
-          return Builtins.sformat(
-            _("Configured as %1 with provider %2"),
-            devname,
-            nam
-          )
-        end
+        # Modem status (%1 is device)
+        return Builtins.sformat(_("Configured as %1"), devname) if nam == "" || nam.nil?
+
+        # Modem status (%1 is device, %2 is provider)
+        return Builtins.sformat(
+          _("Configured as %1 with provider %2"),
+          devname,
+          nam
+        )
       # ISDN card
       elsif devtype == "isdn" || devtype == "contr"
         # ISDN device status (%1 is device)
@@ -344,25 +340,21 @@ module Yast
           addr = Ops.get_string(devmap, "IPADDR", "")
           host = NetHwDetection.ResolveIP(addr)
           remip = Ops.get_string(devmap, "REMOTE_IPADDR", "")
-          if proto == "none"
-            return _("Configured without address (NONE)").dup
-          elsif IsEmpty(addr)
-            # Network card status
-            return HTML.Colorize(_("Configured without an address"), "red")
-          elsif remip == "" || remip.nil?
+          return _("Configured without address (NONE)").dup if proto == "none"
+          # Network card status
+          return HTML.Colorize(_("Configured without an address"), "red") if IsEmpty(addr)
+          if remip == "" || remip.nil?
             # Network card status (%1 is address)
-            return Builtins.sformat(
-              _("Configured with address %1"),
-              Ops.add(addr, String.OptParens(host))
-            )
-          else
-            # Network card status (%1 is address, %2 is address)
-            return Builtins.sformat(
-              _("Configured with address %1 (remote %2)"),
-              addr,
-              remip
-            )
+            return Builtins.sformat(_("Configured with address %1"),
+              Ops.add(addr, String.OptParens(host)))
           end
+
+          # Network card status (%1 is address, %2 is address)
+          return Builtins.sformat(
+            _("Configured with address %1 (remote %2)"),
+            addr,
+            remip
+          )
         else
           # Network card status (%1 is protocol)
           return Builtins.sformat(
@@ -378,33 +370,29 @@ module Yast
         if proto == "" || proto == "static" || proto == "none" || proto.nil?
           addr = Ops.get_string(devmap, "IPADDR", "")
           remip = Ops.get_string(devmap, "REMOTE_IPADDR", "")
-          if addr == "" || addr.nil?
-            # Network card status (%1 is device)
-            return Builtins.sformat(_("Configured as %1"), devname)
-          elsif remip == "" || remip.nil?
+          # Network card status (%1 is device)
+          return Builtins.sformat(_("Configured as %1"), devname) if addr == "" || addr.nil?
+
+          if remip == "" || remip.nil?
             # Network card status (%1 is device, %2 is address)
-            return Builtins.sformat(
-              _("Configured as %1 with address %2"),
-              devname,
-              addr
-            )
-          else
-            # Network card status (%1 is device, %2 is address, %3 is address)
-            return Builtins.sformat(
-              _("Configured as %1 with address %2 (remote %3)"),
-              devname,
-              addr,
-              remip
-            )
+            return Builtins.sformat(_("Configured as %1 with address %2"), devname, addr)
           end
-        else
-          # Network card status (%1 is device, %2 is protocol)
+
+          # Network card status (%1 is device, %2 is address, %3 is address)
           return Builtins.sformat(
-            _("Configured as %1 with %2"),
+            _("Configured as %1 with address %2 (remote %3)"),
             devname,
-            Builtins.toupper(proto)
+            addr,
+            remip
           )
         end
+
+        # Network card status (%1 is device, %2 is protocol)
+        return Builtins.sformat(
+          _("Configured as %1 with %2"),
+          devname,
+          Builtins.toupper(proto)
+        )
       end
     end
 
@@ -413,18 +401,19 @@ module Yast
     # @param [Hash] devmap device map
     # @return textual device protocol
     def DeviceProtocol(devmap)
-      devmap = deep_copy(devmap)
-      if Ops.get_string(devmap, "STARTMODE", "") == "managed"
-        # Abbreviation for "The interface is Managed by NetworkManager"
-        return _("Managed")
-      end
-      ip = Ops.get_string(devmap, "BOOTPROTO", "static")
-      if ip.nil? || ip == "" || ip == "static"
-        ip = Ops.get_string(devmap, "IPADDR", "")
+      return _("Not configured") if devmap.nil? || devmap.empty?
+      # Abbreviation for "The interface is Managed by NetworkManager"
+      return _("Managed") if devmap["STARTMODE"] == "managed"
+
+      bootproto = devmap["BOOTPROTO"] || "static"
+
+      if bootproto.empty? || bootproto == "static"
+        return "NONE" if devmap["IPADDR"] == "0.0.0.0"
+
+        devmap["IPADDR"].to_s
       else
-        ip = Builtins.toupper(ip)
+        bootproto.upcase
       end
-      ip
     end
   end
 end

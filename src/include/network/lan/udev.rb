@@ -6,6 +6,7 @@
 # Authors:     Michal Filka <mfilka@suse.cz>
 #
 # Functions for handling udev rules
+
 module Yast
   module NetworkLanUdevInclude
     # Creates default udev rule for given NIC.
@@ -46,7 +47,9 @@ module Yast
 
     # Returns a value of the particular key in the rule
     #
-    # @return [string] value corresponding to the key or empty string
+    # @param rule [array] an udev rule represented as a list of strings
+    # @param key  [string] a key name which is asked for value
+    # @return     [string] value corresponding to the key or empty string
     def udev_key_value(rule, key)
       raise ArgumentError, "Rule must not be nil when querying a key value" if rule.nil?
 

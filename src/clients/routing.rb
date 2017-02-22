@@ -215,6 +215,7 @@ module Yast
 
       Ops.add(Ops.add(headline, "\n"), table)
     end
+
     # Handler for action "list"
     # @param [Hash{String => String}] options action options
     def ListHandler(_options)
@@ -402,11 +403,9 @@ module Yast
       options = deep_copy(options)
       found = false
       Routing.Routes = Builtins.maplist(Routing.Routes) do |m|
-        if Ops.get(m, "destination") == Ops.get(options, "dest")
-          found = true
-        else
-          next deep_copy(m)
-        end
+        next deep_copy(m) if Ops.get(m, "destination") != Ops.get(options, "dest")
+
+        found = true
       end
 
       if found

@@ -58,3 +58,25 @@ module SCRStub
     allow(Yast::SCR).to receive(:Read).with(path).and_return info
   end
 end
+
+module YaPINetworkStub
+  def stub_network_reads
+    allow(Yast::DNS).to receive(:Read)
+    allow(Yast::Routing).to receive(:Read)
+    allow(Yast::NetworkInterfaces).to receive(:CleanCacheRead)
+    allow(Yast::LanItems).to receive(:Read)
+  end
+
+  def stub_clean_cache(device)
+    allow(Yast::NetworkInterfaces).to receive(:CleanCacheRead)
+    allow(Yast::NetworkInterfaces).to receive(:Add)
+    allow(Yast::NetworkInterfaces).to receive(:Edit).with(device).and_return false
+    allow(Yast::NetworkInterfaces).to receive(:Name).with(device).and_return false
+  end
+
+  def stub_write_interfaces
+    expect(Yast::NetworkInterfaces).to receive("Commit")
+    expect(Yast::NetworkInterfaces).to receive(:Write).with("")
+    expect(Yast::Service).to receive(:Restart).with("network")
+  end
+end

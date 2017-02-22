@@ -8,15 +8,16 @@ require "network/edit_nic_name"
 module Yast
   Yast.import "UI"
 
-  CURRENT_NAME = "spec0"
-  NEW_NAME = "new1"
-  EXISTING_NEW_NAME = "existing_new_name"
+  CURRENT_NAME = "spec0".freeze
+  NEW_NAME = "new1".freeze
+  EXISTING_NEW_NAME = "existing_new_name".freeze
 
   describe "#run" do
     # general mocking stuff is placed here
     before(:each) do
       # NetworkInterfaces are too low level. Everything needed should be mocked
       NetworkInterfaces.as_null_object
+      allow(NetworkInterfaces).to receive(:adapt_old_config!)
 
       # mock devices configuration
       allow(LanItems).to receive(:ReadHardware) { [{ "dev_name" => CURRENT_NAME, "mac" => "00:01:02:03:04:05" }] }

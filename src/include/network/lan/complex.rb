@@ -158,7 +158,7 @@ module Yast
             ),
             "/usr/share/doc/packages/xen/README.SuSE"
           )
-          )
+        )
           ret = false
         end
       end
@@ -171,7 +171,6 @@ module Yast
     def WriteDialog
       return :next if !Lan.Modified
 
-      LanItems.SetModified
       Wizard.RestoreHelp(Ops.get_string(@help, "write", ""))
       Lan.AbortFunction = -> { PollAbort() && ReallyAbort() }
       ret = Lan.Write
@@ -233,7 +232,7 @@ module Yast
             _(
               "For successful firmware installation, the 'install_bcm43xx_firmware' script needs to be executed. Execute it now?"
             )
-            )
+          )
             command = Convert.convert(
               SCR.Execute(
                 path(".target.bash_output"),
@@ -286,36 +285,43 @@ module Yast
       nil
     end
 
-    # Automatically configures bonding slaves when user enslaves them into a master bond device.
-    def UpdateBondingSlaves
+    # Automatically configures slaves when user enslaves them into a bond or bridge device
+    def UpdateSlaves
       current = LanItems.current
 
-      Builtins.foreach(Lan.bond_autoconf_slaves) do |dev|
+      Lan.autoconf_slaves.each do |dev|
         if LanItems.FindAndSelect(dev)
           LanItems.SetItem
         else
           dev_index = LanItems.FindDeviceIndex(dev)
-          if Ops.less_than(dev_index, 0)
-            Builtins.y2error(
-              "initOverview: invalid bond slave device name %1",
-              dev
-            )
+          if dev_index < 0
+            log.error("initOverview: invalid slave device name #{dev}")
             next
           end
           LanItems.current = dev_index
 
           AddInterface()
-
-          # clear defaults, some defaults are invalid for bonding slaves and can cause troubles
-          # in related sysconfig scripts or makes no sence for bonding slaves (e.g. ip configuration).
-          LanItems.netmask = ""
         end
-        LanItems.startmode = "hotplug"
+        # clear defaults, some defaults are invalid for slaves and can cause troubles
+        # in related sysconfig scripts or makes no sence for slaves (e.g. ip configuration).
+        LanItems.netmask = ""
         LanItems.bootproto = "none"
+        case LanItems.GetDeviceType(current)
+        when "bond"
+          LanItems.startmode = "hotplug"
 
-        LanItems.update_item_udev_rule!(:bus_id)
+          LanItems.update_item_udev_rule!(:bus_id)
+        when "br"
+          LanItems.ipaddr = ""
+        end
+
         LanItems.Commit
       end
+
+      # Once the interfaces have been configured we should empty the list to
+      # avoid configure them again in case that some interface is removed from the
+      # master.
+      Lan.autoconf_slaves = []
 
       LanItems.current = current
 
@@ -328,8 +334,8 @@ module Yast
     # into bond device and persistence based on bus id is required, then some configuration changes
     # are required in ifcfg and udev. It used to be needed to do it by hand before.
     def AutoUpdateOverview
-      # TODO: allow disabling. E.g. iff bus id based persistency is not requested.
-      UpdateBondingSlaves()
+      # TODO: allow disabling. E.g. if bus id based persistency is not requested.
+      UpdateSlaves()
 
       nil
     end
@@ -339,19 +345,13 @@ module Yast
       AutoUpdateOverview()
 
       # update table with device description
-      term_items = Builtins.maplist(
-        Convert.convert(
-          LanItems.Overview,
-          from: "list",
-          to:   "list <map <string, any>>"
-        )
-      ) do |i|
-        t = Item(Id(Ops.get_integer(i, "id", -1)))
-        Builtins.foreach(Ops.get_list(i, "table_descr", [])) do |l|
-          t = Builtins.add(t, l)
+      term_items =
+        LanItems.Overview.map do |i|
+          t = Item(Id(i["id"]))
+          (i["table_descr"] || []).each { |l| t << l }
+          t
         end
-        deep_copy(t)
-      end
+
       UI.ChangeWidget(Id(:_hw_items), :Items, term_items)
 
       if !@shown
@@ -361,7 +361,7 @@ module Yast
         enableDisableButtons
       end
 
-      Builtins.y2milestone("LanItems %1", LanItems.Items)
+      log.info("LanItems #{LanItems.Items}")
 
       nil
     end
@@ -401,8 +401,8 @@ module Yast
                     "\n" \
                     "If you edit the settings for this interface here,\n" \
                     "the interface will no longer be managed by NetworkManager.\n"
-                  )
                 )
+              )
                 # y2r: cannot break from middle of switch
                 # but in this function return will do
                 return nil # means cancel
@@ -433,8 +433,8 @@ module Yast
                 LanItems.getCurrentItem,
                 ["hwinfo", "dev_name"],
                 ""
-                )
               )
+            )
               return :init_s390
             end
           end
@@ -448,7 +448,7 @@ module Yast
             if !Popup.YesNoHeadline(
               Label.WarningMsg,
               _("Device you select has STARTMODE=nfsroot. Really delete?")
-              )
+            )
               # y2r: cannot break from middle of switch
               # but in this function return will do
               return nil
@@ -480,7 +480,7 @@ module Yast
         # Network setup method dialog caption
         "caption"            => _(
           "Network Setup Method"
-),
+        ),
         "back_button"        => Label.BackButton,
         "abort_button"       => Label.CancelButton,
         "next_button"        => Label.OKButton,
@@ -501,12 +501,11 @@ module Yast
     def input_done?(ret)
       return true if ret != :abort
 
-      if Stage.initial
-        return Popup.ConfirmAbort(:painless)
-      else
-        return ReallyAbort() if LanItems.modified
-        return true
-      end
+      return Popup.ConfirmAbort(:painless) if Stage.initial
+
+      return ReallyAbort() if LanItems.GetModified
+
+      true
     end
 
     def MainDialog(init_tab)

@@ -46,22 +46,22 @@ module Yast
     # @modified [Boolean]         modified by AY (bnc#649494)
 
     # "routes" and ifroute-DEV file directory
-    ROUTES_DIR  = "/etc/sysconfig/network"
+    ROUTES_DIR  = "/etc/sysconfig/network".freeze
     # "routes" file location
-    ROUTES_FILE = "/etc/sysconfig/network/routes"
+    ROUTES_FILE = "/etc/sysconfig/network/routes".freeze
 
     # sysctl keys, used as *single* SCR path components below
-    IPV4_SYSCTL = "net.ipv4.ip_forward"
-    IPV6_SYSCTL = "net.ipv6.conf.all.forwarding"
+    IPV4_SYSCTL = "net.ipv4.ip_forward".freeze
+    IPV6_SYSCTL = "net.ipv6.conf.all.forwarding".freeze
     # SCR paths
-    SYSCTL_AGENT_PATH = ".etc.sysctl_conf"
+    SYSCTL_AGENT_PATH = ".etc.sysctl_conf".freeze
     SYSCTL_IPV4_PATH = SYSCTL_AGENT_PATH + ".\"#{IPV4_SYSCTL}\""
     SYSCTL_IPV6_PATH = SYSCTL_AGENT_PATH + ".\"#{IPV6_SYSCTL}\""
 
     # see man routes - difference on implicit device param (aka "-") in
     # case of /etc/sysconfig/network/routes and /etc/sysconfig/network/
     # /ifroute-<device>
-    ANY_DEVICE = "-"
+    ANY_DEVICE = "-".freeze
 
     def main
       Yast.import "UI"
@@ -145,10 +145,10 @@ module Yast
 
     # Reads current status for both IPv4 and IPv6 forwarding
     def ReadIPForwarding
-      if SuSEFirewall.IsEnabled
-        @Forward_v4 = SuSEFirewall.GetSupportRoute
+      @Forward_v4 = if SuSEFirewall.IsEnabled
+        SuSEFirewall.GetSupportRoute
       else
-        @Forward_v4 = SCR.Read(path(SYSCTL_IPV4_PATH)) == "1"
+        SCR.Read(path(SYSCTL_IPV4_PATH)) == "1"
       end
 
       @Forward_v6 = SCR.Read(path(SYSCTL_IPV6_PATH)) == "1"
@@ -318,10 +318,10 @@ module Yast
 
       return clear_route_file(device) if routes.empty?
 
-      if device == ANY_DEVICE
-        scr_path = path(".routes")
+      scr_path = if device == ANY_DEVICE
+        path(".routes")
       else
-        scr_path = register_ifroute_agent_for_device(device)
+        register_ifroute_agent_for_device(device)
       end
 
       SCR.Write(scr_path, routes)

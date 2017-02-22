@@ -13,7 +13,11 @@ Metrics/BlockNesting:
 # Offense count: 5
 # Configuration parameters: CountComments.
 Metrics/ClassLength:
-  Max: 1916
+  Max: 2000
+
+# some includes are really long
+Metrics/ModuleLength:
+  Max: 1500
 
 # Offense count: 81
 Metrics/CyclomaticComplexity:
@@ -81,40 +85,3 @@ Style/AccessorMethodName:
 Style/TrivialAccessors:
   Enabled: false
 
-# All the configuration below this comment tries to avoid offenses because of backported
-# code that uses different rubocop style.
-#
-# See https://github.com/yast/yast-network/pull/465
-
-Style/AccessModifierIndentation:
-  EnforcedStyle: outdent
-
-Style/ElseAlignment:
-  Exclude:
-    - src/modules/LanItems.rb
-    - src/include/network/lan/address.rb
-    - src/include/network/widgets.rb
-    - src/clients/firewall_stage1_proposal.rb
-    - src/modules/NetworkStorage.rb
-    - src/clients/inst_do_net_test.rb
-    - src/modules/SuSEFirewall4Network.rb
-
-Lint/EndAlignment:
-  Exclude:
-    - src/modules/LanItems.rb
-    - src/include/network/lan/address.rb
-    - src/include/network/widgets.rb
-    - src/clients/firewall_stage1_proposal.rb
-    - src/modules/NetworkStorage.rb
-    - src/clients/inst_do_net_test.rb
-    - src/modules/SuSEFirewall4Network.rb
-
-Style/IndentationWidth:
-  Exclude:
-    - src/modules/LanItems.rb
-    - src/include/network/lan/address.rb
-    - src/include/network/widgets.rb
-    - src/modules/NetworkStorage.rb
-    - src/clients/firewall_stage1_proposal.rb
-    - src/clients/inst_do_net_test.rb
-    - src/modules/SuSEFirewall4Network.rb

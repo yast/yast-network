@@ -37,9 +37,9 @@ module Yast
   class SuSEFirewall4NetworkClass < Module
     include Yast::Logger
 
-    SSH_PACKAGE = "openssh"
-    SSH_SERVICES = ["service:sshd"]
-    VNC_SERVICES = ["service:vnc-httpd", "service:vnc-server"]
+    SSH_PACKAGE = "openssh".freeze
+    SSH_SERVICES = ["service:sshd"].freeze
+    VNC_SERVICES = ["service:vnc-httpd", "service:vnc-server"].freeze
 
     def main
       textdomain "network"
@@ -205,6 +205,23 @@ module Yast
       Ops.greater_than(Builtins.size(interfaces), 0)
     end
 
+    # Checks if interface of given name is assigned to given FW zone
+    def iface_in_zone?(interface, zone)
+      SuSEFirewall.GetInterfacesInZone(zone).include?(interface)
+    end
+
+    # Enables and starts fw service
+    def start_fw_service
+      SuSEFirewall.SetEnableService(true)
+      SuSEFirewall.SetStartService(true)
+    end
+
+    # Disables and stops fw service
+    def stop_fw_service
+      SuSEFirewall.SetEnableService(false)
+      SuSEFirewall.SetStartService(false)
+    end
+
     # Functions sets protection of interface by the protect-status.<br>
     # protect==true  -> add interface into selected firewall zone, sets firewall
     #			 to be started and enabled when booting.<br>
@@ -218,28 +235,24 @@ module Yast
     # @return	[Boolean] if successful
     def ProtectByFirewall(interface, zone, protect_status)
       # Adding protection
-      if protect_status == true
-        Builtins.y2milestone(
-          "Enabling firewall because of '%1' interface",
-          interface
-        )
-        SuSEFirewall.AddInterfaceIntoZone(interface, zone)
-        SuSEFirewall.SetEnableService(true)
-        SuSEFirewall.SetStartService(true)
-        # Removing protection
+      if protect_status
+        log.info("Enabling firewall because of '#{interface}' interface")
+
+        SuSEFirewall.AddInterfaceIntoZone(interface, zone) if !iface_in_zone?(interface, zone)
+
+        start_fw_service
+      # Removing protection
       else
         # removing from all known zones
-        Builtins.foreach(SuSEFirewall.GetKnownFirewallZones) do |remove_from_zone|
+        zones = SuSEFirewall.GetKnownFirewallZones.select { |fw_zone| iface_in_zone?(interface, fw_zone) }
+        zones.each do |remove_from_zone|
           SuSEFirewall.RemoveInterfaceFromZone(interface, remove_from_zone)
         end
         # if there are no other interfaces in configuration, stop firewall
         # and remove it from boot process
         if !AnyInterfacesHandledByFirewall()
-          Builtins.y2milestone(
-            "Disabling firewall, no interfaces are protected."
-          )
-          SuSEFirewall.SetEnableService(false)
-          SuSEFirewall.SetStartService(false)
+          log.info("Disabling firewall, no interfaces are protected.")
+          stop_fw_service
         end
       end
 

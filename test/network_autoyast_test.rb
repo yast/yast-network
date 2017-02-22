@@ -2,12 +2,15 @@
 
 require_relative "test_helper"
 
-require "yast"
 require "network/network_autoyast"
 
 describe "NetworkAutoYast" do
+  subject(:network_autoyast) { Yast::NetworkAutoYast.instance }
+  before do
+    allow(Yast::NetworkInterfaces).to receive(:adapt_old_config!)
+  end
+
   describe "#merge_devices" do
-    let(:network_autoyast) { Yast::NetworkAutoYast.instance }
     let(:netconfig_linuxrc) do
       {
         "eth" => { "eth0" => {} }
@@ -90,7 +93,6 @@ describe "NetworkAutoYast" do
         "resolv_conf_policy" => "ay_resolv_conf_policy"
       }
     end
-    let(:network_autoyast) { Yast::NetworkAutoYast.instance }
 
     it "uses values from instsys, when nothing else is defined" do
       result = network_autoyast.send(:merge_dns, instsys_dns_setup, {})
@@ -120,7 +122,6 @@ describe "NetworkAutoYast" do
         "ipv6_forward" => true
       }
     end
-    let(:network_autoyast) { Yast::NetworkAutoYast.instance }
 
     it "uses values from instsys, when nothing else is defined" do
       result = network_autoyast.send(:merge_routing, instsys_routing_setup, {})
@@ -136,7 +137,6 @@ describe "NetworkAutoYast" do
   end
 
   describe "#merge_configs" do
-    let(:network_autoyast) { Yast::NetworkAutoYast.instance }
 
     it "merges all necessary stuff" do
       Yast.import "UI"
@@ -246,9 +246,106 @@ describe "NetworkAutoYast" do
       expect(network_autoyast.keep_net_config?).to be false
     end
 
-    it "fails when keep_install_network is not present in AY profile" do
+    it "succeedes when keep_install_network is not present in AY profile" do
       keep_install_network_value({})
-      expect(network_autoyast.keep_net_config?).to be false
+      expect(network_autoyast.keep_net_config?).to be true
+    end
+  end
+
+  context "When AY profile contains old style name" do
+    let(:ay_old_id) do
+      {
+        "interfaces" => [{ "device" => "eth-bus-0.0.1111" }]
+      }
+    end
+    let(:ay_old_mac) do
+      {
+        "interfaces" => [{ "device" => "eth-id-00:11:22:33:44:55" }]
+      }
+    end
+    let(:ay_both_vers) do
+      { "interfaces" => ay_old_id["interfaces"] + [{ "device" => "eth0" }] }
+    end
+
+    describe "#createUdevFromIfaceName" do
+      Yast.import "LanItems"
+
+      subject(:lan_udev_auto) { Yast::LanItems }
+
+      let(:ay_interfaces) { ay_both_vers["interfaces"] + ay_old_mac["interfaces"] }
+
+      before(:each) do
+        allow(Yast::LanItems).to receive(:getDeviceName).and_return("eth0")
+      end
+
+      it "returns empty list when no interfaces are provided" do
+        expect(lan_udev_auto.createUdevFromIfaceName(nil)).to be_empty
+        expect(lan_udev_auto.createUdevFromIfaceName([])).to be_empty
+      end
+
+      it "do not modify list of interfaces" do
+        ifaces = ay_interfaces
+
+        lan_udev_auto.send(:createUdevFromIfaceName, ay_interfaces)
+
+        # note that this function originally filtered non old style interfaces out.
+        expect(ifaces).to eql ay_interfaces
+      end
+
+      it "updates udev rules list according old style name" do
+        udev_list = lan_udev_auto.send(:createUdevFromIfaceName, ay_both_vers["interfaces"])
+
+        expect(udev_list.first["rule"]).to eql "KERNELS"
+        expect(udev_list.first["value"]).to eql "0.0.1111"
+        expect(udev_list.first["name"]).to eql "eth0"
+      end
+    end
+  end
+
+  context "When AY profile doesn't contain old style name" do
+    let(:ay_only_new) do
+      {
+        "interfaces" => [{ "device" => "eth0" }]
+      }
+    end
+
+    describe "#createUdevFromIfaceName" do
+      subject(:lan_udev_auto) { Yast::LanItems }
+
+      it "returns no udev rules" do
+        ifaces = ay_only_new["interfaces"]
+
+        expect(lan_udev_auto.send(:createUdevFromIfaceName, ifaces)).to be_empty
+      end
+    end
+  end
+
+  describe "#valid_rename_udev_rule?" do
+    it "fails when the rule do not contain new name" do
+      rule = { "rule" => "exists", "value" => "as_well" }
+      expect(network_autoyast.send(:valid_rename_udev_rule?, rule)).to be false
+      expect(network_autoyast.send(:valid_rename_udev_rule?, rule["name"] = "")).to be false
+    end
+
+    it "fails when the rule do not contain dev attribute" do
+      rule = { "name" => "new_name", "value" => "as_well" }
+      expect(network_autoyast.send(:valid_rename_udev_rule?, rule)).to be false
+      expect(network_autoyast.send(:valid_rename_udev_rule?, rule["rule"] = "")).to be false
+    end
+
+    it "fails when the rule do not contain dev attribute's value" do
+      rule = { "name" => "new_name", "rule" => "exists" }
+      expect(network_autoyast.send(:valid_rename_udev_rule?, rule)).to be false
+      expect(network_autoyast.send(:valid_rename_udev_rule?, rule["value"] = "")).to be false
+    end
+
+    it "succeedes for complete rule" do
+     complete_rule = {
+        "name"  => "new_name",
+        "rule"  => "kernels_or_attr{address}",
+        "value" => "as_expected"
+      }
+      expect(network_autoyast.send(:valid_rename_udev_rule?, complete_rule)).to be true
     end
   end
 end

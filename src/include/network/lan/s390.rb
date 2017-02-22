@@ -8,7 +8,7 @@
 # Functions for accessing and handling s390 specific needs.
 module Yast
   module NetworkLanS390Include
-    SYS_DIR = "/sys/class/net"
+    SYS_DIR = "/sys/class/net".freeze
 
     def initialize_network_lan_s390(_include_target)
       Yast.import "FileUtils"
