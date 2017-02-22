@@ -319,4 +319,33 @@ describe "NetworkAutoYast" do
       end
     end
   end
+
+  describe "#valid_rename_udev_rule?" do
+    it "fails when the rule do not contain new name" do
+      rule = { "rule" => "exists", "value" => "as_well" }
+      expect(network_autoyast.send(:valid_rename_udev_rule?, rule)).to be false
+      expect(network_autoyast.send(:valid_rename_udev_rule?, rule["name"] = "")).to be false
+    end
+
+    it "fails when the rule do not contain dev attribute" do
+      rule = { "name" => "new_name", "value" => "as_well" }
+      expect(network_autoyast.send(:valid_rename_udev_rule?, rule)).to be false
+      expect(network_autoyast.send(:valid_rename_udev_rule?, rule["rule"] = "")).to be false
+    end
+
+    it "fails when the rule do not contain dev attribute's value" do
+      rule = { "name" => "new_name", "rule" => "exists" }
+      expect(network_autoyast.send(:valid_rename_udev_rule?, rule)).to be false
+      expect(network_autoyast.send(:valid_rename_udev_rule?, rule["value"] = "")).to be false
+    end
+
+    it "succeedes for complete rule" do
+     complete_rule = {
+        "name"  => "new_name",
+        "rule"  => "kernels_or_attr{address}",
+        "value" => "as_expected"
+      }
+      expect(network_autoyast.send(:valid_rename_udev_rule?, complete_rule)).to be true
+    end
+  end
 end
