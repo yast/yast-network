@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Feb 22 10:49:17 UTC 2017 - mfilka@suse.com
+
+- bnc#1020074
+  - when incomplete udev rule is read from the AY profile, it is
+    ignored instead of raising an internal error.
+- 3.2.20
+
+-------------------------------------------------------------------
 Thu Jan 19 15:22:03 UTC 2017 - kanderssen@suse.com
 
 - Added network proposal using the new summary api and the new

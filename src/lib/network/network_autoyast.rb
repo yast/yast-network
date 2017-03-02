@@ -218,6 +218,15 @@ module Yast
       ay_profile["networking"]
     end
 
+    # Checks if the udev rule is valid for renaming a NIC
+    def valid_rename_udev_rule?(rule)
+      return false if rule["name"].nil? || rule["name"].empty?
+      return false if rule["rule"].nil? || rule["rule"].empty?
+      return false if rule["value"].nil? || rule["value"].empty?
+
+      true
+    end
+
     # Takes a list of udev rules and assignes them to corresponding devices.
     #
     # If a device has an udev rule defined already, it is overwritten by new one.
@@ -228,7 +237,11 @@ module Yast
       udev_rules.each do |rule|
         name_to = rule["name"]
         attr = rule["rule"]
-        key = rule["value"].downcase
+        key = rule["value"]
+
+        next if !valid_rename_udev_rule?(rule)
+        key.downcase!
+
         item, matching_item = LanItems.Items.find do |_, i|
           i["hwinfo"]["busid"].downcase == key || i["hwinfo"]["mac"].downcase == key
         end
