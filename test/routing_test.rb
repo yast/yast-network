@@ -28,7 +28,7 @@ describe Yast::Routing do
     # or not
     fw_enabled = [false, true]
     fw_enabled.each do |enabled|
-      context "when Firewall is %s" % [enabled ? "enabled" : "disabled"] do
+      context format("when Firewall is %s", enabled ? "enabled" : "disabled") do
         before(:each) do
           allow(Yast::SuSEFirewall).to receive(:IsEnabled) { enabled }
         end
