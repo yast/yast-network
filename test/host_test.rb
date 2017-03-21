@@ -206,7 +206,7 @@ describe Yast::Host do
 
         content = file.content
 
-        expect(content.lines).to include("127.0.0.2       localmachine.domain.local localmachine\n")
+        expect(content.lines).to include("127.0.0.2\tlocalmachine.domain.local localmachine\n")
       end
     end
 
