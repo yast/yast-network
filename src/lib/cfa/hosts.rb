@@ -123,7 +123,7 @@ module CFA
       aliases.each do |a|
         aliases_col.add(a)
       end
-      data.add(unique_id, entry_line)
+      data.add(data.unique_id, entry_line)
     end
 
     # Removes hostname from all entries in hosts table.
@@ -192,15 +192,6 @@ module CFA
       result = [entry["canonical"]]
       result.concat(aliases_for(entry))
       result.join(" ")
-    end
-
-    # helper to generate unique id for cfa entry
-    def unique_id
-      id = 1
-      loop do
-        return id.to_s unless data[id.to_s]
-        id += 1
-      end
     end
   end
 end
