@@ -17,12 +17,14 @@ module Yast
     before(:each) do
       # NetworkInterfaces are too low level. Everything needed should be mocked
       NetworkInterfaces.as_null_object
+      allow(NetworkInterfaces).to receive(:adapt_old_config!)
 
       # mock devices configuration
-      allow(LanItems).to receive(:ReadHardware) { [{ "dev_name" => CURRENT_NAME }] }
+      allow(LanItems).to receive(:ReadHardware) { [{ "dev_name" => CURRENT_NAME, "mac" => "00:01:02:03:04:05" }] }
       allow(LanItems).to receive(:getNetworkInterfaces) { [CURRENT_NAME] }
       allow(LanItems).to receive(:GetItemUdev) { "" }
       allow(LanItems).to receive(:GetItemUdev).with("NAME") { CURRENT_NAME }
+      allow(LanItems).to receive(:GetItemUdev).with("ATTR{address}") { "00:01:02:03:04:05" }
 
       # LanItems initialization
       Yast.import "LanItems"

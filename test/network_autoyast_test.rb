@@ -2,11 +2,13 @@
 
 require_relative "test_helper"
 
-require "yast"
 require "network/network_autoyast"
 
 describe "NetworkAutoYast" do
   subject(:network_autoyast) { Yast::NetworkAutoYast.instance }
+  before do
+    allow(Yast::NetworkInterfaces).to receive(:adapt_old_config!)
+  end
 
   describe "#merge_devices" do
     let(:netconfig_linuxrc) do
@@ -315,6 +317,35 @@ describe "NetworkAutoYast" do
 
         expect(lan_udev_auto.send(:createUdevFromIfaceName, ifaces)).to be_empty
       end
+    end
+  end
+
+  describe "#valid_rename_udev_rule?" do
+    it "fails when the rule do not contain new name" do
+      rule = { "rule" => "ATTR{address}", "value" => "00:02:29:69:d3:63" }
+      expect(network_autoyast.send(:valid_rename_udev_rule?, rule)).to be false
+      expect(network_autoyast.send(:valid_rename_udev_rule?, rule["name"] = "")).to be false
+    end
+
+    it "fails when the rule do not contain dev attribute" do
+      rule = { "name" => "eth0", "value" => "00:02:29:69:d3:63" }
+      expect(network_autoyast.send(:valid_rename_udev_rule?, rule)).to be false
+      expect(network_autoyast.send(:valid_rename_udev_rule?, rule["rule"] = "")).to be false
+    end
+
+    it "fails when the rule do not contain dev attribute's value" do
+      rule = { "name" => "eth0", "rule" => "ATTR{address}" }
+      expect(network_autoyast.send(:valid_rename_udev_rule?, rule)).to be false
+      expect(network_autoyast.send(:valid_rename_udev_rule?, rule["value"] = "")).to be false
+    end
+
+    it "succeedes for complete rule" do
+      complete_rule = {
+        "name"  => "eth0",
+        "rule"  => "ATTR{address}",
+        "value" => "00:02:29:69:d3:63"
+      }
+      expect(network_autoyast.send(:valid_rename_udev_rule?, complete_rule)).to be true
     end
   end
 end

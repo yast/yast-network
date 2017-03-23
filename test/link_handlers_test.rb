@@ -20,12 +20,12 @@ describe "phy_connected?" do
   end
 
   it "returns true if PHY layer is available" do
-    allow(Yast::SCR).to receive(:Read).with(path(".target.string"), /\/sys\/class\/net/) { 1 }
+    allow(subject).to receive(:has_carrier?).and_return true
     expect(subject.phy_connected?("enp0s3")).to eql true
   end
 
-  it "returns false if PHY layer is available" do
-    allow(Yast::SCR).to receive(:Read).with(path(".target.string"), /\/sys\/class\/net/) { 0 }
+  it "returns false if PHY layer is not available" do
+    allow(subject).to receive(:has_carrier?).and_return false
     expect(subject.phy_connected?("enp0s3")).to eql false
   end
 end

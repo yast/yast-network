@@ -38,28 +38,35 @@ module Yast
     #
     # It mainly setups suitable BOOTPROTO an IP related values
     def configure_as_bridge_port(device)
+      selected_interface = NetworkInterfaces.Current
       log.info("Adapt device #{device} as bridge port")
 
       # when using wicked every device which can be bridged
       # can be set to BOOTPROTO=none. No workaround with
       # BOOTPROTO=static required anymore
-      NetworkInterfaces.Edit(device)
+      if NetworkInterfaces.Edit(device)
+        NetworkInterfaces.Current["IPADDR"] = ""
+        NetworkInterfaces.Current["NETMASK"] = ""
+        NetworkInterfaces.Current["BOOTPROTO"] = "none"
+        # take out PREFIXLEN from old configuration (BNC#735109)
+        NetworkInterfaces.Current["PREFIXLEN"] = ""
 
-      NetworkInterfaces.Current["IPADDR"] = ""
-      NetworkInterfaces.Current["NETMASK"] = ""
-      NetworkInterfaces.Current["BOOTPROTO"] = "none"
-      # take out PREFIXLEN from old configuration (BNC#735109)
-      NetworkInterfaces.Current["PREFIXLEN"] = ""
+        # remove all aliases (bnc#590167)
+        aliases = NetworkInterfaces.Current["_aliases"] || {}
+        aliases.each do |alias_name, alias_ip|
+          NetworkInterfaces.DeleteAlias(device, alias_name) if alias_ip
+        end
+        NetworkInterfaces.Current["_aliases"] = {}
 
-      # remove all aliases (bnc#590167)
-      aliases = NetworkInterfaces.Current["_aliases"] || {}
-      aliases.each do |alias_name, alias_ip|
-        NetworkInterfaces.DeleteAlias(device, alias_name) if alias_ip
+        NetworkInterfaces.Commit
+        NetworkInterfaces.Add
+
+        NetworkInterfaces.Current = selected_interface
       end
-      NetworkInterfaces.Current["_aliases"] = {}
 
-      NetworkInterfaces.Commit
-      NetworkInterfaces.Add
+      Lan.autoconf_slaves += [device] unless Lan.autoconf_slaves.include? device
+
+      true
     end
 
     def ValidateBridge(_key, _event)

@@ -292,10 +292,6 @@ module Yast
               key = Ops.get_string(row, 1, "")
               Host.add_name(key, value)
             end
-            # deleted entries need to be set to [],
-            # so that ini-agent does not keep them in
-            # config file (#455862)
-            Builtins.foreach(deleted_items) { |d| Host.set_names(d, []) }
           end
           break
         else

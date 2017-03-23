@@ -1,14 +1,15 @@
 # encoding: utf-8
 
 require "yast"
+require "network/wicked"
 
 module Yast
   # The class is responsible for generating / proposing automatic
   # configuration during installation workflow
   class NetworkAutoconfiguration
+    include Wicked
     include Singleton
     include Logger
-    include Yast
 
     Yast.import "Lan"
     Yast.import "LanItems"
@@ -18,7 +19,12 @@ module Yast
     Yast.import "Arch"
     Yast.import "Host"
 
-    BASH_PATH = Path.new(".target.bash")
+    # Checks if any of available interfaces is configured and active
+    #
+    # returns [Boolean] true when at least one interface is active
+    def any_iface_active?
+      network_cards.any? { |c| configured?(c) && active_config?(c) }
+    end
 
     def configure_dhcp
       Yast.include self, "network/routines.rb"
@@ -142,17 +148,6 @@ module Yast
       LanItems.Commit
     end
 
-    # Reloads configuration for each device named in devs
-    #
-    # @devs [Array] list of device names
-    # @return true if configuration was reloaded
-    def reload_config(devs)
-      raise ArgumentError if devs.nil?
-      return true if devs.empty?
-
-      SCR.Execute(BASH_PATH, "wicked ifreload #{devs.join(" ")}") == 0
-    end
-
     def delete_config(devname)
       LanItems.delete_dev(devname)
     end
@@ -188,7 +183,7 @@ module Yast
     # active device <=> a device which is reported as "up" by wicked
     def active_config?(devname)
       wicked_query = "wicked ifstatus --brief #{devname} | grep 'up$'"
-      SCR.Execute(BASH_PATH, wicked_query) == 0
+      SCR.Execute(BASH_PATH, wicked_query).zero?
     end
 
     # Returns list of servers used for internet reachability test

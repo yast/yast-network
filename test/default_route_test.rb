@@ -2,7 +2,6 @@
 
 require_relative "test_helper"
 
-require "yast"
 require "network/install_inf_convertor"
 
 describe "Yast::LanItemsClass" do
@@ -48,6 +47,8 @@ describe "Yast::LanItemsClass" do
     # stub NetworkInterfaces, apart from the ifcfgs
     allow(Yast::NetworkInterfaces)
       .to receive(:CleanHotplugSymlink)
+    allow(Yast::NetworkInterfaces)
+      .to receive(:adapt_old_config!)
     allow(Yast::NetworkInterfaces)
       .to receive(:GetTypeFromSysfs)
       .with(/eth\d+/)

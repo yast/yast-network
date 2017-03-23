@@ -88,51 +88,5 @@ module Yast
       Builtins.y2debug("Free device=%1", ret)
       ret
     end
-
-    # Update Devices map
-    # @param [String] type device type
-    # @param [String] device device number
-    # @param [Hash] newdev new device map
-    # @param [Boolean] check if check if device already exists
-    # @return true if success
-    def ChangeDevice(type, device, newdev, check)
-      newdev = deep_copy(newdev)
-      Builtins.y2debug("ChangeDevice(%1,%2,%3,%4)", type, device, newdev, check)
-      Builtins.y2debug("Devices=%1", @Devices)
-      devmap = Ops.get(@Devices, type, {})
-      dev = Builtins.sformat("%1", device)
-
-      if check && Builtins.haskey(devmap, dev)
-        Builtins.y2error("Key already present: %1(%2)", dev, type)
-        return false
-      end
-      Ops.set(devmap, dev, newdev)
-      Ops.set(@Devices, type, devmap)
-      Builtins.y2debug("Devices=%1", @Devices)
-      true
-    end
-
-    # Delete a device from Devices map
-    # @param [String] type device type
-    # @param [String] dev device number
-    # @return true if success
-    def DeleteDevice(type, dev)
-      Builtins.y2debug("Devices=%1", @Devices)
-      Builtins.y2debug("DeletedDevices=%1", @DeletedDevices)
-
-      devmap = Ops.get(@Devices, type, {})
-      if !Builtins.haskey(devmap, dev)
-        Builtins.y2error("Key not found: %1(%2)", dev, type)
-        return false
-      end
-      # remove(devmap, dev);
-      devmap = Builtins.remove(devmap, dev)
-      Ops.set(@Devices, type, devmap)
-      @DeletedDevices = Builtins.add(@DeletedDevices, dev)
-
-      Builtins.y2debug("Devices=%1", @Devices)
-      Builtins.y2debug("DeletedDevices=%1", @DeletedDevices)
-      true
-    end
   end
 end

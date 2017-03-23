@@ -1,7 +1,7 @@
 #
 # spec file for package yast2-network
 #
-# Copyright (c) 2013 SUSE LINUX Products GmbH, Nuernberg, Germany.
+# Copyright (c) 2016 SUSE LINUX GmbH, Nuernberg, Germany.
 #
 # All modifications and additions to the file contributed by third parties
 # remain the property of their copyright owners, unless otherwise agreed
@@ -17,40 +17,45 @@
 
 
 Name:           yast2-network
-Version:        3.2.2
+Version:        3.3.0
 Release:        0
+BuildArch:      noarch
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 Source0:        %{name}-%{version}.tar.bz2
 
 Group:          System/YaST
 License:        GPL-2.0
-# should be required by devtools
-BuildRequires:  perl-XML-Writer pkgconfig rpm
 BuildRequires:  update-desktop-files
 BuildRequires:  yast2-devtools >= 3.1.15
-BuildRequires:  yast2-country
-BuildRequires:  yast2-proxy
 Requires:       yast2-proxy
 #for install task
 BuildRequires:  rubygem(yast-rake)
 
 # yast2 v3.1.86: Added ServicesProposal library
 BuildRequires:  yast2 >= 3.1.86
-# yast2 v3.1.135: Fixed Hostname API
-Requires:       yast2 >= 3.1.136
+# Network: Adapt old enslaved interface config
+Requires:       yast2 >= 3.1.206.2
+
+# Product control need xml agent
+BuildRequires:  yast2-xml
+Requires:       yast2-xml
 
 #netconfig (FaTE #303618)
 Requires:       sysconfig >= 0.80.0
-#GetLanguageCountry
-#(in newly created yast2-country-data)
-Requires:       yast2-country-data >= 2.16.3
 # Packages::vnc_packages
-BuildRequires:  yast2-packager >= 3.1.47
 Requires:       yast2-packager >= 3.1.47
+# cfa for parsing hosts, AugeasTree#unique_id
+BuildRequires:  rubygem(%rb_default_ruby_abi:cfa) >= 0.6.0
+Requires:       rubygem(%rb_default_ruby_abi:cfa) >= 0.6.0
+# lenses are needed to use cfa
+BuildRequires:  augeas-lenses
+Requires:       augeas-lenses
+# BusID of all the cards with the same one (bsc#1007172)
+Requires:       hwinfo         >= 21.35
 
 # testsuite
-BuildRequires:       rubygem(rspec)
+BuildRequires:  rubygem(rspec)
 
 PreReq:         /bin/rm
 
@@ -80,6 +85,7 @@ rake install DESTDIR="%{buildroot}"
 %{yast_ybindir}/*
 %{yast_yncludedir}/network
 %{yast_clientdir}/*.rb
+%dir %{yast_moduledir}/YaPI
 %{yast_moduledir}/YaPI/NETWORK.pm
 %{yast_moduledir}/*.rb
 %{yast_desktopdir}/*.desktop
@@ -88,6 +94,8 @@ rake install DESTDIR="%{buildroot}"
 %{yast_schemadir}/autoyast/rnc/networking.rnc
 %{yast_schemadir}/autoyast/rnc/host.rnc
 %{yast_libdir}/network
+%dir %{yast_libdir}/cfa/
+%{yast_libdir}/cfa/hosts.rb
 %{yast_ydatadir}/network
 
 %dir %{yast_docdir}

@@ -24,6 +24,8 @@
 require "yast"
 require "yaml"
 require "network/install_inf_convertor"
+require "network/wicked"
+require "network/lan_items_summary"
 
 module Yast
   # Does way too many things.
@@ -46,6 +48,7 @@ module Yast
     attr_accessor :ipoib_mode
 
     include Logger
+    include Wicked
 
     def main
       Yast.import "UI"
@@ -127,18 +130,19 @@ module Yast
       @wl_default_key = 0
       @wl_nick = ""
 
+      # FIXME: We should unify bridge_ports and bond_slaves variables
+
+      # interfaces attached to bridge (list delimited by ' ')
+      @bridge_ports = ""
+
       # bond options
       @bond_slaves = []
       @bond_option = ""
-
-      @MAX_BOND_SLAVE = 10
 
       # VLAN option
       @vlan_etherdevice = ""
       @vlan_id = ""
 
-      # interfaces attached to bridge (list delimited by ' ')
-      @bridge_ports = ""
       # wl_wpa_eap aggregates the settings in a map for easier CWM access.
       #
       # **Structure:**
@@ -221,7 +225,7 @@ module Yast
     #
     # @param itemId [Integer] a key for {#Items}
     def GetLanItem(itemId)
-      Ops.get_map(@Items, itemId, {})
+      Items()[itemId] || {}
     end
 
     # Returns configuration for currently modified item.
@@ -409,26 +413,66 @@ module Yast
       deep_copy(udev_rules)
     end
 
+    # It returns a value for the particular key of udev rule belonging to the current item.
     def GetItemUdev(key)
-      value = ""
+      udev_key_value(getUdevFallback, key)
+    end
 
-      Builtins.foreach(getUdevFallback) do |row|
-        if Builtins.issubstring(row, key)
-          items = Builtins.filter(Builtins.splitstring(row, "=")) do |s|
-            Ops.greater_than(Builtins.size(s), 0)
-          end
-          if Builtins.size(items) == 2 && Ops.get_string(items, 0, "") == key
-            value = Builtins.deletechars(Ops.get_string(items, 1, ""), "\"")
-          else
-            Builtins.y2warning(
-              "udev items %1 doesn't match the key %2",
-              items,
-              key
-            )
-          end
-        end
+    # It deletes the given key from the udev rule of the current item.
+    #
+    # @param key [string] udev key which identifies the tuple to be removed
+    # @return [Object, nil] the current item's udev rule without the given key; nil if
+    # there is not udev rules for the current item
+    def RemoveItemUdev(key)
+      current_rule = LanItems.GetItemUdevRule(LanItems.current)
+
+      return nil if current_rule.empty?
+
+      log.info("Removing #{key} from #{current_rule}")
+      Items()[@current]["udev"]["net"] =
+        LanItems.RemoveKeyFromUdevRule(current_rule, key)
+    end
+
+    # Updates the udev rule of the current Lan Item based on the key given
+    # which currently could be mac or bus_id.
+    #
+    # In case of bus_id the dev_port will be always added to avoid cases where
+    # the interfaces shared the same bus_id (i.e. Multiport cards using the
+    # same function to all the ports) (bsc#1007172)
+    #
+    # @param based_on [Symbol] principal key to be matched, `:mac` or `:bus_id`
+    # @return [void]
+    def update_item_udev_rule!(based_on = :mac)
+      case based_on
+      when :mac
+        LanItems.RemoveItemUdev("ATTR{dev_port}")
+
+        # FIXME: While the user is able to modify the udev rule using the
+        # mac address instead of bus_id when bonding, could be that the
+        # mac in use was not the permanent one. We could read it with
+        # ethtool -P dev_name}
+        LanItems.ReplaceItemUdev(
+          "KERNELS",
+          "ATTR{address}",
+          LanItems.getCurrentItem.fetch("hwinfo", {}).fetch("mac", "")
+        )
+      when :bus_id
+        # Update or insert the dev_port if the sysfs dev_port attribute is present
+        LanItems.ReplaceItemUdev(
+          "ATTR{dev_port}",
+          "ATTR{dev_port}",
+          LanItems.dev_port(LanItems.GetCurrentName)
+        ) if LanItems.dev_port?(LanItems.GetCurrentName)
+
+        # If the current rule is mac based, overwrite to bus id. Don't touch otherwise.
+        LanItems.ReplaceItemUdev(
+          "ATTR{address}",
+          "KERNELS",
+          LanItems.getCurrentItem.fetch("hwinfo", {}).fetch("busid", "")
+        )
+      else
+        raise ArgumentError, "The key given for udev rule #{based_on} is not supported"
       end
-      value
     end
 
     # It replaces a tuple identified by replace_key in current item's udev rule
@@ -436,38 +480,39 @@ module Yast
     # Note that the tuple is identified by key only. However modification flag is
     # set only if value was changed (in case when replace_key == new_key)
     #
+    # It also contain a logic on tuple operators. When the new_key is "NAME"
+    # then assignment operator (=) is used. Otherwise equality operator (==) is used.
+    # Thats bcs this function is currently used for touching "NAME", "KERNELS" and
+    # "ATTR{address}" keys only
+    #
     # @param replace_key [string] udev key which identifies tuple to be replaced
     # @param new_key     [string] new key to by used
     # @param new_val     [string] value for new key
     # @return updated rule when replace_key is found, current rule otherwise
     def ReplaceItemUdev(replace_key, new_key, new_val)
-      new_rule = []
-      # udev syntax distinguishes among others:
       # =    for assignment
       # ==   for equality checks
       operator = new_key == "NAME" ? "=" : "=="
-      current_rule = getUdevFallback
+      current_rule = GetItemUdevRule(@current)
+      rule = RemoveKeyFromUdevRule(getUdevFallback, replace_key)
 
-      return current_rule if !new_key || new_key.empty?
-      return current_rule if !new_val || new_val.empty?
+      # NAME="devname" has to be last in the rule.
+      # otherwise SCR agent .udev_persistent.net returns crap
+      # isn't that fun
+      name_tuple = rule.pop
+      new_rule = AddToUdevRule(rule, "#{new_key}#{operator}\"#{new_val}\"")
+      new_rule.push(name_tuple)
 
-      i = current_rule.find_index { |tuple| tuple =~ /#{replace_key}/ }
-      if i
-        # deep_copy is most probably not neccessary because getUdevFallback does
-        # deep_copy on return value. However, getUdevFallback will be subect of refactoring
-        # so caution is must. Moreover new_rule is also return value so it should be
-        # copied anyway
-        new_rule = deep_copy(current_rule)
-        new_rule[i] = "#{new_key}#{operator}\"#{new_val}\""
+      if current_rule.sort != new_rule.sort
+        SetModified()
 
-        SetModified() if current_rule != new_rule
+        log.info("ReplaceItemUdev: new udev rule = #{new_rule}")
+
+        Items()[@current]["udev"] = { "net" => [] } if !Items()[@current]["udev"]
+        Items()[@current]["udev"]["net"] = new_rule
       end
 
-      log.info("LanItems#ReplaceItemUdev: #{current_rule} -> #{new_rule}")
-
-      Items()[@current]["udev"]["net"] = new_rule
-
-      new_rule
+      deep_copy(new_rule)
     end
 
     # Updates device name.
@@ -569,7 +614,7 @@ module Yast
           # removing is less error prone when tracking name changes, so it was chosen.
           item_udev_net = RemoveKeyFromUdevRule(item_udev_net, "KERNEL")
           # setting links down during AY is forbidden bcs it can freeze ssh installation
-          SetLinkDown(dev_name) if !Mode.autoinst
+          SetIfaceDown(dev_name) if !Mode.autoinst
 
           @force_restart = true
         end
@@ -756,9 +801,7 @@ module Yast
     #
     # @param [String] bridgeMaster  name of master device
     # @param [Fixnum] itemId        index into LanItems::Items
-    # TODO: bridgeMaster is not used yet bcs detection of bridge master
-    # for checked device is missing.
-    def IsBridgeable(_bridgeMaster, itemId)
+    def IsBridgeable(bridgeMaster, itemId)
       ifcfg = GetDeviceMap(itemId)
 
       # no netconfig configuration has been found so nothing
@@ -770,6 +813,11 @@ module Yast
 
       if bonded[devname]
         log.debug("Excluding lan item (#{itemId}: #{devname}) - is bonded")
+        return false
+      end
+
+      if bridge_index[devname] && bridge_index[devname] != bridgeMaster
+        log.debug("Excluding lan item (#{itemId}: #{devname}) - is already in a bridge")
         return false
       end
 
@@ -866,7 +914,7 @@ module Yast
     # It means list of item ids of all netcards which are detected and/or
     # configured in the system
     def GetNetcardInterfaces
-      @Items.keys
+      Items().keys
     end
 
     # Creates list of names of all known netcards configured even unconfigured
@@ -874,7 +922,48 @@ module Yast
       GetDeviceNames(GetNetcardInterfaces())
     end
 
-    # get list of all configurations for "netcard" macro in NetworkInterfaces module
+    # Finds all NICs configured with DHCP
+    #
+    # @return [Array<String>] list of NIC names which are configured to use (any) dhcp
+    def find_dhcp_ifaces
+      find_by_sysconfig do |ifcfg|
+        ["dhcp4", "dhcp6", "dhcp", "dhcp+autoip"].include?(ifcfg["BOOTPROTO"])
+      end
+    end
+
+    # Finds all devices which has DHCLIENT_SET_HOSTNAME set to "yes"
+    #
+    # @return [Array<String>] list of NIC names which has the option set to "yes"
+    def find_set_hostname_ifaces
+      find_by_sysconfig do |ifcfg|
+        ifcfg["DHCLIENT_SET_HOSTNAME"] == "yes"
+      end
+    end
+
+    # Creates a list of config files which contain corrupted DHCLIENT_SET_HOSTNAME setup
+    #
+    # @return [Array] list of config file names
+    def invalid_dhcp_cfgs
+      devs = LanItems.find_set_hostname_ifaces
+      dev_ifcfgs = devs.map { |d| "ifcfg-#{d}" }
+
+      return dev_ifcfgs if devs.size > 1
+      return dev_ifcfgs << "dhcp" if !devs.empty? && DNS.dhcp_hostname
+
+      []
+    end
+
+    # Checks if system DHCLIENT_SET_HOSTNAME is valid
+    #
+    # @return [Boolean]
+    def valid_dhcp_cfg?
+      invalid_dhcp_cfgs.empty?
+    end
+
+    # Get list of all configured interfaces
+    #
+    # return [Array] list of strings - interface names (eth0, ...)
+    # FIXME: rename e.g. to configured_interfaces
     def getNetworkInterfaces
       configurations = NetworkInterfaces.FilterDevices("netcard")
       devtypes = NetworkInterfaces.CardRegex["netcard"].to_s.split("|")
@@ -1022,53 +1111,26 @@ module Yast
 
       ReadHw()
       NetworkInterfaces.Read
+      NetworkInterfaces.adapt_old_config!
       NetworkInterfaces.CleanHotplugSymlink
 
       interfaces = getNetworkInterfaces
       # match configurations to Items list with hwinfo
-      Builtins.foreach(interfaces) do |confname|
-        pos = nil
-        val = {}
-        Builtins.foreach(
-          Convert.convert(
-            @Items,
-            from: "map <integer, any>",
-            to:   "map <integer, map <string, any>>"
-          )
-        ) do |key, value|
-          if Ops.get_string(value, ["hwinfo", "dev_name"], "") == confname
-            pos = key
-            val = deep_copy(value)
-          end
+      interfaces.each do |confname|
+        @Items.each do |key, value|
+          match = value.fetch("hwinfo", {}).fetch("dev_name", "") == confname
+          @Items[key]["ifcfg"] = confname if match
         end
-        if pos.nil?
-          pos = Builtins.size(@Items)
-          Ops.set(@Items, pos, {})
-        end
-        Ops.set(@Items, [pos, "ifcfg"], confname)
       end
 
-      # add to Items also virtual devices (configurations) without hwinfo
-      Builtins.foreach(interfaces) do |confname|
-        already = false
-        Builtins.foreach(
-          Convert.convert(
-            Map.Keys(@Items),
-            from: "list",
-            to:   "list <integer>"
-          )
-        ) do |key|
-          if confname == Ops.get_string(@Items, [key, "ifcfg"], "")
-            already = true
-            raise Break
-          end
-        end
-        if !already
-          AddNew()
-          Ops.set(@Items, @current, "ifcfg" => confname)
-        end
+      interfaces.each do |confname|
+        next if @Items.keys.any? { |key| @Items.fetch(key, {}).fetch("ifcfg", "") == confname }
+
+        AddNew()
+        @Items[@current] = { "ifcfg" => confname }
       end
-      Builtins.y2milestone("Read Configuration LanItems::Items %1", @Items)
+
+      log.info "Read Configuration LanItems::Items #{@Items}"
 
       nil
     end
@@ -1103,9 +1165,9 @@ module Yast
         LanItems.Items[current] = { "ifcfg" => device }
       end
 
-      autoinstall_settings["start_immediately"] = settings.fetch("start_immediately", false)
-      autoinstall_settings["strict_IP_check_timeout"] = settings.fetch("strict_IP_check_timeout", -1)
-      autoinstall_settings["keep_install_network"] = settings.fetch("keep_install_network", true)
+      @autoinstall_settings["start_immediately"] = settings.fetch("start_immediately", false)
+      @autoinstall_settings["strict_IP_check_timeout"] = settings.fetch("strict_IP_check_timeout", -1)
+      @autoinstall_settings["keep_install_network"] = settings.fetch("keep_install_network", true)
 
       # FIXME: createS390Device does two things, it
       # - updates internal structures
@@ -1218,49 +1280,58 @@ module Yast
       firmware
     end
 
-    # Creates list of devices enslaved in any bond device.
+    # Creates list of devices enslaved in the bond device.
+    #
+    # @param bond_master [string] device name of a bond master (e.g. bond0)
+    # @return list of the bond slaves
     def GetBondSlaves(bond_master)
-      slaves = []
-      slave_index = 0
+      net_cards = NetworkInterfaces.FilterDevices("netcard") || { "bond" => {} }
+      bonds = net_cards["bond"] || {}
+      bond_map = bonds[bond_master] || {}
 
-      while Ops.less_than(slave_index, @MAX_BOND_SLAVE)
-        slave = Ops.get_string(
-          NetworkInterfaces.FilterDevices("netcard"),
-          [
-            "bond",
-            bond_master,
-            Builtins.sformat("BONDING_SLAVE%1", slave_index)
-          ],
-          ""
-        )
-
-        if Ops.greater_than(Builtins.size(slave), 0)
-          slaves = Builtins.add(slaves, slave)
-        end
-
-        slave_index = Ops.add(slave_index, 1)
-      end
+      slaves = bond_map.select { |k, _| k.start_with?("BONDING_SLAVE") }.values
 
       deep_copy(slaves)
     end
 
     def BuildBondIndex
       index = {}
-      bond_devs = Convert.convert(
-        Ops.get(NetworkInterfaces.FilterDevices("netcard"), "bond", {}),
-        from: "map",
-        to:   "map <string, map>"
-      )
 
-      Builtins.foreach(bond_devs) do |bond_master, _value|
-        Builtins.foreach(GetBondSlaves(bond_master)) do |slave|
-          index = Builtins.add(index, slave, bond_master)
+      bond_devs = NetworkInterfaces.FilterDevices("netcard").fetch("bond", {})
+
+      bond_devs.each do |bond_master, _value|
+        GetBondSlaves(bond_master).each do |slave|
+          index[slave] = bond_master
         end
       end
 
-      Builtins.y2debug("bond slaves index: %1", index)
+      log.debug("bond slaves index: #{index}")
 
-      deep_copy(index)
+      index
+    end
+
+    # Creates a map where the keys are the interfaces enslaved and the values
+    # are the bridges where them are taking part.
+    def bridge_index
+      index = {}
+
+      bridge_devs = NetworkInterfaces.FilterDevices("netcard").fetch("br", {})
+
+      bridge_devs.each do |bridge_master, value|
+        value["BRIDGE_PORTS"].to_s.split.each do |if_name|
+          index[if_name] = bridge_master
+        end
+      end
+
+      index
+    end
+
+    # Returns the interfaces that are enslaved in the given bridge
+    #
+    # @param [String] bridge name
+    # @return [Array<String>] a list of interface names
+    def bridge_slaves(master)
+      bridge_index.select { |_k, v| v == master }.keys
     end
 
     # Creates item's startmode human description
@@ -1300,26 +1371,44 @@ module Yast
       [startmode_descr]
     end
 
-    def ip_overview(ip)
+    # Creates a summary of the configured items.
+    #
+    # It supports differents types of summaries depending on the options[:type]
+    #
+    # @see LanItemsSummary
+    # @param options [Hash] summary options
+    # @return [String] summary of the configured items
+    def summary(type = "default")
+      LanItemsSummary.new.send(type)
+    end
+
+    # Creates details for device's overview based on ip configuration type
+    #
+    # Produces list of strings. Strings are intended for "bullet" list, e.g.:
+    # * <string1>
+    # * <string2>
+    #
+    # @param [Hash] dev_map a device's sysconfig map (in form "option" => "value")
+    # @return [Array] list of strings, one string is intended for one "bullet"
+    def ip_overview(dev_map)
       bullets = []
 
-      case ip
-      when "NONE", ""
-      # do nothing
-      when /DHCP/
+      ip = DeviceProtocol(dev_map)
+
+      if ip =~ /DHCP/
         bullets << format("%s %s", _("IP address assigned using"), ip)
-      else
-        prefixlen = NetworkInterfaces.Current["PREFIXLEN"]
-        if prefixlen
+      elsif IP.Check(ip)
+        prefixlen = dev_map["PREFIXLEN"] || ""
+        if !prefixlen.empty?
           bullets << format(_("IP address: %s/%s"), ip, prefixlen)
         else
-          subnetmask = NetworkInterfaces.Current["NETMASK"]
+          subnetmask = dev_map["NETMASK"]
           bullets << format(_("IP address: %s, subnet mask %s"), ip, subnetmask)
         end
       end
 
       # build aliases overview
-      item_aliases = NetworkInterfaces.Current["_aliases"] || {}
+      item_aliases = dev_map["_aliases"] || {}
       if !item_aliases.empty? && !NetworkService.is_network_manager
         item_aliases.each do |_key2, desc|
           parameters = format("%s/%s", desc["IPADDR"], desc["PREFIXLEN"])
@@ -1336,9 +1425,10 @@ module Yast
       overview = []
       links = []
 
+      bond_index = BuildBondIndex()
+
       LanItems.Items.each_key do |key|
         rich = ""
-        ip = _("Not configured")
 
         item_hwinfo = LanItems.Items[key]["hwinfo"] || {}
         descr = item_hwinfo["name"] || ""
@@ -1346,25 +1436,22 @@ module Yast
         note = ""
         bullets = []
         ifcfg_name = LanItems.Items[key]["ifcfg"] || ""
+        ifcfg_type = NetworkInterfaces.GetType(ifcfg_name)
 
-        LanItems.type = NetworkInterfaces.GetType(ifcfg_name)
         if !ifcfg_name.empty?
           ifcfg_conf = GetDeviceMap(key)
+          log.error("BuildLanOverview: devmap for #{key}/#{ifcfg_name} is nil") if ifcfg_conf.nil?
+
           ifcfg_desc = ifcfg_conf["NAME"]
           descr = ifcfg_desc if !ifcfg_desc.nil? && !ifcfg_desc.empty?
-          descr = CheckEmptyName(LanItems.type, descr)
-          ip = DeviceProtocol(ifcfg_conf)
-          status = DeviceStatus(
-            LanItems.type,
-            ifcfg_name,
-            ifcfg_conf
-          )
+          descr = CheckEmptyName(ifcfg_type, descr)
+          status = DeviceStatus(ifcfg_type, ifcfg_name, ifcfg_conf)
 
           bullets << _("Device Name: %s") % ifcfg_name
           bullets += startmode_overview(key)
-          bullets += ip_overview(ip) if ifcfg_conf["STARTMODE"] != "managed"
+          bullets += ip_overview(ifcfg_conf) if ifcfg_conf["STARTMODE"] != "managed"
 
-          if LanItems.type == "wlan" &&
+          if ifcfg_type == "wlan" &&
               ifcfg_conf["WIRELESS_AUTH_MODE"] == "open" &&
               IsEmpty(ifcfg_conf["WIRELESS_KEY_0"])
 
@@ -1378,26 +1465,20 @@ module Yast
             links << href
           end
 
-          if LanItems.type == "bond"
-            bond_slaves_desc = format(
-              "%s: %s",
-              _("Bonding slaves"),
-              GetBondSlaves(ifcfg_name).join(" ")
-            )
-            bullets << bond_slaves_desc
+          if ifcfg_type == "bond" || ifcfg_type == "br"
+            bullets << slaves_desc(ifcfg_type, ifcfg_name)
           end
 
-          bond_index = BuildBondIndex()
-          bond_master = Ops.get(
-            bond_index,
-            ifcfg_name,
-            ""
-          )
-
-          if !bond_master.empty?
-            note = format(_("enslaved in %s"), bond_master)
-            bond_master_desc = format("%s: %s", _("Bonding master"), bond_master)
-            bullets << bond_master_desc
+          if enslaved?(ifcfg_name)
+            if bond_index[ifcfg_name]
+              master = bond_index[ifcfg_name]
+              master_desc = _("Bonding master")
+            else
+              master = bridge_index[ifcfg_name]
+              master_desc = _("Bridge")
+            end
+            note = format(_("enslaved in %s"), master)
+            bullets << format("%s: %s", master_desc, master)
           end
 
           if renamed?(key)
@@ -1406,7 +1487,7 @@ module Yast
 
           overview << Summary.Device(descr, status)
         else
-          descr = CheckEmptyName(LanItems.type, descr)
+          descr = CheckEmptyName(ifcfg_type, descr)
           overview << Summary.Device(descr, Summary.NotConfigured)
         end
         conn = ""
@@ -1447,7 +1528,7 @@ module Yast
         end
         LanItems.Items[key]["table_descr"] = {
           "rich_descr"  => rich,
-          "table_descr" => [descr, ip, ifcfg_name, note]
+          "table_descr" => [descr, DeviceProtocol(ifcfg_conf), ifcfg_name, note]
         }
       end
       [Summary.DevicesList(overview), links]
@@ -1570,15 +1651,6 @@ module Yast
           )
         end
       end
-
-      nil
-    end
-
-    # Select the hardware component
-    # @param [Fixnum] which index of the component
-
-    def SelectHW(which)
-      SelectHWMap(FindHardware(@Hardware, which))
 
       nil
     end
@@ -1843,6 +1915,32 @@ module Yast
       devmap
     end
 
+    # Sets bonding specific sysconfig options in given device map
+    #
+    # If any bonding specific option is present already it gets overwritten
+    # by new ones in case of collision. If any BONDING_SLAVEx from devmap
+    # is not set, then its value is set to 'nil'
+    #
+    # @param devmap [Hash] hash of a device's sysconfig variables
+    # @param slaves [array] list of strings, each string is a bond slave name
+    #
+    # @return [Hash] updated copy of the device map
+    def setup_bonding(devmap, slaves, options)
+      raise ArgumentError, "Device map has to be provided." if devmap.nil?
+
+      devmap = deep_copy(devmap)
+      slaves ||= []
+
+      slave_opts = devmap.select { |k, _| k.start_with?("BONDING_SLAVE") }.keys
+      slave_opts.each { |s| devmap[s] = nil }
+      slaves.each_with_index { |s, i| devmap["BONDING_SLAVE#{i}"] = s }
+
+      devmap["BONDING_MODULE_OPTS"] = options || ""
+      devmap["BONDING_MASTER"] = "yes"
+
+      devmap
+    end
+
     # Commit pending operation
     #
     # It commits *only* content of the corresponding ifcfg into NetworkInterfaces.
@@ -1890,20 +1988,10 @@ module Yast
 
       case @type
       when "bond"
-        i = 0
-        @bond_slaves.each do |slave|
-          newdev["BONDING_SLAVE#{i}"] = slave
-          i += 1
-        end
-
-        # assign nil to rest BONDING_SLAVEn to remove them
-        while i < @MAX_BOND_SLAVE
-          newdev["BONDING_SLAVE#{i}"] = nil
-          i += 1
-        end
-
-        newdev["BONDING_MODULE_OPTS"] = @bond_option
-        newdev["BONDING_MASTER"] = "yes"
+        # we need current slaves - when some of them is not used anymore we need to
+        # configure it for deletion from ifcfg (SCR expects special value nil)
+        current_slaves = (GetCurrentMap() || {}).select { |k, _| k.start_with?("BONDING_SLAVE") }
+        newdev = setup_bonding(newdev.merge(current_slaves), @bond_slaves, @bond_option)
 
       when "vlan"
         newdev["ETHERDEVICE"] = @vlan_etherdevice
@@ -2044,6 +2132,7 @@ module Yast
 
         # configure bridge ports
         if @bridge_ports
+          log.info "Configuring bridge ports #{@bridge_ports} for: #{ifcfg_name}"
           @bridge_ports.split.each { |bp| configure_as_bridge_port(bp) }
         end
 
@@ -2392,6 +2481,55 @@ module Yast
       udev_rules
     end
 
+    # Configures available devices for obtaining hostname via specified device
+    #
+    # This is related to setting system's hostname via DHCP. Apart of global
+    # DHCLIENT_SET_HOSTNAME which is set in /etc/sysconfig/network/dhcp and is
+    # used as default, one can specify the option even per interface. To avoid
+    # collisions / undeterministic behavior the system should be configured so,
+    # that just one DHCP interface can update the hostname. E.g. global option
+    # can be set to "no" and just only one ifcfg can have the option set to "yes".
+    #
+    # @param [String] device name where should be hostname configuration active
+    # @return [Boolean] false when the configuration cannot be set for a device
+    def conf_set_hostname(device)
+      return false if !find_dhcp_ifaces.include?(device)
+
+      clear_set_hostname
+
+      ret = SetItemSysconfigOpt(find_configured(device), "DHCLIENT_SET_HOSTNAME", "yes")
+
+      SetModified()
+
+      ret
+    end
+
+    # Removes DHCLIENT_SET_HOSTNAME from all ifcfgs
+    #
+    # @return [Array<String>] list of names of cleared devices
+    def clear_set_hostname
+      log.info("Clearing DHCLIENT_SET_HOSTNAME flag from device configs")
+
+      ret = []
+
+      GetNetcardInterfaces().each do |item_id|
+        dev_map = GetDeviceMap(item_id)
+        next if dev_map.nil? || dev_map.empty?
+        next if !dev_map["DHCLIENT_SET_HOSTNAME"]
+
+        dev_map["DHCLIENT_SET_HOSTNAME"] = nil
+
+        SetDeviceMap(item_id, dev_map)
+        SetModified()
+
+        ret << GetDeviceName(item_id)
+      end
+
+      log.info("#{ret.inspect} use default DHCLIENT_SET_HOSTNAME")
+
+      ret
+    end
+
     # This helper allows YARD to extract DSL-defined attributes.
     # Unfortunately YARD has problems with the Capitalized ones,
     # so those must be done manually.
@@ -2403,6 +2541,34 @@ module Yast
     end
 
   private
+
+    # Returns a formated string with the interfaces that are part of a bridge
+    # or of a bond interface.
+    #
+    # @param [String] ifcfg_type
+    # @param [String] ifcfg_name
+    # @return [String] formated string with the interface type and the interfaces enslaved
+    def slaves_desc(ifcfg_type, ifcfg_name)
+      if ifcfg_type == "bond"
+        slaves = GetBondSlaves(ifcfg_name)
+        desc = _("Bonding slaves")
+      else
+        slaves = bridge_slaves(ifcfg_name)
+        desc = _("Bridge Ports")
+      end
+
+      format("%s: %s", desc, slaves.join(" "))
+    end
+
+    # Check if the given interface is enslaved in a bond or in a bridge
+    #
+    # @return [Boolean] true if enslaved
+    def enslaved?(ifcfg_name)
+      bond_index = BuildBondIndex()
+      return true if bond_index[ifcfg_name] || bridge_index[ifcfg_name]
+
+      false
+    end
 
     # Checks if given lladdr can be written into ifcfg
     #
@@ -2421,7 +2587,7 @@ module Yast
     # Removes all records connected to the ip from /etc/hosts
     def drop_hosts(ip)
       log.info("Deleting hostnames assigned to #{ip} from /etc/hosts")
-      Host.set_names(ip, [])
+      Host.remove_ip(ip)
     end
 
     # Exports udev rules for AY profile
@@ -2591,6 +2757,25 @@ module Yast
       deep_copy(ay)
     end
 
+    # Searches available items according sysconfig option
+    #
+    # Expects a block. The block is provided
+    # with a hash of every item's ifcfg options. Returns
+    # list of device names for whose the block evaluates to true.
+    #
+    # ifcfg hash<string, string> is in form { <sysconfig_key> -> <value> }
+    #
+    # @return [Array] list of device names
+    def find_by_sysconfig
+      items = GetNetcardInterfaces().select do |iface|
+        ifcfg = GetDeviceMap(iface) || {}
+
+        yield(ifcfg)
+      end
+
+      GetDeviceNames(items)
+    end
+
     # @attribute Items
     # @return [Hash<Integer, Hash<String, Object> >]
     # Each item, indexed by an Integer in a Hash, aggregates several aspects
@@ -2699,7 +2884,6 @@ module Yast
     publish function: :isCurrentDHCP, type: "boolean ()"
     publish function: :GetItemDescription, type: "string ()"
     publish function: :SelectHWMap, type: "void (map)"
-    publish function: :SelectHW, type: "void (integer)"
     publish function: :FreeDevices, type: "list (string)"
     publish function: :SetDefaultsForHW, type: "void ()"
     publish function: :SetDeviceVars, type: "void (map, map)"

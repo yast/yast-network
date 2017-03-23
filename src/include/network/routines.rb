@@ -50,6 +50,7 @@ module Yast
       Yast.import "IP"
       Yast.import "TypeRepository"
       Yast.import "Stage"
+      Yast.import "PackagesProposal"
     end
 
     # Abort function
@@ -102,6 +103,16 @@ module Yast
       end
 
       nil
+    end
+
+    # Adds the packages to the software proposal to make sure they are available
+    # in the installed system
+    # @param [Array<String>] packages list of required packages (["rpm", "bash"])
+    # @return :next in any case
+    def add_pkgs_to_proposal(packages)
+      log.info "Adding network packages to proposal: #{packages}"
+      PackagesProposal.AddResolvables("network", :package, packages) unless packages.empty?
+      :next
     end
 
     # Check if required packages are installed and install them if they're not
@@ -686,7 +697,7 @@ module Yast
     # @param Shell command to run
     # @return whether command execution succeeds
     def Run(command)
-      ret = SCR.Execute(path(".target.bash"), command) == 0
+      ret = SCR.Execute(path(".target.bash"), command).zero?
 
       Builtins.y2error("Run <%1>: Command execution failed.", command) if !ret
 
@@ -694,9 +705,13 @@ module Yast
     end
     # TODO: end
 
-    # Return list of all interfaces present in the system (not only configured ones as NetworkInterfaces::List does).
+    # Return list of all interfaces present in the system.
+    #
+    # It means all interfaces which exists in the system at the time.
+    # /sys filesystem is used for checking that.
     #
     # @return [Array] of interface names.
+    # FIXME: rename e.g. to sys_interfaces
     def GetAllInterfaces
       result = RunAndRead("ls /sys/class/net")
 
@@ -707,36 +722,41 @@ module Yast
       end
     end
 
+    # Wrapper to call 'ip link set up' with the given interface
+    #
+    # @param [String] name of interface to 'set link up'
     def SetLinkUp(dev_name)
       log.info("Setting link up for interface #{dev_name}")
       Run("ip link set #{dev_name} up")
     end
 
+    # Wrapper to call 'ip link set down' with the given interface
+    #
+    # @param [String] name of interface to 'set link down'
     def SetLinkDown(dev_name)
       log.info("Setting link down for interface #{dev_name}")
       Run("ip link set #{dev_name} down")
     end
 
-    # Tries to set all available interfaces up
+    # Calls wicked ifup with the given interface
     #
-    # @return [boolean] false if some of interfaces cannot be set up
-    def SetAllLinksUp
-      interfaces = GetAllInterfaces()
-
-      return false if interfaces.empty?
-
-      interfaces.all? { |i| SetLinkUp(i) }
+    # @param [String] name of interface to put down
+    def SetIfaceUp(dev_name)
+      log.info("Setting interface #{dev_name} up")
+      Run("ifup #{dev_name}")
     end
 
-    # Tries to set all available interfaces down
+    # Calls wicked ifdown with the given interface
     #
-    # @return [boolean] false if some of interfaces cannot be set down
-    def SetAllLinksDown
-      interfaces = GetAllInterfaces()
+    # @param [String] name of interface to put down
+    def SetIfaceDown(dev_name)
+      log.info("Setting interface #{dev_name} down")
+      Run("ifdown #{dev_name}")
+    end
 
-      return false if interfaces.empty?
-
-      interfaces.all? { |i| SetLinkDown(i) }
+    # Tries to set the link up of all available interfaces
+    def SetAllLinksUp
+      GetAllInterfaces().each { |i| SetLinkUp(i) }
     end
 
     # Checks if given device has carrier
@@ -766,6 +786,25 @@ module Yast
     # @see #physical_port_id
     def physical_port_id?(dev_name)
       !physical_port_id(dev_name).empty?
+    end
+
+    # Dev port of the given interface from /sys/class/net/$dev_name/dev_port
+    #
+    # @param [String] device name to check
+    # @return [String] dev port or an empty string if not
+    def dev_port(dev_name)
+      SCR.Read(
+        path(".target.string"),
+        "/sys/class/net/#{dev_name}/dev_port"
+      ).to_s.strip
+    end
+
+    # Checks if the given interface exports its dev port via sysfs
+    #
+    # @return [boolean] true if the dev port is not empty
+    # @see #physical_port_id
+    def dev_port?(dev_name)
+      !dev_port(dev_name).empty?
     end
 
     # Checks if device is physically connected to a network
@@ -905,6 +944,31 @@ module Yast
 
       hwstring = hwstrings[hwtype] || _("All Network Devices")
       Confirm.Detection(hwstring, nil)
+    end
+
+    # Returns a generic message informing user that incorrect DHCLIENT_SET_HOSTNAME
+    # setup was detected.
+    #
+    # @param [Array<String>] list of incorrectly configured devices
+    # @return [String] a message stating that incorrect DHCLIENT_SET_HOSTNAME setup was detected
+    def fix_dhclient_msg(cfgs)
+      format(
+        _(
+          "More than one interface asks to control the hostname via DHCP.\n" \
+          "If you keep the current settings, the behavior is non-deterministic.\n\n" \
+          "Involved configuration files:\n" \
+          "%s\n"
+        ),
+        cfgs.join(" ")
+      )
+    end
+
+    # A popup informing user that incorrent DHCLIENT_SET_HOSTNAME was detected
+    #
+    # @param [Array<String>] list of incorrectly configured devices
+    # @return [void]
+    def fix_dhclient_warning(devs)
+      Popup.Warning(fix_dhclient_msg(devs))
     end
   end
 end
