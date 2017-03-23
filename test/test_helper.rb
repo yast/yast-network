@@ -5,10 +5,21 @@ ENV["Y2DIR"] = y2dirs.unshift(srcdir).join(":")
 require "yast"
 require "yast/rspec"
 
+# Ensure the tests runs with english locales
+ENV["LC_ALL"] = "en_US.UTF-8"
+
 require_relative "SCRStub"
 
 RSpec.configure do |c|
+  c.extend Yast::I18n # available in context/describe
+  c.include Yast::I18n
   c.include SCRStub
+end
+
+# stub module to prevent its Import
+# Useful for modules from different yast packages, to avoid build dependencies
+def stub_module(name)
+  Yast.const_set name.to_sym, Class.new { def self.fake_method; end }
 end
 
 # A two level section/key => value store

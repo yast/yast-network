@@ -9,8 +9,10 @@ TESTS = \
   dns_test.rb \
   edit_nic_name_test.rb \
   firewall_stage1_proposal_test.rb \
+  hardware_test.rb \
   host_test.rb \
   ifroute_test.rb \
+  inst_setup_dhcp_test.rb \
   install_inf_convertor_test.rb \
   lan_items_export_test.rb \
   lan_items_helpers_test.rb \

@@ -401,18 +401,19 @@ module Yast
     # @param [Hash] devmap device map
     # @return textual device protocol
     def DeviceProtocol(devmap)
-      devmap = deep_copy(devmap)
-      if Ops.get_string(devmap, "STARTMODE", "") == "managed"
-        # Abbreviation for "The interface is Managed by NetworkManager"
-        return _("Managed")
-      end
-      ip = Ops.get_string(devmap, "BOOTPROTO", "static")
-      ip = if ip.nil? || ip == "" || ip == "static"
-        Ops.get_string(devmap, "IPADDR", "")
+      return _("Not configured") if devmap.nil? || devmap.empty?
+      # Abbreviation for "The interface is Managed by NetworkManager"
+      return _("Managed") if devmap["STARTMODE"] == "managed"
+
+      bootproto = devmap["BOOTPROTO"] || "static"
+
+      if bootproto.empty? || bootproto == "static"
+        return "NONE" if devmap["IPADDR"] == "0.0.0.0"
+
+        devmap["IPADDR"].to_s
       else
-        Builtins.toupper(ip)
+        bootproto.upcase
       end
-      ip
     end
   end
 end

@@ -185,9 +185,6 @@ module Yast
       nil
     end
 
-    # max length of device / interface filename lenght supported by kernel
-    IFACE_LABEL_MAX = 16
-
     # Open a dialog to edit a name-ipaddr-netmask triple.
     # @param id    [Integer]    an id for the table item to be returned
     # @param entry [Yast::Term] an existing entry to be edited, or term(:empty)
@@ -239,7 +236,7 @@ module Yast
         host = Item(Id(id))
         val = UI.QueryWidget(Id(:name), :Value)
 
-        if LanItems.device.size + val.size + 1 > IFACE_LABEL_MAX
+        if !ValidNicName("#{LanItems.device}.#{val}")
           # Popup::Error text
           Popup.Error(_("Label is too long."))
           UI.SetFocus(Id(:name))

@@ -1,12 +1,3 @@
-require "yast"
-require "network/network_autoconfiguration"
+require "network/clients/inst_setup_dhcp"
 
-def main
-  Yast::NetworkAutoconfiguration.instance.configure_dhcp
-
-  # if this is not wrapped in a def, ruby -cw says
-  # warning: possibly useless use of a literal in void context
-  :next
-end
-
-main
+Yast::SetupDhcp.instance.main

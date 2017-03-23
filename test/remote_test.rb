@@ -4,11 +4,11 @@ require_relative "test_helper"
 
 require "yast"
 
+stub_module "Packages"
+
 module Yast
   import "Remote"
   import "Linuxrc"
-  import "Package"
-  import "Packages"
 
   describe Remote do
     before do
@@ -150,7 +150,7 @@ module Yast
     describe ".configure_display_manager" do
       before do
         stub_scr_write
-        stub_scr_read(".etc.xinetd_conf.services")
+        yaml_stub_scr_read(".etc.xinetd_conf.services")
         allow(Package).to receive(:Installed).and_return true
       end
 
@@ -291,9 +291,12 @@ module Yast
       end
 
       context "when remote adminitration is being disabled" do
-        before(:each) do
+        before do
           Remote.Disable()
           allow(Service).to receive(:active?).with("xinetd").and_return(active_xinetd)
+          # do not call reload or stop
+          allow(Service).to receive(:Reload).and_return(true)
+          allow(Service).to receive(:Stop).and_return(true)
         end
 
         context "xinetd is active" do

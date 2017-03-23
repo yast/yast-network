@@ -39,28 +39,17 @@ module Yast
 
       Yast.import "CWM"
       Yast.import "DNS"
-      Yast.import "GetInstArgs"
-      Yast.import "Host"
       Yast.import "Hostname"
       Yast.import "IP"
       Yast.import "Label"
-      Yast.import "Lan"
-      Yast.import "NetworkConfig"
+      Yast.import "LanItems"
       Yast.import "Popup"
       Yast.import "Map"
-      Yast.import "CWMTab"
+      Yast.import "NetworkService"
 
       Yast.include include_target, "network/routines.rb"
       Yast.include include_target, "network/widgets.rb"
       Yast.include include_target, "network/lan/help.rb"
-
-      # If we know that there are no interfaces with DHCP, we can disable
-      # the check boxes.
-      # Each dialog must set this variable.
-      # HostnameDialog does not know yet whether we will have DHCP so it
-      # assumes yes.
-      # DNSMainDialog can query Lan::.
-      @has_dhcp = true
 
       # If there's a process modifying resolv.conf, we warn the user before
       # letting him change things that will be overwritten anyway.
@@ -77,7 +66,6 @@ module Yast
       @widget_descr_dns = {
         "HOSTNAME"        => {
           "widget"            => :textentry,
-          # textentry label
           "label"             => Label.HostName,
           "opt"               => [],
           "help"              => Ops.get_string(@help, "hostname_global", ""),
@@ -95,7 +83,6 @@ module Yast
         },
         "HOSTNAME_GLOBAL" => {
           "widget" => :empty,
-          # #91202
           "init"   => fun_ref(
             method(:initHostnameGlobal),
             "void (string)"
@@ -107,14 +94,12 @@ module Yast
         },
         "DOMAIN"          => {
           "widget"            => :textentry,
-          # textentry label
           "label"             => _("&Domain Name"),
           "opt"               => [],
           # Do nothing (the widget doesnt have notify anyway)
           # In particular do not disable the host and domain name widgets,
           # setting of FQDN should be possible even if DHCP overrides it.
           # N#28427, N#63423.
-          # "handle": nil,
           "valid_chars"       => Hostname.ValidCharsDomain(
           ),
           "validate_type"     => :function_no_popup,
@@ -131,19 +116,22 @@ module Yast
         "DHCP_HOSTNAME"   => {
           "widget"        => :custom,
           "custom_widget" => HBox(
-            CheckBox(Id("DHCP_HOSTNAME"), _("&Change Hostname via DHCP"), true),
+            Label(_("Set Hostname via DHCP")),
+            HSpacing(2),
+            ComboBox(
+              Id("DHCP_HOSTNAME"),
+              "",
+              []
+            ),
             ReplacePoint(Id("dh_host_text"), Empty())
           ),
-          # help
-          "help"          => Ops.get_string(@help, "dhcp_hostname", ""),
-          "init"          => fun_ref(method(:InitDhcpHostname), "void (string)")
+          "init"          => fun_ref(method(:InitDhcpHostname), "void (string)"),
+          "store"         => fun_ref(method(:StoreDhcpHostname), "void (string, map)")
         },
         "WRITE_HOSTNAME"  => {
           "widget" => :checkbox,
-          # checkbox label
           "label"  => _("&Assign Hostname to Loopback IP"),
           "opt"    => [],
-          # help
           "help"   => Ops.get_string(@help, "write_hostname", "")
         },
         "MODIFY_RESOLV"   => {
@@ -173,7 +161,6 @@ module Yast
         },
         "NAMESERVER_1"    => {
           "widget"            => :textentry,
-          # textentry label
           "label"             => _("Name Server &1"),
           "opt"               => [],
           "help"              => "",
@@ -197,7 +184,6 @@ module Yast
         # NAMESERVER_2 and NAMESERVER_3 are cloned in the dialog function
         "SEARCHLIST_S"    => {
           "widget"            => :multi_line_edit,
-          # textentry label
           "label"             => _("Do&main Search"),
           "opt"               => [],
           "help"              => Ops.get_string(@help, "searchlist_s", ""),
@@ -205,7 +191,6 @@ module Yast
             method(:HandleResolverData),
             "symbol (string, map)"
           ),
-          #	"valid_chars": Hostname::ValidCharsFQ, // TODO: whitespace. unused anyway?
           "validate_type"     => :function,
           "validate_function" => fun_ref(
             method(:ValidateSearchList),
@@ -224,9 +209,7 @@ module Yast
         "NAMESERVER_3",
         Ops.get(@widget_descr_dns, "NAMESERVER_1", {})
       )
-      # text entry label
       Ops.set(@widget_descr_dns, ["NAMESERVER_2", "label"], _("Name Server &2"))
-      # text entry label
       Ops.set(@widget_descr_dns, ["NAMESERVER_3", "label"], _("Name Server &3"))
 
       @dns_contents = VBox(
@@ -239,14 +222,14 @@ module Yast
               HSpacing(1),
               "DOMAIN"
             ),
-            # CheckBox label
-            Left("DHCP_HOSTNAME"),
-            Left("WRITE_HOSTNAME")
+            VBox(
+              Left("WRITE_HOSTNAME"),
+              Left("DHCP_HOSTNAME")
+            )
           )
         ),
         VSpacing(0.49),
         Left(HBox("MODIFY_RESOLV", HSpacing(1), "PLAIN_POLICY")),
-        # Frame label
         Frame(
           _("Name Servers and Domain Search List"),
           VBox(
@@ -296,7 +279,6 @@ module Yast
       settings = {
         "HOSTNAME"       => DNS.hostname,
         "DOMAIN"         => DNS.domain,
-        "DHCP_HOSTNAME"  => DNS.dhcp_hostname,
         "WRITE_HOSTNAME" => DNS.write_hostname,
         "PLAIN_POLICY"   => DNS.resolv_conf_policy
       }
@@ -337,7 +319,6 @@ module Yast
       DNS.domain = Ops.get_string(settings, "DOMAIN", "")
       DNS.nameservers = NonEmpty(nameservers)
       DNS.searchlist = NonEmpty(searchlist)
-      DNS.dhcp_hostname = Ops.get_boolean(settings, "DHCP_HOSTNAME", false)
       DNS.write_hostname = Ops.get_boolean(settings, "WRITE_HOSTNAME", true)
       DNS.resolv_conf_policy = settings["PLAIN_POLICY"]
 
@@ -357,8 +338,6 @@ module Yast
 
     # Initialize internal state according current system configuration.
     def InitHnSettings
-      @has_dhcp = Lan.AnyDHCPDevice
-
       @hn_settings = InitSettings()
 
       nil
@@ -431,23 +410,74 @@ module Yast
       nil
     end
 
-    # Init handler for DHCP_HOSTNAME.
-    # enable or disable: is DHCP available?
-    # @param [String] key	the widget receiving the event
-    # @param event	the event being handled
-    # @return nil so that the dialog loops on
+    NONE_LABEL = "no".freeze
+    ANY_LABEL = "any".freeze
+    NO_CHANGE_LABEL = "no_change".freeze
+
+    # Checks whether setting hostname via DHCP is allowed
+    def use_dhcp_hostname?
+      UI.QueryWidget(Id("DHCP_HOSTNAME"), :Value) != NONE_LABEL
+    end
+
+    # Init handler for DHCP_HOSTNAME
     def InitDhcpHostname(_key)
-      UI.ChangeWidget(Id("DHCP_HOSTNAME"), :Enabled, @has_dhcp)
-      if !@has_dhcp
-        UI.ReplaceWidget(Id("dh_host_text"), Label(_("No interface with dhcp")))
-      else
-        # the hostname dialog proposes to update it by DHCP on a laptop (#326102)
-        UI.ChangeWidget(
-          Id("DHCP_HOSTNAME"),
-          :Value,
-          Ops.get_boolean(@hn_settings, "DHCP_HOSTNAME", true)
-        )
+      UI.ChangeWidget(Id("DHCP_HOSTNAME"), :Enabled, has_dhcp? && NetworkService.is_wicked)
+
+      hostname_ifaces = LanItems.find_set_hostname_ifaces
+      selected = DNS.dhcp_hostname ? ANY_LABEL : NONE_LABEL
+      items = []
+
+      if !LanItems.valid_dhcp_cfg?
+        fix_dhclient_warning(LanItems.invalid_dhcp_cfgs)
+
+        selected = NO_CHANGE_LABEL
+        items << Item(Id(NO_CHANGE_LABEL), _("keep current settings"), true)
+      elsif hostname_ifaces.size == 1
+        selected = hostname_ifaces.first
       end
+      # translators: no device selected placeholder
+      items << Item(Id(NONE_LABEL), _("no"), selected == NONE_LABEL)
+      # translators: placeholder for "set hostname via any DHCP aware device"
+      items << Item(Id(ANY_LABEL), _("yes: any"), selected == ANY_LABEL)
+
+      items += LanItems.find_dhcp_ifaces.sort.map do |iface|
+        # translators: label is in form yes: <device name>
+        Item(Id(iface), format(_("yes: %s"), iface), iface == selected)
+      end
+
+      UI.ChangeWidget(Id("DHCP_HOSTNAME"), :Items, items)
+
+      log.info("InitDhcpHostname: preselected item = #{selected}")
+
+      nil
+    end
+
+    # Store handler for DHCP_HOSTNAME
+    def StoreDhcpHostname(_key, _event)
+      return if !UI.QueryWidget(Id("DHCP_HOSTNAME"), :Enabled)
+
+      device = UI.QueryWidget(Id("DHCP_HOSTNAME"), :Value)
+
+      case device
+      when NONE_LABEL
+        LanItems.clear_set_hostname
+
+        DNS.modified = true if DNS.dhcp_hostname
+        DNS.dhcp_hostname = false
+      when ANY_LABEL
+        LanItems.clear_set_hostname
+
+        DNS.modified = true if !DNS.dhcp_hostname
+        DNS.dhcp_hostname = true
+      when NO_CHANGE_LABEL
+        nil
+      else
+        LanItems.conf_set_hostname(device)
+
+        DNS.modified = true if DNS.dhcp_hostname
+        DNS.dhcp_hostname = false
+      end
+
       nil
     end
 
@@ -470,8 +500,7 @@ module Yast
     # @param [Hash] event	the event being handled
     # @return whether valid
     def ValidateHostname(key, _event)
-      dhn = @has_dhcp &&
-        Convert.to_boolean(UI.QueryWidget(Id("DHCP_HOSTNAME"), :Value))
+      dhn = has_dhcp? && use_dhcp_hostname?
       # If the names are set by dhcp, the user may enter backup values
       # here - N#28427. That is, host and domain name are optional then.
       # For static config, they are mandatory.
@@ -486,7 +515,7 @@ module Yast
     # @param [Hash] event	the event being handled
     # @return whether valid
     def ValidateDomain(key, _event)
-      dhn = @has_dhcp && UI.QueryWidget(Id("DHCP_HOSTNAME"), :Value) == true
+      dhn = has_dhcp? && use_dhcp_hostname?
       return true if dhn
 
       value = UI.QueryWidget(Id(key), :Value).to_s
@@ -607,11 +636,7 @@ module Yast
         UI.QueryWidget(Id("MODIFY_RESOLV"), :Value)
       )
 
-      @resolver_modifiable = if UI.QueryWidget(Id("MODIFY_RESOLV"), :Value) == :nomodify
-        false
-      else
-        true
-      end
+      @resolver_modifiable = UI.QueryWidget(Id("MODIFY_RESOLV"), :Value) != :nomodify
 
       initPolicy(key)
 
@@ -661,57 +686,6 @@ module Yast
       Popup.ConfirmAbort(:incomplete)
     end
 
-    def HostnameDialog
-      @has_dhcp = true
-
-      @hn_settings = InitSettings()
-
-      functions = {
-        "init"  => fun_ref(method(:InitHnWidget), "void (string)"),
-        "store" => fun_ref(method(:StoreHnWidget), "void (string, map)"),
-        :abort  => fun_ref(method(:ReallyAbortInst), "boolean ()")
-      }
-      contents = HSquash(
-        # Frame label
-        Frame(
-          _("Hostname and Domain Name"),
-          VBox(
-            HBox("HOSTNAME", HSpacing(1), "DOMAIN"),
-            Left("DHCP_HOSTNAME"),
-            Left("WRITE_HOSTNAME")
-          )
-        )
-      )
-
-      ret = CWM.ShowAndRun(
-        "widget_descr"       => @widget_descr_dns,
-        "contents"           => contents,
-        # dialog caption
-        "caption"            => _("Hostname and Domain Name"),
-        "back_button"        => Label.BackButton,
-        "next_button"        => Label.NextButton,
-        "fallback_functions" => functions,
-        "disable_buttons"    => GetInstArgs.enable_back ? [] : ["back_button"]
-      )
-
-      if ret == :next
-        # Pre-populate resolv.conf search list with current domain name
-        # but only if none exists so far
-        current_domain = Ops.get_string(@hn_settings, "DOMAIN", "")
-
-        # Need to modify hn_settings explicitly as SEARCHLIST_S widget
-        # does not exist in this dialog, thus StoreHnWidget won't do it
-        # #438167
-        if DNS.searchlist == [] && current_domain != "site"
-          Ops.set(@hn_settings, "SEARCHLIST_S", current_domain)
-        end
-
-        StoreSettings(@hn_settings)
-      end
-
-      ret
-    end
-
     # Standalone dialog only - embedded one is handled separately
     # via CWMTab
     def DNSMainDialog(_standalone)
@@ -736,6 +710,13 @@ module Yast
       )
 
       ret
+    end
+
+    # Checks if any interface is configured to use DHCP
+    #
+    # @return [Boolean] true when an interface uses DHCP config
+    def has_dhcp?
+      !LanItems.find_dhcp_ifaces.empty?
     end
   end
 end

@@ -59,7 +59,6 @@ module Yast
       Yast.import "LanItems"
       Yast.import "ModuleLoading"
       Yast.import "Linuxrc"
-      Yast.import "Report"
 
       Yast.include self, "network/complex.rb"
       Yast.include self, "network/runtime.rb"
@@ -84,6 +83,9 @@ module Yast
 
       # list of interface names which were recently assigned as a slave to a bond device
       @bond_autoconf_slaves = []
+
+      # list of interface names which were recently enslaved in a bridge or bond device
+      @autoconf_slaves = []
 
       # Lan::Read (`cache) will do nothing if initialized already.
       @initialized = false
@@ -214,51 +216,27 @@ module Yast
       down
     end
 
+    # Checks local configuration if IPv6 is allowed
+    #
+    # return [Boolean] true when IPv6 is enabled in the system
     def readIPv6
-      @ipv6 = true
+      ipv6 = true
 
-      methods =
-        #         "module" : $[
-        #                 "filelist" : ["ipv6", "50-ipv6.conf"],
-        #                 "filepath" : "/etc/modprobe.d/",
-        #                 "regexp"   : "^[[:space:]]*(install ipv6 /bin/true)"
-        #         ]
-        {
-          "builtin" => {
-            "filelist" => ["sysctl.conf"],
-            "filepath" => "/etc/",
-            "regexp"   => "^[[:space:]]*(net.ipv6.conf.all.disable_ipv6)[[:space:]]*=[[:space:]]*1"
-          }
-        }
+      sysctl_path = "/etc/sysctl.conf"
+      ipv6_regexp = /^[[:space:]]*(net.ipv6.conf.all.disable_ipv6)[[:space:]]*=[[:space:]]*1/
 
-      Builtins.foreach(methods) do |which, method|
-        filelist = Ops.get_list(method, "filelist", [])
-        filepath = Ops.get_string(method, "filepath", "")
-        regexp = Ops.get_string(method, "regexp", "")
-        Builtins.foreach(filelist) do |file|
-          filename = Builtins.sformat("%1/%2", filepath, file)
-          if FileUtils.Exists(filename)
-            Builtins.foreach(
-              Builtins.splitstring(
-                Convert.to_string(SCR.Read(path(".target.string"), filename)),
-                "\n"
-              )
-            ) do |row|
-              if Ops.greater_than(
-                Builtins.size(
-                  Builtins.regexptokenize(String.CutBlanks(row), regexp)
-                ),
-                0
-              )
-                Builtins.y2milestone("IPv6 is disabled by '%1' method.", which)
-                @ipv6 = false
-              end
-            end
-          end
-        end
+      # sysctl.conf is kind of "mandatory" config file, use default
+      if !FileUtils.Exists(sysctl_path)
+        log.error("readIPv6: #{sysctl_path} is missing")
+        return true
       end
 
-      nil
+      lines = (SCR.Read(path(".target.string"), sysctl_path) || []).split("\n")
+      ipv6 = false if lines.any? { |row| row =~ ipv6_regexp }
+
+      log.info("readIPv6: IPv6 is #{ipv6 ? "enabled" : "disabled"}")
+
+      ipv6
     end
 
     # Read all network settings from the SCR
@@ -367,6 +345,7 @@ module Yast
       # Progress step 3/9 - multiple devices may be present, really plural
       ProgressNextStage(_("Reading device configuration...")) if @gui
       LanItems.Read
+
       Builtins.sleep(sl)
 
       return false if Abort()
@@ -374,7 +353,7 @@ module Yast
       ProgressNextStage(_("Reading network configuration...")) if @gui
       NetworkConfig.Read
 
-      readIPv6
+      @ipv6 = readIPv6
 
       Builtins.sleep(sl)
 
@@ -418,6 +397,8 @@ module Yast
 
       return false if Abort()
       @initialized = true
+
+      fix_dhclient_warning(LanItems.invalid_dhcp_cfgs) if @gui && !LanItems.valid_dhcp_cfg?
 
       Progress.Finish if @gui
 
@@ -747,30 +728,21 @@ module Yast
     # proposal (NetworkManager + ipv6)
     # @return [rich text, links]
     def SummaryGeneral
-      status_nm = nil
-      status_v6 = nil
-      status_virt_net = nil
-      href_nm = nil
-      href_v6 = nil
-      href_virt_net = nil
-      link_nm = nil
-      link_v6 = nil
-      link_virt_net = nil
+      # header for network summary list
       header_nm = _("Network Mode")
 
       if NetworkService.is_network_manager
         href_nm = "lan--nm-disable"
         # network mode: the interfaces are controlled by the user
         status_nm = _("Interfaces controlled by NetworkManager")
-        # disable NetworkManager applet
-        link_nm = Hyperlink(href_nm, _("Disable NetworkManager"))
+        # switch from network manager to wicked
+        link_nm = Hyperlink(href_nm, _("switch to Wicked"))
       else
         href_nm = "lan--nm-enable"
         # network mode
-        status_nm = _("Traditional network setup with NetControl - ifup")
-        # enable NetworkManager applet
-        # for virtual network proposal (bridged) don't show hyperlink to enable networkmanager
-        link_nm = Hyperlink(href_nm, _("Enable NetworkManager"))
+        status_nm = _("Traditional network setup with Wicked")
+        # switch from wicked to network manager
+        link_nm = Hyperlink(href_nm, _("switch to NetworkManager"))
       end
 
       if @ipv6
@@ -778,13 +750,13 @@ module Yast
         # ipv6 support is enabled
         status_v6 = _("Support for IPv6 protocol is enabled")
         # disable ipv6 support
-        link_v6 = Hyperlink(href_v6, _("Disable IPv6"))
+        link_v6 = Hyperlink(href_v6, _("disable"))
       else
         href_v6 = "ipv6-enable"
         # ipv6 support is disabled
         status_v6 = _("Support for IPv6 protocol is disabled")
         # enable ipv6 support
-        link_v6 = Hyperlink(href_v6, _("Enable IPv6"))
+        link_v6 = Hyperlink(href_v6, _("enable"))
       end
       descr = Builtins.sformat(
         "<ul><li>%1: %2 (%3)</li></ul> \n\t\t\t     <ul><li>%4 (%5)</li></ul>",
@@ -794,16 +766,7 @@ module Yast
         status_v6,
         link_v6
       )
-      if !link_virt_net.nil?
-        descr = Builtins.sformat(
-          "%1\n\t\t\t\t\t\t<ul><li>%2 (%3)</li></ul>",
-          descr,
-          status_virt_net,
-          link_virt_net
-        )
-      end
       links = [href_nm, href_v6]
-      links = Builtins.add(links, href_virt_net) if !href_virt_net.nil?
       [descr, links]
     end
 
@@ -990,11 +953,16 @@ module Yast
             configure_as_bridge_port(ifcfg)
 
             Ops.set(LanItems.Items, [current, "ifcfg"], new_ifcfg)
-            LanItems.SetModified
             LanItems.force_restart = true
             Builtins.y2internal("List %1", NetworkInterfaces.List(""))
             # re-read configuration to see new items in UI
             LanItems.Read
+
+            # note: LanItems.Read resets modification flag
+            # the Read is used as a trick how to update LanItems' internal
+            # cache according NetworkInterfaces' one. As NetworkInterfaces'
+            # cache was edited directly, LanItems is not aware of changes.
+            LanItems.SetModified
           end
         else
           Builtins.y2warning("empty ifcfg")
@@ -1004,29 +972,6 @@ module Yast
       nil
     end
 
-    # Create a configuration for autoyast
-    # @return true if something was proposed
-    # Check if any device  is configured with DHCP.
-    # @return true if any DHCP device is configured
-    def AnyDHCPDevice
-      # return true if there is at least one device with dhcp4, dhcp6, dhcp or dhcp+autoip
-      Ops.greater_than(
-        Builtins.size(
-          Builtins.union(
-            Builtins.union(
-              NetworkInterfaces.Locate("BOOTPROTO", "dhcp4"),
-              NetworkInterfaces.Locate("BOOTPROTO", "dhcp6")
-            ),
-            Builtins.union(
-              NetworkInterfaces.Locate("BOOTPROTO", "dhcp"),
-              NetworkInterfaces.Locate("BOOTPROTO", "dhcp+autoip")
-            )
-          )
-        ),
-        0
-      )
-    end
-
     # @return [Array] of packages needed when writing the config
     def Packages
       # various device types require some special packages ...
@@ -1034,7 +979,6 @@ module Yast
         # for wlan require iw instead of wireless-tools (bnc#539669)
         "wlan" => "iw",
         "vlan" => "vlan",
-        "br"   => "bridge-utils",
         "tun"  => "tunctl",
         "tap"  => "tunctl"
       }
@@ -1093,6 +1037,7 @@ module Yast
     publish variable: :ipv6, type: "boolean"
     publish variable: :AbortFunction, type: "block <boolean>"
     publish variable: :bond_autoconf_slaves, type: "list <string>"
+    publish variable: :autoconf_slaves, type: "list <string>"
     publish function: :Modified, type: "boolean ()"
     publish function: :isAnyInterfaceDown, type: "boolean ()"
     publish function: :Read, type: "boolean (symbol)"
@@ -1115,17 +1060,32 @@ module Yast
   private
 
     def activate_network_service
-      if LanItems.force_restart
+      # If the second installation stage has been called by yast.ssh via
+      # ssh, we should not restart network because systemctl
+      # hangs in that case. (bnc#885640)
+      action = :reload_restart   if Stage.normal || !Linuxrc.usessh
+      action = :force_restart    if LanItems.force_restart
+      action = :remote_installer if Stage.initial && (Linuxrc.usessh || Linuxrc.vnc)
+
+      case action
+      when :force_restart
         log.info("Network service activation forced")
         NetworkService.Restart
-      else
-        log.info "Attempting to reload network service, normal stage " \
-          "#{Stage.normal}, ssh: #{Linuxrc.usessh}"
 
-        # If the second installation stage has been called by yast.ssh via
-        # ssh, we should not restart network cause systemctl
-        # hangs in that case. (bnc#885640)
+      when :reload_restart
+        log.info("Attempting to reload network service, normal stage #{Stage.normal}, ssh: #{Linuxrc.usessh}")
+
         NetworkService.ReloadOrRestart if Stage.normal || !Linuxrc.usessh
+
+      when :remote_installer
+        ifaces = LanItems.getNetworkInterfaces
+
+        # last instance handling "special" cases like ssh installation
+        # FIXME: most probably not everything will be set properly
+        log.info("Running in ssh/vnc installer -> just setting links up")
+        log.info("Available interfaces: #{ifaces}")
+
+        LanItems.reload_config(ifaces)
       end
     end
   end

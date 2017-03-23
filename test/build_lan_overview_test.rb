@@ -64,3 +64,17 @@ describe "LanItemsClass#BuildLanOverview" do
     expect(overview).to eql german_translation_overview
   end
 end
+
+describe "LanItemsClass#ip_overview" do
+  # smoke test for bnc#1013684
+  it "do not crash when devmap for staticaly configured device do not contain PREFIXLEN" do
+    devmap = {
+      "IPADDR"    => "1.1.1.1",
+      "NETMASK"   => "255.255.0.0",
+      "BOOTPROTO" => "static",
+      "STARTMODE" => "auto"
+    }
+
+    expect { Yast::LanItems.ip_overview(devmap) }.not_to raise_error
+  end
+end

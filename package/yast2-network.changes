@@ -1,4 +1,242 @@
 -------------------------------------------------------------------
+Tue Mar 21 09:24:29 UTC 2017 - jreidinger@suse.com
+
+- adapt to new version of cfa (new cfa needed for bsc#1023204)
+
+-------------------------------------------------------------------
+Wed Feb 22 10:49:17 UTC 2017 - mfilka@suse.com
+
+- bnc#1020074
+  - when incomplete udev rule is read from the AY profile, it is
+    ignored instead of raising an internal error.
+
+-------------------------------------------------------------------
+Thu Jan 19 15:22:03 UTC 2017 - kanderssen@suse.com
+
+- Added network proposal using the new summary api and the new
+  proposal_client flag 'label_proposal' for CASP special formmating
+  (fate#322328).
+
+-------------------------------------------------------------------
+Wed Jan 18 07:54:01 UTC 2017 - kanderssen@suse.com
+
+- Added summaries for the configured interfaces, particulary an one
+  line summary. (fate#322328)
+
+-------------------------------------------------------------------
+Wed Jan 11 00:56:09 UTC 2017 - kanderssen@suse.com
+
+- Fixed the assignment of udev rules to Lan Items when a previous
+  one does not exist (bsc#996879).
+
+-------------------------------------------------------------------
+Fri Dec  9 09:19:16 UTC 2016 - mfilka@suse.com
+
+- bnc#1013605
+  - Enable DHCP_HOSTNAME listbox only when wicked service is used.
+  - Fixed displaying the "keep current settings" option.
+
+-------------------------------------------------------------------
+Wed Dec  7 07:43:45 UTC 2016 - mfilka@suse.com
+
+- bnc#1013684
+  - do not crash with internal error when setting static setup for
+    newly added device
+
+-------------------------------------------------------------------
+Wed Nov 30 12:11:44 UTC 2016 - kanderssen@suse.com
+
+- Linuxrc does not export some variables anymore and handles the
+  configuration of network directly, for that reason, some methods
+  or reponsibilities of InstallInfConvertor class are not needed
+  being removed.
+
+-------------------------------------------------------------------
+Wed Nov 30 09:04:58 UTC 2016 - mfilka@suse.com
+
+- bnc#1012764
+  - made rpm architecture independent (noarch)
+
+-------------------------------------------------------------------
+Tue Nov 29 12:41:40 UTC 2016 - mfilka@suse.com
+
+- bnc#1012581
+  - do not crash with internal error stating undefined method when
+    switching to "Hostname / DNS" tab when the system contains
+    incorrect configuration of DHCLIENT_SET_HOSTNAME
+
+-------------------------------------------------------------------
+Mon Nov 28 21:15:00 UTC 2016 - mfilka@suse.com
+
+- bnc#1009931
+  - update item's overview with freshly edited values
+
+-------------------------------------------------------------------
+Wed Nov 23 09:18:33 UTC 2016 - mfilka@suse.com
+
+- bsc#984890
+  - new implementation of setting hostname via DHCP. User is
+    allowed to set hostname via particular interface or set a
+    reasonable default value for all interfaces.
+- bsc#1007172 (kanderssen@suse.com)
+  - When an interface is enslaved in a bond the udev rule is modified
+    using the bus_id instead of the mac address but some multiport
+    cards could use the same bus_id. In such cases also the dev_port
+    is needed. Taking this in account the dev_port will be added
+    always when a udev rule based on bus_id is written.
+
+-------------------------------------------------------------------
+Tue Nov 22 12:30:06 UTC 2016 - igonzalezsosa@suse.com
+
+- Do not crash when removing an entry from the /etc/hosts file
+  (bsc#1010994)
+
+-------------------------------------------------------------------
+Tue Nov 22 11:34:08 UTC 2016 - jreidinger@suse.com
+
+- do not crash when on command line is passed non-number id
+  (bsc#1003908)
+
+-------------------------------------------------------------------
+Thu Oct 27 11:55:10 UTC 2016 - jreidinger@suse.com
+
+- Make network summary consistent with other summaries
+  (bsc#745940)
+
+-------------------------------------------------------------------
+Tue Oct 25 13:25:53 UTC 2016 - mvidner@suse.com
+
+- Fixed a hardcoded interface name in a CLI test (bsc#1006799)
+
+-------------------------------------------------------------------
+Mon Oct 17 08:13:38 UTC 2016 - kanderssen@suse.com
+
+- Bridge handling has been improved (bsc#962824).
+  - "NONE" is shown instead of 0.0.0.0 for old bridge configuration
+  - The bridge master is shown in the enslaved interface.
+  - The interfaces overview is updated after a bridge is modified
+  - The interfaces enlsaved are not lost when save in a different
+    tab.
+
+-------------------------------------------------------------------
+Mon Oct 17 07:01:24 UTC 2016 - jreidinger@suse.com
+
+- fix crash when dummy ip is not needed
+  (found during testing of bsc#877047)
+
+-------------------------------------------------------------------
+Fri Oct 14 14:08:31 UTC 2016 - jreidinger@suse.com
+
+- optimize loading /etc/hosts if there is a lot of entries
+  (bsc#877047)
+
+-------------------------------------------------------------------
+Mon Oct 10 09:11:29 UTC 2016 - mfilka@suse.com
+
+- do not duplicate work of network service at the beginning of
+  AutoYaST's second stage - not loading modules and so on.
+
+-------------------------------------------------------------------
+Fri Oct  7 15:16:11 UTC 2016 - kanderssen@suse.com
+
+- If an interface is not configured yet then just set the interface
+  link, the backend should handle at least the up event.
+  (bsc#991694)
+
+-------------------------------------------------------------------
+Fri Oct  7 15:12:05 UTC 2016 - ancor@suse.com
+
+- Extra space in the remote administration dialog (bsc#988904)
+
+-------------------------------------------------------------------
+Thu Oct  6 09:22:25 UTC 2016 - mfilka@suse.com
+
+- Use full interface up / down instead of setting just link
+  up / down to allow proper update of interface's configuration.
+  (bsc#991694)
+
+-------------------------------------------------------------------
+Wed Oct  5 13:49:08 UTC 2016 - ancor@suse.com
+
+- If WIFI is configured during installation, make sure the packages
+  required for WIFI to work are installed in the resulting system
+  (bsc#1002700)
+
+-------------------------------------------------------------------
+Wed Sep 21 09:57:30 UTC 2016 - jreidinger@suse.com
+
+- reduce rpm build time (bsc#999203)
+
+-------------------------------------------------------------------
+Wed Sep  7 11:23:16 UTC 2016 - mfilka@suse.com
+
+- bnc#993587
+  - extended fix from 3.1.168 to cover also virtual interfaces
+
+-------------------------------------------------------------------
+Sat Sep  3 20:02:55 UTC 2016 - mfilka@suse.com
+
+- bnc#988157
+  - disable DHCP autoconfiguration in installer when an interface
+    configuration is provided via linuxrc
+
+-------------------------------------------------------------------
+Wed Aug 24 10:54:55 UTC 2016 - mfilka@suse.com
+
+- bnc#993587
+  - installer is able to newly configured set devices up in case of
+    ssh/vnc installation
+
+-------------------------------------------------------------------
+Fri Aug 19 08:59:14 UTC 2016 - mfilka@suse.com
+
+- bnc#991382 
+  - init and store IFPLUGD_PRIORITY properly
+
+-------------------------------------------------------------------
+Thu Aug 18 08:52:41 UTC 2016 - mfilka@suse.com
+
+- bnc#991486
+  - extended fix for this bug from 3.1.163. Do not report invalid
+    names incorrectly
+
+-------------------------------------------------------------------
+Thu Aug 11 19:02:36 UTC 2016 - mfilka@suse.com
+
+- bnc#985905 
+  - do not limit number of bonding slaves to 10
+
+-------------------------------------------------------------------
+Thu Aug 11 08:23:00 UTC 2016 - mfilka@suse.com
+
+- bnc#988786
+  - Create bridge when proposing configuration for VM host.
+
+-------------------------------------------------------------------
+Wed Aug 10 18:07:12 UTC 2016 - ancor@suse.com
+
+- Improved parsing of vlan ids that are longer than one character.
+
+-------------------------------------------------------------------
+Wed Aug 10 16:07:26 UTC 2016 - mfilka@suse.com
+
+- bnc#991486
+  - Do not allow creating device with oversized configuration name.
+
+-------------------------------------------------------------------
+Tue Aug  9 12:29:35 UTC 2016 - schubi@suse.de
+
+- Added entry "s390-devices" to the AutoYaST schema file.
+  Bug similar bnc#954412.
+
+-------------------------------------------------------------------
+Tue Aug  9 12:25:01 UTC 2016 - mfilka@suse.com
+
+- bnc#991920
+  - do not crash with internal error when renaming unconfigured
+    device
+
+-------------------------------------------------------------------
 Tue Aug  9 11:18:28 UTC 2016 - ancor@suse.com
 
 - storage-ng: commented remaining code relying on the old

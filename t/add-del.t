@@ -17,12 +17,13 @@ tapfail() {
 
 YAST=/usr/sbin/yast
 
-echo "# assume and check that eth0 exists, as a base for the vlan"
-ip addr show dev eth0
-echo "ok 1 eth0: exists already"
+echo "# find the base device for the vlan"
+BASEDEVICE=$(ip -o addr show scope global | head -n1 | cut -d' ' -f2)
+ip addr show dev $BASEDEVICE
+echo "ok 1 $BASEDEVICE: found"
 
 echo "# add a (virtual) interface"
-$YAST lan add name=vlan50 ethdevice=eth0 bootproto=dhcp || tapfail
+$YAST lan add name=vlan50 ethdevice=$BASEDEVICE bootproto=dhcp || tapfail
 echo "ok 2 vlan50: added"
 
 # check it has worked
