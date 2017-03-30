@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Mar 30 13:52:36 WEST 2017 - knut.anderssen@suse.com
+
+- Fix typo in edit_nic_name dialog using bus_id instead of busid
+  (bsc#1031120)
+- 3.1.140.11
+
+-------------------------------------------------------------------
 Tue Dec 20 07:14:38 UTC 2016 - kanderssen@suse.com
 
 - Improved parsing of vlan ids that are longer than one character.
