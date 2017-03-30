@@ -103,7 +103,7 @@ module Yast
                 ),
                 Left(
                   RadioButton(
-                    Id(:busid),
+                    Id(:bus_id),
                     _("BusID: %s") % @bus_id
                   )
                 )
@@ -122,7 +122,7 @@ module Yast
       when MAC_UDEV_ATTR
         UI.ChangeWidget(Id(:udev_type), :CurrentButton, :mac)
       when BUSID_UDEV_ATTR
-        UI.ChangeWidget(Id(:udev_type), :CurrentButton, :busid)
+        UI.ChangeWidget(Id(:udev_type), :CurrentButton, :bus_id)
       else
         Builtins.y2error("Unknown udev rule.")
       end
