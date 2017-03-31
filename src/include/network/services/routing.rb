@@ -146,7 +146,7 @@ module Yast
     # prefix length. If prefix length is used it has to start with '/'.
     # For IPv6 network, only prefix length is allowed.
     #
-    # param [string] netmask or /<prefix length>
+    # @param [String] netmask or /<prefix length>
     def valid_netmask?(netmask)
       return false if netmask.nil? || netmask.empty?
       return true if Netmask.Check4(netmask)
@@ -438,14 +438,15 @@ module Yast
       false
     end
 
-    # Mangles route definition for storing in routes file
+    # Converts route definition for storing in routes file
     #
     # Basically netmask field is obsolete, so it converts
     # the record to use CIDR notation if netmask is defined.
     #
-    # For details see "man routes".
+    # @param route [Hash] see {RoutingClass#Routes}
+    # @return [Hash] where netmask is "-" (CIDR flavor)
     def convert_route_conf(route)
-      return route if route["netmask"].empty? || route["netmask"] == "-"
+      return route if route["netmask"] == "-"
 
       dest = route["destination"]
       netmask = route["netmask"]

@@ -38,6 +38,26 @@ module Yast
 
     include Logger
 
+    # @attribute Routes
+    # Entries of a routes(5) style routing table.
+    #
+    # An array of hashes whose keys are
+    #
+    # - "destination"
+    #     May be "default", "10.20.0.0/16" (then netmask is "-")
+    #     or "10.20.0.0" (then netmask must be a quad)
+    # - "gateway"
+    # - "netmask"
+    # - "device"
+    # - "extrapara"
+    #
+    # but the values depend on which flavor of RoutingHash this is:
+    # - the quad flavor: netmask has the form "255.255.0.0"
+    # - the CIDR flavor: netmask must be "-" (and destination is 1.1.1.1/16)
+    # - the slash flavor (only for the UI): netmask has the form "/16"
+    #
+    # @return [Array<Hash>] routing table entries
+
     # @Orig_Routes [Array]        array of hashes. Caches known routes
     #
     # @Orig_Forward_v4 [Boolean]  current status of ipv4 forwarding
@@ -161,7 +181,7 @@ module Yast
 
     # Configures system for IPv4 forwarding
     #
-    # @param [Boolean] true when forwarding should be enabled
+    # @param forward_ipv4 [Boolean] true when forwarding should be enabled
     def write_ipv4_forwarding(forward_ipv4)
       sysctl_val = forward_ipv4 ? "1" : "0"
 
@@ -182,7 +202,7 @@ module Yast
 
     # Configures system for IPv6 forwarding
     #
-    # @param [Boolean] true when forwarding should be enabled
+    # @param forward_ipv6 [Boolean] true when forwarding should be enabled
     def write_ipv6_forwarding(forward_ipv6)
       sysctl_val = forward_ipv6 ? "1" : "0"
 
@@ -211,12 +231,11 @@ module Yast
     # "gateway", "netmask", "device", "extrapara"
     #
     # Currently it converts "destination" in CIDR format (<ip>/<prefix_len>)
-    # and keeps just <ip> part in "destination" and puts "<prefix_len>" into
+    # and keeps just <ip> part in "destination" and puts "/<prefix_len>" into
     # "netmask"
     #
-    # @param <List> list of hashes which keeps routes configuration
-    #
-    # @return list of converted hashes
+    # @param routes [Array<Hash>] in quad or CIDR flavors (see {#Routes})
+    # @return [Array<Hash>] in quad or slash flavor
     def normalize_routes(routes)
       return routes if routes.nil? || routes.empty?
 
@@ -468,7 +487,7 @@ module Yast
     end
 
     # Create routing text summary
-    # @returns [String] summary text
+    # @return [String] summary text
     def Summary
       return "" if @Routes.nil? || @Routes.empty?
 
