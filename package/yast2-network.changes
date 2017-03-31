@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Mar 30 13:52:36 WEST 2017 - knut.anderssen@suse.com
+
+- Fix typo in edit_nic_name dialog using bus_id instead of busid
+  (bsc#1031120)
+- 3.1.176
+
+-------------------------------------------------------------------
 Wed Feb 22 10:49:17 UTC 2017 - mfilka@suse.com
 
 - bnc#1020074
