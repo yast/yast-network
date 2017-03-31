@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Mar 30 13:52:36 WEST 2017 - knut.anderssen@suse.com
+
+- Fix typo in edit_nic_name dialog using bus_id instead of busid
+  (bsc#1031120)
+- 3.2.22
+
+-------------------------------------------------------------------
 Tue Mar 21 09:24:29 UTC 2017 - jreidinger@suse.com
 
 - adapt to new version of cfa (new cfa needed for bsc#1023204)
