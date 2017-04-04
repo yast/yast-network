@@ -17,7 +17,7 @@
 
 
 Name:           yast2-network
-Version:        3.2.20
+Version:        3.2.22
 Release:        0
 BuildArch:      noarch
 
@@ -48,9 +48,9 @@ BuildRequires:  yast2-storage >= 2.21.11
 Requires:       yast2-storage >= 2.21.11
 # Packages::vnc_packages
 Requires:       yast2-packager >= 3.1.47
-# cfa for parsing hosts
-BuildRequires:  rubygem(%rb_default_ruby_abi:cfa)
-Requires:       rubygem(%rb_default_ruby_abi:cfa)
+# cfa for parsing hosts, AugeasTree#unique_id
+BuildRequires:  rubygem(%rb_default_ruby_abi:cfa) >= 0.6.0
+Requires:       rubygem(%rb_default_ruby_abi:cfa) >= 0.6.0
 # lenses are needed to use cfa
 BuildRequires:  augeas-lenses
 Requires:       augeas-lenses

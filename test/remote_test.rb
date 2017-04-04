@@ -291,9 +291,12 @@ module Yast
       end
 
       context "when remote adminitration is being disabled" do
-        before(:each) do
+        before do
           Remote.Disable()
           allow(Service).to receive(:active?).with("xinetd").and_return(active_xinetd)
+          # do not call reload or stop
+          allow(Service).to receive(:Reload).and_return(true)
+          allow(Service).to receive(:Stop).and_return(true)
         end
 
         context "xinetd is active" do
