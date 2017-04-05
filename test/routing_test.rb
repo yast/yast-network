@@ -228,7 +228,10 @@ describe Yast::Routing do
       { ip_forward_v4: "1", ip_forward_v6: "0" }
     ].freeze
 
-    MOCKED_ROUTES = [{ "1" => "r1" }, { "2" => "r2" }].freeze
+    MOCKED_ROUTES = [
+      { "destination" => "r1" },
+      { "destination" => "r2" }
+    ].freeze
 
     CONFIGS_OS.each do |config|
       ipv4 = config[:ip_forward_v4]
@@ -263,6 +266,32 @@ describe Yast::Routing do
           end
         end
       end
+    end
+  end
+
+  describe "#normalize_routes" do
+    it "puts prefix length into netmask field when destination is in CIDR format" do
+      input_routes = [
+        {
+          "destination" => "1.1.1.1/24"
+        }
+      ]
+
+      result = Yast::Routing.normalize_routes(input_routes)
+
+      expect(result.first["destination"]).to eql "1.1.1.1"
+      expect(result.first["netmask"]).to eql "/24"
+    end
+
+    it "does nothing when netmask is used" do
+      input_routes = [
+        {
+          "destination" => "1.1.1.1",
+          "netmask"     => "255.0.0.0"
+        }
+      ]
+
+      expect(Yast::Routing.normalize_routes(input_routes)).to eql input_routes
     end
   end
 end

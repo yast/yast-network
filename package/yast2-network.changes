@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Mon Apr  3 08:27:26 UTC 2017 - mfilka@suse.com
+
+- bnc#927629
+  - improved adding routes. Accepts netmask or prefix length.
+  - fixed column name in add route dialog from Genmask to more
+    common Netmask
+- 3.2.23
+
+-------------------------------------------------------------------
 Thu Mar 30 13:52:36 WEST 2017 - knut.anderssen@suse.com
 
 - Fix typo in edit_nic_name dialog using bus_id instead of busid
