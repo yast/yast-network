@@ -165,12 +165,7 @@ module Yast
 
     # Reads current status for both IPv4 and IPv6 forwarding
     def ReadIPForwarding
-      @Forward_v4 = if SuSEFirewall.IsEnabled
-        SuSEFirewall.GetSupportRoute
-      else
-        SCR.Read(path(SYSCTL_IPV4_PATH)) == "1"
-      end
-
+      @Forward_v4 = SCR.Read(path(SYSCTL_IPV4_PATH)) == "1"
       @Forward_v6 = SCR.Read(path(SYSCTL_IPV6_PATH)) == "1"
 
       log.info("Forward_v4=#{@Forward_v4}")
@@ -185,15 +180,13 @@ module Yast
     def write_ipv4_forwarding(forward_ipv4)
       sysctl_val = forward_ipv4 ? "1" : "0"
 
-      if SuSEFirewall.IsEnabled
-        SuSEFirewall.SetSupportRoute(forward_ipv4)
-      else
-        SCR.Write(
-          path(SYSCTL_IPV4_PATH),
-          sysctl_val
-        )
-        SCR.Write(path(SYSCTL_AGENT_PATH), nil)
-      end
+      # No longer configure IPv4 forwarding via SuSEfirewall, but do it
+      # directly like with IPv6 (see bnc#572202)
+      SCR.Write(
+        path(SYSCTL_IPV4_PATH),
+        sysctl_val
+      )
+      SCR.Write(path(SYSCTL_AGENT_PATH), nil)
 
       SCR.Execute(path(".target.bash"), "sysctl -w #{IPV4_SYSCTL}=#{sysctl_val}")
 

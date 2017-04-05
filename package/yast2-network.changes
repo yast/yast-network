@@ -1,3 +1,13 @@
+Tue Apr  4 14:27:03 CEST 2017 - matthias.gerstner@suse.de
+
+- harmonized configuration of IPv4 and IPv6 forwarding. IPv4
+  forwarding was configured implicitly via SuSEfirewall2, if enabled. IPv6 was
+  enabled explicitly via sysctl. Now both cases are configured via sysctl.
+  SuSEfirewall will continue to function if the user configures FW_ROUTE=yes.
+  In the future SuSEfirewall2 will alter ip_forwarding only if it's not been
+  already enabled via yast/sysctl. See bsc#572202.
+- 3.2.23
+
 -------------------------------------------------------------------
 Mon Apr  3 08:27:26 UTC 2017 - mfilka@suse.com
 
