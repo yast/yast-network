@@ -380,7 +380,7 @@ describe "LanClass#ProposeVirtualized" do
       Yast::Lan.ProposeVirtualized
     end
 
-    it "refresh lan items with the new interfaces" do
+    it "refreshes lan items with the new interfaces" do
       expect(Yast::Lan).to receive(:configure_as_bridge!).with("eth0", "br1").and_return(true)
       expect(Yast::Lan).to receive(:configure_as_bridge_port).with("eth0")
       expect(Yast::Lan).to receive(:refresh_lan_items)
