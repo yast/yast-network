@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Apr  4 11:48:24 WEST 2017 - knut.anderssen@suse.com
+
+- bsc#956755
+  - Don't propose wlan interfaces for the virtualization bridge.
+- 3.2.24
+
+-------------------------------------------------------------------
 Mon Apr  3 08:27:26 UTC 2017 - mfilka@suse.com
 
 - bnc#927629
