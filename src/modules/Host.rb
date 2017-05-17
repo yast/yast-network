@@ -222,12 +222,11 @@ module Yast
     # @param String ip to assign
     # @return true if success
     def Update(oldhn, newhn, ip)
-      Builtins.y2milestone(
-        "Updating /etc/hosts: %1 -> %2: %3",
-        oldhn,
-        newhn,
-        ip
-      )
+      raise ArgumentError, "IP cannot be nil" if ip.nil?
+      raise ArgumentError, "Nonempty IP expected" if ip.empty?
+
+      log.info("Updating /etc/hosts: #{oldhn} -> #{newhn}: #{ip}")
+
       @modified = true
 
       # Remove old hostname from hosts
