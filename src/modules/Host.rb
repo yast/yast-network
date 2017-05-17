@@ -292,10 +292,11 @@ module Yast
     # make sure /etc/hosts resolves it to our, bnc#664929
     def ResolveHostnameToStaticIPs
       static_ips = StaticIPs()
-      if Ops.greater_than(Builtins.size(static_ips), 0)
-        fqhostname = Hostname.MergeFQ(DNS.hostname, DNS.domain)
-        Update(fqhostname, fqhostname, static_ips)
-      end
+      return if static_ips.empty?
+
+      fqhostname = Hostname.MergeFQ(DNS.hostname, DNS.domain)
+
+      static_ips.reject(&:empty?).each { |sip| Update(fqhostname, fqhostname, sip) }
 
       nil
     end
