@@ -227,4 +227,25 @@ describe Yast::Host do
 
     end
   end
+
+  describe ".ResolveHostnameToStaticIPs" do
+    let(:static_ips) { ["1.1.1.1", "2.2.2.2"] }
+    let(:fqhostname) { "sles.suse.de" }
+
+    before(:each) do
+      allow(Yast::Host)
+        .to receive(:StaticIPs)
+        .and_return(static_ips)
+      allow(Yast::Hostname).to receive(:MergeFQ).and_return(fqhostname)
+    end
+
+   it "do not send array of IPs into .Update" do
+      expect(Yast::Host)
+        .not_to receive(:Update)
+        .with(instance_of(String), instance_of(String), instance_of(Array))
+
+      Yast::Host.ResolveHostnameToStaticIPs
+    end
+  end
+
 end
