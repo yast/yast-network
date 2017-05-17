@@ -260,4 +260,49 @@ describe Yast::Host do
     end
   end
 
+  describe ".StaticIPs" do
+    before(:each) do
+      devs = {
+        "lo"   => {
+          "BOOTPROTO" => "static",
+          "IPADDR"    => "127.0.0.1"
+        },
+        "eth0" => { "BOOTPROTO" => "static" },
+        "eth1" => { "BOOTPROTO" => "dhcp" },
+        "eth2" => {
+          "BOOTPROTO" => "static",
+          "IPADDR" => "1.1.1.1"
+        },
+        "eth3" => {
+          "BOOTPROTO" => "static",
+          "IPADDR" => ""
+        }
+      }
+
+      # do not touch system
+      allow(Yast::NetworkInterfaces)
+        .to receive(:Read)
+
+      devs.each do |dev, conf|
+        allow(Yast::NetworkInterfaces)
+          .to receive(:Locate)
+          .and_return(devs.keys)
+        allow(Yast::NetworkInterfaces)
+          .to receive(:GetValue)
+          .with(dev, "IPADDR")
+          .and_return(conf["IPADDR"])
+      end
+    end
+
+    it "do not return invalid items for devices with static configuration but invalid IP" do
+      expect(Yast::Host.StaticIPs).not_to include ""
+      expect(Yast::Host.StaticIPs).not_to include nil
+      expect(Yast::Host.StaticIPs).not_to include "127.0.0.1"
+    end
+
+    it "returns all devices with valid setup" do
+      expect(Yast::Host.StaticIPs).to include "1.1.1.1"
+    end
+  end
+
 end
