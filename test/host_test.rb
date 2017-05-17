@@ -271,11 +271,11 @@ describe Yast::Host do
         "eth1" => { "BOOTPROTO" => "dhcp" },
         "eth2" => {
           "BOOTPROTO" => "static",
-          "IPADDR" => "1.1.1.1"
+          "IPADDR"    => "1.1.1.1"
         },
         "eth3" => {
           "BOOTPROTO" => "static",
-          "IPADDR" => ""
+          "IPADDR"    => ""
         }
       }
 
