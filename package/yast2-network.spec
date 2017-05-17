@@ -17,7 +17,7 @@
 
 
 Name:           yast2-network
-Version:        3.2.24
+Version:        3.2.25
 Release:        0
 BuildArch:      noarch
 

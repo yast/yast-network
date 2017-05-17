@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue May 16 07:45:01 UTC 2017 - knut.anderssen@suse.com
+
+- bsc#1035908
+  - Moved inst_install_inf client to yast2-installation.
+- 3.2.25
+
+-------------------------------------------------------------------
 Tue Apr  4 11:48:24 WEST 2017 - knut.anderssen@suse.com
 
 - bsc#956755
