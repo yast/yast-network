@@ -279,12 +279,14 @@ module Yast
     def StaticIPs
       NetworkInterfaces.Read
       devs = NetworkInterfaces.Locate("BOOTPROTO", "static")
-      devs = Builtins.filter(devs) { |dev| dev != "lo" }
-      ips = Builtins.maplist(devs) do |dev|
-        NetworkInterfaces.GetValue(dev, "IPADDR")
-      end
-      Builtins.y2milestone("ifcfgs: %1 IPs: %2", devs, ips)
-      deep_copy(ips)
+
+      devs.reject! { |dev| dev == "lo" }
+      static_ips = devs.map { |dev| NetworkInterfaces.GetValue(dev, "IPADDR") }
+      static_ips.reject! { |ip| ip.nil? || ip.empty? }
+
+      log.info("StaticIPs: found in ifcfgs: #{devs} IPs list: #{static_ips}")
+
+      static_ips
     end
 
     # if we have a static address,
