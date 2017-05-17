@@ -239,12 +239,24 @@ describe Yast::Host do
       allow(Yast::Hostname).to receive(:MergeFQ).and_return(fqhostname)
     end
 
-   it "do not send array of IPs into .Update" do
+    it "do not send array of IPs into .Update" do # bnc1038521
       expect(Yast::Host)
         .not_to receive(:Update)
         .with(instance_of(String), instance_of(String), instance_of(Array))
 
       Yast::Host.ResolveHostnameToStaticIPs
+    end
+  end
+
+  describe ".Update" do
+    it "raises an error when empty ip is provided" do
+      expect { Yast::Host.Update("oldhostname", "newhostname", "") }
+        .to raise_error(ArgumentError, instance_of(String))
+      end
+
+    it "raises an error when nil ip is provided" do
+      expect { Yast::Host.Update("oldhostname", "newhostname", nil) }
+        .to raise_error(ArgumentError, instance_of(String))
     end
   end
 
