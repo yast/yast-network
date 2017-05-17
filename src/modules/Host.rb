@@ -297,7 +297,7 @@ module Yast
 
       fqhostname = Hostname.MergeFQ(DNS.hostname, DNS.domain)
 
-      static_ips.reject(&:empty?).each { |sip| Update(fqhostname, fqhostname, sip) }
+      static_ips.each { |sip| Update(fqhostname, fqhostname, sip) }
 
       nil
     end
