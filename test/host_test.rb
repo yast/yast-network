@@ -252,7 +252,7 @@ describe Yast::Host do
     it "raises an error when empty ip is provided" do
       expect { Yast::Host.Update("oldhostname", "newhostname", "") }
         .to raise_error(ArgumentError, instance_of(String))
-      end
+    end
 
     it "raises an error when nil ip is provided" do
       expect { Yast::Host.Update("oldhostname", "newhostname", nil) }
