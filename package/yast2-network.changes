@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Wed May 17 09:41:29 UTC 2017 - mfilka@suse.com
+
+- bnc#1038521
+  - do not raise an internal error during installation when
+    multiple static device and hostname configurations were
+    provided
+- 3.2.26
+
+-------------------------------------------------------------------
 Tue May 16 07:45:01 UTC 2017 - knut.anderssen@suse.com
 
 - bsc#1035908
