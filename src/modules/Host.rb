@@ -222,12 +222,11 @@ module Yast
     # @param String ip to assign
     # @return true if success
     def Update(oldhn, newhn, ip)
-      Builtins.y2milestone(
-        "Updating /etc/hosts: %1 -> %2: %3",
-        oldhn,
-        newhn,
-        ip
-      )
+      raise ArgumentError, "IP cannot be nil" if ip.nil?
+      raise ArgumentError, "Nonempty IP expected" if ip.empty?
+
+      log.info("Updating /etc/hosts: #{oldhn} -> #{newhn}: #{ip}")
+
       @modified = true
 
       # Remove old hostname from hosts
@@ -280,22 +279,25 @@ module Yast
     def StaticIPs
       NetworkInterfaces.Read
       devs = NetworkInterfaces.Locate("BOOTPROTO", "static")
-      devs = Builtins.filter(devs) { |dev| dev != "lo" }
-      ips = Builtins.maplist(devs) do |dev|
-        NetworkInterfaces.GetValue(dev, "IPADDR")
-      end
-      Builtins.y2milestone("ifcfgs: %1 IPs: %2", devs, ips)
-      deep_copy(ips)
+
+      devs.reject! { |dev| dev == "lo" }
+      static_ips = devs.map { |dev| NetworkInterfaces.GetValue(dev, "IPADDR") }
+      static_ips.reject! { |ip| ip.nil? || ip.empty? }
+
+      log.info("StaticIPs: found in ifcfgs: #{devs} IPs list: #{static_ips}")
+
+      static_ips
     end
 
     # if we have a static address,
     # make sure /etc/hosts resolves it to our, bnc#664929
     def ResolveHostnameToStaticIPs
       static_ips = StaticIPs()
-      if Ops.greater_than(Builtins.size(static_ips), 0)
-        fqhostname = Hostname.MergeFQ(DNS.hostname, DNS.domain)
-        Update(fqhostname, fqhostname, static_ips)
-      end
+      return if static_ips.empty?
+
+      fqhostname = Hostname.MergeFQ(DNS.hostname, DNS.domain)
+
+      static_ips.each { |sip| Update(fqhostname, fqhostname, sip) }
 
       nil
     end

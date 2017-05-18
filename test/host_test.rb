@@ -227,4 +227,82 @@ describe Yast::Host do
 
     end
   end
+
+  describe ".ResolveHostnameToStaticIPs" do
+    let(:static_ips) { ["1.1.1.1", "2.2.2.2"] }
+    let(:fqhostname) { "sles.suse.de" }
+
+    before(:each) do
+      allow(Yast::Host)
+        .to receive(:StaticIPs)
+        .and_return(static_ips)
+      allow(Yast::Hostname).to receive(:MergeFQ).and_return(fqhostname)
+    end
+
+    it "do not send array of IPs into .Update" do # bnc1038521
+      expect(Yast::Host)
+        .not_to receive(:Update)
+        .with(instance_of(String), instance_of(String), instance_of(Array))
+
+      Yast::Host.ResolveHostnameToStaticIPs
+    end
+  end
+
+  describe ".Update" do
+    it "raises an error when empty ip is provided" do
+      expect { Yast::Host.Update("oldhostname", "newhostname", "") }
+        .to raise_error(ArgumentError, instance_of(String))
+    end
+
+    it "raises an error when nil ip is provided" do
+      expect { Yast::Host.Update("oldhostname", "newhostname", nil) }
+        .to raise_error(ArgumentError, instance_of(String))
+    end
+  end
+
+  describe ".StaticIPs" do
+    before(:each) do
+      devs = {
+        "lo"   => {
+          "BOOTPROTO" => "static",
+          "IPADDR"    => "127.0.0.1"
+        },
+        "eth0" => { "BOOTPROTO" => "static" },
+        "eth1" => { "BOOTPROTO" => "dhcp" },
+        "eth2" => {
+          "BOOTPROTO" => "static",
+          "IPADDR"    => "1.1.1.1"
+        },
+        "eth3" => {
+          "BOOTPROTO" => "static",
+          "IPADDR"    => ""
+        }
+      }
+
+      # do not touch system
+      allow(Yast::NetworkInterfaces)
+        .to receive(:Read)
+
+      devs.each do |dev, conf|
+        allow(Yast::NetworkInterfaces)
+          .to receive(:Locate)
+          .and_return(devs.keys)
+        allow(Yast::NetworkInterfaces)
+          .to receive(:GetValue)
+          .with(dev, "IPADDR")
+          .and_return(conf["IPADDR"])
+      end
+    end
+
+    it "do not return invalid items for devices with static configuration but invalid IP" do
+      expect(Yast::Host.StaticIPs).not_to include ""
+      expect(Yast::Host.StaticIPs).not_to include nil
+      expect(Yast::Host.StaticIPs).not_to include "127.0.0.1"
+    end
+
+    it "returns all devices with valid setup" do
+      expect(Yast::Host.StaticIPs).to include "1.1.1.1"
+    end
+  end
+
 end
