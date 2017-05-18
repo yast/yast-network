@@ -56,8 +56,6 @@ module Yast
         ),
         "id"         => "remote",
         "guihandler" => fun_ref(method(:RemoteGUI), "any ()"),
-        "initialize" => fun_ref(Remote.method(:Read), "boolean ()"),
-        "finish"     => fun_ref(Remote.method(:Write), "boolean ()"),
         "actions"    => {
           "list"  => {
             # Commandline command help
@@ -150,6 +148,8 @@ module Yast
         return false
       end
 
+      success = Remote.Read
+      return false unless success
       Builtins.y2milestone(
         "Setting AllowRemoteAdministration to '%1'",
         allow_ra
@@ -159,8 +159,9 @@ module Yast
       else
         Remote.Disable
       end
+      success = Remote.Write
 
-      true
+      success
     end
   end
 end
