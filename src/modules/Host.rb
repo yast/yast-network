@@ -243,7 +243,7 @@ module Yast
       return true if [nil, ""].include?(newhn)
 
       nick = Hostname.SplitFQ(newhn)[0] || ""
-      nick = nick.empty? ? [] : [nick]
+      nick = nick.empty? || nick == newhn ? [] : [nick]
       hosts = @hosts.host(ip)
       if hosts.empty?
         @hosts.add_entry(ip, newhn, nick)
