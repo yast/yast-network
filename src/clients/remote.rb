@@ -158,9 +158,8 @@ module Yast
       else
         Remote.Disable
       end
-      success = Remote.Write
 
-      success
+      Remote.Write
     end
   end
 end
