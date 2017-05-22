@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon May 22 13:19:22 UTC 2017 - gsouza@suse.com
+
+- bsc#1036440 and bsc#994471
+  - Command "yast remote list" should not alter the system.
+- 3.2.27
+
+-------------------------------------------------------------------
 Wed May 17 09:41:29 UTC 2017 - mfilka@suse.com
 
 - bnc#1038521
