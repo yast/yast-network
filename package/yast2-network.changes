@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Thu May 25 09:27:09 UTC 2017 - mfilka@suse.com
+
+- bnc#1039532
+  - do not write hostname into /etc/hosts duplicitly for one IP
+  - configure static IPs without own hostname to resolve to system
+    wide hostname during installation
+- 3.2.28
+
+-------------------------------------------------------------------
 Mon May 22 13:19:22 UTC 2017 - gsouza@suse.com
 
 - bsc#1036440 and bsc#994471
