@@ -276,6 +276,9 @@ module Yast
       summary
     end
 
+    # Creates a list os static ips present in the system
+    #
+    # @return [Array<string>] list of ip addresses
     def StaticIPs
       NetworkInterfaces.Read
       devs = NetworkInterfaces.Locate("BOOTPROTO", "static")
