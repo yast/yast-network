@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri May 26 06:44:13 UTC 2017 - mfilka@suse.com
+
+- bnc1039532
+  - configure static IPs to resolve to system wide hostname during
+    installation
+- 3.1.178
+
+-------------------------------------------------------------------
 Thu May 18 10:11:01 UTC 2017 - gsouza@suse.com
 
 - bsc#1036440 and bsc#994471
