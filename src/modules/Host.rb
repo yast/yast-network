@@ -243,7 +243,7 @@ module Yast
       return true if [nil, ""].include?(newhn)
 
       nick = Hostname.SplitFQ(newhn)[0] || ""
-      nick = nick.empty? ? [] : [nick]
+      nick = nick.empty? || nick == newhn ? [] : [nick]
       hosts = @hosts.host(ip)
       if hosts.empty?
         @hosts.add_entry(ip, newhn, nick)
@@ -276,6 +276,9 @@ module Yast
       summary
     end
 
+    # Creates a list os static ips present in the system
+    #
+    # @return [Array<string>] list of ip addresses
     def StaticIPs
       NetworkInterfaces.Read
       devs = NetworkInterfaces.Locate("BOOTPROTO", "static")
@@ -289,14 +292,22 @@ module Yast
       static_ips
     end
 
-    # if we have a static address,
-    # make sure /etc/hosts resolves it to our, bnc#664929
+    # Configure system to resolve static ips without hostname to system wide hostname
+    #
+    # It is expected to be used during installation only. If user configures static
+    # ips during installation and do not assign them particular hostname, then such
+    # ips are configuret to resolve to the system wide hostname (see Hostname module,
+    # /etc/HOSTNAME)
+    #
+    # Originally implemented as a fix for bnc#664929, later extended for bnc#1039532
     def ResolveHostnameToStaticIPs
-      static_ips = StaticIPs()
+      # reject those static ips which have particular hostnames already configured
+      static_ips = StaticIPs().reject { |sip| @hosts.include_ip?(sip) }
       return if static_ips.empty?
 
       fqhostname = Hostname.MergeFQ(DNS.hostname, DNS.domain)
 
+      # assign system wide hostname to a static ip without particular hostname
       static_ips.each { |sip| Update(fqhostname, fqhostname, sip) }
 
       nil
