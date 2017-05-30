@@ -48,5 +48,13 @@ describe "Host" do
       tested_ip = "10.0.0.1"
       expect(host.name_map[tested_ip]).to eql etc_hosts[tested_ip]
     end
+
+    it "doesn't write entry with duplicate hostname" do
+      ip = "1.1.1.1"
+      hostname = "linux"
+
+      Yast::Host.Update(hostname, hostname, [ip])
+      expect(Yast::Host.name_map[ip]).not_to eql ["#{hostname} #{hostname}"]
+    end
   end
 end
