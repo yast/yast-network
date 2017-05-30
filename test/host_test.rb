@@ -258,6 +258,14 @@ describe Yast::Host do
       expect { Yast::Host.Update("oldhostname", "newhostname", nil) }
         .to raise_error(ArgumentError, instance_of(String))
     end
+
+    it "doesn't write entry with duplicate hostname" do
+      ip = "1.1.1.1"
+      hostname = "linux"
+
+      Yast::Host.Update(hostname, hostname, ip)
+      expect(Yast::Host.name_map[ip]).not_to eql ["#{hostname} #{hostname}"]
+    end
   end
 
   describe ".StaticIPs" do
