@@ -189,6 +189,24 @@ describe Yast::Host do
 
       expect(content.lines).to include("10.100.128.72   pepa pepa2 newname.suse.cz newname\n")
     end
+
+    it "raises an error when empty ip is provided" do
+      expect { Yast::Host.Update("oldhostname", "newhostname", "") }
+        .to raise_error(ArgumentError, instance_of(String))
+    end
+
+    it "raises an error when nil ip is provided" do
+      expect { Yast::Host.Update("oldhostname", "newhostname", nil) }
+        .to raise_error(ArgumentError, instance_of(String))
+    end
+
+    it "doesn't write entry with duplicate hostname" do
+      ip = "1.1.1.1"
+      hostname = "linux"
+
+      Yast::Host.Update(hostname, hostname, ip)
+      expect(Yast::Host.name_map[ip]).not_to eql ["#{hostname} #{hostname}"]
+    end
   end
 
   describe ".EnsureHostnameResolvable" do
@@ -267,26 +285,6 @@ describe Yast::Host do
       expect(Yast::Host.ResolveHostnameToStaticIPs)
         .not_to receive(:Update)
         .with(fqhostname, fqhostname, static_ips[0])
-    end
-  end
-
-  describe ".Update" do
-    it "raises an error when empty ip is provided" do
-      expect { Yast::Host.Update("oldhostname", "newhostname", "") }
-        .to raise_error(ArgumentError, instance_of(String))
-    end
-
-    it "raises an error when nil ip is provided" do
-      expect { Yast::Host.Update("oldhostname", "newhostname", nil) }
-        .to raise_error(ArgumentError, instance_of(String))
-    end
-
-    it "doesn't write entry with duplicate hostname" do
-      ip = "1.1.1.1"
-      hostname = "linux"
-
-      Yast::Host.Update(hostname, hostname, ip)
-      expect(Yast::Host.name_map[ip]).not_to eql ["#{hostname} #{hostname}"]
     end
   end
 
