@@ -393,9 +393,6 @@ module Yast
 
       Progress.New(caption, " ", Builtins.size(steps), steps, [], "")
 
-      # Allow to set hostname even if it's modified by DHCP (#13427)
-      # if(NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"]:false != true) {
-
       # Progress step 1/3
       ProgressNextStage(_("Writing hostname..."))
 
@@ -419,9 +416,6 @@ module Yast
       # Finish him
       update_mta_config
       Builtins.sleep(sl)
-
-      #     if(SCR::Read(.target.size, resolv_conf) < 0)
-      # SCR::Write(.target.string, resolv_conf, "");
 
       # Progress step 3/3
       ProgressNextStage(_("Updating /etc/resolv.conf ..."))
