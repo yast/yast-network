@@ -331,7 +331,7 @@ module Yast
     # Write new DNS and hostname settings
     # Includes Host,NetworkConfig::Write
     # @return true if success
-    def Write
+    def Write(gui: true)
       # Write process description labels
       steps = [
         # Progress stage 1
@@ -357,24 +357,24 @@ module Yast
       # Write dialog caption
       caption = _("Saving Hostname and DNS Configuration")
 
-      Progress.New(caption, " ", Builtins.size(steps), steps, [], "")
+      Progress.New(caption, " ", Builtins.size(steps), steps, [], "") if gui
 
       # Progress step 1/3
-      ProgressNextStage(_("Writing hostname..."))
+      ProgressNextStage(_("Writing hostname...")) if gui
       update_hostname
-      Builtins.sleep(0)
+      Builtins.sleep(0) if gui
 
       # Progress step 2/3
-      ProgressNextStage(_("Updating configuration..."))
+      ProgressNextStage(_("Updating configuration...")) if gui
       update_mta_config
-      Builtins.sleep(0)
+      Builtins.sleep(0) if gui
 
       # Progress step 3/3
-      ProgressNextStage(_("Updating /etc/resolv.conf ..."))
+      ProgressNextStage(_("Updating /etc/resolv.conf ...")) if gui
       update_sysconfig_config
-      Builtins.sleep(0)
+      Builtins.sleep(0) if gui
 
-      Progress.NextStage
+      Progress.NextStage if gui
       @modified = false
 
       true

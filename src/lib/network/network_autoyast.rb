@@ -123,6 +123,8 @@ module Yast
       log.info("dhcp hostname: #{DNS.dhcp_hostname}")
       log.info("write hostname: #{DNS.write_hostname}")
 
+      DNS.Write(gui: false)
+
       true
     end
 
