@@ -106,24 +106,26 @@ module Yast
 
     # Initializates DNS setup according AY profile
     #
-    # FIXME: it currently doesn't write DNS configuration. It is used for initialization
-    # of DNS setup according AY profile in 1st stage as part of network setup was moved
-    # here already and some parts of network configuration needs to know it. DNS write
-    # is still done in 2nd stage.
+    # If the installer is running in 1st stage mode only, then the configuration
+    # is also written
     #
+    # @param [Boolean] write forces instant writing of the configuration
     # @return [Boolean] true when configuration was present and loaded from the profile
-    def configure_dns
+    def configure_dns(write: false)
       ay_dns_config = ay_networking_section["dns"]
 
       return false if !ay_dns_config
 
       DNS.Import(ay_dns_config)
 
+      write ||= !ay_general_section.fetch("mode", { "second_stage" => true })["second_stage"]
+
       log.info("NetworkAutoYast: DNS / Hostname configuration")
       log.info("dhcp hostname: #{DNS.dhcp_hostname}")
       log.info("write hostname: #{DNS.write_hostname}")
+      log.info("Write configuration instantly: #{write}")
 
-      DNS.Write(gui: false)
+      DNS.Write(gui: false) if write
 
       true
     end
@@ -208,16 +210,30 @@ module Yast
       instsys_routing.merge(ay_routing)
     end
 
-    # Returns networking section of current AY profile
-    def ay_networking_section
+    # Returns current AY profile in the internal representation
+    #
+    # @return [Hash] hash representing current profile or empty hash
+    def ay_current_profile
       Yast.import "Profile"
 
       ay_profile = Profile.current
 
       return {} if ay_profile.nil? || ay_profile.empty?
-      return {} if ay_profile["networking"].nil?
+      return ay_profile
+    end
 
-      ay_profile["networking"]
+    # Returns networking section of current AY profile
+    def ay_networking_section
+      return {} if ay_current_profile["networking"].nil?
+
+      ay_current_profile["networking"]
+    end
+
+    # Returns global section of current AY profile
+    def ay_general_section
+      return {} if ay_current_profile["general"].nil?
+
+      ay_current_profile["general"]
     end
 
     # Checks if the udev rule is valid for renaming a NIC
