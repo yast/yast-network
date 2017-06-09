@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri Jul 11 09:40:11 UTC 2017 - mfilka@suse.com
+
+- Moving network setup in AY into 1s stage
+  - DNS configuration is written when second stage is disabled in
+    the profile
+- 3.3.3
+
+-------------------------------------------------------------------
 Mon Jul 10 15:03:09 UTC 2017 - jreidinger@suse.com
 
 - Fix crash during write if Host.Read and Host.Import is called

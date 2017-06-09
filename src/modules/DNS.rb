@@ -353,7 +353,6 @@ module Yast
         return true
       end
 
-
       # Write dialog caption
       caption = _("Saving Hostname and DNS Configuration")
 

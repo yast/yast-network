@@ -118,7 +118,7 @@ module Yast
 
       DNS.Import(ay_dns_config)
 
-      write ||= !ay_general_section.fetch("mode", { "second_stage" => true })["second_stage"]
+      write ||= !ay_general_section.fetch("mode", "second_stage" => true)["second_stage"]
 
       log.info("NetworkAutoYast: DNS / Hostname configuration")
       log.info("dhcp hostname: #{DNS.dhcp_hostname}")
@@ -219,7 +219,7 @@ module Yast
       ay_profile = Profile.current
 
       return {} if ay_profile.nil? || ay_profile.empty?
-      return ay_profile
+      ay_profile
     end
 
     # Returns networking section of current AY profile
