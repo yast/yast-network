@@ -227,6 +227,24 @@ module Yast
       true
     end
 
+    def rename_lan_item(item, name_to, attr=nil, key=nil)
+      # selecting according device name is unreliable (selects only in between configured devices)
+      LanItems.current = item
+
+      if !attr.nil? && !key.nil?
+        # find out what attribude is currently used for setting device name and
+        # change it if needed. Currently mac is used by default. So, we check is it is
+        # the other one (busid). If no we defaults to mac.
+        bus_attr = LanItems.GetItemUdev("KERNELS")
+        current_attr = bus_attr.empty? ? "ATTR{address}" : "KERNELS"
+
+        # make sure that we base renaming on defined attribute with value given in AY profile
+        LanItems.ReplaceItemUdev(current_attr, attr, key)
+      end
+
+      LanItems.rename(name_to)
+    end
+
     # Takes a list of udev rules and assignes them to corresponding devices.
     #
     # If a device has an udev rule defined already, it is overwritten by new one.
@@ -242,27 +260,25 @@ module Yast
         next if !valid_rename_udev_rule?(rule)
         key.downcase!
 
+        # find item which matches to the given rule definition
         item, matching_item = LanItems.Items.find do |_, i|
           i["hwinfo"]["busid"].downcase == key || i["hwinfo"]["mac"].downcase == key
         end
         next if !matching_item
 
-        # for logging only
         name_from = matching_item["ifcfg"] || matching_item["dev_name"]
         log.info("Matching device found - renaming <#{name_from}> -> <#{name_to}>")
 
-        # selecting according device name is unreliable (selects only in between configured devices)
-        LanItems.current = item
+        # find rule in collision
+        colliding_item, item_map = LanItems.Items.find do |i, _|
+          LanItems.GetDeviceName(i) == name_to
+        end
 
-        # find out what attribude is currently used for setting device name and
-        # change it if needed. Currently mac is used by default. So, we check is it is
-        # the other one (busid). If no we defaults to mac.
-        bus_attr = LanItems.GetItemUdev("KERNELS")
-        current_attr = bus_attr.empty? ? "ATTR{address}" : "KERNELS"
+        # rename item in collision
+        rename_lan_item(colliding_item, name_from)
 
-        # make sure that we base renaming on defined attribute with value given in AY profile
-        LanItems.ReplaceItemUdev(current_attr, attr, key)
-        LanItems.rename(name_to)
+        # rename matching item
+        rename_lan_item(item, name_to, attr, key)
       end
     end
   end
