@@ -363,6 +363,12 @@ module Yast
         when 145
           return "usb" # #22739
         when 128
+          # Mellanox ConnectX-3 series badly uses the 128 sub class
+          # Check for the specific known boards with bad subclass.
+          if Ops.get_integer(hwdevice, "vendor_id", 0) == 71_091
+            device_id = Ops.get_integer(hwdevice, "device_id", -1)
+            return "ib" if [69_635, 69_636, 69_639].include?(device_id)
+          end
           # Nothing was found
           Builtins.y2error("Unknown network controller type: %1", hwdevice)
           Builtins.y2error(
