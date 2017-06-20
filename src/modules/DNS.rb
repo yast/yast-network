@@ -282,14 +282,8 @@ module Yast
     def Read
       return true if @initialized == true
 
-      tmp1 = Convert.to_string(
-        SCR.Read(path(".sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME"))
-      )
-      @dhcp_hostname = tmp1 == "yes"
-      tmp2 = Convert.to_string(
-        SCR.Read(path(".sysconfig.network.dhcp.WRITE_HOSTNAME_TO_HOSTS"))
-      )
-      @write_hostname = tmp2 == "yes"
+      @dhcp_hostname = dhclient_set_hostname
+      @write_hostname = write_hostname_to_hosts
 
       @resolv_conf_policy = Convert.to_string(
         SCR.Read(path(".sysconfig.network.config.NETCONFIG_DNS_POLICY"))
@@ -652,24 +646,20 @@ module Yast
 
     # Updates /etc/sysconfig/network/dhcp
     def update_sysconfig_dhcp
-      tmp = SCR.Read(path(".sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME"))
-      old_dhcp_hostname = tmp == "yes"
-
-      tmp = SCR.Read(path(".sysconfig.network.dhcp.WRITE_HOSTNAME_TO_HOSTS"))
-      old_write_hostname = tmp == "yes"
-
-      if old_dhcp_hostname != @dhcp_hostname || old_write_hostname != @write_hostname
+      if dhclient_set_hostname != @dhcp_hostname || write_hostname_to_hosts != @write_hostname
         log.info("dhcp_hostname=#{@dhcp_hostname}")
         log.info("write_hostname=#{@write_hostname}")
 
+        # @dhcp_hostname and @wrote_hostname can currently be nil only when
+        # not present in original file. So, do not add it in such case.
         SCR.Write(
           path(".sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME"),
           @dhcp_hostname ? "yes" : "no"
-        )
+        ) if !@dhcp_hostname.nil?
         SCR.Write(
           path(".sysconfig.network.dhcp.WRITE_HOSTNAME_TO_HOSTS"),
           @write_hostname ? "yes" : "no"
-        )
+        ) if !@write_hostname
         SCR.Write(path(".sysconfig.network.dhcp"), nil)
       else
         log.info("No update for /etc/sysconfig/network/dhcp")
@@ -717,6 +707,25 @@ module Yast
       SCR.Write(path(".sysconfig.network.config"), nil)
 
       SCR.Execute(path(".target.bash"), "/sbin/netconfig update")
+    end
+
+    # A constant for translating sysconfig's yes/no values into boolean
+    SYSCFG_TO_BOOL = { "yes" => true, "no" => false }.freeze
+
+    # Reads value of DHCLIENT_SET_HOSTNAME and translates it to boolean
+    #
+    # return {true, false, nil} "yes" => true, "no" => false, otherwise or not
+    # present => nil
+    def dhclient_set_hostname
+      SYSCFG_TO_BOOL[SCR.Read(path(".sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME"))]
+    end
+
+    # Reads value of WRITE_HOSTNAME_TO_HOSTS and translates it to boolean
+    #
+    # return {true, false, nil} "yes" => true, "no" => false, otherwise or not
+    # present => nil
+    def write_hostname_to_hosts
+      SYSCFG_TO_BOOL[SCR.Read(path(".sysconfig.network.dhcp.WRITE_HOSTNAME_TO_HOSTS"))]
     end
 
     publish variable: :proposal_valid, type: "boolean"
