@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Jun 22 08:24:17 UTC 2017 - nmoreychaisemartin@suse.com
+
+- bsc#1044982
+  - handle bad pci class/subclass ids used by Mellanox ConnectX-3
+- 3.2.29
+
+-------------------------------------------------------------------
 Thu May 25 09:27:09 UTC 2017 - mfilka@suse.com
 
 - bnc#1039532
