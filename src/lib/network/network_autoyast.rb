@@ -112,22 +112,9 @@ module Yast
     # @param [Boolean] write forces instant writing of the configuration
     # @return [Boolean] true when configuration was present and loaded from the profile
     def configure_dns(write: false)
-      ay_dns_config = ay_networking_section["dns"]
-
-      return false if !ay_dns_config
-
-      DNS.Import(ay_dns_config)
-
-      write ||= !ay_general_section.fetch("mode", "second_stage" => true)["second_stage"]
-
       log.info("NetworkAutoYast: DNS / Hostname configuration")
-      log.info("dhcp hostname: #{DNS.dhcp_hostname}")
-      log.info("write hostname: #{DNS.write_hostname}")
-      log.info("Write configuration instantly: #{write}")
 
-      DNS.Write(gui: false) if write
-
-      true
+      configure_submodule(DNS, ay_networking_section["dns"])
     end
 
     # Checks if the profile asks for keeping installation network configuration
@@ -282,6 +269,25 @@ module Yast
         LanItems.ReplaceItemUdev(current_attr, attr, key)
         LanItems.rename(name_to)
       end
+    end
+
+    # Configures given yast submodule according AY configuration
+    #
+    # It takes part of AY profile which is relevant for the given yast submodule,
+    # configures the module and writes the configuration. Writing the configuration
+    # is optional when second stage is available and mandatory when running first
+    # stage only autoyast installation.
+    def configure_submodule(yast_module, ay_config, write: false)
+      return false if !ay_config
+
+      yast_module.Import(ay_config)
+
+      write ||= !ay_general_section.fetch("mode", "second_stage" => true)["second_stage"]
+      log.info("Write configuration instantly: #{write}")
+
+      yast_module.Write(gui: false) if write
+
+      true
     end
   end
 end
