@@ -269,6 +269,12 @@ module Yast
       NetworkAutoconfiguration.instance.configure_hosts if !configured
     end
 
+    def configure_routing
+      return if !Mode.autoinst
+
+      NetworkAutoYast.instance.configure_routing
+    end
+
     # It does an automatic configuration of installed system
     #
     # Basically, it runs several proposals.
@@ -279,6 +285,7 @@ module Yast
 
       # this depends on DNS configuration
       configure_hosts
+      configure_routing
 
       set_network_service
 

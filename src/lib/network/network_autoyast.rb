@@ -21,6 +21,7 @@ module Yast
       Yast.import "LanItems"
       Yast.import "Linuxrc"
       Yast.import "Host"
+      Yast.import "Routing"
     end
 
     # Merges existing config from system into given configuration map
@@ -116,6 +117,19 @@ module Yast
       log.info("NetworkAutoYast: DNS / Hostname configuration")
 
       configure_submodule(DNS, ay_networking_section["dns"], write: write)
+    end
+
+    # Initializates Routing setup according AY profile
+    #
+    # If the installer is running in 1st stage mode only, then the configuration
+    # is also written
+    #
+    # @param [Boolean] write forces instant writing of the configuration
+    # @return [Boolean] true when configuration was present and loaded from the profile
+    def configure_routing(write: false)
+      log.info("NetworkAutoYast: Routing configuration")
+
+      configure_submodule(Routing, ay_networking_section["routing"], write: write)
     end
 
     # Initializates /etc/hosts according AY profile
