@@ -132,7 +132,8 @@ module Yast
       hosts_config = (ay_host_section["hosts"] || {}).map do |host|
         # we neet to guarantee order of the items here
         [host["host_address"] || "", host["names"] || []]
-      end.to_h.delete_if { |k, v| k.empty? || v.empty? }
+      end
+      hosts_config = hosts_config.to_h.delete_if { |k, v| k.empty? || v.empty? }
 
       configure_submodule(Host, "hosts" => hosts_config, write: write)
     end
