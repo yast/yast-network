@@ -20,6 +20,7 @@ module Yast
       Yast.import "Lan"
       Yast.import "LanItems"
       Yast.import "Linuxrc"
+      Yast.import "Host"
     end
 
     # Merges existing config from system into given configuration map
@@ -115,6 +116,24 @@ module Yast
       log.info("NetworkAutoYast: DNS / Hostname configuration")
 
       configure_submodule(DNS, ay_networking_section["dns"])
+    end
+
+    # Initializates /etc/hosts according AY profile
+    #
+    # If the installer is running in 1st stage mode only, then the configuration
+    # is also written
+    #
+    # @param [Boolean] write forces instant writing of the configuration
+    # @return [Boolean] true when configuration was present and loaded from the profile
+    def configure_hosts(write: false)
+      log.info("NetworkAutoYast: Hosts configuration")
+
+      # expected format for Hosts.Import is { "ip" => [list, of, names] }
+      hosts_config = ay_host_section["hosts"].map do |host|
+        [host["host_address"] || "", host["names"] || []]
+      end.to_h.delete_if { |k, v| k.empty? || v.empty? }
+
+      configure_submodule(Host, "hosts" => hosts_config)
     end
 
     # Checks if the profile asks for keeping installation network configuration
@@ -223,6 +242,23 @@ module Yast
       ay_current_profile["general"]
     end
 
+    # Returns host section of the current AY profile
+    #
+    # Note that autoyast transforms the profile into:
+    # hosts => [
+    #   # first <host_entry>
+    #   {
+    #     "hosts_address" => <ip>,
+    #     "names" => [list, of, names]
+    #   }
+    #   # second <host_entry>
+    # ]
+    def ay_host_section
+      return [] if ay_current_profile["host"].nil?
+
+      ay_current_profile["host"]
+    end
+
     # Checks if the udev rule is valid for renaming a NIC
     def valid_rename_udev_rule?(rule)
       return false if rule["name"].nil? || rule["name"].empty?
@@ -273,10 +309,12 @@ module Yast
 
     # Configures given yast submodule according AY configuration
     #
-    # It takes part of AY profile which is relevant for the given yast submodule,
-    # configures the module and writes the configuration. Writing the configuration
-    # is optional when second stage is available and mandatory when running first
-    # stage only autoyast installation.
+    # It takes data from AY profile transformed into a format expected by the YaST
+    # sub module's Import method.
+    #
+    # It imports the profile, configures the module and writes the configuration.
+    # Writing the configuration is optional when second stage is available and mandatory
+    # when running autoyast installation with first stage only.
     def configure_submodule(yast_module, ay_config, write: false)
       return false if !ay_config
 
