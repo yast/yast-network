@@ -115,7 +115,7 @@ module Yast
     def configure_dns(write: false)
       log.info("NetworkAutoYast: DNS / Hostname configuration")
 
-      configure_submodule(DNS, ay_networking_section["dns"])
+      configure_submodule(DNS, ay_networking_section["dns"], write: write)
     end
 
     # Initializates /etc/hosts according AY profile
@@ -129,11 +129,12 @@ module Yast
       log.info("NetworkAutoYast: Hosts configuration")
 
       # expected format for Hosts.Import is { "ip" => [list, of, names] }
-      hosts_config = ay_host_section["hosts"].map do |host|
+      hosts_config = (ay_host_section["hosts"] || {}).map do |host|
+        # we neet to guarantee order of the items here
         [host["host_address"] || "", host["names"] || []]
       end.to_h.delete_if { |k, v| k.empty? || v.empty? }
 
-      configure_submodule(Host, "hosts" => hosts_config)
+      configure_submodule(Host, "hosts" => hosts_config, write: write)
     end
 
     # Checks if the profile asks for keeping installation network configuration
@@ -244,17 +245,23 @@ module Yast
 
     # Returns host section of the current AY profile
     #
-    # Note that autoyast transforms the profile into:
-    # hosts => [
-    #   # first <host_entry>
-    #   {
-    #     "hosts_address" => <ip>,
-    #     "names" => [list, of, names]
-    #   }
-    #   # second <host_entry>
-    # ]
+    # Note that autoyast transforms the host's subsection
+    # into:
+    # {
+    #   hosts => [
+    #     # first <host_entry>
+    #     {
+    #       "hosts_address" => <ip>,
+    #       "names" => [list, of, names]
+    #     }
+    #     # second <host_entry>
+    #     ...
+    #   ]
+    # }
+    #
+    # return <Hash> with hosts configuration
     def ay_host_section
-      return [] if ay_current_profile["host"].nil?
+      return {} if ay_current_profile["host"].nil?
 
       ay_current_profile["host"]
     end
