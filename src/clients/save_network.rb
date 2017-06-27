@@ -275,16 +275,24 @@ module Yast
       NetworkAutoYast.instance.configure_routing
     end
 
+    def configure_nics
+      return if !Mode.autoinst
+
+      NetworkAutoYast.instance.configure_nics
+    end
+
     # It does an automatic configuration of installed system
     #
     # Basically, it runs several proposals.
     def configure_target
       NetworkAutoconfiguration.instance.configure_virtuals
 
+      configure_nics
       configure_dns
 
       # this depends on DNS configuration
       configure_hosts
+      # this depends on NICs configuration
       configure_routing
 
       set_network_service

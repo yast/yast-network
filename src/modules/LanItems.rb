@@ -693,7 +693,8 @@ module Yast
       nil
     end
 
-    def write
+    # TODO: make subcalls gui dependent where needed
+    def write(gui: false)
       renamed_items = @Items.keys.select { |item_id| renamed?(item_id) }
       renamed_items.each do |item_id|
         devmap = GetDeviceMap(item_id)
@@ -707,6 +708,7 @@ module Yast
       # FIXME: hack: no "netcard" filter as biosdevname names it diferently (bnc#712232)
       NetworkInterfaces.Write("")
     end
+    alias_method :Write, :write
 
     # Exports configuration for use in AY profile
     #
