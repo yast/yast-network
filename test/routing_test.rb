@@ -78,10 +78,10 @@ describe Yast::Routing do
 
       context "when user sets IPv4 Forwarding to #{ipv4} and IPv6 to #{ipv6}" do
         before(:each) do
-          Yast::Wizard.as_null_object
-          Yast::Label.as_null_object
-          Yast::Netmask.as_null_object
-          Yast::Popup.as_null_object
+          stub_const("Yast::Wizard", double.as_null_object)
+          stub_const("Yast::Label", double.as_null_object)
+          stub_const("Yast::Netmask", double.as_null_object)
+          stub_const("Yast::Popup", double.as_null_object)
 
           Yast.import "UI"
           allow(Yast::UI).to receive(:QueryWidget) { "" }
@@ -260,7 +260,7 @@ describe Yast::Routing do
 
         describe "#Read" do
           it "loads configuration from system" do
-            Yast::NetworkInterfaces.as_null_object
+            stub_const("Yast::NetworkInterfaces", double.as_null_object)
 
             expect(Yast::Routing.Read).to be true
           end
