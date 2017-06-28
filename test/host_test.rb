@@ -276,16 +276,6 @@ describe Yast::Host do
 
       Yast::Host.ResolveHostnameToStaticIPs
     end
-
-    it "doesn't call .Update when an IP already has a hostname" do
-      hostname = "linux"
-
-      Yast::Host.Update(hostname, hostname, static_ips[0])
-
-      expect(Yast::Host.ResolveHostnameToStaticIPs)
-        .not_to receive(:Update)
-        .with(fqhostname, fqhostname, static_ips[0])
-    end
   end
 
   describe ".StaticIPs" do
