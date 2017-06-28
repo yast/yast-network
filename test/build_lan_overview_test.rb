@@ -49,8 +49,8 @@ describe "LanItemsClass#BuildLanOverview" do
       .to receive(:locale)
       .and_return("de")
 
-    # HACK: locale search path
-    Yast::I18n::LOCALE_DIR = File.expand_path("../locale", __FILE__)
+    # locale search path
+    stub_const("Yast::I18n::LOCALE_DIR", File.expand_path("../locale", __FILE__))
 
     textdomain("network")
 
