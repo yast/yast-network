@@ -52,6 +52,9 @@ module Yast
       Yast.import "Service"
       Yast.import "String"
       Yast.import "FileUtils"
+      Yast.import "Stage"
+      Yast.import "Mode"
+      Yast.import "Report"
 
       Yast.include self, "network/routines.rb"
       Yast.include self, "network/runtime.rb"
@@ -479,6 +482,21 @@ module Yast
 
       @nameservers = Builtins.eval(Ops.get_list(settings, "nameservers", []))
       @searchlist = Builtins.eval(Ops.get_list(settings, "searchlist", []))
+
+      # check for AY unsupported scenarios, the name servers and the search domains
+      # are written in the 2nd stage, if is disabled then it cannot work (bsc#1046198)
+      if Stage.initial && Mode.auto && (!@nameservers.empty? || !@searchlist.empty?)
+        # lazy loading to avoid the dependency on AutoYaST, this can be imported only
+        # in the initial stage otherwise it might fail!
+        Yast.import "AutoinstConfig"
+
+        if !AutoinstConfig.second_stage
+          Report.Error(_("DNS configuration error: The name servers or the search domains\n" \
+            "will not be configured when the second installation stage\n" \
+            "(after reboot) is disabled in the installation XML profile."))
+        end
+      end
+
       @modified = true
       # empty settings means that we're probably resetting the config
       # thus, setup is not initialized anymore
