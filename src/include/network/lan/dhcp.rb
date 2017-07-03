@@ -33,10 +33,7 @@ module Yast
 
       textdomain "network"
 
-      Yast.import "Label"
       Yast.import "NetworkConfig"
-      Yast.import "Popup"
-      Yast.import "Wizard"
 
       Yast.include include_target, "network/routines.rb"
       Yast.include include_target, "network/lan/help.rb"
@@ -47,10 +44,6 @@ module Yast
         Frame(
           _("DHCP Client Options"),
           VBox(
-            # CheckBox label
-            #       `Left(`CheckBox(`id(`broadcast), _("Request Broad&cast Response"))),
-            #        `VSpacing(0.49),
-            # TextEntry label
             Left(
               InputField(
                 Id(:clientid),
@@ -93,13 +86,6 @@ module Yast
     end
 
     def initDhclientOptions(_key)
-      #     boolean dhclient_broadcast = false;
-      #
-      #     if(issubstring(NetworkConfig::DHCP["DHCLIENT_ADDITIONAL_OPTIONS"]:"", "-B"))
-      #         dhclient_broadcast = true;
-      #
-      #
-      #     UI::ChangeWidget(`id(`broadcast), `Value, dhclient_broadcast);
       UI.ChangeWidget(
         Id(:clientid),
         :Value,
@@ -117,7 +103,7 @@ module Yast
       )
 
       disable_unconfigureable_items(
-        [:broadcast, :clientid, :hostname, :no_defaultroute],
+        [:clientid, :hostname, :no_defaultroute],
         false
       )
 
@@ -140,18 +126,6 @@ module Yast
         "DHCLIENT_HOSTNAME_OPTION",
         UI.QueryWidget(Id(:hostname), :Value)
       )
-      #     boolean dhclient_broadcast = UI::QueryWidget(`id(`broadcast), `Value) == true;
-      #
-      #     string options = NetworkConfig::DHCP["DHCLIENT_ADDITIONAL_OPTIONS"]:"";
-      #     if(options == nil) options = "";
-      #
-      #     if(dhclient_broadcast && !issubstring(options, "-B")) {
-      #         NetworkConfig::DHCP["DHCLIENT_ADDITIONAL_OPTIONS"] = options + " -B";
-      #     }
-      #     else
-      #     if(!dhclient_broadcast && issubstring(options, "-B")) {
-      #         NetworkConfig::DHCP["DHCLIENT_ADDITIONAL_OPTIONS"] = regexpsub(options, "(.*)-B(.*)", "\\1\\2");
-      #     }
 
       nil
     end
