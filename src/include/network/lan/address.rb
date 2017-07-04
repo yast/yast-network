@@ -1482,33 +1482,32 @@ module Yast
           LanItems.device = NetworkInterfaces.device_num(ifcfgname)
         end
 
-        LanItems.bootproto = Ops.get_string(@settings, "BOOTPROTO", "")
-        if LanItems.bootproto == "static" # #104494
-          ip_changed = LanItems.ipaddr !=
-            Ops.get_string(@settings, "IPADDR", "")
-          if ip_changed
+        bootproto = Ops.get_string(@settings, "BOOTPROTO", "")
+        ipaddr = @settings.fetch("IPADDR", "")
+
+        # IP is mandatory for static configuration. Makes no sense to write static
+        # configuration without that.
+        if bootproto == "static" && !ipaddr.empty?
+          ip_changed = LanItems.ipaddr != ipaddr
+          hostname = @settings.fetch("HOSTNAME", "")
+
+          if ip_changed || hostname.empty?
+            log.info("Dropping record for #{LanItems.ipaddr} from /etc/hosts")
             Host.remove_ip(LanItems.ipaddr)
-            Builtins.y2milestone("IP has changed")
           end
 
-          LanItems.ipaddr = Ops.get_string(@settings, "IPADDR", "")
+          LanItems.ipaddr = ipaddr
+          LanItems.bootproto = bootproto
           LanItems.netmask = Ops.get_string(@settings, "NETMASK", "")
           LanItems.prefix = Ops.get_string(@settings, "PREFIXLEN", "")
           LanItems.remoteip = Ops.get_string(@settings, "REMOTEIP", "")
 
-          if @hostname_initial != Ops.get_string(@settings, "HOSTNAME", "") || ip_changed
-            if Ops.get_string(@settings, "HOSTNAME", "") == ""
-              Host.remove_ip(LanItems.ipaddr)
-            else
-              Host.Update(
-                @hostname_initial,
-                Ops.get_string(@settings, "HOSTNAME", ""),
-                Ops.get_string(@settings, "IPADDR", "")
-              )
-            end
+          if (@hostname_initial != hostname && !hostname.empty?) || ip_changed
+            Host.Update(@hostname_initial, hostname, LanItems.ipaddr)
           end
-        else
+        elsif bootproto != "static"
           LanItems.ipaddr = ""
+          LanItems.bootproto = bootproto
           LanItems.netmask = ""
           LanItems.remoteip = ""
           # fixed bug #73739 - if dhcp is used, dont set default gw statically
