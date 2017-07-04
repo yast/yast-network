@@ -352,7 +352,7 @@ module Yast
       nil
     end
 
-    def ManagedHandle(_key, event)
+    def ManagedHandle(_key, _event)
       selected_service = UI.QueryWidget(Id(:managed), :Value)
 
       # Disable / enable all widgets which depends on network service
