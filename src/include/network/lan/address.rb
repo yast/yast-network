@@ -1482,12 +1482,16 @@ module Yast
           LanItems.device = NetworkInterfaces.device_num(ifcfgname)
         end
 
-        bootproto = Ops.get_string(@settings, "BOOTPROTO", "")
+        bootproto = @settings.fetch("BOOTPROTO", "")
         ipaddr = @settings.fetch("IPADDR", "")
 
         # IP is mandatory for static configuration. Makes no sense to write static
         # configuration without that.
-        if bootproto == "static" && !ipaddr.empty?
+        return ret if bootproto == "static" && ipaddr.empty?
+
+        LanItems.bootproto = bootproto
+
+        if bootproto == "static"
           ip_changed = LanItems.ipaddr != ipaddr
           hostname = @settings.fetch("HOSTNAME", "")
 
@@ -1497,7 +1501,6 @@ module Yast
           end
 
           LanItems.ipaddr = ipaddr
-          LanItems.bootproto = bootproto
           LanItems.netmask = Ops.get_string(@settings, "NETMASK", "")
           LanItems.prefix = Ops.get_string(@settings, "PREFIXLEN", "")
           LanItems.remoteip = Ops.get_string(@settings, "REMOTEIP", "")
@@ -1505,9 +1508,8 @@ module Yast
           if (@hostname_initial != hostname && !hostname.empty?) || ip_changed
             Host.Update(@hostname_initial, hostname, LanItems.ipaddr)
           end
-        elsif bootproto != "static"
+        else
           LanItems.ipaddr = ""
-          LanItems.bootproto = bootproto
           LanItems.netmask = ""
           LanItems.remoteip = ""
           # fixed bug #73739 - if dhcp is used, dont set default gw statically
