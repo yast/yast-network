@@ -363,6 +363,16 @@ module Yast
         when 145
           return "usb" # #22739
         when 128
+          # Mellanox ConnectX-3 series badly uses the 128 sub class
+          # Check for the specific known boards with bad subclass.
+          #
+          # Concerned devices are:
+          # 15b3:1003	MT27500 Family [ConnectX-3]
+          # 15b3:1004	MT27500/MT27520 Family [ConnectX-3/ConnectX-3 Pro Virtual Function]
+          # 15b3:1007	MT27520 Family [ConnectX-3 Pro]
+          if hwdevice["vendor_id"] == 71_091
+            return "ib" if [69_635, 69_636, 69_639].include?(hwdevice["device_id"])
+          end
           # Nothing was found
           Builtins.y2error("Unknown network controller type: %1", hwdevice)
           Builtins.y2error(
