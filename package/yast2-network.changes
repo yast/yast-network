@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Jul  4 15:06:40 UTC 2017 - lslezak@suse.cz
+
+- Display a warning in AutoYaST installation when importing the DNS
+  configuration with disabled seconds stage (the second stage is
+  currently required for writing the config) (bsc#1046198)
+- 3.2.31
+
+-------------------------------------------------------------------
 Tue Jul  4 12:57:05 UTC 2017 - mfilka@suse.com
 
 - bnc#1046735
