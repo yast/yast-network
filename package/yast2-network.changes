@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Jul  4 07:21:29 UTC 2017 - mfilka@suse.com
+
+- bnc#1046677
+  - disable widgets which cannot be configured by the selected
+    network service
+- 3.2.29
+
+-------------------------------------------------------------------
 Thu May 25 09:27:09 UTC 2017 - mfilka@suse.com
 
 - bnc#1039532
