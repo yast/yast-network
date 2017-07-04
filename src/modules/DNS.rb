@@ -488,16 +488,16 @@ module Yast
 
       # check for AY unsupported scenarios, the name servers and the search domains
       # are written in the 2nd stage, if is disabled then it cannot work (bsc#1046198)
-      if Stage.initial && Mode.auto && !@error_reported && (!@nameservers.empty? || !@searchlist.empty?)
+      if Stage.initial && Mode.auto && !@error_reported && !empty?
         # lazy loading to avoid the dependency on AutoYaST, this can be imported only
         # in the initial stage otherwise it might fail!
         Yast.import "AutoinstConfig"
 
         if !AutoinstConfig.second_stage
           # TRANSLATORS: Warning message, the AutoYaST XML profile is incorrect
-          Report.Warning(_("DNS configuration error: The name servers or the search domains\n" \
-            "will not be configured when the second installation stage\n" \
-            "(after reboot) is disabled in the installation XML profile."))
+          Report.Warning(_("DNS configuration error: The DNS configuration\n" \
+            "is written in the second installation stage (after reboot)\n" \
+            "but the second stage is disabled in the AutoYaST XML profile."))
           @error_reported = true
         end
       end
@@ -712,6 +712,12 @@ module Yast
       @modified = true if !fqhostname.empty?
 
       fqhostname
+    end
+
+    # empty configuration?
+    # @return [Boolean] true if the configuration is empty (or contains defaults)
+    def empty?
+      @nameservers.empty? && @searchlist.empty? && @hostname.empty? && @domain.empty?
     end
 
     publish variable: :proposal_valid, type: "boolean"
