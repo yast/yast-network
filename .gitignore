@@ -31,3 +31,4 @@ testsuite/run/
 /test/*.log
 .yardoc
 /coverage
+*.pot

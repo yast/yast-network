@@ -818,155 +818,64 @@ module Yast
 
     def IfcfgsToSkipVirtualizedProposal
       skipped = []
-      Builtins.foreach(LanItems.Items) do |current, _config|
-        ifcfg = Ops.get_string(LanItems.Items, [current, "ifcfg"], "")
-        if NetworkInterfaces.GetType(ifcfg) == "br"
-          NetworkInterfaces.Edit(ifcfg)
-          Builtins.y2milestone(
-            "Bridge %1 with ports (%2) found",
-            ifcfg,
-            Ops.get_string(NetworkInterfaces.Current, "BRIDGE_PORTS", "")
-          )
-          skipped = Builtins.add(skipped, ifcfg)
-          Builtins.foreach(
-            Builtins.splitstring(
-              Ops.get_string(NetworkInterfaces.Current, "BRIDGE_PORTS", ""),
-              " "
-            )
-          ) { |port| skipped = Builtins.add(skipped, port) }
-        end
-        if NetworkInterfaces.GetType(ifcfg) == "bond"
-          NetworkInterfaces.Edit(ifcfg)
 
-          Builtins.foreach(LanItems.GetBondSlaves(ifcfg)) do |slave|
-            Builtins.y2milestone(
-              "For interface %1 found slave %2",
-              ifcfg,
-              slave
-            )
-            skipped = Builtins.add(skipped, slave)
+      LanItems.Items.each do |_current, config|
+        ifcfg = config["ifcfg"]
+        ifcfg_type = NetworkInterfaces.GetType(ifcfg)
+
+        case ifcfg_type
+        when "br"
+          skipped << ifcfg
+
+          bridge_ports = NetworkInterfaces.GetValue(ifcfg, "BRIDGE_PORTS").to_s
+
+          bridge_ports.split.each { |port| skipped << port }
+        when "bond"
+          LanItems.GetBondSlaves(ifcfg).each do |slave|
+            log.info("For interface #{ifcfg} found slave #{slave}")
+            skipped << slave
           end
+
+        # Skip also usb and wlan devices as they are not good for bridge proposal (bnc#710098)
+        when "usb", "wlan"
+          log.info("#{ifcfg_type} device #{ifcfg} skipped from bridge proposal")
+          skipped << ifcfg
         end
-        # Skip also usb device as it is not good for bridge proposal (bnc#710098)
-        if NetworkInterfaces.GetType(ifcfg) == "usb"
-          NetworkInterfaces.Edit(ifcfg)
-          Builtins.y2milestone(
-            "Usb device %1 skipped from bridge proposal",
-            ifcfg
-          )
-          skipped = Builtins.add(skipped, ifcfg)
-        end
-        if NetworkInterfaces.GetValue(ifcfg, "STARTMODE") == "nfsroot"
-          Builtins.y2milestone(
-            "Skipped %1 interface from bridge slaves because of nfsroot.",
-            ifcfg
-          )
-          skipped = Builtins.add(skipped, ifcfg)
-        end
+
+        next unless NetworkInterfaces.GetValue(ifcfg, "STARTMODE") == "nfsroot"
+
+        log.info("Skipped #{ifcfg} interface from bridge slaves because of nfsroot.")
+
+        skipped << ifcfg
       end
-      Builtins.y2milestone("Skipped interfaces : %1", skipped)
-      deep_copy(skipped)
+      log.info("Skipped interfaces : #{skipped}")
+
+      skipped
     end
 
     def ProposeVirtualized
-      # in case of virtualization use special proposal
-      # collect all interfaces that will be skipped from bridged proposal
-      skipped = IfcfgsToSkipVirtualizedProposal()
-
-      # first configure all connected unconfigured devices with dhcp (with default parameters)
-      Builtins.foreach(LanItems.Items) do |number, lanitem|
-        if IsNotEmpty(
-          Ops.get_string(Convert.to_map(lanitem), ["hwinfo", "dev_name"], "")
-        )
-          LanItems.current = number
-          valid = Ops.get_boolean(
-            LanItems.getCurrentItem,
-            ["hwinfo", "link"],
-            false
-          ) == true
-          if !valid
-            Builtins.y2warning("item number %1 has link:false detected", number)
-          elsif Ops.get_string(LanItems.getCurrentItem, ["hwinfo", "type"], "") == "wlan"
-            Builtins.y2warning("not proposing WLAN interface")
-            valid = false
-          end
-          if !LanItems.IsCurrentConfigured && valid &&
-              !Builtins.contains(
-                skipped,
-                Ops.get_string(
-                  LanItems.getCurrentItem,
-                  ["hwinfo", "dev_name"],
-                  ""
-                )
-              )
-            Builtins.y2milestone("Not configured - start proposing")
-            LanItems.ProposeItem
-          end
-        end
-      end
-
       # then each configuration (except bridges) move to the bridge
       # and add old device name into bridge_ports
-      Builtins.foreach(LanItems.Items) do |current, _config|
-        ifcfg = Ops.get_string(LanItems.Items, [current, "ifcfg"], "")
-        if Builtins.contains(skipped, ifcfg)
-          Builtins.y2milestone("Skipping interface %1", ifcfg)
+      LanItems.Items.each do |current, config|
+        ifcfg = config["ifcfg"].to_s
+
+        bridge_name = format("br%s", NetworkInterfaces.GetFreeDevice("br"))
+
+        if !LanItems.IsBridgeable(bridge_name, current)
+          log.info "The interface #{ifcfg} is not bridgeable."
           next
-        elsif Ops.greater_than(Builtins.size(ifcfg), 0)
-          NetworkInterfaces.Edit(ifcfg)
-          old_config = deep_copy(NetworkInterfaces.Current)
-          Builtins.y2debug("Old Config %1\n%2", ifcfg, old_config)
-          new_ifcfg = Builtins.sformat(
-            "br%1",
-            NetworkInterfaces.GetFreeDevice("br")
-          )
-          Builtins.y2milestone(
-            "old configuration %1, bridge %2",
-            ifcfg,
-            new_ifcfg
-          )
-          NetworkInterfaces.Name = new_ifcfg
-          # from bridge interface remove all bonding-related stuff
-          Builtins.foreach(NetworkInterfaces.Current) do |key, _value|
-            if Builtins.issubstring(key, "BONDING")
-              Ops.set(NetworkInterfaces.Current, key, nil)
-            end
-          end
-          Ops.set(NetworkInterfaces.Current, "BRIDGE", "yes")
-          Ops.set(NetworkInterfaces.Current, "BRIDGE_PORTS", ifcfg)
-          Ops.set(NetworkInterfaces.Current, "BRIDGE_STP", "off")
-          Ops.set(NetworkInterfaces.Current, "BRIDGE_FORWARDDELAY", "0")
-          # hardcode startmode (bnc#450670), it can't be ifplugd!
-          Ops.set(NetworkInterfaces.Current, "STARTMODE", "auto")
-          # remove description - will be replaced by new (real) one
-          NetworkInterfaces.Current = Builtins.remove(
-            NetworkInterfaces.Current,
-            "NAME"
-          )
-          # remove ETHTOOLS_OPTIONS as it is useful only for real hardware
-          NetworkInterfaces.Current = Builtins.remove(
-            NetworkInterfaces.Current,
-            "ETHTOOLS_OPTIONS"
-          )
-          if NetworkInterfaces.Commit
-            # reconfigure existing device as newly created bridge's port
-            configure_as_bridge_port(ifcfg)
-
-            Ops.set(LanItems.Items, [current, "ifcfg"], new_ifcfg)
-            LanItems.force_restart = true
-            Builtins.y2internal("List %1", NetworkInterfaces.List(""))
-            # re-read configuration to see new items in UI
-            LanItems.Read
-
-            # note: LanItems.Read resets modification flag
-            # the Read is used as a trick how to update LanItems' internal
-            # cache according NetworkInterfaces' one. As NetworkInterfaces'
-            # cache was edited directly, LanItems is not aware of changes.
-            LanItems.SetModified
-          end
-        else
-          Builtins.y2warning("empty ifcfg")
         end
+
+        LanItems.current = current
+
+        propose_current_item!(config) if !LanItems.IsCurrentConfigured
+
+        next unless configure_as_bridge!(ifcfg, bridge_name)
+
+        # reconfigure existing device as newly created bridge's port
+        configure_as_bridge_port(ifcfg)
+
+        refresh_lan_items
       end
 
       nil
@@ -1087,6 +996,68 @@ module Yast
 
         LanItems.reload_config(ifaces)
       end
+    end
+
+    def configure_as_bridge!(ifcfg, bridge_name)
+      return false if !NetworkInterfaces.Edit(ifcfg)
+
+      old_config = deep_copy(NetworkInterfaces.Current)
+      log.debug("Old Config #{ifcfg}\n#{old_config}")
+
+      log.info("old configuration #{ifcfg}, bridge #{bridge_name}")
+
+      NetworkInterfaces.Name = bridge_name
+
+      # from bridge interface remove all bonding-related stuff
+      NetworkInterfaces.Current.each do |key, _value|
+        NetworkInterfaces.Current[key] = nil if key.include? "BONDING"
+      end
+
+      NetworkInterfaces.Current["BRIDGE"] = "yes"
+      NetworkInterfaces.Current["BRIDGE_PORTS"] = ifcfg
+      NetworkInterfaces.Current["BRIDGE_STP"] = "off"
+      NetworkInterfaces.Current["BRIDGE_FORWARDDELAY"] = "0"
+
+      # hardcode startmode (bnc#450670), it can't be ifplugd!
+      NetworkInterfaces.Current["STARTMODE"] = "auto"
+      # remove description - will be replaced by new (real) one
+      NetworkInterfaces.Current.delete("NAME")
+      # remove ETHTOOLS_OPTIONS as it is useful only for real hardware
+      NetworkInterfaces.Current.delete("ETHTOOLS_OPTIONS")
+
+      NetworkInterfaces.Commit
+    end
+
+    def propose_current_item!(config)
+      # first configure all connected unconfigured devices with dhcp (with default parameters)
+      hwinfo = config.fetch("hwinfo", {})
+
+      if hwinfo.fetch("link", false) == true
+        log.warn("item number #{LanItems.current} has link:false detected")
+
+        return false
+      end
+
+      if hwinfo.fetch("type", "") == "wlan"
+        log.warn("not proposing WLAN interface")
+
+        return false
+      end
+
+      LanItems.ProposeItem
+    end
+
+    def refresh_lan_items
+      LanItems.force_restart = true
+      log.info("List #{NetworkInterfaces.List("")}")
+      # re-read configuration to see new items in UI
+      LanItems.Read
+
+      # note: LanItems.Read resets modification flag
+      # the Read is used as a trick how to update LanItems' internal
+      # cache according NetworkInterfaces' one. As NetworkInterfaces'
+      # cache was edited directly, LanItems is not aware of changes.
+      LanItems.SetModified
     end
   end
 

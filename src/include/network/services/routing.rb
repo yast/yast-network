@@ -86,7 +86,7 @@ module Yast
                       # Table header 2/4
                       _("Gateway"),
                       # Table header 3/4
-                      _("Genmask"),
+                      _("Netmask"),
                       # Table header 4/4
                       _("Device"),
                       # Table header 5/4
@@ -140,6 +140,24 @@ module Yast
       }
     end
 
+    # Validates user's input obtained from Netmask field
+    #
+    # It currently allows to use netmask for IPv4 (e.g. 255.0.0.0) or
+    # prefix length. If prefix length is used it has to start with '/'.
+    # For IPv6 network, only prefix length is allowed.
+    #
+    # @param [String] netmask or /<prefix length>
+    def valid_netmask?(netmask)
+      return false if netmask.nil? || netmask.empty?
+      return true if Netmask.Check4(netmask)
+
+      if netmask.start_with?("/")
+        return true if netmask[1..-1].to_i.between?(1, 128)
+      end
+
+      false
+    end
+
     # Route edit dialog
     # @param [Fixnum] id id of the edited route
     # @param [Yast::Term] entry edited entry
@@ -168,7 +186,7 @@ module Yast
                   InputField(
                     Id(:genmask),
                     Opt(:hstretch),
-                    _("Ge&nmask"),
+                    _("&Netmask"),
                     Ops.get_string(entry, 3, "-")
                   ))
               ),
@@ -218,11 +236,8 @@ module Yast
         Ops.add(Ops.add(IP.ValidChars, "default"), "/-")
       )
       UI.ChangeWidget(Id(:gateway), :ValidChars, Ops.add(IP.ValidChars, "-"))
-      UI.ChangeWidget(
-        Id(:genmask),
-        :ValidChars,
-        Ops.add(Netmask.ValidChars, "-")
-      )
+      # user can enter IPv4 netmask or prefix length (has to start with '/')
+      UI.ChangeWidget(Id(:genmask), :ValidChars, Netmask.ValidChars + "-/")
 
       if entry == term(:empty)
         UI.SetFocus(Id(:destination))
@@ -234,7 +249,6 @@ module Yast
       route = nil
 
       loop do
-        route = nil
         ret = UI.UserInput
         break if ret != :ok
 
@@ -258,7 +272,7 @@ module Yast
         end
         route = Builtins.add(route, val)
         val = Convert.to_string(UI.QueryWidget(Id(:genmask), :Value))
-        if val != "-" && val != "0.0.0.0" && !Netmask.Check(val)
+        if val != "-" && val != "0.0.0.0" && !valid_netmask?(val)
           # Popup::Error text
           Popup.Error(_("Subnetmask is invalid."))
           UI.SetFocus(Id(:genmask))
@@ -424,15 +438,44 @@ module Yast
       false
     end
 
+    # Converts route definition for storing in routes file
+    #
+    # Basically netmask field is obsolete, so it converts
+    # the record to use CIDR notation if netmask is defined.
+    #
+    # @param route [Hash] see {RoutingClass#Routes}
+    # @return [Hash] where netmask is "-" (CIDR flavor)
+    def convert_route_conf(route)
+      return route if route["netmask"] == "-"
+
+      dest = route["destination"]
+      netmask = route["netmask"]
+
+      if Netmask.Check4(netmask)
+        cidr = Netmask.ToBits(netmask)
+      elsif netmask.start_with?("/")
+        cidr = netmask[1..-1]
+      else
+        # if it is netmask then long netmask is not supported for IPv6
+        # if it is prefix length (CIDR), then prefix it has to be prefixed by '/'
+        raise ArgumentError, "Invalid netmask or prefix length: #{netmask}"
+      end
+
+      route["destination"] = "#{dest}/#{cidr}"
+      route["netmask"] = "-"
+
+      route
+    end
+
     def storeRouting(_key, _event)
-      route_conf = Builtins.maplist(@r_items) do |e|
-        {
-          "destination" => Ops.get_string(e, 1, ""),
-          "gateway"     => Ops.get_string(e, 2, ""),
-          "netmask"     => Ops.get_string(e, 3, ""),
-          "device"      => Ops.get_string(e, 4, ""),
-          "extrapara"   => Ops.get_string(e, 5, "")
-        }
+      route_conf = @r_items.map do |route|
+        convert_route_conf(
+          "destination" => route[1].to_s,
+          "gateway"     => route[2].to_s,
+          "netmask"     => route[3].to_s,
+          "device"      => route[4].to_s,
+          "extrapara"   => route[5].to_s
+        )
       end
 
       @defgw = UI.QueryWidget(Id(:gw), :Value)
@@ -440,27 +483,21 @@ module Yast
       @defgw6 = UI.QueryWidget(Id(:gw6), :Value)
       @defgwdev6 = UI.QueryWidget(Id(:gw6dev), :Value)
 
-      if @defgw != ""
-        route_conf = Builtins.add(
-          route_conf,
-          "destination" => "default",
-          "gateway"     => @defgw,
-          "netmask"     => "-",
-          "device"      => @defgwdev
-        )
-      end
+      route_conf << {
+        "destination" => "default",
+        "gateway"     => @defgw,
+        "netmask"     => "-",
+        "device"      => @defgwdev
+      } if !@defgw.empty?
 
-      if @defgw6 != ""
-        route_conf = Builtins.add(
-          route_conf,
-          "destination" => "default",
-          "gateway"     => @defgw6,
-          "netmask"     => "-",
-          "device"      => @defgwdev6
-        )
-      end
+      route_conf << {
+        "destination" => "default",
+        "gateway"     => @defgw6,
+        "netmask"     => "-",
+        "device"      => @defgwdev6
+      } if !@defgw6.empty?
 
-      Routing.Routes = deep_copy(route_conf)
+      Routing.Routes = route_conf
       Routing.Forward_v4 = UI.QueryWidget(Id(:forward_v4), :Value)
       Routing.Forward_v6 = UI.QueryWidget(Id(:forward_v6), :Value)
 

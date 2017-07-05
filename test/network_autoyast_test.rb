@@ -139,8 +139,7 @@ describe "NetworkAutoYast" do
   describe "#merge_configs" do
 
     it "merges all necessary stuff" do
-      Yast.import "UI"
-      Yast::UI.as_null_object
+      stub_const("Yast::UI", double.as_null_object)
       expect(network_autoyast).to receive(:merge_dns)
       expect(network_autoyast).to receive(:merge_routing)
       expect(network_autoyast).to receive(:merge_devices)

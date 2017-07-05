@@ -21,18 +21,9 @@ module Yast
     end
 
     def initialize
-      Yast.import "Hostname"
       Yast.import "DNS"
       Yast.import "IP"
-      Yast.import "NetworkInterfaces"
-      Yast.import "FileUtils"
-      Yast.import "Netmask"
       Yast.import "Proxy"
-      Yast.import "String"
-      Yast.import "Arch"
-
-      Yast.include self, "network/routines.rb"
-      Yast.include self, "network/complex.rb"
     end
 
     def write_netconfig
