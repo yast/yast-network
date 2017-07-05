@@ -78,10 +78,10 @@ describe Yast::Routing do
 
       context "when user sets IPv4 Forwarding to #{ipv4} and IPv6 to #{ipv6}" do
         before(:each) do
-          Yast::Wizard.as_null_object
-          Yast::Label.as_null_object
-          Yast::Netmask.as_null_object
-          Yast::Popup.as_null_object
+          stub_const("Yast::Wizard", double.as_null_object)
+          stub_const("Yast::Label", double.as_null_object)
+          stub_const("Yast::Netmask", double.as_null_object)
+          stub_const("Yast::Popup", double.as_null_object)
 
           Yast.import "UI"
           allow(Yast::UI).to receive(:QueryWidget) { "" }
@@ -228,7 +228,10 @@ describe Yast::Routing do
       { ip_forward_v4: "1", ip_forward_v6: "0" }
     ].freeze
 
-    MOCKED_ROUTES = [{ "1" => "r1" }, { "2" => "r2" }].freeze
+    MOCKED_ROUTES = [
+      { "destination" => "r1" },
+      { "destination" => "r2" }
+    ].freeze
 
     CONFIGS_OS.each do |config|
       ipv4 = config[:ip_forward_v4]
@@ -257,12 +260,38 @@ describe Yast::Routing do
 
         describe "#Read" do
           it "loads configuration from system" do
-            Yast::NetworkInterfaces.as_null_object
+            stub_const("Yast::NetworkInterfaces", double.as_null_object)
 
             expect(Yast::Routing.Read).to be true
           end
         end
       end
+    end
+  end
+
+  describe "#normalize_routes" do
+    it "puts prefix length into netmask field when destination is in CIDR format" do
+      input_routes = [
+        {
+          "destination" => "1.1.1.1/24"
+        }
+      ]
+
+      result = Yast::Routing.normalize_routes(input_routes)
+
+      expect(result.first["destination"]).to eql "1.1.1.1"
+      expect(result.first["netmask"]).to eql "/24"
+    end
+
+    it "does nothing when netmask is used" do
+      input_routes = [
+        {
+          "destination" => "1.1.1.1",
+          "netmask"     => "255.0.0.0"
+        }
+      ]
+
+      expect(Yast::Routing.normalize_routes(input_routes)).to eql input_routes
     end
   end
 end

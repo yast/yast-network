@@ -352,6 +352,19 @@ module Yast
       nil
     end
 
+    def ManagedHandle(_key, _event)
+      selected_service = UI.QueryWidget(Id(:managed), :Value)
+
+      # Disable / enable all widgets which depends on network service
+      # in the Managed dialog
+      # See include/network/lan/dhcp.rb for referenced widgets
+      [:clientid, :hostname, :no_defaultroute].each do |i|
+        UI.ChangeWidget(Id(i), :Enabled, selected_service == "wicked")
+      end
+
+      nil
+    end
+
     def managed_widget
       {
         "widget"        => :custom,
@@ -360,7 +373,7 @@ module Yast
           Left(
             ComboBox(
               Id(:managed),
-              Opt(:hstretch),
+              Opt(:hstretch, :notify),
               _("Network Setup Method"),
               []
             )
@@ -369,6 +382,7 @@ module Yast
         "opt"           => [],
         "help"          => @help["managed"] || "",
         "init"          => fun_ref(method(:ManagedInit), "void (string)"),
+        "handle"        => fun_ref(method(:ManagedHandle), "symbol (string, map)"),
         "store"         => fun_ref(method(:ManagedStore), "void (string, map)")
       }
     end

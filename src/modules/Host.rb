@@ -222,12 +222,11 @@ module Yast
     # @param String ip to assign
     # @return true if success
     def Update(oldhn, newhn, ip)
-      Builtins.y2milestone(
-        "Updating /etc/hosts: %1 -> %2: %3",
-        oldhn,
-        newhn,
-        ip
-      )
+      raise ArgumentError, "IP cannot be nil" if ip.nil?
+      raise ArgumentError, "Nonempty IP expected" if ip.empty?
+
+      log.info("Updating /etc/hosts: #{oldhn} -> #{newhn}: #{ip}")
+
       @modified = true
 
       # Remove old hostname from hosts
@@ -244,7 +243,7 @@ module Yast
       return true if [nil, ""].include?(newhn)
 
       nick = Hostname.SplitFQ(newhn)[0] || ""
-      nick = nick.empty? ? [] : [nick]
+      nick = nick.empty? || nick == newhn ? [] : [nick]
       hosts = @hosts.host(ip)
       if hosts.empty?
         @hosts.add_entry(ip, newhn, nick)
@@ -277,25 +276,39 @@ module Yast
       summary
     end
 
+    # Creates a list os static ips present in the system
+    #
+    # @return [Array<string>] list of ip addresses
     def StaticIPs
       NetworkInterfaces.Read
       devs = NetworkInterfaces.Locate("BOOTPROTO", "static")
-      devs = Builtins.filter(devs) { |dev| dev != "lo" }
-      ips = Builtins.maplist(devs) do |dev|
-        NetworkInterfaces.GetValue(dev, "IPADDR")
-      end
-      Builtins.y2milestone("ifcfgs: %1 IPs: %2", devs, ips)
-      deep_copy(ips)
+
+      devs.reject! { |dev| dev == "lo" }
+      static_ips = devs.map { |dev| NetworkInterfaces.GetValue(dev, "IPADDR") }
+      static_ips.reject! { |ip| ip.nil? || ip.empty? }
+
+      log.info("StaticIPs: found in ifcfgs: #{devs} IPs list: #{static_ips}")
+
+      static_ips
     end
 
-    # if we have a static address,
-    # make sure /etc/hosts resolves it to our, bnc#664929
+    # Configure system to resolve static ips without hostname to system wide hostname
+    #
+    # It is expected to be used during installation only. If user configures static
+    # ips during installation and do not assign them particular hostname, then such
+    # ips are configuret to resolve to the system wide hostname (see Hostname module,
+    # /etc/HOSTNAME)
+    #
+    # Originally implemented as a fix for bnc#664929, later extended for bnc#1039532
     def ResolveHostnameToStaticIPs
-      static_ips = StaticIPs()
-      if Ops.greater_than(Builtins.size(static_ips), 0)
-        fqhostname = Hostname.MergeFQ(DNS.hostname, DNS.domain)
-        Update(fqhostname, fqhostname, static_ips)
-      end
+      # reject those static ips which have particular hostnames already configured
+      static_ips = StaticIPs().reject { |sip| @hosts.include_ip?(sip) }
+      return if static_ips.empty?
+
+      fqhostname = Hostname.MergeFQ(DNS.hostname, DNS.domain)
+
+      # assign system wide hostname to a static ip without particular hostname
+      static_ips.each { |sip| Update(fqhostname, fqhostname, sip) }
 
       nil
     end

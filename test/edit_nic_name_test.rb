@@ -16,8 +16,7 @@ module Yast
     # general mocking stuff is placed here
     before(:each) do
       # NetworkInterfaces are too low level. Everything needed should be mocked
-      NetworkInterfaces.as_null_object
-      allow(NetworkInterfaces).to receive(:adapt_old_config!)
+      stub_const("NetworkInterfaces", double(adapt_old_config!: nil))
 
       # mock devices configuration
       allow(LanItems).to receive(:ReadHardware) { [{ "dev_name" => CURRENT_NAME, "mac" => "00:01:02:03:04:05" }] }
