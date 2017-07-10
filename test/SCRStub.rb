@@ -17,6 +17,8 @@ require "yaml"
 #     end
 #
 module SCRStub
+  DATA_PATH = File.join(File.expand_path(File.dirname(__FILE__)), "data")
+
   # Ensures that non-stubbed SCR calls still work as expected after including
   # the module in the testsuite
   def self.included(testsuite)
