@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Jul 10 15:03:09 UTC 2017 - jreidinger@suse.com
+
+- Fix crash during write if Host.Read and Host.Import is called
+  together (bsc#1047929)
+- 3.3.2
+
+-------------------------------------------------------------------
 Tue Jul  4 15:06:40 UTC 2017 - lslezak@suse.cz
 
 - Display a warning in AutoYaST installation when importing the DNS
