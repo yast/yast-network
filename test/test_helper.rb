@@ -1,6 +1,7 @@
 srcdir = File.expand_path("../../src", __FILE__)
 y2dirs = ENV.fetch("Y2DIR", "").split(":")
 ENV["Y2DIR"] = y2dirs.unshift(srcdir).join(":")
+DATA_PATH = File.join(File.expand_path(File.dirname(__FILE__)), "data")
 
 require "yast"
 require "yast/rspec"
@@ -9,11 +10,13 @@ require "yast/rspec"
 ENV["LC_ALL"] = "en_US.UTF-8"
 
 require_relative "SCRStub"
+require_relative "storage_helpers.rb"
 
 RSpec.configure do |c|
   c.extend Yast::I18n # available in context/describe
   c.include Yast::I18n
   c.include SCRStub
+  c.include StorageHelpers
 end
 
 # stub module to prevent its Import
