@@ -78,6 +78,10 @@ module Yast
     end
 
     describe ".Import" do
+      before do
+        allow(Yast::Stage).to receive(:initial).and_return(false)
+      end
+
       context "with present dhcp_hostname and write_hostname" do
         let(:settings) { { "hostname" => "host", "dhcp_hostname" => true, "write_hostname" => true } }
 
@@ -99,6 +103,37 @@ module Yast
           DNS.Import(settings)
           expect(DNS.write_hostname).to eql(false)
           expect(DNS.dhcp_hostname).to eql(false)
+        end
+      end
+
+      context "The AutoYaST first stage installation" do
+        let(:settings) { { "hostname" => "host", "searchlist" => ["example.com"] } }
+
+        before do
+          allow(Yast::Stage).to receive(:initial).and_return(true)
+          allow(Yast::Mode).to receive(:auto).and_return(true)
+          allow(Yast).to receive(:import).with("AutoinstConfig")
+          # reset the internal counter
+          DNS.instance_variable_set(:@error_reported, false)
+        end
+
+        it "prints a warning when the 2nd stage is disabled for writing the search list" do
+          stub_const("Yast::AutoinstConfig", double(second_stage: false))
+          expect(Yast::Report).to receive(:Warning)
+          DNS.Import(settings)
+        end
+
+        it "prints the warning only once on multiple calls" do
+          stub_const("Yast::AutoinstConfig", double(second_stage: false))
+          expect(Yast::Report).to receive(:Warning).once
+          DNS.Import(settings)
+          DNS.Import(settings)
+        end
+
+        it "does not print a warning when the 2nd stage is enabled for writing the search list" do
+          stub_const("Yast::AutoinstConfig", double(second_stage: true))
+          expect(Yast::Report).to_not receive(:Warning)
+          DNS.Import(settings)
         end
       end
     end
