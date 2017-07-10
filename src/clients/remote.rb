@@ -57,7 +57,6 @@ module Yast
         "id"         => "remote",
         "guihandler" => fun_ref(method(:RemoteGUI), "any ()"),
         "initialize" => fun_ref(Remote.method(:Read), "boolean ()"),
-        "finish"     => fun_ref(Remote.method(:Write), "boolean ()"),
         "actions"    => {
           "list"  => {
             # Commandline command help
@@ -160,7 +159,7 @@ module Yast
         Remote.Disable
       end
 
-      true
+      Remote.Write
     end
   end
 end

@@ -56,11 +56,8 @@ if ENV["COVERAGE"]
     add_filter "/test/"
   end
 
-  # For coverage we need to load all ruby files
-  # Note that clients/ are excluded because they run too eagerly by design
-  Dir["#{srcdir}/{include,modules}/**/*.rb"].each do |f|
-    require_relative f
-  end
+  # track all ruby files under src
+  SimpleCov.track_files("#{srcdir}/**/*.rb")
 
   # use coveralls for on-line code coverage reporting at Travis CI
   if ENV["TRAVIS"]

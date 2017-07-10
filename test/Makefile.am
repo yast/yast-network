@@ -29,6 +29,7 @@ TESTS = \
   remote_test.rb \
   routines_test.rb \
   routing_test.rb \
+  routing_helpers_test.rb \
   s390_helpers_test.rb \
   suse_firewall_4_network_test.rb \
   udev_test.rb \

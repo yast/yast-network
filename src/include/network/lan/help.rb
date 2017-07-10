@@ -98,8 +98,12 @@ module Yast
                                ) +
                                  _(
                                    "<p>For each route, enter destination network IP address, gateway address,\n" \
-                                     "and netmask. To omit any of these values, use a dash sign \"-\". Select\n" \
-                                     "the device through which the traffic to the defined network will be routed.\"-\" is an alias for any interface.</p>\n"
+                                     "and netmask. You can use either IPv4 netmask or prefix length when defining\n" \
+                                     "network part of route. Prefix length has to be prefixed using '/'.\n" \
+                                     "To omit any of these values, use a dash sign \"-\". Select\n" \
+                                     "the device through which the traffic to the defined network will be routed.\"-\" is an alias for any interface.\n" \
+                                     "Please note that in case of IPv6 networks only prefix length is accepted\n" \
+                                     "for netmask definition.</p>\n"
                                  ) +
                                  # Routing dialog help 2/2
                                  _(

@@ -7,11 +7,78 @@ network.
 - 3.3.1
 
 -------------------------------------------------------------------
+Wed Jul  5 14:21:10 CEST 2017 - shundhammer@suse.de
+
+- Merged master to storage-ng branch
+- 3.4.0
+
+-------------------------------------------------------------------
+Tue Jul  4 09:18:21 UTC 2017 - mfilka@suse.com
+
+- bsc#1044982
+  - handle bad pci class/subclass ids used by Mellanox ConnectX-3
+  - nmoreychaisemartin@suse.com
+
+-------------------------------------------------------------------
+Tue Jul  4 07:21:29 UTC 2017 - mfilka@suse.com
+
+- bnc#1046677
+  - disable widgets which cannot be configured by the selected
+    network service
+
+-------------------------------------------------------------------
+Thu May 25 09:27:09 UTC 2017 - mfilka@suse.com
+
+- bnc#1039532
+  - do not write hostname into /etc/hosts duplicitly for one IP
+  - configure static IPs without own hostname to resolve to system
+    wide hostname during installation
+
+-------------------------------------------------------------------
+Mon May 22 13:19:22 UTC 2017 - gsouza@suse.com
+
+- bsc#1036440 and bsc#994471
+  - Command "yast remote list" should not alter the system.
+
+-------------------------------------------------------------------
+Wed May 17 09:41:29 UTC 2017 - mfilka@suse.com
+
+- bnc#1038521
+  - do not raise an internal error during installation when
+    multiple static device and hostname configurations were
+    provided
+
+-------------------------------------------------------------------
+Tue May 16 07:45:01 UTC 2017 - knut.anderssen@suse.com
+
+- bsc#1035908
+  - Moved inst_install_inf client to yast2-installation.
+
+-------------------------------------------------------------------
+Tue Apr  4 11:48:24 WEST 2017 - knut.anderssen@suse.com
+
+- bsc#956755
+  - Don't propose wlan interfaces for the virtualization bridge.
+
+-------------------------------------------------------------------
+Mon Apr  3 08:27:26 UTC 2017 - mfilka@suse.com
+
+- bnc#927629
+  - improved adding routes. Accepts netmask or prefix length.
+  - fixed column name in add route dialog from Genmask to more
+    common Netmask
+
+-------------------------------------------------------------------
+Thu Mar 30 13:52:36 WEST 2017 - knut.anderssen@suse.com
+
+- Fix typo in edit_nic_name dialog using bus_id instead of busid
+  (bsc#1031120)
+
+-------------------------------------------------------------------
 Thu Mar 23 15:44:36 UTC 2017 - ancor@suse.com
 
 - Version temporarily bumped to 3.3.x to prioritize the
   storage-ng branch
-- 3.3.0
 
 -------------------------------------------------------------------
 Tue Mar 21 09:24:29 UTC 2017 - jreidinger@suse.com
