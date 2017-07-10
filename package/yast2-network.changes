@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Jul 10 07:06:17 UTC 2017 - gsouza@suse.com
+
+- Added support to storage-ng so it can verify if a disk is in
+network.
+- Updated dependencies to include storage-ng.
+- 3.3.1
+
+-------------------------------------------------------------------
 Thu Mar 23 15:44:36 UTC 2017 - ancor@suse.com
 
 - Version temporarily bumped to 3.3.x to prioritize the
