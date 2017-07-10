@@ -11,12 +11,11 @@ module CFA
   # @see http://www.rubydoc.info/github/config-files-api/config_files_api/CFA/BaseModel
   # @see http://www.rubydoc.info/github/config-files-api/config_files_api/CFA/AugeasParser
   class Hosts < BaseModel
-    PARSER = AugeasParser.new("hosts.lns")
     PATH = "/etc/hosts".freeze
     include Yast::Logger
 
     def initialize(file_handler: nil)
-      super(PARSER, PATH, file_handler: file_handler)
+      super(AugeasParser.new("hosts.lns"), PATH, file_handler: file_handler)
     end
 
     # The old format used by {Yast::HostClass}.
