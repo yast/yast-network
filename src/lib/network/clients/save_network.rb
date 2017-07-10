@@ -27,7 +27,6 @@ module Yast
       else
         Builtins.y2milestone("update - skip save_network")
       end
-      # EOF
 
       nil
     end
@@ -40,7 +39,10 @@ module Yast
         Installation.destdir
       )
 
-      return unless is_disk_in_network
+      if !is_disk_in_network
+        log.info("Directory \"#{Installation.destdir}\" is not on a network based device")
+        return
+      end
 
       log.info("Directory \"#{Installation.destdir}\" is on a network based device")
 
