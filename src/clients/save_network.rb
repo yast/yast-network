@@ -269,6 +269,10 @@ module Yast
       NetworkAutoconfiguration.instance.configure_hosts if !configured
     end
 
+    # Invokes configuration of parts which are in charge of Lan module
+    #
+    # Currently it handles just AutoYaST installation. It just exits in case
+    # of common installation as there currently is nothing to do.
     def configure_lan
       return if !Mode.autoinst
 
