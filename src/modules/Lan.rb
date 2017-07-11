@@ -473,7 +473,7 @@ module Yast
 
     # Update the SCR according to network settings
     # @return true on success
-    def Write
+    def Write(gui: true)
       Builtins.y2milestone("Writing configuration")
 
       # Query modified flag in all components, not just LanItems - DNS,
@@ -547,7 +547,7 @@ module Yast
       # Progress step 5
       ProgressNextStage(_("Writing routing configuration..."))
       orig = Progress.set(false)
-      Routing.Write
+      Routing.Write(gui: gui)
       Progress.set(orig)
       Builtins.sleep(sl)
 
@@ -557,9 +557,9 @@ module Yast
       # write resolv.conf after change from dhcp to static (#327074)
       # reload/restart network before this to put correct resolv.conf from dhcp-backup
       orig = Progress.set(false)
-      DNS.Write
+      DNS.Write(gui: gui)
       Host.EnsureHostnameResolvable
-      Host.Write
+      Host.Write(gui: gui)
       Progress.set(orig)
 
       Builtins.sleep(sl)

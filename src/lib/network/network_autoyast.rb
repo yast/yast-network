@@ -147,6 +147,22 @@ module Yast
       configure_submodule(LanItems, ay_configuration, write: write)
     end
 
+    # Initializates NICs setup according AY profile
+    #
+    # If the installer is running in 1st stage mode only, then the configuration
+    # is also written
+    #
+    # @param [Boolean] write forces instant writing of the configuration
+    # @return [Boolean] true when configuration was present and loaded from the profile
+    def configure_lan(write: false)
+      log.info("NetworkAutoYast: Lan configuration")
+
+      ay_configuration = Lan.FromAY(ay_networking_section)
+      ay_configuration = NetworkAutoYast.instance.merge_configs(ay_configuration) if keep_net_config?
+
+      configure_submodule(Lan, ay_configuration, write: write)
+    end
+
     # Initializates /etc/hosts according AY profile
     #
     # If the installer is running in 1st stage mode only, then the configuration

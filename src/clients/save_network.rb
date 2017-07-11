@@ -281,19 +281,19 @@ module Yast
       NetworkAutoYast.instance.configure_nics
     end
 
+    def configure_lan
+      NetworkAutoYast.instance.configure_lan
+    end 
+
     # It does an automatic configuration of installed system
     #
     # Basically, it runs several proposals.
     def configure_target
       NetworkAutoconfiguration.instance.configure_virtuals
 
-      configure_nics
-      configure_dns
+      configure_lan
 
-      # this depends on DNS configuration
-      configure_hosts
-      # this depends on NICs configuration
-      configure_routing
+      # TODO: see configure_hosts
 
       set_network_service
 
