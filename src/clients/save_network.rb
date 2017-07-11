@@ -269,21 +269,11 @@ module Yast
       NetworkAutoconfiguration.instance.configure_hosts if !configured
     end
 
-    def configure_routing
-      return if !Mode.autoinst
-
-      NetworkAutoYast.instance.configure_routing
-    end
-
-    def configure_nics
-      return if !Mode.autoinst
-
-      NetworkAutoYast.instance.configure_nics
-    end
-
     def configure_lan
+      return if !Mode.autoinst
+
       NetworkAutoYast.instance.configure_lan
-    end 
+    end
 
     # It does an automatic configuration of installed system
     #
@@ -293,7 +283,8 @@ module Yast
 
       configure_lan
 
-      # TODO: see configure_hosts
+      # this depends on DNS configuration
+      configure_hosts
 
       set_network_service
 

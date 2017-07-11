@@ -106,47 +106,6 @@ module Yast
       NetworkService.EnableDisableNow
     end
 
-    # Initializates DNS setup according AY profile
-    #
-    # If the installer is running in 1st stage mode only, then the configuration
-    # is also written
-    #
-    # @param [Boolean] write forces instant writing of the configuration
-    # @return [Boolean] true when configuration was present and loaded from the profile
-    def configure_dns(write: false)
-      log.info("NetworkAutoYast: DNS / Hostname configuration")
-
-      configure_submodule(DNS, ay_networking_section["dns"], write: write)
-    end
-
-    # Initializates Routing setup according AY profile
-    #
-    # If the installer is running in 1st stage mode only, then the configuration
-    # is also written
-    #
-    # @param [Boolean] write forces instant writing of the configuration
-    # @return [Boolean] true when configuration was present and loaded from the profile
-    def configure_routing(write: false)
-      log.info("NetworkAutoYast: Routing configuration")
-
-      configure_submodule(Routing, ay_networking_section["routing"], write: write)
-    end
-
-    # Initializates NICs setup according AY profile
-    #
-    # If the installer is running in 1st stage mode only, then the configuration
-    # is also written
-    #
-    # @param [Boolean] write forces instant writing of the configuration
-    # @return [Boolean] true when configuration was present and loaded from the profile
-    def configure_nics(write: false)
-      log.info("NetworkAutoYast: NICs configuration")
-
-      ay_configuration = Lan.FromAY(ay_networking_section)
-
-      configure_submodule(LanItems, ay_configuration, write: write)
-    end
-
     # Initializates NICs setup according AY profile
     #
     # If the installer is running in 1st stage mode only, then the configuration

@@ -210,42 +210,6 @@ describe "NetworkAutoYast" do
     end
   end
 
-  describe "#configure_dns" do
-    let(:network_autoyast) { Yast::NetworkAutoYast.instance }
-
-    def global_section(second_stage: true)
-      allow(network_autoyast)
-        .to receive(:ay_general_section)
-        .and_return("mode" => { "second_stage" => second_stage })
-    end
-
-    before(:each) do
-      Yast.import "DNS"
-
-      allow(network_autoyast)
-        .to receive(:ay_networking_section)
-        .and_return("dns" => { "dhcp_hostname" => false })
-      allow(network_autoyast)
-        .to receive(:ay_general_section)
-        .and_return({})
-    end
-
-    it "imports DNS configuration when available in profile" do
-      expect(Yast::DNS).to receive(:Import)
-      expect(Yast::DNS).not_to receive(:Write)
-
-      expect(network_autoyast.configure_dns).to be true
-    end
-
-    it "writes DNS config when running first stage only" do
-      global_section(second_stage: false)
-
-      expect(Yast::DNS).to receive(:Import)
-      expect(Yast::DNS).to receive(:Write)
-      expect(network_autoyast.configure_dns).to be true
-    end
-  end
-
   describe "#keep_net_config?" do
     let(:network_autoyast) { Yast::NetworkAutoYast.instance }
 
