@@ -283,7 +283,7 @@ module Yast
       return true if @initialized == true
 
       @dhcp_hostname = dhclient_set_hostname
-      @write_hostname = write_hostname_to_hosts
+      @write_hostname = get_write_hostname_to_hosts
 
       @resolv_conf_policy = Convert.to_string(
         SCR.Read(path(".sysconfig.network.config.NETCONFIG_DNS_POLICY"))
@@ -355,17 +355,14 @@ module Yast
       # Progress step 1/3
       ProgressNextStage(_("Writing hostname...")) if gui
       update_hostname
-      Builtins.sleep(0) if gui
 
       # Progress step 2/3
       ProgressNextStage(_("Updating configuration...")) if gui
       update_mta_config
-      Builtins.sleep(0) if gui
 
       # Progress step 3/3
       ProgressNextStage(_("Updating /etc/resolv.conf ...")) if gui
       update_sysconfig_config
-      Builtins.sleep(0) if gui
 
       Progress.NextStage if gui
       @modified = false
@@ -646,7 +643,7 @@ module Yast
 
     # Updates /etc/sysconfig/network/dhcp
     def update_sysconfig_dhcp
-      if dhclient_set_hostname != @dhcp_hostname || write_hostname_to_hosts != @write_hostname
+      if dhclient_set_hostname != @dhcp_hostname || get_write_hostname_to_hosts != @write_hostname
         log.info("dhcp_hostname=#{@dhcp_hostname}")
         log.info("write_hostname=#{@write_hostname}")
 
@@ -659,7 +656,7 @@ module Yast
         SCR.Write(
           path(".sysconfig.network.dhcp.WRITE_HOSTNAME_TO_HOSTS"),
           @write_hostname ? "yes" : "no"
-        ) if !@write_hostname
+        ) if !@write_hostname.nil?
         SCR.Write(path(".sysconfig.network.dhcp"), nil)
       else
         log.info("No update for /etc/sysconfig/network/dhcp")
@@ -724,7 +721,7 @@ module Yast
     #
     # return {true, false, nil} "yes" => true, "no" => false, otherwise or not
     # present => nil
-    def write_hostname_to_hosts
+    def get_write_hostname_to_hosts
       SYSCFG_TO_BOOL[SCR.Read(path(".sysconfig.network.dhcp.WRITE_HOSTNAME_TO_HOSTS"))]
     end
 
