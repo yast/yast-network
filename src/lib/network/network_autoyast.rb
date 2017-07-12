@@ -227,7 +227,7 @@ module Yast
       true
     end
 
-    def rename_lan_item(item, name_to, attr=nil, key=nil)
+    def rename_lan_item(item, name_to, attr = nil, key = nil)
       return if item.nil? || item.empty? || item < 0 || item >= LanItems.Items.size
       return if name_to.nil? || name_to.empty?
 
@@ -273,7 +273,7 @@ module Yast
         log.info("Matching device found - renaming <#{name_from}> -> <#{name_to}>")
 
         # find rule in collision
-        colliding_item, item_map = LanItems.Items.find do |i, _|
+        colliding_item, _item_map = LanItems.Items.find do |i, _|
           LanItems.GetDeviceName(i) == name_to
         end
 
