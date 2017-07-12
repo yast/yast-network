@@ -228,6 +228,9 @@ module Yast
     end
 
     def rename_lan_item(item, name_to, attr=nil, key=nil)
+      return if item.nil? || item.empty? || item < 0 || item >= LanItems.Items.size
+      return if name_to.nil? || name_to.empty?
+
       # selecting according device name is unreliable (selects only in between configured devices)
       LanItems.current = item
 
