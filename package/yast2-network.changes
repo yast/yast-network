@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Jul 12 05:37:30 UTC 2017 - mfilka@suse.com
+
+- bnc#1038717
+  - avoid creating duplicit udev rules in AutoYaST installation
+- 3.1.178
+
+-------------------------------------------------------------------
 Thu May 18 10:11:01 UTC 2017 - gsouza@suse.com
 
 - bsc#1036440 and bsc#994471
