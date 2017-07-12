@@ -2,7 +2,7 @@
 Wed Jul 12 05:37:30 UTC 2017 - mfilka@suse.com
 
 - bnc#1038717
-  - avoid creating duplicit udev rules in AutoYaST installation
+  - avoid creating duplicate udev rules in AutoYaST installation
 - 3.1.178
 
 -------------------------------------------------------------------

@@ -227,8 +227,15 @@ module Yast
       true
     end
 
+    # Renames a network device represented by given item.
+    #
+    # @param [Integer] item is an item id. See LanItems for detail
+    # @param [String] name_to new device name
+    # @param [String] attr an udev attribute usable in NIC's rule. Currently just
+    #  "KERNELS" or "ATTR{address}" makes sense. This parameter is optional
+    # @param [String] value for the given udev attribute. Optional parameter.
     def rename_lan_item(item, name_to, attr = nil, key = nil)
-      return if item.nil? || item.empty? || item < 0 || item >= LanItems.Items.size
+      return if item.nil? || item < 0 || item >= LanItems.Items.size
       return if name_to.nil? || name_to.empty?
 
       # selecting according device name is unreliable (selects only in between configured devices)
