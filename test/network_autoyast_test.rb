@@ -348,4 +348,53 @@ describe "NetworkAutoYast" do
       expect(network_autoyast.send(:valid_rename_udev_rule?, complete_rule)).to be true
     end
   end
+
+  describe "#rename_lan_item" do
+    before(:each) do
+      allow(Yast::LanItems)
+        .to receive(:Items)
+        .and_return({ 0 => { "ifcfg" => "eth0" }})
+    end
+
+    context "valid arguments given" do
+      it "renames the item with no udev attribute change" do
+        expect(Yast::LanItems)
+          .to receive(:rename)
+          .with("new_name")
+        expect(Yast::LanItems)
+          .not_to receive(:ReplaceItemUdev)
+
+        network_autoyast.send(:rename_lan_item, 0, "new_name")
+      end
+
+      it "renames the item with udev attribute change" do
+        expect(Yast::LanItems)
+          .to receive(:rename)
+          .with("new_name")
+        expect(Yast::LanItems)
+          .to receive(:ReplaceItemUdev)
+
+        network_autoyast.send(:rename_lan_item, 0, "new_name", "KERNELS", "0000:00:03.0")
+      end
+    end
+
+    context "invalid arguments given" do
+      it "do not try to rename an item when missing new name" do
+        expect(Yast::LanItems)
+          .not_to receive(:rename)
+
+        network_autoyast.send(:rename_lan_item, 0, nil)
+        network_autoyast.send(:rename_lan_item, 0, "")
+      end
+
+      it "do not try to rename an item when given item id is invalid" do
+        expect(Yast::LanItems)
+          .not_to receive(:rename)
+
+        network_autoyast.send(:rename_lan_item, nil, "new_name")
+        network_autoyast.send(:rename_lan_item, -1, "new_name")
+        network_autoyast.send(:rename_lan_item, 100, "new_name")
+      end
+    end
+  end
 end
