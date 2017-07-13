@@ -250,9 +250,13 @@ module Yast
 
         # make sure that we base renaming on defined attribute with value given in AY profile
         LanItems.ReplaceItemUdev(current_attr, attr, key)
+      elsif attr.nil? ^ key.nil? # xor
+        raise ArgumentError, "Not enough data for udev rule definition"
       end
 
       LanItems.rename(name_to)
+
+      nil
     end
 
     # Takes a list of udev rules and assignes them to corresponding devices.
