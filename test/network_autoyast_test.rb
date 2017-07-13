@@ -395,6 +395,15 @@ describe "NetworkAutoYast" do
         network_autoyast.send(:rename_lan_item, -1, "new_name")
         network_autoyast.send(:rename_lan_item, 100, "new_name")
       end
+
+      it "raise an exception when udev definition is incomplete" do
+        expect {
+          network_autoyast.send(:rename_lan_item, 0, "new_name", "KERNELS", nil)
+        }.to raise_error(ArgumentError)
+        expect {
+          network_autoyast.send(:rename_lan_item, 0, "new_name", nil, "0000:00:03.0")
+        }.to raise_error(ArgumentError)
+      end
     end
   end
 end
