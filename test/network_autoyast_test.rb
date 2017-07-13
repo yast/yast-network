@@ -353,7 +353,7 @@ describe "NetworkAutoYast" do
     before(:each) do
       allow(Yast::LanItems)
         .to receive(:Items)
-        .and_return({ 0 => { "ifcfg" => "eth0" }})
+        .and_return(0 => { "ifcfg" => "eth0" })
     end
 
     context "valid arguments given" do
@@ -397,12 +397,12 @@ describe "NetworkAutoYast" do
       end
 
       it "raise an exception when udev definition is incomplete" do
-        expect {
+        expect do
           network_autoyast.send(:rename_lan_item, 0, "new_name", "KERNELS", nil)
-        }.to raise_error(ArgumentError)
-        expect {
+        end.to raise_error(ArgumentError)
+        expect do
           network_autoyast.send(:rename_lan_item, 0, "new_name", nil, "0000:00:03.0")
-        }.to raise_error(ArgumentError)
+        end.to raise_error(ArgumentError)
       end
     end
   end
