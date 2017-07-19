@@ -44,6 +44,7 @@ Requires:       yast2-xml
 #netconfig (FaTE #303618)
 Requires:       sysconfig >= 0.80.0
 # Needed to verify if a disk is in network
+BuildRequires:  yast2-storage-ng >= 0.1.29
 Requires:       yast2-storage-ng >= 0.1.29
 # Packages::vnc_packages
 Requires:       yast2-packager >= 3.1.47
