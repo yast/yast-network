@@ -166,7 +166,9 @@ module Yast
     # Get all the Hosts configuration from a map.
     # When called by hosts_auto (preparing autoinstallation data)
     # the map may be empty.
+    #
     # @param [Hash] settings autoinstallation settings
+    #               expected format of settings["hosts"] is { "ip" => [list, of, names] }
     # @return true if success
     def Import(settings)
       @modified = true # trigger Write

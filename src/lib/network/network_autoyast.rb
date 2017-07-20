@@ -132,9 +132,8 @@ module Yast
     def configure_hosts(write: false)
       log.info("NetworkAutoYast: Hosts configuration")
 
-      # expected format for Hosts.Import is { "ip" => [list, of, names] }
       hosts_config = (ay_host_section["hosts"] || {}).map do |host|
-        # we neet to guarantee order of the items here
+        # we need to guarantee order of the items here
         [host["host_address"] || "", host["names"] || []]
       end
       hosts_config = hosts_config.to_h.delete_if { |k, v| k.empty? || v.empty? }
@@ -256,7 +255,7 @@ module Yast
     #   hosts => [
     #     # first <host_entry>
     #     {
-    #       "hosts_address" => <ip>,
+    #       "host_address" => <ip>,
     #       "names" => [list, of, names]
     #     }
     #     # second <host_entry>
