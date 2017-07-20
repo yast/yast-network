@@ -389,3 +389,71 @@ describe "LanClass#ProposeVirtualized" do
     end
   end
 end
+
+describe "LanClass#FromAY" do
+  it "makes a minimal structure from an empty input" do
+    expected = {
+      "config"     => { "dhcp"=>{} },
+      "devices"    => {},
+      "hwcfg"      => {},
+      "interfaces" => []
+    }
+    expect(Yast::Lan.FromAY({})).to eq(expected)
+  end
+
+  it "converts 'interfaces' into nested 'devices'" do
+    input = {
+      "interfaces" => [
+        {
+          "bootproto"   => "static",
+          "device"      => "eth1",
+          "ipaddr"      => "10.1.1.1",
+          "name"        => "Ethernet Card 0",
+          "prefixlen"   => "24",
+          "startmode"   => "auto",
+          "usercontrol" => "no"
+        }
+      ]
+    }
+    expected = {
+      "eth" => {
+        "eth1" => {
+          "BOOTPROTO"   => "static",
+          "IPADDR"      => "10.1.1.1",
+          "NAME"        => "Ethernet Card 0",
+          "PREFIXLEN"   => "24",
+          "STARTMODE"   => "auto",
+          "USERCONTROL" => "no"
+        }
+      }
+    }
+
+    expect(Yast::Lan.FromAY(input)["devices"]).to eq(expected)
+  end
+
+  it "converts DHCP options" do
+    input = {
+      "dhcp_options" => {
+        "dhclient_hostname_option" => "AUTO"
+      },
+      "dns"          => {
+        "dhcp_hostname"      => false,
+        "domain"             => "example.com",
+        "hostname"           => "eg",
+        "nameservers"        => ["10.10.0.100"],
+        "resolv_conf_policy" => "auto",
+        "searchlist"         => ["example.com"],
+        "write_hostname"     => false
+      }
+    }
+    expected_config = {
+      "dhcp" => {
+        "DHCLIENT_HOSTNAME_OPTION" => "AUTO",
+        "DHCLIENT_SET_HOSTNAME"    => false
+      }
+    }
+
+    actual = Yast::Lan.FromAY(input)
+    expect(actual["config"]).to eq(expected_config)
+  end
+end
