@@ -473,7 +473,7 @@ module Yast
 
     # Update the SCR according to network settings
     # @return true on success
-    def Write
+    def Write(gui: true)
       Builtins.y2milestone("Writing configuration")
 
       # Query modified flag in all components, not just LanItems - DNS,
@@ -547,7 +547,7 @@ module Yast
       # Progress step 5
       ProgressNextStage(_("Writing routing configuration..."))
       orig = Progress.set(false)
-      Routing.Write
+      Routing.Write(gui: gui)
       Progress.set(orig)
       Builtins.sleep(sl)
 
@@ -557,9 +557,9 @@ module Yast
       # write resolv.conf after change from dhcp to static (#327074)
       # reload/restart network before this to put correct resolv.conf from dhcp-backup
       orig = Progress.set(false)
-      DNS.Write
+      DNS.Write(gui: gui)
       Host.EnsureHostnameResolvable
-      Host.Write
+      Host.Write(gui: gui)
       Progress.set(orig)
 
       Builtins.sleep(sl)
@@ -642,6 +642,132 @@ module Yast
         false
       )
       Write()
+    end
+
+    # If there's key in m, upcase key and assign the value to ret
+    # @return ret
+    def UpcaseCondSet(ret, m, key)
+      ret = deep_copy(ret)
+      m = deep_copy(m)
+      if Builtins.haskey(m, key)
+        Ops.set(ret, Builtins.toupper(key), Ops.get(m, key))
+      end
+      deep_copy(ret)
+    end
+
+    # Convert data from autoyast to structure used by module.
+    # @param [Hash] input autoyast settings
+    # @return native network settings
+    # FIXME: massive refactoring required
+    def FromAY(input)
+      input = deep_copy(input)
+      Builtins.y2debug("input %1", input)
+
+      ifaces = []
+      Builtins.foreach(Ops.get_list(input, "interfaces", [])) do |interface|
+        iface = {}
+        Builtins.foreach(interface) do |key, value|
+          if key == "aliases"
+            Builtins.foreach(
+              Convert.convert(
+                value,
+                from: "any",
+                to:   "map <string, map <string, any>>"
+              )
+            ) do |k, v|
+              # replace "alias0" to "0" (bnc#372687)
+              t = Convert.convert(
+                value,
+                from: "any",
+                to:   "map <string, any>"
+              )
+              Ops.set(t, Ops.get_string(v, "LABEL", ""), Ops.get_map(t, k, {}))
+              t = Builtins.remove(t, k)
+              value = deep_copy(t)
+            end
+          end
+          Ops.set(iface, key, value)
+        end
+        ifaces = Builtins.add(ifaces, iface)
+      end
+      Ops.set(input, "interfaces", ifaces)
+
+      interfaces = Builtins.listmap(Ops.get_list(input, "interfaces", [])) do |interface|
+        # input: list of items $[ "device": "d", "foo": "f", "bar": "b"]
+        # output: map of items  "d": $["FOO": "f", "BAR": "b"]
+        new_interface = {}
+        # uppercase map keys
+        newk = nil
+        interface = Builtins.mapmap(interface) do |k, v|
+          newk = if k == "aliases"
+            "_aliases"
+          else
+            Builtins.toupper(k)
+          end
+          { newk => v }
+        end
+        Builtins.foreach(interface) do |k, v|
+          Ops.set(new_interface, k, v) if v != "" && k != "DEVICE"
+        end
+        new_device = Ops.get_string(interface, "DEVICE", "")
+        { new_device => new_interface }
+      end
+
+      # split to a two level map like NetworkInterfaces
+      devices = {}
+
+      Builtins.foreach(interfaces) do |devname, if_data|
+        # devname can be in old-style fashion (eth-bus-<pci_id>). So, convert it
+        devname = LanItems.getDeviceName(devname)
+        type = NetworkInterfaces.GetType(devname)
+        d = Ops.get(devices, type, {})
+        Ops.set(d, devname, if_data)
+        Ops.set(devices, type, d)
+      end
+
+      hwcfg = {}
+      if Ops.greater_than(Builtins.size(Ops.get_list(input, "modules", [])), 0)
+        hwcfg = Builtins.listmap(Ops.get_list(input, "modules", [])) do |mod|
+          options = Ops.get_string(mod, "options", "")
+          module_name = Ops.get_string(mod, "module", "")
+          start_mode = Ops.get_string(mod, "startmode", "auto")
+          device_name = Ops.get_string(mod, "device", "")
+          module_data = {
+            "MODULE"         => module_name,
+            "MODULE_OPTIONS" => options,
+            "STARTMODE"      => start_mode
+          }
+          { device_name => module_data }
+        end
+      end
+
+      Ops.set(input, "devices", devices)
+      Ops.set(input, "hwcfg", hwcfg)
+
+      # DHCP:: config: some of it is in the DNS part of the profile
+      dhcp = {}
+      dhcpopts = Ops.get_map(input, "dhcp_options", {})
+      dns = Ops.get_map(input, "dns", {})
+
+      if Builtins.haskey(dns, "dhcp_hostname")
+        Ops.set(
+          dhcp,
+          "DHCLIENT_SET_HOSTNAME",
+          Ops.get_boolean(dns, "dhcp_hostname", false)
+        )
+      end
+
+      dhcp = UpcaseCondSet(dhcp, dhcpopts, "dhclient_client_id")
+      dhcp = UpcaseCondSet(dhcp, dhcpopts, "dhclient_additional_options")
+      dhcp = UpcaseCondSet(dhcp, dhcpopts, "dhclient_hostname_option")
+
+      Ops.set(input, "config", "dhcp" => dhcp)
+      if !Ops.get(input, "strict_IP_check_timeout").nil?
+        Ops.set(input, ["config", "config"], "CHECK_DUPLICATE_IP" => true)
+      end
+
+      Builtins.y2milestone("input=%1", input)
+      deep_copy(input)
     end
 
     # Import data.

@@ -259,16 +259,36 @@ module Yast
       DNS.create_hostname_link
     end
 
+    # Creates target's /etc/hosts configuration
+    #
+    # It uses hosts' configuration as defined in AY profile (if any) or
+    # proceedes according the proposal
+    def configure_hosts
+      configured = false
+      configured = NetworkAutoYast.instance.configure_hosts if Mode.autoinst
+      NetworkAutoconfiguration.instance.configure_hosts if !configured
+    end
+
+    # Invokes configuration of parts which are in charge of Lan module
+    #
+    # Currently it handles just AutoYaST installation. It just exits in case
+    # of common installation as there currently is nothing to do.
+    def configure_lan
+      return if !Mode.autoinst
+
+      NetworkAutoYast.instance.configure_lan
+    end
+
     # It does an automatic configuration of installed system
     #
     # Basically, it runs several proposals.
     def configure_target
       NetworkAutoconfiguration.instance.configure_virtuals
 
-      configure_dns
+      configure_lan
 
       # this depends on DNS configuration
-      NetworkAutoconfiguration.instance.configure_hosts
+      configure_hosts
 
       set_network_service
 

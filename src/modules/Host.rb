@@ -127,7 +127,7 @@ module Yast
 
     # Write hosts settings and apply changes
     # @return true if success
-    def Write
+    def Write(gui: false)
       Builtins.y2milestone("Writing hosts configuration")
 
       if !@modified
@@ -141,13 +141,15 @@ module Yast
         return true
       end
 
-      steps = [_("Update /etc/hosts")]
+      if gui
+        steps = [_("Update /etc/hosts")]
 
-      caption = _("Saving Hostname Configuration")
+        caption = _("Saving Hostname Configuration")
 
-      Progress.New(caption, " ", steps.size, steps, [], "")
+        Progress.New(caption, " ", steps.size, steps, [], "")
 
-      ProgressNextStage(_("Updating /etc/hosts ..."))
+        ProgressNextStage(_("Updating /etc/hosts ..."))
+      end
 
       # backup if exists
       if SCR.Read(path(".target.size"), CFA::Hosts::PATH) >= 0
@@ -156,7 +158,7 @@ module Yast
 
       @hosts.save
 
-      Progress.NextStage
+      Progress.NextStage if gui
 
       true
     end
@@ -164,7 +166,9 @@ module Yast
     # Get all the Hosts configuration from a map.
     # When called by hosts_auto (preparing autoinstallation data)
     # the map may be empty.
+    #
     # @param [Hash] settings autoinstallation settings
+    #               expected format of settings["hosts"] is { "ip" => [list, of, names] }
     # @return true if success
     def Import(settings)
       @modified = true # trigger Write

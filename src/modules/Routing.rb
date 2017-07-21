@@ -300,7 +300,7 @@ module Yast
 
     # Write routing settings and apply changes
     # @return true if success
-    def Write
+    def Write(gui: false)
       Builtins.y2milestone("Writing configuration")
       if !Modified()
         Builtins.y2milestone("No changes to routing -> nothing to write")
@@ -316,10 +316,12 @@ module Yast
 
       caption = _("Saving Routing Configuration")
 
-      Progress.New(caption, " ", Builtins.size(steps), steps, [], "")
+      if gui
+        Progress.New(caption, " ", Builtins.size(steps), steps, [], "")
 
-      # Progress stage 1/2
-      ProgressNextStage(_("Writing IP forwarding settings..."))
+        # Progress stage 1/2
+        ProgressNextStage(_("Writing IP forwarding settings..."))
+      end
 
       WriteIPForwarding()
 
@@ -329,11 +331,11 @@ module Yast
       # so we let our caller do it together with other things
 
       # Progress stage 2/2
-      ProgressNextStage(_("Writing routing settings..."))
+      ProgressNextStage(_("Writing routing settings...")) if gui
 
       ret = write_routes(@Routes)
 
-      Progress.NextStage
+      Progress.NextStage if gui
 
       ret
     end

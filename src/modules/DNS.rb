@@ -282,14 +282,8 @@ module Yast
     def Read
       return true if @initialized == true
 
-      tmp1 = Convert.to_string(
-        SCR.Read(path(".sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME"))
-      )
-      @dhcp_hostname = tmp1 == "yes"
-      tmp2 = Convert.to_string(
-        SCR.Read(path(".sysconfig.network.dhcp.WRITE_HOSTNAME_TO_HOSTS"))
-      )
-      @write_hostname = tmp2 == "yes"
+      @dhcp_hostname = dhclient_set_hostname
+      @write_hostname = get_write_hostname_to_hosts
 
       @resolv_conf_policy = Convert.to_string(
         SCR.Read(path(".sysconfig.network.config.NETCONFIG_DNS_POLICY"))
@@ -331,53 +325,8 @@ module Yast
     # Write new DNS and hostname settings
     # Includes Host,NetworkConfig::Write
     # @return true if success
-    def Write
-      # build FQ hostname
-      fqhostname = Hostname.MergeFQ(@hostname, @domain)
-
-      # We do not collect static IP addresses here, as hostnames
-      # are defined for each static IP separately in address dialog
-      # FaTE #2202
-
-      @oldhostname = fqhostname # #49634
-
-      # ensure that nothing is saved in case old values are the same, as it makes
-      # rcnetwork reload restart all interfaces (even 'touch /etc/sysconfig/network/dhcp'
-      # is sufficient)
-      tmp = SCR.Read(path(".sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME"))
-      old_dhcp_hostname = tmp == "yes"
-
-      tmp = SCR.Read(path(".sysconfig.network.dhcp.WRITE_HOSTNAME_TO_HOSTS"))
-      old_write_hostname = tmp == "yes"
-
-      if old_dhcp_hostname != dhcp_hostname || old_write_hostname != write_hostname
-        SCR.Write(
-          path(".sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME"),
-          @dhcp_hostname ? "yes" : "no"
-        )
-        SCR.Write(
-          path(".sysconfig.network.dhcp.WRITE_HOSTNAME_TO_HOSTS"),
-          @write_hostname ? "yes" : "no"
-        )
-        SCR.Write(path(".sysconfig.network.dhcp"), nil)
-      end
-
-      Builtins.y2milestone("Writing configuration")
-      if !@modified
-        Builtins.y2milestone("No changes to DNS -> nothing to write")
-        return true
-      end
-
-      Builtins.y2milestone("nameservers=%1", @nameservers)
-      Builtins.y2milestone("searchlist=%1", @searchlist)
-      Builtins.y2milestone("hostname=%1", @hostname)
-      Builtins.y2milestone("domain=%1", @domain)
-      Builtins.y2milestone(
-        "dhcp_hostname=%1, write_hostname=%2",
-        @dhcp_hostname,
-        @write_hostname
-      )
-
+    def Write(gui: true)
+      # Write process description labels
       steps = [
         # Progress stage 1
         _("Write hostname"),
@@ -387,65 +336,37 @@ module Yast
         _("Update /etc/resolv.conf")
       ]
 
+      # ensure that nothing is saved in case old values are the same, as it makes
+      # rcnetwork reload restart all interfaces (even 'touch /etc/sysconfig/network/dhcp'
+      # is sufficient)
+      update_sysconfig_dhcp
+
+      log.info("DNS: Writing configuration")
+      if !@modified
+        log.info("No changes to DNS -> nothing to write")
+        return true
+      end
+
       # Write dialog caption
       caption = _("Saving Hostname and DNS Configuration")
-      sl = 0 # 100; for testing
 
-      Progress.New(caption, " ", Builtins.size(steps), steps, [], "")
-
-      # Allow to set hostname even if it's modified by DHCP (#13427)
-      # if(NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"]:false != true) {
+      Progress.New(caption, " ", Builtins.size(steps), steps, [], "") if gui
 
       # Progress step 1/3
-      ProgressNextStage(_("Writing hostname..."))
-
-      # change the hostname
-      SCR.Execute(path(".target.bash"), Ops.add("/bin/hostname ", @hostname))
-
-      # write hostname
-      SCR.Write(
-        path(".target.string"),
-        HOSTNAME_PATH,
-        Ops.add(fqhostname, "\n")
-      )
-
-      create_hostname_link
-
-      Builtins.sleep(sl)
+      ProgressNextStage(_("Writing hostname...")) if gui
+      update_hostname
 
       # Progress step 2/3
-      ProgressNextStage(_("Updating configuration..."))
-
-      # Finish him
+      ProgressNextStage(_("Updating configuration...")) if gui
       update_mta_config
-      Builtins.sleep(sl)
-
-      #     if(SCR::Read(.target.size, resolv_conf) < 0)
-      # SCR::Write(.target.string, resolv_conf, "");
 
       # Progress step 3/3
-      ProgressNextStage(_("Updating /etc/resolv.conf ..."))
+      ProgressNextStage(_("Updating /etc/resolv.conf ...")) if gui
+      update_sysconfig_config
 
-      SCR.Write(
-        path(".sysconfig.network.config.NETCONFIG_DNS_POLICY"),
-        @resolv_conf_policy
-      )
-      SCR.Write(
-        path(".sysconfig.network.config.NETCONFIG_DNS_STATIC_SEARCHLIST"),
-        Builtins.mergestring(@searchlist, " ")
-      )
-      SCR.Write(
-        path(".sysconfig.network.config.NETCONFIG_DNS_STATIC_SERVERS"),
-        Builtins.mergestring(@nameservers, " ")
-      )
-      SCR.Write(path(".sysconfig.network.config"), nil)
-
-      SCR.Execute(path(".target.bash"), "/sbin/netconfig update")
-
-      Builtins.sleep(sl)
-
-      Progress.NextStage
+      Progress.NextStage if gui
       @modified = false
+
       true
     end
 
@@ -718,6 +639,90 @@ module Yast
     # @return [Boolean] true if the configuration is empty (or contains defaults)
     def empty?
       @nameservers.empty? && @searchlist.empty? && @hostname.empty? && @domain.empty?
+    end
+
+    # Updates /etc/sysconfig/network/dhcp
+    def update_sysconfig_dhcp
+      if dhclient_set_hostname != @dhcp_hostname || get_write_hostname_to_hosts != @write_hostname
+        log.info("dhcp_hostname=#{@dhcp_hostname}")
+        log.info("write_hostname=#{@write_hostname}")
+
+        # @dhcp_hostname and @wrote_hostname can currently be nil only when
+        # not present in original file. So, do not add it in such case.
+        SCR.Write(
+          path(".sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME"),
+          @dhcp_hostname ? "yes" : "no"
+        ) if !@dhcp_hostname.nil?
+        SCR.Write(
+          path(".sysconfig.network.dhcp.WRITE_HOSTNAME_TO_HOSTS"),
+          @write_hostname ? "yes" : "no"
+        ) if !@write_hostname.nil?
+        SCR.Write(path(".sysconfig.network.dhcp"), nil)
+      else
+        log.info("No update for /etc/sysconfig/network/dhcp")
+      end
+    end
+
+    # Updates system with new hostname
+    def update_hostname
+      log.info("hostname=#{@hostname}")
+      log.info("domain=#{@domain}")
+
+      # change the hostname
+      SCR.Execute(path(".target.bash"), Ops.add("/bin/hostname ", @hostname))
+
+      # build and write FQDN hostname
+      fqhostname = Hostname.MergeFQ(@hostname, @domain)
+      @oldhostname = fqhostname # #49634
+
+      SCR.Write(
+        path(".target.string"),
+        HOSTNAME_PATH,
+        Ops.add(fqhostname, "\n")
+      )
+
+      create_hostname_link
+    end
+
+    # Updates /etc/sysconfig/network/config
+    def update_sysconfig_config
+      log.info("nameservers=#{@nameservers}")
+      log.info("searchlist=#{@searchlist}")
+
+      SCR.Write(
+        path(".sysconfig.network.config.NETCONFIG_DNS_POLICY"),
+        @resolv_conf_policy
+      )
+      SCR.Write(
+        path(".sysconfig.network.config.NETCONFIG_DNS_STATIC_SEARCHLIST"),
+        Builtins.mergestring(@searchlist, " ")
+      )
+      SCR.Write(
+        path(".sysconfig.network.config.NETCONFIG_DNS_STATIC_SERVERS"),
+        Builtins.mergestring(@nameservers, " ")
+      )
+      SCR.Write(path(".sysconfig.network.config"), nil)
+
+      SCR.Execute(path(".target.bash"), "/sbin/netconfig update")
+    end
+
+    # A constant for translating sysconfig's yes/no values into boolean
+    SYSCFG_TO_BOOL = { "yes" => true, "no" => false }.freeze
+
+    # Reads value of DHCLIENT_SET_HOSTNAME and translates it to boolean
+    #
+    # return {true, false, nil} "yes" => true, "no" => false, otherwise or not
+    # present => nil
+    def dhclient_set_hostname
+      SYSCFG_TO_BOOL[SCR.Read(path(".sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME"))]
+    end
+
+    # Reads value of WRITE_HOSTNAME_TO_HOSTS and translates it to boolean
+    #
+    # return {true, false, nil} "yes" => true, "no" => false, otherwise or not
+    # present => nil
+    def get_write_hostname_to_hosts
+      SYSCFG_TO_BOOL[SCR.Read(path(".sysconfig.network.dhcp.WRITE_HOSTNAME_TO_HOSTS"))]
     end
 
     publish variable: :proposal_valid, type: "boolean"

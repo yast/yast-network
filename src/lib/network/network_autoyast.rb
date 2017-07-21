@@ -20,6 +20,8 @@ module Yast
       Yast.import "Lan"
       Yast.import "LanItems"
       Yast.import "Linuxrc"
+      Yast.import "Host"
+      Yast.import "Routing"
     end
 
     # Merges existing config from system into given configuration map
@@ -104,26 +106,39 @@ module Yast
       NetworkService.EnableDisableNow
     end
 
-    # Initializates DNS setup according AY profile
+    # Initializates NICs setup according AY profile
     #
-    # FIXME: it currently doesn't write DNS configuration. It is used for initialization
-    # of DNS setup according AY profile in 1st stage as part of network setup was moved
-    # here already and some parts of network configuration needs to know it. DNS write
-    # is still done in 2nd stage.
+    # If the installer is running in 1st stage mode only, then the configuration
+    # is also written
     #
+    # @param [Boolean] write forces instant writing of the configuration
     # @return [Boolean] true when configuration was present and loaded from the profile
-    def configure_dns
-      ay_dns_config = ay_networking_section["dns"]
+    def configure_lan(write: false)
+      log.info("NetworkAutoYast: Lan configuration")
 
-      return false if !ay_dns_config
+      ay_configuration = Lan.FromAY(ay_networking_section)
+      ay_configuration = NetworkAutoYast.instance.merge_configs(ay_configuration) if keep_net_config?
 
-      DNS.Import(ay_dns_config)
+      configure_submodule(Lan, ay_configuration, write: write)
+    end
 
-      log.info("NetworkAutoYast: DNS / Hostname configuration")
-      log.info("dhcp hostname: #{DNS.dhcp_hostname}")
-      log.info("write hostname: #{DNS.write_hostname}")
+    # Initializates /etc/hosts according AY profile
+    #
+    # If the installer is running in 1st stage mode only, then the configuration
+    # is also written
+    #
+    # @param [Boolean] write forces instant writing of the configuration
+    # @return [Boolean] true when configuration was present and loaded from the profile
+    def configure_hosts(write: false)
+      log.info("NetworkAutoYast: Hosts configuration")
 
-      true
+      hosts_config = (ay_host_section["hosts"] || {}).map do |host|
+        # we need to guarantee order of the items here
+        [host["host_address"] || "", host["names"] || []]
+      end
+      hosts_config = hosts_config.to_h.delete_if { |k, v| k.empty? || v.empty? }
+
+      configure_submodule(Host, "hosts" => hosts_config, write: write)
     end
 
     # Checks if the profile asks for keeping installation network configuration
@@ -206,16 +221,53 @@ module Yast
       instsys_routing.merge(ay_routing)
     end
 
-    # Returns networking section of current AY profile
-    def ay_networking_section
+    # Returns current AY profile in the internal representation
+    #
+    # @return [Hash] hash representing current profile or empty hash
+    def ay_current_profile
       Yast.import "Profile"
 
       ay_profile = Profile.current
 
       return {} if ay_profile.nil? || ay_profile.empty?
-      return {} if ay_profile["networking"].nil?
+      ay_profile
+    end
 
-      ay_profile["networking"]
+    # Returns networking section of current AY profile
+    def ay_networking_section
+      return {} if ay_current_profile["networking"].nil?
+
+      ay_current_profile["networking"]
+    end
+
+    # Returns global section of current AY profile
+    def ay_general_section
+      return {} if ay_current_profile["general"].nil?
+
+      ay_current_profile["general"]
+    end
+
+    # Returns host section of the current AY profile
+    #
+    # Note that autoyast transforms the host's subsection
+    # into:
+    # {
+    #   hosts => [
+    #     # first <host_entry>
+    #     {
+    #       "host_address" => <ip>,
+    #       "names" => [list, of, names]
+    #     }
+    #     # second <host_entry>
+    #     ...
+    #   ]
+    # }
+    #
+    # return <Hash> with hosts configuration
+    def ay_host_section
+      return {} if ay_current_profile["host"].nil?
+
+      ay_current_profile["host"]
     end
 
     # Checks if the udev rule is valid for renaming a NIC
@@ -264,6 +316,27 @@ module Yast
         LanItems.ReplaceItemUdev(current_attr, attr, key)
         LanItems.rename(name_to)
       end
+    end
+
+    # Configures given yast submodule according AY configuration
+    #
+    # It takes data from AY profile transformed into a format expected by the YaST
+    # sub module's Import method.
+    #
+    # It imports the profile, configures the module and writes the configuration.
+    # Writing the configuration is optional when second stage is available and mandatory
+    # when running autoyast installation with first stage only.
+    def configure_submodule(yast_module, ay_config, write: false)
+      return false if !ay_config
+
+      yast_module.Import(ay_config)
+
+      write ||= !ay_general_section.fetch("mode", "second_stage" => true)["second_stage"]
+      log.info("Write configuration instantly: #{write}")
+
+      yast_module.Write(gui: false) if write
+
+      true
     end
   end
 end

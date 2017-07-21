@@ -210,22 +210,6 @@ describe "NetworkAutoYast" do
     end
   end
 
-  describe "#configure_dns" do
-    let(:network_autoyast) { Yast::NetworkAutoYast.instance }
-
-    it "imports DNS configuration when available in profile" do
-      Yast.import "DNS"
-
-      allow(network_autoyast)
-        .to receive(:ay_networking_section)
-        .and_return("dns" => { "dhcp_hostname" => false })
-
-      expect(Yast::DNS).to receive(:Import)
-
-      network_autoyast.configure_dns
-    end
-  end
-
   describe "#keep_net_config?" do
     let(:network_autoyast) { Yast::NetworkAutoYast.instance }
 

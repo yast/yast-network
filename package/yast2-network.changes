@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri Jul 11 09:40:11 UTC 2017 - mfilka@suse.com
+
+- bnc#1049814
+  - Moving network setup in AY into first stage completely when
+    the second stage is disabled.
+- 3.3.3
+
+-------------------------------------------------------------------
 Mon Jul 10 15:03:09 UTC 2017 - jreidinger@suse.com
 
 - Fix crash during write if Host.Read and Host.Import is called
