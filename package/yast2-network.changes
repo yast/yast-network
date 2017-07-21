@@ -1,9 +1,9 @@
 -------------------------------------------------------------------
 Fri Jul 11 09:40:11 UTC 2017 - mfilka@suse.com
 
-- Moving network setup in AY into first stage
-  - DNS configuration is written when second stage is disabled in
-    the profile
+- bnc#1049814
+  - Moving network setup in AY into first stage completely when
+    the second stage is disabled.
 - 3.3.3
 
 -------------------------------------------------------------------
