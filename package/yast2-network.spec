@@ -1,7 +1,7 @@
 #
 # spec file for package yast2-network
 #
-# Copyright (c) 2016 SUSE LINUX GmbH, Nuernberg, Germany.
+# Copyright (c) 2017 SUSE LINUX GmbH, Nuernberg, Germany.
 #
 # All modifications and additions to the file contributed by third parties
 # remain the property of their copyright owners, unless otherwise agreed
@@ -17,15 +17,13 @@
 
 
 Name:           yast2-network
-Version:        3.2.31
+Version:        3.2.32
 Release:        0
 BuildArch:      noarch
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 Source0:        %{name}-%{version}.tar.bz2
 
-Group:          System/YaST
-License:        GPL-2.0
 BuildRequires:  update-desktop-files
 BuildRequires:  yast2-devtools >= 3.1.15
 Requires:       yast2-proxy
@@ -70,6 +68,8 @@ Requires:       yast2-ruby-bindings >= 1.0.0
 Obsoletes:      yast2-network-devel-doc
 
 Summary:        YaST2 - Network Configuration
+License:        GPL-2.0
+Group:          System/YaST
 
 %description 
 This package contains the YaST2 component for network configuration.
