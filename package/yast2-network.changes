@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Jul 12 05:37:30 UTC 2017 - mfilka@suse.com
+
+- bnc#1038717
+  - avoid creating duplicate udev rules in AutoYaST installation
+-3.2.32
+
+-------------------------------------------------------------------
 Tue Jul  4 15:06:40 UTC 2017 - lslezak@suse.cz
 
 - Display a warning in AutoYaST installation when importing the DNS
@@ -12,7 +19,7 @@ Tue Jul  4 12:57:05 UTC 2017 - mfilka@suse.com
 - bnc#1046735
   - do not update sysconfig when no IP is given in case of static
     NIC configuration.
-- 3.2.30 
+- 3.2.30
 
 -------------------------------------------------------------------
 Thu Jun 22 08:24:17 UTC 2017 - nmoreychaisemartin@suse.com
