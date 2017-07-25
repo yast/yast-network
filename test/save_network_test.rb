@@ -10,7 +10,7 @@ describe Yast::SaveNetworkClient do
     before do
       Y2Storage::StorageManager.create_test_instance
 
-      staging = Y2Storage::StorageManager.instance.y2storage_staging
+      staging = Y2Storage::StorageManager.instance.staging
       allow(staging).to receive(:filesystem_in_network?).and_return(in_network)
       allow(Yast::SCR).to receive(:Execute).and_return("exit" => 0, "stdout" => "", "stderr" => "")
     end
