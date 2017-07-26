@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Jul 25 10:44:32 UTC 2017 - ancor@suse.com
+
+- storage-ng: adapted calls to temporary y2storage_* methods, since
+  they were finally removed from Y2Storage::StorageManager.
+
+-------------------------------------------------------------------
 Mon Jul 10 07:06:17 UTC 2017 - gsouza@suse.com
 
 - Added support to storage-ng so it can verify if a disk is in

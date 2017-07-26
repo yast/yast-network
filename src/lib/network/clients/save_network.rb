@@ -34,7 +34,7 @@ module Yast
     def adjust_for_network_disks(file)
       # storage-ng
       # Check if installation is targeted to a remote destination.
-      devicegraph = Y2Storage::StorageManager.instance.y2storage_staging
+      devicegraph = Y2Storage::StorageManager.instance.staging
       is_disk_in_network = devicegraph.filesystem_in_network?(
         Installation.destdir
       )
