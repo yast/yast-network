@@ -1,9 +1,17 @@
 -------------------------------------------------------------------
+Thu Jul 27 15:13:28 UTC 2017 - knut.anderssen@suse.com
+
+- bsc#1039851
+  - Host: Load /etc/hosts entries before import the ones defined in
+    a given AutoYaST profile making it backward compatible.
+- 3.2.33
+
+-------------------------------------------------------------------
 Wed Jul 12 05:37:30 UTC 2017 - mfilka@suse.com
 
 - bnc#1038717
   - avoid creating duplicate udev rules in AutoYaST installation
--3.2.32
+- 3.2.32
 
 -------------------------------------------------------------------
 Tue Jul  4 15:06:40 UTC 2017 - lslezak@suse.cz
