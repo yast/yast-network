@@ -114,10 +114,52 @@ describe Yast::Host do
     end
   end
 
+  describe ".Import" do
+    let(:file) do
+      file_path = File.expand_path("../data/default_hosts", __FILE__)
+      CFA::MemoryFile.new(File.read(file_path))
+    end
+
+    let(:etc_hosts) do
+      {
+        "127.0.0.1" => ["localhost"],
+        "::1"       => ["localhost ipv6-localhost ipv6-loopback"],
+        "fe00::0"   => ["ipv6-localnet"],
+        "ff00::0"   => ["ipv6-mcastprefix"],
+        "ff02::1"   => ["ipv6-allnodes"],
+        "ff02::2"   => ["ipv6-allrouters"],
+        "ff02::3"   => ["ipv6-allhosts"]
+      }
+    end
+
+    it "loads the current '/etc/hosts' entries" do
+      Yast::Host.Import("hosts" => {})
+
+      expect(Yast::Host.name_map).to eql(etc_hosts)
+    end
+
+    it "merges current entries with the given ones" do
+      Yast::Host.Import("hosts" => { "10.20.1.29" => ["beholder"] })
+
+      expect(Yast::Host.name_map).to eql(etc_hosts.merge("10.20.1.29" => ["beholder"]))
+    end
+  end
+
   describe ".Export" do
+    let(:file) do
+      file_path = File.expand_path("../data/default_hosts", __FILE__)
+      CFA::MemoryFile.new(File.read(file_path))
+    end
+
     let(:etc_hosts) do
       {
         "127.0.0.1"  => ["localhost localhost.localdomain"],
+        "::1"        => ["localhost ipv6-localhost ipv6-loopback"],
+        "fe00::0"    => ["ipv6-localnet"],
+        "ff00::0"    => ["ipv6-mcastprefix"],
+        "ff02::1"    => ["ipv6-allnodes"],
+        "ff02::2"    => ["ipv6-allrouters"],
+        "ff02::3"    => ["ipv6-allhosts"],
         "10.20.1.29" => ["beholder"]
       }
     end
@@ -128,12 +170,24 @@ describe Yast::Host do
     end
 
     it "removes empty name lists" do
-      Yast::Host.Import("hosts" => { "127.0.0.1" => ["localhost"], "10.0.0.1" => [] })
-      expect(Yast::Host.Export).to eql("hosts" => { "127.0.0.1" => ["localhost"] })
+      Yast::Host.Import("hosts" => { "127.0.0.1" => ["localhost localhost.localdomain"], "10.20.1.29" => [] })
+      etc_hosts.delete("10.20.1.29")
+
+      expect(Yast::Host.Export).to eql("hosts" => etc_hosts)
     end
 
     it "exports empty hash when no mapping is defined" do
-      Yast::Host.Import("hosts" => {})
+      Yast::Host.Import(
+        "hosts" => {
+          "127.0.0.1" => [],
+          "::1"       => [],
+          "fe00::0"   => [],
+          "ff00::0"   => [],
+          "ff02::1"   => [],
+          "ff02::2"   => [],
+          "ff02::3"   => []
+        }
+      )
       expect(Yast::Host.Export).to be_empty
     end
   end
