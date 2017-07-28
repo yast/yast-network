@@ -51,6 +51,7 @@ module Yast
       Yast.import "TypeRepository"
       Yast.import "Stage"
       Yast.import "PackagesProposal"
+      Yast.import "Report"
     end
 
     # Abort function
@@ -978,7 +979,7 @@ module Yast
     # @param [Array<String>] list of incorrectly configured devices
     # @return [void]
     def fix_dhclient_warning(devs)
-      Popup.Warning(fix_dhclient_msg(devs))
+      Report.Warning(fix_dhclient_msg(devs))
     end
   end
 end
