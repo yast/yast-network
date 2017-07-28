@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Fri Jul 28 08:36:54 UTC 2017 - igonzalezsosa@suse.com
+
+- bnc#1050986
+  - fix udev rules export when more than one device is configured
+- bnc#1037727
+  - dhclient configuration warning message does not block AutoYaST
+- 3.2.34
+
+-------------------------------------------------------------------
 Thu Jul 27 15:13:28 UTC 2017 - knut.anderssen@suse.com
 
 - bsc#1039851
