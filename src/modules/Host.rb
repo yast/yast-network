@@ -175,6 +175,9 @@ module Yast
       @initialized = true # don't let Read discard our data
 
       @hosts = CFA::Hosts.new
+      # Load default entries (bsc#1039851)
+      @hosts.load
+
       imported_hosts = Builtins.eval(Ops.get_map(settings, "hosts", {}))
 
       # convert from old format to the new one

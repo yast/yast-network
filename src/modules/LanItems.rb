@@ -2726,7 +2726,7 @@ module Yast
         end
       else
         configured = Items().select { |i, _| IsItemConfigured(i) }
-        configured.each do |id, _|
+        ay["net-udev"] = configured.keys.each_with_object({}) do |id, udev|
           @current = id # for GetItemUdev
 
           name = GetItemUdev("NAME").to_s
@@ -2734,12 +2734,10 @@ module Yast
 
           next if !rule || name.empty?
 
-          ay["net-udev"] = {
-            name => {
-              "rule"  => rule,
-              "name"  => name,
-              "value" => GetItemUdev(rule)
-            }
+          udev[name] = {
+            "rule"  => rule,
+            "name"  => name,
+            "value" => GetItemUdev(rule)
           }
         end
       end
