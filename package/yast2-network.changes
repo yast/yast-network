@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Aug  1 07:48:25 UTC 2017 - mfilka@suse.com
+
+- bnc#1037727
+  - fixed device name recognition during AY installation
+- 3.1.181
+
+-------------------------------------------------------------------
 Thu Jul 27 13:49:45 UTC 2017 - igonzalezsosa@suse.com
 
 - bnc#1050986
