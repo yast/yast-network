@@ -282,8 +282,8 @@ module Yast
     def Read
       return true if @initialized == true
 
-      @dhcp_hostname = dhclient_set_hostname
-      @write_hostname = get_write_hostname_to_hosts
+      @dhcp_hostname = dhclient_set_hostname || false
+      @write_hostname = get_write_hostname_to_hosts || false
 
       @resolv_conf_policy = Convert.to_string(
         SCR.Read(path(".sysconfig.network.config.NETCONFIG_DNS_POLICY"))
@@ -319,7 +319,6 @@ module Yast
       Builtins.y2milestone("domain=%1", @domain)
 
       @initialized = true
-      true
     end
 
     # Write new DNS and hostname settings
