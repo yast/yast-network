@@ -280,8 +280,10 @@ module Yast
     # Includes Host,NetworkConfig::Read
     # @return true if success
     def Read
-      return true if @initialized == true
+      return true if @initialized
 
+      # Used false as "no" is the default value in sysconfig for both
+      # attributes (bsc#bug_1051624)
       @dhcp_hostname = dhclient_set_hostname || false
       @write_hostname = get_write_hostname_to_hosts || false
 
