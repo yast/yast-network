@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Aug  2 13:01:48 UTC 2017 - knut.anderssen@suse.com
+
+- bsc#1051624
+  - Fix default values for not existent sysconfig network variables
+    when read.
+- 3.3.5
+
+-------------------------------------------------------------------
 Fri Jul 28 08:46:43 UTC 2017 - igonzalezsosa@suse.com
 
 - bnc#1050986
