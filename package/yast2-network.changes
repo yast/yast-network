@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri Jul 28 06:44:13 UTC 2017 - mfilka@suse.com
+
+- bnc1039532
+  - configure static IPs to resolve to system wide hostname during
+    installation
+- 3.1.181
+
+-------------------------------------------------------------------
 Thu Jul 27 13:49:45 UTC 2017 - igonzalezsosa@suse.com
 
 - bnc#1050986
@@ -42,13 +50,20 @@ Wed Feb 22 10:49:17 UTC 2017 - mfilka@suse.com
 - 3.1.175
 
 -------------------------------------------------------------------
+Tue Jan 24 15:38:14 UTC 2017 - kanderssen@suse.com
+
+- Backport fix for bnc#1013605
+  - Enable DHCP_HOSTNAME listbox only when wicked service is used.
+  - Fixed displaying the "keep current settings" option.
+- 3.1.174
+
+-------------------------------------------------------------------
 Thu Jan 19 15:22:03 UTC 2017 - kanderssen@suse.com
 
-- Backported
-  - Added network proposal using the new summary api and the new
-    proposal_client flag 'label_proposal' for CASP special formmating
-    (fate#322328).
-- 3.1.174
+- Added network proposal using the new summary api and the new
+  proposal_client flag 'label_proposal' for CASP special formmating
+  (fate#322328).
+- 3.1.173.1
 
 -------------------------------------------------------------------
 Wed Jan 18 07:54:01 UTC 2017 - kanderssen@suse.com
