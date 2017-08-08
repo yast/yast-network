@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Aug  8 12:52:13 UTC 2017 - igonzalezsosa@suse.com
+
+- bnc#1037727
+  - fixed device name recognition during AY installation
+- 3.2.36
+
+-------------------------------------------------------------------
 Wed Aug  2 08:20:54 UTC 2017 - jreidinger@suse.com
 
 - Backport: Fix crash during write if Host.Read and Host.Import is
