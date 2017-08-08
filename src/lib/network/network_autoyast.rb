@@ -332,7 +332,7 @@ module Yast
         end
         next if !matching_item
 
-        name_from = matching_item["ifcfg"] || matching_item["dev_name"]
+        name_from = LanItems.GetDeviceName(item)
         log.info("Matching device found - renaming <#{name_from}> -> <#{name_to}>")
 
         # find rule in collision
