@@ -82,6 +82,14 @@ module Yast
               _("&Do Not Allow Remote Administration"),
               Remote.IsDisabled
             )
+          ),
+          VSpacing(0.3),
+          Left(
+            CheckBox(
+              Id(:allow_web),
+              _("Enable access using a &web browser"),
+              Remote.IsWebVncEnabled
+            )
           )
         )
       )
@@ -101,7 +109,7 @@ module Yast
               "<p>If this feature is enabled, you can\n" \
               "administer this machine remotely from another machine. Use a VNC\n" \
               "client, such as krdc (connect to <tt>&lt;hostname&gt;:%1</tt>), or\n" \
-              "a Java-capable Web browser (connect to <tt>https://&lt;hostname&gt;:%2/</tt>).</p>\n" \
+              "a Web browser (connect to <tt>https://&lt;hostname&gt;:%2/</tt>).</p>\n" \
               "<p>Without Session Management, only one user can be connected\n"\
               "at a time to a session, and that session is terminated when the VNC client\n" \
               "disconnects.</p>" \
@@ -165,6 +173,14 @@ module Yast
           Remote.Enable
         else
           Remote.Disable
+        end
+
+        allow_web = UI.QueryWidget(Id(:allow_web), :Value)
+
+        if allow_web
+          Remote.EnableWebVnc
+        else
+          Remote.DisableWebVnc
         end
       end
 
