@@ -261,6 +261,38 @@ describe Yast::Host do
       Yast::Host.Update(hostname, hostname, ip)
       expect(Yast::Host.name_map[ip]).not_to eql ["#{hostname} #{hostname}"]
     end
+
+    it "doesn't write entry with duplicate hostname" do
+      ip = "1.1.1.1"
+      hostname = "linux"
+
+      Yast::Host.Update(hostname, hostname, [ip])
+      expect(Yast::Host.name_map[ip]).not_to eql ["#{hostname} #{hostname}"]
+    end
+  end
+
+  describe ".ResolveHostnameToStaticIPs" do
+    let(:static_ips) { ["1.1.1.1", "2.2.2.2"] }
+    let(:fqhostname) { "sles.suse.de" }
+
+    before(:each) do
+      allow(Yast::Host)
+        .to receive(:StaticIPs)
+        .and_return(static_ips)
+      allow(Yast::Hostname).to receive(:MergeFQ).and_return(fqhostname)
+    end
+
+    it "doesn't call .Update when an IP already has a hostname" do
+      hostname = "linux"
+
+      Yast::Host.Update(hostname, hostname, [static_ips[0]])
+
+      expect(Yast::Host)
+        .not_to receive(:Update)
+        .with(fqhostname, fqhostname, static_ips)
+
+      Yast::Host.ResolveHostnameToStaticIPs
+    end
   end
 
   describe ".EnsureHostnameResolvable" do
