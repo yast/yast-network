@@ -278,8 +278,6 @@ module Yast
       )
       @modified = true
 
-      nick = Ops.get(Hostname.SplitFQ(newhn), 0, "")
-
       # Remove old hostname from hosts
       if !oldhn.empty?
         Builtins.foreach(@hosts) do |ip, hs|
@@ -301,12 +299,14 @@ module Yast
 
       # Add hostname/ip for all ips
       nickadded = false
+      nick = Hostname.SplitFQ(newhn)[0] || ""
+
       Builtins.maplist(ips) do |ip|
         # Omit some IP addresses
         next if ip == "" || ip.nil? || ip == "127.0.0.1"
         name = newhn
         # Add nick for the first one
-        if !nickadded && name != ""
+        if !nickadded && name != "" && name != nick
           nickadded = true
           name = Ops.add(Ops.add(newhn, " "), nick)
         end
@@ -351,11 +351,12 @@ module Yast
     # if we have a static address,
     # make sure /etc/hosts resolves it to our, bnc#664929
     def ResolveHostnameToStaticIPs
-      static_ips = StaticIPs()
-      if Ops.greater_than(Builtins.size(static_ips), 0)
-        fqhostname = Hostname.MergeFQ(DNS.hostname, DNS.domain)
-        Update(fqhostname, fqhostname, static_ips)
-      end
+      # reject those static ips which have particular hostnames already configured
+      static_ips = StaticIPs().reject { |sip| !names(sip).empty? }
+      return if static_ips.empty?
+
+      fqhostname = Hostname.MergeFQ(DNS.hostname, DNS.domain)
+      Update(fqhostname, fqhostname, static_ips)
 
       nil
     end
