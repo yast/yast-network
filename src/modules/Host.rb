@@ -109,20 +109,18 @@ module Yast
     # @return true if success
     def Read
       return true if @initialized
+      return true if SCR.Read(path(".target.size"), CFA::Hosts::PATH) <= 0
 
-      # read /etc/hosts
-      if Ops.greater_than(SCR.Read(path(".target.size"), CFA::Hosts::PATH), 0)
-        @hosts = CFA::Hosts.new
-        @hosts.load
-      end
+      @hosts = CFA::Hosts.new
+      @hosts.load
 
       # save hosts to check for changes later
       @hosts_init = CFA::Hosts.new
       @hosts_init.load
 
       Builtins.y2debug("hosts=#{@hosts.inspect}")
+
       @initialized = true
-      true
     end
 
     # Write hosts settings and apply changes
