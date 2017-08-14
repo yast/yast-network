@@ -41,6 +41,7 @@ module Yast
       Yast.include self, "network/routines.rb"
 
       # Data was modified?
+      # TODO: Drop the flag. It is useless since we have @hosts and @hosts_init
       @modified = false
 
       @initialized = false
@@ -105,24 +106,18 @@ module Yast
       nil
     end
 
-    # Read hosts settings
-    # @return true if success
+    # Reads /etc/hosts settings
+    #
+    # It reads /etc/hosts only when the module was not initialized already.
+    #
+    # @return true if success, raises an exception in case of malformed file
     def Read
       return true if @initialized
-
-      # read /etc/hosts
-      if Ops.greater_than(SCR.Read(path(".target.size"), CFA::Hosts::PATH), 0)
-        @hosts = CFA::Hosts.new
-        @hosts.load
-      end
-
-      # save hosts to check for changes later
-      @hosts_init = CFA::Hosts.new
-      @hosts_init.load
+      return true if !load_hosts
 
       Builtins.y2debug("hosts=#{@hosts.inspect}")
+
       @initialized = true
-      true
     end
 
     # Write hosts settings and apply changes
@@ -170,11 +165,9 @@ module Yast
       @modified = true # trigger Write
       @initialized = true # don't let Read discard our data
 
-      @hosts = CFA::Hosts.new
-      # Load default entries (bsc#1039851)
-      @hosts.load
+      load_hosts
 
-      imported_hosts = Builtins.eval(Ops.get_map(settings, "hosts", {}))
+      imported_hosts = settings.fetch("hosts", {})
 
       # convert from old format to the new one
       # use ::1 entry as a reference
@@ -354,6 +347,20 @@ module Yast
       end
       @modified = true
     end
+  end
+
+  # Initializes internal state according the /etc/hosts
+  def load_hosts
+    return false if SCR.Read(path(".target.size"), CFA::Hosts::PATH) <= 0
+
+    @hosts = CFA::Hosts.new
+    @hosts.load
+
+    # save hosts to check for changes later
+    @hosts_init = CFA::Hosts.new
+    @hosts_init.load
+
+    true
   end
 
   Host = HostClass.new
