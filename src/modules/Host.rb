@@ -105,8 +105,11 @@ module Yast
       nil
     end
 
-    # Read hosts settings
-    # @return true if success
+    # Reads /etc/hosts settings
+    #
+    # It reads /etc/hosts only when the module was not initialized already.
+    #
+    # @return true if success, raises an exception in case of malformed file
     def Read
       return true if @initialized
       return true if SCR.Read(path(".target.size"), CFA::Hosts::PATH) <= 0
