@@ -59,7 +59,11 @@ module Yast
       Yast.import "NetworkConfig"
       Yast.import "NetworkStorage"
       Yast.import "Host"
+# storage-ng
+# rubocop:disable Style/BlockComments
+=begin
       Yast.import "Storage"
+=end
       Yast.import "Directory"
       Yast.import "Stage"
       Yast.include self, "network/complex.rb"
@@ -2249,11 +2253,14 @@ module Yast
       @ipaddr = ""
       @netmask = ""
       @bootproto = "dhcp"
+# storage-ng
+=begin
       # #176804
       if Storage.IsDeviceOnNetwork(NetworkStorage.getDevice("/")) != :no
         @startmode = "nfsroot"
         Builtins.y2milestone("startmode nfsroot")
       end
+=end
       NetworkInterfaces.Add
       @operation = :edit
       Ops.set(

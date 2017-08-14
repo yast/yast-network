@@ -1,4 +1,49 @@
 -------------------------------------------------------------------
+Mon Aug 14 11:39:36 UTC 2017 - snwint@suse.com
+
+- merge storage-ng branch to master
+- note: all changes below with this date belong to the merge
+- 3.3.7
+
+-------------------------------------------------------------------
+Mon Aug 14 11:39:36 UTC 2017 - ancor@suse.com
+
+- storage-ng: adapted calls to temporary y2storage_* methods, since
+  they were finally removed from Y2Storage::StorageManager.
+
+-------------------------------------------------------------------
+Mon Aug 14 11:39:36 UTC 2017 - gsouza@suse.com
+
+- Added support to storage-ng so it can verify if a disk is in
+  network.
+- Updated dependencies to include storage-ng.
+
+-------------------------------------------------------------------
+Mon Aug 14 11:39:36 UTC 2017 - shundhammer@suse.de
+
+- Merged master to storage-ng branch
+
+-------------------------------------------------------------------
+Mon Aug 14 11:39:36 UTC 2017 - ancor@suse.com
+
+- Version temporarily bumped to 3.3.x to prioritize the
+  storage-ng branch
+
+-------------------------------------------------------------------
+Mon Aug 14 11:39:36 UTC 2017 - ancor@suse.com
+
+- storage-ng: commented remaining code relying on the old
+  yast2-storage
+- Removed yast2-storage dependency
+
+-------------------------------------------------------------------
+Mon Aug 14 11:39:36 UTC 2017 - ancor@suse.com
+
+- storage-ng: commented installation-related code relying on the
+  old yast2-storage
+- Version temporarily bumped to 3.2.x to prioritize this branch
+
+-------------------------------------------------------------------
 Tue Aug  8 12:52:13 UTC 2017 - igonzalezsosa@suse.com
 
 - bnc#1037727
