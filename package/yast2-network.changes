@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Aug 14 08:52:33 UTC 2017 - mfilka@suse.com
+
+- bnc#1047615 
+  - check if /etc/hosts exists before loading its content
+- 3.3.7
+
+-------------------------------------------------------------------
 Tue Aug  8 12:52:13 UTC 2017 - igonzalezsosa@suse.com
 
 - bnc#1037727
