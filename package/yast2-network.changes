@@ -3,7 +3,7 @@ Mon Aug 14 11:39:36 UTC 2017 - snwint@suse.com
 
 - merge storage-ng branch to master (fate#318196)
 - note: all changes below with this date belong to the merge
-- 3.3.7
+- 3.3.8
 
 -------------------------------------------------------------------
 Mon Aug 14 11:39:36 UTC 2017 - ancor@suse.com
@@ -42,6 +42,13 @@ Mon Aug 14 11:39:36 UTC 2017 - ancor@suse.com
 - storage-ng: commented installation-related code relying on the
   old yast2-storage
 - Version temporarily bumped to 3.2.x to prioritize this branch
+
+-------------------------------------------------------------------
+Mon Aug 14 08:52:33 UTC 2017 - mfilka@suse.com
+
+- bnc#1047615
+  - check if /etc/hosts exists before loading its content
+- 3.3.7
 
 -------------------------------------------------------------------
 Tue Aug  8 12:52:13 UTC 2017 - igonzalezsosa@suse.com
