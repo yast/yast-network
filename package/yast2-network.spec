@@ -17,7 +17,7 @@
 
 
 Name:           yast2-network
-Version:        3.3.7
+Version:        3.3.8
 Release:        0
 BuildArch:      noarch
 
@@ -41,9 +41,8 @@ Requires:       yast2-xml
 
 #netconfig (FaTE #303618)
 Requires:       sysconfig >= 0.80.0
-# Storage::IsDeviceOnNetwork
-BuildRequires:  yast2-storage >= 2.21.11
-Requires:       yast2-storage >= 2.21.11
+BuildRequires:  yast2-storage-ng
+Requires:       yast2-storage-ng
 # Packages::vnc_packages
 Requires:       yast2-packager >= 3.1.47
 # cfa for parsing hosts, AugeasTree#unique_id

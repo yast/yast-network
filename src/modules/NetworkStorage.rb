@@ -34,10 +34,6 @@ module Yast
   class NetworkStorageClass < Module
     include Logger
 
-    def main
-      Yast.import "Storage"
-    end
-
     # Ask /proc/mounts what device a mount point is using.
     # @return e.g. /dev/sda2 (or just "nfs")
     def getDevice(mount_point)
@@ -62,5 +58,4 @@ module Yast
   end
 
   NetworkStorage = NetworkStorageClass.new
-  NetworkStorage.main
 end
