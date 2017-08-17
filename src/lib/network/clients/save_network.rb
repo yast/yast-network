@@ -222,14 +222,39 @@ module Yast
 
     # Creates target's default DNS configuration
     #
-    # It uses DNS configuration as defined in AY profile (if any) or
-    # proposes a predefined default values.
+    # It proposes a predefined default values in common installation, exits
+    # in AY mode.
     def configure_dns
-      configured = false
-      configured = NetworkAutoYast.instance.configure_dns if Mode.autoinst
-      NetworkAutoconfiguration.instance.configure_dns if !configured
+      return if Mode.autoinst
+
+      NetworkAutoconfiguration.instance.configure_dns
 
       DNS.create_hostname_link
+    end
+
+    # Creates target's /etc/hosts configuration
+    #
+    # It uses hosts' configuration as defined in AY profile (if any) or
+    # proceedes according the proposal
+    def configure_hosts
+      configured = false
+      configured = NetworkAutoYast.instance.configure_hosts if Mode.autoinst
+      NetworkAutoconfiguration.instance.configure_hosts if !configured
+    end
+
+    # Invokes configuration of parts which are in charge of Lan module
+    #
+    # It creates a proposal in case of common installation. In case of AY
+    # installation it does full import of <networking> section
+    def configure_lan
+      if !Mode.autoinst
+        configure_dns
+      else
+        NetworkAutoYast.instance.configure_lan
+      end
+
+      # this depends on DNS configuration
+      configure_hosts
     end
 
     # It does an automatic configuration of installed system
@@ -238,11 +263,10 @@ module Yast
     def configure_target
       NetworkAutoconfiguration.instance.configure_virtuals
 
-      configure_dns
+      # creates target's network configuration
+      configure_lan
 
-      # this depends on DNS configuration
-      NetworkAutoconfiguration.instance.configure_hosts
-
+      # set proper network service
       set_network_service
 
       SCR.Execute(path(".target.bash"), "chkconfig network on")
