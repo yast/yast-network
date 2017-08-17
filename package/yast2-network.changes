@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Aug 17 14:44:16 CEST 2017 - snwint@suse.de
+
+- use storage-ng code to determine if "/" is on a network filesystem
+- 3.3.9
+
+-------------------------------------------------------------------
 Mon Aug 14 11:39:36 UTC 2017 - snwint@suse.com
 
 - merge storage-ng branch to master (fate#318196)
