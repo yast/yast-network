@@ -3,6 +3,13 @@ Mon Aug 21 06:57:26 UTC 2017 - mfilka@suse.com
 
 - bnc#1039656
   - do not clear /etc/hosts when installing virtual Host
+- 3.3.11
+
+-------------------------------------------------------------------
+Thu Aug 17 19:42:51 UTC 2017 - mfilka@suse.com
+
+- restored part of version 3.3.3 (bnc#1049814) which was 
+  accidentaly dropped in subsequent versions
 - 3.3.10
 
 -------------------------------------------------------------------
