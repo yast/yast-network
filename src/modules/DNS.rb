@@ -68,6 +68,9 @@ module Yast
       # Domain Name (not including the host part)
       @domain = ""
 
+      # the hostname and the domain has been imported from an AY profile
+      @hostname_from_profile = nil
+
       @nameservers = []
       @searchlist = []
 
@@ -476,11 +479,13 @@ module Yast
       if Builtins.haskey(settings, "hostname")
         @hostname = Ops.get_string(settings, "hostname", "")
         @domain = Ops.get_string(settings, "domain", "") # empty is not a bug, bnc#677471
+        @hostname_from_profile = true
       else
         # otherwise, check 1) install.inf 2) /etc/HOSTNAME
         ReadHostname()
         # if nothing is found, generate a random one
         ProposeHostname()
+        @hostname_from_profile = false
       end
 
       @nameservers = Builtins.eval(Ops.get_list(settings, "nameservers", []))
@@ -488,7 +493,7 @@ module Yast
 
       # check for AY unsupported scenarios, the name servers and the search domains
       # are written in the 2nd stage, if is disabled then it cannot work (bsc#1046198)
-      if Stage.initial && Mode.auto && !@error_reported && !empty?
+      if Stage.initial && Mode.auto && @hostname_from_profile && !@error_reported && !empty?
         # lazy loading to avoid the dependency on AutoYaST, this can be imported only
         # in the initial stage otherwise it might fail!
         Yast.import "AutoinstConfig"
