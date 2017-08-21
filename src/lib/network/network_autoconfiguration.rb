@@ -80,7 +80,7 @@ module Yast
       # avoid restarting network (installation can run via ssh, vnc, ...)
       # Moreover virtual devices are not needed during first stage. So, it can
       # wait for rebooting into just installed target
-      Lan.WriteOnly
+      LanItems.write
     end
 
     # Propose DNS and Hostname setup

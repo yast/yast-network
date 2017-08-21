@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Aug 21 06:57:26 UTC 2017 - mfilka@suse.com
+
+- bnc#1039656
+  - do not clear /etc/hosts when installing virtual Host
+- 3.3.10
+
+-------------------------------------------------------------------
 Thu Aug 17 14:44:16 CEST 2017 - snwint@suse.de
 
 - use storage-ng code to determine if "/" is on a network filesystem
