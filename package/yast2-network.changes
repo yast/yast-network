@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Aug 21 07:02:32 UTC 2017 - lslezak@suse.cz
+
+- AutoYaST: Do not display a warning about disabled second stage
+  when the hostname setting is read out of profile (bsc#1054400)
+- 3.2.39
+
+-------------------------------------------------------------------
 Mon Aug 21 06:57:26 UTC 2017 - mfilka@suse.com
 
 - bnc#1039656
