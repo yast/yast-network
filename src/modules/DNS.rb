@@ -86,9 +86,6 @@ module Yast
 
       # True if DNS is already read
       @initialized = false
-
-      # report the profile error only once
-      @error_reported = false
     end
 
     # Use the parameter, coming usually from install.inf, if it is defined.
@@ -398,6 +395,8 @@ module Yast
       if Builtins.haskey(settings, "hostname")
         @hostname = Ops.get_string(settings, "hostname", "")
         @domain = Ops.get_string(settings, "domain", "") # empty is not a bug, bnc#677471
+        # print a warning in unsupported scenarios
+        warn_unsupported
       else
         # otherwise, check 1) install.inf 2) /etc/HOSTNAME
         ReadHostname()
@@ -407,22 +406,6 @@ module Yast
 
       @nameservers = Builtins.eval(Ops.get_list(settings, "nameservers", []))
       @searchlist = Builtins.eval(Ops.get_list(settings, "searchlist", []))
-
-      # check for AY unsupported scenarios, the name servers and the search domains
-      # are written in the 2nd stage, if is disabled then it cannot work (bsc#1046198)
-      if Stage.initial && Mode.auto && !@error_reported && !empty?
-        # lazy loading to avoid the dependency on AutoYaST, this can be imported only
-        # in the initial stage otherwise it might fail!
-        Yast.import "AutoinstConfig"
-
-        if !AutoinstConfig.second_stage
-          # TRANSLATORS: Warning message, the AutoYaST XML profile is incorrect
-          Report.Warning(_("DNS configuration error: The DNS configuration\n" \
-            "is written in the second installation stage (after reboot)\n" \
-            "but the second stage is disabled in the AutoYaST XML profile."))
-          @error_reported = true
-        end
-      end
 
       @modified = true
       # empty settings means that we're probably resetting the config
@@ -614,6 +597,25 @@ module Yast
     end
 
   private
+
+    # check for AY unsupported scenarios, the name servers and the search domains
+    # are written in the 2nd stage, if is disabled then it cannot work (bsc#1046198)
+    def warn_unsupported
+      return if !Stage.initial || !Mode.auto || @error_reported || empty?
+
+      # lazy loading to avoid the dependency on AutoYaST, this can be imported only
+      # in the initial stage otherwise it might fail!
+      Yast.import "AutoinstConfig"
+
+      # the 2nd stage is enabled, OK
+      return if AutoinstConfig.second_stage
+
+      # TRANSLATORS: Warning message, the AutoYaST XML profile is incorrect
+      Report.Warning(_("DNS configuration error: The DNS configuration\n" \
+        "is written in the second installation stage (after reboot)\n" \
+        "but the second stage is disabled in the AutoYaST XML profile."))
+      @error_reported = true
+    end
 
     def read_hostname_from_install_inf
       install_inf_hostname = SCR.Read(path(".etc.install_inf.Hostname")) || ""
