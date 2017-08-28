@@ -242,11 +242,13 @@ module Yast
       NetworkAutoconfiguration.instance.configure_hosts if !configured
     end
 
-    # Invokes configuration of parts which are in charge of Lan module
+    # Invokes configuration according automatic proposals or AY profile
     #
     # It creates a proposal in case of common installation. In case of AY
     # installation it does full import of <networking> section
     def configure_lan
+      NetworkAutoconfiguration.instance.configure_virtuals
+
       if !Mode.autoinst
         configure_dns
       else
@@ -261,8 +263,6 @@ module Yast
     #
     # Basically, it runs several proposals.
     def configure_target
-      NetworkAutoconfiguration.instance.configure_virtuals
-
       # creates target's network configuration
       configure_lan
 
