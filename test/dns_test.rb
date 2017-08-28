@@ -135,6 +135,13 @@ module Yast
           expect(Yast::Report).to_not receive(:Warning)
           DNS.Import(settings)
         end
+
+        it "does not print a warning when the hostname is set out of the profile" do
+          stub_const("Yast::AutoinstConfig", double(second_stage: true))
+          expect(Yast::Report).to_not receive(:Warning)
+          DNS.hostname = "test"
+          DNS.Import({})
+        end
       end
     end
   end
