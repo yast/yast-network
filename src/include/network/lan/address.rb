@@ -26,9 +26,12 @@
 # Summary:	Network card adresss configuration dialogs
 # Authors:	Michal Svec <msvec@suse.cz>
 #
+require "ui/text_helpers"
+
 module Yast
   module NetworkLanAddressInclude
     include Yast::Logger
+    include ::UI::TextHelpers
 
     def initialize_network_lan_address(include_target)
       Yast.import "UI"
@@ -713,39 +716,6 @@ module Yast
       physical_ports = repeated_physical_port_ids(selected_slaves)
 
       physical_ports.empty? ? true : continue_with_duplicates?(physical_ports)
-    end
-
-    # FIXME: This method should be moved to a more generic class.
-    # Wrap given text breaking lines longer than given wrap size. It supports
-    # custom separator, max number of lines to split in and cut text to add
-    # as last line if cut was needed.
-    #
-    # @param [String] text to be wrapped
-    # @param [String] wrap size
-    # @param [Hash <String>] optional parameters as separator and prepend_text.
-    # @return [String] wrap text
-    def wrap_text(text, wrap = 78, separator: " ", prepend_text: "",
-      n_lines: nil, cut_text: nil)
-      lines = []
-      message_line = prepend_text
-      text.split(/\s+/).each_with_index do |t, i|
-        if !message_line.empty? && "#{message_line}#{t}".size > wrap
-          lines << message_line
-          message_line = ""
-        end
-
-        message_line << separator if !message_line.empty? && i != 0
-        message_line << t
-      end
-
-      lines << message_line if !message_line.empty?
-
-      if n_lines && lines.size > n_lines
-        lines = lines[0..n_lines - 1]
-        lines << cut_text if cut_text
-      end
-
-      lines.join("\n")
     end
 
     def initTunnel(_key)

@@ -17,7 +17,7 @@
 
 
 Name:           yast2-network
-Version:        3.3.11
+Version:        3.3.12
 Release:        0
 BuildArch:      noarch
 
@@ -31,9 +31,8 @@ Requires:       yast2-proxy
 BuildRequires:  rubygem(yast-rake)
 
 # yast2 v3.1.86: Added ServicesProposal library
-BuildRequires:  yast2 >= 3.1.86
-# Network: Adapt old enslaved interface config
-Requires:       yast2 >= 3.1.206.2
+BuildRequires:  yast2 >= 4.0.1
+Requires:       yast2 >= 4.0.1
 
 # Product control need xml agent
 BuildRequires:  yast2-xml
