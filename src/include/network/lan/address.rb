@@ -1494,20 +1494,19 @@ module Yast
         if bootproto == "static"
           ip_changed = LanItems.ipaddr != ipaddr
           hostname = @settings.fetch("HOSTNAME", "")
+          hostname_changed = @hostname_initial != hostname
 
-          if ip_changed || hostname.empty?
+          if ip_changed || hostname_changed || hostname.empty?
             log.info("Dropping record for #{LanItems.ipaddr} from /etc/hosts")
+
             Host.remove_ip(LanItems.ipaddr)
+            Host.Update(@hostname_initial, hostname, ipaddr) if !hostname.empty?
           end
 
           LanItems.ipaddr = ipaddr
           LanItems.netmask = Ops.get_string(@settings, "NETMASK", "")
           LanItems.prefix = Ops.get_string(@settings, "PREFIXLEN", "")
           LanItems.remoteip = Ops.get_string(@settings, "REMOTEIP", "")
-
-          if (@hostname_initial != hostname && !hostname.empty?) || ip_changed
-            Host.Update(@hostname_initial, hostname, LanItems.ipaddr)
-          end
         else
           LanItems.ipaddr = ""
           LanItems.netmask = ""
