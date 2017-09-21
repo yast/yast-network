@@ -558,6 +558,9 @@ module Yast
       # reload/restart network before this to put correct resolv.conf from dhcp-backup
       orig = Progress.set(false)
       DNS.Write
+      # Ensure that the /etc/hosts has been read to no blank out it (bsc#1058396)
+      # The method just returns true in case of initialized.
+      Host.Read
       Host.EnsureHostnameResolvable
       Host.Write
       Progress.set(orig)
