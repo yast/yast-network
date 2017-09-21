@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Sep 21 13:26:16 UTC 2017 - knut.anderssen@suse.com
+
+- Do not blank out /etc/hosts when no <host> section is defined
+  (bsc#1058396)
+- 3.2.41
+
+-------------------------------------------------------------------
 Tue Sep 26 12:44:47 UTC 2017 - knut.anderssen@suse.com
 
 - Preload the global DHCLIENT_SET_HOSTNAME option based on linuxrc
