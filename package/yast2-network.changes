@@ -1,4 +1,14 @@
 -------------------------------------------------------------------
+Tue Sep 26 12:44:47 UTC 2017 - knut.anderssen@suse.com
+
+- Preloads the global DHCLIENT_SET_HOSTNAME option based on linuxrc
+  sethostname option if given or based in control file default if
+  not. (bsc#1054933)
+- Do not override the configuration with the default defined in
+  the control file at the end of the first stage (bsc#1056633)
+- 3.2.40
+
+-------------------------------------------------------------------
 Mon Aug 21 07:02:32 UTC 2017 - lslezak@suse.cz
 
 - AutoYaST: Do not display a warning about disabled second stage
