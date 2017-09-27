@@ -1,7 +1,7 @@
 -------------------------------------------------------------------
 Tue Sep 26 12:44:47 UTC 2017 - knut.anderssen@suse.com
 
-- Preloads the global DHCLIENT_SET_HOSTNAME option based on linuxrc
+- Preload the global DHCLIENT_SET_HOSTNAME option based on linuxrc
   sethostname option if given or based in control file default if
   not. (bsc#1054933)
 - Do not override the configuration with the default defined in

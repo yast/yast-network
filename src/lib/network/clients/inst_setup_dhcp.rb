@@ -1,14 +1,12 @@
 require "network/network_autoconfiguration"
 
+Yast.import "Linuxrc"
+Yast.import "DNS"
+
 module Yast
   class SetupDhcp
     include Singleton
     include Logger
-
-    def initialize
-      Yast.import "Linuxrc"
-      Yast.import "DNS"
-    end
 
     def main
       nac = NetworkAutoconfiguration.instance
@@ -27,6 +25,8 @@ module Yast
 
     # Check if set of DHCLIENT_SET_HOSTNAME in /etc/sysconfig/network/dhcp has
     # been disable by linuxrc cmdline
+    #
+    # @return [Boolean] false if sethostname=0; true otherwise
     def set_dhcp_hostname?
       set_hostname = Linuxrc.InstallInf("SetHostname")
       log.info("SetHostname: #{set_hostname}")

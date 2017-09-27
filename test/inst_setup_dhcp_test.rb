@@ -5,7 +5,7 @@ require_relative "test_helper"
 require "network/clients/inst_setup_dhcp"
 
 describe Yast::SetupDhcp do
-  let(:subject) { Yast::SetupDhcp.instance }
+  subject { Yast::SetupDhcp.instance }
 
   describe "#main" do
 
@@ -93,13 +93,14 @@ describe Yast::SetupDhcp do
   end
 
   describe "set_dhcp_hostname?" do
-    let(:set_hostname) { "1" }
-
     before do
       allow(Yast::Linuxrc).to receive(:InstallInf)
         .with("SetHostname").and_return(set_hostname)
     end
+
     context "when dhcp hostname has not been disabled by linuxrc" do
+      let(:set_hostname) { "1" }
+
       it "returns true" do
         expect(subject.set_dhcp_hostname?).to eql(true)
       end
