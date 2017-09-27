@@ -118,11 +118,7 @@ module Yast
           "custom_widget" => HBox(
             Label(_("Set Hostname via DHCP")),
             HSpacing(2),
-            ComboBox(
-              Id("DHCP_HOSTNAME"),
-              "",
-              []
-            ),
+            ReplacePoint(Id("dhcp_hostname_method"), Empty()),
             ReplacePoint(Id("dh_host_text"), Empty())
           ),
           "init"          => fun_ref(method(:InitDhcpHostname), "void (string)"),
@@ -445,7 +441,14 @@ module Yast
         Item(Id(iface), format(_("yes: %s"), iface), iface == selected)
       end
 
-      UI.ChangeWidget(Id("DHCP_HOSTNAME"), :Items, items)
+      UI.ReplaceWidget(
+        Id("dhcp_hostname_method"),
+        ComboBox(
+          Id("DHCP_HOSTNAME"),
+          "",
+          items
+        )
+      )
 
       log.info("InitDhcpHostname: preselected item = #{selected}")
 
