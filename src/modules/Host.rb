@@ -95,13 +95,14 @@ module Yast
 
         fqhostname = Hostname.MergeFQ(DNS.hostname, DNS.domain)
         set_names(local_ip, ["#{fqhostname} #{DNS.hostname}"])
+        @modified = true
       elsif @hosts.include_ip?(local_ip)
         # Do not add it if product default says no
         # and remove 127.0.02 entry if it exists
 
         @hosts.delete_by_ip(local_ip)
+        @modified = true
       end
-      @modified = true
 
       nil
     end
