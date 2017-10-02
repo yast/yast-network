@@ -785,6 +785,10 @@ module Yast
       DNS.Import(settings["dns"] || {})
       Routing.Import(settings["routing"] || {})
 
+      # Ensure that the /etc/hosts has been read to no blank out it in case of
+      # not defined <host> section (bsc#1058396)
+      Host.Read
+
       @ipv6 = settings.fetch("ipv6", true)
 
       true
