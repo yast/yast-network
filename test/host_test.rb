@@ -11,7 +11,7 @@ Yast.import "Host"
 
 describe Yast::Host do
   let(:file) do
-    file_path = File.expand_path("../data/hosts", __FILE__)
+    file_path = File.join(DATA_PATH, "hosts")
     CFA::MemoryFile.new(File.read(file_path))
   end
 
@@ -116,7 +116,7 @@ describe Yast::Host do
 
   describe ".Import" do
     let(:file) do
-      file_path = File.expand_path("../data/default_hosts", __FILE__)
+      file_path = File.join(DATA_PATH, "default_hosts")
       CFA::MemoryFile.new(File.read(file_path))
     end
 
@@ -147,7 +147,7 @@ describe Yast::Host do
 
   describe ".Export" do
     let(:file) do
-      file_path = File.expand_path("../data/default_hosts", __FILE__)
+      file_path = File.join(DATA_PATH, "default_hosts")
       CFA::MemoryFile.new(File.read(file_path))
     end
 
@@ -314,9 +314,9 @@ describe Yast::Host do
       end
 
       it "sets Host as modified" do
-        expect(Yast::Host.GetModified).to eql(false)
-        Yast::Host.EnsureHostnameResolvable
-        expect(Yast::Host.GetModified).to eql(true)
+        expect { Yast::Host.EnsureHostnameResolvable }
+          .to change { Yast::Host.GetModified }
+          .from(false).to(true)
       end
     end
 
@@ -337,25 +337,24 @@ describe Yast::Host do
         end
 
         it "sets Host as modified" do
-          expect(Yast::Host.GetModified).to eql(false)
-          Yast::Host.EnsureHostnameResolvable
-          expect(Yast::Host.GetModified).to eql(true)
+          expect { Yast::Host.EnsureHostnameResolvable }
+            .to change { Yast::Host.GetModified }
+            .from(false).to(true)
         end
       end
     end
 
     context "and /etc/hosts does not contains 127.0.0.2 entry" do
       let(:file) do
-        file_path = File.expand_path("../data/default_hosts", __FILE__)
+        file_path = File.join(DATA_PATH, "default_hosts")
         CFA::MemoryFile.new(File.read(file_path))
       end
 
-      it "doest not set Host as modified" do
+      it "does not set Host as modified" do
         allow(Yast::DNS).to receive(:write_hostname).and_return(false)
 
-        expect(Yast::Host.GetModified).to eql(false)
-        Yast::Host.EnsureHostnameResolvable
-        expect(Yast::Host.GetModified).to eql(false)
+        expect { Yast::Host.EnsureHostnameResolvable }
+          .not_to change { Yast::Host.GetModified }.from(false)
       end
     end
   end
