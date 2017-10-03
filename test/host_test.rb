@@ -299,12 +299,12 @@ describe Yast::Host do
     context "need dummy ip" do
       before do
         allow(Yast::DNS).to receive(:write_hostname).and_return(true)
-      end
-
-      it "sets entry for 127.0.0.2 to hostname and hostname with domain" do
         allow(Yast::DNS).to receive(:hostname).and_return("localmachine")
         allow(Yast::DNS).to receive(:domain).and_return("domain.local")
         Yast::Host.Read
+      end
+
+      it "sets entry for 127.0.0.2 to hostname and hostname with domain" do
         Yast::Host.EnsureHostnameResolvable
         Yast::Host.Write
 
@@ -312,23 +312,51 @@ describe Yast::Host do
 
         expect(content.lines).to include("127.0.0.2\tlocalmachine.domain.local localmachine\n")
       end
+
+      it "sets Host as modified" do
+        expect(Yast::Host.GetModified).to eql(false)
+        Yast::Host.EnsureHostnameResolvable
+        expect(Yast::Host.GetModified).to eql(true)
+      end
     end
 
     context "do not need dummy ip" do
       before do
         allow(Yast::DNS).to receive(:write_hostname).and_return(false)
-      end
-
-      it "deletes entry for 127.0.0.2" do
         Yast::Host.Read
-        Yast::Host.EnsureHostnameResolvable
-        Yast::Host.Write
-
-        content = file.content
-
-        expect(content.lines.grep(/^127.0.0.2/)).to be_empty
       end
 
+      context "and 127.0.0.2 is present in /etc/hosts" do
+        it "deletes entry for 127.0.0.2" do
+          Yast::Host.EnsureHostnameResolvable
+          Yast::Host.Write
+
+          content = file.content
+
+          expect(content.lines.grep(/^127.0.0.2/)).to be_empty
+        end
+
+        it "sets Host as modified" do
+          expect(Yast::Host.GetModified).to eql(false)
+          Yast::Host.EnsureHostnameResolvable
+          expect(Yast::Host.GetModified).to eql(true)
+        end
+      end
+    end
+
+    context "and /etc/hosts does not contains 127.0.0.2 entry" do
+      let(:file) do
+        file_path = File.expand_path("../data/default_hosts", __FILE__)
+        CFA::MemoryFile.new(File.read(file_path))
+      end
+
+      it "doest not set Host as modified" do
+        allow(Yast::DNS).to receive(:write_hostname).and_return(false)
+
+        expect(Yast::Host.GetModified).to eql(false)
+        Yast::Host.EnsureHostnameResolvable
+        expect(Yast::Host.GetModified).to eql(false)
+      end
     end
   end
 
@@ -408,5 +436,4 @@ describe Yast::Host do
       expect(Yast::Host.StaticIPs).to include "1.1.1.1"
     end
   end
-
 end
