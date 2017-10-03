@@ -17,9 +17,9 @@ and below we have the principal steps concerning network configuration:
 [this](https://github.com/yast/yast-installation/blob/master/doc/installation_overview.md) 
 documentation.
 
-### Linuxrc 
+### Linuxrc
 
-As the [documentation](https://github.com/openSUSE/linuxrc) of the project 
+As the [documentation](https://github.com/openSUSE/linuxrc) of the project
 explains, it is the very early part of the SuSE Installation before YaST runs
 which means that it is the first one responsible for the network config.
 
@@ -35,7 +35,6 @@ will create a ifcfg file per interface with these options:
 ```
 BOOTPROTO='dhcp'
 STARTMODE='auto'
-DHCLIENT_SET_HOSTNAME='yes'
 ```
 
 Or a static config if it is specified so by ifcfg option, for example:
@@ -49,7 +48,6 @@ Will create ifcfg-eth0 with:
 BOOTPROTO='static'
 STARTMODE='auto'
 IPADDR='192.168.122.100/24'
-DHCLIENT_SET_HOSTNAME='yes'
 ```
 
 ifroute-eth0:
@@ -57,17 +55,25 @@ ifroute-eth0:
 default 192.168.122.1 - eth0
 ```
 
-and network/config:
+network/config:
 ```
 NETCONFIG_DNS_STATIC_SEARCH_LIST="suse.de"
 NETCONFIG_DNS_STATIC_SERVERS="192.168.122.1"
 ```
 
+and network/dhcp
+```
+DHCLIENT_SET_HOSTNAME="yes"
+```
+
+**Note:** We can use `sethostname=0` to disable this option, and also we can
+provide a static hostname with `hostname=whatever.example.com`
+
 ## inst_dhcp
 
-This client will try to configure dhcp in all the connected cards that haven't 
-been configured yet but only in the case that linuxrc has not activated one
-previously (i.e. with some parameter that implies a remote connection).
+This client will try to configure dhcp in all the connected cards that have
+not been configured yet but only in the case that linuxrc has not activated
+one previously (i.e. with some parameter that implies a remote connection).
 
 ## inst_lan
 
