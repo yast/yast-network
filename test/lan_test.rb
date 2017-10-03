@@ -134,8 +134,8 @@ describe "LanClass#activate_network_service" do
 end
 
 describe "LanClass#Import" do
-  it "flushes internal state of LanItems correctly when asked for reset" do
-    AY_PROFILE = {
+  let(:ay_profile) do
+    {
       "devices" => {
         "eth" => {
           "eth0" => {
@@ -147,15 +147,23 @@ describe "LanClass#Import" do
           }
         }
       }
-    }.freeze
+    }
+  end
 
-    expect(Yast::Lan.Import(AY_PROFILE)).to be true
+  it "flushes internal state of LanItems correctly when asked for reset" do
+    expect(Yast::Lan.Import(ay_profile)).to be true
     expect(Yast::LanItems.GetModified).to be true
     expect(Yast::LanItems.Items).not_to be_empty
 
     expect(Yast::Lan.Import({})).to be true
     expect(Yast::LanItems.GetModified).to be false
     expect(Yast::LanItems.Items).to be_empty
+  end
+
+  it "reads the current /etc/hosts entries" do
+    expect(Yast::Host).to receive(:Read)
+
+    Yast::Lan.Import(ay_profile)
   end
 end
 

@@ -16,6 +16,8 @@ RSpec.configure do |c|
   c.include SCRStub
 end
 
+DATA_PATH = File.join(File.expand_path(File.dirname(__FILE__)), "data")
+
 # stub module to prevent its Import
 # Useful for modules from different yast packages, to avoid build dependencies
 def stub_module(name)
