@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Oct  4 10:26:53 CEST 2017 - schubi@suse.de
+
+- Remote settings: Only reading firewall settings if we are really
+  in an installed system. (bnc#1055279, bnc#1058071)
+- 4.0.2
+
+-------------------------------------------------------------------
 Fri Sep 29 13:26:16 UTC 2017 - knut.anderssen@suse.com
 
 - Do not blank out /etc/hosts when no <host> section is defined
