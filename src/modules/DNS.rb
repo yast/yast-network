@@ -685,8 +685,8 @@ module Yast
       # in the initial stage otherwise it might fail!
       Yast.import "AutoinstConfig"
 
-      # the 2nd stage is enabled, OK
-      return if AutoinstConfig.second_stage
+      # the 2nd stage is enabled or the network is configured before the proposal
+      return if AutoinstConfig.second_stage || AutoinstConfig.network_before_proposal
 
       # TRANSLATORS: Warning message, the AutoYaST XML profile is incorrect
       Report.Warning(_("DNS configuration error: The DNS configuration\n" \
