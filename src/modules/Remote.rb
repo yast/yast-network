@@ -182,18 +182,20 @@ module Yast
     # Update the SCR according to network settings
     # @return true on success
     def Write
-      # Package containing SuSEfirewall2 services has to be installed before
-      # reading SuSEFirewall, otherwise exception is thrown by firewall
-      if Package.Install(PKG_CONTAINING_FW_SERVICES)
-        current_progress = Progress.set(false)
-        SuSEFirewall.Read
-        Progress.set(current_progress)
-      else
-        Report.Error(
-          _("Package %{package} is not installed\nfirewall settings will be disabled.") % {
-            package: PKG_CONTAINING_FW_SERVICES
-          }
-        )
+      if Mode.normal # running in an installed system
+        # Package containing SuSEfirewall2 services has to be installed before
+        # reading SuSEFirewall, otherwise exception is thrown by firewall
+        if Package.Install(PKG_CONTAINING_FW_SERVICES)
+          current_progress = Progress.set(false)
+          SuSEFirewall.Read
+          Progress.set(current_progress)
+        else
+          Report.Error(
+            _("Package %{package} is not installed\nfirewall settings will be disabled.") % {
+              package: PKG_CONTAINING_FW_SERVICES
+            }
+          )
+        end
       end
 
       steps = [
