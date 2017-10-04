@@ -330,8 +330,8 @@ describe "LanClass#IfcfgsToSkipVirtualizedProposal" do
   end
 
   context "there is no interfaces in the system" do
-    let(:items) { {} }
     it "returns an empty array" do
+      allow(Yast::LanItems).to receive(:Items).and_return({})
       expect(Yast::Lan.IfcfgsToSkipVirtualizedProposal).to eql([])
     end
   end
