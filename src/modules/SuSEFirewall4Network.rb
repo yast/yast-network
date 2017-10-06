@@ -51,6 +51,7 @@ module Yast
       Yast.import "Linuxrc"
       Yast.import "ProductFeatures"
       Yast.import "Pkg"
+      Yast.import "PackageSystem"
 
       @firewall_enabled_1st_stage = false
       @ssh_enabled_1st_stage = false
@@ -278,6 +279,10 @@ module Yast
     # Returns whether the firewall package is installed
     # @return [Boolean] if installed
     def IsInstalled
+      if Stage.initial
+        return false unless PackageSystem.Installed(SuSEFirewall.FIREWALL_PACKAGE)
+      end
+
       SuSEFirewall.SuSEFirewallIsInstalled
     end
 
