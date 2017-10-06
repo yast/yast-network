@@ -240,6 +240,7 @@ module Yast
 
       # selecting according device name is unreliable (selects only in between configured devices)
       LanItems.current = item
+      LanItems.InitItemUdevRule(item)
 
       if !attr.nil? && !key.nil?
         # find out what attribude is currently used for setting device name and

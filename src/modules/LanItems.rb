@@ -350,6 +350,34 @@ module Yast
       Ops.get_list(GetLanItem(itemId), ["udev", "net"], [])
     end
 
+    # Sets udev rule for given item
+    #
+    # @param itemId [Integer] a key for {#Items}
+    # @param rule   [String]  an udev rule
+    def SetItemUdevRule(itemId, rule)
+      GetLanItem(itemId)["udev"]["net"] = rule
+    end
+
+    # Inits item's udev rule to a default one if none is present
+    #
+    # @param itemId [Integer] a key for {#Items}
+    # @return [String] item's udev rule
+    def InitItemUdevRule(item_id)
+      udev = GetItemUdevRule(item_id)
+      return udev if !udev.empty?
+
+      default_mac = GetLanItem(item_id).fetch("hwinfo", {})["mac"]
+      raise ArgumentError, "Cannot propose udev rule - NIC not present" if !default_mac
+
+      default_udev = GetDefaultUdevRule(
+        GetCurrentName(),
+        default_mac
+      )
+      SetItemUdevRule(item_id, default_udev)
+
+      default_udev
+    end
+
     def ReadUdevDriverRules
       Builtins.y2milestone("Reading udev rules ...")
       @udev_net_rules = Convert.convert(
