@@ -353,7 +353,7 @@ describe "NetworkAutoYast" do
     before(:each) do
       allow(Yast::LanItems)
         .to receive(:Items)
-        .and_return(0 => { "ifcfg" => "eth0" })
+        .and_return(0 => { "ifcfg" => "eth0", "udev" => { "net" => ["ATTR{address}==\"24:be:05:ce:1e:91\"", "KERNEL==\"eth*\"", "NAME=\"eth0\""] } })
     end
 
     context "valid arguments given" do
