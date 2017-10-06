@@ -280,20 +280,34 @@ module Yast
         end
         next if !matching_item
 
-        name_from = LanItems.GetDeviceName(item)
+        name_from = item_name(item)
         log.info("Matching device found - renaming <#{name_from}> -> <#{name_to}>")
 
-        # find rule in collision
-        colliding_item, _item_map = LanItems.Items.find do |i, _|
-          LanItems.GetDeviceName(i) == name_to
-        end
-
         # rename item in collision
-        rename_lan_item(colliding_item, name_from)
+        rename_lan_item(colliding_item(name_to), name_from)
 
         # rename matching item
         rename_lan_item(item, name_to, attr, key)
       end
+    end
+
+    # Returns items id, taking into account that item could be renamed
+    #
+    # @return [String] device name
+    def item_name(item_id)
+      LanItems.renamed?(item_id) ? LanItems.renamed_to(item_id) : LanItems.GetDeviceName(item_id)
+    end
+
+    # Finds a LanItem which name is in collision to the provided name
+    #
+    # @param [String] a device name (eth0, ...)
+    # @return [Integer] item id (see LanItems::Items)
+    def colliding_item(name)
+      colliding_item, _item_map = LanItems.Items.find do |i, _|
+        name == item_name(i)
+      end
+
+      colliding_item
     end
   end
 end
