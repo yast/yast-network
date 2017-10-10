@@ -138,7 +138,7 @@ describe "NetworkLanAddressInclude" do
         .to receive(:ipaddr)
         .and_return(ip)
       allow(subject)
-        .to receive(:hostname_initial)
+        .to receive(:initial_hostname)
         .and_return(initial_hostname)
 
       expect(Yast::Host)

@@ -1547,7 +1547,7 @@ module Yast
         "NETMASK"          => LanItems.netmask,
         "PREFIXLEN"        => LanItems.prefix,
         "REMOTEIP"         => LanItems.remoteip,
-        "HOSTNAME"         => hostname_initial(LanItems.ipaddr),
+        "HOSTNAME"         => intial_hostname(LanItems.ipaddr),
         "IFCFGTYPE"        => LanItems.type,
         "IFCFGID"          => LanItems.device
       }
@@ -1629,21 +1629,21 @@ module Yast
     # @param [String] new hostname
     def update_hostname(ipaddr, hostname)
       ip_changed = LanItems.ipaddr != ipaddr
-      hostname_initial = hostname_initial(LanItems.ipaddr)
-      hostname_changed = hostname_initial != hostname
+      initial_hostname = initial_hostname(LanItems.ipaddr)
+      hostname_changed = initial_hostname != hostname
 
       return if !(ip_changed || hostname_changed || hostname.empty?)
 
       log.info("Dropping record for #{LanItems.ipaddr} from /etc/hosts")
 
       Host.remove_ip(LanItems.ipaddr)
-      Host.Update(hostname_initial, hostname, ipaddr) if !hostname.empty?
+      Host.Update(initial_hostname, hostname, ipaddr) if !hostname.empty?
 
       nil
     end
 
     # Returns canonical hostname for the given ip
-    def hostname_initial(ipaddr)
+    def initial_hostname(ipaddr)
       host_list = Host.names(ipaddr)
       if Ops.greater_than(Builtins.size(host_list), 1)
         Builtins.y2milestone(
