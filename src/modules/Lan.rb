@@ -104,6 +104,7 @@ module Yast
       return true if NetworkConfig.Modified
       return true if NetworkService.Modified
       return true if SuSEFirewall.GetModified
+      return true if Host.GetModified
 
       false
     end
