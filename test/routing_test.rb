@@ -23,39 +23,17 @@ describe Yast::Routing do
       allow(Yast::SCR).to receive(:Execute) { nil }
     end
 
-    context "when Firewall is enabled" do
-      before(:each) do
-        allow(Yast::SuSEFirewall).to receive(:IsEnabled) { true }
-      end
+    describe "#WriteIPForwarding" do
+      it "Updates IPv4 and IPv6 forwarding in sysctl.conf" do
+        allow(Yast::SCR).to receive(:Write) { nil }
+        expect(Yast::SCR)
+          .to receive(:Write)
+          .with(SYSCTL_IPV4_PATH, @value4)
+        expect(Yast::SCR)
+          .to receive(:Write)
+          .with(SYSCTL_IPV6_PATH, @value6)
 
-      describe "#WriteIPForwarding" do
-        it "Delegates setup to SuSEFirewall2" do
-          expect(Yast::SuSEFirewall)
-            .to receive(:SetSupportRoute)
-            .with(forward_v4)
-
-          expect(Yast::Routing.WriteIPForwarding).to be_equal nil
-        end
-      end
-    end
-
-    context "when Firewall is disabled" do
-      before(:each) do
-        allow(Yast::SuSEFirewall).to receive(:IsEnabled) { false }
-      end
-
-      describe "#WriteIPForwarding" do
-        it "Updates IPv4 and IPv6 forwarding in sysctl.conf" do
-          allow(Yast::SCR).to receive(:Write) { nil }
-          expect(Yast::SCR)
-            .to receive(:Write)
-            .with(SYSCTL_IPV4_PATH, @value4)
-          expect(Yast::SCR)
-            .to receive(:Write)
-            .with(SYSCTL_IPV6_PATH, @value6)
-
-          expect(Yast::Routing.WriteIPForwarding).to be_equal nil
-        end
+        expect(Yast::Routing.WriteIPForwarding).to be_equal nil
       end
     end
   end
