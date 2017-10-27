@@ -1292,11 +1292,11 @@ module Yast
       fwzone = SuSEFirewall4Network.GetZoneOfInterface(LanItems.GetCurrentName)
 
       # If firewall is active and interface in no zone, nothing
-      # gets through (#62309) so add it to the external zone
+      # gets through (#62309) so add it to the default zone
       if fwzone == "" && LanItems.operation == :add && SuSEFirewall4Network.IsOn &&
           SuSEFirewall4Network.UnconfiguredIsBlocked
-        fwzone = "EXT"
-        Builtins.y2milestone("Defaulting to EXT")
+        fwzone = "public"
+        Builtins.y2milestone("Defaulting to public")
       end
 
       @fwzone_initial = fwzone

@@ -183,7 +183,7 @@ module Yast
     # @return true on success
     def Write
       if Mode.normal # running in an installed system
-        # Package containing SuSEfirewall2 services has to be installed before
+        # Package containing SuSEfirewall services has to be installed before
         # reading SuSEFirewall, otherwise exception is thrown by firewall
         if Package.Install(PKG_CONTAINING_FW_SERVICES)
           current_progress = Progress.set(false)
