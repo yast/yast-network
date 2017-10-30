@@ -1620,10 +1620,8 @@ module Yast
     #
     # When hostname is empty, then old IP's record is cleared from /etc/hosts and
     # new is not created.
-    # When hostname is changed then canonical name and all aliases in the record
+    # Otherwise the canonical name and all aliases in the record
     # are replaced by new ones.
-    # When NIC's IP was changed than the canonical name and all aliases are assigned
-    # the new IP (or replaced by new ones if the hostname was changed as well)
     #
     # @param [String] ip address
     # @param [String] new hostname
