@@ -69,8 +69,6 @@ module Yast
 
       @fwzone_initial = ""
 
-      @hostname_initial = ""
-
       @force_static_ip = ProductFeatures.GetBooleanFeature(
         "network",
         "force_static_ip"
@@ -1331,14 +1329,6 @@ module Yast
 
       @fwzone_initial = fwzone
 
-      host_list = Host.names(LanItems.ipaddr)
-      if Ops.greater_than(Builtins.size(host_list), 1)
-        Builtins.y2milestone(
-          "More than one hostname for single IP detected, using the first one only"
-        )
-      end
-      @hostname_initial = String.FirstChunk(Ops.get(host_list, 0, ""), " \t")
-
       initialize_address_settings
 
       wd = Convert.convert(
@@ -1492,22 +1482,12 @@ module Yast
         LanItems.bootproto = bootproto
 
         if bootproto == "static"
-          ip_changed = LanItems.ipaddr != ipaddr
-          hostname = @settings.fetch("HOSTNAME", "")
-
-          if ip_changed || hostname.empty?
-            log.info("Dropping record for #{LanItems.ipaddr} from /etc/hosts")
-            Host.remove_ip(LanItems.ipaddr)
-          end
+          update_hostname(ipaddr, @settings.fetch("HOSTNAME", ""))
 
           LanItems.ipaddr = ipaddr
           LanItems.netmask = Ops.get_string(@settings, "NETMASK", "")
           LanItems.prefix = Ops.get_string(@settings, "PREFIXLEN", "")
           LanItems.remoteip = Ops.get_string(@settings, "REMOTEIP", "")
-
-          if (@hostname_initial != hostname && !hostname.empty?) || ip_changed
-            Host.Update(@hostname_initial, hostname, LanItems.ipaddr)
-          end
         else
           LanItems.ipaddr = ""
           LanItems.netmask = ""
@@ -1567,7 +1547,7 @@ module Yast
         "NETMASK"          => LanItems.netmask,
         "PREFIXLEN"        => LanItems.prefix,
         "REMOTEIP"         => LanItems.remoteip,
-        "HOSTNAME"         => @hostname_initial,
+        "HOSTNAME"         => intial_hostname(LanItems.ipaddr),
         "IFCFGTYPE"        => LanItems.type,
         "IFCFGID"          => LanItems.device
       }
@@ -1630,6 +1610,46 @@ module Yast
       physical_port_ids.select! { |_k, v| v.size > 1 }
 
       physical_port_ids
+    end
+
+    # Performs hostname update
+    #
+    # This handles ip and hostname change when editing NIC properties.
+    # The method relies on old NIC's IP which is set globally at initialization
+    # of NIC edit dialog (@see LanItems#ipaddr)
+    #
+    # When hostname is empty, then old IP's record is cleared from /etc/hosts and
+    # new is not created.
+    # Otherwise the canonical name and all aliases in the record
+    # are replaced by new ones.
+    #
+    # @param [String] ip address
+    # @param [String] new hostname
+    def update_hostname(ipaddr, hostname)
+      ip_changed = LanItems.ipaddr != ipaddr
+      initial_hostname = initial_hostname(LanItems.ipaddr)
+      hostname_changed = initial_hostname != hostname
+
+      return if !(ip_changed || hostname_changed || hostname.empty?)
+
+      log.info("Dropping record for #{LanItems.ipaddr} from /etc/hosts")
+
+      Host.remove_ip(LanItems.ipaddr)
+      Host.Update(initial_hostname, hostname, ipaddr) if !hostname.empty?
+
+      nil
+    end
+
+    # Returns canonical hostname for the given ip
+    def initial_hostname(ipaddr)
+      host_list = Host.names(ipaddr)
+      if Ops.greater_than(Builtins.size(host_list), 1)
+        Builtins.y2milestone(
+          "More than one hostname for single IP detected, using the first one only"
+        )
+      end
+
+      String.FirstChunk(Ops.get(host_list, 0, ""), " \t")
     end
   end
 end

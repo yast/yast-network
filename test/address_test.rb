@@ -128,4 +128,28 @@ describe "NetworkLanAddressInclude" do
     end
   end
 
+  describe "#update_hostname" do
+    let(:ip) { "1.1.1.1" }
+    let(:initial_hostname) { "initial.hostname.com" }
+    let(:new_hostname) { "new.hostname.com" }
+
+    it "drops old /etc/hosts record if hostname was changed" do
+      allow(Yast::LanItems)
+        .to receive(:ipaddr)
+        .and_return(ip)
+      allow(subject)
+        .to receive(:initial_hostname)
+        .and_return(initial_hostname)
+
+      expect(Yast::Host)
+        .to receive(:remove_ip)
+        .with(ip)
+      expect(Yast::Host)
+        .to receive(:Update)
+        .with(initial_hostname, new_hostname, ip)
+
+      subject.send(:update_hostname, ip, new_hostname)
+    end
+  end
+
 end

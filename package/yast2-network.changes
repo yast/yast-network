@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Oct 10 08:28:07 UTC 2017 - mfilka@suse.com
+
+- bnc#1052042
+  - properly update canonical name and aliases in /etc/hosts when
+    FQDN is provided as a hostname
+- 3.2.43
+
+-------------------------------------------------------------------
 Wed Oct  4 06:43:54 UTC 2017 - knut.anderssen@suse.com
 
 - AutoYaST: Do not display a warning about disabled second stage
