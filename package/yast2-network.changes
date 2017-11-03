@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Nov  3 14:13:40 UTC 2017 - knut.anderssen@suse.com
+
+- Fixed a method name typo and removed SuSEFirewall from Routing
+  module (bsc#572202)
+- 4.0.6
+
+-------------------------------------------------------------------
 Wed Nov  1 10:17:20 UTC 2017 - mfilka@suse.com
 
 - bnc#1052042

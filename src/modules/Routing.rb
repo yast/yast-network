@@ -91,7 +91,6 @@ module Yast
       Yast.import "NetworkInterfaces"
       Yast.import "Map"
       Yast.import "Mode"
-      Yast.import "SuSEFirewall"
       Yast.import "FileUtils"
 
       Yast.include self, "network/runtime.rb"
