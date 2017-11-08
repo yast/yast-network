@@ -1547,7 +1547,7 @@ module Yast
         "NETMASK"          => LanItems.netmask,
         "PREFIXLEN"        => LanItems.prefix,
         "REMOTEIP"         => LanItems.remoteip,
-        "HOSTNAME"         => intial_hostname(LanItems.ipaddr),
+        "HOSTNAME"         => initial_hostname(LanItems.ipaddr),
         "IFCFGTYPE"        => LanItems.type,
         "IFCFGID"          => LanItems.device
       }

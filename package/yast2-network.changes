@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Nov  8 14:50:55 UTC 2017 - igonzalezsosa@suse.com
+
+- Fix a typo in NetworkLanAddressInclude module (bsc#1067172)
+- 3.2.44
+
+-------------------------------------------------------------------
 Tue Oct 10 08:28:07 UTC 2017 - mfilka@suse.com
 
 - bnc#1052042
