@@ -594,7 +594,7 @@ module Yast
     #
     # @param item_id [Integer] a key for {#Items}
     def renamed_to(item_id)
-      @Items[item_id]["renamed_to"]
+      Items()[item_id]["renamed_to"]
     end
 
     def current_renamed_to
@@ -605,7 +605,7 @@ module Yast
     #
     # @param item_id [Integer] a key for {#Items}
     def renamed?(item_id)
-      return false if !LanItems.Items[item_id].key?("renamed_to")
+      return false if !renamed_to(item_id)
       renamed_to(item_id) != GetDeviceName(item_id)
     end
 
