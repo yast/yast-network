@@ -406,4 +406,34 @@ describe "NetworkAutoYast" do
       end
     end
   end
+
+  describe "#item_name" do
+    def mock_lan_item(renamed_to: nil)
+      allow(Yast::LanItems)
+        .to receive(:Items)
+        .and_return(0 => {
+          "ifcfg"   => "eth0",
+          "renamed_to" => !renamed_to.nil? ? renamed_to : nil,
+          "udev" => {
+            "net" => [
+              "ATTR{address}==\"24:be:05:ce:1e:91\"",
+              "NAME=\"#{renamed_to}\""
+            ]
+          }
+        })
+    end
+
+    it "returns old name when device has not been renamed" do
+      mock_lan_item
+
+      expect(network_autoyast.send(:item_name, 0)).to eql "eth0"
+    end
+
+    it "returns new name when device has been renamed" do
+      new_name = "new1"
+      mock_lan_item(renamed_to: new_name)
+
+      expect(network_autoyast.send(:item_name, 0)).to eql new_name
+    end
+  end
 end
