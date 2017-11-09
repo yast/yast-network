@@ -47,6 +47,7 @@ module Yast
   class LanItemsClass < Module
     attr_reader :ipoib_modes
     attr_accessor :ipoib_mode
+    attr_accessor :firewall_zone
 
     include Logger
     include Wicked
@@ -1679,6 +1680,7 @@ module Yast
       @prefix            = d["PREFIXLEN"]
       @remoteip          = d["REMOTE_IPADDR"]
       @netmask           = d["NETMASK"]
+      @firewall_zone     = d["ZONE"]
       @set_default_route = case d["DHCLIENT_SET_DEFAULT_ROUTE"]
       when "yes" then true
       when "no" then  false
@@ -1975,6 +1977,7 @@ module Yast
         end
       end
 
+      newdev["ZONE"] = @firewall_zone
       newdev["NAME"] = @description
 
       newdev = setup_basic_device_options(newdev)

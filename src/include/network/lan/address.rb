@@ -27,6 +27,7 @@
 # Authors:	Michal Svec <msvec@suse.cz>
 #
 require "ui/text_helpers"
+require "y2firewall/firewalld"
 
 module Yast
   module NetworkLanAddressInclude
@@ -69,8 +70,6 @@ module Yast
       Yast.include include_target, "network/lan/s390.rb"
 
       @settings = {}
-
-      @fwzone_initial = ""
 
       @force_static_ip = ProductFeatures.GetBooleanFeature(
         "network",
@@ -1287,18 +1286,6 @@ module Yast
     # Dialog for setting up IP address
     # @return dialog result
     def AddressDialog
-      fwzone = SuSEFirewall4Network.GetZoneOfInterface(LanItems.GetCurrentName)
-
-      # If firewall is active and interface in no zone, nothing
-      # gets through (#62309) so add it to the default zone
-      if fwzone == "" && LanItems.operation == :add && SuSEFirewall4Network.IsOn &&
-          SuSEFirewall4Network.UnconfiguredIsBlocked
-        fwzone = "public"
-        Builtins.y2milestone("Defaulting to public")
-      end
-
-      @fwzone_initial = fwzone
-
       initialize_address_settings
 
       wd = Convert.convert(
@@ -1428,13 +1415,7 @@ module Yast
         ifcfgname = Ops.get_string(LanItems.getCurrentItem, "ifcfg", "")
         # general tab
         LanItems.startmode = Ops.get_string(@settings, "STARTMODE", "")
-
-        if SuSEFirewall4Network.IsInstalled
-          zone = Ops.get_string(@settings, "FWZONE", "")
-          SuSEFirewall4Network.ChangedByUser(true) if zone != @fwzone_initial
-          SuSEFirewall4Network.ProtectByFirewall(ifcfgname, zone, zone != "")
-        end
-
+        LanItems.firewall_zone = @settings.fetch("FWZONE", "")
         LanItems.mtu = Ops.get_string(@settings, "MTU", "")
 
         # address tab
@@ -1509,7 +1490,7 @@ module Yast
         "STARTMODE"        => LanItems.startmode,
         "IFPLUGD_PRIORITY" => LanItems.ifplugd_priority,
         # problems when renaming the interface?
-        "FWZONE"           => @fwzone_initial,
+        "FWZONE"           => LanItems.firewall_zone,
         "MTU"              => LanItems.mtu,
         # address tab:
         "BOOTPROTO"        => LanItems.bootproto,

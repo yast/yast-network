@@ -31,6 +31,8 @@
 # Input and output routines.
 require "yast"
 require "network/confirm_virt_proposal"
+require "network/firewalld_interface_zones"
+require "y2firewall/firewalld"
 
 module Yast
   class LanClass < Module
@@ -362,7 +364,7 @@ module Yast
       # Progress step 5/9
       ProgressNextStage(_("Reading firewall settings...")) if @gui
       orig = Progress.set(false)
-      SuSEFirewall4Network.Read
+      FirewalldInterfaceZones.instance.read
       Progress.set(orig) if @gui
       Builtins.sleep(sl)
 
@@ -485,7 +487,7 @@ module Yast
         return true
       end
 
-      fw_is_installed = SuSEFirewall4Network.IsInstalled
+      fw_is_installed = firewalld.installed?
 
       # Write dialog caption
       caption = _("Saving Network Configuration")
@@ -511,6 +513,7 @@ module Yast
       if fw_is_installed
         step_labels = Builtins.add(step_labels, _("Write firewall settings"))
       end
+
       # Progress stage 9
       if !@write_only
         step_labels = Builtins.add(step_labels, _("Activate network services"))
@@ -577,7 +580,7 @@ module Yast
         # Progress step 8
         ProgressNextStage(_("Writing firewall settings..."))
         orig = Progress.set(false)
-        SuSEFirewall4Network.Write
+        FirewalldInterfaceZones.instance.apply_changes
         Progress.set(orig)
         Builtins.sleep(sl)
       end
@@ -1098,6 +1101,10 @@ module Yast
     publish function: :HaveXenBridge, type: "boolean ()"
 
   private
+
+    def firewalld
+      Y2Firewall::Firewalld.instance
+    end
 
     def activate_network_service
       # If the second installation stage has been called by yast.ssh via
