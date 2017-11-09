@@ -37,6 +37,7 @@ module Yast
       Yast.import "Remote"
       Yast.import "Wizard"
       Yast.import "CWMFirewallInterfaces"
+      Yast.import "SuSEFirewall"
       Yast.import "Popup"
     end
 
@@ -76,6 +77,7 @@ module Yast
         )
       )
 
+      SuSEFirewall.Read
       firewall_widget = CWMFirewallInterfaces.CreateOpenFirewallWidget(
         { "services" => ["service:vnc-httpd", "service:vnc-server"], "display_details" => true }
       )
