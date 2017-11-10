@@ -1572,7 +1572,9 @@ module Yast
     end
 
     def GetItemDescription
-      Ops.get_string(@Items, [@current, "table_descr", "rich_descr"], "")
+      item = getCurrentItem
+      desc = item.fetch("table_descr", {})["rich_descr"] if item
+      desc ? desc : ""
     end
 
     # Select the hardware component

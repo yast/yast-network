@@ -472,3 +472,28 @@ describe "DHCLIENT_SET_HOSTNAME helpers" do
     end
   end
 end
+
+describe "#GetItemDescription" do
+  subject(:lan_items) { Yast::LanItems }
+
+  it "returns description whenever it is available" do
+    allow(lan_items)
+      .to receive(:getCurrentItem)
+      .and_return("table_descr" => { "rich_descr" => "description" })
+    expect(lan_items.GetItemDescription).to eql "description"
+  end
+
+  it "returns empty description whenever it is not available" do
+    allow(lan_items)
+      .to receive(:getCurrentItem)
+      .and_return("table_descr" => {})
+    expect(lan_items.GetItemDescription).to eql ""
+  end
+
+  it "returns empty description whenever it is not available" do
+    allow(lan_items)
+      .to receive(:getCurrentItem)
+      .and_return(nil)
+    expect(lan_items.GetItemDescription).to eql ""
+  end
+end
