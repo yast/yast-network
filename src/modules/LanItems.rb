@@ -2211,13 +2211,13 @@ module Yast
       return if @current < 0
       return if @Items.nil? || @Items.empty?
 
-      log.info("DeleteItem: #{@Items[@current]}")
+      log.info("DeleteItem: #{getCurrentItem}")
 
       devmap = GetCurrentMap()
       drop_hosts(devmap["IPADDR"]) if devmap
       SetCurrentName("")
 
-      current_item = @Items[@current]
+      current_item = getCurrentItem
 
       if current_item["hwinfo"].nil? || current_item["hwinfo"].empty?
         # size is always > 0 here and items are numbered 0, 1, ..., size -1
