@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Nov 14 17:05:47 UTC 2017 - jreidinger@suse.com
+
+- bnc#1066982
+  - fixed initialization and storing of firewall widget
+- 3.1.183
+
+-------------------------------------------------------------------
 Tue Aug  1 07:48:25 UTC 2017 - mfilka@suse.com
 
 - bnc#1037727
