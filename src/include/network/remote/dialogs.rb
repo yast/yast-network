@@ -37,6 +37,7 @@ module Yast
       Yast.import "Remote"
       Yast.import "Wizard"
       Yast.import "CWMFirewallInterfaces"
+      Yast.import "SuSEFirewall"
       Yast.import "Popup"
     end
 
@@ -86,6 +87,9 @@ module Yast
         )
       )
 
+      # read firewall configuration before we init widget.
+      # See CWMFirewallInterfaces top level documentation.
+      SuSEFirewall.Read
       firewall_widget = CWMFirewallInterfaces.CreateOpenFirewallWidget(
         "services" => ["service:vnc-httpd", "service:vnc-server"], "display_details" => true
       )
@@ -155,6 +159,8 @@ module Yast
       end
       if ret == :next
         CWMFirewallInterfaces.OpenFirewallStore(firewall_widget, "", event)
+        # OpenFirewallStore just sets variables, but we need real firewall write
+        SuSEFirewall.Write
 
         allow_with_vncmanager = UI.QueryWidget(Id(:allow_with_vncmanager), :Value)
         allow_without_vncmanager = UI.QueryWidget(Id(:allow_without_vncmanager), :Value)
