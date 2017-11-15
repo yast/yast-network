@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Nov 14 17:05:47 UTC 2017 - jreidinger@suse.com
+
+- bnc#1066982
+  - fixed initialization and storing of firewall widget
+- 3.2.45
+
+-------------------------------------------------------------------
 Wed Nov  8 14:50:55 UTC 2017 - igonzalezsosa@suse.com
 
 - Fix a typo in NetworkLanAddressInclude module (bsc#1067172)
