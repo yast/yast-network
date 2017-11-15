@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Nov 14 17:05:47 UTC 2017 - jreidinger@suse.com
+
+- bnc#1066982
+  - fixed initialization and storing of firewall widget
+- 4.0.7
+
+-------------------------------------------------------------------
 Fri Nov  3 14:13:40 UTC 2017 - knut.anderssen@suse.com
 
 - Fixed a method name typo and removed SuSEFirewall from Routing
