@@ -1,7 +1,20 @@
 module Y2Network
+  require "yast" # for logger
+
   # A container class for network devices
   class NetDevices
-    def initialize(hwinfo: nil, udev_rules: nil, ifcfgs: nil)
+    include Yast::Logger
+    include Enumerable
+
+    # Appends the device object into the container
+    #
+    # For object definition see @NetDevice
+    def push(device)
+    end
+
+    # Clears stored data
+    def reset
+      log.info("NetDevices: clearing the cache")
     end
   end
 end

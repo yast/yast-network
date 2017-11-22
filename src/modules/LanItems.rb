@@ -27,6 +27,7 @@ require "y2storage"
 require "network/install_inf_convertor"
 require "network/wicked"
 require "network/lan_items_summary"
+require "y2network/net_devices"
 
 module Yast
   # Does way too many things.
@@ -49,6 +50,7 @@ module Yast
     attr_accessor :ipoib_mode
     attr_accessor :firewall_zone
     attr_accessor :Items
+    attr_accessor :devices
 
     include Logger
     include Wicked
@@ -966,7 +968,10 @@ module Yast
     #
     # @return [Array] list of config file names
     def invalid_dhcp_cfgs
-      devs = LanItems.find_set_hostname_ifaces
+#      devs = LanItems.find_set_hostname_ifaces
+      devs = devices.select do |device|
+        device.ifcfg["DHCLIENT_SET_HOSTNAME"] == "yes"
+      end
       dev_ifcfgs = devs.map { |d| "ifcfg-#{d}" }
 
       return dev_ifcfgs if devs.size > 1
@@ -1109,12 +1114,13 @@ module Yast
           ),
           "\""
         )
-        Ops.set(
-          Items(),
-          Builtins.size(Items()),
-          "hwinfo" => hwitem,
-          "udev"   => { "net" => udev_net, "driver" => mod }
-        )
+# TODO: move into container class
+#        Ops.set(
+#          Items(),
+#          Builtins.size(Items()),
+#          "hwinfo" => hwitem,
+#          "udev"   => { "net" => udev_net, "driver" => mod }
+#        )
       end
 
       nil
@@ -1137,22 +1143,26 @@ module Yast
       NetworkInterfaces.CleanHotplugSymlink
 
       interfaces = getNetworkInterfaces
+      # TODO: move into container class
       # match configurations to Items list with hwinfo
-      interfaces.each do |confname|
-        Items().each do |key, value|
-          match = value.fetch("hwinfo", {}).fetch("dev_name", "") == confname
-          Items()[key]["ifcfg"] = confname if match
-        end
-      end
+#      interfaces.each do |confname|
+#        Items().each do |key, value|
+#          match = value.fetch("hwinfo", {}).fetch("dev_name", "") == confname
+#          Items()[key]["ifcfg"] = confname if match
+#        end
+#      end
+#
+#      interfaces.each do |confname|
+#        next if Items().keys.any? { |key| Items().fetch(key, {}).fetch("ifcfg", "") == confname }
+#
+#        AddNew()
+#        Items()[@current] = { "ifcfg" => confname }
+#      end
+#
+#      log.info "Read Configuration LanItems::Items #{Items()}"
 
-      interfaces.each do |confname|
-        next if Items().keys.any? { |key| Items().fetch(key, {}).fetch("ifcfg", "") == confname }
-
-        AddNew()
-        Items()[@current] = { "ifcfg" => confname }
-      end
-
-      log.info "Read Configuration LanItems::Items #{Items()}"
+      # TODO: missing hwinfo and udev setup, add when needed.
+      devices = Y2Network::NetDevices.new(ifcfgs: interfaces)
 
       nil
     end
@@ -1165,7 +1175,7 @@ module Yast
     # 3) variables which keeps (some of) attributes of the current item (= item
     # which is being pointed by the iterator)
     def reset_cache
-      LanItems.Items = {}
+      devices.reset if devices
 
       @modified = false
     end
