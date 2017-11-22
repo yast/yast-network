@@ -105,59 +105,6 @@ module Yast
           expect(DNS.dhcp_hostname).to eql(false)
         end
       end
-
-      context "The AutoYaST first stage installation" do
-        let(:settings) { { "hostname" => "host", "searchlist" => ["example.com"] } }
-        let(:second_stage) { false }
-        let(:network_before_proposal) { false }
-        let(:autoinst_mock) do
-          double(second_stage: second_stage, network_before_proposal: network_before_proposal)
-        end
-
-        before do
-          allow(Yast::Stage).to receive(:initial).and_return(true)
-          allow(Yast::Mode).to receive(:auto).and_return(true)
-          allow(Yast).to receive(:import).with("AutoinstConfig")
-          # reset the internal counter
-          DNS.instance_variable_set(:@error_reported, false)
-          stub_const("Yast::AutoinstConfig", autoinst_mock)
-        end
-
-        context "with 2nd stage enabled" do
-          let(:second_stage) { true }
-
-          it "does not print a warning for writing the search list" do
-            expect(Yast::Report).to_not receive(:Warning)
-            DNS.hostname = "test"
-            DNS.Import({})
-          end
-        end
-
-        context "with 2nd stage disabled" do
-          it "does not print a warning if the network is configured before the proposal" do
-            stub_const("Yast::AutoinstConfig",
-              double(second_stage: false, network_before_proposal: true))
-            expect(Yast::Report).to_not receive(:Warning)
-            DNS.Import(settings)
-          end
-
-          it "does not print a warning when the hostname is set out of the profile" do
-            expect(Yast::Report).to_not receive(:Warning)
-            DNS.hostname = "test"
-            DNS.Import({})
-          end
-          it "prints a warning for writing the search list" do
-            expect(Yast::Report).to receive(:Warning)
-            DNS.Import(settings)
-          end
-
-          it "prints the warning only once on multiple calls" do
-            expect(Yast::Report).to receive(:Warning).once
-            DNS.Import(settings)
-            DNS.Import(settings)
-          end
-        end
-      end
     end
   end
 end
