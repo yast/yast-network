@@ -617,12 +617,6 @@ module Yast
       fqhostname
     end
 
-    # empty configuration?
-    # @return [Boolean] true if the configuration is empty (or contains defaults)
-    def empty?
-      @nameservers.empty? && @searchlist.empty? && @hostname.empty? && @domain.empty?
-    end
-
     # Updates /etc/sysconfig/network/dhcp
     def update_sysconfig_dhcp
       if dhclient_set_hostname != @dhcp_hostname || get_write_hostname_to_hosts != @write_hostname
