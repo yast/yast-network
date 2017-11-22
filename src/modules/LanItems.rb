@@ -48,6 +48,7 @@ module Yast
     attr_reader :ipoib_modes
     attr_accessor :ipoib_mode
     attr_accessor :firewall_zone
+    attr_accessor :Items
 
     include Logger
     include Wicked
@@ -216,6 +217,10 @@ module Yast
       # this is the map of kernel modules vs. requested firmware
       # non-empty keys are firmware packages shipped by SUSE
       @request_firmware = YAML.load_file(Directory.find_data_file("network/firmwares.yml"))
+    end
+
+    def Items
+      raise ArgumentError, "Please, replace LanItems::Items referenece."
     end
 
     # Returns configuration of item (see LanItems::Items) with given id.
@@ -2801,7 +2806,7 @@ module Yast
     # - ifcfg: String, just a foreign key for NetworkInterfaces#Select
     # - hwinfo: Hash, detected hardware information
     # - udev: Hash, udev naming rules
-    publish_variable :Items, "map <integer, any>"
+#    publish_variable :Items, "map <integer, any>"
     # @attribute Hardware
     publish_variable :Hardware, "list <map>"
     publish_variable :udev_net_rules, "map <string, any>"
