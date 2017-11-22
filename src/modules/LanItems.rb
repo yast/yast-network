@@ -274,7 +274,7 @@ module Yast
 
     # transforms given list of item ids onto device names
     #
-    # item id is index into internal @Items structure
+    # item id is index into internal LanItems::Items structure
     def GetDeviceNames(items)
       return [] unless items
 
@@ -577,10 +577,10 @@ module Yast
     # Sets new device name for current item
     def rename(name)
       if GetCurrentName() != name
-        @Items[@current]["renamed_to"] = name
+        Items()[@current]["renamed_to"] = name
         SetModified()
       else
-        @Items[@current].delete("renamed_to")
+        Items()[@current].delete("renamed_to")
       end
     end
 
@@ -616,14 +616,14 @@ module Yast
 
       Builtins.foreach(
         Convert.convert(
-          Map.Keys(@Items),
+          Map.Keys(Items()),
           from: "list",
           to:   "list <integer>"
         )
       ) do |key|
         item_udev_net = GetItemUdevRule(key)
         next if IsEmpty(item_udev_net)
-        dev_name = Ops.get_string(@Items, [key, "hwinfo", "dev_name"], "")
+        dev_name = Ops.get_string(Items(), [key, "hwinfo", "dev_name"], "")
         @current = key
         if dev_name != GetItemUdev("NAME")
           # when changing device name you have a choice
@@ -654,14 +654,14 @@ module Yast
 
       Builtins.foreach(
         Convert.convert(
-          Map.Keys(@Items),
+          Map.Keys(Items()),
           from: "list",
           to:   "list <integer>"
         )
       ) do |key|
-        driver = Ops.get_string(@Items, [key, "udev", "driver"], "")
+        driver = Ops.get_string(Items(), [key, "udev", "driver"], "")
         if IsNotEmpty(driver)
-          modalias = Ops.get_string(@Items, [key, "hwinfo", "modalias"], "")
+          modalias = Ops.get_string(Items(), [key, "hwinfo", "modalias"], "")
           driver_rule = []
 
           driver_rule = AddToUdevRule(
@@ -717,7 +717,7 @@ module Yast
     end
 
     def write
-      renamed_items = @Items.keys.select { |item_id| renamed?(item_id) }
+      renamed_items = Items().keys.select { |item_id| renamed?(item_id) }
       renamed_items.each do |item_id|
         devmap = GetDeviceMap(item_id)
         # change configuration name if device is configured
@@ -754,8 +754,8 @@ module Yast
     end
 
     def AddNew
-      @current = @Items.to_h.size
-      @Items[@current] = { "commited" => false }
+      @current = Items().to_h.size
+      Items()[@current] = { "commited" => false }
       @operation = :add
 
       nil
@@ -768,7 +768,7 @@ module Yast
       mods = []
       mods = Builtins.add(mods, default_module) if IsNotEmpty(default_module)
       Builtins.foreach(
-        Ops.get_list(@Items, [@current, "hwinfo", "drivers"], [])
+        Ops.get_list(Items(), [@current, "hwinfo", "drivers"], [])
       ) do |row|
         tmp_mod = Ops.get_string(row, ["modules", 0, 0], "")
         mods = Builtins.add(mods, tmp_mod) if !Builtins.contains(mods, tmp_mod)
@@ -999,7 +999,7 @@ module Yast
     # @param [String] device name (e.g. eth0)
     # @return index in Items or nil
     def find_configured(device)
-      @Items.select { |_k, v| v["ifcfg"] == device }.keys.first
+      Items().select { |_k, v| v["ifcfg"] == device }.keys.first
     end
 
     def FindAndSelect(device)
@@ -1018,7 +1018,7 @@ module Yast
 
       Builtins.foreach(
         Convert.convert(
-          @Items,
+          Items(),
           from: "map <integer, any>",
           to:   "map <integer, map <string, any>>"
         )
@@ -1063,9 +1063,9 @@ module Yast
       newname
     end
 
-    # preinitializates @Items according info on physically detected network cards
+    # preinitializates LanItems::Items according info on physically detected network cards
     def ReadHw
-      @Items = {}
+      reset_cache
       @Hardware = ReadHardware("netcard")
       # Hardware = [$["active":true, "bus":"pci", "busid":"0000:02:00.0", "dev_name":"wlan0", "drivers":[$["active":true, "modprobe":true, "modules":[["ath5k" , ""]]]], "link":true, "mac":"00:22:43:37:55:c3", "modalias":"pci:v0000168Cd0000001Csv00001A3Bsd00001026bc02s c00i00", "module":"ath5k", "name":"AR242x 802.11abg Wireless PCI Express Adapter", "num":0, "options":"", "re quires":[], "sysfs_id":"/devices/pci0000:00/0000:00:1c.1/0000:02:00.0", "type":"wlan", "udi":"/org/freedeskto p/Hal/devices/pci_168c_1c", "wl_auth_modes":["open", "sharedkey", "wpa-psk", "wpa-eap"], "wl_bitrates":nil, " wl_channels":["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"], "wl_enc_modes":["WEP40", "WEP104", "T KIP", "CCMP"]], $["active":true, "bus":"pci", "busid":"0000:01:00.0", "dev_name":"eth0", "drivers":[$["active ":true, "modprobe":true, "modules":[["atl1e", ""]]]], "link":false, "mac":"00:23:54:3f:7c:c3", "modalias":"pc i:v00001969d00001026sv00001043sd00008324bc02sc00i00", "module":"atl1e", "name":"L1 Gigabit Ethernet Adapter", "num":1, "options":"", "requires":[], "sysfs_id":"/devices/pci0000:00/0000:00:1c.3/0000:01:00.0", "type":"et h", "udi":"/org/freedesktop/Hal/devices/pci_1969_1026", "wl_auth_modes":nil, "wl_bitrates":nil, "wl_channels" :nil, "wl_enc_modes":nil]];
       ReadUdevDriverRules()
@@ -1105,8 +1105,8 @@ module Yast
           "\""
         )
         Ops.set(
-          @Items,
-          Builtins.size(@Items),
+          Items(),
+          Builtins.size(Items()),
           "hwinfo" => hwitem,
           "udev"   => { "net" => udev_net, "driver" => mod }
         )
@@ -1115,14 +1115,14 @@ module Yast
       nil
     end
 
-    # initializates @Items
+    # initializates LanItems::Items
     #
     # It does:
     # (1) read hardware present on the system
     # (2) read known configurations (e.g. ifcfg-eth0)
     # (3) joins together. Join is done via device name (e.g. eth0) as key.
     # It is full outer join in -> you can have hwinfo part with no coresponding
-    # netconfig part (or vice versa) in @Items when the method is done.
+    # netconfig part (or vice versa) in the Items when the method is done.
     def Read
       reset_cache
 
@@ -1134,20 +1134,20 @@ module Yast
       interfaces = getNetworkInterfaces
       # match configurations to Items list with hwinfo
       interfaces.each do |confname|
-        @Items.each do |key, value|
+        Items().each do |key, value|
           match = value.fetch("hwinfo", {}).fetch("dev_name", "") == confname
-          @Items[key]["ifcfg"] = confname if match
+          Items()[key]["ifcfg"] = confname if match
         end
       end
 
       interfaces.each do |confname|
-        next if @Items.keys.any? { |key| @Items.fetch(key, {}).fetch("ifcfg", "") == confname }
+        next if Items().keys.any? { |key| Items().fetch(key, {}).fetch("ifcfg", "") == confname }
 
         AddNew()
-        @Items[@current] = { "ifcfg" => confname }
+        Items()[@current] = { "ifcfg" => confname }
       end
 
-      log.info "Read Configuration LanItems::Items #{@Items}"
+      log.info "Read Configuration LanItems::Items #{Items()}"
 
       nil
     end
@@ -1203,26 +1203,26 @@ module Yast
       descr = []
       Builtins.foreach(
         Convert.convert(
-          @Items,
+          Items(),
           from: "map <integer, any>",
           to:   "map <integer, map <string, any>>"
         )
       ) do |key, value|
         if Builtins.haskey(value, "table_descr") &&
             Ops.greater_than(
-              Builtins.size(Ops.get_map(@Items, [key, "table_descr"], {})),
+              Builtins.size(Ops.get_map(Items(), [key, "table_descr"], {})),
               1
             )
           descr = Builtins.add(
             descr,
             "id"          => key,
             "rich_descr"  => Ops.get_string(
-              @Items,
+              Items(),
               [key, "table_descr", "rich_descr"],
               ""
             ),
             "table_descr" => Ops.get_list(
-              @Items,
+              Items(),
               [key, "table_descr", "table_descr"],
               []
             )
@@ -1234,16 +1234,16 @@ module Yast
 
     def needFirmwareCurrentItem
       need = false
-      if IsNotEmpty(Ops.get_string(@Items, [@current, "hwinfo", "driver"], ""))
+      if IsNotEmpty(Ops.get_string(Items(), [@current, "hwinfo", "driver"], ""))
         if Builtins.haskey(
           @request_firmware,
-          Ops.get_string(@Items, [@current, "hwinfo", "driver"], "")
+          Ops.get_string(Items(), [@current, "hwinfo", "driver"], "")
         )
           need = true
         end
       else
         Builtins.foreach(
-          Ops.get_list(@Items, [@current, "hwinfo", "drivers"], [])
+          Ops.get_list(Items(), [@current, "hwinfo", "drivers"], [])
         ) do |driver|
           if Builtins.haskey(
             @request_firmware,
@@ -1263,20 +1263,20 @@ module Yast
 
     def GetFirmwareForCurrentItem
       kernel_module = ""
-      if IsNotEmpty(Ops.get_string(@Items, [@current, "hwinfo", "driver"], ""))
+      if IsNotEmpty(Ops.get_string(Items(), [@current, "hwinfo", "driver"], ""))
         if Builtins.haskey(
           @request_firmware,
-          Ops.get_string(@Items, [@current, "hwinfo", "driver"], "")
+          Ops.get_string(Items(), [@current, "hwinfo", "driver"], "")
         )
           kernel_module = Ops.get_string(
-            @Items,
+            Items(),
             [@current, "hwinfo", "driver"],
             ""
           )
         end
       else
         Builtins.foreach(
-          Ops.get_list(@Items, [@current, "hwinfo", "drivers"], [])
+          Ops.get_list(Items(), [@current, "hwinfo", "drivers"], [])
         ) do |driver|
           if Builtins.haskey(
             @request_firmware,
@@ -1816,7 +1816,7 @@ module Yast
     end
 
     def hotplug_usable?
-      true unless Ops.get_string(@Items, [@current, "hwinfo", "hotplug"], "").empty?
+      true unless Ops.get_string(Items(), [@current, "hwinfo", "hotplug"], "").empty?
     end
 
     def replace_ifplugd?
@@ -1877,15 +1877,15 @@ module Yast
       devmap = new_item_default_options
 
       # FIXME: encapsulate into LanItems.GetItemType ?
-      @type = Ops.get_string(@Items, [@current, "hwinfo", "type"], "eth")
+      @type = Ops.get_string(Items(), [@current, "hwinfo", "type"], "eth")
       @device = @type + NetworkInterfaces.GetFreeDevice(@type)
 
       # TODO: instead of udev use hwinfo dev_name
       NetworkInterfaces.Name = GetItemUdev("NAME")
-      if Ops.less_than(Builtins.size(@Items), @current)
-        Ops.set(@Items, @current, "ifcfg" => NetworkInterfaces.Name)
+      if Ops.less_than(Builtins.size(Items()), @current)
+        Ops.set(Items(), @current, "ifcfg" => NetworkInterfaces.Name)
       else
-        Ops.set(@Items, [@current, "ifcfg"], NetworkInterfaces.Name)
+        Ops.set(Items(), [@current, "ifcfg"], NetworkInterfaces.Name)
       end
 
       # FIXME: alias: how to prefill new alias?
@@ -1991,7 +1991,7 @@ module Yast
       # set LLADDR to sysconfig only for device on layer2 and only these which needs it
       # do not write incorrect LLADDR.
       if @qeth_layer2 && s390_correct_lladdr(@qeth_macaddress)
-        busid = Ops.get_string(@Items, [@current, "hwinfo", "busid"], "")
+        busid = Ops.get_string(Items(), [@current, "hwinfo", "busid"], "")
         # sysfs id has changed from css0...
         sysfs_id = "/devices/qeth/#{busid}"
         log.info("busid #{busid}")
@@ -2209,7 +2209,7 @@ module Yast
     # Deletes the {#current} item and its configuration
     def DeleteItem
       return if @current < 0
-      return if @Items.nil? || @Items.empty?
+      return if Items().nil? || Items().empty?
 
       log.info("DeleteItem: #{getCurrentItem}")
 
@@ -2221,10 +2221,10 @@ module Yast
 
       if current_item["hwinfo"].nil? || current_item["hwinfo"].empty?
         # size is always > 0 here and items are numbered 0, 1, ..., size -1
-        delete_index = @Items.size - 1
+        delete_index = Items().size - 1
 
-        @Items[@current] = @Items[delete_index] if delete_index != @current
-        @Items.delete(delete_index)
+        Items()[@current] = Items()[delete_index] if delete_index != @current
+        Items().delete(delete_index)
 
         # item was deleted, so original @current is invalid
         @current = -1
@@ -2284,7 +2284,7 @@ module Yast
       NetworkInterfaces.Add
       @operation = :edit
       Ops.set(
-        @Items,
+        Items(),
         [@current, "ifcfg"],
         Ops.get_string(getCurrentItem, ["hwinfo", "dev_name"], "")
       )
@@ -2307,7 +2307,7 @@ module Yast
           IsEmpty(Ops.get_string(getCurrentItem, ["udev", "driver"], ""))
         return
       end
-      Ops.set(@Items, [@current, "udev", "driver"], driver)
+      Ops.set(Items(), [@current, "udev", "driver"], driver)
 
       nil
     end
@@ -2441,12 +2441,12 @@ module Yast
         if Ops.get_integer(output2, "exit", -1) == 0 &&
             Builtins.size(Ops.get_string(output2, "stderr", "")) == 0
           Ops.set(
-            @Items,
+            Items(),
             [@current, "ifcfg"],
             Ops.get_string(output2, "stdout", "")
           )
           Ops.set(
-            @Items,
+            Items(),
             [@current, "hwinfo", "dev_name"],
             Ops.get_string(output2, "stdout", "")
           )
