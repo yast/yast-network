@@ -1334,7 +1334,7 @@ module Yast
         ]
       )
 
-      wd["FWZONE"]["items"] = firewall_widget
+      wd["FWZONE"]["items"] = firewall_zones
 
       if LanItems.GetCurrentType == "ib"
         wd["IPOIB_MODE"] = ipoib_mode_widget
@@ -1601,6 +1601,20 @@ module Yast
       end
 
       String.FirstChunk(Ops.get(host_list, 0, ""), " \t")
+    end
+
+    def firewall_zones
+      @firewalld ||= Y2Firewall::Firewalld.instance
+      zones = [["", _("Automatically Assigned Zone")]]
+      if @firewalld.installed?
+        Y2Firewall::Firewalld::Zone.known_zones.map do |name, full_name|
+          zones << [name, full_name]
+        end
+      else
+        zones = [["", _("Firewall is not installed.")]]
+      end
+
+      zones
     end
   end
 end
