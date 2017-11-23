@@ -8,7 +8,6 @@ TESTS = \
   dns_service_test.rb \
   dns_test.rb \
   edit_nic_name_test.rb \
-  firewall_stage1_proposal_test.rb \
   hardware_test.rb \
   host_test.rb \
   ifroute_test.rb \
