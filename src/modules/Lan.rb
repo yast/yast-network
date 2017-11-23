@@ -31,8 +31,6 @@
 # Input and output routines.
 require "yast"
 require "network/confirm_virt_proposal"
-require "network/firewalld_interface_zones"
-require "y2firewall/firewalld"
 
 module Yast
   class LanClass < Module
@@ -55,7 +53,6 @@ module Yast
       Yast.import "Routing"
       Yast.import "Progress"
       Yast.import "String"
-      Yast.import "SuSEFirewall4Network"
       Yast.import "FileUtils"
       Yast.import "PackageSystem"
       Yast.import "LanItems"
@@ -105,7 +102,6 @@ module Yast
       return true if Routing.Modified
       return true if NetworkConfig.Modified
       return true if NetworkService.Modified
-      return true if SuSEFirewall.GetModified
       return true if Host.GetModified
 
       false
@@ -266,23 +262,21 @@ module Yast
           " ",
           steps,
           [
-            # Progress stage 1/9
+            # Progress stage 1/8
             _("Detect network devices"),
-            # Progress stage 2/9
+            # Progress stage 2/8
             _("Read driver information"),
-            # Progress stage 3/9 - multiple devices may be present, really plural
+            # Progress stage 3/8 - multiple devices may be present, really plural
             _("Read device configuration"),
-            # Progress stage 4/9
+            # Progress stage 4/8
             _("Read network configuration"),
-            # Progress stage 5/9
-            _("Read firewall settings"),
-            # Progress stage 6/9
+            # Progress stage 5/8
             _("Read hostname and DNS configuration"),
-            # Progress stage 7/9
+            # Progress stage 6/8
             _("Read installation information"),
-            # Progress stage 8/9
+            # Progress stage 8/8
             _("Read routing configuration"),
-            # Progress stage 9/9
+            # Progress stage 9/8
             _("Detect current status")
           ],
           [],
@@ -296,7 +290,7 @@ module Yast
       #    if(!Confirm::MustBeRoot()) return false;
 
       return false if Abort()
-      # Progress step 1/9
+      # Progress step 1/8
       ProgressNextStage(_("Detecting ndiswrapper...")) if @gui
       # modprobe ndiswrapper before hwinfo when needed (#343893)
       if !Mode.autoinst && PackageSystem.Installed("ndiswrapper")
@@ -337,7 +331,7 @@ module Yast
       Builtins.sleep(sl)
 
       return false if Abort()
-      # Progress step 2/9
+      # Progress step 2/8
       ProgressNextStage(_("Detecting network devices...")) if @gui
       # Dont read hardware data in config mode
       NetHwDetection.Start if !Mode.config
@@ -345,14 +339,14 @@ module Yast
       Builtins.sleep(sl)
 
       return false if Abort()
-      # Progress step 3/9 - multiple devices may be present, really plural
+      # Progress step 3/8 - multiple devices may be present, really plural
       ProgressNextStage(_("Reading device configuration...")) if @gui
       LanItems.Read
 
       Builtins.sleep(sl)
 
       return false if Abort()
-      # Progress step 4/9
+      # Progress step 4/8
       ProgressNextStage(_("Reading network configuration...")) if @gui
       NetworkConfig.Read
 
@@ -361,34 +355,26 @@ module Yast
       Builtins.sleep(sl)
 
       return false if Abort()
-      # Progress step 5/9
-      ProgressNextStage(_("Reading firewall settings...")) if @gui
-      orig = Progress.set(false)
-      FirewalldInterfaceZones.instance.read
-      Progress.set(orig) if @gui
-      Builtins.sleep(sl)
-
-      return false if Abort()
-      # Progress step 6/9
+      # Progress step 5/8
       ProgressNextStage(_("Reading hostname and DNS configuration...")) if @gui
       DNS.Read
       Host.Read
       Builtins.sleep(sl)
 
       return false if Abort()
-      # Progress step 7/9
+      # Progress step 6/8
       ProgressNextStage(_("Reading installation information...")) if @gui
       #    ReadInstallInf();
       Builtins.sleep(sl)
 
       return false if Abort()
-      # Progress step 8/9
+      # Progress step 7/8
       ProgressNextStage(_("Reading routing configuration...")) if @gui
       Routing.Read
       Builtins.sleep(sl)
 
       return false if Abort()
-      # Progress step 9/9
+      # Progress step 8/8
       ProgressNextStage(_("Detecting current status...")) if @gui
       NetworkService.Read
       Builtins.sleep(sl)
@@ -487,8 +473,6 @@ module Yast
         return true
       end
 
-      fw_is_installed = firewalld.installed?
-
       # Write dialog caption
       caption = _("Saving Network Configuration")
 
@@ -509,10 +493,6 @@ module Yast
         # Progress stage 7
         _("Set up network services")
       ]
-      # Progress stage 8
-      if fw_is_installed
-        step_labels = Builtins.add(step_labels, _("Write firewall settings"))
-      end
 
       # Progress stage 9
       if !@write_only
@@ -573,17 +553,6 @@ module Yast
       ProgressNextStage(_("Setting up network services..."))
       writeIPv6
       Builtins.sleep(sl)
-
-      # Show this only if SuSEfirewall is installed
-      if fw_is_installed
-        return false if Abort()
-        # Progress step 8
-        ProgressNextStage(_("Writing firewall settings..."))
-        orig = Progress.set(false)
-        FirewalldInterfaceZones.instance.apply_changes
-        Progress.set(orig)
-        Builtins.sleep(sl)
-      end
 
       if !@write_only
         return false if Abort()
@@ -1101,10 +1070,6 @@ module Yast
     publish function: :HaveXenBridge, type: "boolean ()"
 
   private
-
-    def firewalld
-      Y2Firewall::Firewalld.instance
-    end
 
     def activate_network_service
       # If the second installation stage has been called by yast.ssh via
