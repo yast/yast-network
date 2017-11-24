@@ -65,7 +65,6 @@ s390 Devices
 Firewall Parts
 --------------
 
-- stage1 proposal + write it down ( firewall enable/disable, sshd enable/disable, ssh port open/close, vnc enable/disable)
 - assign network device to firewall zone
 
 Network Storage Devices

@@ -174,7 +174,6 @@ describe "LanClass#Modified" do
     allow(Yast::Routing).to receive(:Modified).and_return false
     allow(Yast::NetworkConfig).to receive(:Modified).and_return false
     allow(Yast::NetworkService).to receive(:Modified).and_return false
-    allow(Yast::SuSEFirewall).to receive(:GetModified).and_return false
   end
 
   def expect_modification_succeedes(modname, method)
@@ -206,10 +205,6 @@ describe "LanClass#Modified" do
 
   it "returns true when NetworkService module was modified" do
     expect_modification_succeedes(Yast::NetworkService, :Modified)
-  end
-
-  it "returns true when SuSEFirewall module was modified" do
-    expect_modification_succeedes(Yast::SuSEFirewall, :GetModified)
   end
 
   it "returns false when no module was modified" do

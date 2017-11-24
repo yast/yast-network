@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri Nov 24 11:57:33 UTC 2017 - knut.anderssen@suse.com
+
+- Do not depend on SuSEFirewall for zone interface change. The zone
+  is now written in the ifcfg-file and wicked takes care of calling
+  firewalld commandline. (fate#323460)
+- 4.0.10
+
+-------------------------------------------------------------------
 Wed Nov 22 11:59:22 UTC 2017 - knut.anderssen@suse.com
 
 - AutoYaST: Do not display a warning about second stage being
