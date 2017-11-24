@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Wed Nov 22 11:59:22 UTC 2017 - knut.anderssen@suse.com
+
+- AutoYaST: Do not display a warning about second stage being
+  disabled when importing the DNS configuration (added in 3.3.1)
+  once  the network configuration is done during the first stage
+  (since version 3.3.3) (bsc#1069761)
+- 4.0.9
+
+-------------------------------------------------------------------
 Wed Nov 15 19:22:41 UTC 2017 - knut.anderssen@suse.com
 
 - bnc#1066982
