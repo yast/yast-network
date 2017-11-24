@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Nov 24 09:23:07 UTC 2017 - mfilka@suse.com
+
+- bnc#1061306
+  - backported fix to avoid internal error in startup when an ifcfg
+    file contains an option not suitable for particular device type
+- 3.1.185
+-------------------------------------------------------------------
 Wed Nov 15 19:22:41 UTC 2017 - knut.anderssen@suse.com
 
 - bnc#1066982
