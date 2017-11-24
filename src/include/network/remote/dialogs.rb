@@ -159,8 +159,6 @@ module Yast
       end
       if ret == :next
         CWMFirewallInterfaces.OpenFirewallStore(firewall_widget, "", event)
-        # OpenFirewallStore just sets variables, but we need real firewall write
-        SuSEFirewall.Write
 
         allow_with_vncmanager = UI.QueryWidget(Id(:allow_with_vncmanager), :Value)
         allow_without_vncmanager = UI.QueryWidget(Id(:allow_without_vncmanager), :Value)
