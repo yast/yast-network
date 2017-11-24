@@ -1603,10 +1603,14 @@ module Yast
       String.FirstChunk(Ops.get(host_list, 0, ""), " \t")
     end
 
+    # Return a list of items for ComboBox with all the known firewalld zones
+    # and also an empty string option for the default zone.
+    #
+    # @return [Array <Array <String, String>>] list of names an description of
+    # known zones
     def firewall_zones
-      @firewalld ||= Y2Firewall::Firewalld.instance
       zones = [["", _("Automatically Assigned Zone")]]
-      if @firewalld.installed?
+      if firewalld.installed?
         Y2Firewall::Firewalld::Zone.known_zones.map do |name, full_name|
           zones << [name, full_name]
         end
@@ -1615,6 +1619,13 @@ module Yast
       end
 
       zones
+    end
+
+    # Convenience method which returns an instance of Y2Firewall::Firewalld
+    #
+    # @return [Y2Firewall::Firewalld] instance
+    def firewalld
+      @firewalld ||= Y2Firewall::Firewalld.instance
     end
   end
 end
