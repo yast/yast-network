@@ -17,7 +17,7 @@
 
 
 Name:           yast2-network
-Version:        4.0.10
+Version:        4.0.11
 Release:        0
 BuildArch:      noarch
 
@@ -30,9 +30,9 @@ Requires:       yast2-proxy
 #for install task
 BuildRequires:  rubygem(yast-rake)
 
-# yast2 v4.0.17: Y2Firewall::Firewalld::Zone.known_zones (fate#323460)
-BuildRequires:  yast2 >= 4.0.17
-Requires:       yast2 >= 4.0.17
+# yast2 v4.0.21: Y2Firewall::Firewalld::Zone.known_zones (fate#323460)
+BuildRequires:  yast2 >= 4.0.21
+Requires:       yast2 >= 4.0.21
 
 # Product control need xml agent
 BuildRequires:  yast2-xml
@@ -43,7 +43,7 @@ Requires:       sysconfig >= 0.80.0
 BuildRequires:  yast2-storage-ng
 Requires:       yast2-storage-ng
 # Packages::vnc_packages
-Requires:       yast2-packager >= 3.1.47
+Requires:       yast2-packager >= 4.0.18
 # cfa for parsing hosts, AugeasTree#unique_id
 BuildRequires:  rubygem(%rb_default_ruby_abi:cfa) >= 0.6.0
 Requires:       rubygem(%rb_default_ruby_abi:cfa) >= 0.6.0
