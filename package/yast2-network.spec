@@ -28,7 +28,7 @@ BuildRequires:  update-desktop-files
 BuildRequires:  yast2-devtools >= 3.1.15
 Requires:       yast2-proxy
 #for install task
-BuildRequires:  rubygem(yast-rake)
+BuildRequires:  rubygem(%rb_default_ruby_abi:yast-rake)
 
 # yast2 v4.0.21: Y2Firewall::Firewalld::Zone.known_zones (fate#323460)
 BuildRequires:  yast2 >= 4.0.21
@@ -54,7 +54,7 @@ Requires:       augeas-lenses
 Requires:       hwinfo         >= 21.35
 
 # testsuite
-BuildRequires:  rubygem(rspec)
+BuildRequires:  rubygem(%rb_default_ruby_abi:rspec)
 
 PreReq:         /bin/rm
 
