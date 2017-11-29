@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Nov 29 09:46:50 UTC 2017 - knut.anderssen@suse.com
+
+- Switched VNC service from xinetd to systemd.
+- VNC over HTTP service can be enabled/disabled separately.
+  (fate#323880, bnc#1058460)
+- 4.0.11
+
+-------------------------------------------------------------------
 Fri Nov 24 11:57:33 UTC 2017 - knut.anderssen@suse.com
 
 - Do not depend on SuSEFirewall for zone interface change. The zone
