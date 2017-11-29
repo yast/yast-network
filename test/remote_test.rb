@@ -52,62 +52,83 @@ module Yast
         allow(SuSEFirewall).to receive(:Read).and_return true
       end
 
-      context "vncmanager mode is on" do
+      context "vncmanager mode is on, web off" do
         before do
           allow(Service).to receive(:Enabled).with("display-manager").and_return true
-          allow(Service).to receive(:Enabled).with("xinetd").and_return true
+          allow(Service).to receive(:Enabled).with("xvnc.socket").and_return false
+          allow(Service).to receive(:Enabled).with("xvnc-novnc.socket").and_return false
           allow(Service).to receive(:Enabled).with("vncmanager").and_return true
-
-          allow(Yast::SCR).to receive(:Read).with(
-            Yast::Path.new(".etc.xinetd_conf.services")
-          ).and_return(
-            [{ "service" => "vnc1", "enabled" => false }, { "service" => "vnchttpd1", "enabled" => true }]
-          )
         end
 
-        it "recognizes vncmanager mode" do
+        it "recognizes vncmanager mode, web off" do
           Remote.Read
           expect(Remote.IsEnabled).to eql(true)
           expect(Remote.EnabledVncManager).to eql(true)
+          expect(Remote.IsWebVncEnabled).to eql(false)
         end
       end
 
-      context "xinetd mode is on" do
+      context "xvnc mode is on, web off" do
         before do
           allow(Service).to receive(:Enabled).with("display-manager").and_return true
-          allow(Service).to receive(:Enabled).with("xinetd").and_return true
+          allow(Service).to receive(:Enabled).with("xvnc.socket").and_return true
+          allow(Service).to receive(:Enabled).with("xvnc-novnc.socket").and_return false
           allow(Service).to receive(:Enabled).with("vncmanager").and_return false
-
-          allow(Yast::SCR).to receive(:Read).with(
-            Yast::Path.new(".etc.xinetd_conf.services")
-          ).and_return(
-            [{ "service" => "vnc1", "enabled" => true }, { "service" => "vnchttpd1", "enabled" => true }]
-          )
         end
 
-        it "recognizes xinetd mode" do
+        it "recognizes xvnc mode, web off" do
           Remote.Read
           expect(Remote.IsEnabled).to eql(true)
           expect(Remote.EnabledVncManager).to eql(false)
+          expect(Remote.IsWebVncEnabled).to eql(false)
         end
       end
 
-      context "xinetd service is off" do
+      context "vncmanager mode is on, web on" do
         before do
           allow(Service).to receive(:Enabled).with("display-manager").and_return true
-          allow(Service).to receive(:Enabled).with("xinetd").and_return false
-          allow(Service).to receive(:Enabled).with("vncmanager").and_return false
+          allow(Service).to receive(:Enabled).with("xvnc.socket").and_return false
+          allow(Service).to receive(:Enabled).with("xvnc-novnc.socket").and_return true
+          allow(Service).to receive(:Enabled).with("vncmanager").and_return true
+        end
 
-          allow(Yast::SCR).to receive(:Read).with(
-            Yast::Path.new(".etc.xinetd_conf.services")
-          ).and_return(
-            [{ "service" => "vnc1", "enabled" => true }, { "service" => "vnchttpd1", "enabled" => true }]
-          )
+        it "recognizes vncmanager mode, web on" do
+          Remote.Read
+          expect(Remote.IsEnabled).to eql(true)
+          expect(Remote.EnabledVncManager).to eql(true)
+          expect(Remote.IsWebVncEnabled).to eql(true)
+        end
+      end
+
+      context "xvnc mode is on, web on" do
+        before do
+          allow(Service).to receive(:Enabled).with("display-manager").and_return true
+          allow(Service).to receive(:Enabled).with("xvnc.socket").and_return true
+          allow(Service).to receive(:Enabled).with("xvnc-novnc.socket").and_return true
+          allow(Service).to receive(:Enabled).with("vncmanager").and_return false
+        end
+
+        it "recognizes xvnc mode, web on" do
+          Remote.Read
+          expect(Remote.IsEnabled).to eql(true)
+          expect(Remote.EnabledVncManager).to eql(false)
+          expect(Remote.IsWebVncEnabled).to eql(true)
+        end
+      end
+
+      context "vnc is off" do
+        before do
+          allow(Service).to receive(:Enabled).with("display-manager").and_return true
+          allow(Service).to receive(:Enabled).with("xvnc.socket").and_return false
+          allow(Service).to receive(:Enabled).with("xvnc-novnc.socket").and_return false
+          allow(Service).to receive(:Enabled).with("vncmanager").and_return false
         end
 
         it "recognizes disabled mode" do
           Remote.Read
           expect(Remote.IsEnabled).to eql(false)
+          expect(Remote.EnabledVncManager).to eql(false)
+          expect(Remote.IsWebVncEnabled).to eql(false)
         end
       end
     end
@@ -147,10 +168,35 @@ module Yast
 
     end
 
+    describe ".enable_disable_web_access" do
+      context "with VNC enabled and web access enabled" do
+        before do
+          Remote.Enable
+          Remote.EnableWebVnc
+        end
+
+        it "enables web access" do
+          expect(Remote.IsEnabled).to eql(true)
+          expect(Remote.IsWebVncEnabled).to eql(true)
+        end
+      end
+
+      context "with VNC enabled and web access disables" do
+        before do
+          Remote.Enable
+          Remote.DisableWebVnc
+        end
+
+        it "disables web access" do
+          expect(Remote.IsEnabled).to eql(true)
+          expect(Remote.IsWebVncEnabled).to eql(false)
+        end
+      end
+    end
+
     describe ".configure_display_manager" do
       before do
         stub_scr_write
-        yaml_stub_scr_read(".etc.xinetd_conf.services")
         allow(Package).to receive(:Installed).and_return true
       end
 
@@ -171,25 +217,21 @@ module Yast
           allow(Package).to receive(:InstallAll).and_return true
 
           expect(Service).to receive(:Enable).with("display-manager").and_return true
-          expect(Service).to receive(:Enable).with("xinetd").and_return true
+          expect(Service).to receive(:Enable).with("xvnc.socket").and_return true
           expect(Service).to receive(:Disable).with("vncmanager").and_return true
+          expect(Service).to receive(:Disable).with("xvnc-novnc.socket").and_return true
           expect(Remote.configure_display_manager).to eql(true)
         end
 
         it "writes the VNC configuration" do
           allow(Service).to receive(:Enable).twice.and_return true
-          allow(Service).to receive(:Disable).once.and_return true
+          allow(Service).to receive(:Disable).twice.and_return true
           allow(Package).to receive(:InstallAll).and_return true
 
           expect(Remote.configure_display_manager).to eql(true)
 
           expect(written_value_for(".sysconfig.displaymanager.DISPLAYMANAGER_REMOTE_ACCESS")).to eq("yes")
           expect(written_value_for(".sysconfig.displaymanager.DISPLAYMANAGER_ROOT_LOGIN_REMOTE")).to eq("yes")
-
-          # vnc1 and vnchttpd1 services are enabled
-          services = written_value_for(".etc.xinetd_conf.services")
-          services = services.select { |s| s["service"] =~ /vnc/ }.map { |s| [s["service"], s["enabled"]] }.to_h
-          expect(services).to eq("vnc1" => true, "vnchttpd1" => true)
         end
       end
 
@@ -200,6 +242,7 @@ module Yast
 
         it "installs packages provided by Packages.vnc_packages" do
           allow(Service).to receive(:Enable).and_return true
+          allow(Service).to receive(:Disable).and_return true
 
           expect(Package).to receive(:InstallAll).with(%w(some names vncmanager)).and_return true
           expect(Remote.configure_display_manager).to eql(true)
@@ -209,24 +252,21 @@ module Yast
           allow(Package).to receive(:InstallAll).and_return true
 
           expect(Service).to receive(:Enable).with("display-manager").and_return true
-          expect(Service).to receive(:Enable).with("xinetd").and_return true
           expect(Service).to receive(:Enable).with("vncmanager").and_return true
+          expect(Service).to receive(:Disable).with("xvnc.socket").and_return true
+          expect(Service).to receive(:Disable).with("xvnc-novnc.socket").and_return true
           expect(Remote.configure_display_manager).to eql(true)
         end
 
         it "writes the VNC configuration" do
-          allow(Service).to receive(:Enable).exactly(3).times.and_return true
+          allow(Service).to receive(:Enable).twice.and_return true
+          allow(Service).to receive(:Disable).twice.and_return true
           allow(Package).to receive(:InstallAll).and_return true
 
           expect(Remote.configure_display_manager).to eql(true)
 
           expect(written_value_for(".sysconfig.displaymanager.DISPLAYMANAGER_REMOTE_ACCESS")).to eq("yes")
           expect(written_value_for(".sysconfig.displaymanager.DISPLAYMANAGER_ROOT_LOGIN_REMOTE")).to eq("yes")
-
-          # vnchttpd1 service is enabled but vnc1 is disabled
-          services = written_value_for(".etc.xinetd_conf.services")
-          services = services.select { |s| s["service"] =~ /vnc/ }.map { |s| [s["service"], s["enabled"]] }.to_h
-          expect(services).to eq("vnc1" => false, "vnchttpd1" => true)
         end
       end
 
@@ -250,11 +290,6 @@ module Yast
 
           expect(written_value_for(".sysconfig.displaymanager.DISPLAYMANAGER_REMOTE_ACCESS")).to eq("no")
           expect(written_value_for(".sysconfig.displaymanager.DISPLAYMANAGER_ROOT_LOGIN_REMOTE")).to eq("no")
-
-          # vnc1 and vnchttpd1 services are disabled
-          services = written_value_for(".etc.xinetd_conf.services")
-          services = services.select { |s| s["service"] =~ /vnc/ }.map { |s| [s["service"], s["enabled"]] }.to_h
-          expect(services).to eq("vnc1" => false, "vnchttpd1" => false)
         end
       end
     end
@@ -269,9 +304,9 @@ module Yast
         context "when display-manager service is active" do
           let(:active_display_manager) { true }
 
-          it "adjusts xinetd and display-manager  services and warns the user" do
+          it "adjusts vncmanager and display-manager service and warns the user" do
             expect(SystemdTarget).to receive(:set_default).with("graphical").and_return(true)
-            expect(Service).to receive(:Restart).with("xinetd").and_return(true)
+            expect(Service).to receive(:Restart).with("xvnc.socket").and_return(true)
             expect(Service).to receive(:Reload).with("display-manager").and_return(true)
             expect(Report).to receive(:Warning)
             Remote.restart_services
@@ -281,9 +316,9 @@ module Yast
         context "when display-manager service is inactive" do
           let(:active_display_manager) { false }
 
-          it "adjusts xinetd and display-manager services" do
+          it "adjusts xvnc and display-manager services" do
             expect(SystemdTarget).to receive(:set_default).with("graphical").and_return(true)
-            expect(Service).to receive(:Restart).with("xinetd").and_return(true)
+            expect(Service).to receive(:Restart).with("xvnc.socket").and_return(true)
             expect(Service).to receive(:Restart).with("display-manager").and_return(true)
             Remote.restart_services
           end
@@ -293,39 +328,15 @@ module Yast
       context "when remote adminitration is being disabled" do
         before do
           Remote.Disable()
-          allow(Service).to receive(:active?).with("xinetd").and_return(active_xinetd)
-          # do not call reload or stop
           allow(Service).to receive(:Reload).and_return(true)
           allow(Service).to receive(:Stop).and_return(true)
         end
 
-        context "xinetd is active" do
-          let(:active_xinetd) { true }
-
-          it "reloads the xinetd service" do
-            expect(Service).to receive(:Reload).with("xinetd").and_return(true)
-            Remote.restart_services
-          end
-
-          it "disables vncmanager" do
-            expect(Service).to receive(:Stop).with("vncmanager").and_return(true)
-            Remote.restart_services
-          end
+        it "disables vncmanager" do
+          expect(Service).to receive(:Stop).with("vncmanager").and_return(true)
+          Remote.restart_services
         end
 
-        context "xinetd is inactive" do
-          let(:active_xinetd) { false }
-
-          it "does nothing with xinetd service" do
-            expect(Service).not_to receive(:Reload)
-            Remote.restart_services
-          end
-
-          it "disables vncmanager" do
-            expect(Service).to receive(:Stop).with("vncmanager").and_return(true)
-            Remote.restart_services
-          end
-        end
       end
     end
   end
