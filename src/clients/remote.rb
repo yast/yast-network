@@ -1,62 +1,75 @@
 # encoding: utf-8
 
-# ***************************************************************************
+# ------------------------------------------------------------------------------
+# Copyright (c) 2017 SUSE LLC
 #
-# Copyright (c) 2012 Novell, Inc.
-# All Rights Reserved.
 #
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of version 2 of the GNU General Public License as
-# published by the Free Software Foundation.
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of version 2 of the GNU General Public License as published by the
+# Free Software Foundation.
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.   See the
-# GNU General Public License for more details.
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, contact Novell, Inc.
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, contact SUSE.
 #
-# To contact Novell about this file by physical or electronic mail,
-# you may find current contact information at www.novell.com
-#
-# **************************************************************************
-# File:	clients/remote.ycp
-# Package:	Network configuration
-# Summary:	Remote Administration
-# Authors:	Arvin Schnell <arvin@suse.de>
-#		Michal Svec <msvec@suse.cz>
-#
+# To contact SUSE about this file by physical or electronic mail, you may find
+# current contact information at www.suse.com.
+# ------------------------------------------------------------------------------
+require "yast"
+require "y2remote/remote"
+require "y2remote/dialogs/remote"
+
 module Yast
   class RemoteClient < Client
-    def main
+    include Logger
+    include I18n
+
+    def initialize
       Yast.import "UI"
 
       textdomain "network"
 
-      # The main ()
-      Builtins.y2milestone("----------------------------------------")
-      Builtins.y2milestone("Remote module started")
-
       Yast.import "Label"
-      Yast.import "Remote"
       Yast.import "Wizard"
       Yast.import "Report"
 
       Yast.import "CommandLine"
       Yast.import "RichText"
+    end
 
-      Yast.include self, "network/remote/dialogs.rb"
+    def remote
+      @remote ||= Y2Remote::Remote.instance
+    end
+
+    def main
+      # The main ()
+      log.info("----------------------------------------")
+      log.info("Remote module started")
 
       # Command line definition
-      @cmdline = {
+      ret = CommandLine.Run(command_line_definition)
+      log.debug("ret=#{ret}")
+
+      # Finish
+      log.info("Remote module finished")
+      log.info("----------------------------------------")
+
+      ret
+    end
+  private
+
+    def command_line_definition
+      {
         # Commandline help title
         "help"       => _(
           "Remote Access Configuration"
         ),
         "id"         => "remote",
         "guihandler" => fun_ref(method(:RemoteGUI), "any ()"),
-        "initialize" => fun_ref(Remote.method(:Read), "boolean ()"),
+        "initialize" => [ lambda { remote.read }, true ],
         "actions"    => {
           "list"  => {
             # Commandline command help
@@ -89,31 +102,21 @@ module Yast
         },
         "mappings"   => { "allow" => ["set"] }
       }
-
-      @ret = CommandLine.Run(@cmdline)
-      Builtins.y2debug("ret=%1", @ret)
-
-      # Finish
-      Builtins.y2milestone("Remote module finished")
-      Builtins.y2milestone("----------------------------------------")
-      deep_copy(@ret)
-
-      # EOF
     end
 
     # Main remote GUI
     def RemoteGUI
-      Remote.Read
+      ret = Y2Remote::Dialogs::Remote.new.run
 
       Wizard.CreateDialog
       Wizard.SetDesktopTitleAndIcon("remote")
       Wizard.SetNextButton(:next, Label.FinishButton)
 
-      ret = RemoteMainDialog()
-      Remote.Write if ret == :next
+      remote.write if ret == :next
 
       UI.CloseDialog
-      deep_copy(ret)
+
+      ret
     end
 
     # Handler for action "list"
@@ -123,7 +126,7 @@ module Yast
       summary = Ops.add(
         Ops.add(
           "\n" + _("Remote Access Configuration Summary:") + "\n\n",
-          RichText.Rich2Plain(Remote.Summary)
+          RichText.Rich2Plain(remote.summary)
         ),
         "\n"
       )
@@ -153,14 +156,12 @@ module Yast
         "Setting AllowRemoteAdministration to '%1'",
         allow_ra
       )
-      if allow_ra == "yes"
-        Remote.Enable
-      else
-        Remote.Disable
-      end
+      allow_ra == "yes" ? remote.enable! : remote.disable!
 
-      Remote.Write
+      remote.Write
     end
+
+
   end
 end
 
