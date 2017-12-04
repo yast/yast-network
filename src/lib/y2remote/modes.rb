@@ -23,6 +23,7 @@ require "yast"
 
 Yast.import "Packages"
 Yast.import "SystemdSocket"
+Yast.import "Service"
 
 module Y2Remote
   class Modes
@@ -41,7 +42,7 @@ module Y2Remote
         end
 
         def required_packages
-          self.const_get("PACKAGES")
+          const_get("PACKAGES")
         end
       end
     end
@@ -103,10 +104,11 @@ module Y2Remote
           return false unless installed?
 
           if !Yast::Service.Stop(SERVICE)
-            Yast::Report.Error(
-              Yast::Message.CannotStopService(SERVICE)
-            )
+            Yast::Report.Error(Yast::Message.CannotStopService(SERVICE))
+            return false
           end
+
+          true
         end
 
         def restart
@@ -119,10 +121,11 @@ module Y2Remote
           return false unless installed?
 
           if !Yast::Service.Restart(SERVICE)
-            Yast::Report.Error(
-              Yast::Message.CannotRestartService(SERVICE)
-            )
+            Yast::Report.Error(Yast::Message.CannotRestartService(SERVICE))
+            return false
           end
+
+          true
         end
 
         def enable!
@@ -130,7 +133,7 @@ module Y2Remote
 
           if !Yast::Service.Enable(SERVICE)
             Yast::Report.Error(
-              _("Enabling service %{service} has failed") % { service: SERVICE}
+              _("Enabling service %{service} has failed") % { service: SERVICE }
             )
             return false
           end
@@ -195,7 +198,7 @@ module Y2Remote
     end
 
     def self.running_modes
-      all.select { |m| m.enabled? }
+      all.select(&:enabled?).map(&:to_sym)
     end
   end
 end

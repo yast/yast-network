@@ -123,6 +123,7 @@ module Y2Remote
           5801
         )
       end
+
     private
 
       # Convenience method for obtain a Y2Remote::Remote instance
@@ -171,8 +172,8 @@ module Y2Remote
       attr_accessor :cwm_interfaces
       def initialize
         @cwm_interfaces = Yast::CWMFirewallInterfaces.CreateOpenFirewallWidget(
-         "services" => ["service:vnc-httpd", "service:vnc-server"],
-         "display_details" => true
+          "services"        => ["service:vnc-httpd", "service:vnc-server"],
+          "display_details" => true
         )
       end
 

@@ -24,6 +24,7 @@
 require "yast"
 require "y2remote/remote"
 require "installation/proposal_client"
+require "y2remote/dialogs/remote"
 
 module Y2Remote
   module Clients
@@ -51,33 +52,29 @@ module Y2Remote
 
       # create a textual proposal
       def make_proposal(attrs)
-        attrs["force_reset"] ? remote.reset : remote.propose
+        attrs["force_reset"] ? remote.reset! : remote.propose!
 
-        { "raw_proposal" => [summary] }
+        { "raw_proposal" => [remote.summary] }
       end
 
-      def ask_user(param)
-        @result = Y2Remote::Dialogs::Proposal.new
+      def ask_user(_param)
+        ret = Y2Remote::Dialogs::Remote.new.run
 
-        log.debug("result=%1", @result)
+        log.debug("result=#{ret}")
 
-        { "workflow_sequence" => @result }
+        { "workflow_sequence" => ret }
       end
 
       def write
         remote.write
       end
+
     private
 
       def remote
         @remote ||= Y2Remote::Remote.instance
       end
 
-      def summary
-        return _("Remote administration is enabled.") if remote.enabled?
-
-        _("Remote administration is disabled.")
-      end
-    end
+        end
   end
 end

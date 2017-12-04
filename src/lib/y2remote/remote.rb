@@ -66,19 +66,28 @@ module Y2Remote
       @modes = []
     end
 
+    # It add the given mode to the list of modes to be enabled
+    #
+    # @return [Array<Symbol>] list of enable vnc modes
     def enable_mode(mode)
+      return modes if modes.include?(mode)
+
       @modes.delete(:vnc) if mode == :manager
       @modes.delete(:manager) if mode == :vnc
 
       @modes << mode
     end
 
+    # Whether the vnc manager mode is enabled or not
+    #
+    # @return [Boolean] true it the :manager mode is enabled
     def with_manager?
       modes.include?(:manager)
     end
 
-    # Read the current status
-    # @return true on success
+    # Read the current status of vnc and the enabled modes
+    #
+    # @return [Boolean] true
     def read
       if xdm_enabled? && display_manager_remote_access?
         @modes = Y2Remote::Modes.running_modes
@@ -87,8 +96,9 @@ module Y2Remote
       true
     end
 
-    # Update the SCR according to network settings
-    # @return true on success
+    # Update the SCR according to vnc settings
+    #
+    # @return [Boolean] true on success
     def write
       steps = [_("Configure display manager")]
       steps << _("Restart the services") if Yast::Mode.normal
@@ -110,18 +120,25 @@ module Y2Remote
       true
     end
 
+    # Reset the proposal configuration enabling vnc if it was enabled by
+    # linuxrc
     def reset!
-      Linuxrc.vnc ? enable! : disable!
+      @proposed = false
+
+      propose!
+    end
+
+    # It propose the vnc configuration if it has not been proposed yet
+    #
+    # @return [Boolean]
+    def propose!
+      return false if proposed?
+
+      Yast::Linuxrc.vnc ? enable! : disable!
 
       log.info("Remote Administration was proposed as: #{modes.inspect}")
 
       @proposed = true
-    end
-
-    def propose
-      return false if proposed?
-
-      reset!
     end
 
     # Updates the VNC and xdm configuration
@@ -169,10 +186,10 @@ module Y2Remote
             "please restart it manually or log out and log in again."
           )
         )
-      else
+      elsif !Yast::Service.Restart(XDM_SERVICE_NAME)
         Yast::Report.Error(
           Yast::Message.CannotRestartService(XDM_SERVICE_NAME)
-        ) if !Yast::Service.Restart(XDM_SERVICE_NAME)
+        )
       end
     end
 
@@ -185,11 +202,10 @@ module Y2Remote
       restart_display_manager if enabled?
     end
 
-    # Create summary
-    # @return summary text
     def summary
-      # description in proposal
-      enabled? ? _("Remote administration is enabled.") : _("Remote administration is disabled.")
+      return _("Remote administration is enabled.") if remote.enabled?
+
+      _("Remote administration is disabled.")
     end
 
   private

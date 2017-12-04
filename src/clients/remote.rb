@@ -40,10 +40,6 @@ module Yast
       Yast.import "RichText"
     end
 
-    def remote
-      @remote ||= Y2Remote::Remote.instance
-    end
-
     def main
       # The main ()
       log.info("----------------------------------------")
@@ -59,7 +55,12 @@ module Yast
 
       ret
     end
+
   private
+
+    def remote
+      @remote ||= Y2Remote::Remote.instance
+    end
 
     def command_line_definition
       {
@@ -68,8 +69,8 @@ module Yast
           "Remote Access Configuration"
         ),
         "id"         => "remote",
-        "guihandler" => fun_ref(method(:RemoteGUI), "any ()"),
-        "initialize" => [ lambda { remote.read }, true ],
+        "guihandler" => fun_ref(method(:RemoteGUI), "any()"),
+        "initialize" => -> { remote.read },
         "actions"    => {
           "list"  => {
             # Commandline command help
@@ -160,8 +161,6 @@ module Yast
 
       remote.Write
     end
-
-
   end
 end
 
