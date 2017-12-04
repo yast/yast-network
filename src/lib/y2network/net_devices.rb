@@ -10,6 +10,8 @@ module Y2Network
     #
     # For object definition see @NetDevice
     def push(device)
+      # TODO: check if device is desired object type
+      cache[device.name] = device
     end
 
     # Clears stored data
