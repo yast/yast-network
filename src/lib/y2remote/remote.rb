@@ -31,10 +31,7 @@ module Y2Remote
     XDM_SERVICE_NAME = "display-manager".freeze
     GRAPHICAL_TARGET = "graphical".freeze
 
-    PKG_CONTAINING_FW_SERVICES = "xorg-x11-Xvnc".freeze
-
-    # Currently, all attributes (enablement of remote access)
-    # are applied on vnc1 even vnchttpd1 configuration
+    FIREWALL_SERVICES_PACKAGE = "xorg-x11-Xvnc".freeze
 
     # [Symbol] Remote administration mode, :disabled, :xvnc or :vncmanager
     attr_reader :modes
@@ -57,41 +54,51 @@ module Y2Remote
       !disabled?
     end
 
+    def enable!
+      enable_mode!(Y2Remote::Modes::VNC.instance)
+    end
+
+    def enable_manager!
+      enable_mode!(Y2Remote::Modes::Manager.instance)
+    end
+
+    def enable_web!
+      enable_mode!(Y2Remote::Modes::Web.instance)
+    end
+
     # Checks if remote administration is currently disallowed
     def disabled?
       modes.empty?
     end
 
+    # Removes all the running modes
+    #
+    # @return [Array<Y2Remote::Mode>]
     def disable!
       @modes = []
     end
 
-    # It add the given mode to the list of modes to be enabled
+    # Whether some of the VNC running modes is Web or not
     #
-    # @return [Array<Symbol>] list of enable vnc modes
-    def enable_mode(mode)
-      return modes if modes.include?(mode)
-
-      @modes.delete(:vnc) if mode == :manager
-      @modes.delete(:manager) if mode == :vnc
-
-      @modes << mode
+    # @return [Boolean] true if web is enabled; false otherwise
+    def web_enabled?
+      modes.include?(Y2Remote::Modes::Web.instance)
     end
 
     # Whether the vnc manager mode is enabled or not
     #
     # @return [Boolean] true it the :manager mode is enabled
     def with_manager?
-      modes.include?(:manager)
+      modes.include?(Y2Remote::Modes::Manager.instance)
     end
 
     # Read the current status of vnc and the enabled modes
     #
     # @return [Boolean] true
     def read
-      if xdm_enabled? && display_manager_remote_access?
-        @modes = Y2Remote::Modes.running_modes
-      end
+      return true unless xdm_enabled? && display_manager_remote_access?
+
+      @modes = Y2Remote::Modes.running_modes
 
       true
     end
@@ -134,7 +141,7 @@ module Y2Remote
     def propose!
       return false if proposed?
 
-      Yast::Linuxrc.vnc ? enable! : disable!
+      Yast::Linuxrc.vnc ? enable_vnc! : disable!
 
       log.info("Remote Administration was proposed as: #{modes.inspect}")
 
@@ -156,7 +163,7 @@ module Y2Remote
           return false
         end
 
-        Y2Remote::Modes.all.each { |m| modes.include?(m) ? m.enable! : m.disable! }
+        Y2Remote::Modes.update_status(modes)
       end
 
       # Set DISPLAYMANAGER_REMOTE_ACCESS in sysconfig/displaymanager
@@ -197,13 +204,13 @@ module Y2Remote
     def restart_services
       Yast::SystemdTarget.set_default(GRAPHICAL_TARGET) if enabled?
 
-      Y2Remote::Modes.all { |m| modes.include?(m.to_sym) ? m.restart! : m.stop! }
+      Y2Remote::Modes.restart_modes
 
       restart_display_manager if enabled?
     end
 
     def summary
-      return _("Remote administration is enabled.") if remote.enabled?
+      return _("Remote administration is enabled.") if enabled?
 
       _("Remote administration is disabled.")
     end
@@ -222,10 +229,9 @@ module Y2Remote
       Yast.import "SystemdTarget"
     end
 
+    # Obtains a list of the required packages for the enabled vnc modes
     def required_packages
-      Y2Remote::Modes.all.map do |mode|
-        mode.required_packages if modes.include?(mode.to_sym)
-      end.compact.flatten
+      modes.map(&:required_packages).flatten
     end
 
     def display_manager_remote_access?
@@ -234,6 +240,22 @@ module Y2Remote
 
     def xdm_enabled?
       Yast::Service.Enabled(XDM_SERVICE_NAME)
+    end
+
+    # Adds the given mode to the list of modes to be enabled
+    #
+    # @return [Array<Symbol>] list of enable vnc modes
+    def enable_mode!(mode)
+      return modes if modes.include?(mode)
+
+      case mode
+      when Y2Remote::Modes::VNC.instance
+        @modes.delete(Y2Remote::Modes::Manager.instance)
+      when Y2Remote::Modes::Manager.instance
+        @modes.delete(Y2Remote::Modes::VNC.instance)
+      end
+
+      @modes << mode
     end
   end
 end

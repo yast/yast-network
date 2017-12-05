@@ -25,6 +25,10 @@ require "y2remote/remote"
 describe Y2Remote::Remote do
   subject { described_class.instance }
 
+  before do
+    stub_const("Yast::Packages", double.as_null_object)
+  end
+
   describe ".disabled?" do
     let(:modes) { [] }
 
@@ -77,67 +81,74 @@ describe Y2Remote::Remote do
     end
   end
 
-  describe ".enable_mode" do
-    context "given a vnc running mode" do
-      context "when it is :vnc" do
-        it "returns the current modes if already present" do
-          allow(subject).to receive(:modes).and_return([:vnc, :web])
-          expect(subject.modes).to_not receive(:delete)
+  describe ".enable_manager!" do
+    let(:web) { Y2Remote::Modes::Web.instance }
+    let(:manager) { Y2Remote::Modes::Manager.instance }
+    let(:vnc) { Y2Remote::Modes::VNC.instance }
 
-          expect(subject.enable_mode(:vnc)).to contain_exactly(:vnc, :web)
-        end
+    it "returns the current modes if already present" do
+      allow(subject).to receive(:modes).and_return([manager, web])
+      expect(subject.modes).to_not receive(:delete)
 
-        it "removes :manager if present from the modes list" do
-          allow(subject).to receive(:modes).and_return([:manager])
+      expect(subject.enable_manager!).to contain_exactly(manager, web)
+    end
 
-          expect(subject.enable_mode(:vnc)).to contain_exactly(:vnc)
-        end
+    it "removes the VNC instance if present from the modes list" do
+      allow(subject).to receive(:modes).and_return([vnc])
 
-        it "adds the :vnc mode to the list of modes if not present" do
-          subject.disable!
-          expect(subject.enable_mode(:vnc)).to contain_exactly(:vnc)
-          # Check that is not added twice
-          expect(subject.enable_mode(:vnc)).to contain_exactly(:vnc)
-        end
-      end
+      expect(subject.enable_manager!).to contain_exactly(manager)
+    end
 
-      context "when it is :manager" do
-        it "returns the current modes if already present" do
-          allow(subject).to receive(:modes).and_return([:manager, :web])
-          expect(subject.modes).to_not receive(:delete)
+    it "adds the :manager mode to the list of modes if not present" do
+      subject.disable!
+      expect(subject.enable_manager!).to contain_exactly(manager)
+      # Check that is not added twice
+      expect(subject.enable_manager!).to contain_exactly(manager)
+    end
+  end
 
-          expect(subject.enable_mode(:manager)).to contain_exactly(:manager, :web)
-        end
+  describe ".enable!" do
+    let(:web) { Y2Remote::Modes::Web.instance }
+    let(:manager) { Y2Remote::Modes::Manager.instance }
+    let(:vnc) { Y2Remote::Modes::VNC.instance }
 
-        it "removes :vnc if present from the modes list" do
-          allow(subject).to receive(:modes).and_return([:vnc])
+    it "returns the current modes if already present" do
+      allow(subject).to receive(:modes).and_return([vnc, web])
+      expect(subject.modes).to_not receive(:delete)
 
-          expect(subject.enable_mode(:manager)).to contain_exactly(:manager)
-        end
+      expect(subject.enable!).to contain_exactly(vnc, web)
+    end
 
-        it "adds the :manager mode to the list of modes if not present" do
-          subject.disable!
-          expect(subject.enable_mode(:manager)).to contain_exactly(:manager)
-          # Check that is not added twice
-          expect(subject.enable_mode(:manager)).to contain_exactly(:manager)
-        end
-      end
+    it "removes :manager if present from the modes list" do
+      allow(subject).to receive(:modes).and_return([manager])
 
-      context "when it is :web" do
-        it "returns the current modes if already present" do
-          allow(subject).to receive(:modes).and_return([:manager, :web])
-          expect(subject.modes).to_not receive(:delete)
+      expect(subject.enable!).to contain_exactly(vnc)
+    end
 
-          expect(subject.enable_mode(:manager)).to contain_exactly(:manager, :web)
-        end
+    it "adds the :vnc mode to the list of modes if not present" do
+      subject.disable!
+      expect(subject.enable!).to contain_exactly(vnc)
+      # Check that is not added twice
+      expect(subject.enable!).to contain_exactly(vnc)
+    end
+  end
 
-        it "adds the :web mode to the list of modes if not present" do
-          subject.disable!
-          expect(subject.enable_mode(:web)).to contain_exactly(:web)
-          # Check that is not added twice
-          expect(subject.enable_mode(:web)).to contain_exactly(:web)
-        end
-      end
+  describe ".enable_web!" do
+    let(:web) { Y2Remote::Modes::Web.instance }
+    let(:manager) { Y2Remote::Modes::Manager.instance }
+
+    it "returns the current modes if already present" do
+      allow(subject).to receive(:modes).and_return([manager, web])
+      expect(subject.modes).to_not receive(:delete)
+
+      expect(subject.enable_web!).to contain_exactly(manager, web)
+    end
+
+    it "adds the :web mode to the list of modes if not present" do
+      subject.disable!
+      expect(subject.enable_web!).to contain_exactly(web)
+      # Check that is not added twice
+      expect(subject.enable_web!).to contain_exactly(web)
     end
   end
 

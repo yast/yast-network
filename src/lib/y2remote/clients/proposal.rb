@@ -1,5 +1,3 @@
-#!/usr/bin/env ruby
-#
 # encoding: utf-8
 
 # Copyright (c) [2017] SUSE LLC
@@ -74,7 +72,6 @@ module Y2Remote
       def remote
         @remote ||= Y2Remote::Remote.instance
       end
-
-        end
+    end
   end
 end

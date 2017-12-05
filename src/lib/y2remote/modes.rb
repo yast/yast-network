@@ -20,185 +20,34 @@
 # ------------------------------------------------------------------------------
 
 require "yast"
-
-Yast.import "Packages"
-Yast.import "SystemdSocket"
-Yast.import "Service"
+require "y2remote/modes/vnc.rb"
+require "y2remote/modes/manager.rb"
+require "y2remote/modes/web.rb"
 
 module Y2Remote
   class Modes
-    class Base
-      include Yast::Logger
-      include Yast::I18n
-      extend Yast::I18n
-
-      class << self
-        def to_sym
-          name.split("::").last.downcase.to_sym
-        end
-
-        def installed?
-          Yast::Package.InstalledAll(required_packages)
-        end
-
-        def required_packages
-          const_get("PACKAGES")
-        end
-      end
-    end
-
-    class VNC < Base
-      SOCKET = "xvnc".freeze
-
-      class << self
-        def required_packages
-          Yast::Packages.vnc_packages
-        end
-
-        def socket
-          Yast::SystemdSocket.find(SOCKET)
-        end
-
-        def enabled?
-          return false unless socket
-
-          socket.enabled?
-        end
-
-        def enable!
-          return false unless socket
-
-          socket.enable!
-        end
-
-        def disable!
-          return false unless socket
-
-          socket.disable!
-        end
-
-        def stop!
-          return false unless socket
-
-          socket.stop!
-        end
-      end
-    end
-
-    class Manager < Base
-      SERVICE  = "vncmanager".freeze
-      PACKAGES = ["vncmanager"].freeze
-
-      class << self
-        def enabled?
-          Yast::Service.Enabled(SERVICE)
-        end
-
-        def stop
-          return false unless installed?
-
-          Yast::Service.Stop(SERVICE)
-        end
-
-        def stop!
-          return false unless installed?
-
-          if !Yast::Service.Stop(SERVICE)
-            Yast::Report.Error(Yast::Message.CannotStopService(SERVICE))
-            return false
-          end
-
-          true
-        end
-
-        def restart
-          return false unless installed?
-
-          Yast::Service.Restart(SERVICE)
-        end
-
-        def restart!
-          return false unless installed?
-
-          if !Yast::Service.Restart(SERVICE)
-            Yast::Report.Error(Yast::Message.CannotRestartService(SERVICE))
-            return false
-          end
-
-          true
-        end
-
-        def enable!
-          return false unless installed?
-
-          if !Yast::Service.Enable(SERVICE)
-            Yast::Report.Error(
-              _("Enabling service %{service} has failed") % { service: SERVICE }
-            )
-            return false
-          end
-
-          true
-        end
-
-        def disable!
-          return false unless installed?
-
-          if !Yast::Service.Disable(SERVICE)
-            Yast::Report.Error(
-              _("Disabling service %{service} has failed") % { service: SERVICE }
-            )
-            return false
-          end
-
-          true
-        end
-      end
-    end
-
-    class Web < Base
-      SOCKET   = "xvnc-novnc".freeze
-      PACKAGES = ["xorg-x11-Xvnc-novnc"].freeze
-
-      class << self
-        def socket
-          Yast::SystemdSocket.find(SOCKET)
-        end
-
-        def enabled?
-          return false unless socket
-
-          socket.enabled?
-        end
-
-        def enable!
-          return false unless socket
-
-          socket.enable!
-        end
-
-        def disable!
-          return false unless socket
-
-          socket.disable!
-        end
-
-        def stop!
-          return false unless socket
-
-          socket.stop!
-        end
-      end
-    end
-
     MODES = [VNC, Manager, Web].freeze
 
-    def self.all
-      MODES
-    end
+    class << self
+      def all
+        MODES
+      end
 
-    def self.running_modes
-      all.select(&:enabled?).map(&:to_sym)
+      def running_modes
+        all.select { |m| m.instance.enabled? }.map(&:to_sym)
+      end
+
+      def restart_modes(enable_modes = [])
+        all.each do |mode|
+          enable_modes.include?(mode.instance) ? mode.instance.restart! : mode.instance.stop
+        end
+      end
+
+      def update_status(enable_modes = [])
+        all.each do |mode|
+          enable_modes.include?(mode.instance) ? mode.instance.enable! : mode.instance.disable!
+        end
+      end
     end
   end
 end

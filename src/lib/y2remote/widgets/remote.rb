@@ -60,9 +60,9 @@ module Y2Remote
 
         return if disallow?
 
-        allow_manager? ? remote.enable_mode(:manager) : remote.enable_mode(:vnc)
+        allow_manager? ? remote.enable_manager! : remote.enable!
 
-        remote.enable_mode(:web) if allow_web?
+        remote.enable_web! if allow_web?
 
         nil
       end
@@ -160,6 +160,10 @@ module Y2Remote
     class AllowWeb < CWM::CheckBox
       def label
         _("Enable access using a &web browser")
+      end
+
+      def init
+        self.value = Y2Remote::Remote.instance.web_enabled?
       end
 
       def opt

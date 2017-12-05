@@ -19,53 +19,37 @@
 # current contact information at www.suse.com.
 # ------------------------------------------------------------------------------
 
-require "y2remote/dialogs/remote"
+require "yast"
 
 module Y2Remote
-  module Clients
-    class Remote
+  # Class to handle the different remote running modes
+  class Modes
+    # Base class
+    class Base
+      include Singleton
       include Yast::Logger
       include Yast::I18n
-      include Yast::UIShortcuts
+      extend Yast::I18n
 
+      # Construsctor
       def initialize
-        Yast.import "Label"
-        Yast.import "Wizard"
-        Yast.import "Report"
-        Yast.import "SuSEFirewall"
-
-        Yast.import "CommandLine"
-        Yast.import "RichText"
-        Yast.import "UI"
-
-        textdomain "network"
+        Yast.import "Packages"
+        Yast.import "SystemdSocket"
+        Yast.import "Service"
       end
 
-      def remote
-        @remote = Y2Remote::Remote.instance
+      # Return a list of names of the required packages of the running mode
+      #
+      # @return [Array<String>] list of packages required by the service
+      def required_packages
+        []
       end
 
-      def run
-        log.info("----------------------------------------")
-        log.info("Remote client started")
-
-        remote.read
-        Yast::SuSEFirewall.Read
-
-        ret = Y2Remote::Dialogs::Remote.new.run
-
-        Yast::Wizard.CreateDialog
-        Yast::Wizard.SetDesktopTitleAndIcon("remote")
-        Yast::Wizard.SetNextButton(:next, Yast::Label.FinishButton)
-
-        remote.write if ret == :next
-
-        Yast::Wizard.CloseDialog
-
-        log.info("----------------------------------------")
-        log.info("Remote client finished")
-
-        ret
+      # Return whether all the required packages have been installed or not
+      #
+      # @return [Boolean] true if installed; false otherwise
+      def installed?
+        Yast::Package.InstalledAll(required_packages)
       end
     end
   end

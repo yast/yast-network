@@ -44,6 +44,7 @@ BuildRequires:  yast2-storage-ng
 Requires:       yast2-storage-ng
 # Packages::vnc_packages
 Requires:       yast2-packager >= 4.0.18
+BuildRequires:  yast2-packager >= 4.0.18
 # cfa for parsing hosts, AugeasTree#unique_id
 BuildRequires:  rubygem(%rb_default_ruby_abi:cfa) >= 0.6.0
 Requires:       rubygem(%rb_default_ruby_abi:cfa) >= 0.6.0

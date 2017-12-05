@@ -27,6 +27,9 @@ require "cwm/rspec"
 
 describe Y2Remote::Widgets do
   let(:remote) { Y2Remote::Remote.instance }
+  before do
+    stub_const("Yast::Packages", double.as_null_object)
+  end
 
   describe Y2Remote::Widgets::RemoteSettings do
     include_examples "CWM::CustomWidget"
@@ -91,7 +94,7 @@ describe Y2Remote::Widgets do
           it "enables vnc" do
             subject.store
 
-            expect(remote.modes).to contain_exactly(:vnc)
+            expect(remote.modes).to contain_exactly(Y2Remote::Modes::VNC.instance)
           end
 
           it "returns nil" do
@@ -104,7 +107,9 @@ describe Y2Remote::Widgets do
             it "enables vnc and web access" do
               subject.store
 
-              expect(remote.modes).to contain_exactly(:vnc, :web)
+              expect(remote.modes).to contain_exactly(
+                Y2Remote::Modes::VNC.instance, Y2Remote::Modes::Web.instance
+              )
             end
           end
 
@@ -117,7 +122,7 @@ describe Y2Remote::Widgets do
           it "enables vnc manager mode" do
             subject.store
 
-            expect(remote.modes).to contain_exactly(:manager)
+            expect(remote.modes).to contain_exactly(Y2Remote::Modes::Manager.instance)
           end
 
           it "returns nil" do
@@ -130,7 +135,9 @@ describe Y2Remote::Widgets do
             it "enables vnc with session management and web access" do
               subject.store
 
-              expect(remote.modes).to contain_exactly(:manager, :web)
+              expect(remote.modes).to contain_exactly(
+                Y2Remote::Modes::Manager.instance, Y2Remote::Modes::Web.instance
+              )
             end
           end
         end
