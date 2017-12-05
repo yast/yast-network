@@ -21,6 +21,7 @@
 
 require "yast"
 require "y2remote/modes"
+require "y2remote/display_manager"
 
 module Y2Remote
   class Remote
@@ -28,18 +29,20 @@ module Y2Remote
     include Yast::Logger
     include Yast::I18n
 
-    XDM_SERVICE_NAME = "display-manager".freeze
     GRAPHICAL_TARGET = "graphical".freeze
 
     FIREWALL_SERVICES_PACKAGE = "xorg-x11-Xvnc".freeze
 
-    # [Symbol] Remote administration mode, :disabled, :xvnc or :vncmanager
+    # List of Y2Remote::Modes::Base subclasses that are the enabled VNC running
+    # modes
     attr_reader :modes
 
+    # [Boolean] whether the configuration has been proposed or not
     attr_accessor :proposed
 
     alias_method :proposed?, :proposed
 
+    # Constructor
     def initialize
       import_modules
 
@@ -54,14 +57,17 @@ module Y2Remote
       !disabled?
     end
 
+    # Enables the Y2Remote::Modes::VNC mode
     def enable!
       enable_mode!(Y2Remote::Modes::VNC.instance)
     end
 
+    # Enables the Y2Remote::Modes::Manager mode
     def enable_manager!
       enable_mode!(Y2Remote::Modes::Manager.instance)
     end
 
+    # Enables the Y2Remote::Modes::Web mode
     def enable_web!
       enable_mode!(Y2Remote::Modes::Web.instance)
     end
@@ -92,11 +98,15 @@ module Y2Remote
       modes.include?(Y2Remote::Modes::Manager.instance)
     end
 
+    def display_manager
+      @display_manager ||= Y2Remote::DisplayManager.instance
+    end
+
     # Read the current status of vnc and the enabled modes
     #
     # @return [Boolean] true
     def read
-      return true unless xdm_enabled? && display_manager_remote_access?
+      return true unless display_manager.remote_access?
 
       @modes = Y2Remote::Modes.running_modes
 
@@ -135,7 +145,7 @@ module Y2Remote
       propose!
     end
 
-    # It propose the vnc configuration if it has not been proposed yet
+    # Propose the vnc configuration if it has not been proposed yet
     #
     # @return [Boolean]
     def propose!
@@ -166,38 +176,7 @@ module Y2Remote
         Y2Remote::Modes.update_status(modes)
       end
 
-      # Set DISPLAYMANAGER_REMOTE_ACCESS in sysconfig/displaymanager
-      Yast::SCR.Write(
-        Yast.path(".sysconfig.displaymanager.DISPLAYMANAGER_REMOTE_ACCESS"),
-        enabled? ? "yes" : "no"
-      )
-      Yast::SCR.Write(
-        Yast.path(".sysconfig.displaymanager.DISPLAYMANAGER_ROOT_LOGIN_REMOTE"),
-        enabled? ? "yes" : "no"
-      )
-      Yast::SCR.Write(Yast.path(".sysconfig.displaymanager"), nil)
-
-      true
-    end
-
-    def restart_display_manager
-      if Yast::Service.active?(XDM_SERVICE_NAME)
-        Yast::Report.Error(
-          Yast::Message.CannotRestartService(XDM_SERVICE_NAME)
-        ) if !Yast::Service.Reload(XDM_SERVICE_NAME)
-
-        Yast::Report.Warning(
-          _(
-            "Your display manager must be restarted.\n" \
-            "To take the changes in remote administration into account, \n" \
-            "please restart it manually or log out and log in again."
-          )
-        )
-      elsif !Yast::Service.Restart(XDM_SERVICE_NAME)
-        Yast::Report.Error(
-          Yast::Message.CannotRestartService(XDM_SERVICE_NAME)
-        )
-      end
+      display_manager.write_remote_access(enabled?)
     end
 
     # Restarts services, reporting errors to the user
@@ -206,9 +185,12 @@ module Y2Remote
 
       Y2Remote::Modes.restart_modes
 
-      restart_display_manager if enabled?
+      display_manager.restart if enabled?
     end
 
+    # Return a summary of the current remote configuration
+    #
+    # @return [String] summary text
     def summary
       return _("Remote administration is enabled.") if enabled?
 
@@ -217,12 +199,10 @@ module Y2Remote
 
   private
 
+    # Convenience method to import YaST module dependencies
     def import_modules
       Yast.import "Mode"
       Yast.import "Package"
-      Yast.import "Packages"
-      Yast.import "Service"
-      Yast.import "SuSEFirewall"
       Yast.import "Progress"
       Yast.import "Linuxrc"
       Yast.import "Message"
@@ -234,17 +214,10 @@ module Y2Remote
       modes.map(&:required_packages).flatten
     end
 
-    def display_manager_remote_access?
-      Yast::SCR.Read(Yast.path(".sysconfig.displaymanager.DISPLAYMANAGER_REMOTE_ACCESS")) == "yes"
-    end
-
-    def xdm_enabled?
-      Yast::Service.Enabled(XDM_SERVICE_NAME)
-    end
-
     # Adds the given mode to the list of modes to be enabled
     #
-    # @return [Array<Symbol>] list of enable vnc modes
+    # @param mode [Y2Remote::Modes::Base] running mode to be enabled
+    # @return [Array<Y2Remote::Modes::Base>] list of enable running modes
     def enable_mode!(mode)
       return modes if modes.include?(mode)
 

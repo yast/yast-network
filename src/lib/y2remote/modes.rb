@@ -39,7 +39,7 @@ module Y2Remote
 
       def restart_modes(enable_modes = [])
         all.each do |mode|
-          enable_modes.include?(mode.instance) ? mode.instance.restart! : mode.instance.stop
+          enable_modes.include?(mode.instance) ? mode.instance.restart! : mode.instance.stop!
         end
       end
 

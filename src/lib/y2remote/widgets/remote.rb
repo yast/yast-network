@@ -126,7 +126,7 @@ module Y2Remote
 
     private
 
-      # Convenience method for obtain a Y2Remote::Remote instance
+      # Convenience method to obtain a Y2Remote::Remote instance
       #
       # @return [Y2Remote::Remote] instance
       def remote
