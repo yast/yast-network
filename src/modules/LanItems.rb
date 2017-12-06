@@ -304,13 +304,7 @@ module Yast
     def GetDeviceMap(itemId)
       return nil if !IsItemConfigured(itemId)
 
-      devname = GetDeviceName(itemId)
-
-      NetworkInterfaces.FilterDevices("netcard").each do |_dev_type, conf|
-        return conf[devname] if conf[devname]
-      end
-
-      nil
+      NetworkInterfaces.devmap(GetDeviceName(itemId))
     end
 
     def GetCurrentMap

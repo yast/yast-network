@@ -17,7 +17,7 @@
 
 
 Name:           yast2-network
-Version:        4.0.11
+Version:        4.0.12
 Release:        0
 BuildArch:      noarch
 
@@ -31,8 +31,8 @@ Requires:       yast2-proxy
 BuildRequires:  rubygem(%rb_default_ruby_abi:yast-rake)
 
 # yast2 v4.0.21: Y2Firewall::Firewalld::Zone.known_zones (fate#323460)
-BuildRequires:  yast2 >= 4.0.21
-Requires:       yast2 >= 4.0.21
+BuildRequires:  yast2 >= 4.0.23
+Requires:       yast2 >= 4.0.23
 
 # Product control need xml agent
 BuildRequires:  yast2-xml

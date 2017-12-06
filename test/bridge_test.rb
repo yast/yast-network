@@ -66,10 +66,21 @@ describe Yast::LanItems do
   end
 
   before(:each) do
+    allow(Yast::NetworkInterfaces).to receive(:Read).and_return(true)
     allow(Yast::NetworkInterfaces).to receive(:FilterDevices).with("netcard") { netconfig_items }
     allow(Yast::NetworkInterfaces).to receive(:adapt_old_config!)
+    allow(Yast::NetworkInterfaces).to receive(:CleanHotplugSymlink).and_return(true)
 
     allow(Yast::LanItems).to receive(:ReadHardware) { hwinfo_items }
+
+    netconfig_items.each_pair do |_type, device_maps|
+      device_maps.each_pair do |dev, devmap|
+        allow(Yast::NetworkInterfaces)
+          .to receive(:devmap)
+          .with(dev)
+          .and_return(devmap)
+      end
+    end
 
     Yast::LanItems.Read
   end

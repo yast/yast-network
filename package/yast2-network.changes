@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Dec  4 08:59:16 UTC 2017 - mfilka@suse.com
+
+- bnc#1061306
+  - use API for accessing device's sysconfig to avoid internal
+    errors
+- 4.0.12 
+
+-------------------------------------------------------------------
 Wed Nov 29 09:46:50 UTC 2017 - knut.anderssen@suse.com
 
 - Switched VNC service from xinetd to systemd.
