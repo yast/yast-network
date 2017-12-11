@@ -23,7 +23,6 @@ require "yast"
 require "cwm"
 require "y2remote/remote"
 
-Yast.import "Remote"
 Yast.import "Popup"
 Yast.import "CWMFirewallInterfaces"
 

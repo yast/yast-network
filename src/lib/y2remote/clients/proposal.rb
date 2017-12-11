@@ -32,7 +32,6 @@ module Y2Remote
 
       def initialize
         Yast.import "UI"
-        Yast.import "Remote"
         Yast.import "Wizard"
 
         textdomain "network"
