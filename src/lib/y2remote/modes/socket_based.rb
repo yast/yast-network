@@ -2,7 +2,7 @@ require "yast"
 
 module Y2Remote
   module Modes
-    # Common methods for handle systemd sockets
+    # Common methods for handling systemd sockets
     module SocketBased
       def self.included(_base)
         Yast.import "SystemdSocket"
@@ -53,9 +53,8 @@ module Y2Remote
       # not disabled; true if disabled with success
       def disable!
         return false unless socket
-        return true if enabled?
 
-        if !socket.disable
+        if enabled? && !socket.disable
           Yast::Report.Error(
             _("Disabling systemd socket %{socket} has failed") % { socket: socket_name }
           )
@@ -89,8 +88,7 @@ module Y2Remote
       # @return [Boolean] return false if the systemd socket is not present or
       # not restarted; true if restarted with success
       def restart!
-        return false unless socket
-        return false unless stop!
+        return false unless socket && stop!
 
         if !socket.start
           Yast::Report.Error(

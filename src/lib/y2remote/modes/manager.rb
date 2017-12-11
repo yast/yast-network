@@ -25,14 +25,14 @@ module Y2Remote
   module Modes
     # This class is reponsible of vncmanager service management
     class Manager < Base
-      # <String> Service name
+      # [String] Service name
       SERVICE  = "vncmanager".freeze
-      # <Array<String>> Packages needed by the service
+      # [Array<String>] Packages needed by the service
       PACKAGES = ["vncmanager"].freeze
 
       # Return the list of the packages needed by the service
       #
-      # @return [<Array<String>>] list of required packages
+      # @return [Array<String>] list of required packages
       def required_packages
         PACKAGES
       end
