@@ -370,7 +370,7 @@ module Yast
       raise ArgumentError, "Cannot propose udev rule - NIC not present" if !default_mac
 
       default_udev = GetDefaultUdevRule(
-        GetCurrentName(),
+        GetDeviceName(item_id),
         default_mac
       )
       SetItemUdevRule(item_id, default_udev)
