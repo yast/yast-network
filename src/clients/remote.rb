@@ -45,6 +45,7 @@ module Yast
       log.info("----------------------------------------")
       log.info("Remote module started")
 
+      remote.read
       # Command line definition
       ret = CommandLine.Run(command_line_definition)
       log.debug("ret=#{ret}")
@@ -70,7 +71,6 @@ module Yast
         ),
         "id"         => "remote",
         "guihandler" => fun_ref(method(:RemoteGUI), "any()"),
-        "initialize" => -> { remote.read },
         "actions"    => {
           "list"  => {
             # Commandline command help
