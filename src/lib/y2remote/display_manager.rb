@@ -92,8 +92,7 @@ module Y2Remote
 
   private
 
-    # Convenience method for reporting an not able to restart a service
-    # message.
+    # Convenience method to report a not able to restart service error message.
     #
     # @param service_name [String] servie name to report about
     def report_cannot_restart(service_name)

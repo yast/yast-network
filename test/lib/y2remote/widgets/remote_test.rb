@@ -34,13 +34,13 @@ describe Y2Remote::Widgets do
   describe Y2Remote::Widgets::RemoteSettings do
     include_examples "CWM::CustomWidget"
 
-    describe ".init" do
+    describe "#init" do
       it "disables the web checkbox if vnc is not enabled" do
         expect(subject)
       end
     end
 
-    describe ".handle" do
+    describe "#handle" do
       it "returns nil" do
         expect(subject.handle("any")).to eq(nil)
       end
@@ -62,7 +62,7 @@ describe Y2Remote::Widgets do
       end
     end
 
-    describe ".store" do
+    describe "#store" do
       let(:disallow) { false }
       let(:web_access) { false }
       let(:with_manager) { false }

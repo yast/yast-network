@@ -1,10 +1,10 @@
 require "y2remote/modes/base"
-require "y2remote/modes/sockets_mixin"
+require "y2remote/modes/socket_based"
 
 module Y2Remote
   module Modes
     class VNC < Base
-      include SocketsMixin
+      include SocketBased
 
       SOCKET = "xvnc".freeze
 

@@ -146,9 +146,7 @@ module Y2Remote
       return false if proposed?
 
       Yast::Linuxrc.vnc ? enable_vnc! : disable!
-
       log.info("Remote Administration was proposed as: #{modes.inspect}")
-
       @proposed = true
     end
 
@@ -176,7 +174,6 @@ module Y2Remote
     # Restarts services, reporting errors to the user
     def restart_services
       Yast::SystemdTarget.set_default(GRAPHICAL_TARGET) if enabled?
-
       Y2Remote::Modes.restart_modes
 
       display_manager.restart if enabled?

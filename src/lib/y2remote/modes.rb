@@ -28,20 +28,30 @@ module Y2Remote
   module Modes
     MODES = [VNC, Manager, Web].freeze
 
+    # Return a list with all the available Y2Remote::Remote::Base subclases
+    #
+    # @returm [Array<Y2Remote::Modes::Base>] list of available modes
     def self.all
       MODES
     end
 
+    # Return a list with all the enabled Y2Remote::Modes::Base instances.
+    #
+    # @returm [Array<Y2Remote::Modes::Base>] list of enabled modes
     def self.running_modes
       all.select { |m| m.instance.enabled? }.map(&:instance)
     end
 
+    # It restart all the given list of Y2Remote::Modes::Base instances and stop
+    # the rest.
     def self.restart_modes(enable_modes = [])
       all.each do |mode|
         enable_modes.include?(mode.instance) ? mode.instance.restart! : mode.instance.stop!
       end
     end
 
+    # It enable all the given list of Y2Remote::Modes::Base instances and
+    # disable the rest.
     def self.update_status(enable_modes = [])
       all.each do |mode|
         enable_modes.include?(mode.instance) ? mode.instance.enable! : mode.instance.disable!

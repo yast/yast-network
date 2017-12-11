@@ -31,7 +31,7 @@ module Y2Remote
       include Yast::I18n
       extend Yast::I18n
 
-      # Construsctor
+      # Constructor
       def initialize
         Yast.import "Packages"
       end

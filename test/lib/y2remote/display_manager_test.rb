@@ -25,7 +25,7 @@ require "y2remote/remote"
 describe Y2Remote::DisplayManager do
   subject { described_class.instance }
 
-  describe ".enabled?" do
+  describe "#enabled?" do
     let(:service_enabled) { false }
 
     before do
@@ -47,15 +47,13 @@ describe Y2Remote::DisplayManager do
     end
   end
 
-  describe ".remote_access?" do
+  describe "#remote_access?" do
     let(:remote_access_path) { ".sysconfig.displaymanager.DISPLAYMANAGER_REMOTE_ACCESS" }
     let(:remote_access_value) { "yes" }
     let(:service_enabled) { true }
 
     before do
-      allow(Yast).to receive(:path).with(remote_access_path)
-        .and_return("remote_access_path")
-      allow(Yast::SCR).to receive(:Read).with("remote_access_path")
+      allow(Yast::SCR).to receive(:Read).with(Yast::Path.new(remote_access_path))
         .and_return(remote_access_value)
       stub_const("Yast::Service", double(Enabled: service_enabled))
     end
@@ -85,7 +83,7 @@ describe Y2Remote::DisplayManager do
     end
   end
 
-  describe ".restart" do
+  describe "#restart" do
     let(:service_active) { false }
     let(:service_restarted) { false }
     let(:service_reloaded) { false }
@@ -143,35 +141,30 @@ describe Y2Remote::DisplayManager do
     end
   end
 
-  describe ".write_remote_access" do
+  describe "#write_remote_access" do
     let(:remote_access_path) { ".sysconfig.displaymanager.DISPLAYMANAGER_REMOTE_ACCESS" }
     let(:root_remote_login_path) { ".sysconfig.displaymanager.DISPLAYMANAGER_ROOT_LOGIN_REMOTE" }
 
     before do
       allow(Yast::SCR).to receive(:Write)
-      allow(Yast).to receive(:path).with(remote_access_path).and_return("remote_access_path")
-      allow(Yast).to receive(:path).with(root_remote_login_path).and_return("root_remote")
-      allow(Yast).to receive(:path).with(".sysconfig.displaymanager").and_return("dm")
     end
 
     context "when the given 'allowed' param is true" do
       it "writes DISPLAYMANAGER_REMOTE_ACCESS with 'yes' in /etc/sysconfig/displaymanager" do
-        expect(Yast).to receive(:path).with(remote_access_path).and_return("remote_access_path")
-        expect(Yast::SCR).to receive(:Write).with("remote_access_path", "yes")
+        expect(Yast::SCR).to receive(:Write).with(Yast::Path.new(remote_access_path), "yes")
 
         subject.write_remote_access(true)
       end
 
       it "writes DISPLAYMANAGER_ROOT_LOGIN_REMOTE with 'yes' in /etc/sysconfig/displaymanager" do
-        expect(Yast).to receive(:path).with(root_remote_login_path).and_return("root_remote")
-        expect(Yast::SCR).to receive(:Write).with("root_remote", "yes")
+        expect(Yast::SCR).to receive(:Write).with(Yast::Path.new(root_remote_login_path), "yes")
 
         subject.write_remote_access(true)
       end
 
       it "flushes /etc/sysconfig/displaymanager after writing" do
-        expect(Yast).to receive(:path).with(".sysconfig.displaymanager").and_return("dm")
-        expect(Yast::SCR).to receive(:Write).with("dm", nil)
+        expect(Yast::SCR).to receive(:Write)
+          .with(Yast::Path.new(".sysconfig.displaymanager"), nil)
 
         subject.write_remote_access(true)
       end
@@ -179,22 +172,20 @@ describe Y2Remote::DisplayManager do
 
     context "when the given 'allowed' param is not true" do
       it "writes DISPLAYMANAGER_REMOTE_ACCESS with 'no' in /etc/sysconfig/displaymanager" do
-        expect(Yast).to receive(:path).with(remote_access_path).and_return("remote_access_path")
-        expect(Yast::SCR).to receive(:Write).with("remote_access_path", "no")
+        expect(Yast::SCR).to receive(:Write).with(Yast::Path.new(remote_access_path), "no")
 
         subject.write_remote_access(false)
       end
 
       it "writes DISPLAYMANAGER_ROOT_LOGIN_REMOTE with 'no' in /etc/sysconfig/displaymanager" do
-        expect(Yast).to receive(:path).with(root_remote_login_path).and_return("root_remote")
-        expect(Yast::SCR).to receive(:Write).with("root_remote", "no")
+        expect(Yast::SCR).to receive(:Write).with(Yast::Path.new(root_remote_login_path), "no")
 
         subject.write_remote_access(false)
       end
 
       it "flushes /etc/sysconfig/displaymanager after writing" do
-        expect(Yast).to receive(:path).with(".sysconfig.displaymanager").and_return("dm")
-        expect(Yast::SCR).to receive(:Write).with("dm", nil)
+        expect(Yast::SCR).to receive(:Write)
+          .with(Yast::Path.new(".sysconfig.displaymanager"), nil)
 
         subject.write_remote_access(false)
       end
