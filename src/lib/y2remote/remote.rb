@@ -117,21 +117,15 @@ module Y2Remote
     #
     # @return [Boolean] true on success
     def write
-      steps = [_("Configure display manager")]
-      steps << _("Restart the services") if Yast::Mode.normal
+      configure_write_steps
 
-      caption = _("Saving Remote Administration Configuration")
-
-      Yast::Progress.New(caption, " ", steps.size, steps, [], "")
-      Yast::Progress.NextStage
-      Yast::Progress.Title(_("Configuring display manager..."))
+      next_stage(_("Configuring display manager..."))
       return false unless configure_display_manager
 
       if Yast::Mode.normal
-        Yast::Progress.NextStage
-        Yast::Progress.Title(_("Restarting the service..."))
+        next_stage(_("Restarting the service..."))
         restart_services
-        Yast::Progress.NextStage
+        next_stage
       end
 
       true
@@ -229,6 +223,20 @@ module Y2Remote
       end
 
       @modes << mode
+    end
+
+    def configure_write_steps
+      steps = [_("Configure display manager")]
+      steps << _("Restart the services") if Yast::Mode.normal
+
+      caption = _("Saving Remote Administration Configuration")
+
+      Yast::Progress.New(caption, " ", steps.size, steps, [], "")
+    end
+
+    def next_stage(title = nil)
+      Yast::Progress.NextStage
+      Yast::Progress.Title(title) if title
     end
   end
 end

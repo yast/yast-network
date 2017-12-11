@@ -41,7 +41,7 @@ module Y2Remote
     #
     # @return [Boolean] true if enabled; false otherwise
     def enabled?
-      Yast::Service.Enabled(XDM_SERVICE_NAME)
+      Yast::Service.Enabled(SERVICE)
     end
 
     # Whether the display manager allow remote access or not. If the service is

@@ -34,7 +34,7 @@ module Y2Remote
       end
 
       def running_modes
-        all.select { |m| m.instance.enabled? }.map(&:to_sym)
+        all.select { |m| m.instance.enabled? }.map(&:instance)
       end
 
       def restart_modes(enable_modes = [])

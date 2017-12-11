@@ -23,6 +23,8 @@ require_relative "../../test_helper.rb"
 require "y2remote/remote"
 
 describe Y2Remote::Remote do
+  let(:vnc) { Y2Remote::Modes::Web.instance }
+  let(:web) { Y2Remote::Modes::VNC.instance }
   subject { described_class.instance }
 
   before do
@@ -43,7 +45,7 @@ describe Y2Remote::Remote do
     end
 
     context "when some vnc mode is enabled" do
-      let(:modes) { [:vnc, :web] }
+      let(:modes) { [vnc, web] }
 
       it "returns false" do
         expect(subject.disabled?).to eq(false)
@@ -153,22 +155,24 @@ describe Y2Remote::Remote do
   end
 
   describe ".read" do
+    let(:vnc) { Y2Remote::Modes::VNC.instance }
+    let(:display_manager) { Y2Remote::DisplayManager.instance }
+
     it "returns true" do
-      allow(subject).to receive(:xdm_enabled?).and_return(false)
+      allow(display_manager).to receive(:enabled?).and_return(false)
 
       expect(subject.read).to eq(true)
     end
 
-    context "when xdm & the remote access are enabled" do
+    context "when the display manager allowes remote access" do
       it "initializes the list of modes depending on the enabled ones" do
-        allow(subject).to receive(:xdm_enabled?).and_return(true)
-        allow(subject).to receive(:display_manager_remote_access?).and_return(true)
+        allow(display_manager).to receive(:remote_access?).and_return(true)
 
-        expect(Y2Remote::Modes).to receive(:running_modes).and_return([:vnc])
+        expect(Y2Remote::Modes).to receive(:running_modes).and_return([vnc])
 
         subject.read
 
-        expect(subject.modes).to contain_exactly(:vnc)
+        expect(subject.modes).to contain_exactly(vnc)
       end
     end
   end
@@ -239,6 +243,7 @@ describe Y2Remote::Remote do
   end
 
   describe ".propose!" do
+    let(:web) { Y2Remote::Modes::Web.instance }
     let(:linuxrc) { double("Yast::Linuxrc") }
 
     context "when the config has been already proposed" do

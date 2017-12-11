@@ -22,26 +22,26 @@ module Y2Remote
       def enable!
         return false unless socket
 
-        socket.enable!
+        socket.enable
       end
 
       def disable!
         return false unless socket
 
-        socket.disable!
+        socket.disable
       end
 
       def stop!
         return false unless socket
 
-        socket.stop!
+        socket.stop
       end
 
       def restart!
         return false unless socket
 
-        stop!
-        socket.start!
+        stop! if socket.listening?
+        socket.start
       end
     end
   end
