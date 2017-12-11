@@ -23,7 +23,7 @@ require "yast"
 
 module Y2Remote
   # Class to handle the different remote running modes
-  class Modes
+  module Modes
     # Base class
     class Base
       include Singleton
@@ -34,8 +34,6 @@ module Y2Remote
       # Construsctor
       def initialize
         Yast.import "Packages"
-        Yast.import "SystemdSocket"
-        Yast.import "Service"
       end
 
       # Return a list of names of the required packages of the running mode

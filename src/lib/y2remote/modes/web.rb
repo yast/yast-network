@@ -1,8 +1,11 @@
 require "y2remote/modes/base"
+require "y2remote/modes/sockets_mixin"
 
 module Y2Remote
-  class Modes
+  module Modes
     class Web < Base
+      include SocketsMixin
+
       SOCKET   = "xvnc-novnc".freeze
       PACKAGES = ["xorg-x11-Xvnc-novnc"].freeze
 
@@ -10,39 +13,8 @@ module Y2Remote
         PACKAGES
       end
 
-      def socket
-        Yast::SystemdSocket.find(SOCKET)
-      end
-
-      def enabled?
-        return false unless socket
-
-        socket.enabled?
-      end
-
-      def enable!
-        return false unless socket
-
-        socket.enable!
-      end
-
-      def disable!
-        return false unless socket
-
-        socket.disable!
-      end
-
-      def stop!
-        return false unless socket
-
-        socket.stop!
-      end
-
-      def restart!
-        return false unless socket
-
-        stop!
-        socket.start!
+      def socket_name
+        SOCKET
       end
     end
   end

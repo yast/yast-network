@@ -25,28 +25,26 @@ require "y2remote/modes/manager.rb"
 require "y2remote/modes/web.rb"
 
 module Y2Remote
-  class Modes
+  module Modes
     MODES = [VNC, Manager, Web].freeze
 
-    class << self
-      def all
-        MODES
-      end
+    def self.all
+      MODES
+    end
 
-      def running_modes
-        all.select { |m| m.instance.enabled? }.map(&:instance)
-      end
+    def self.running_modes
+      all.select { |m| m.instance.enabled? }.map(&:instance)
+    end
 
-      def restart_modes(enable_modes = [])
-        all.each do |mode|
-          enable_modes.include?(mode.instance) ? mode.instance.restart! : mode.instance.stop!
-        end
+    def self.restart_modes(enable_modes = [])
+      all.each do |mode|
+        enable_modes.include?(mode.instance) ? mode.instance.restart! : mode.instance.stop!
       end
+    end
 
-      def update_status(enable_modes = [])
-        all.each do |mode|
-          enable_modes.include?(mode.instance) ? mode.instance.enable! : mode.instance.disable!
-        end
+    def self.update_status(enable_modes = [])
+      all.each do |mode|
+        enable_modes.include?(mode.instance) ? mode.instance.enable! : mode.instance.disable!
       end
     end
   end

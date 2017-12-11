@@ -1,7 +1,7 @@
 require "y2remote/modes/base"
 
 module Y2Remote
-  class Modes
+  module Modes
     class Manager < Base
       SERVICE  = "vncmanager".freeze
       PACKAGES = ["vncmanager"].freeze
