@@ -1,10 +1,19 @@
 -------------------------------------------------------------------
+Mon Dec 11 11:29:18 UTC 2017 - knut.anderssen@suse.com
+
+- Remote: reimplemented the module dialogs and clients under
+  y2remote libdir.
+- Fixed restart of xvnc as it is now a socket instead of a service
+  (bsc#1070582).
+- 4.0.13
+
+-------------------------------------------------------------------
 Mon Dec  4 08:59:16 UTC 2017 - mfilka@suse.com
 
 - bnc#1061306
   - use API for accessing device's sysconfig to avoid internal
     errors
-- 4.0.12 
+- 4.0.12
 
 -------------------------------------------------------------------
 Wed Nov 29 09:46:50 UTC 2017 - knut.anderssen@suse.com

@@ -17,7 +17,7 @@
 
 
 Name:           yast2-network
-Version:        4.0.12
+Version:        4.0.13
 Release:        0
 BuildArch:      noarch
 
@@ -44,6 +44,7 @@ BuildRequires:  yast2-storage-ng
 Requires:       yast2-storage-ng
 # Packages::vnc_packages
 Requires:       yast2-packager >= 4.0.18
+BuildRequires:  yast2-packager >= 4.0.18
 # cfa for parsing hosts, AugeasTree#unique_id
 BuildRequires:  rubygem(%rb_default_ruby_abi:cfa) >= 0.6.0
 Requires:       rubygem(%rb_default_ruby_abi:cfa) >= 0.6.0
@@ -95,6 +96,7 @@ rake install DESTDIR="%{buildroot}"
 %{yast_schemadir}/autoyast/rnc/networking.rnc
 %{yast_schemadir}/autoyast/rnc/host.rnc
 %{yast_libdir}/network
+%{yast_libdir}/y2remote
 %dir %{yast_libdir}/cfa/
 %{yast_libdir}/cfa/hosts.rb
 %{yast_ydatadir}/network
