@@ -142,8 +142,8 @@ describe "LanItems#InitItemUdev" do
       .to receive(:Items)
       .and_return(
         0 => {
-          "ifcfg"      => "eth0",
-          "udev"       => {
+          "ifcfg" => "eth0",
+          "udev"  => {
             "net" => udev_rule("24:be:05:ce:1e:91", "eth0")
           }
         },
@@ -153,7 +153,7 @@ describe "LanItems#InitItemUdev" do
             "dev_name" => "eth1"
           },
           # always exists
-          "udev" => {
+          "udev"   => {
             "net" => []
           }
         }
