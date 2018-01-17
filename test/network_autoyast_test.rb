@@ -414,7 +414,7 @@ describe "NetworkAutoYast" do
         .and_return(
           0 => {
             "ifcfg"      => "eth0",
-            "renamed_to" => !renamed_to.nil? ? renamed_to : nil,
+            "renamed_to" => renamed_to,
             "udev"       => {
               "net" => [
                 "ATTR{address}==\"24:be:05:ce:1e:91\"",
