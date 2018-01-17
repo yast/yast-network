@@ -259,12 +259,6 @@ module Yast
       true
     end
 
-    # @return Whether the UI should warn about interfaces
-    # that are not in any zone
-    def UnconfiguredIsBlocked
-      !SuSEFirewall.IsAnyNetworkInterfaceSupported
-    end
-
     # Function sets that a firewall proposal was changed by user
     # by editing firewall zone of network interface
     # (applicable during 2nd stage of installation only)
@@ -349,7 +343,6 @@ module Yast
     publish function: :IsProtectedByFirewall, type: "boolean (string)"
     publish function: :GetZoneOfInterface, type: "string (string)"
     publish function: :ProtectByFirewall, type: "boolean (string, string, boolean)"
-    publish function: :UnconfiguredIsBlocked, type: "boolean ()"
     publish function: :ChangedByUser, type: "void (boolean)"
     publish function: :IsInstalled, type: "boolean ()"
     publish function: :SetEnabled1stStage, type: "void (boolean)"
