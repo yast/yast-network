@@ -1019,8 +1019,7 @@ module Yast
     # @param [String] key	the widget being validated
     # @param [Hash] event	the event being handled
     # @return whether valid
-    def ValidateBootproto(_key, event)
-      event = deep_copy(event)
+    def ValidateBootproto(_key, _event)
       if UI.QueryWidget(:bootproto, :CurrentButton) == :static
         ipa = Convert.to_string(UI.QueryWidget(:ipaddr, :Value))
         if ipa != "" && !IP.Check(ipa)
