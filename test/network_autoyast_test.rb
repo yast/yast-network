@@ -459,5 +459,90 @@ describe "NetworkAutoYast" do
         expect(network_autoyast.send(:colliding_item, "enp0s3")).to be 0
       end
     end
+
+    describe "#assign_udevs_to_devs" do
+      Yast.import "LanItems"
+
+      let(:udev_rules) do
+        [
+          {
+            "name"  => "eth1",
+            "rule"  => "KERNELS",
+            "value" => "0000:01:00.0"
+          },
+          {
+            "name"  => "eth0",
+            "rule"  => "KERNELS",
+            "value" => "0000:01:00.2"
+          }
+        ]
+      end
+
+      let(:persistent_udevs) do
+        {
+          "eth0" => [
+            "KERNELS==\"0000:01:00.0\"",
+            "NAME=eth0"
+          ],
+          "eth1" => [
+            "KERNELS==\"0000:01:00.1\"",
+            "NAME=eth1"
+          ],
+          "eth2" => [
+            "KERNELS==\"0000:01:00.2\"",
+            "NAME=eth2"
+          ]
+        }
+      end
+
+      let(:hw_netcard) do
+        [
+          {
+            "dev_name" => "eth0",
+            "busid"    => "0000:01:00.0",
+            "mac"      => "00:00:00:00:00:00"
+          },
+          {
+            "dev_name" => "eth1",
+            "busid"    => "0000:01:00.1",
+            "mac"      => "00:00:00:00:00:01"
+          },
+          {
+            "dev_name" => "eth2",
+            "busid"    => "0000:01:00.2",
+            "mac"      => "00:00:00:00:00:02"
+          }
+        ]
+      end
+
+      before(:each) do
+        allow(Yast::LanItems)
+          .to receive(:ReadHardware)
+          .with("netcard")
+          .and_return(hw_netcard)
+        allow(Yast::NetworkInterfaces)
+          .to receive(:Read)
+          .and_return(true)
+        # respective agent is not able to change scr root
+        allow(Yast::SCR)
+          .to receive(:Read)
+          .with(path(".udev_persistent.net"))
+          .and_return(persistent_udevs)
+
+        Yast::LanItems.Read
+      end
+
+      it "applies rules so, that names remain unique" do
+        network_autoyast.send(:assign_udevs_to_devs, udev_rules)
+
+        lan_items = Yast::LanItems
+        names = lan_items.Items.keys.map do |i|
+          lan_items.renamed?(i) ? lan_items.renamed_to(i) : lan_items.GetDeviceName(i)
+        end
+
+        # check if device names are unique
+        expect(names.sort).to eql ["eth0", "eth1", "eth2"]
+      end
+    end
   end
 end
