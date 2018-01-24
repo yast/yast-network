@@ -532,6 +532,17 @@ describe "NetworkAutoYast" do
         Yast::LanItems.Read
       end
 
+      # see bnc#1056109
+      # - basically dev_name is renamed_to || ifcfg || hwinfo.devname for purposes
+      # of this test (ifcfg is name distinguished from sysconfig configuration,
+      # hwinfo.devname is name assigned by kernel during device initialization and
+      # renamed_to is new device name assigned by user when asking for device renaming
+      # - updating udev rules)
+      #
+      # - when we have devices <eth0, eth1, eth2> and ruleset defined in AY profile
+      # which renames these devices it could, before the fix, happen that after
+      # applying of the ruleset we could end with new nameset e.g. <eth2, eth0, eth0>
+      # which obviously leads to misconfiguration of the system
       it "applies rules so, that names remain unique" do
         network_autoyast.send(:assign_udevs_to_devs, udev_rules)
 
