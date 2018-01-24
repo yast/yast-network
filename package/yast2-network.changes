@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Dec 11 08:26:58 UTC 2017 - mfilka@suse.com
+
+- bnc#1056109
+  - improved device name collision recognition when applying device
+    renaming according to the AY profile
+- 3.1.185
+
+-------------------------------------------------------------------
 Wed Nov 15 19:22:41 UTC 2017 - knut.anderssen@suse.com
 
 - bnc#1066982

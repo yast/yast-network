@@ -125,6 +125,50 @@ describe "LanItemsClass#s390_correct_lladdr" do
   end
 end
 
+describe "LanItems#InitItemUdev" do
+  def udev_rule(mac, name)
+    [
+      "SUBSYSTEM==\"net\"",
+      "ACTION==\"add\"",
+      "DRIVERS==\"?*\"",
+      "ATTR{address}==\"#{mac}\"",
+      "ATTR{type}==\"1\"",
+      "NAME=\"#{name}\""
+    ]
+  end
+
+  before(:each) do
+    allow(Yast::LanItems)
+      .to receive(:Items)
+      .and_return(
+        0 => {
+          "ifcfg" => "eth0",
+          "udev"  => {
+            "net" => udev_rule("24:be:05:ce:1e:91", "eth0")
+          }
+        },
+        1 => {
+          "hwinfo" => {
+            "mac"      => "00:00:00:00:00:01",
+            "dev_name" => "eth1"
+          },
+          # always exists
+          "udev"   => {
+            "net" => []
+          }
+        }
+      )
+  end
+
+  it "returns existing udev rule if there is any already" do
+    expect(Yast::LanItems.InitItemUdevRule(0)).to eql udev_rule("24:be:05:ce:1e:91", "eth0")
+  end
+
+  it "creates new udev rule if none is present" do
+    expect(Yast::LanItems.InitItemUdevRule(1)).to eql udev_rule("00:00:00:00:00:01", "eth1")
+  end
+end
+
 describe "LanItems#GetItemUdev" do
   def check_GetItemUdev(key, expected_value)
     expect(Yast::LanItems.GetItemUdev(key)).to eql expected_value
