@@ -189,7 +189,7 @@ module Y2Remote
       end
 
       def help
-        @cwm_interfaces["help"]
+        @cwm_interfaces["help"] || ""
       end
 
       def handle(event)
