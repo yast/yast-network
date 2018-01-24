@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Jan 24 16:03:20 UTC 2018 - mfilka@suse.com
+
+- bnc#1056109
+  - improved device name collision recognition when applying device
+    renaming according to the AY profile
+- 4.0.14
+
+-------------------------------------------------------------------
 Mon Dec 11 11:29:18 UTC 2017 - knut.anderssen@suse.com
 
 - Remote: reimplemented the module dialogs and clients under

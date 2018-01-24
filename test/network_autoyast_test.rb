@@ -336,7 +336,7 @@ describe "NetworkAutoYast" do
     before(:each) do
       allow(Yast::LanItems)
         .to receive(:Items)
-        .and_return(0 => { "ifcfg" => "eth0" })
+        .and_return(0 => { "ifcfg" => "eth0", "udev" => { "net" => ["ATTR{address}==\"24:be:05:ce:1e:91\"", "KERNEL==\"eth*\"", "NAME=\"eth0\""] } })
     end
 
     context "valid arguments given" do
@@ -386,6 +386,156 @@ describe "NetworkAutoYast" do
         expect do
           network_autoyast.send(:rename_lan_item, 0, "new_name", nil, "0000:00:03.0")
         end.to raise_error(ArgumentError)
+      end
+    end
+  end
+
+  context "When creating udev rules based on the AY profile" do
+    def mock_lan_item(renamed_to: nil)
+      allow(Yast::LanItems)
+        .to receive(:Items)
+        .and_return(
+          0 => {
+            "ifcfg"      => "eth0",
+            "renamed_to" => renamed_to,
+            "udev"       => {
+              "net" => [
+                "ATTR{address}==\"24:be:05:ce:1e:91\"",
+                "NAME=\"#{renamed_to}\""
+              ]
+            }
+          }
+        )
+    end
+
+    describe "#item_name" do
+      it "returns old name when the device has not been renamed" do
+        mock_lan_item
+
+        expect(network_autoyast.send(:item_name, 0)).to eql "eth0"
+      end
+
+      it "returns new name when the device has been renamed" do
+        new_name = "new1"
+        mock_lan_item(renamed_to: new_name)
+
+        expect(network_autoyast.send(:item_name, 0)).to eql new_name
+      end
+    end
+
+    describe "#colliding_item" do
+      it "returns nothing if no collision was found" do
+        mock_lan_item
+
+        expect(network_autoyast.send(:colliding_item, "enp0s3")).to be nil
+      end
+
+      it "returns device name which is in collision" do
+        mock_lan_item
+
+        expect(network_autoyast.send(:colliding_item, "eth0")).to be 0
+      end
+
+      it "returns device name when the device was already renamed before and we new name is in collision" do
+        mock_lan_item(renamed_to: "enp0s3")
+
+        expect(network_autoyast.send(:colliding_item, "enp0s3")).to be 0
+      end
+    end
+
+    describe "#assign_udevs_to_devs" do
+      Yast.import "LanItems"
+
+      let(:udev_rules) do
+        [
+          {
+            "name"  => "eth1",
+            "rule"  => "KERNELS",
+            "value" => "0000:01:00.0"
+          },
+          {
+            "name"  => "eth0",
+            "rule"  => "KERNELS",
+            "value" => "0000:01:00.2"
+          }
+        ]
+      end
+
+      let(:persistent_udevs) do
+        {
+          "eth0" => [
+            "KERNELS==\"0000:01:00.0\"",
+            "NAME=eth0"
+          ],
+          "eth1" => [
+            "KERNELS==\"0000:01:00.1\"",
+            "NAME=eth1"
+          ],
+          "eth2" => [
+            "KERNELS==\"0000:01:00.2\"",
+            "NAME=eth2"
+          ]
+        }
+      end
+
+      let(:hw_netcard) do
+        [
+          {
+            "dev_name" => "eth0",
+            "busid"    => "0000:01:00.0",
+            "mac"      => "00:00:00:00:00:00"
+          },
+          {
+            "dev_name" => "eth1",
+            "busid"    => "0000:01:00.1",
+            "mac"      => "00:00:00:00:00:01"
+          },
+          {
+            "dev_name" => "eth2",
+            "busid"    => "0000:01:00.2",
+            "mac"      => "00:00:00:00:00:02"
+          }
+        ]
+      end
+
+      before(:each) do
+        allow(Yast::LanItems)
+          .to receive(:ReadHardware)
+          .with("netcard")
+          .and_return(hw_netcard)
+        allow(Yast::NetworkInterfaces)
+          .to receive(:Read)
+          .and_return(true)
+        # respective agent is not able to change scr root
+        allow(Yast::SCR)
+          .to receive(:Read)
+          .with(path(".udev_persistent.net"))
+          .and_return(persistent_udevs)
+
+        Yast::LanItems.Read
+      end
+
+      # see bnc#1056109
+      # - basically dev_name is renamed_to || ifcfg || hwinfo.devname for purposes
+      # of this test (ifcfg is name distinguished from sysconfig configuration,
+      # hwinfo.devname is name assigned by kernel during device initialization and
+      # renamed_to is new device name assigned by user when asking for device renaming
+      # - updating udev rules)
+      #
+      # - when we have devices <eth0, eth1, eth2> and ruleset defined in AY profile
+      # which renames these devices it could, before the fix, happen that after
+      # applying of the ruleset we could end with new nameset e.g. <eth2, eth0, eth0>
+      # which obviously leads to misconfiguration of the system
+      it "applies rules so, that names remain unique" do
+        network_autoyast.send(:assign_udevs_to_devs, udev_rules)
+
+        lan_items = Yast::LanItems
+        names = lan_items.Items.keys.map do |i|
+          lan_items.renamed?(i) ? lan_items.renamed_to(i) : lan_items.GetDeviceName(i)
+        end
+
+        # check if device names are unique
+        expect(names.sort).to eql ["eth0", "eth1", "eth2"]
       end
     end
   end
