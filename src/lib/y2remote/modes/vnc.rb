@@ -6,7 +6,7 @@ module Y2Remote
     class VNC < Base
       include SocketBased
 
-      SOCKET = "xvnc".freeze
+      SOCKET = "".freeze
 
       def initialize
         super()
