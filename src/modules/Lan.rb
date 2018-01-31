@@ -371,7 +371,7 @@ module Yast
       ProgressNextStage(_("Reading hostname and DNS configuration...")) if @gui
       DNS.Read
       if !Host.Read
-        ret = @gui && Popup.ContinueCancel(_("Reading /etc/hosts failed.\nIf you continue any existing configuration will be overwritten."))
+        ret = @gui && Popup.ContinueCancel(_("Reading /etc/hosts failed.\nThe file content is not in expected format.\nIf you continue any existing configuration will be overwritten."))
         return false if !ret
       end
       Builtins.sleep(sl)
