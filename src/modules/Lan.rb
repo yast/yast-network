@@ -866,14 +866,14 @@ module Yast
 
         bridge_name = format("br%s", NetworkInterfaces.GetFreeDevice("br"))
 
-        if !LanItems.IsBridgeable(bridge_name, current)
-          log.info "The interface #{ifcfg} is not bridgeable."
+        if !LanItems.IsBridgeable(bridge_name, current) || !proposable_as_bridge?(config)
+          log.info "The interface #{ifcfg} can not be proposed as bridge."
           next
         end
 
         LanItems.current = current
 
-        propose_current_item!(config) if !LanItems.IsCurrentConfigured
+        LanItems.ProposeItem if !LanItems.IsCurrentConfigured
 
         next unless configure_as_bridge!(ifcfg, bridge_name)
 
@@ -1033,23 +1033,18 @@ module Yast
       NetworkInterfaces.Commit
     end
 
-    def propose_current_item!(config)
+    def proposable_as_bridge?(config)
       # first configure all connected unconfigured devices with dhcp (with default parameters)
       hwinfo = config.fetch("hwinfo", {})
-
       if hwinfo.fetch("link", false) == true
         log.warn("item number #{LanItems.current} has link:false detected")
-
         return false
       end
-
       if hwinfo.fetch("type", "") == "wlan"
         log.warn("not proposing WLAN interface")
-
         return false
       end
-
-      LanItems.ProposeItem
+      true
     end
 
     def refresh_lan_items
