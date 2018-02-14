@@ -1037,7 +1037,7 @@ module Yast
       # first configure all connected unconfigured devices with dhcp (with default parameters)
       hwinfo = config.fetch("hwinfo", {})
       if hwinfo.fetch("link", false) == true
-        log.warn("item number #{LanItems.current} has link:false detected")
+        log.warn("Ifcfg #{config["ifcfg"]} has link:false detected")
         return false
       end
       if hwinfo.fetch("type", "") == "wlan"
