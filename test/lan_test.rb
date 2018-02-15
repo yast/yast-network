@@ -363,14 +363,16 @@ describe "LanClass#ProposeVirtualized" do
 
   context "when an interface is bridgeable" do
     before do
-      allow(Yast::LanItems).to receive(:IsBridgeable).with(anything, 0).and_return(true)
-      allow(Yast::LanItems).to receive(:IsBridgeable).with(anything, 1).and_return(false)
-      allow(Yast::LanItems).to receive(:IsBridgeable).with(anything, 2).and_return(false)
-      allow(Yast::Lan).to receive(:proposable_as_bridge?).with(anything).and_return(true)
+      allow(Yast::Lan).to receive(:connected_and_bridgeable?)
+        .with(anything, 0, anything).and_return(true)
+      allow(Yast::Lan).to receive(:connected_and_bridgeable?)
+        .with(anything, 1, anything).and_return(false)
+      allow(Yast::Lan).to receive(:connected_and_bridgeable?)
+        .with(anything, 2, anything).and_return(false)
     end
 
-    it "does not configure the interface if it is not proposable" do
-      allow(Yast::Lan).to receive(:proposable_as_bridge?).with(anything).and_return(false)
+    it "does not configure the interface if it is not connected" do
+      allow(Yast::Lan).to receive(:connected_and_bridgeable?).with(anything).and_return(false)
       expect(Yast::Lan).not_to receive(:ProposeItem)
 
       Yast::Lan.ProposeVirtualized

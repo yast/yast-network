@@ -863,23 +863,14 @@ module Yast
       # and add old device name into bridge_ports
       LanItems.Items.each do |current, config|
         ifcfg = config["ifcfg"].to_s
-
         bridge_name = format("br%s", NetworkInterfaces.GetFreeDevice("br"))
-
-        if !LanItems.IsBridgeable(bridge_name, current) || !proposable_as_bridge?(config)
-          log.info "The interface #{ifcfg} can not be proposed as bridge."
-          next
-        end
-
+        next unless connected_and_bridgeable?(bridge_name, current, config)
         LanItems.current = current
-
+        # first configure all connected unconfigured devices with dhcp (with default parameters)
         LanItems.ProposeItem if !LanItems.IsCurrentConfigured
-
         next unless configure_as_bridge!(ifcfg, bridge_name)
-
         # reconfigure existing device as newly created bridge's port
         configure_as_bridge_port(ifcfg)
-
         refresh_lan_items
       end
 
@@ -1033,15 +1024,23 @@ module Yast
       NetworkInterfaces.Commit
     end
 
-    def proposable_as_bridge?(config)
-      # first configure all connected unconfigured devices with dhcp (with default parameters)
+    # Convenience method that returns true if the current item has link and can
+    # be enslabed in a bridge.
+    #
+    # @return [Boolean] true if it is bridgeable
+    def connected_and_bridgeable?(bridge_name, item, config)
+      if !LanItems.IsBridgeable(bridge_name, item)
+        log.info "The interface #{config["ifcfg"]} can not be proposed as bridge."
+        return false
+      end
+
       hwinfo = config.fetch("hwinfo", {})
       if hwinfo.fetch("link", false) == true
-        log.warn("Ifcfg #{config["ifcfg"]} has link:false detected")
+        log.warn("Lan item #{item} has link:false detected")
         return false
       end
       if hwinfo.fetch("type", "") == "wlan"
-        log.warn("not proposing WLAN interface")
+        log.warn("Not proposing WLAN interface for lan item: #{item}")
         return false
       end
       true
