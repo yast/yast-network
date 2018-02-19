@@ -1015,39 +1015,11 @@ module Yast
       true
     end
 
-    # If the traffic would be blocked, ask the user
-    # if he wants to change it
-    # @param [Hash] event	the event being handled
-    # @return change it?
-    def NeedToAssignFwZone(event)
-      event = deep_copy(event)
-      ret = Ops.get(event, "ID")
-      if ret == :next
-        # If firewall is active and interface in no zone, nothing
-        # gets through (#62309) so warn and redirect to details
-        name = Convert.to_string(UI.QueryWidget(Id("IFCFGID"), :Value))
-        if SuSEFirewall4Network.IsOn &&
-            SuSEFirewall4Network.GetZoneOfInterface(name) == "" &&
-            SuSEFirewall4Network.UnconfiguredIsBlocked
-          return Popup.YesNoHeadline(
-            Label.WarningMsg,
-            _(
-              "The firewall is active, but this interface is not\n" \
-                "in any zone. All its traffic would be blocked.\n" \
-                "Assign it to a zone now?"
-            )
-          )
-        end
-      end
-      false
-    end
-
     # Validator for network masks adresses
     # @param [String] key	the widget being validated
     # @param [Hash] event	the event being handled
     # @return whether valid
-    def ValidateBootproto(_key, event)
-      event = deep_copy(event)
+    def ValidateBootproto(_key, _event)
       if UI.QueryWidget(:bootproto, :CurrentButton) == :static
         ipa = Convert.to_string(UI.QueryWidget(:ipaddr, :Value))
         if ipa != "" && !IP.Check(ipa)
@@ -1097,10 +1069,7 @@ module Yast
           end
         end
       end
-      if NeedToAssignFwZone(event)
-        UI.FakeUserInput("ID" => "t_general")
-        return false
-      end
+
       true
     end
 
