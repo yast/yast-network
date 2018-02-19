@@ -862,12 +862,12 @@ module Yast
       # then each configuration (except bridges) move to the bridge
       # and add old device name into bridge_ports
       LanItems.Items.each do |current, config|
-        ifcfg = config["ifcfg"].to_s
         bridge_name = format("br%s", NetworkInterfaces.GetFreeDevice("br"))
         next unless connected_and_bridgeable?(bridge_name, current, config)
         LanItems.current = current
         # first configure all connected unconfigured devices with dhcp (with default parameters)
-        LanItems.ProposeItem if !LanItems.IsCurrentConfigured
+        next if !LanItems.IsCurrentConfigured && !LanItems.ProposeItem
+        ifcfg = LanItems.GetCurrentName
         next unless configure_as_bridge!(ifcfg, bridge_name)
         # reconfigure existing device as newly created bridge's port
         configure_as_bridge_port(ifcfg)
@@ -1035,7 +1035,7 @@ module Yast
       end
 
       hwinfo = config.fetch("hwinfo", {})
-      if hwinfo.fetch("link", false) == true
+      unless hwinfo.fetch("link", false) == true
         log.warn("Lan item #{item} has link:false detected")
         return false
       end

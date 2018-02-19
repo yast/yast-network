@@ -342,8 +342,10 @@ describe "LanClass#ProposeVirtualized" do
   before do
     allow(Yast::NetworkInterfaces).to receive(:GetFreeDevice).with("br").and_return("1")
     allow(Yast::LanItems).to receive(:IsCurrentConfigured).and_return(true)
+    allow(Yast::Lan).to receive(:ProposeItem)
     allow(Yast::Lan).to receive(:configure_as_bridge!)
     allow(Yast::Lan).to receive(:configure_as_bridge_port)
+    allow(Yast::Lan).to receive(:refresh_lan_items)
 
     allow(Yast::LanItems).to receive(:Items)
       .and_return(
