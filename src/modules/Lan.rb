@@ -1035,7 +1035,7 @@ module Yast
       end
 
       hwinfo = config.fetch("hwinfo", {})
-      unless hwinfo.fetch("link", false) == true
+      unless hwinfo.fetch("link", false)
         log.warn("Lan item #{item} has link:false detected")
         return false
       end
