@@ -33,6 +33,7 @@ module Yast
     def main
       textdomain "network"
 
+      Yast.import "Mode"
       Yast.import "Service"
       Yast.import "SuSEFirewall"
       Yast.import "SuSEFirewall4Network"
@@ -71,6 +72,7 @@ module Yast
 
         # This is equivalent to write-only, do not attempt to restart the service
         SuSEFirewall.WriteConfiguration
+        SuSEFirewall.DisableServices if Mode.autoinst
       else
         Builtins.y2error("unknown function: %1", @func)
         @ret = nil
