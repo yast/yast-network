@@ -1128,7 +1128,7 @@ module Yast
     # @return [Boolean] true if it is bridgeable
     def connected_and_bridgeable?(bridge_name, item, config)
       if !LanItems.IsBridgeable(bridge_name, item)
-        log.info "The interface #{config["ifcfg"]} can not be proposed as bridge."
+        log.info "The interface #{config["ifcfg"]} cannot be proposed as bridge."
         return false
       end
 
