@@ -960,24 +960,15 @@ module Yast
       # then each configuration (except bridges) move to the bridge
       # and add old device name into bridge_ports
       LanItems.Items.each do |current, config|
-        ifcfg = config["ifcfg"].to_s
-
         bridge_name = format("br%s", NetworkInterfaces.GetFreeDevice("br"))
-
-        if !LanItems.IsBridgeable(bridge_name, current)
-          log.info "The interface #{ifcfg} is not bridgeable."
-          next
-        end
-
+        next unless connected_and_bridgeable?(bridge_name, current, config)
         LanItems.current = current
-
-        propose_current_item!(config) if !LanItems.IsCurrentConfigured
-
+        # first configure all connected unconfigured devices with dhcp (with default parameters)
+        next if !LanItems.IsCurrentConfigured && !LanItems.ProposeItem
+        ifcfg = LanItems.GetCurrentName
         next unless configure_as_bridge!(ifcfg, bridge_name)
-
         # reconfigure existing device as newly created bridge's port
         configure_as_bridge_port(ifcfg)
-
         refresh_lan_items
       end
 
@@ -1131,23 +1122,26 @@ module Yast
       NetworkInterfaces.Commit
     end
 
-    def propose_current_item!(config)
-      # first configure all connected unconfigured devices with dhcp (with default parameters)
+    # Convenience method that returns true if the current item has link and can
+    # be enslabed in a bridge.
+    #
+    # @return [Boolean] true if it is bridgeable
+    def connected_and_bridgeable?(bridge_name, item, config)
+      if !LanItems.IsBridgeable(bridge_name, item)
+        log.info "The interface #{config["ifcfg"]} can not be proposed as bridge."
+        return false
+      end
+
       hwinfo = config.fetch("hwinfo", {})
-
-      if hwinfo.fetch("link", false) == true
-        log.warn("item number #{LanItems.current} has link:false detected")
-
+      unless hwinfo.fetch("link", false)
+        log.warn("Lan item #{item} has link:false detected")
         return false
       end
-
       if hwinfo.fetch("type", "") == "wlan"
-        log.warn("not proposing WLAN interface")
-
+        log.warn("Not proposing WLAN interface for lan item: #{item}")
         return false
       end
-
-      LanItems.ProposeItem
+      true
     end
 
     def refresh_lan_items
