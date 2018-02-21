@@ -342,8 +342,10 @@ describe "LanClass#ProposeVirtualized" do
   before do
     allow(Yast::NetworkInterfaces).to receive(:GetFreeDevice).with("br").and_return("1")
     allow(Yast::LanItems).to receive(:IsCurrentConfigured).and_return(true)
+    allow(Yast::Lan).to receive(:ProposeItem)
     allow(Yast::Lan).to receive(:configure_as_bridge!)
     allow(Yast::Lan).to receive(:configure_as_bridge_port)
+    allow(Yast::Lan).to receive(:refresh_lan_items)
 
     allow(Yast::LanItems).to receive(:Items)
       .and_return(
@@ -352,10 +354,10 @@ describe "LanClass#ProposeVirtualized" do
   end
 
   context "when an interface is not bridgeable" do
-    it "doest not propose the interface" do
+    it "does not propose the interface" do
       allow(Yast::LanItems).to receive(:IsBridgeable).with(anything, anything).and_return(false)
       allow(Yast::LanItems).to receive(:IsCurrentConfigured).and_return(false)
-      expect(Yast::Lan).not_to receive(:propose_current_item!).with("ifcfg" => "wlan0")
+      expect(Yast::Lan).not_to receive(:ProposeItem)
 
       Yast::Lan.ProposeVirtualized
     end
@@ -363,14 +365,24 @@ describe "LanClass#ProposeVirtualized" do
 
   context "when an interface is bridgeable" do
     before do
-      allow(Yast::LanItems).to receive(:IsBridgeable).with(anything, 0).and_return(true)
-      allow(Yast::LanItems).to receive(:IsBridgeable).with(anything, 1).and_return(false)
-      allow(Yast::LanItems).to receive(:IsBridgeable).with(anything, 2).and_return(false)
+      allow(Yast::Lan).to receive(:connected_and_bridgeable?)
+        .with(anything, 0, anything).and_return(true)
+      allow(Yast::Lan).to receive(:connected_and_bridgeable?)
+        .with(anything, 1, anything).and_return(false)
+      allow(Yast::Lan).to receive(:connected_and_bridgeable?)
+        .with(anything, 2, anything).and_return(false)
+    end
+
+    it "does not configure the interface if it is not connected" do
+      allow(Yast::Lan).to receive(:connected_and_bridgeable?).with(anything).and_return(false)
+      expect(Yast::Lan).not_to receive(:ProposeItem)
+
+      Yast::Lan.ProposeVirtualized
     end
 
     it "configures the interface with defaults before anything if not configured" do
       allow(Yast::LanItems).to receive(:IsCurrentConfigured).and_return(false)
-      expect(Yast::Lan).to receive(:propose_current_item!).with("ifcfg" => "eth0")
+      expect(Yast::LanItems).to receive(:ProposeItem)
 
       Yast::Lan.ProposeVirtualized
     end
