@@ -33,9 +33,12 @@ module Yast
     def main
       textdomain "network"
 
+      Yast.import "Mode"
       Yast.import "Service"
       Yast.import "SuSEFirewall"
+      Yast.import "SuSEFirewallServices"
       Yast.import "SuSEFirewall4Network"
+      Yast.import "SuSEFirewallProposal"
 
       @ret = nil
       @func = ""
@@ -66,6 +69,14 @@ module Yast
           "when"  => [:installation, :autoinst]
         }
       when "Write"
+        # The Autoyast configuration is mainly done during the second stage but
+        # we need to open remote services if enabled by linuxrc (bsc#1080630)
+        if Mode.autoinst && SuSEFirewall4Network.IsInstalled
+          Builtins.y2milestone("Preparing proposal for autoconfiguration.")
+          SuSEFirewall4Network.prepare_proposal unless SuSEFirewallProposal.GetChangedByUser
+          adjust_configuration
+        end
+
         # Enable SSH service independent of port open (bnc#865056)
         Service.Enable("sshd") if SuSEFirewall4Network.EnabledSshd
 
@@ -79,6 +90,64 @@ module Yast
       Builtins.y2debug("ret=%1", @ret)
       Builtins.y2milestone("firewall_stage1_finish finished")
       deep_copy(@ret)
+    end
+
+    # Returns true if all services are known to firewall
+    # @param [Array <String>] services
+    # @return [Boolean] if all are known
+    def known_firewall_services?(services)
+      @all_known_services ||= SuSEFirewallServices.all_services.keys
+
+      (services - @all_known_services).empty?
+    end
+
+    # Reads and adjust the configuration for SuSEfirewall2 according to the current proposal.
+    def adjust_configuration
+      enable_fw = SuSEFirewall4Network.Enabled1stStage
+      enable_sshd = SuSEFirewall4Network.EnabledSshd
+      open_ssh_port = SuSEFirewall4Network.EnabledSsh1stStage
+      open_vnc_port = SuSEFirewall4Network.EnabledVnc1stStage
+
+      log.info "After installation, firewall will be #{enable_fw ? "enabled" : "disabled"}, " \
+        "SSHD will be #{enable_sshd ? "enabled" : "disabled"}, " \
+        "SSH port will be #{open_ssh_port ? "open" : "closed"}, " \
+        "VNC port will be #{open_vnc_port ? "open" : "closed"}"
+
+      # Read the configuration from sysconfig
+      # bnc#887406: The file is in inst-sys
+      previous_state = Progress.set(false)
+      SuSEFirewall.Read
+      Progress.set(previous_state)
+
+      SuSEFirewall.SetEnableService(enable_fw)
+      SuSEFirewall.SetStartService(enable_fw)
+
+      # Open or close FW ports depending on user decision
+      # This can raise an exception if requested service-files are not part of the current system
+      # For that reason, these files have to be part of the inst-sys
+      if known_firewall_services?(SuSEFirewall4NetworkClass::SSH_SERVICES)
+        SuSEFirewall.SetServicesForZones(
+          SuSEFirewall4NetworkClass::SSH_SERVICES,
+          SuSEFirewall.GetKnownFirewallZones,
+          open_ssh_port
+        )
+      else
+        log.warn "Services #{SuSEFirewall4NetworkClass::SSH_SERVICES} are unknown"
+      end
+
+      if known_firewall_services?(SuSEFirewall4NetworkClass::VNC_SERVICES)
+        SuSEFirewall.SetServicesForZones(
+          SuSEFirewall4NetworkClass::VNC_SERVICES,
+          SuSEFirewall.GetKnownFirewallZones,
+          open_vnc_port
+        )
+      else
+        log.warn "Services #{SuSEFirewall4NetworkClass::VNC_SERVICES} are unknown"
+      end
+
+      # BNC #766300 - Automatically propose opening iscsi-target port
+      # when installing with withiscsi=1
+      SuSEFirewallProposal.propose_iscsi if Linuxrc.useiscsi
     end
   end
 end
