@@ -1581,7 +1581,7 @@ module Yast
       zones = [["", _("Automatically Assigned Zone")]]
       if firewalld.installed?
         Y2Firewall::Firewalld::Zone.known_zones.map do |name, full_name|
-          zones << [name, Builtins.dgettext(full_name)]
+          zones << [name, Builtins.dgettext("base", full_name)]
         end
       else
         zones = [["", _("Firewall is not installed.")]]
