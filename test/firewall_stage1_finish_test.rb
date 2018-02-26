@@ -8,10 +8,12 @@ require_relative "../src/clients/firewall_stage1_finish"
 describe Yast::FirewallStage1FinishClient do
   describe "main" do
     context "when the client is called with 'Info'" do
+      before do
+        allow(Yast::WFM).to receive(:Args).and_return("Info")
+      end
+
       it "returns a hash with 'steps', 'title' and 'when' keys" do
-
-        res = Yast::WFM.CallFunction("firewall_stage1_finish", ["Info"])
-
+        res = subject.main
         expect(res).to be_a(Hash)
         expect(res).to include("steps", "title", "when")
       end
@@ -22,7 +24,7 @@ describe Yast::FirewallStage1FinishClient do
         allow(Yast::WFM).to receive(:Args).and_return("Write")
       end
 
-      context "in autoninst Mode" do
+      context "in autoinst Mode" do
         let(:installed) { false }
 
         before do
@@ -36,7 +38,7 @@ describe Yast::FirewallStage1FinishClient do
         context "with SuSEfirewall2 installed" do
           let(:installed) { true }
 
-          it "allows the remote installations in use in the SuSEFirewall configuration" do
+          it "ajusts the SuSEFirewall configuration" do
             expect(subject).to receive(:adjust_ay_configuration)
 
             subject.main
@@ -68,7 +70,10 @@ describe Yast::FirewallStage1FinishClient do
   end
 
   describe "#adjust_ay_configuration" do
+    let(:modified_proposal) { false }
     before do
+      allow(Yast::SuSEFirewallProposal).to receive(:GetChangedByUser)
+        .and_return(modified_proposal)
       allow(Yast::Progress).to receive(:set)
       allow(Yast::SuSEFirewall).to receive(:Read)
       allow(subject).to receive(:open_ssh_port)
@@ -79,7 +84,6 @@ describe Yast::FirewallStage1FinishClient do
 
     context "when the user has not modified the proposal" do
       it "obtains the linuxrc options and defauls from the control file" do
-        allow(Yast::SuSEFirewallProposal).to receive(:GetChangedByUser).and_return(false)
         expect(Yast::SuSEFirewall4Network).to receive(:prepare_proposal)
 
         subject.send(:adjust_ay_configuration)
@@ -87,8 +91,8 @@ describe Yast::FirewallStage1FinishClient do
     end
 
     context "when the user has modified the proposal" do
+      let(:modified_proposal) { true }
       it "does not modify it" do
-        allow(Yast::SuSEFirewallProposal).to receive(:GetChangedByUser).and_return(true)
         expect(Yast::SuSEFirewall4Network).to_not receive(:prepare_proposal)
 
         subject.send(:adjust_ay_configuration)
@@ -96,7 +100,7 @@ describe Yast::FirewallStage1FinishClient do
     end
 
     it "returns if the firewall is not enabled" do
-      expect(Yast::SuSEFirewall4Network).to receive(:Enabled1stStage).and_return(false)
+      allow(Yast::SuSEFirewall4Network).to receive(:Enabled1stStage).and_return(false)
       expect(Yast::SuSEFirewall4Network).to_not receive(:EnabledSsh1stStage)
 
       subject.send(:adjust_ay_configuration)
@@ -109,8 +113,8 @@ describe Yast::FirewallStage1FinishClient do
     end
 
     it "opens remote access in the firewall when correspond" do
-      expect(Yast::SuSEFirewall4Network).to receive(:EnabledSsh1stStage).and_return(true)
-      expect(Yast::SuSEFirewall4Network).to receive(:EnabledVnc1stStage).and_return(false)
+      allow(Yast::SuSEFirewall4Network).to receive(:EnabledSsh1stStage).and_return(true)
+      allow(Yast::SuSEFirewall4Network).to receive(:EnabledVnc1stStage).and_return(false)
       expect(subject).to receive(:open_ssh_port).with(true)
       expect(subject).to receive(:open_vnc_port).with(false)
 

@@ -102,10 +102,13 @@ module Yast
 
     # Convenience method for opening the ssh port during the first stage when
     # enabled
+    #
+    # If the service-file is not part of the current system an exception will
+    # be raised. For that reason, these files have to be part of the inst-sys
+    #
+    # @param open [Boolean] whether the ssh service has to be opened in the
+    # firewall
     def open_ssh_port(open)
-      # Open or close FW ports depending on user decision
-      # This can raise an exception if requested service-files are not part of the current system
-      # For that reason, these files have to be part of the inst-sys
       if known_firewall_services?(SuSEFirewall4NetworkClass::SSH_SERVICES)
         SuSEFirewall.SetServicesForZones(
           SuSEFirewall4NetworkClass::SSH_SERVICES,
@@ -119,6 +122,11 @@ module Yast
 
     # Convenience method for opening the vnc port during the first stage when
     # enabled
+    #
+    # If the service-file is not part of the current system an exception will
+    # be raised. For that reason, these files have to be part of the inst-sys
+    #
+    # @param open [Boolean]
     def open_vnc_port(open)
       if known_firewall_services?(SuSEFirewall4NetworkClass::VNC_SERVICES)
         SuSEFirewall.SetServicesForZones(
