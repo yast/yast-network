@@ -30,6 +30,7 @@ require "yast"
 
 module Yast
   class FirewallStage1FinishClient < Client
+    include Logger
     def main
       textdomain "network"
 
@@ -71,11 +72,7 @@ module Yast
       when "Write"
         # The Autoyast configuration is mainly done during the second stage but
         # we need to open remote services if enabled by linuxrc (bsc#1080630)
-        if Mode.autoinst && SuSEFirewall4Network.IsInstalled
-          Builtins.y2milestone("Preparing proposal for autoconfiguration.")
-          SuSEFirewall4Network.prepare_proposal unless SuSEFirewallProposal.GetChangedByUser
-          adjust_configuration
-        end
+        adjust_ay_configuration if Mode.autoinst && SuSEFirewall4Network.IsInstalled
 
         # Enable SSH service independent of port open (bnc#865056)
         Service.Enable("sshd") if SuSEFirewall4Network.EnabledSshd
@@ -92,6 +89,8 @@ module Yast
       deep_copy(@ret)
     end
 
+  private
+
     # Returns true if all services are known to firewall
     # @param [Array <String>] services
     # @return [Boolean] if all are known
@@ -101,12 +100,46 @@ module Yast
       (services - @all_known_services).empty?
     end
 
+    # Convenience method for opening the ssh port during the first stage when
+    # enabled
+    def open_ssh_port(open)
+      # Open or close FW ports depending on user decision
+      # This can raise an exception if requested service-files are not part of the current system
+      # For that reason, these files have to be part of the inst-sys
+      if known_firewall_services?(SuSEFirewall4NetworkClass::SSH_SERVICES)
+        SuSEFirewall.SetServicesForZones(
+          SuSEFirewall4NetworkClass::SSH_SERVICES,
+          SuSEFirewall.GetKnownFirewallZones,
+          open
+        )
+      else
+        log.warn "Services #{SuSEFirewall4NetworkClass::SSH_SERVICES} are unknown"
+      end
+    end
+
+    # Convenience method for opening the vnc port during the first stage when
+    # enabled
+    def open_vnc_port(open)
+      if known_firewall_services?(SuSEFirewall4NetworkClass::VNC_SERVICES)
+        SuSEFirewall.SetServicesForZones(
+          SuSEFirewall4NetworkClass::VNC_SERVICES,
+          SuSEFirewall.GetKnownFirewallZones,
+          open
+        )
+      else
+        log.warn "Services #{SuSEFirewall4NetworkClass::VNC_SERVICES} are unknown"
+      end
+    end
+
     # Reads and adjust the configuration for SuSEfirewall2 according to the current proposal.
-    def adjust_configuration
+    def adjust_ay_configuration
+      Builtins.y2milestone("Preparing proposal for autoconfiguration.")
+      SuSEFirewall4Network.prepare_proposal unless SuSEFirewallProposal.GetChangedByUser
       enable_fw = SuSEFirewall4Network.Enabled1stStage
+      return unless enable_fw
       enable_sshd = SuSEFirewall4Network.EnabledSshd
-      open_ssh_port = SuSEFirewall4Network.EnabledSsh1stStage
-      open_vnc_port = SuSEFirewall4Network.EnabledVnc1stStage
+      open_ssh = SuSEFirewall4Network.EnabledSsh1stStage
+      open_vnc = SuSEFirewall4Network.EnabledVnc1stStage
 
       log.info "After installation, firewall will be #{enable_fw ? "enabled" : "disabled"}, " \
         "SSHD will be #{enable_sshd ? "enabled" : "disabled"}, " \
@@ -119,31 +152,8 @@ module Yast
       SuSEFirewall.Read
       Progress.set(previous_state)
 
-      SuSEFirewall.SetEnableService(enable_fw)
-      SuSEFirewall.SetStartService(enable_fw)
-
-      # Open or close FW ports depending on user decision
-      # This can raise an exception if requested service-files are not part of the current system
-      # For that reason, these files have to be part of the inst-sys
-      if known_firewall_services?(SuSEFirewall4NetworkClass::SSH_SERVICES)
-        SuSEFirewall.SetServicesForZones(
-          SuSEFirewall4NetworkClass::SSH_SERVICES,
-          SuSEFirewall.GetKnownFirewallZones,
-          open_ssh_port
-        )
-      else
-        log.warn "Services #{SuSEFirewall4NetworkClass::SSH_SERVICES} are unknown"
-      end
-
-      if known_firewall_services?(SuSEFirewall4NetworkClass::VNC_SERVICES)
-        SuSEFirewall.SetServicesForZones(
-          SuSEFirewall4NetworkClass::VNC_SERVICES,
-          SuSEFirewall.GetKnownFirewallZones,
-          open_vnc_port
-        )
-      else
-        log.warn "Services #{SuSEFirewall4NetworkClass::VNC_SERVICES} are unknown"
-      end
+      open_ssh_port(open_ssh)
+      open_vnc_port(open_vnc)
 
       # BNC #766300 - Automatically propose opening iscsi-target port
       # when installing with withiscsi=1
