@@ -35,6 +35,7 @@ module Y2Remote
     # Constructor
     def initialize
       Yast.import "Service"
+      textdomain "network"
     end
 
     # Whether the display manager service is enabled or not
