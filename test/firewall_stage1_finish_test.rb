@@ -79,7 +79,6 @@ describe Yast::FirewallStage1FinishClient do
       allow(subject).to receive(:open_ssh_port)
       allow(subject).to receive(:open_vnc_port)
       allow(Yast::Linuxrc).to receive(:useiscsi).and_return(false)
-      allow(Yast::SuSEFirewall4Network).to receive(:Enabled1stStage).and_return(true)
     end
 
     context "when the user has not modified the proposal" do
@@ -97,13 +96,6 @@ describe Yast::FirewallStage1FinishClient do
 
         subject.send(:adjust_ay_configuration)
       end
-    end
-
-    it "returns if the firewall is not enabled" do
-      allow(Yast::SuSEFirewall4Network).to receive(:Enabled1stStage).and_return(false)
-      expect(Yast::SuSEFirewall4Network).to_not receive(:EnabledSsh1stStage)
-
-      subject.send(:adjust_ay_configuration)
     end
 
     it "reads the firewall configuration" do

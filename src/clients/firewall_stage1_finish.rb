@@ -143,16 +143,13 @@ module Yast
     def adjust_ay_configuration
       Builtins.y2milestone("Preparing proposal for autoconfiguration.")
       SuSEFirewall4Network.prepare_proposal unless SuSEFirewallProposal.GetChangedByUser
-      enable_fw = SuSEFirewall4Network.Enabled1stStage
-      return unless enable_fw
       enable_sshd = SuSEFirewall4Network.EnabledSshd
       open_ssh = SuSEFirewall4Network.EnabledSsh1stStage
       open_vnc = SuSEFirewall4Network.EnabledVnc1stStage
 
-      log.info "After installation, firewall will be #{enable_fw ? "enabled" : "disabled"}, " \
-        "SSHD will be #{enable_sshd ? "enabled" : "disabled"}, " \
-        "SSH port will be #{open_ssh_port ? "open" : "closed"}, " \
-        "VNC port will be #{open_vnc_port ? "open" : "closed"}"
+      log.info "After installation, SSHD will be #{enable_sshd ? "enabled" : "disabled"}, " \
+        "SSH port will be #{open_ssh ? "open" : "closed"}, " \
+        "VNC port will be #{open_vnc ? "open" : "closed"}"
 
       # Read the configuration from sysconfig
       # bnc#887406: The file is in inst-sys
