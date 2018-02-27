@@ -26,6 +26,11 @@ require "y2remote/widgets/remote"
 module Y2Remote
   module Dialogs
     class Remote < CWM::Dialog
+      def initialize
+        super
+        textdomain "network"
+      end
+
       def title
         _("Remote Administration")
       end

@@ -105,6 +105,7 @@ module Y2Remote
       def enable!
         return false unless installed?
 
+        textdomain "network"
         if !Yast::Service.Enable(SERVICE)
           Yast::Report.Error(
             _("Enabling service %{service} has failed") % { service: SERVICE }
@@ -123,6 +124,7 @@ module Y2Remote
       def disable!
         return false unless installed?
 
+        textdomain "network"
         if !Yast::Service.Disable(SERVICE)
           Yast::Report.Error(
             _("Disabling service %{service} has failed") % { service: SERVICE }

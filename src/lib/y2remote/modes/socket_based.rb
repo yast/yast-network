@@ -6,6 +6,8 @@ module Y2Remote
     module SocketBased
       def self.included(_base)
         Yast.import "SystemdSocket"
+
+        textdomain "network"
       end
 
       # Name of the socket to be managed

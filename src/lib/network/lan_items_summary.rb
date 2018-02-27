@@ -28,6 +28,7 @@ module Yast
     include I18n
 
     def initialize
+      textdomain "network"
       Yast.import "LanItems"
       Yast.import "Summary"
     end
