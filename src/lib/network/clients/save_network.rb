@@ -191,25 +191,7 @@ module Yast
       # but definitely not looking well ;-)
       NetworkAutoYast.instance.create_udevs if Mode.autoinst
 
-      # Copy DHCP client cache so that we can request the same IP (#43974).
-      WFM.Execute(
-        path(".local.bash"),
-        Builtins.sformat(
-          "mkdir -p '%2%1'; /bin/cp -p %1/dhcpcd-*.cache '%2%1'",
-          "/var/lib/dhcpcd",
-          String.Quote(Installation.destdir)
-        )
-      )
-      # Copy DHCPv6 (DHCP for IPv6) client cache.
-      WFM.Execute(
-        path(".local.bash"),
-        Builtins.sformat(
-          "/bin/cp -p %1/ '%2%1'",
-          "/var/lib/dhcpv6",
-          String.Quote(Installation.destdir)
-        )
-      )
-
+      copy_dhcp_info
       copy_udev_rules
       CopyConfiguredNetworkFiles()
 
@@ -218,6 +200,39 @@ module Yast
       WFM.SCRClose(new_SCR)
 
       nil
+    end
+
+    def copy_dhcp_info
+      destdir = String.Quote(Installation.destdir)
+      # Wicked dhcp files
+      wicked_path = "/var/lib/wicked/"
+      wicked_files = ["duid.xml", "aid.xml", "lease*.xml"]
+      WFM.Execute(path(".local.bash"), "mkdir -p '#{wicked_path}'")
+      wicked_files.each do |file|
+        WFM.Execute(
+          path(".local.bash"),
+          "cp -p '#{wicked_path}#{file}' '#{destdir}#{wicked_path}'"
+        )
+      end
+
+      # Copy DHCP client cache so that we can request the same IP (#43974).
+      WFM.Execute(
+        path(".local.bash"),
+        Builtins.sformat(
+          "mkdir -p '%2%1'; /bin/cp -p %1/dhcpcd-*.cache '%2%1'",
+          "/var/lib/dhcpcd",
+          destdir
+        )
+      )
+      # Copy DHCPv6 (DHCP for IPv6) client cache.
+      WFM.Execute(
+        path(".local.bash"),
+        Builtins.sformat(
+          "/bin/cp -p %1/ '%2%1'",
+          "/var/lib/dhcpv6",
+          destdir
+        )
+      )
     end
 
     # Creates target's default DNS configuration
