@@ -6,6 +6,7 @@ module Y2Remote
     module SocketBased
       def self.included(_base)
         Yast.import "SystemdSocket"
+        extend Yast::I18n
 
         textdomain "network"
       end
