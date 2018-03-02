@@ -204,37 +204,42 @@ module Yast
       nil
     end
 
+    # For copying wicked dhcp files (bsc#1082832)
     WICKED_DHCP_PATH = "/var/lib/wicked/".freeze
     WICKED_DHCP_FILES = ["duid.xml", "iaid.xml", "lease*.xml"].freeze
+    # For copying dhcp-client leases
+    # FIXME: We probably could ommit the copy of these leases as we are using
+    # wicked during the installation instead of dhclient.
     DHCPv4_PATH = "/var/lib/dhcp/".freeze
     DHCPv6_PATH = "/var/lib/dhcp6/".freeze
-    DHCP_FILES = "*.leases".freeze
+    DHCP_FILES = ["*.leases"].freeze
 
+    # Convenience method for copying dhcp files
     def copy_dhcp_info
-      # Ensure directories exist
-      wicked_dest_dir = ::File.join(Installation.destdir, WICKED_DHCP_PATH)
-      dhcpv4_dest_dir = ::File.join(Installation.destdir, DHCPv4_PATH)
-      dhcpv6_dest_dir = ::File.join(Installation.destdir, DHCPv6_PATH)
+      entries_to_copy = [
+        { dir: WICKED_DHCP_PATH, files: WICKED_DHCP_FILES },
+        { dir: DHCPv4_PATH, files: DHCP_FILES },
+        { dir: DHCPv6_PATH, files: DHCP_FILES }
+      ]
 
-      # Copy wicked dhcp files
-      wicked_files = WICKED_DHCP_FILES.map { |f| WICKED_DHCP_PATH + f }
-      unless wicked_files.empty?
-        ::FileUtils.mkdir_p(wicked_dest_dir)
-        ::FileUtils.cp(::Dir.glob(wicked_files), wicked_dest_dir, preserve: true)
-      end
+      entries_to_copy.each { |e| copy_files_to_target(e[:files], e[:dir]) }
+    end
 
-      # FIXME: We probably could ommit the copy of these leases as we are using
-      # wicked during the installation instead of dhclient.
-      # Copy dhcp leases
-      dhcpv4_files = ::Dir.glob(File.join(DHCPv4_PATH, DHCP_FILES))
-      unless dhcpv4_files.empty?
-        ::FileUtils.mkdir_p(dhcpv4_dest_dir)
-        ::FileUtils.cp(dhcpv4_files, dhcpv4_dest_dir, preserve: true)
-      end
-      dhcpv6_files = ::Dir.glob(File.join(DHCPv6_PATH, DHCP_FILES))
-      return if dhcpv6_files.empty?
-      ::FileUtils.mkdir_p(dhcpv6_dest_dir)
-      ::FileUtils.cp(dhcpv6_files, dhcpv6_dest_dir, preserve: true)
+    # Convenvenience method for copying a list of files into the target system.
+    # It takes care of creating the target directory but only if some file
+    # needs to be copied
+    #
+    # @param files [Array<String>] list of short filenames to be copied
+    # @param path [String] path where the files resides and where will be
+    # copied in the target system
+    # @return [Boolean] whether some file was copied
+    def copy_files_to_target(files, path)
+      dest_dir = ::File.join(Installation.destdir, path)
+      glob_files = ::Dir.glob(files.map { |f| File.join(path, f) })
+      return false if glob_files.empty?
+      ::FileUtils.mkdir_p(dest_dir)
+      ::FileUtils.cp(glob_files, dest_dir, preserve: true)
+      true
     end
 
     # Creates target's default DNS configuration

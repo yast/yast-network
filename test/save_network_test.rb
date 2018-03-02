@@ -56,15 +56,15 @@ describe Yast::SaveNetworkClient do
     let(:wicked_files) do
       described_class::WICKED_DHCP_FILES.map { |f| File.join(wicked_path, f) }
     end
-    let(:dhcpv4_leases) { File.join(dhcpv4_path, described_class::DHCP_FILES) }
-    let(:dhcpv6_leases) { File.join(dhcpv6_path, described_class::DHCP_FILES) }
+    let(:dhcpv4_files) { described_class::DHCP_FILES.map { |f| File.join(dhcpv4_path, f) } }
+    let(:dhcpv6_files) { described_class::DHCP_FILES.map { |f| File.join(dhcpv6_path, f) } }
     before do
       allow(Yast::Installation).to receive(:destdir).and_return("/mnt")
       allow(::FileUtils).to receive(:mkdir_p)
       allow(::FileUtils).to receive(:cp)
       allow(::Dir).to receive(:glob).with(wicked_files).and_return(["1.xml", "2.xml"])
-      allow(::Dir).to receive(:glob).with(dhcpv4_leases).and_return(["3.leases"])
-      allow(::Dir).to receive(:glob).with(dhcpv6_leases).and_return(["4.leases"])
+      allow(::Dir).to receive(:glob).with(dhcpv4_files).and_return(["3.leases"])
+      allow(::Dir).to receive(:glob).with(dhcpv6_files).and_return(["4.leases"])
     end
 
     it "creates the wicked directory if not exist" do
