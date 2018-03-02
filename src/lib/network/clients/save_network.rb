@@ -31,6 +31,8 @@ module Yast
       nil
     end
 
+  private
+
     def adjust_for_network_disks(file)
       # storage-ng
       # Check if installation is targeted to a remote destination.
@@ -202,37 +204,29 @@ module Yast
       nil
     end
 
+    WICKED_DHCP_PATH = "/var/lib/wicked/".freeze
+    WICKED_DHCP_FILES = ["duid.xml", "iaid.xml", "lease*.xml"].freeze
+    DHCP_CLIENT_PATH = "/var/lib/dhcpcd/".freeze
+    DHCP_CLIENT_CACHE = "dhcpcd-*.cache".freeze
+    DHCPv6_CLIENT_CACHE_PATH = "/var/lib/dhcpv6".freeze
+
     def copy_dhcp_info
-      destdir = String.Quote(Installation.destdir)
-      # Wicked dhcp files
-      wicked_path = "/var/lib/wicked/"
-      wicked_files = ["duid.xml", "aid.xml", "lease*.xml"]
-      WFM.Execute(path(".local.bash"), "mkdir -p '#{wicked_path}'")
-      wicked_files.each do |file|
-        WFM.Execute(
-          path(".local.bash"),
-          "cp -p '#{wicked_path}#{file}' '#{destdir}#{wicked_path}'"
-        )
-      end
+      # Ensure directories exist
+      wicked_dest_dir = Installation.destdir + WICKED_DHCP_PATH
+      dhcpcd_dest_dir = Installation.destdir + DHCP_CLIENT_PATH
+      dhcpv6_dest = Installation.destdir + DHCPv6_CLIENT_CACHE_PATH
+
+      # Copy wicked dhcp files
+      ::FileUtils.mkdir_p(wicked_dest_dir)
+      wicked_files = WICKED_DHCP_FILES.map { |f| WICKED_DHCP_PATH + f }
+      ::FileUtils.cp(wicked_files, wicked_dest_dir, preserve: true)
 
       # Copy DHCP client cache so that we can request the same IP (#43974).
-      WFM.Execute(
-        path(".local.bash"),
-        Builtins.sformat(
-          "mkdir -p '%2%1'; /bin/cp -p %1/dhcpcd-*.cache '%2%1'",
-          "/var/lib/dhcpcd",
-          destdir
-        )
-      )
+      ::FileUtils.mkdir_p(dhcpcd_dest_dir)
+      ::FileUtils.cp(DHCP_CLIENT_PATH + DHCP_CLIENT_CACHE, dhcpcd_dest_dir, preserve: true)
+
       # Copy DHCPv6 (DHCP for IPv6) client cache.
-      WFM.Execute(
-        path(".local.bash"),
-        Builtins.sformat(
-          "/bin/cp -p %1/ '%2%1'",
-          "/var/lib/dhcpv6",
-          destdir
-        )
-      )
+      ::FileUtils.cp(DHCPv6_CLIENT_CACHE_PATH, dhcpv6_dest, preserve: true)
     end
 
     # Creates target's default DNS configuration
