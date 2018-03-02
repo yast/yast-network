@@ -219,11 +219,12 @@ module Yast
       # Copy wicked dhcp files
       ::FileUtils.mkdir_p(wicked_dest_dir)
       wicked_files = WICKED_DHCP_FILES.map { |f| WICKED_DHCP_PATH + f }
-      ::FileUtils.cp(wicked_files, wicked_dest_dir, preserve: true)
+      ::FileUtils.cp(::Dir.glob(wicked_files), wicked_dest_dir, preserve: true)
 
       # Copy DHCP client cache so that we can request the same IP (#43974).
       ::FileUtils.mkdir_p(dhcpcd_dest_dir)
-      ::FileUtils.cp(DHCP_CLIENT_PATH + DHCP_CLIENT_CACHE, dhcpcd_dest_dir, preserve: true)
+      dhcp_client_files = ::Dir.glob(DHCP_CLIENT_PATH + DHCP_CLIENT_CACHE)
+      ::FileUtils.cp(dhcp_client_files, dhcpcd_dest_dir, preserve: true)
 
       # Copy DHCPv6 (DHCP for IPv6) client cache.
       ::FileUtils.cp(DHCPv6_CLIENT_CACHE_PATH, dhcpv6_dest, preserve: true)

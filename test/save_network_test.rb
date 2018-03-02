@@ -61,6 +61,8 @@ describe Yast::SaveNetworkClient do
       allow(Yast::Installation).to receive(:destdir).and_return("/mnt")
       allow(::FileUtils).to receive(:mkdir_p)
       allow(::FileUtils).to receive(:cp)
+      allow(::Dir).to receive(:glob).with(wicked_files).and_return(["1.xml", "2.xml"])
+      allow(::Dir).to receive(:glob).with(dhcp_client_cache).and_return(["3.xml", "4.xml"])
     end
 
     it "creates the wicked directory if not exist" do
@@ -71,7 +73,7 @@ describe Yast::SaveNetworkClient do
 
     it "copies the wicked dhcp files" do
       expect(::FileUtils).to receive(:cp)
-        .with(wicked_files, "/mnt/var/lib/wicked/", preserve: true)
+        .with(["1.xml", "2.xml"], "/mnt/var/lib/wicked/", preserve: true)
 
       subject.send(:copy_dhcp_info)
     end
@@ -84,7 +86,7 @@ describe Yast::SaveNetworkClient do
 
     it "copies the dhcp client files" do
       expect(::FileUtils).to receive(:cp)
-        .with(dhcp_client_cache, "/mnt/var/lib/dhcpcd/", preserve: true)
+        .with(["3.xml", "4.xml"], "/mnt/var/lib/dhcpcd/", preserve: true)
       expect(::FileUtils).to receive(:cp)
         .with(dhcpv6_client_cache_path, "/mnt/var/lib/dhcpv6", preserve: true)
 
