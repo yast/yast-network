@@ -208,7 +208,7 @@ module Yast
     WICKED_DHCP_PATH = "/var/lib/wicked/".freeze
     WICKED_DHCP_FILES = ["duid.xml", "iaid.xml", "lease*.xml"].freeze
     # For copying dhcp-client leases
-    # FIXME: We probably could ommit the copy of these leases as we are using
+    # FIXME: We probably could omit the copy of these leases as we are using
     # wicked during the installation instead of dhclient.
     DHCPv4_PATH = "/var/lib/dhcp/".freeze
     DHCPv6_PATH = "/var/lib/dhcp6/".freeze
