@@ -31,6 +31,8 @@ module Yast
       nil
     end
 
+  private
+
     def adjust_for_network_disks(file)
       # storage-ng
       # Check if installation is targeted to a remote destination.
@@ -191,25 +193,7 @@ module Yast
       # but definitely not looking well ;-)
       NetworkAutoYast.instance.create_udevs if Mode.autoinst
 
-      # Copy DHCP client cache so that we can request the same IP (#43974).
-      WFM.Execute(
-        path(".local.bash"),
-        Builtins.sformat(
-          "mkdir -p '%2%1'; /bin/cp -p %1/dhcpcd-*.cache '%2%1'",
-          "/var/lib/dhcpcd",
-          String.Quote(Installation.destdir)
-        )
-      )
-      # Copy DHCPv6 (DHCP for IPv6) client cache.
-      WFM.Execute(
-        path(".local.bash"),
-        Builtins.sformat(
-          "/bin/cp -p %1/ '%2%1'",
-          "/var/lib/dhcpv6",
-          String.Quote(Installation.destdir)
-        )
-      )
-
+      copy_dhcp_info
       copy_udev_rules
       CopyConfiguredNetworkFiles()
 
@@ -218,6 +202,44 @@ module Yast
       WFM.SCRClose(new_SCR)
 
       nil
+    end
+
+    # For copying wicked dhcp files (bsc#1082832)
+    WICKED_DHCP_PATH = "/var/lib/wicked/".freeze
+    WICKED_DHCP_FILES = ["duid.xml", "iaid.xml", "lease*.xml"].freeze
+    # For copying dhcp-client leases
+    # FIXME: We probably could omit the copy of these leases as we are using
+    # wicked during the installation instead of dhclient.
+    DHCPv4_PATH = "/var/lib/dhcp/".freeze
+    DHCPv6_PATH = "/var/lib/dhcp6/".freeze
+    DHCP_FILES = ["*.leases"].freeze
+
+    # Convenience method for copying dhcp files
+    def copy_dhcp_info
+      entries_to_copy = [
+        { dir: WICKED_DHCP_PATH, files: WICKED_DHCP_FILES },
+        { dir: DHCPv4_PATH, files: DHCP_FILES },
+        { dir: DHCPv6_PATH, files: DHCP_FILES }
+      ]
+
+      entries_to_copy.each { |e| copy_files_to_target(e[:files], e[:dir]) }
+    end
+
+    # Convenvenience method for copying a list of files into the target system.
+    # It takes care of creating the target directory but only if some file
+    # needs to be copied
+    #
+    # @param files [Array<String>] list of short filenames to be copied
+    # @param path [String] path where the files resides and where will be
+    # copied in the target system
+    # @return [Boolean] whether some file was copied
+    def copy_files_to_target(files, path)
+      dest_dir = ::File.join(Installation.destdir, path)
+      glob_files = ::Dir.glob(files.map { |f| File.join(path, f) })
+      return false if glob_files.empty?
+      ::FileUtils.mkdir_p(dest_dir)
+      ::FileUtils.cp(glob_files, dest_dir, preserve: true)
+      true
     end
 
     # Creates target's default DNS configuration
