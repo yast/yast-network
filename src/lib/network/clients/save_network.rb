@@ -212,9 +212,9 @@ module Yast
 
     def copy_dhcp_info
       # Ensure directories exist
-      wicked_dest_dir = Installation.destdir + WICKED_DHCP_PATH
-      dhcpcd_dest_dir = Installation.destdir + DHCP_CLIENT_PATH
-      dhcpv6_dest = Installation.destdir + DHCPv6_CLIENT_CACHE_PATH
+      wicked_dest_dir = ::File.join(Installation.destdir, WICKED_DHCP_PATH)
+      dhcpcd_dest_dir = ::File.join(Installation.destdir, DHCP_CLIENT_PATH)
+      dhcpv6_dest = ::File.join(Installation.destdir, DHCPv6_CLIENT_CACHE_PATH)
 
       # Copy wicked dhcp files
       ::FileUtils.mkdir_p(wicked_dest_dir)
@@ -223,7 +223,7 @@ module Yast
 
       # Copy DHCP client cache so that we can request the same IP (#43974).
       ::FileUtils.mkdir_p(dhcpcd_dest_dir)
-      dhcp_client_files = ::Dir.glob(DHCP_CLIENT_PATH + DHCP_CLIENT_CACHE)
+      dhcp_client_files = ::Dir.glob(File.join(DHCP_CLIENT_PATH, DHCP_CLIENT_CACHE))
       ::FileUtils.cp(dhcp_client_files, dhcpcd_dest_dir, preserve: true)
 
       # Copy DHCPv6 (DHCP for IPv6) client cache.

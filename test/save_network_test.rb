@@ -52,9 +52,11 @@ describe Yast::SaveNetworkClient do
   describe "#copy_dhcp_info" do
     let(:wicked_path) { described_class::WICKED_DHCP_PATH }
     let(:dhcpcd_path) { described_class::DHCP_CLIENT_PATH }
-    let(:wicked_files) { described_class::WICKED_DHCP_FILES.map { |f| wicked_path + f } }
+    let(:wicked_files) do
+      described_class::WICKED_DHCP_FILES.map { |f| File.join(wicked_path, f) }
+    end
     let(:dhcp_client_cache) do
-      described_class::DHCP_CLIENT_PATH + described_class::DHCP_CLIENT_CACHE
+      File.join(described_class::DHCP_CLIENT_PATH, described_class::DHCP_CLIENT_CACHE)
     end
     let(:dhcpv6_client_cache_path) { described_class::DHCPv6_CLIENT_CACHE_PATH }
     before do
