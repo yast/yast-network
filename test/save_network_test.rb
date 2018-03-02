@@ -51,21 +51,20 @@ describe Yast::SaveNetworkClient do
 
   describe "#copy_dhcp_info" do
     let(:wicked_path) { described_class::WICKED_DHCP_PATH }
-    let(:dhcpcd_path) { described_class::DHCP_CLIENT_PATH }
+    let(:dhcpv4_path) { described_class::DHCPv4_PATH }
+    let(:dhcpv6_path) { described_class::DHCPv6_PATH }
     let(:wicked_files) do
       described_class::WICKED_DHCP_FILES.map { |f| File.join(wicked_path, f) }
     end
-    let(:dhcp_client_cache) do
-      File.join(described_class::DHCP_CLIENT_PATH, described_class::DHCP_CLIENT_CACHE)
-    end
-    let(:dhcpv6_client_cache_path) { described_class::DHCPv6_CLIENT_CACHE_PATH }
+    let(:dhcpv4_leases) { File.join(dhcpv4_path, described_class::DHCP_FILES) }
+    let(:dhcpv6_leases) { File.join(dhcpv6_path, described_class::DHCP_FILES) }
     before do
       allow(Yast::Installation).to receive(:destdir).and_return("/mnt")
       allow(::FileUtils).to receive(:mkdir_p)
       allow(::FileUtils).to receive(:cp)
       allow(::Dir).to receive(:glob).with(wicked_files).and_return(["1.xml", "2.xml"])
-      allow(::Dir).to receive(:glob).with(dhcp_client_cache).and_return(["3.xml", "4.xml"])
-      allow(::File).to receive(:exist?).with(dhcpv6_client_cache_path).and_return(true)
+      allow(::Dir).to receive(:glob).with(dhcpv4_leases).and_return(["3.leases"])
+      allow(::Dir).to receive(:glob).with(dhcpv6_leases).and_return(["4.leases"])
     end
 
     it "creates the wicked directory if not exist" do
@@ -81,17 +80,18 @@ describe Yast::SaveNetworkClient do
       subject.send(:copy_dhcp_info)
     end
 
-    it "creates the dhcp client dir if not exist" do
-      expect(::FileUtils).to receive(:mkdir_p).with("/mnt/var/lib/dhcpcd/")
+    it "creates the dhcp client dirs if not exist" do
+      expect(::FileUtils).to receive(:mkdir_p).with("/mnt/var/lib/dhcp/")
+      expect(::FileUtils).to receive(:mkdir_p).with("/mnt/var/lib/dhcp6/")
 
       subject.send(:copy_dhcp_info)
     end
 
     it "copies the dhcp client files" do
       expect(::FileUtils).to receive(:cp)
-        .with(["3.xml", "4.xml"], "/mnt/var/lib/dhcpcd/", preserve: true)
+        .with(["3.leases"], "/mnt/var/lib/dhcp/", preserve: true)
       expect(::FileUtils).to receive(:cp)
-        .with(dhcpv6_client_cache_path, "/mnt/var/lib/dhcpv6", preserve: true)
+        .with(["4.leases"], "/mnt/var/lib/dhcp6/", preserve: true)
 
       subject.send(:copy_dhcp_info)
     end

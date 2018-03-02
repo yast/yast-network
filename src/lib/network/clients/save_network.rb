@@ -206,29 +206,35 @@ module Yast
 
     WICKED_DHCP_PATH = "/var/lib/wicked/".freeze
     WICKED_DHCP_FILES = ["duid.xml", "iaid.xml", "lease*.xml"].freeze
-    DHCP_CLIENT_PATH = "/var/lib/dhcpcd/".freeze
-    DHCP_CLIENT_CACHE = "dhcpcd-*.cache".freeze
-    DHCPv6_CLIENT_CACHE_PATH = "/var/lib/dhcpv6".freeze
+    DHCPv4_PATH = "/var/lib/dhcp/".freeze
+    DHCPv6_PATH = "/var/lib/dhcp6/".freeze
+    DHCP_FILES = "*.leases".freeze
 
     def copy_dhcp_info
       # Ensure directories exist
       wicked_dest_dir = ::File.join(Installation.destdir, WICKED_DHCP_PATH)
-      dhcpcd_dest_dir = ::File.join(Installation.destdir, DHCP_CLIENT_PATH)
-      dhcpv6_dest = ::File.join(Installation.destdir, DHCPv6_CLIENT_CACHE_PATH)
+      dhcpv4_dest_dir = ::File.join(Installation.destdir, DHCPv4_PATH)
+      dhcpv6_dest_dir = ::File.join(Installation.destdir, DHCPv6_PATH)
 
       # Copy wicked dhcp files
-      ::FileUtils.mkdir_p(wicked_dest_dir)
       wicked_files = WICKED_DHCP_FILES.map { |f| WICKED_DHCP_PATH + f }
-      ::FileUtils.cp(::Dir.glob(wicked_files), wicked_dest_dir, preserve: true)
+      unless wicked_files.empty?
+        ::FileUtils.mkdir_p(wicked_dest_dir)
+        ::FileUtils.cp(::Dir.glob(wicked_files), wicked_dest_dir, preserve: true)
+      end
 
-      # Copy DHCP client cache so that we can request the same IP (#43974).
-      ::FileUtils.mkdir_p(dhcpcd_dest_dir)
-      dhcp_client_files = ::Dir.glob(File.join(DHCP_CLIENT_PATH, DHCP_CLIENT_CACHE))
-      ::FileUtils.cp(dhcp_client_files, dhcpcd_dest_dir, preserve: true)
-
-      # Copy DHCPv6 (DHCP for IPv6) client cache.
-      return unless File.exist?(DHCPv6_CLIENT_CACHE_PATH)
-      ::FileUtils.cp(DHCPv6_CLIENT_CACHE_PATH, dhcpv6_dest, preserve: true)
+      # FIXME: We probably could ommit the copy of these leases as we are using
+      # wicked during the installation instead of dhclient.
+      # Copy dhcp leases
+      dhcpv4_files = ::Dir.glob(File.join(DHCPv4_PATH, DHCP_FILES))
+      unless dhcpv4_files.empty?
+        ::FileUtils.mkdir_p(dhcpv4_dest_dir)
+        ::FileUtils.cp(dhcpv4_files, dhcpv4_dest_dir, preserve: true)
+      end
+      dhcpv6_files = ::Dir.glob(File.join(DHCPv6_PATH, DHCP_FILES))
+      return if dhcpv6_files.empty?
+      ::FileUtils.mkdir_p(dhcpv6_dest_dir)
+      ::FileUtils.cp(dhcpv6_files, dhcpv6_dest_dir, preserve: true)
     end
 
     # Creates target's default DNS configuration
