@@ -227,6 +227,7 @@ module Yast
       ::FileUtils.cp(dhcp_client_files, dhcpcd_dest_dir, preserve: true)
 
       # Copy DHCPv6 (DHCP for IPv6) client cache.
+      return unless File.exist?(DHCPv6_CLIENT_CACHE_PATH)
       ::FileUtils.cp(DHCPv6_CLIENT_CACHE_PATH, dhcpv6_dest, preserve: true)
     end
 

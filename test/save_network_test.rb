@@ -63,6 +63,7 @@ describe Yast::SaveNetworkClient do
       allow(::FileUtils).to receive(:cp)
       allow(::Dir).to receive(:glob).with(wicked_files).and_return(["1.xml", "2.xml"])
       allow(::Dir).to receive(:glob).with(dhcp_client_cache).and_return(["3.xml", "4.xml"])
+      allow(::File).to receive(:exist?).with(dhcpv6_client_cache_path).and_return(true)
     end
 
     it "creates the wicked directory if not exist" do
