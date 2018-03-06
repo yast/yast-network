@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Mar  6 16:12:13 UTC 2018 - knut.anderssen@suse.com
+
+- Tigervnc will provide the definition of firewalld services so
+  we will use them instead of the vnc-server service definition
+  that is shipped with firewalld (bsc#1081952)
+- 4.0.20
+
+-------------------------------------------------------------------
 Thu Mar  1 13:58:27 UTC 2018 - knut.anderssen@suse.com
 
 - save_network client copies wicked dhcp files from inst-sys into
