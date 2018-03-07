@@ -175,7 +175,7 @@ module Y2Remote
       attr_accessor :cwm_interfaces
       def initialize
         @cwm_interfaces = Yast::CWMFirewallInterfaces.CreateOpenFirewallWidget(
-          "services"        => ["service:vnc-httpd", "service:vnc-server"],
+          "services"        => ["tigervnc", "tigervnc-https"],
           "display_details" => true
         )
       end
