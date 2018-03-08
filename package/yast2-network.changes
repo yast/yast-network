@@ -1,15 +1,9 @@
 -------------------------------------------------------------------
-Tue Mar  6 11:15:12 UTC 2018 - knut.anderssen@suse.com
+Thu Mar  8 11:15:12 UTC 2018 - knut.anderssen@suse.com
 
 - bsc#1078991
   - Do not crash when some LanItem does not have hardware info.
 - 4.0.21
-
--------------------------------------------------------------------
-Mon Feb 26 14:55:08 UTC 2018 - knut.anderssen@suse.com
-
-- SuSEFIrewall2: Allow also (vnc / ssh) access in SuSEFirewall in
-  case of remote auto-installations for the 2st stage (bsc#1080630)
 
 -------------------------------------------------------------------
 Tue Mar  6 16:12:13 UTC 2018 - knut.anderssen@suse.com
@@ -45,8 +39,6 @@ Fri Feb 23 11:27:58 UTC 2018 - knut.anderssen@suse.com
 
 - Really translate firewalld zones (bsc#1082246)
 - 4.0.16
-=======
->>>>>>> SLE-12-SP3
 
 -------------------------------------------------------------------
 Wed Feb 14 10:40:04 UTC 2018 - knut.anderssen@suse.com
