@@ -329,7 +329,8 @@ module Yast
 
         # find item which matches to the given rule definition
         item, matching_item = LanItems.Items.find do |_, i|
-          i["hwinfo"]["busid"].downcase == key || i["hwinfo"]["mac"].downcase == key
+          i["hwinfo"] &&
+            (i["hwinfo"]["busid"].downcase == key || i["hwinfo"]["mac"].downcase == key)
         end
         next if !matching_item
 

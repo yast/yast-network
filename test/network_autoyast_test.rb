@@ -454,6 +454,11 @@ describe "NetworkAutoYast" do
             "value" => "0000:01:00.0"
           },
           {
+            "name"  => "eth3",
+            "rule"  => "KERNELS",
+            "value" => "0000:01:00.4"
+          },
+          {
             "name"  => "eth0",
             "rule"  => "KERNELS",
             "value" => "0000:01:00.2"
@@ -513,6 +518,7 @@ describe "NetworkAutoYast" do
           .and_return(persistent_udevs)
 
         Yast::LanItems.Read
+        Yast::LanItems.Items[3] = { "ifcfg" => "eth3" }
       end
 
       # see bnc#1056109
@@ -535,7 +541,7 @@ describe "NetworkAutoYast" do
         end
 
         # check if device names are unique
-        expect(names.sort).to eql ["eth0", "eth1", "eth2"]
+        expect(names.sort).to eql ["eth0", "eth1", "eth2", "eth3"]
       end
     end
   end
