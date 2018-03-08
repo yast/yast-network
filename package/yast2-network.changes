@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Mar  6 11:15:12 UTC 2018 - knut.anderssen@suse.com
+
+- bsc#1078991
+  - Do not crash when some LanItem does not have hardware info.
+- 3.2.50
+
+-------------------------------------------------------------------
 Mon Feb 26 14:55:08 UTC 2018 - knut.anderssen@suse.com
 
 - SuSEFIrewall2: Allow also (vnc / ssh) access in SuSEFirewall in
