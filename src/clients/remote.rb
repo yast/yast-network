@@ -41,10 +41,6 @@ module Yast
       Yast.import "RichText"
     end
 
-    def firewalld
-      Y2Firewall::Firewalld.instance
-    end
-
     def main
       # The main ()
       log.info("----------------------------------------")
@@ -63,6 +59,10 @@ module Yast
     end
 
   private
+
+    def firewalld
+      Y2Firewall::Firewalld.instance
+    end
 
     def remote
       @remote ||= Y2Remote::Remote.instance
@@ -119,8 +119,10 @@ module Yast
       Wizard.SetDesktopTitleAndIcon("remote")
       Wizard.SetNextButton(:next, Label.FinishButton)
 
-      remote.write if ret == :next
-      firewalld.write if ret == :next
+      if ret == :next
+        remote.write
+        firewalld.write
+      end
 
       UI.CloseDialog
 
