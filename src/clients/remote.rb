@@ -21,6 +21,7 @@
 require "yast"
 require "y2remote/remote"
 require "y2remote/dialogs/remote"
+require "y2firewall/firewalld"
 
 module Yast
   class RemoteClient < Client
@@ -58,6 +59,10 @@ module Yast
     end
 
   private
+
+    def firewalld
+      Y2Firewall::Firewalld.instance
+    end
 
     def remote
       @remote ||= Y2Remote::Remote.instance
@@ -107,13 +112,17 @@ module Yast
 
     # Main remote GUI
     def RemoteGUI
+      firewalld.read
       ret = Y2Remote::Dialogs::Remote.new.run
 
       Wizard.CreateDialog
       Wizard.SetDesktopTitleAndIcon("remote")
       Wizard.SetNextButton(:next, Label.FinishButton)
 
-      remote.write if ret == :next
+      if ret == :next
+        remote.write
+        firewalld.write
+      end
 
       UI.CloseDialog
 
