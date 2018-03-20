@@ -60,57 +60,7 @@ module Yast
           "widget"            => :custom,
           "custom_widget"     => HBox(
             HSpacing(5),
-            VBox(
-              VStretch(),
-              # ComboBox label
-              HBox(
-                InputField(Id(:gw), Opt(:hstretch), _("Default IPv4 &Gateway")),
-                ComboBox(Id(:gw4dev), Opt(:editable), _("Device"), [])
-              ),
-              HBox(
-                InputField(Id(:gw6), Opt(:hstretch), _("Default IPv6 &Gateway")),
-                ComboBox(Id(:gw6dev), Opt(:editable), _("Device"), [])
-              ),
-              VSpacing(1),
-              # Frame label
-              Frame(
-                _("Routing Table"),
-                VBox(
-                  # CheckBox label
-                  Table(
-                    Id(:table),
-                    Opt(:notify),
-                    Header(
-                      # Table header 1/4
-                      _("Destination"),
-                      # Table header 2/4
-                      _("Gateway"),
-                      # Table header 3/4
-                      _("Netmask"),
-                      # Table header 4/4
-                      _("Device"),
-                      # Table header 5/4
-                      # FIXME
-                      Builtins.deletechars(Label.Options, "&")
-                    ),
-                    []
-                  ),
-                  # PushButton label
-                  HBox(
-                    PushButton(Id(:add), _("Ad&d")),
-                    # PushButton label
-                    PushButton(Id(:edit), _("&Edit")),
-                    # PushButton label
-                    PushButton(Id(:delete), _("De&lete"))
-                  )
-                )
-              ),
-              VSpacing(1),
-              # CheckBox label
-              Left(CheckBox(Id(:forward_v4), _("Enable &IPv4 Forwarding"))),
-              Left(CheckBox(Id(:forward_v6), _("Enable I&Pv6 Forwarding"))),
-              VStretch()
-            ),
+            routing_box_widget,
             HSpacing(5)
           ),
           "init"              => fun_ref(method(:initRouting), "void (string)"),
@@ -526,6 +476,70 @@ module Yast
         "back_button"        => Label.BackButton,
         "next_button"        => Label.NextButton,
         "fallback_functions" => functions
+      )
+    end
+
+  private
+
+    def default_static_ipv4_gw_widget
+      HBox(
+        InputField(Id(:gw), Opt(:hstretch), _("Default IPv4 &Gateway")),
+        ComboBox(Id(:gw4dev), Opt(:editable), _("Device"), [])
+      )
+    end
+
+    def default_static_ipv6_gw_widget
+      HBox(
+        InputField(Id(:gw6), Opt(:hstretch), _("Default IPv6 &Gateway")),
+        ComboBox(Id(:gw6dev), Opt(:editable), _("Device"), [])
+      )
+    end
+
+    def routing_box_widget
+      VBox(
+        VStretch(),
+        # ComboBox label
+        default_static_ipv4_gw_widget,
+        default_static_ipv6_gw_widget,
+        VSpacing(1),
+        # Frame label
+        Frame(
+          _("Routing Table"),
+          VBox(
+            # CheckBox label
+            Table(
+              Id(:table),
+              Opt(:notify),
+              Header(
+                # Table header 1/4
+                _("Destination"),
+                # Table header 2/4
+                _("Gateway"),
+                # Table header 3/4
+                _("Netmask"),
+                # Table header 4/4
+                _("Device"),
+                # Table header 5/4
+                # FIXME
+                Builtins.deletechars(Label.Options, "&")
+              ),
+              []
+            ),
+            # PushButton label
+            HBox(
+              PushButton(Id(:add), _("Ad&d")),
+              # PushButton label
+              PushButton(Id(:edit), _("&Edit")),
+              # PushButton label
+              PushButton(Id(:delete), _("De&lete"))
+            )
+          )
+        ),
+        VSpacing(1),
+        # CheckBox label
+        Left(CheckBox(Id(:forward_v4), _("Enable &IPv4 Forwarding"))),
+        Left(CheckBox(Id(:forward_v6), _("Enable I&Pv6 Forwarding"))),
+        VStretch()
       )
     end
   end
