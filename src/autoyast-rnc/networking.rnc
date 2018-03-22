@@ -84,6 +84,7 @@ interface =
     dhclient_set_down_link? &
     dhclient_set_default_route? &
 
+    element zone { text }? &
     element firewall { "yes" | "no" }?
   }
 

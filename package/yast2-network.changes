@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Mar 21 23:20:26 UTC 2018 - knut.anderssen@suse.com
+
+- Added networking interfaces 'zone' element to the AutoYaST schema
+  file (bsc#1013047)
+- 4.0.23
+
+-------------------------------------------------------------------
 Fri Mar 16 14:09:54 UTC 2018 - knut.anderssen@suse.com
 
 - Read and write the firewalld configuration when the remote access
