@@ -157,6 +157,10 @@ module Y2Remote
 
     # Checkbox widget for setting vnc web access as enabled when checked.
     class AllowWeb < CWM::CheckBox
+      def initialize
+        textdomain "network"
+      end
+
       def label
         _("Enable access using a &web browser")
       end
@@ -178,6 +182,7 @@ module Y2Remote
           "services"        => ["tigervnc", "tigervnc-https"],
           "display_details" => true
         )
+        textdomain "network"
       end
 
       def init
