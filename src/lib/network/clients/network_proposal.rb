@@ -24,7 +24,7 @@ module Yast
 
     def make_proposal(_)
       {
-        "preformatted_proposal" => Yast::Lan.Summary("summary"),
+        "preformatted_proposal" => Yast::Lan.Summary("summary").first,
         "label_proposal"        => [Yast::LanItems.summary("one_line")]
       }
     end

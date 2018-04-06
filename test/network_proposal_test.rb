@@ -9,7 +9,7 @@ describe Yast::NetworkProposal do
   before do
     stub_const("Yast::Wizard", double.as_null_object)
     allow(Yast::LanItems).to receive(:summary).with("one_line").and_return("one_line_summary")
-    allow(Yast::Lan).to receive(:Summary).with("summary").and_return(["rich_text_summary"])
+    allow(Yast::Lan).to receive(:Summary).with("summary").and_return(["rich_text_summary", ""])
   end
 
   describe "#description" do
@@ -24,7 +24,7 @@ describe Yast::NetworkProposal do
     end
 
     it "returns a map with 'preformatted_proposal' as an array with the network summary'" do
-      expect(subject.make_proposal({})["preformatted_proposal"]).to eql(["rich_text_summary"])
+      expect(subject.make_proposal({})["preformatted_proposal"]).to eql("rich_text_summary")
     end
   end
 
