@@ -346,41 +346,48 @@ module Yast
       return false if Abort()
       # Progress step 4/8
       ProgressNextStage(_("Reading network configuration...")) if @gui
-      NetworkConfig.Read
+      begin
+        NetworkConfig.Read
 
-      @ipv6 = readIPv6
+        @ipv6 = readIPv6
 
-      Builtins.sleep(sl)
+        Builtins.sleep(sl)
 
-      return false if Abort()
-      # Progress step 5/8
-      ProgressNextStage(_("Reading hostname and DNS configuration...")) if @gui
-      DNS.Read
-      if !Host.Read
-        ret = @gui && Popup.ContinueCancel(_("Reading /etc/hosts failed.\nThe file content is not in expected format.\nIf you continue any existing configuration will be overwritten."))
+        return false if Abort()
+        # Progress step 5/8
+        ProgressNextStage(_("Reading hostname and DNS configuration...")) if @gui
+        DNS.Read
+
+        Host.Read
+        Builtins.sleep(sl)
+
+        return false if Abort()
+        # Progress step 6/8
+        ProgressNextStage(_("Reading installation information...")) if @gui
+        #    ReadInstallInf();
+        Builtins.sleep(sl)
+
+        return false if Abort()
+        # Progress step 7/8
+        ProgressNextStage(_("Reading routing configuration...")) if @gui
+        Routing.Read
+        Builtins.sleep(sl)
+
+        return false if Abort()
+        # Progress step 8/8
+        ProgressNextStage(_("Detecting current status...")) if @gui
+        NetworkService.Read
+        Builtins.sleep(sl)
+
+        return false if Abort()
+      rescue RuntimeError => error
+        msg = _("Network configuration is corrupted.\n"\
+                "If you continue resulting configuration can be malformed."\
+                "\n\n%s" % wrap_string(error.message))
+        ret = @gui && Popup.ContinueCancel(msg)
         return false if !ret
       end
-      Builtins.sleep(sl)
 
-      return false if Abort()
-      # Progress step 6/8
-      ProgressNextStage(_("Reading installation information...")) if @gui
-      #    ReadInstallInf();
-      Builtins.sleep(sl)
-
-      return false if Abort()
-      # Progress step 7/8
-      ProgressNextStage(_("Reading routing configuration...")) if @gui
-      Routing.Read
-      Builtins.sleep(sl)
-
-      return false if Abort()
-      # Progress step 8/8
-      ProgressNextStage(_("Detecting current status...")) if @gui
-      NetworkService.Read
-      Builtins.sleep(sl)
-
-      return false if Abort()
       # Final progress step
       ProgressNextStage(_("Finished")) if @gui
       Builtins.sleep(sl)
@@ -1032,6 +1039,10 @@ module Yast
     publish function: :HaveXenBridge, type: "boolean ()"
 
   private
+
+    def wrap_string(s, width=50)
+      s.gsub(/\s+/, " ").gsub(/(.{1,#{width}})( |\Z)/, "\\1\n")
+    end
 
     def activate_network_service
       # If the second installation stage has been called by yast.ssh via
