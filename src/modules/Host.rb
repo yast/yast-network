@@ -354,7 +354,6 @@ module Yast
   def load_hosts
     return false if SCR.Read(path(".target.size"), CFA::Hosts::PATH) <= 0
 
-    ret = true
     begin
       @hosts = CFA::Hosts.new
       @hosts.load
@@ -369,10 +368,11 @@ module Yast
       @hosts = CFA::Hosts.new
       @hosts_init = nil
 
-      ret = false
+      # reraise the exception - let the gui takes care of it
+      raise
     end
 
-    ret
+    true
   end
 
   Host = HostClass.new
