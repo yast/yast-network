@@ -31,9 +31,12 @@
 # Input and output routines.
 require "yast"
 require "network/confirm_virt_proposal"
+require "ui/text_helpers"
 
 module Yast
   class LanClass < Module
+    include ::UI::TextHelpers
+
     def main
       Yast.import "UI"
       textdomain "network"
@@ -1035,18 +1038,6 @@ module Yast
     publish function: :HaveXenBridge, type: "boolean ()"
 
   private
-
-    # Wraps string to given width on word boundary
-    #
-    # Removes all existing '\n' and inserts new ones where necessarry.
-    #
-    # @param [String] string to be wrapped
-    # @param [Integer] width of resulting string
-    #
-    # @return [String] wrapped string
-    def wrap_string(s, width = 50)
-      s.gsub(/\s+/, " ").gsub(/(.{1,#{width}})( |\Z)/, "\\1\n")
-    end
 
     def activate_network_service
       # If the second installation stage has been called by yast.ssh via
