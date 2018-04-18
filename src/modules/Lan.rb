@@ -1040,6 +1040,14 @@ module Yast
 
   private
 
+    # Wraps string to given width on word boundary
+    #
+    # Removes all existing '\n' and inserts new ones where necessarry.
+    #
+    # @param [String] string to be wrapped
+    # @param [Integer] width of resulting string
+    #
+    # @return [String] wrapped string
     def wrap_string(s, width=50)
       s.gsub(/\s+/, " ").gsub(/(.{1,#{width}})( |\Z)/, "\\1\n")
     end
