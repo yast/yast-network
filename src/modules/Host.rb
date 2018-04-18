@@ -365,7 +365,7 @@ module Yast
       # save hosts to check for changes later
       @hosts_init = CFA::Hosts.new
       @hosts_init.load
-    rescue RuntimeError => error
+    rescue IOError, SystemCallError, RuntimeError => error
       log.error("Loading /etc/hosts failed with exception #{error.inspect}")
 
       # get clean environment, crashing due to exception is no option here

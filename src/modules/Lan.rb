@@ -376,7 +376,7 @@ module Yast
         Builtins.sleep(sl)
 
         return false if Abort()
-      rescue RuntimeError => error
+      rescue IOError, SystemCallError, RuntimeError => error
         msg = _("Network configuration is corrupted.\n"\
                 "If you continue resulting configuration can be malformed."\
                 "\n\n%s" % wrap_string(error.message))
