@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Sat Apr 21 18:15:56 UTC 2018 - mfilka@suse.com
+
+- bnc#1089471
+  - do not propose vlan package for installation
+- 4.0.27
+
+-------------------------------------------------------------------
 Thu Apr 19 00:31:15 UTC 2018 - knut.anderssen@suse.com
 
 - Y2Remote:
