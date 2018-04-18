@@ -290,9 +290,6 @@ module Yast
 
       return false if Abort()
 
-      # check the environment
-      #    if(!Confirm::MustBeRoot()) return false;
-
       return false if Abort()
       # Progress step 1/9
       ProgressNextStage(_("Detecting ndiswrapper...")) if @gui
@@ -378,7 +375,6 @@ module Yast
         return false if Abort()
         # Progress step 6/8
         ProgressNextStage(_("Reading installation information...")) if @gui
-        #    ReadInstallInf();
         Builtins.sleep(sl)
 
         return false if Abort()
