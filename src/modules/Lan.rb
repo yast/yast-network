@@ -377,9 +377,9 @@ module Yast
 
         return false if Abort()
       rescue IOError, SystemCallError, RuntimeError => error
-        msg = _("Network configuration is corrupted.\n"\
+        msg = format(_("Network configuration is corrupted.\n"\
                 "If you continue resulting configuration can be malformed."\
-                "\n\n%s" % wrap_string(error.message))
+                "\n\n%s"), wrap_text(error.message))
         ret = @gui && Popup.ContinueCancel(msg)
         return false if !ret
       end
@@ -1044,7 +1044,7 @@ module Yast
     # @param [Integer] width of resulting string
     #
     # @return [String] wrapped string
-    def wrap_string(s, width=50)
+    def wrap_string(s, width = 50)
       s.gsub(/\s+/, " ").gsub(/(.{1,#{width}})( |\Z)/, "\\1\n")
     end
 
