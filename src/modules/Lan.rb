@@ -975,49 +975,23 @@ module Yast
       nil
     end
 
+    # Proposes additional packages when needed by current networking setup
+    #
     # @return [Array] of packages needed when writing the config
     def Packages
-      # various device types require some special packages ...
-      type_requires = {
-        # for wlan require iw instead of wireless-tools (bnc#539669)
-        "wlan" => "iw",
-        "vlan" => "vlan",
-        "tun"  => "tunctl",
-        "tap"  => "tunctl"
-      }
-      # ... and some options require special packages as well
-      option_requires = {
-        "WIRELESS_AUTH_MODE" => {
-          "psk" => "wpa_supplicant",
-          "eap" => "wpa_supplicant"
-        }
-      }
-
       pkgs = []
-      type_requires.each do |type, package|
-        ifaces = NetworkInterfaces.List(type)
-        next if ifaces.empty?
-
-        Builtins.y2milestone(
-          "Network interface type #{type} requires package #{package}"
-        )
-        pkgs << package if !PackageSystem.Installed(package)
-      end
-
-      option_requires.each do |option, option_values|
-        option_values.each do |value, package|
-          next if NetworkInterfaces.Locate(option, value) == []
-
-          Builtins.y2milestone(
-            "Network interface with option #{option}=#{value} requires package #{package}"
-          )
-          pkgs << package if !PackageSystem.Installed(package)
-        end
-      end
 
       if NetworkService.is_network_manager
         pkgs << "NetworkManager" if !PackageSystem.Installed("NetworkManager")
+      elsif !PackageSystem.Installed("wpa_supplicant")
+        # we have to add wpa_supplicant when wpa is in game, wicked relies on it
+        pkgs << "wpa_supplicant" if NetworkInterfaces.Locate("WIRELESS_AUTH_MODE", "psk")
+        pkgs << "wpa_supplicant" if NetworkInterfaces.Locate("WIRELESS_AUTH_MODE", "eap")
       end
+
+      pkgs.uniq!
+
+      log.info("Additional packages requested by yast2-network: #{pkgs.inspect}") if !pkgs.empty?
 
       pkgs
     end
