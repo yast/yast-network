@@ -150,6 +150,41 @@ describe Y2Remote::Widgets do
   end
 
   describe Y2Remote::Widgets::RemoteFirewall do
+    let("firewall_widget") { { "help" => "", "custom_widget" => Yast::Term.new(:Empty) } }
     include_examples "CWM::CustomWidget"
+
+    before do
+      allow(Yast::CWMFirewallInterfaces).to receive(:CreateOpenFirewallWidget)
+        .and_return(firewall_widget)
+      allow(Yast::CWMFirewallInterfaces).to receive(:OpenFirewallInit)
+      allow(Yast::CWMFirewallInterfaces).to receive(:OpenFirewallHandle)
+      allow(Yast::CWMFirewallInterfaces).to receive(:StoreAllowedInterfaces)
+    end
+
+    describe ".new" do
+      it "initializes the widget" do
+        expect(Yast::CWMFirewallInterfaces).to receive(:CreateOpenFirewallWidget)
+          .with("services" => Y2Remote::Remote::FIREWALL_SERVICES, "display_details" => true)
+
+        described_class.new
+      end
+    end
+
+    describe ".handle" do
+      it "handles changes in the widget" do
+        expect(Yast::CWMFirewallInterfaces).to receive(:OpenFirewallHandle)
+          .with(firewall_widget, "", "event")
+        subject.handle("event")
+      end
+    end
+
+    describe ".store" do
+      it "enables vnc firewall services in the allowed interfaces" do
+        expect(Yast::CWMFirewallInterfaces).to receive(:StoreAllowedInterfaces)
+          .with(Y2Remote::Remote::FIREWALL_SERVICES)
+
+        subject.store
+      end
+    end
   end
 end
