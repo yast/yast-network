@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Thu Apr 19 00:31:15 UTC 2018 - knut.anderssen@suse.com
+
+- Y2Remote:
+  - Fixed the start of services when writing (bsc#1088646)
+  - Fixed the modification of vnc services configuration according
+    to the selection of allowed interfaces (bsc#1088647)
+- 4.0.26
+
+-------------------------------------------------------------------
 Fri Apr  6 16:17:45 UTC 2018 - knut.anderssen@suse.com
 
 - Fixed preformatted proposal for network module (bsc#1088488)
