@@ -416,16 +416,13 @@ module Yast
     end
 
     def writeIPv6
-      #  SCR::Write(.target.string, "/etc/modprobe.d/ipv6", sformat("%1install ipv6 /bin/true", ipv6?"#":""));
-      # uncomment to write to old place (and comment code bellow)
-      #  SCR::Write(.target.string, "/etc/modprobe.d/50-ipv6.conf", sformat("%1install ipv6 /bin/true\n", ipv6?"#":""));
       filename = "/etc/sysctl.conf"
       sysctl = Convert.to_string(SCR.Read(path(".target.string"), filename))
       sysctl_row = Builtins.sformat(
         "%1net.ipv6.conf.all.disable_ipv6 = 1",
         @ipv6 ? "# " : ""
       )
-      found = false # size(regexptokenize(sysctl, "(net.ipv6.conf.all.disable_ipv6)"))>0;
+      found = false
       file = []
       Builtins.foreach(Builtins.splitstring(sysctl, "\n")) do |row|
         if Ops.greater_than(
