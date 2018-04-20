@@ -239,9 +239,7 @@ module Yast
     end
 
     # Read all network settings from the SCR
-    # @param [Symbol] cache:
-    #  `cache=use cached data,
-    #  `nocache=reread from disk (for reproposal); TODO pass to submodules
+    # @param cache [Symbol] :cache=use cached data, :nocache=reread from disk TODO pass to submodules
     # @return true on success
     def Read(cache)
       if cache == :cache && @initialized
@@ -395,7 +393,7 @@ module Yast
     end
 
     # (a specialization used when a parameterless function is needed)
-    # @return Read(`cache)
+    # @return [Boolean] true on success
     def ReadWithCache
       Read(:cache)
     end
@@ -878,8 +876,7 @@ module Yast
       true
     end
 
-    # Delete the given device
-    # @param name device to delete
+    # Delete current device (see LanItems::current)
     # @return true if success
     def Delete
       LanItems.DeleteItem

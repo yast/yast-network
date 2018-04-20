@@ -45,7 +45,7 @@ module Y2Remote
     # Restart all the given list of Y2Remote::Modes::Base instances and stop
     # the rest.
     #
-    # @param [Array<Y2Remote::Modes::Base>] list of modes to be restarted, the
+    # @param enable_modes [Array<Y2Remote::Modes::Base>] list of modes to be restarted, the
     # rest will be stopped
     def self.restart_modes(enable_modes = [])
       # There are conflicts between modes. Therefore we have to stop first the
@@ -58,7 +58,7 @@ module Y2Remote
     # Enable all the given list of Y2Remote::Modes::Base instances and
     # disable the rest.
     #
-    # @param [Array<Y2Remote::Modes::Base>] list of modes to be enabled; the
+    # @param enable_modes [Array<Y2Remote::Modes::Base>] list of modes to be enabled; the
     # rest will be disable
     def self.update_status(enable_modes = [])
       all.each do |mode|

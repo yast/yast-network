@@ -58,12 +58,12 @@ module Yast
     #
     # @return [Array<Hash>] routing table entries
 
-    # @Orig_Routes [Array]        array of hashes. Caches known routes
+    # @attribute Orig_Routes [Array]        array of hashes. Caches known routes
     #
-    # @Orig_Forward_v4 [Boolean]  current status of ipv4 forwarding
-    # @Orig_Forward_v6 [Boolean]  current status of ipv6 forwarding
+    # @attribute Orig_Forward_v4 [Boolean]  current status of ipv4 forwarding
+    # @attribute Orig_Forward_v6 [Boolean]  current status of ipv6 forwarding
     #
-    # @modified [Boolean]         modified by AY (bnc#649494)
+    # @attribute modified [Boolean]         modified by AY (bnc#649494)
 
     # "routes" and ifroute-DEV file directory
     ROUTES_DIR  = "/etc/sysconfig/network".freeze

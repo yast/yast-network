@@ -217,7 +217,7 @@ module Yast
     end
 
     # Handler for action "list"
-    # @param [Hash{String => String}] options action options
+    # @param _options [Hash{String => String}] action options
     def ListHandler(_options)
       CommandLine.Print(PrintableRoutingTable(Routing.Routes))
       CommandLine.Print("")

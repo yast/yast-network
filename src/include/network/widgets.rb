@@ -158,8 +158,8 @@ module Yast
     end
 
     # Validator for IP adresses, no_popup
-    # @param [String] key	the widget being validated
-    # @param [Hash] event	the event being handled
+    # @param key [String] the widget being validated
+    # @param _event [Hash] the event being handled
     # @return whether valid
     def ValidateIP(key, _event)
       value = Convert.to_string(UI.QueryWidget(Id(key), :Value))
@@ -276,7 +276,7 @@ module Yast
     end
 
     # Initialize the NetworkManager widget
-    # @param [String] key id of the widget
+    # @param _key [String] id of the widget
     def ManagedInit(_key)
       items = []
 
@@ -318,8 +318,8 @@ module Yast
     end
 
     # Store the NetworkManager widget
-    # @param [String] key	id of the widget
-    # @param [Hash] event	the event being handled
+    # @param _key [String] id of the widget
+    # @param _event [Hash] the event being handled
     def ManagedStore(_key, _event)
       new_backend = UI.QueryWidget(Id(:managed), :Value)
 

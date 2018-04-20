@@ -218,10 +218,10 @@ module Yast
 
     # Update hosts according to the current hostname
     # (only one hostname, assigned to all IP)
-    # @param hostname current hostname
-    # @param domain current domain name
-    # @param String ip to assign
-    # @return true if success
+    # @param oldhn [String] current hostname
+    # @param newhn [String] current domain name
+    # @param ip [String] to assign
+    # @return [Boolean] true if success
     def Update(oldhn, newhn, ip)
       raise ArgumentError, "IP cannot be nil" if ip.nil?
       raise ArgumentError, "Nonempty IP expected" if ip.empty?

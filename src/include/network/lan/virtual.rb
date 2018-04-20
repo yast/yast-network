@@ -81,7 +81,6 @@ module Yast
     end
 
     # Main aliases dialog
-    # @param standalone true if not run from another ycp client
     # @return dialog result
     def handleAdditional(_key, event)
       event = deep_copy(event)

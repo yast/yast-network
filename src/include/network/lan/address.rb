@@ -414,8 +414,8 @@ module Yast
     end
 
     # Debug messages configurable at runtime
-    # @param [String] class debug class
-    # @param [String] msg message to log
+    # @param class_ [String] debug class
+    # @param msg [String] message to log
     def my2debug(class_, msg)
       if SCR.Read(path(".target.size"), Ops.add("/tmp/my2debug/", class_)) != -1
         Builtins.y2internal(Ops.add(Ops.add(class_, ": "), msg))
@@ -472,8 +472,7 @@ module Yast
     end
 
     # Default function to store the value of devices attached to bridge (BRIDGE_PORTS).
-    # @param [String] key	id of the widget
-    # @param [String] key id of the widget
+    # @param key [String] id of the widget
     def StoreBridge(key, _event)
       selected_bridge_ports = UI.QueryWidget(Id("BRIDGE_PORTS"), :SelectedItems) || []
 
@@ -487,7 +486,7 @@ module Yast
     end
 
     # Default function to init the value of slave ETHERDEVICE box.
-    # @param [String] key	id of the widget
+    # @param _key [String] id of the widget
     def InitVLANSlave(_key)
       items = []
       # unconfigured devices
@@ -558,8 +557,7 @@ module Yast
     end
 
     # Default function to store the value of ETHERDEVICE devices box.
-    # @param [String] key	id of the widget
-    # @param [String] key id of the widget
+    # @param _key [String] id of the widget
     def StoreVLANSlave(_key, _event)
       Ops.set(
         @settings,
@@ -600,7 +598,7 @@ module Yast
     end
 
     # Default function to init the value of slave devices box for bonding.
-    # @param [String] key	id of the widget
+    # @param _key [String] id of the widget
     def InitSlave(_key)
       @settings["SLAVES"] = LanItems.bond_slaves || []
 
@@ -677,8 +675,7 @@ module Yast
     end
 
     # Default function to store the value of slave devices box.
-    # @param [String] key	id of the widget
-    # @param [String] key id of the widget
+    # @param _key [String] id of the widget
     def StoreSlave(_key, _event)
       configured_slaves = @settings["SLAVES"] || []
 
@@ -704,8 +701,8 @@ module Yast
     # Validates created bonding. Currently just prevent the user to create a
     # bond with more than one interface sharing the same physical port id
     #
-    # @param [String] key the widget being validated
-    # @param [Hash] event the event being handled
+    # @param _key [String] the widget being validated
+    # @param _event [Hash] the event being handled
     # @return true if valid or user decision if not
     def validate_bond(_key, _event)
       selected_slaves = UI.QueryWidget(:msbox_items, :SelectedItems) || []
@@ -759,10 +756,8 @@ module Yast
 
     # Initialize a RadioButtonGroup
     # Group called FOO has buttons FOO_bar FOO_qux and values bar qux
-    # @param [String] key id of the widget
+    # @param _key [String] id of the widget
     def initBootProto(_key)
-      #  if (LanItems::type=="br") UI::ReplaceWidget(`rp, `Empty());
-      # 	else
       if LanItems.type != "eth"
         UI.ReplaceWidget(
           :rp,
@@ -862,8 +857,8 @@ module Yast
 
     # Store a RadioButtonGroup
     # Group called FOO has buttons FOO_bar FOO_qux and values bar qux
-    # @param [String] key	id of the widget
-    # @param [Hash] event	the event being handled
+    # @param _key [String] id of the widget
+    # @param _event [Hash] the event being handled
     def storeBootProto(_key, _event)
       case Convert.to_symbol(UI.QueryWidget(Id(:bootproto), :CurrentButton))
       when :none
@@ -938,8 +933,8 @@ module Yast
     end
 
     # Remap the buttons to their Wizard Sequencer values
-    # @param [String] key	the widget receiving the event
-    # @param [Hash] event	the event being handled
+    # @param _key [String] the widget receiving the event
+    # @param event [Hash] the event being handled
     # @return nil so that the dialog loops on
     def HandleButton(_key, event)
       event = deep_copy(event)
@@ -962,8 +957,8 @@ module Yast
     end
 
     # Validator for network masks adresses
-    # @param [String] key	the widget being validated
-    # @param [Hash] event	the event being handled
+    # @param key [String] the widget being validated
+    # @param _event [Hash] the event being handled
     # @return whether valid
     def ValidateNetmask(key, _event)
       # TODO: general CWM improvement idea: validate and save only nondisabled
@@ -976,8 +971,8 @@ module Yast
     end
 
     # Validator for ifcfg names
-    # @param [String] key	the widget being validated
-    # @param [Hash] event	the event being handled
+    # @param key [String] the widget being validated
+    # @param _event [Hash] the event being handled
     # @return whether valid
     def ValidateIfcfgType(key, _event)
       if LanItems.operation == :add
@@ -1016,8 +1011,8 @@ module Yast
     end
 
     # Validator for network masks adresses
-    # @param [String] key	the widget being validated
-    # @param [Hash] event	the event being handled
+    # @param _key [String] the widget being validated
+    # @param _event [Hash] the event being handled
     # @return whether valid
     def ValidateBootproto(_key, _event)
       if UI.QueryWidget(:bootproto, :CurrentButton) == :static
@@ -1075,7 +1070,7 @@ module Yast
 
     # Initialize value of firewall zone widget
     # (disables it when SuSEFirewall is not installed)
-    # @param [String] key id of the widget
+    # @param _key [String] id of the widget
     def InitFwZone(_key)
       if SuSEFirewall4Network.IsInstalled
         UI.ChangeWidget(
@@ -1494,7 +1489,7 @@ module Yast
     # Given a map of duplicated port ids with device names, aks the user if he
     # would like to continue or not.
     #
-    # @param [Hash{String => Array<String>}] hash of duplicated physical port ids
+    # @param physical_ports [Hash{String => Array<String>}] hash of duplicated physical port ids
     # mapping to an array of device names
     # @return [Boolean] true if continue with duplicates, otherwise false
     def continue_with_duplicates?(physical_ports)
@@ -1515,7 +1510,7 @@ module Yast
     # Given a list of device names returns a hash of physical port ids mapping
     # device names if at least two devices shared the same physical port id
     #
-    # @param [Array<String] bonding slaves
+    # @param slaves [Array<String>] bonding slaves
     # @return [Hash{String => Array<String>}] of duplicated physical port ids
     def repeated_physical_port_ids(slaves)
       physical_port_ids = {}
@@ -1543,8 +1538,8 @@ module Yast
     # Otherwise the canonical name and all aliases in the record
     # are replaced by new ones.
     #
-    # @param [String] ip address
-    # @param [String] new hostname
+    # @param ipaddr [String] ip address
+    # @param hostname [String] new hostname
     def update_hostname(ipaddr, hostname)
       ip_changed = LanItems.ipaddr != ipaddr
       initial_hostname = initial_hostname(LanItems.ipaddr)
