@@ -48,9 +48,11 @@ module Y2Remote
     # @param [Array<Y2Remote::Modes::Base>] list of modes to be restarted, the
     # rest will be stopped
     def self.restart_modes(enable_modes = [])
-      all.each do |mode|
-        enable_modes.include?(mode.instance) ? mode.instance.restart! : mode.instance.stop!
-      end
+      # There are conflicts between modes. Therefore we have to stop first the
+      # disabled ones.
+      all.each { |mc| mc.instance.stop! unless enable_modes.include?(mc.instance) }
+
+      enable_modes.each(&:restart!)
     end
 
     # Enable all the given list of Y2Remote::Modes::Base instances and

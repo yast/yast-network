@@ -177,28 +177,47 @@ module Y2Remote
     # Widget for opening VNC services in the firewall
     class RemoteFirewall < CWM::CustomWidget
       attr_accessor :cwm_interfaces
+
+      # Constructor
       def initialize
+        textdomain "network"
         @cwm_interfaces = Yast::CWMFirewallInterfaces.CreateOpenFirewallWidget(
-          "services"        => ["tigervnc", "tigervnc-https"],
+          "services"        => services,
           "display_details" => true
         )
-        textdomain "network"
+      end
+
+      def opt
+        [:notify]
       end
 
       def init
-        Yast::CWMFirewallInterfaces.OpenFirewallInit(@cwm_interfaces, "")
+        Yast::CWMFirewallInterfaces.OpenFirewallInit(cwm_interfaces, "")
       end
 
       def contents
-        @cwm_interfaces["custom_widget"]
+        cwm_interfaces["custom_widget"]
       end
 
       def help
-        @cwm_interfaces["help"] || ""
+        cwm_interfaces["help"] || ""
       end
 
       def handle(event)
-        Yast::CWMFirewallInterfaces.OpenFirewallHandle(@cwm_interfaces, "", event)
+        Yast::CWMFirewallInterfaces.OpenFirewallHandle(cwm_interfaces, "", event)
+      end
+
+      # Applies the configuration of the vnc services according to the allowed
+      # interfaces.
+      def store
+        Yast::CWMFirewallInterfaces.StoreAllowedInterfaces(services)
+      end
+
+    private
+
+      # Convenience method to obtain the vnc firewalld services
+      def services
+        Y2Remote::Remote::FIREWALL_SERVICES
       end
     end
   end

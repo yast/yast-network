@@ -24,7 +24,9 @@ require "y2remote/remote"
 
 describe Y2Remote::Remote do
   let(:vnc) { Y2Remote::Modes::Web.instance }
+  let(:manager) { Y2Remote::Modes::Manager.instance }
   let(:web) { Y2Remote::Modes::VNC.instance }
+  let(:display_manager) { Y2Remote::DisplayManager.instance }
   subject { described_class.instance }
 
   before do
@@ -84,10 +86,6 @@ describe Y2Remote::Remote do
   end
 
   describe ".enable_manager!" do
-    let(:web) { Y2Remote::Modes::Web.instance }
-    let(:manager) { Y2Remote::Modes::Manager.instance }
-    let(:vnc) { Y2Remote::Modes::VNC.instance }
-
     it "returns the current modes if already present" do
       allow(subject).to receive(:modes).and_return([manager, web])
       expect(subject.modes).to_not receive(:delete)
@@ -155,9 +153,6 @@ describe Y2Remote::Remote do
   end
 
   describe ".read" do
-    let(:vnc) { Y2Remote::Modes::VNC.instance }
-    let(:display_manager) { Y2Remote::DisplayManager.instance }
-
     it "returns true" do
       allow(display_manager).to receive(:enabled?).and_return(false)
 
@@ -295,6 +290,43 @@ describe Y2Remote::Remote do
       expect(subject).to receive(:propose!)
 
       subject.reset!
+    end
+  end
+
+  describe ".restart_services" do
+    let(:modes) { [vnc, web] }
+
+    before do
+      allow(subject).to receive(:modes).and_return(modes)
+      allow(Yast::SystemdTarget).to receive(:set_default)
+      allow(display_manager).to receive(:restart)
+    end
+
+    context "when vnc is enabled" do
+      it "sets graphical as the default systemd target" do
+        expect(Yast::SystemdTarget).to receive(:set_default)
+          .with(Y2Remote::Remote::GRAPHICAL_TARGET)
+        subject.restart_services
+      end
+
+      it "starts the enabled modes and stops the rest" do
+        expect(Y2Remote::Modes).to receive(:restart_modes).with(modes)
+        subject.restart_services
+      end
+
+      it "restarts the display manager" do
+        expect(display_manager).to receive(:restart)
+        subject.restart_services
+      end
+    end
+
+    context "when vnc is disabled" do
+      let(:modes) { [] }
+
+      it "stops the running modes" do
+        expect(Y2Remote::Modes).to receive(:restart_modes).with(modes)
+        subject.restart_services
+      end
     end
   end
 end

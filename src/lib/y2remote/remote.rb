@@ -30,8 +30,7 @@ module Y2Remote
     include Yast::I18n
 
     GRAPHICAL_TARGET = "graphical".freeze
-
-    FIREWALL_SERVICES_PACKAGE = "xorg-x11-Xvnc".freeze
+    FIREWALL_SERVICES = ["tigervnc", "tigervnc-https"].freeze
 
     # List of Y2Remote::Modes::Base subclasses that are the enabled VNC running
     # modes
@@ -174,7 +173,7 @@ module Y2Remote
     # Restarts services, reporting errors to the user
     def restart_services
       Yast::SystemdTarget.set_default(GRAPHICAL_TARGET) if enabled?
-      Y2Remote::Modes.restart_modes
+      Y2Remote::Modes.restart_modes(modes)
 
       display_manager.restart if enabled?
     end
