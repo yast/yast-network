@@ -979,8 +979,8 @@ module Yast
         pkgs << "NetworkManager" if !PackageSystem.Installed("NetworkManager")
       elsif !PackageSystem.Installed("wpa_supplicant")
         # we have to add wpa_supplicant when wpa is in game, wicked relies on it
-        pkgs << "wpa_supplicant" if NetworkInterfaces.Locate("WIRELESS_AUTH_MODE", "psk")
-        pkgs << "wpa_supplicant" if NetworkInterfaces.Locate("WIRELESS_AUTH_MODE", "eap")
+        pkgs << "wpa_supplicant" if !NetworkInterfaces.Locate("WIRELESS_AUTH_MODE", "psk").empty?
+        pkgs << "wpa_supplicant" if !NetworkInterfaces.Locate("WIRELESS_AUTH_MODE", "eap").empty?
       end
 
       pkgs.uniq!
