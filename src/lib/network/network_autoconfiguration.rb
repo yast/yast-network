@@ -153,7 +153,7 @@ module Yast
 
     # Writes and activates changes in devices configurations
     #
-    # @devnames [Array] list of device names
+    # @param devnames [Array] list of device names
     # @return true when changes were successfully applied
     def activate_changes(devnames)
       return false if !write_configuration

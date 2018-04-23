@@ -740,7 +740,7 @@ module Yast
 
     # Import data.
     # It expects data described networking.rnc
-    # and then passed through {LanAutoClient#FromAY}.
+    # and then passed through {Lan#FromAY}.
     # Most prominently, instead of a flat list called "interfaces"
     # we import a 2-level map of typed "devices"
     # @param [Hash] settings settings to be imported

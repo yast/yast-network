@@ -397,12 +397,6 @@ module Yast
       )
     end
 
-    # obsoleted by GetDefaultsForHW
-    # @return `next
-    def ChangeDefaults
-      :next
-    end
-
     # `RadioButtonGroup uses CurrentButton instead of Value, grrr
     # @param [String] key widget id
     # @return what property to ask for to get the widget value

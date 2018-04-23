@@ -1682,7 +1682,6 @@ module Yast
       NetworkInterfaces.GetFreeDevices(type, 10)
     end
 
-    # must be in sync with {#GetDefaultsForHW}
     def SetDefaultsForHW
       Builtins.y2milestone("SetDefaultsForHW type %1", @type)
       @mtu = "1492" if Arch.s390 && Builtins.contains(["lcs", "eth"], @type)
