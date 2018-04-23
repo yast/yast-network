@@ -25,6 +25,13 @@ module Y2Remote
       def socket_name
         SOCKET
       end
+
+      # Name of the associated service
+      #
+      # @return [String] service name
+      def service_name
+        socket_name
+      end
     end
   end
 end

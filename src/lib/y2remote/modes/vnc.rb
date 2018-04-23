@@ -20,6 +20,10 @@ module Y2Remote
       def socket_name
         SOCKET
       end
+
+      def service_name
+        "#{socket_name}@*"
+      end
     end
   end
 end

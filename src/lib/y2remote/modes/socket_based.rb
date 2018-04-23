@@ -16,6 +16,11 @@ module Y2Remote
         raise "Not implemented yet"
       end
 
+      # Name of the associated service that will be started
+      def service_name
+        raise "Not implemented yet"
+      end
+
       # Obtain the systemd socket itself
       #
       # @return [Yast::SystemdSocket, nil]
@@ -80,6 +85,10 @@ module Y2Remote
             _("Stopping systemd socket %{socket} has failed") % { socket: socket_name }
           )
           return false
+        end
+
+        if !Yast::Service.Stop(service_name)
+          Yast::Report.Error(Yast::Message.CannotStopService(service_name))
         end
 
         true
