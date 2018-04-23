@@ -354,7 +354,7 @@ module Yast
 
     # Inits item's udev rule to a default one if none is present
     #
-    # @param itemId [Integer] a key for {#Items}
+    # @param item_id [Integer] a key for {#Items}
     # @return [String] item's udev rule
     def InitItemUdevRule(item_id)
       udev = GetItemUdevRule(item_id)
@@ -1037,7 +1037,7 @@ module Yast
     # It goes through currently present devices and tries to mach it to given
     # old fashioned name
     #
-    # @returns [String] new style name in case of success. Given name otherwise.
+    # @return [String] new style name in case of success. Given name otherwise.
     def getDeviceName(oldname)
       newname = oldname
 
@@ -1171,7 +1171,7 @@ module Yast
     # networking section the function requires hash map with whole AY profile hash
     # representation as returned by LanAutoClient#FromAY profile.
     #
-    # @param [Hash] AY profile converted into hash
+    # @param settings [Hash] AY profile converted into hash
     # @return [Boolean] on success
     def Import(settings)
       reset_cache
@@ -1345,7 +1345,7 @@ module Yast
 
     # Returns the interfaces that are enslaved in the given bridge
     #
-    # @param [String] bridge name
+    # @param master [String] bridge name
     # @return [Array<String>] a list of interface names
     def bridge_slaves(master)
       bridge_index.select { |_k, v| v == master }.keys
@@ -1393,7 +1393,7 @@ module Yast
     # It supports differents types of summaries depending on the options[:type]
     #
     # @see LanItemsSummary
-    # @param options [Hash] summary options
+    # @param type [Hash] summary options
     # @return [String] summary of the configured items
     def summary(type = "default")
       LanItemsSummary.new.send(type)
@@ -1682,7 +1682,6 @@ module Yast
       NetworkInterfaces.GetFreeDevices(type, 10)
     end
 
-    # must be in sync with {#GetDefaultsForHW}
     def SetDefaultsForHW
       Builtins.y2milestone("SetDefaultsForHW type %1", @type)
       @mtu = "1492" if Arch.s390 && Builtins.contains(["lcs", "eth"], @type)
@@ -2327,7 +2326,7 @@ module Yast
 
     # Creates eth emulation for s390 devices
     #
-    # @param [Hash] an s390 device description (e.g. as obtained from AY profile).
+    # @param dev_attrs [Hash] an s390 device description (e.g. as obtained from AY profile).
     # If it contains s390 device attributes definition, then these definitions takes
     # precendence over values assigned to corresponding LanItems' global variables
     # before the method invocation. Hash keys are strings named after LanItems'

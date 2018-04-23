@@ -397,8 +397,8 @@ module Yast
     end
 
     # Default function to store the value of a widget.
-    # @param [String] key	id of the widget
-    # @param [Hash] event	the event being handled
+    # @param key [String] id of the widget
+    # @param _event [Hash] the event being handled
     def StoreHnWidget(key, _event)
       value = UI.QueryWidget(Id(key), :Value)
       SetHnItem(key, value)
@@ -486,8 +486,8 @@ module Yast
 
     # Event handler for resolver data (nameservers, searchlist)
     # enable or disable: is DHCP available?
-    # @param [String] key	the widget receiving the event
-    # @param [Hash] event	the event being handled
+    # @param key [String] the widget receiving the event
+    # @param _event [Hash] the event being handled
     # @return nil so that the dialog loops on
     def HandleResolverData(key, _event)
       # if this one is disabled, it means NM is in charge (see also initModifyResolvPolicy())
@@ -499,8 +499,8 @@ module Yast
     end
 
     # Validator for hostname, no_popup
-    # @param [String] key	the widget being validated
-    # @param [Hash] event	the event being handled
+    # @param key [String] the widget being validated
+    # @param _event [Hash] the event being handled
     # @return whether valid
     def ValidateHostname(key, _event)
       dhn = has_dhcp? && use_dhcp_hostname?
@@ -514,8 +514,8 @@ module Yast
     end
 
     # Validator for domain name, no_popup
-    # @param [String] key	the widget being validated
-    # @param [Hash] event	the event being handled
+    # @param key [String] the widget being validated
+    # @param _event [Hash] the event being handled
     # @return whether valid
     def ValidateDomain(key, _event)
       dhn = has_dhcp? && use_dhcp_hostname?
@@ -531,8 +531,8 @@ module Yast
     end
 
     # Validator for the search list
-    # @param [String] key	the widget being validated
-    # @param [Hash] event	the event being handled
+    # @param key [String] the widget being validated
+    # @param _event [Hash] the event being handled
     # @return whether valid
     def ValidateSearchList(key, _event)
       value = Convert.to_string(UI.QueryWidget(Id(key), :Value))
@@ -651,7 +651,7 @@ module Yast
     end
 
     # Used in GUI mode - initializes widgets according hn_settings
-    # @param [String] key ignored
+    # @param _key [String] ignored
     def initHostnameGlobal(_key)
       InitHnSettings()
 
@@ -673,8 +673,8 @@ module Yast
 
     # Used in GUI mode - updates and stores actuall hostname settings according dialog widgets content.
     # It calls store handler for every widget from hn_settings with event as an option.
-    # @param [String] key ignored
-    # @param [Hash] event user generated event
+    # @param _key [String] ignored
+    # @param event [Hash] user generated event
     def storeHostnameGlobal(_key, event)
       @hn_settings.keys.each do |key2|
         StoreHnWidget(key2, event) if UI.QueryWidget(Id(key2), :Enabled)

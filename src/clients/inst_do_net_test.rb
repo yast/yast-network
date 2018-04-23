@@ -597,8 +597,8 @@ module Yast
     # Function checks two versions of installed rpm and decides whether the second one is
     # newer than the first one. This function ignores non-numerical values in versions
     #
-    # @param string first version
-    # @param string second version
+    # @param installed_rpm_version [String] first version
+    # @param downloaded_rpm_version [String] second version
     # @return [Boolean] true if the second one is newer than the first one
     def IsDownloadedVersionNewer(installed_rpm_version, downloaded_rpm_version)
       installed_rpm_version_l = Builtins.filter(

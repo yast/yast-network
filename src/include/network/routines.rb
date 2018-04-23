@@ -183,8 +183,8 @@ module Yast
     end
 
     # Create a list of items for UI from the given list
-    # @param [Array] l given list for conversion
-    # @param [Fixnum] selected selected item (0 for the first)
+    # @param descriptions [Array] given list for conversion
+    # @param selected_index [Fixnum] selected item (0 for the first)
     # @return a list of items
     # @example [ "x", "y" ] -&gt; [ `item(`id(0), "x"), `item(`id(1), "y") ]
     def list2items(descriptions, selected_index)
@@ -199,8 +199,8 @@ module Yast
     # <li> undetected cards manually. there is no link status there
     # and it won't be displayed. all is ok. </li>
     # </ol>
-    # @param [Array<Hash>] l given list for conversion
-    # @param [Fixnum] selected selected item (0 for the first)
+    # @param descriptions [Array<Hash>] given list for conversion
+    # @param selected_index [Fixnum] selected item (0 for the first)
     # @return a list of items
     def hwlist2items(descriptions, selected_index)
       descriptions.map.with_index do |d, i|
@@ -675,7 +675,7 @@ module Yast
     # TODO: begin:
     # Following functions should be generalized and ported into yast-yast2
 
-    # @param Shell command to run
+    # @param command [String] Shell command to run
     # @return Hash in form $[ "exit": <command-exit-status>, "output": [ <1st line>, <2nd line>, ... ] ]
     def RunAndRead(command)
       ret = { "exit" => false, "output" => [] }
@@ -705,7 +705,7 @@ module Yast
       deep_copy(ret)
     end
 
-    # @param Shell command to run
+    # @param command [String] Shell command to run
     # @return whether command execution succeeds
     def Run(command)
       ret = SCR.Execute(path(".target.bash"), command).zero?
@@ -735,7 +735,7 @@ module Yast
 
     # Wrapper to call 'ip link set up' with the given interface
     #
-    # @param [String] name of interface to 'set link up'
+    # @param dev_name [String] name of interface to 'set link up'
     def SetLinkUp(dev_name)
       log.info("Setting link up for interface #{dev_name}")
       Run("ip link set #{dev_name} up")
@@ -743,7 +743,7 @@ module Yast
 
     # Wrapper to call 'ip link set down' with the given interface
     #
-    # @param [String] name of interface to 'set link down'
+    # @param dev_name [String] name of interface to 'set link down'
     def SetLinkDown(dev_name)
       log.info("Setting link down for interface #{dev_name}")
       Run("ip link set #{dev_name} down")
@@ -751,7 +751,7 @@ module Yast
 
     # Calls wicked ifup with the given interface
     #
-    # @param [String] name of interface to put down
+    # @param dev_name [String] name of interface to put down
     def SetIfaceUp(dev_name)
       log.info("Setting interface #{dev_name} up")
       Run("ifup #{dev_name}")
@@ -759,7 +759,7 @@ module Yast
 
     # Calls wicked ifdown with the given interface
     #
-    # @param [String] name of interface to put down
+    # @param dev_name [String] name of interface to put down
     def SetIfaceDown(dev_name)
       log.info("Setting interface #{dev_name} down")
       Run("ifdown #{dev_name}")
@@ -784,7 +784,7 @@ module Yast
     # port in various. If the driver module support it, we can check the phys
     # port id via sysfs reading the /sys/class/net/$dev_name/phys_port_id
     #
-    # @param [String] device name to check
+    # @param dev_name [String] device name to check
     # @return [String] physical port id if supported or a empty string if not
     def physical_port_id(dev_name)
       SCR.Read(
@@ -801,7 +801,7 @@ module Yast
 
     # Dev port of the given interface from /sys/class/net/$dev_name/dev_port
     #
-    # @param [String] device name to check
+    # @param dev_name [String] device name to check
     # @return [String] dev port or an empty string if not
     def dev_port(dev_name)
       SCR.Read(
@@ -960,7 +960,7 @@ module Yast
     # Returns a generic message informing user that incorrect DHCLIENT_SET_HOSTNAME
     # setup was detected.
     #
-    # @param [Array<String>] list of incorrectly configured devices
+    # @param cfgs [Array<String>] list of incorrectly configured devices
     # @return [String] a message stating that incorrect DHCLIENT_SET_HOSTNAME setup was detected
     def fix_dhclient_msg(cfgs)
       format(
@@ -976,7 +976,7 @@ module Yast
 
     # A popup informing user that incorrent DHCLIENT_SET_HOSTNAME was detected
     #
-    # @param [Array<String>] list of incorrectly configured devices
+    # @param devs [Array<String>] list of incorrectly configured devices
     # @return [void]
     def fix_dhclient_warning(devs)
       Report.Warning(fix_dhclient_msg(devs))

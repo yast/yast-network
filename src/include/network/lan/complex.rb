@@ -408,7 +408,6 @@ module Yast
                 return nil # means cancel
               end
 
-              # TODO: move the defaults to GetDefaultsForHW
               LanItems.startmode = "ifplugd"
             end
           else

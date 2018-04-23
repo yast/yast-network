@@ -1144,8 +1144,8 @@ module Yast
 
     # Event handler for EAP mode:
     # enable or disable appropriate widgets
-    # @param [String] key	the widget receiving the event
-    # @param [Hash] event	the event being handled
+    # @param key [String] the widget receiving the event
+    # @param _event [Hash] the event being handled
     # @return nil so that the dialog loops on
     def HandleEapMode(key, _event)
       tls = UI.QueryWidget(Id(key), :Value) == "TLS"
@@ -1221,8 +1221,8 @@ module Yast
     end
 
     # Remap the buttons to their Wizard Sequencer values
-    # @param [String] key	the widget receiving the event
-    # @param [Hash] event	the event being handled
+    # @param _key [String] the widget receiving the event
+    # @param event [Hash] the event being handled
     # @return nil so that the dialog loops on
     def HandleDetails(_key, event)
       event = deep_copy(event)
@@ -1231,8 +1231,8 @@ module Yast
     end
 
     # Called to validate that the file entered exists
-    # @param [String] key widget id
-    # @param [Hash] event ?
+    # @param key [String] widget id
+    # @param _event [Hash] the event being handled
     # @return ok?
     def ValidateFileExists(key, _event)
       file = Convert.to_string(UI.QueryWidget(Id(key), :Value))
@@ -1265,8 +1265,8 @@ module Yast
     end
 
     # Called to validate that the whole dialog makes sense together
-    # @param [String] key widget id
-    # @param [Hash] event ?
+    # @param _key [String] widget id
+    # @param _event [Hash] the event being handled
     # @return ok?
     def ValidateWpaEap(_key, _event)
       tmp = Builtins.listmap(

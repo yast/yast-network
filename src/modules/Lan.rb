@@ -239,9 +239,7 @@ module Yast
     end
 
     # Read all network settings from the SCR
-    # @param [Symbol] cache:
-    #  `cache=use cached data,
-    #  `nocache=reread from disk (for reproposal); TODO pass to submodules
+    # @param cache [Symbol] :cache=use cached data, :nocache=reread from disk TODO pass to submodules
     # @return true on success
     def Read(cache)
       if cache == :cache && @initialized
@@ -395,7 +393,7 @@ module Yast
     end
 
     # (a specialization used when a parameterless function is needed)
-    # @return Read(`cache)
+    # @return [Boolean] true on success
     def ReadWithCache
       Read(:cache)
     end
@@ -416,16 +414,13 @@ module Yast
     end
 
     def writeIPv6
-      #  SCR::Write(.target.string, "/etc/modprobe.d/ipv6", sformat("%1install ipv6 /bin/true", ipv6?"#":""));
-      # uncomment to write to old place (and comment code bellow)
-      #  SCR::Write(.target.string, "/etc/modprobe.d/50-ipv6.conf", sformat("%1install ipv6 /bin/true\n", ipv6?"#":""));
       filename = "/etc/sysctl.conf"
       sysctl = Convert.to_string(SCR.Read(path(".target.string"), filename))
       sysctl_row = Builtins.sformat(
         "%1net.ipv6.conf.all.disable_ipv6 = 1",
         @ipv6 ? "# " : ""
       )
-      found = false # size(regexptokenize(sysctl, "(net.ipv6.conf.all.disable_ipv6)"))>0;
+      found = false
       file = []
       Builtins.foreach(Builtins.splitstring(sysctl, "\n")) do |row|
         if Ops.greater_than(
@@ -745,7 +740,7 @@ module Yast
 
     # Import data.
     # It expects data described networking.rnc
-    # and then passed through {LanAutoClient#FromAY}.
+    # and then passed through {Lan#FromAY}.
     # Most prominently, instead of a flat list called "interfaces"
     # we import a 2-level map of typed "devices"
     # @param [Hash] settings settings to be imported
@@ -881,8 +876,7 @@ module Yast
       true
     end
 
-    # Delete the given device
-    # @param name device to delete
+    # Delete current device (see LanItems::current)
     # @return true if success
     def Delete
       LanItems.DeleteItem
@@ -975,49 +969,23 @@ module Yast
       nil
     end
 
+    # Proposes additional packages when needed by current networking setup
+    #
     # @return [Array] of packages needed when writing the config
     def Packages
-      # various device types require some special packages ...
-      type_requires = {
-        # for wlan require iw instead of wireless-tools (bnc#539669)
-        "wlan" => "iw",
-        "vlan" => "vlan",
-        "tun"  => "tunctl",
-        "tap"  => "tunctl"
-      }
-      # ... and some options require special packages as well
-      option_requires = {
-        "WIRELESS_AUTH_MODE" => {
-          "psk" => "wpa_supplicant",
-          "eap" => "wpa_supplicant"
-        }
-      }
-
       pkgs = []
-      type_requires.each do |type, package|
-        ifaces = NetworkInterfaces.List(type)
-        next if ifaces.empty?
-
-        Builtins.y2milestone(
-          "Network interface type #{type} requires package #{package}"
-        )
-        pkgs << package if !PackageSystem.Installed(package)
-      end
-
-      option_requires.each do |option, option_values|
-        option_values.each do |value, package|
-          next if NetworkInterfaces.Locate(option, value) == []
-
-          Builtins.y2milestone(
-            "Network interface with option #{option}=#{value} requires package #{package}"
-          )
-          pkgs << package if !PackageSystem.Installed(package)
-        end
-      end
 
       if NetworkService.is_network_manager
         pkgs << "NetworkManager" if !PackageSystem.Installed("NetworkManager")
+      elsif !PackageSystem.Installed("wpa_supplicant")
+        # we have to add wpa_supplicant when wpa is in game, wicked relies on it
+        pkgs << "wpa_supplicant" if NetworkInterfaces.Locate("WIRELESS_AUTH_MODE", "psk")
+        pkgs << "wpa_supplicant" if NetworkInterfaces.Locate("WIRELESS_AUTH_MODE", "eap")
       end
+
+      pkgs.uniq!
+
+      log.info("Additional packages requested by yast2-network: #{pkgs.inspect}") if !pkgs.empty?
 
       pkgs
     end

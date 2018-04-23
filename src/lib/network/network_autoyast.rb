@@ -26,7 +26,7 @@ module Yast
 
     # Merges existing config from system into given configuration map
     #
-    # @param [Hash, nil] configuration map
+    # @param conf [Hash, nil] configuration map
     #
     # @return updated configuration map
     def merge_configs(conf)
@@ -281,11 +281,11 @@ module Yast
 
     # Renames a network device represented by given item.
     #
-    # @param [Integer] item is an item id. See LanItems for detail
-    # @param [String] name_to new device name
-    # @param [String] attr an udev attribute usable in NIC's rule. Currently just
+    # @param item [Integer] is an item id. See LanItems for detail
+    # @param name_to [String] new device name
+    # @param attr [String] an udev attribute usable in NIC's rule. Currently just
     #  "KERNELS" or "ATTR{address}" makes sense. This parameter is optional
-    # @param [String] value for the given udev attribute. Optional parameter.
+    # @param key [String] for the given udev attribute. Optional parameter.
     def rename_lan_item(item, name_to, attr = nil, key = nil)
       return if item.nil? || item < 0 || item >= LanItems.Items.size
       return if name_to.nil? || name_to.empty?
@@ -375,7 +375,7 @@ module Yast
 
     # Finds a LanItem which name is in collision to the provided name
     #
-    # @param [String] a device name (eth0, ...)
+    # @param name [String] a device name (eth0, ...)
     # @return [Integer] item id (see LanItems::Items)
     def colliding_item(name)
       colliding_item, _item_map = LanItems.Items.find do |i, _|

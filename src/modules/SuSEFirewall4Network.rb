@@ -262,7 +262,7 @@ module Yast
     # Function sets that a firewall proposal was changed by user
     # by editing firewall zone of network interface
     # (applicable during 2nd stage of installation only)
-    # @param boolean whether proposal was changed by user
+    # @param changed [Boolean] whether proposal was changed by user
     def ChangedByUser(changed)
       SuSEFirewallProposal.SetChangedByUser(changed) if Stage.cont
 
@@ -276,7 +276,7 @@ module Yast
     end
 
     # Sets whether firewall should be enabled
-    # @param boolean new state
+    # @param enabled [Boolean] new state
     def SetEnabled1stStage(enabled)
       @firewall_enabled_1st_stage = enabled
 
@@ -290,7 +290,7 @@ module Yast
     end
 
     # Sets whether SSH port should be opened in firewall
-    # @param boolean new state
+    # @param enabled [Boolean] new state
     def SetSshEnabled1stStage(enabled)
       @ssh_enabled_1st_stage = enabled
 
@@ -303,7 +303,7 @@ module Yast
     end
 
     # Sets whether start sshd
-    # @param boolean new state
+    # @param enabled [Boolean] new state
     def SetSshdEnabled(enabled)
       @sshd_enabled = enabled
 
@@ -324,7 +324,7 @@ module Yast
     end
 
     # Sets whether VNC ports should be opened in firewall
-    # @param boolean new state
+    # @param enabled [Boolean] new state
     def SetVncEnabled1stStage(enabled)
       @vnc_enabled_1st_stage = enabled
 
