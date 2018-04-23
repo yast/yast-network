@@ -2,7 +2,8 @@
 Sat Apr 21 18:15:56 UTC 2018 - mfilka@suse.com
 
 - bnc#1089471
-  - do not propose vlan package for installation
+  - do not propose vlan, iw and tunctl packages for installation as
+    its functionality is implemented by wicked.
 - 4.0.27
 
 -------------------------------------------------------------------
