@@ -60,8 +60,30 @@ module Yast
 
   private
 
+    # Convenience methof for obtaining a Y2Firewall::Firewalld instance
     def firewalld
       Y2Firewall::Firewalld.instance
+    end
+
+    # Return whether all the firewalld remote service definitions are supported
+    #
+    # @return [Boolean] true if all the remote firewall services are supported;
+    # false otherwise
+    def fw_services_supported?
+      services = firewalld.api.services
+      Y2Remote::Remote::FIREWALL_SERVICES.all? { |s| services.include?(s) }
+    end
+
+    def install_fw_packages?
+      package = Y2Remote::Remote::FIREWALL_SERVICES_PACKAGE
+      Yast::Package.InstallAllMsg(
+        [package],
+        _(
+          "In order to be able to configure the firewall, " \
+          "the '%s' package need to be installed.\n" \
+          "Do you want to install it now?"
+        ) % package
+      )
     end
 
     def remote
@@ -112,12 +134,13 @@ module Yast
 
     # Main remote GUI
     def RemoteGUI
-      firewalld.read
-      ret = Y2Remote::Dialogs::Remote.new.run
-
       Wizard.CreateDialog
       Wizard.SetDesktopTitleAndIcon("remote")
       Wizard.SetNextButton(:next, Label.FinishButton)
+
+      firewalld.read
+      install_fw_packages? unless fw_services_supported?
+      ret = Y2Remote::Dialogs::Remote.new.run
 
       if ret == :next
         remote.write
