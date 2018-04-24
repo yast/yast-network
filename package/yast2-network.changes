@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Mon Apr 23 18:10:29 UTC 2018 - mfilka@suse.com
+
+- bnc#1089471 
+  - previous fix contains wrong check of ifcfg options and proposes
+    wpa_supplicant incorrectly. The check was fixed and
+    wpa_supplicant is proposed when needed only.
+- 4.0.28
+
+-------------------------------------------------------------------
 Sat Apr 21 18:15:56 UTC 2018 - mfilka@suse.com
 
 - bnc#1089471
