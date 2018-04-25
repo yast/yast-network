@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Apr 25 08:31:35 UTC 2018 - knut.anderssen@suse.com
+
+- Y2remote: When vnc is disabled disable also all the services that
+  are still enabled (bsc#1088646)
+- 4.0.30
+
+-------------------------------------------------------------------
 Wed Apr 25 07:01:58 UTC 2018 - mfilka@suse.com
 
 - bnc#1077435
