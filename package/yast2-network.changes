@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Apr 25 07:01:58 UTC 2018 - mfilka@suse.com
+
+- bnc#1077435
+  - do not crash with internal error when /etc/hosts is corrupted
+- 4.0.29
+
+-------------------------------------------------------------------
 Mon Apr 23 18:10:29 UTC 2018 - mfilka@suse.com
 
 - bnc#1089471 
