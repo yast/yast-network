@@ -329,4 +329,65 @@ describe Y2Remote::Remote do
       end
     end
   end
+
+  describe ".configure_display_manager" do
+    let(:modes) { [vnc, web] }
+    before do
+      allow(subject).to receive(:modes).and_return(modes)
+      allow(display_manager).to receive(:write_remote_access)
+      allow(Y2Remote::Modes).to receive(:update_status)
+    end
+
+    context "when vnc is disabled" do
+      let(:modes) { [] }
+
+      it "disables all the vnc modes that are still enabled" do
+        expect(Y2Remote::Modes).to receive(:update_status).with([])
+        subject.configure_display_manager
+      end
+
+      it "disables the remote access in the display manager" do
+        expect(display_manager).to receive(:write_remote_access).with(false)
+
+        subject.configure_display_manager
+      end
+    end
+
+    context "when vnc is enabled" do
+      before do
+        allow(Yast::Package).to receive(:InstallAll)
+        allow(subject).to receive(:required_packages).and_return("packages")
+      end
+
+      it "tries to install all the required packages for the enabled modes" do
+        expect(Yast::Package).to receive(:InstallAll).with("packages")
+
+        subject.configure_display_manager
+      end
+
+      context "if all the required packages are installed" do
+        before do
+          allow(Yast::Package).to receive(:InstallAll).and_return(true)
+        end
+
+        it "enables the configured vnc modes" do
+          expect(Y2Remote::Modes).to receive(:update_status).with([vnc, web])
+          subject.configure_display_manager
+        end
+
+        it "enables the remote access in the display manager" do
+          expect(display_manager).to receive(:write_remote_access).with(true)
+
+          subject.configure_display_manager
+        end
+      end
+
+      context "if some required package was not installed or available" do
+        it "returns false" do
+          expect(Yast::Package).to receive(:InstallAll).and_return(false)
+          subject.configure_display_manager
+        end
+      end
+    end
+  end
 end
