@@ -157,16 +157,11 @@ module Y2Remote
     #
     # @return [Boolean] true if success, false otherwise
     def configure_display_manager
-      if enabled?
-        # Install required packages
-        if !Yast::Package.InstallAll(required_packages)
-          log.error "Installing of required packages failed"
-          return false
-        end
-
-        Y2Remote::Modes.update_status(modes)
+      if enabled? && !Yast::Package.InstallAll(required_packages)
+        log.error "Installing of required packages failed"
+        return false
       end
-
+      Y2Remote::Modes.update_status(modes)
       display_manager.write_remote_access(enabled?)
     end
 
