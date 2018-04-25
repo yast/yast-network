@@ -354,25 +354,26 @@ module Yast
   def load_hosts
     return false if SCR.Read(path(".target.size"), CFA::Hosts::PATH) <= 0
 
-    begin
-      @hosts = CFA::Hosts.new
-      @hosts.load
+    @hosts = CFA::Hosts.new
+    @hosts.load
 
-      # save hosts to check for changes later
-      @hosts_init = CFA::Hosts.new
-      @hosts_init.load
-    rescue IOError, SystemCallError, RuntimeError => error
-      log.error("Loading /etc/hosts failed with exception #{error.inspect}")
-
-      # get clean environment, crashing due to exception is no option here
-      @hosts = CFA::Hosts.new
-      @hosts_init = nil
-
-      # reraise the exception - let the gui takes care of it
-      raise
-    end
+    # save hosts to check for changes later
+    @hosts_init = CFA::Hosts.new
+    @hosts_init.load
 
     true
+
+  # rescuing only those exceptions which are related to /etc/hosts access
+  # (e.g. corrupted file, file access error, ...)
+  rescue IOError, SystemCallError, RuntimeError => error
+    log.error("Loading /etc/hosts failed with exception #{error.inspect}")
+
+    # get clean environment, crashing due to exception is no option here
+    @hosts = CFA::Hosts.new
+    @hosts_init = nil
+
+    # reraise the exception - let the gui takes care of it
+    raise
   end
 
   Host = HostClass.new

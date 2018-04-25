@@ -394,8 +394,8 @@ module Yast
         msg = format(_("Network configuration is corrupted.\n"\
                 "If you continue resulting configuration can be malformed."\
                 "\n\n%s"), wrap_string(error.message))
-        ret = @gui && Popup.ContinueCancel(msg)
-        return false if !ret
+        return false if !@gui
+        return false if !Popup.ContinueCancel(msg)
       end
 
       # Final progress step
