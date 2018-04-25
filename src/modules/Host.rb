@@ -114,7 +114,7 @@ module Yast
     # @return true if success, raises an exception in case of malformed file
     def Read
       return true if @initialized
-      return true if !load_hosts
+      return false if !load_hosts
 
       Builtins.y2debug("hosts=#{@hosts.inspect}")
 
@@ -366,6 +366,18 @@ module Yast
     @hosts_init.load
 
     true
+
+  # rescuing only those exceptions which are related to /etc/hosts access
+  # (e.g. corrupted file, file access error, ...)
+  rescue IOError, SystemCallError, RuntimeError => error
+    log.error("Loading /etc/hosts failed with exception #{error.inspect}")
+
+    # get clean environment, crashing due to exception is no option here
+    @hosts = CFA::Hosts.new
+    @hosts_init = nil
+
+    # reraise the exception - let the gui takes care of it
+    raise
   end
 
   Host = HostClass.new
