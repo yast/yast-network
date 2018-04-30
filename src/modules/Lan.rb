@@ -286,9 +286,6 @@ module Yast
       end
 
       return false if Abort()
-
-      return false if Abort()
-      # Progress step 1/8
       ProgressNextStage(_("Detecting ndiswrapper...")) if @gui
       # modprobe ndiswrapper before hwinfo when needed (#343893)
       if !Mode.autoinst && PackageSystem.Installed("ndiswrapper")
@@ -325,11 +322,9 @@ module Yast
         end
       end
 
-      # ReadHardware(""); /* TESTING
       Builtins.sleep(sl)
 
       return false if Abort()
-      # Progress step 2/8
       ProgressNextStage(_("Detecting network devices...")) if @gui
       # Dont read hardware data in config mode
       NetHwDetection.Start if !Mode.config
@@ -337,14 +332,12 @@ module Yast
       Builtins.sleep(sl)
 
       return false if Abort()
-      # Progress step 3/8 - multiple devices may be present, really plural
       ProgressNextStage(_("Reading device configuration...")) if @gui
       LanItems.Read
 
       Builtins.sleep(sl)
 
       return false if Abort()
-      # Progress step 4/8
       ProgressNextStage(_("Reading network configuration...")) if @gui
       begin
         NetworkConfig.Read
@@ -354,7 +347,6 @@ module Yast
         Builtins.sleep(sl)
 
         return false if Abort()
-        # Progress step 5/8
         ProgressNextStage(_("Reading hostname and DNS configuration...")) if @gui
         DNS.Read
 
@@ -362,18 +354,11 @@ module Yast
         Builtins.sleep(sl)
 
         return false if Abort()
-        # Progress step 6/8
-        ProgressNextStage(_("Reading installation information...")) if @gui
-        Builtins.sleep(sl)
-
-        return false if Abort()
-        # Progress step 7/8
         ProgressNextStage(_("Reading routing configuration...")) if @gui
         Routing.Read
         Builtins.sleep(sl)
 
         return false if Abort()
-        # Progress step 8/8
         ProgressNextStage(_("Detecting current status...")) if @gui
         NetworkService.Read
         Builtins.sleep(sl)
