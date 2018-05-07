@@ -328,8 +328,20 @@ module Yast
 
       copy_from_instsys
       configure_target
+      enable_wicked_debug if debug_wicked?
 
       nil
+    end
+
+    def enable_wicked_debug
+      log.info("Enabling wicked debug")
+      SCR.Write(path(".sysconfig.network.config.WICKED_DEBUG"), "all")
+      SCR.Write(path(".sysconfig.network.config.WAIT_FOR_INTERFACES"), "90")
+      SCR.Write(path(".sysconfig.network.config"),nil)
+    end
+
+    def debug_wicked?
+      Linuxrc.InstallInf("Cmdline").to_s.split.include?("wicked.debug=1")
     end
   end
 end
