@@ -22,13 +22,13 @@ describe Yast::SaveNetworkClient do
       Y2Storage::StorageManager.create_test_instance
 
       staging = Y2Storage::StorageManager.instance.staging
-      allow(staging).to receive(:filesystem_in_network?).and_return(in_network)
+      allow(staging).to receive(:filesystem_in_network?).with("/").and_return(in_network)
       allow(subject).to receive(:save_network)
       # Mainly for import
       subject.main
     end
 
-    context "when installation directory is in a network device" do
+    context "when the root filesystem of the target system is in a network device" do
       let(:in_network) { true }
 
       it "tunes ifcfg file for remote filesystem" do
@@ -38,7 +38,7 @@ describe Yast::SaveNetworkClient do
       end
     end
 
-    context "when installation directory is in a local device" do
+    context "when the root filesystem of the target system is in a local device" do
       let(:in_network) { false }
 
       it "does not touch any configuration file" do
