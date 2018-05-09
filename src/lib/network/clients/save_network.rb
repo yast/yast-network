@@ -37,16 +37,14 @@ module Yast
       # storage-ng
       # Check if installation is targeted to a remote destination.
       devicegraph = Y2Storage::StorageManager.instance.staging
-      is_disk_in_network = devicegraph.filesystem_in_network?(
-        Installation.destdir
-      )
+      is_disk_in_network = devicegraph.filesystem_in_network?("/")
 
       if !is_disk_in_network
-        log.info("Directory \"#{Installation.destdir}\" is not on a network based device")
+        log.info("Root filesystem is not on a network based device")
         return
       end
 
-      log.info("Directory \"#{Installation.destdir}\" is on a network based device")
+      log.info("Root filesystem is on a network based device")
 
       # tune ifcfg file for remote filesystem
       SCR.Execute(
