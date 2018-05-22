@@ -18,53 +18,54 @@ describe Yast::LanClass do
         .and_return(nm_enabled)
     end
 
-  context "When NetworkManager is not going to be installed" do
-    let(:nm_enabled) { false }
+    context "When NetworkManager is not going to be installed" do
+      let(:nm_enabled) { false }
 
-    before(:each) do
-      allow(Yast::PackageSystem)
-        .to receive(:Installed)
-        .with("wpa_supplicant")
-        .at_least(:once)
-        .and_return(false)
+      before(:each) do
+        allow(Yast::PackageSystem)
+          .to receive(:Installed)
+          .with("wpa_supplicant")
+          .at_least(:once)
+          .and_return(false)
+      end
+
+      it "does not list wpa_supplicant package when WIRELESS_AUTH_MODE is not psk or eap" do
+        expect(Yast::NetworkInterfaces)
+          .to receive(:Locate)
+          .with("WIRELESS_AUTH_MODE", /(psk|eap)/)
+          .at_least(:once)
+          .and_return([])
+
+        expect(Yast::Lan.Packages).not_to include "wpa_supplicant"
+      end
+
+      it "lists wpa_supplicant package when WIRELESS_AUTH_MODE is psk or eap" do
+        # when checking options, LanClass#Packages currently cares only if
+        # WIRELESS_AUTH_MODE={psk, eap} is present
+        expect(Yast::NetworkInterfaces)
+          .to receive(:Locate)
+          .with("WIRELESS_AUTH_MODE", /(psk|eap)/)
+          .at_least(:once)
+          .and_return(["place_holder"])
+
+        expect(Yast::Lan.Packages).to include "wpa_supplicant"
+      end
     end
 
-    it "does not list wpa_supplicant package when WIRELESS_AUTH_MODE is not psk or eap" do
-      expect(Yast::NetworkInterfaces)
-        .to receive(:Locate)
-        .with("WIRELESS_AUTH_MODE", /(psk|eap)/)
-        .at_least(:once)
-        .and_return([])
+    context "When NetworkManager is selected for the target" do
+      let(:nm_enabled) { true }
 
-      expect(Yast::Lan.Packages).not_to include "wpa_supplicant"
-    end
-
-    it "lists wpa_supplicant package when WIRELESS_AUTH_MODE is psk or eap" do
-      # when checking options, LanClass#Packages currently cares only if
-      # WIRELESS_AUTH_MODE={psk, eap} is present
-      expect(Yast::NetworkInterfaces)
-        .to receive(:Locate)
-        .with("WIRELESS_AUTH_MODE", /(psk|eap)/)
-        .at_least(:once)
-        .and_return(["place_holder"])
-
-      expect(Yast::Lan.Packages).to include "wpa_supplicant"
-    end
-  end
-
-  context "When NetworkManager is selected for the target" do
-    let(:nm_enabled) { true }
-
-    it "lists NetworkManager package" do
-      expect(Yast::NetworkService)
-        .to receive(:is_network_manager)
-        .and_return(true)
-      expect(Yast::PackageSystem)
-        .to receive(:Installed)
-        .with("NetworkManager")
-        .at_least(:once)
-        .and_return(false)
-      expect(Yast::Lan.Packages).to include "NetworkManager"
+      it "lists NetworkManager package" do
+        expect(Yast::NetworkService)
+          .to receive(:is_network_manager)
+          .and_return(true)
+        expect(Yast::PackageSystem)
+          .to receive(:Installed)
+          .with("NetworkManager")
+          .at_least(:once)
+          .and_return(false)
+        expect(Yast::Lan.Packages).to include "NetworkManager"
+      end
     end
   end
 
