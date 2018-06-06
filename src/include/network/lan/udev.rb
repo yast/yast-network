@@ -13,7 +13,7 @@ module Yast
     #
     # Udev rule is based on device's MAC.
     #
-    # @return [Array] an udev rule
+    # @return [Array<String>] an udev rule
     def GetDefaultUdevRule(dev_name, dev_mac)
       [
         "SUBSYSTEM==\"net\"",

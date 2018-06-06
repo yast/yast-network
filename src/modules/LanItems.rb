@@ -42,7 +42,6 @@ module Yast
   #
   # 3. ...
   #
-
   # FIXME: well this class really is not nice
   class LanItemsClass < Module
     attr_reader :ipoib_modes
@@ -230,7 +229,7 @@ module Yast
       GetLanItem(@current)
     end
 
-    # Returns true if the item (see LanItems::Items) has
+    # Returns true if the item (see {#Items}) has
     # netconfig configuration.
     #
     # @param itemId [Integer] a key for {#Items}
@@ -241,7 +240,7 @@ module Yast
       ret
     end
 
-    # Returns true if current (see LanItems::current) has
+    # Returns true if the {#current} item has a
     # configuration
     def IsCurrentConfigured
       IsItemConfigured(@current)
@@ -340,6 +339,7 @@ module Yast
     # Returns udev rule known for particular item
     #
     # @param itemId [Integer] a key for {#Items}
+    # @return [Array<String>]
     def GetItemUdevRule(itemId)
       Ops.get_list(GetLanItem(itemId), ["udev", "net"], [])
     end
@@ -355,7 +355,7 @@ module Yast
     # Inits item's udev rule to a default one if none is present
     #
     # @param item_id [Integer] a key for {#Items}
-    # @return [String] item's udev rule
+    # @return [Array<String>] item's udev rule
     def InitItemUdevRule(item_id)
       udev = GetItemUdevRule(item_id)
       return udev if !udev.empty?
@@ -501,7 +501,7 @@ module Yast
     # It also contain a logic on tuple operators. When the new_key is "NAME"
     # then assignment operator (=) is used. Otherwise equality operator (==) is used.
     # Thats bcs this function is currently used for touching "NAME", "KERNELS" and
-    # "ATTR{address}" keys only
+    # "ATTR!{address}" keys only
     #
     # @param replace_key [string] udev key which identifies tuple to be replaced
     # @param new_key     [string] new key to by used
@@ -731,10 +731,28 @@ module Yast
       NetworkInterfaces.Write("")
     end
 
-    # Exports configuration for use in AY profile
+    # Exports configuration for use in AY profile.
+    # Note that this is not exactly what is described by the RNC schema,
+    # because {LanAutoClient#ToAY} does a conversion.
     #
-    # TODO: it currently exports only udevs (as a consequence of dropping LanUdevAuto)
-    # so once it is extended, all references has to be checked
+    # @return [Hash] see the example
+    # @example
+    #    {
+    #      "net-udev" => {
+    #        "eth0" => { "rule" => "ATTR{address}", "name" => "eth0", "value" => "00:50:56:12:34:56" },
+    #        "eth1" => { "rule" => "KERNELS",       "name" => "eth1", "value" => "0000:00:1f.6" }
+    #
+    #      },
+    #      "s390-devices" => {
+    #        "eth0" => {
+    #          "type" => "qeth",
+    #          "chanids" => "...",
+    #          "portname" => "...",
+    #          "protocol" => "...",
+    #          "layer2" => true
+    #        }
+    #      }
+    #    }
     def export(devices)
       export_udevs(devices)
     end
@@ -2789,6 +2807,8 @@ module Yast
 
       GetDeviceNames(items)
     end
+
+  public # rubocop:disable Lint/UselessAccessModifier
 
     # @attribute Items
     # @return [Hash<Integer, Hash<String, Object> >]
