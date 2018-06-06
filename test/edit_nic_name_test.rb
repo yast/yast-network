@@ -88,11 +88,11 @@ module Yast
           .and_return(:ok)
 
         expect(@edit_name_dlg)
-          .to receive(:CheckUdevNicName)
+          .to receive(:check_new_device_name)
           .with(EXISTING_NEW_NAME)
           .and_return(false)
         expect(@edit_name_dlg)
-          .to receive(:CheckUdevNicName)
+          .to receive(:check_new_device_name)
           .with(NEW_NAME)
           .and_return(true)
 

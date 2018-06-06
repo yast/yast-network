@@ -54,7 +54,7 @@ module Yast
 
         new_name = UI.QueryWidget(:dev_name, :Value)
 
-        if CheckUdevNicName(new_name)
+        if check_new_device_name(new_name)
           LanItems.rename(new_name)
         else
           UI.SetFocus(:dev_name)
@@ -137,8 +137,8 @@ module Yast
     #
     # Pops up an explanation if the name is invalid
     #
-    # @return [boolean] false if name is invalid
-    def CheckUdevNicName(name)
+    # @return [Boolean] false if name is invalid
+    def check_new_device_name(name)
       # check if the name is assigned to another device already
       if LanItems.GetNetcardNames.include?(name) && name != LanItems.GetCurrentName
         Popup.Error(_("Configuration name already exists."))
