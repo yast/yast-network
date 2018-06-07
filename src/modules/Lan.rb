@@ -290,9 +290,6 @@ module Yast
 
       return false if Abort()
 
-      # check the environment
-      #    if(!Confirm::MustBeRoot()) return false;
-
       return false if Abort()
       # Progress step 1/9
       ProgressNextStage(_("Detecting ndiswrapper...")) if @gui
@@ -352,46 +349,55 @@ module Yast
       return false if Abort()
       # Progress step 4/9
       ProgressNextStage(_("Reading network configuration...")) if @gui
-      NetworkConfig.Read
+      begin
+        NetworkConfig.Read
 
-      @ipv6 = readIPv6
+        @ipv6 = readIPv6
 
-      Builtins.sleep(sl)
+        Builtins.sleep(sl)
 
-      return false if Abort()
-      # Progress step 5/9
-      ProgressNextStage(_("Reading firewall settings...")) if @gui
-      orig = Progress.set(false)
-      SuSEFirewall4Network.Read
-      Progress.set(orig) if @gui
-      Builtins.sleep(sl)
+        return false if Abort()
+        # Progress step 5/9
+        ProgressNextStage(_("Reading firewall settings...")) if @gui
+        orig = Progress.set(false)
+        SuSEFirewall4Network.Read
+        Progress.set(orig) if @gui
+        Builtins.sleep(sl)
 
-      return false if Abort()
-      # Progress step 6/9
-      ProgressNextStage(_("Reading hostname and DNS configuration...")) if @gui
-      DNS.Read
-      Host.Read
-      Builtins.sleep(sl)
+        return false if Abort()
+        # Progress step 5/8
+        ProgressNextStage(_("Reading hostname and DNS configuration...")) if @gui
+        DNS.Read
 
-      return false if Abort()
-      # Progress step 7/9
-      ProgressNextStage(_("Reading installation information...")) if @gui
-      #    ReadInstallInf();
-      Builtins.sleep(sl)
+        Host.Read
+        Builtins.sleep(sl)
 
-      return false if Abort()
-      # Progress step 8/9
-      ProgressNextStage(_("Reading routing configuration...")) if @gui
-      Routing.Read
-      Builtins.sleep(sl)
+        return false if Abort()
+        # Progress step 6/8
+        ProgressNextStage(_("Reading installation information...")) if @gui
+        Builtins.sleep(sl)
 
-      return false if Abort()
-      # Progress step 9/9
-      ProgressNextStage(_("Detecting current status...")) if @gui
-      NetworkService.Read
-      Builtins.sleep(sl)
+        return false if Abort()
+        # Progress step 7/8
+        ProgressNextStage(_("Reading routing configuration...")) if @gui
+        Routing.Read
+        Builtins.sleep(sl)
 
-      return false if Abort()
+        return false if Abort()
+        # Progress step 8/8
+        ProgressNextStage(_("Detecting current status...")) if @gui
+        NetworkService.Read
+        Builtins.sleep(sl)
+
+        return false if Abort()
+      rescue IOError, SystemCallError, RuntimeError => error
+        msg = format(_("Network configuration is corrupted.\n"\
+                "If you continue resulting configuration can be malformed."\
+                "\n\n%s"), wrap_string(error.message))
+        return false if !@gui
+        return false if !Popup.ContinueCancel(msg)
+      end
+
       # Final progress step
       ProgressNextStage(_("Finished")) if @gui
       Builtins.sleep(sl)
@@ -963,6 +969,10 @@ module Yast
     publish function: :HaveXenBridge, type: "boolean ()"
 
   private
+
+    def wrap_string(s, width = 50)
+      s.gsub(/\s+/, " ").gsub(/(.{1,#{width}})( |\Z)/, "\\1\n")
+    end
 
     def activate_network_service
       # If the second installation stage has been called by yast.ssh via
