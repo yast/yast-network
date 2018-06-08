@@ -143,6 +143,22 @@ describe Yast::Host do
 
       expect(Yast::Host.name_map).to eql(etc_hosts.merge("10.20.1.29" => ["beholder"]))
     end
+
+    context "when the profile contains multiple host entries for ::1" do
+      let(:holder_entries) { ["beholder.test.com test.com", "second.test.com second"] }
+      let(:hosts) do
+        {
+          "::1"        => ["localhost", "ipv6-localhost", "ipv6-loopback"],
+          "10.20.1.29" => holder_entries
+        }
+      end
+
+      it "converts each duplicated entry to just one line" do
+        Yast::Host.Import("hosts" => hosts)
+
+        expect(Yast::Host.name_map["10.20.1.29"]).to eql([holder_entries.join(" ")])
+      end
+    end
   end
 
   describe ".Export" do
