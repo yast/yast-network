@@ -1,0 +1,244 @@
+* Udev Rules in yast-network
+
+https://github.com/yast/yast-network
+
+** What are Udev Rules
+
+If a computer has two network cards, how does it determine which one is *eth0*
+and which one is *eth1*?
+
+A Linux machine may have several network interfaces, such as eth0, eth1,
+wlan0, enp0s3.
+These udev rules ensure the correct assignment of interface names.
+
+_(
+  "<p><b>Udev Rules</b> are rules for the kernel device manager that allow\n" \
+    "associating the MAC address or BusID of the network device with its name (for\n" \
+    "example, eth1, wlan0 ) and assures a persistent device name upon reboot.\n"
+)
+
+For a NIC a widget exists where you can change its name and choose whether it
+will be pinned to its MAC (Ethernet address), or its PCI bus address.
+
+** Why
+
+The code of yast-network is messy, so Udev Rules is one area to clean it up.
+It is simple enough and well defined.
+
+** Plan
+
+- [x] collect all mentions of "udev" in yast-network
+- [ ] read them all and design a decent API
+- [ ] cover the code with tests
+- [ ] use the new API, possibly using old code underneath
+- [ ] replace old implementation with a better one
+
+** AY interface
+
+The rnc schema says all elements are optional
+but the SLE12(also 15) docs says name+rule+value are all required
+
+https://www.suse.com/documentation/sles-12/singlehtml/book_autoyast/book_autoyast.html#CreateProfile.Network.names
+
+Semantics: the device *name* is identified
+by the field with the key *rule* (sic!) having the value *value*
+(that does not allow some complex identifications)
+
+#+BEGIN_SRC xml
+<networking>
+  <net-udev config:type="list">
+    <rule>
+      <name>eth0</name>
+      <rule>ATTR{address}</rule>
+      <value>00:30:6E:08:FF:80</value>
+    </rule>
+  </net-udev>
+</networking>
+#+END_SRC
+
+** where is "udev" mentioned?
+#+BEGIN_SRC sh
+$ grep -r -H -i udev src | cut -d: -f1 | uniq -c | sort -n
+      1 src/lib/network/install_inf_convertor.rb
+      2 src/include/network/lan/complex.rb
+      2 src/scrconf/cfg_udev_persistent.scr
+      3 src/autoyast-rnc/networking.rnc
+      3 src/modules/Lan.rb
+      4 src/servers_non_y2/ag_udev_persistent
+      5 src/clients/lan_auto.rb
+     15 src/include/network/lan/hardware.rb
+     18 src/lib/network/clients/save_network.rb
+     19 src/lib/network/edit_nic_name.rb
+     26 src/include/network/lan/udev.rb
+     28 src/lib/network/network_autoyast.rb
+    127 src/modules/LanItems.rb
+#+END_SRC
+
+** Areas NOT in scope
+
+These are related to Udev in the current code but let's not touch them
+in this 1st stage.
+
+*** s390 rules (AY: networking/s390-devices)
+
+are similar but not really
+- set up a virtual device
+- do not include a name(!?)
+*** driver rules (selecting the driver seems broken?)
+the other part of ag_udev_persistent
+not part of AY?
+
+** API
+*** Naming
+
+Anything named "udev" should be code-clean.
+
+LanItems - keep it for now but remember that "item" is too generic
+  yet it combines info about a "nic" and its (stored) config.
+
+"Udev" is an implementation detail, the upper layer should say
+"NameRule"
+
+"Udev name" -> "device name", or "persistent device name"
+
+In LanItems, keep the general interface of item["udev"]["net"]
+so that existing code works, BUT
+  instead of ["net"] which is_a Array<String>
+  make       ["name_rule"] which is_a NameRule
+
+*** copying and identity
+#Items are deeply copied values? NO. GetLanItem and getCurrentItem return the
+original data.
+
+*** LanItems item API
+
+This is strictly speaking above our area of focus, but the current naming is
+so awful that at least a glossary is needed to be able to understand what's
+going on.
+
+**** current -> Integer
+the *index* of the current item
+**** GetLanItem(item_id) => item(item_id) # surprisingly no collisions with "item" lvar
+**** getCurrentItem      => current_item
+**** item_name_rule(item_id) = item(item_id)["udev"]["name_rule"]
+also considering that #item would be an adaptor object
+that would translate #name_rule to ["udev"]["name_rule"]
+Does it need to exist? Nil? NullRule?
+**** current_item_name_rule  =  current_item["udev"]["name_rule"]
+
+*** target API
+This is a sketch of the new API as emerging from the Usage section below
+**** NameRule
+***** @udev [UdevRule]
+***** #matcher= and #matcher(:bus_id or :mac)
+***** #value (case sensitive??)
+***** #name
+udev["NAME"]
+**** NameRules
+***** #pathname
+"/etc/udev/rules.d/70-persistent-net.rules"
+
+*** Usage
+Here I list all the mentions of "udev" in the code
+and sketch out how to write them better.
+**** InstallInfConvertor
+***** AllowUdevModify
+checks if cmdline contains "biosdevname=..."
+**** NetworkLanComplexInclude src/include/network/lan/complex.rb
+***** calls LanItems.update_item_udev_rule!(:bus_id)
+**** Lan#Export
+calls LanItems#Export
+**** lan_auto
+***** ToAY converts the net-udev piece from a hash to an array
+**** NetworkLanHardwareInclude
+it's the Hardware tab
+      device_name = LanItems.current_udev_name
+let's keep that
+**** save_network
+#copy_udev_rules
+
+s390 51* leave that
+
+the rule file needs to be copied from inst-sys to target:
+  need its fs path
+  NameRules#pathname (and use std ruby dirname+basename)
+BTW the https://bugzilla.suse.com/show_bug.cgi?id=293366#c7 comment means
+a mkdir -p is fine
+**** edit_nic_name EditNicName
+is a freshly rewritten class, yay 2013-09 mchf
+well, it is called like EditNicName.new.run
+and its #initialize uses the ugly LanItemsApi
+so does #run
+and #CheckUdevNicName (sic)
+***** to be removed:
+MAC_UDEV_ATTR   = "ATTR{address}".freeze
+BUSID_UDEV_ATTR = "KERNELS".freeze
+***** initialize
+@old_key = current_item_name_rule.matcher
+***** run
+        LanItems.update_item_udev_rule!(udev_type)
+(watch out, uses the ui symbol directly)
+***** CheckUdevNicName
+uses LanItems#GetCurrentName
+  which is GetDeviceName(@current) ... and it never uses the "udev name" which
+  confuses my naming plan :(
+renamed! to check_new_device_name
+**** network_autoyast
+renaming logic
+***** create_udevs
+"# Creates udev rules according definition from profile"
+rename to create_name_rules_from_profile
+uses LanItems.createUdevFromIfaceName - well drop that, SLE10 compat
+calls assign_udevs_to_devs
+***** assign_udevs_to_devs (udev_rules: Array<AY_rule>)
+  make nr = NameRule.from_ay(hash(name rule value))
+  it's a standalone one not part of NameRules
+  does an item match a NameRule
+
+  rename_lan_item
+***** rename_lan_item
+keep the signature because the renaming mess is fragile and we'll leave the
+  logic unchanged for now
+
+  LanItems.InitItemUdevRule(item_idx) # the only caller
+**** LanItems
+***** #current_udev_name
+deals with renaming, uses
+         LanItems.GetItemUdev("NAME")
+-> current_item_name_rule.name
+def current_item_name_rule; current_item["udev"]["name_rule"] + autovivify(?); end
+***** LanItems#update_item_udev_rule!(:mac or :bus_id)
+  implementation eventually does
+          Items()[@current]["udev"]["net"] = new_rule
+
+  LanItems.current is the *index*, duh
+
+so:
+  current_item_name_rule.matcher = :bus_id   # maybe make/use an Enum class? but a symbol is ok
+  # saving semantics?
+
+***** LanItems#export
+should produce the net-udev part for Export
+
+export_s390_devices
+export_net_udev
+ (warning, on s390 it constructs KERNELS rules detected from /sys
+  probably keep the weird impl)
+
+NameRule#to_ay ->
+ { "rule" => "KERNELS", "name" => "eth1", "value" => "0000:00:1f.6" }
+NameRules#to_ay ->
+ an array of (NameRule#to_ay)
+ (NOTE that LanItems#export needs a [name, rule]...to_h conversion until the
+ ToAY conversion is dropped)
+***** createUdevFromIfaceName
+rename to name_rules_from_sle10_names
+or just drop it quietly
+make implicitly defined rules via old style names
+  ifcfg-eth-id-nn-nn-nn...
+  ifcfg-eth-bus-nnnn-nn...
+***** InitItemUdevRule
+***** GetItemUdevRule(item_id) -> Array<String> rule
+       Ops.get_list(GetLanItem(itemId), ["udev", "net"], [])
+  =>
+  item_name_rule(item_id) -> NameRule
