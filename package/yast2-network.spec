@@ -1,7 +1,7 @@
 #
 # spec file for package yast2-network
 #
-# Copyright (c) 2017 SUSE LINUX GmbH, Nuernberg, Germany.
+# Copyright (c) 2018 SUSE LINUX GmbH, Nuernberg, Germany.
 #
 # All modifications and additions to the file contributed by third parties
 # remain the property of their copyright owners, unless otherwise agreed
@@ -17,7 +17,7 @@
 
 
 Name:           yast2-network
-Version:        3.2.50
+Version:        3.2.52
 Release:        0
 BuildArch:      noarch
 
