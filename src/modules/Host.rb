@@ -178,7 +178,7 @@ module Yast
       # use ::1 entry as a reference
       if (imported_hosts["::1"] || []).size > 1
         imported_hosts.each_pair do |k, v|
-          imported_hosts[k] = v.join(" ")
+          imported_hosts[k] = [v.join(" ")]
         end
       end
 
