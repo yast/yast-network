@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Jun  7 10:48:42 UTC 2018 - knut.anderssen@suse.com
+
+- AutoYaST: Do not crash when trying to convert the /etc/hosts
+  profile declaration from multiple line host entries for the same
+  host to just one line (bnc#1095971)
+- 4.0.32
+
+-------------------------------------------------------------------
 Wed May  9 10:35:36 UTC 2018 - knut.anderssen@suse.com
 
 - Fix the check for adjusting ifcfg configuration in case of
