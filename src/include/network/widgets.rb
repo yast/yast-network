@@ -225,7 +225,8 @@ module Yast
     end
 
     def store_ipoib_mode_widget(key, _event)
-      LanItems.ipoib_mode = UI.QueryWidget(Id(key), :CurrentButton)
+      ipoib_mode = UI.QueryWidget(Id(key), :CurrentButton)
+      LanItems.ipoib_mode = ipoib_mode == "default" ? nil : ipoib_mode
     end
 
     def ipoib_mode_widget

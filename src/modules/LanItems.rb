@@ -200,6 +200,7 @@ module Yast
       @ipoib_mode = ""
       @ipoib_modes = {
         # translators: a possible value for: IPoIB device mode
+        "default"   => _("default"),
         "connected" => _("connected"),
         "datagram"  => _("datagram")
       }
@@ -2103,7 +2104,6 @@ module Yast
 
       when "ib"
         newdev["IPOIB_MODE"] = @ipoib_mode
-
       end
 
       if DriverType(@type) == "ctc"
