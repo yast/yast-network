@@ -22,6 +22,7 @@ module Yast
       Yast.import "Linuxrc"
       Yast.import "Host"
       Yast.import "Routing"
+      Yast.import "AutoInstall"
     end
 
     # Merges existing config from system into given configuration map
@@ -357,6 +358,10 @@ module Yast
       return false if !ay_config
 
       yast_module.Import(ay_config)
+
+      # Results of imported values semantic check.
+      # Return true in order to not call the NetworkAutoconfiguration.configure_hosts
+      return true unless AutoInstall.valid_imported_values
 
       write ||= !ay_general_section.fetch("mode", "second_stage" => true)["second_stage"]
       log.info("Write configuration instantly: #{write}")
