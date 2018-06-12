@@ -352,13 +352,12 @@ module Yast
     # @param [Hash] input autoyast settings
     def check_profile_for_errors(imported_hosts)
       # Checking for empty hostnames
-      imported_hosts.each do |ip,hosts|
-        if hosts.any?{|host| host.strip.empty? }
-          AutoInstall.issues_list.add(:invalid_value, "host", "names",
-            "",
-            # TRANSLATORS: %s is host address
-            _("The name must not be empty for %s.") % ip)
-        end
+      imported_hosts.each do |ip, hosts|
+        next unless hosts.any? { |host| host.strip.empty? }
+        AutoInstall.issues_list.add(:invalid_value, "host", "names",
+          "",
+          # TRANSLATORS: %s is host address
+          _("The name must not be empty for %s.") % ip)
       end
     end
 
