@@ -132,6 +132,8 @@ describe Yast::Host do
       }
     end
 
+    let(:i_list) { double("IssuesList", add: nil) }
+
     it "loads the current '/etc/hosts' entries" do
       Yast::Host.Import("hosts" => {})
 
@@ -142,6 +144,17 @@ describe Yast::Host do
       Yast::Host.Import("hosts" => { "10.20.1.29" => ["beholder"] })
 
       expect(Yast::Host.name_map).to eql(etc_hosts.merge("10.20.1.29" => ["beholder"]))
+    end
+
+    it "blames empty host name entries" do
+      expect(Yast::AutoInstall).to receive(:issues_list).and_return(i_list)
+      expect(i_list).to receive(:add)
+        .with(:invalid_value,
+          "host",
+          "names",
+          "",
+          "The name must not be empty for 10.20.1.29.")
+      Yast::Host.Import("hosts" => { "10.20.1.29" => [" "] })
     end
 
     context "when the profile contains multiple host entries for ::1" do
