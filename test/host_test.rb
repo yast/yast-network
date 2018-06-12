@@ -150,10 +150,10 @@ describe Yast::Host do
       expect(Yast::AutoInstall).to receive(:issues_list).and_return(i_list)
       expect(i_list).to receive(:add)
         .with(:invalid_value,
-        "host",
-        "names",
-        "",
-        "The name must not be empty for 10.20.1.29.")
+          "host",
+          "names",
+          "",
+          "The name must not be empty for 10.20.1.29.")
       Yast::Host.Import("hosts" => { "10.20.1.29" => [" "] })
     end
 
