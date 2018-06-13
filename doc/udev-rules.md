@@ -133,17 +133,31 @@ are similar but not really
 API
 ---
 
-### PersistentNameRule
+### Y2Network::NameRule
+
+Ensures that one NIC keeps the name assigned to it
+(using a {::UdevRule udev rule})
 
 - @udev [UdevRule]
-- #matcher= and #matcher(:bus_id or :mac)
-- #value (case sensitive??)
-- #name
+- attr_accessor matcher (:bus_id or :mac)
+- attr_accessor match_value [String]
+  eg. "11:22:33:aa:bb:cc" or "0000:00:03.0"
+- attr_accessor name [String]
 udev["NAME"]
 
-### PersistentNameRules
+- .from_ay(Hash{"name", "rule", "value"})
+- #to_ay[Hash{"name", "rule", "value"}]
 
-Is this just an array of PersistentNameRule ?
+### Y2Network::NameRules
+
+Is this just an array of NameRule ?
+Mostly, but importantly it deals with their persistence
 
 - #pathname
 "/etc/udev/rules.d/70-persistent-net.rules"
+
+- .from_ay(Array<Hash{"name", "rule", "value"}>)
+- #to_ay [Array<Hash{"name", "rule", "value"}>]
+
+
+### ::UdevRule
