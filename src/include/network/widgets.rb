@@ -240,7 +240,7 @@ module Yast
         "widget" => :radio_buttons,
         # ipoib_modes contains known IPoIB modes, "default" is place holder for
         # "do not set anything explicitly -> driver will choose"
-        "items"  => [[ "default", _("default") ]] + ipoib_modes.to_a,
+        "items"  => [["default", _("default")]] + ipoib_modes.to_a,
         "label"  => _("IPoIB Device Mode"),
         "opt"    => [:hstretch],
         "init"   => fun_ref(method(:init_ipoib_mode_widget), "void (string)"),
