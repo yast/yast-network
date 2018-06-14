@@ -198,12 +198,6 @@ module Yast
 
       # infiniband options
       @ipoib_mode = ""
-      @ipoib_modes = {
-        # translators: a possible value for: IPoIB device mode
-        "default"   => _("default"),
-        "connected" => _("connected"),
-        "datagram"  => _("datagram")
-      }
 
       Yast.include self, "network/hardware.rb"
 

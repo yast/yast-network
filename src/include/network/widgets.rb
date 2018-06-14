@@ -212,10 +212,16 @@ module Yast
       deep_copy(ret)
     end
 
-    def init_ipoib_mode_widget(key)
-      ipoib_mode = LanItems.ipoib_mode
+    def ipoib_modes
+      {
+        # translators: a possible value for: IPoIB device mode
+        "connected" => _("connected"),
+        "datagram"  => _("datagram")
+      }
+    end
 
-      return unless LanItems.ipoib_modes.keys.include?(ipoib_mode)
+    def init_ipoib_mode_widget(key)
+      ipoib_mode = ipoib_modes[LanItems.ipoib_mode] || "default"
 
       UI.ChangeWidget(
         Id(key),
@@ -232,7 +238,9 @@ module Yast
     def ipoib_mode_widget
       {
         "widget" => :radio_buttons,
-        "items"  => LanItems.ipoib_modes.to_a,
+        # ipoib_modes contains known IPoIB modes, "default" is place holder for
+        # "do not set anything explicitly -> driver will choose"
+        "items"  => [[ "default", _("default") ]] + ipoib_modes.to_a,
         "label"  => _("IPoIB Device Mode"),
         "opt"    => [:hstretch],
         "init"   => fun_ref(method(:init_ipoib_mode_widget), "void (string)"),

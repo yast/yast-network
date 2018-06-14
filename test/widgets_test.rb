@@ -19,6 +19,8 @@ describe "NetworkWidgetsInclude::ipoib_mode_widget" do
     widget_def = subject.ipoib_mode_widget
     expect(widget_def).to include("items")
 
-    expect(widget_def["items"]).to be_eql Yast::LanItems.ipoib_modes.to_a
+    Yast::LanItems.ipoib_modes.to_a.each do |item|
+      expect(widget_def["items"]).to include(item)
+    end
   end
 end
