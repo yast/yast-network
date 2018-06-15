@@ -53,11 +53,22 @@ describe Yast::Host do
   end
 
   describe ".clear" do
-    it "removes all entries from host table" do
-      Yast::Host.Read
-      Yast::Host.clear
+    context "when no argument is given" do
+      it "removes all entries from host table" do
+        Yast::Host.Read
+        Yast::Host.clear
 
-      expect(Yast::Host.name_map).to be_empty
+        expect(Yast::Host.name_map).to be_empty
+      end
+    end
+
+    context "when :keep_defaults argument is true" do
+      it "clears all the entries from the hosts table except the defaults" do
+        Yast::Host.Read
+        Yast::Host.clear(keep_defaults: true)
+
+        expect(Yast::Host.name_map).to eql(etc_hosts)
+      end
     end
   end
 
@@ -152,12 +163,20 @@ describe Yast::Host do
       expect(Yast::Host.name_map).to eql(etc_hosts.merge(ip => ["beholder"]))
     end
 
+    it "joins the name entry list into a single host entry" do
+      Yast::Host.Import(
+        "hosts" => [{ "host_address" => ip, "names" => ["beholder.example.com", "beholder"] }]
+      )
+
+      expect(Yast::Host.name_map).to eql(etc_hosts.merge(ip => ["beholder.example.com beholder"]))
+    end
+
     it "blames empty host name entries" do
       expect(Yast::Host).to receive(:add_issue).with(ip, :empty_name)
       Yast::Host.Import("hosts" => [{ "host_address" => ip, "names" => ["   "] }])
     end
 
-    context "when the profile contains multiple host entries for ::1" do
+    context "when the profile contains multiple host entries" do
       let(:holder_entry_1) { ["beholder.test.com", "beholder"] }
       let(:holder_entry_2) { ["beholder2.test.com beholder2"] }
       let(:hosts) do
@@ -182,7 +201,7 @@ describe Yast::Host do
         Yast::Host.Import("hosts" => hosts)
       end
 
-      it "converts each duplicated entry to just one line" do
+      it "adds each host address entry separately" do
         Yast::Host.Import("hosts" => hosts)
         names_1 = holder_entry_1.join(" ")
         names_2 = holder_entry_2.join(" ")

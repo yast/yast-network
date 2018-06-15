@@ -51,8 +51,9 @@ module Yast
     end
 
     # Remove all entries from the host table.
-    def clear
+    def clear(keep_defaults: false)
       @hosts.hosts.keys.each do |ip|
+        next if keep_defaults && GetSystemHosts().include?(ip)
         @hosts.delete_by_ip(ip)
       end
       @modified = true
@@ -160,15 +161,34 @@ module Yast
       true
     end
 
-    # Get all the Hosts configuration from a map.
-    # When called by hosts_auto (preparing autoinstallation data)
-    # the map may be empty.
+    # Imports the Hosts configuration of defined in the profile section merging
+    # the configuration with the defaults.
     #
-    # @param [Hash] settings autoinstallation settings
-    #               expected format of settings["hosts"] is { "ip" => [list, of, names] }
+    # It permits duplicate entries although will blame about it
+    #
+    # @example importing some duplicate entries
+    #   Yast::Host.Import( "hosts" => [
+    #     {
+    #       "host_address" => "192.168.122.1",
+    #       "names" => ["server.example.com", "server"]
+    #     },
+    #     {
+    #       "host_address" => "192.168.122.1",
+    #       "Permit entries defined in just one string item or in various"
+    #       "names" => ["ftp.example.com ftp"]
+    #     }
+    #   ])
+    #
+    #   # Etc content
+    #   ... defaults should be here
+    #   192.168.122.1 server.example.com server
+    #   192.168.122.1 ftp.example.com ftp
+    #
+    # @param settings [Hash] autoinstallation settings
     # @return true if success
     def Import(settings)
       Read()
+      clear(keep_defaults: true)
       host_entries = settings.fetch("hosts", [])
       return true if host_entries.empty?
       imported_hosts = {}
@@ -347,6 +367,10 @@ module Yast
 
   private
 
+    # Append to the list of AutoYaST issues for being reported the given one
+    #
+    # @param ip [String] host address wiith some issue
+    # @param issue [Symbol] the specific problem to be reported
     def add_issue(ip, issue)
       case issue
       when :empty_name
