@@ -15,6 +15,21 @@ describe Yast::Host do
     CFA::MemoryFile.new(File.read(file_path))
   end
 
+  let(:etc_hosts) do
+    {
+      "127.0.0.1" => ["localhost"],
+      "::1"       => ["localhost ipv6-localhost ipv6-loopback"],
+      "fe00::0"   => ["ipv6-localnet"],
+      "ff00::0"   => ["ipv6-mcastprefix"],
+      "ff02::1"   => ["ipv6-allnodes"],
+      "ff02::2"   => ["ipv6-allrouters"],
+      "ff02::3"   => ["ipv6-allhosts"]
+    }
+  end
+
+  let(:profile) { { "hosts" => profile_host_entries } }
+  let(:profile_host_entries) { etc_hosts.map { |k, v| { "host_address" => k, "names" => v } } }
+
   before do
     # use only testing file
     CFA::BaseModel.default_file_handler = file
@@ -119,57 +134,60 @@ describe Yast::Host do
       file_path = File.join(DATA_PATH, "default_hosts")
       CFA::MemoryFile.new(File.read(file_path))
     end
+    let(:ip) { "10.20.1.29" }
 
-    let(:etc_hosts) do
-      {
-        "127.0.0.1" => ["localhost"],
-        "::1"       => ["localhost ipv6-localhost ipv6-loopback"],
-        "fe00::0"   => ["ipv6-localnet"],
-        "ff00::0"   => ["ipv6-mcastprefix"],
-        "ff02::1"   => ["ipv6-allnodes"],
-        "ff02::2"   => ["ipv6-allrouters"],
-        "ff02::3"   => ["ipv6-allhosts"]
-      }
+    before do
+      allow(Yast::Host).to receive(:add_issue)
     end
 
-    let(:i_list) { double("IssuesList", add: nil) }
-
     it "loads the current '/etc/hosts' entries" do
-      Yast::Host.Import("hosts" => {})
+      Yast::Host.Import({})
 
       expect(Yast::Host.name_map).to eql(etc_hosts)
     end
 
     it "merges current entries with the given ones" do
-      Yast::Host.Import("hosts" => { "10.20.1.29" => ["beholder"] })
+      Yast::Host.Import("hosts" => [{ "host_address" => ip, "names" => ["beholder"] }])
 
-      expect(Yast::Host.name_map).to eql(etc_hosts.merge("10.20.1.29" => ["beholder"]))
+      expect(Yast::Host.name_map).to eql(etc_hosts.merge(ip => ["beholder"]))
     end
 
     it "blames empty host name entries" do
-      expect(Yast::AutoInstall).to receive(:issues_list).and_return(i_list)
-      expect(i_list).to receive(:add)
-        .with(:invalid_value,
-          "host",
-          "names",
-          "",
-          "The name must not be empty for 10.20.1.29.")
-      Yast::Host.Import("hosts" => { "10.20.1.29" => [" "] })
+      expect(Yast::Host).to receive(:add_issue).with(ip, :empty_name)
+      Yast::Host.Import("hosts" => [{ "host_address" => ip, "names" => ["   "] }])
     end
 
     context "when the profile contains multiple host entries for ::1" do
-      let(:holder_entries) { ["beholder.test.com test.com", "second.test.com second"] }
+      let(:holder_entry_1) { ["beholder.test.com", "beholder"] }
+      let(:holder_entry_2) { ["beholder2.test.com beholder2"] }
       let(:hosts) do
-        {
-          "::1"        => ["localhost", "ipv6-localhost", "ipv6-loopback"],
-          "10.20.1.29" => holder_entries
-        }
+        [
+          {
+            "host_address" => "::1",
+            "names"        => ["localhost", "ipv6-localhost", "ipv6-loopback"]
+          },
+          {
+            "host_address" => ip,
+            "names"        => holder_entry_1
+          },
+          {
+            "host_address" => ip,
+            "names"        => holder_entry_2
+          }
+        ]
+      end
+
+      it "blames duplicate ip addresses" do
+        expect(Yast::Host).to receive(:add_issue).with(ip, :duplicates)
+        Yast::Host.Import("hosts" => hosts)
       end
 
       it "converts each duplicated entry to just one line" do
         Yast::Host.Import("hosts" => hosts)
+        names_1 = holder_entry_1.join(" ")
+        names_2 = holder_entry_2.join(" ")
 
-        expect(Yast::Host.name_map["10.20.1.29"]).to eql([holder_entries.join(" ")])
+        expect(Yast::Host.name_map[ip]).to eql([names_1, names_2])
       end
     end
   end
@@ -180,43 +198,17 @@ describe Yast::Host do
       CFA::MemoryFile.new(File.read(file_path))
     end
 
-    let(:etc_hosts) do
-      {
-        "127.0.0.1"  => ["localhost localhost.localdomain"],
-        "::1"        => ["localhost ipv6-localhost ipv6-loopback"],
-        "fe00::0"    => ["ipv6-localnet"],
-        "ff00::0"    => ["ipv6-mcastprefix"],
-        "ff02::1"    => ["ipv6-allnodes"],
-        "ff02::2"    => ["ipv6-allrouters"],
-        "ff02::3"    => ["ipv6-allhosts"],
-        "10.20.1.29" => ["beholder"]
-      }
+    let(:profile_host_entries) do
+      etc_hosts.map { |k, v| { "host_address" => k, "names" => v.first.split } }
     end
 
-    it "Successfully exports stored mapping" do
-      Yast::Host.Import("hosts" => etc_hosts)
-      expect(Yast::Host.Export).to eql("hosts" => etc_hosts)
+    it "successfully exports stored mapping" do
+      Yast::Host.Import(profile)
+      expect(Yast::Host.Export).to eql(profile)
     end
 
-    it "removes empty name lists" do
-      Yast::Host.Import("hosts" => { "127.0.0.1" => ["localhost localhost.localdomain"], "10.20.1.29" => [] })
-      etc_hosts.delete("10.20.1.29")
-
-      expect(Yast::Host.Export).to eql("hosts" => etc_hosts)
-    end
-
-    it "exports empty hash when no mapping is defined" do
-      Yast::Host.Import(
-        "hosts" => {
-          "127.0.0.1" => [],
-          "::1"       => [],
-          "fe00::0"   => [],
-          "ff00::0"   => [],
-          "ff02::1"   => [],
-          "ff02::2"   => [],
-          "ff02::3"   => []
-        }
-      )
+    it "exports and empty hash when no mapping is defined" do
+      Yast::Host.clear
       expect(Yast::Host.Export).to be_empty
     end
   end
@@ -237,7 +229,7 @@ describe Yast::Host do
     end
 
     it "doesn't drop records with two spaces but make it single space" do
-      Yast::Host.Import("hosts" => etc_hosts)
+      Yast::Host.Import(profile)
       Yast::Host.Update("", "newname", "10.0.0.42")
 
       tested_ip = "10.0.0.1"
@@ -245,7 +237,7 @@ describe Yast::Host do
     end
 
     it "adds alias for added hostname" do
-      Yast::Host.Import("hosts" => etc_hosts)
+      Yast::Host.Import(profile)
       Yast::Host.Update("", "newname.suse.cz", "10.0.0.42")
 
       tested_ip = "10.0.0.42"

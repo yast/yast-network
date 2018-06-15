@@ -168,28 +168,28 @@ module Yast
     #               expected format of settings["hosts"] is { "ip" => [list, of, names] }
     # @return true if success
     def Import(settings)
-      @modified = true # trigger Write
-      @initialized = true # don't let Read discard our data
-
-      load_hosts
-
-      imported_hosts = settings.fetch("hosts", {})
-
-      # convert from old format to the new one
-      # use ::1 entry as a reference
-      if (imported_hosts["::1"] || []).size > 1
-        imported_hosts.each_pair do |k, v|
-          imported_hosts[k] = [v.join(" ")]
+      Read()
+      host_entries = settings.fetch("hosts", [])
+      return true if host_entries.empty?
+      imported_hosts = {}
+      host_entries.each do |host|
+        ip = host["host_address"]
+        names = parse_host_names(host.fetch("names", []))
+        if names.empty?
+          add_issue(ip, :empty_name)
+          next
         end
+        # Multiple entries are permited
+        imported_hosts[ip] ||= []
+        imported_hosts[ip] << names
       end
 
       imported_hosts.each_pair do |ip, names|
+        add_issue(ip, :duplicates) if names.size > 1
         set_names(ip, names)
       end
 
-      check_profile_for_errors(imported_hosts)
-
-      true
+      @modified = true
     end
 
     # Dump the Hosts settings to a map, for autoinstallation use.
@@ -197,12 +197,13 @@ module Yast
     def Export
       exported_hosts = @hosts.hosts
       return {} if exported_hosts.empty?
+      host_entries = []
 
-      # Filter out IPs with empty hostname (so that valid autoyast
-      # profile is created)(#335120)
-      exported_hosts.keep_if { |_, names| !names.empty? }
+      exported_hosts.each do |host, names|
+        names.each { |n| host_entries << { "host_address" => host, "names" => n.split } }
+      end
 
-      { "hosts" => exported_hosts }
+      { "hosts" => host_entries }
     end
 
     # Return "system" predefined hosts (should be present all the time)
@@ -346,18 +347,18 @@ module Yast
 
   private
 
-    # Semantic AutoYaST profile check
-    #
-    # Problems will be stored in AutoInstall.issues_list.
-    # @param [Hash] input autoyast settings
-    def check_profile_for_errors(imported_hosts)
-      # Checking for empty hostnames
-      imported_hosts.each do |ip, hosts|
-        next unless hosts.any? { |host| host.strip.empty? }
+    def add_issue(ip, issue)
+      case issue
+      when :empty_name
         AutoInstall.issues_list.add(:invalid_value, "host", "names",
           "",
           # TRANSLATORS: %s is host address
           _("The name must not be empty for %s.") % ip)
+      when :duplicates
+        AutoInstall.issues_list.add(:invalid_value, "host", "host_address",
+          "",
+          # TRANSLATORS: %s is host address
+          _("The IP address %s is defined multiple times which is not recommended.") % ip)
       end
     end
 
@@ -369,6 +370,19 @@ module Yast
         @hosts.add_entry(address, canonical, aliases)
       end
       @modified = true
+    end
+
+    # Given a list of names it return a string with all of them separated by a
+    # space. It permits multiple names in the same entry as previously
+    #
+    # @example parsing multiple names with extra spaces
+    #   parse_host_names(["example.suse.de  example ", " test "])
+    #   => "example.suse.de example test"
+    #
+    # @param names [Array<String>] list of name entries
+    # @return [String]
+    def parse_host_names(names)
+      names.map { |n| n.split(" ") }.flatten.uniq.join(" ")
     end
   end
 

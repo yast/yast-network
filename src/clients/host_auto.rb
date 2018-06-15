@@ -83,29 +83,10 @@ module Yast
         Wizard.CloseDialog
       # Import configuration
       elsif @func == "Import"
-        @hosts = Ops.get_list(@param, "hosts", [])
-        @hostlist = Builtins.listmap(@hosts) do |host|
-          {
-            Ops.get_string(host, "host_address", "error") => Ops.get_list(
-              host,
-              "names",
-              []
-            )
-          }
-        end
-        @ret = Host.Import("hosts" => @hostlist)
+        @ret = Host.Import(@param)
       # Return actual state
       elsif @func == "Export"
-        @ret1 = Host.Export
-        @hosts = Ops.get_map(@ret1, "hosts", {})
-        @ret2 = Builtins.maplist(@hosts) do |hostaddress, names|
-          { "host_address" => hostaddress, "names" => names }
-        end
-        @ret = if Ops.greater_than(Builtins.size(@ret2), 0)
-          { "hosts" => @ret2 }
-        else
-          {}
-        end
+        @ret = Host.Export
       # Read current state
       elsif @func == "Read"
         Yast.import "Progress"
