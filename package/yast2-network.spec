@@ -17,11 +17,12 @@
 
 
 Name:           yast2-network
-Version:        4.0.33
+Version:        4.0.34
 Release:        0
 BuildArch:      noarch
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+Url:		https://github.com/yast/yast-network
 Source0:        %{name}-%{version}.tar.bz2
 
 BuildRequires:  update-desktop-files
@@ -64,11 +65,14 @@ Conflicts:      yast2-core < 2.10.6
 
 Requires:       yast2-ruby-bindings >= 1.0.0
 
-Obsoletes:      yast2-network-devel-doc
+Obsoletes:      yast2-network-devel-doc <= 3.1.154
+Provides:       yast2-network-devel-doc = %{version}
 
 Summary:        YaST2 - Network Configuration
 License:        GPL-2.0
 Group:          System/YaST
+
+%build
 
 %description 
 This package contains the YaST2 component for network configuration.

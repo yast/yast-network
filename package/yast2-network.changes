@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Jun 18 08:01:44 UTC 2018 - mfilka@suse.com
+
+- bnc#1097954
+  - fixed several rpmlint warnings
+- 4.0.34
+
+-------------------------------------------------------------------
 Tue Jun 12 10:29:30 CEST 2018 - schubi@suse.de
 
 - AutoYaST: Checking for empty host name entries and informing
