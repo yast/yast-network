@@ -221,7 +221,7 @@ module Yast
     end
 
     def init_ipoib_mode_widget(key)
-      ipoib_mode = ipoib_modes[LanItems.ipoib_mode] || "default"
+      ipoib_mode = LanItems.ipoib_mode || "default"
 
       UI.ChangeWidget(
         Id(key),
