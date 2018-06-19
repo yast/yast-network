@@ -23,4 +23,9 @@ describe "NetworkWidgetsInclude::ipoib_mode_widget" do
       expect(widget_def["items"]).to include(item)
     end
   end
+
+  it "contains an item allowing implicit mode setup" do
+    widget_def = subject.ipoib_mode_widget
+    expect(widget_def["items"]).to include(["default", //])
+  end
 end
