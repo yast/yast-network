@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Jun 20 07:21:17 UTC 2018 - mfilka@suse.com
+
+- bnc#1086454
+  - do not enforce particular mode for IPoIB devices by default
+- 4.0.35
+
+-------------------------------------------------------------------
 Mon Jun 18 08:01:44 UTC 2018 - mfilka@suse.com
 
 - bnc#1097954
