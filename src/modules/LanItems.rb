@@ -59,7 +59,6 @@ module Yast
       Yast.import "NetworkInterfaces"
       Yast.import "ProductFeatures"
       Yast.import "NetworkConfig"
-      Yast.import "NetworkStorage"
       Yast.import "Host"
       Yast.import "Directory"
       Yast.import "Stage"
