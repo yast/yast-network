@@ -1,8 +1,28 @@
 -------------------------------------------------------------------
-Thu Jun 14 07:46:54 UTC 2018 - mfilka@suse.com
+Fri Jun 22 13:49:08 CEST 2018 - schubi@suse.de
+
+- Removed AutoYaST dependencies in order to run the host module
+  without AutoYaST packages (bnc#1098407).
+- 4.1.0
+
+-------------------------------------------------------------------
+Wed Jun 20 07:24:24 UTC 2018 - mfilka@suse.com
+
+- dropped dead code 
+- 4.1.0
+
+-------------------------------------------------------------------
+Wed Jun 20 07:21:17 UTC 2018 - mfilka@suse.com
 
 - bnc#1086454
   - do not enforce particular mode for IPoIB devices by default
+- 4.0.35
+
+-------------------------------------------------------------------
+Mon Jun 18 08:01:44 UTC 2018 - mfilka@suse.com
+
+- bnc#1097954
+  - fixed several rpmlint warnings
 - 4.0.34
 
 -------------------------------------------------------------------
