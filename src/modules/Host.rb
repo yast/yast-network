@@ -37,7 +37,6 @@ module Yast
       Yast.import "NetworkInterfaces"
       Yast.import "String"
       Yast.import "Summary"
-      Yast.import "AutoInstall"
 
       Yast.include self, "network/routines.rb"
 
@@ -186,8 +185,6 @@ module Yast
       imported_hosts.each_pair do |ip, names|
         set_names(ip, names)
       end
-
-      check_profile_for_errors(imported_hosts)
 
       true
     end
@@ -345,21 +342,6 @@ module Yast
     publish function: :SetModified, type: "void ()"
 
   private
-
-    # Semantic AutoYaST profile check
-    #
-    # Problems will be stored in AutoInstall.issues_list.
-    # @param [Hash] input autoyast settings
-    def check_profile_for_errors(imported_hosts)
-      # Checking for empty hostnames
-      imported_hosts.each do |ip, hosts|
-        next unless hosts.any? { |host| host.strip.empty? }
-        AutoInstall.issues_list.add(:invalid_value, "host", "names",
-          "",
-          # TRANSLATORS: %s is host address
-          _("The name must not be empty for %s.") % ip)
-      end
-    end
 
     # Give address a new list of names.
     def set_names(address, names)
