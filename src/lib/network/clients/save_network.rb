@@ -12,7 +12,6 @@ module Yast
 
       Yast.import "DNS"
       Yast.import "FileUtils"
-      Yast.import "NetworkStorage"
       Yast.import "Installation"
       Yast.import "String"
       Yast.import "Mode"
