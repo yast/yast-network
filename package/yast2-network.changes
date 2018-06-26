@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Jun 26 09:18:50 UTC 2018 - mfilka@suse.com
+
+- removed NetworkStorage as it is unused (had been replaced by
+  storage-ng)
+
+-------------------------------------------------------------------
 Fri Jun 22 14:11:30 CEST 2018 - schubi@suse.de
 
 - Removed AutoYaST dependencies in order to run the host module
