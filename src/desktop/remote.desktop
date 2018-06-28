@@ -13,6 +13,7 @@ X-SuSE-YaST-AutoInst=write
 X-SuSE-YaST-Geometry=
 X-SuSE-YaST-SortKey=
 X-SuSE-YaST-AutoInstResource=remote
+X-SuSE-YaST-Keywords=vnc,network,remote
 
 Icon=yast-remote
 Exec=xdg-su -c "/sbin/yast2 remote"
