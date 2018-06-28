@@ -15,6 +15,7 @@ X-SuSE-YaST-SortKey=
 X-SuSE-YaST-AutoInstResource=host
 X-SuSE-YaST-AutoInstClonable=true
 X-SuSE-YaST-AutoInstSchema=host.rnc
+X-SuSE-YaST-Keywords=name,network
 
 Icon=yast-host
 Exec=xdg-su -c "/sbin/yast2 host"
