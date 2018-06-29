@@ -1377,10 +1377,6 @@ module Yast
         LanItems.mtu = Ops.get_string(@settings, "MTU", "")
 
         # address tab
-        if LanItems.operation == :add
-          LanItems.device = NetworkInterfaces.device_num(ifcfgname)
-        end
-
         bootproto = @settings.fetch("BOOTPROTO", "")
         ipaddr = @settings.fetch("IPADDR", "")
 
