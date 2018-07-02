@@ -1,5 +1,17 @@
 -------------------------------------------------------------------
-Tue Jun 26 09:18:50 UTC 2018 - mfilka@suse.com
+Mon Jul  2 13:42:55 CEST 2018 - schubi@suse.de
+
+- Fixed flickering testcase which has been introduced by fixing
+  bnc#1052042.
+- 4.1.2
+
+-------------------------------------------------------------------
+Thu Jun 28 15:56:15 CEST 2018 - schubi@suse.de
+
+- Added additional searchkeys to desktop file (fate#321043).
+
+-------------------------------------------------------------------
+ Jun 26 09:18:50 UTC 2018 - mfilka@suse.com
 
 - removed NetworkStorage as it is unused (had been replaced by
   storage-ng)
