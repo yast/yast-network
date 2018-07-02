@@ -157,6 +157,7 @@ describe "LanClass#Modified" do
     allow(Yast::Routing).to receive(:Modified).and_return false
     allow(Yast::NetworkConfig).to receive(:Modified).and_return false
     allow(Yast::NetworkService).to receive(:Modified).and_return false
+    allow(Yast::Host).to receive(:Modified).and_return false
   end
 
   def expect_modification_succeedes(modname, method)
