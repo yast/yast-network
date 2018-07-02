@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Jul  2 13:42:55 CEST 2018 - schubi@suse.de
+
+- Fixed flickering testcase which has been introduced by fixing
+  bnc#1052042.
+- 4.0.37
+
+-------------------------------------------------------------------
 Thu Jun 28 15:56:15 CEST 2018 - schubi@suse.de
 
 - Added additional searchkeys to desktop file (fate#321043).
