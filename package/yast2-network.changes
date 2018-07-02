@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Jul  2 16:20:55 CEST 2018 - schubi@suse.de
+
+- lan_test: stubbin Host.GetModified call (bnc#1052042).
+- 4.1.3
+
+-------------------------------------------------------------------
 Mon Jul  2 13:42:55 CEST 2018 - schubi@suse.de
 
 - Fixed flickering testcase which has been introduced by fixing
