@@ -2233,7 +2233,7 @@ module Yast
       NetworkInterfaces.Edit(@device)
       @type = Ops.get_string(getCurrentItem, ["hwinfo", "type"], "")
 
-      @type = NetworkInterfaces.GetType(@device) if IsEmpty(@type)
+      @type = NetworkInterfaces.GetType(@device) if @type.empty?
 
       @alias = NetworkInterfaces.alias_num(@device)
 
