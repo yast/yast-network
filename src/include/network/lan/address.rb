@@ -1151,8 +1151,7 @@ module Yast
       # TODO: dynamic for dummy. or add dummy from outside?
       no_dhcp =
         is_ptp ||
-        type == "dummy" ||
-        LanItems.alias != ""
+        type == "dummy"
 
       address_p2p_contents = Frame(
         "", # labelless frame
@@ -1426,7 +1425,7 @@ module Yast
       end
 
       # proceed with WLAN settings if appropriate, #42420
-      if ret == :next && LanItems.type == "wlan" && LanItems.alias == ""
+      if ret == :next && LanItems.type == "wlan"
         ret = :wire
       end
 
