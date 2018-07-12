@@ -170,6 +170,11 @@ module Yast
             # Commandline option help
             "help" => _("Interfaces for Bridging"),
             "type" => "string"
+          },
+          "type" => {
+            # Commandline option help
+            "help" => _("Type of the device (eth, vlan, ...)"),
+            "type" => "string"
           }
         },
         "mappings"   => {
@@ -182,6 +187,7 @@ module Yast
             "netmask",
             "prefix",
             "slaves",
+            "type",
             "ethdevice",
             "bridge_ports"
           ],
