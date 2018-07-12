@@ -171,7 +171,7 @@ module Yast
             "help" => _("Interfaces for Bridging"),
             "type" => "string"
           },
-          "type" => {
+          "type"         => {
             # Commandline option help
             "help" => _("Type of the device (eth, vlan, ...)"),
             "type" => "string"

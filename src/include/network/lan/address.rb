@@ -1369,7 +1369,6 @@ module Yast
       LanItems.Rollback if ret == :abort
 
       if ret != :back && ret != :abort
-        ifcfgname = Ops.get_string(LanItems.getCurrentItem, "ifcfg", "")
         # general tab
         LanItems.startmode = Ops.get_string(@settings, "STARTMODE", "")
         LanItems.firewall_zone = @settings.fetch("FWZONE", "")
@@ -1425,9 +1424,7 @@ module Yast
       end
 
       # proceed with WLAN settings if appropriate, #42420
-      if ret == :next && LanItems.type == "wlan"
-        ret = :wire
-      end
+      ret = :wire if ret == :next && LanItems.type == "wlan"
 
       Routing.SetDevices(NetworkInterfaces.List("")) if ret == :routing
 

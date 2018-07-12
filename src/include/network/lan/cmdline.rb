@@ -195,7 +195,7 @@ module Yast
         Ops.get(options, "name", "")
       )
       LanItems.type = options["type"]
-      raise RuntimeError, "Device type is mandatory." if !LanItems.type
+      raise "Device type is mandatory." if !LanItems.type
 
       if LanItems.type == "bond"
         LanItems.bond_slaves = Builtins.splitstring(
