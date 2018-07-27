@@ -194,9 +194,9 @@ module Yast
         [LanItems.current, "ifcfg"],
         Ops.get(options, "name", "")
       )
-      LanItems.type = NetworkInterfaces.device_type(
-        Ops.get(options, "name", "")
-      )
+      LanItems.type = options["type"]
+      raise "Device type is mandatory." if !LanItems.type
+
       if LanItems.type == "bond"
         LanItems.bond_slaves = Builtins.splitstring(
           Ops.get(options, "slaves", ""),

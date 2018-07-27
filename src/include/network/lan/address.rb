@@ -1151,8 +1151,7 @@ module Yast
       # TODO: dynamic for dummy. or add dummy from outside?
       no_dhcp =
         is_ptp ||
-        type == "dummy" ||
-        LanItems.alias != ""
+        type == "dummy"
 
       address_p2p_contents = Frame(
         "", # labelless frame
@@ -1370,17 +1369,12 @@ module Yast
       LanItems.Rollback if ret == :abort
 
       if ret != :back && ret != :abort
-        ifcfgname = Ops.get_string(LanItems.getCurrentItem, "ifcfg", "")
         # general tab
         LanItems.startmode = Ops.get_string(@settings, "STARTMODE", "")
         LanItems.firewall_zone = @settings.fetch("FWZONE", "")
         LanItems.mtu = Ops.get_string(@settings, "MTU", "")
 
         # address tab
-        if LanItems.operation == :add
-          LanItems.device = NetworkInterfaces.device_num(ifcfgname)
-        end
-
         bootproto = @settings.fetch("BOOTPROTO", "")
         ipaddr = @settings.fetch("IPADDR", "")
 
@@ -1430,9 +1424,7 @@ module Yast
       end
 
       # proceed with WLAN settings if appropriate, #42420
-      if ret == :next && LanItems.type == "wlan" && LanItems.alias == ""
-        ret = :wire
-      end
+      ret = :wire if ret == :next && LanItems.type == "wlan"
 
       Routing.SetDevices(NetworkInterfaces.List("")) if ret == :routing
 

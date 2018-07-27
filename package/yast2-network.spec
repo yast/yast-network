@@ -17,7 +17,7 @@
 
 
 Name:           yast2-network
-Version:        4.1.3
+Version:        4.1.4
 Release:        0
 BuildArch:      noarch
 
@@ -69,7 +69,7 @@ Obsoletes:      yast2-network-devel-doc <= 3.1.154
 Provides:       yast2-network-devel-doc = %{version}
 
 Summary:        YaST2 - Network Configuration
-License:        GPL-2.0
+License:        GPL-2.0-only
 Group:          System/YaST
 
 %build

@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Thu Jul 12 11:46:53 UTC 2018 - mfilka@suse.com
+
+- bnc#964856
+  - dropped calls to obsolete NetworkInterfaces API
+  - CLI: setting device type explicitly using new type option is
+    mandatory when adding new device
+- 4.1.4
+
+-------------------------------------------------------------------
 Mon Jul  2 16:20:55 CEST 2018 - schubi@suse.de
 
 - lan_test: stubbin Host.GetModified call (bnc#1052042).
@@ -17,7 +26,7 @@ Thu Jun 28 15:56:15 CEST 2018 - schubi@suse.de
 - Added additional searchkeys to desktop file (fate#321043).
 
 -------------------------------------------------------------------
- Jun 26 09:18:50 UTC 2018 - mfilka@suse.com
+Tue Jun 26 09:18:50 UTC 2018 - mfilka@suse.com
 
 - removed NetworkStorage as it is unused (had been replaced by
   storage-ng)

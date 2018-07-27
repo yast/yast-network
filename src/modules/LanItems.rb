@@ -94,8 +94,6 @@ module Yast
       @type = ""
       # ifcfg name for the @current device
       @device = ""
-      # FIXME: always empty string - remove all occuriences
-      @alias = ""
       @current = -1
       @hotplug = ""
 
@@ -1880,9 +1878,6 @@ module Yast
         Ops.set(@Items, [@current, "ifcfg"], NetworkInterfaces.Name)
       end
 
-      # FIXME: alias: how to prefill new alias?
-      @alias = ""
-
       # general stuff
       @description = BuildDescription(@type, @device, devmap, @Hardware)
 
@@ -1912,8 +1907,6 @@ module Yast
 
     # Sets device map items for device when it is not alias
     def setup_basic_device_options(devmap)
-      return devmap if !@alias.empty?
-
       devmap["MTU"] = @mtu
       devmap["ETHTOOL_OPTIONS"] = @ethtool_options
       devmap["STARTMODE"] = @startmode
@@ -2233,9 +2226,7 @@ module Yast
       NetworkInterfaces.Edit(@device)
       @type = Ops.get_string(getCurrentItem, ["hwinfo", "type"], "")
 
-      @type = NetworkInterfaces.GetType(@device) if IsEmpty(@type)
-
-      @alias = NetworkInterfaces.alias_num(@device)
+      @type = NetworkInterfaces.GetType(@device) if @type.empty?
 
       # general stuff
       devmap = deep_copy(NetworkInterfaces.Current)
