@@ -69,7 +69,7 @@ Obsoletes:      yast2-network-devel-doc <= 3.1.154
 Provides:       yast2-network-devel-doc = %{version}
 
 Summary:        YaST2 - Network Configuration
-License:        GPL-2.0
+License:        GPL-2.0-only
 Group:          System/YaST
 
 %build
