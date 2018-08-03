@@ -39,7 +39,7 @@ interfaces =
   }
 
 interface =
-  element interface {
+  element (interface | listentry) {
     element device { text }? &	#overloaded
     element name { text }? &
 
@@ -89,13 +89,13 @@ interface =
 
 
 s390-devices =
-  element device {
+  element s390-devices {
     LIST,
     device+
   }
 
 device =
-  element device {
+  element (device | listentry) {
     element type { text }? &
     element chanids { text }? &
     element portname { text }? &
@@ -111,7 +111,7 @@ net-udev =
   }
 
 rule =
-  element rule {
+  element (rule | listentry) {
     element rule { text }? &
     element value { text }? &
     element name { text }?
@@ -222,7 +222,7 @@ modules =
     module_entry+
   }
 module_entry =
-  element module_entry {
+  element (module_entry | listentry) {
     element ccw_chan_ids { text }? &
     element ccw_chan_num { text }? &
     element device { text } &	# overloaded
@@ -262,7 +262,7 @@ routes =
     route+
   }
 route =
-  element route {
+  element (route | listentry) {
     destination &
     element netmask { text } &	#overloaded
     element device { text } &	#overloaded
