@@ -22,6 +22,7 @@
 require "yast"
 require "y2remote/modes"
 require "y2remote/display_manager"
+require "yast2/systemd/target"
 
 module Y2Remote
   class Remote
@@ -167,7 +168,7 @@ module Y2Remote
 
     # Restarts services, reporting errors to the user
     def restart_services
-      Yast::SystemdTarget.set_default(GRAPHICAL_TARGET) if enabled?
+      Yast2::Systemd::Target.set_default(GRAPHICAL_TARGET) if enabled?
       Y2Remote::Modes.restart_modes(modes)
 
       display_manager.restart if enabled?
@@ -191,7 +192,6 @@ module Y2Remote
       Yast.import "Progress"
       Yast.import "Linuxrc"
       Yast.import "Message"
-      Yast.import "SystemdTarget"
     end
 
     # Obtains a list of the required packages for the enabled vnc modes
