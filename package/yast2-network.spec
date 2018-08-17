@@ -31,9 +31,9 @@ Requires:       yast2-proxy
 #for install task
 BuildRequires:  rubygem(%rb_default_ruby_abi:yast-rake)
 
-# yast2 v4.0.21: Y2Firewall::Firewalld::Zone.known_zones (fate#323460)
-BuildRequires:  yast2 >= 4.0.23
-Requires:       yast2 >= 4.0.23
+# Yast2::Systemd::Socket
+BuildRequires:  yast2 >= 4.1.3
+Requires:       yast2 >= 4.1.3
 
 # Product control need xml agent
 BuildRequires:  yast2-xml
