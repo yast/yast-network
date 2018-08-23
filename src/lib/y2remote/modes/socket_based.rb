@@ -1,11 +1,11 @@
 require "yast"
+require "yast2/systemd/socket"
 
 module Y2Remote
   module Modes
     # Common methods for handling systemd sockets
     module SocketBased
       def self.included(_base)
-        Yast.import "SystemdSocket"
         extend Yast::I18n
 
         textdomain "network"
@@ -18,9 +18,9 @@ module Y2Remote
 
       # Obtain the systemd socket itself
       #
-      # @return [Yast::SystemdSocket, nil]
+      # @return [Yast2::Systemd::Socket, nil]
       def socket
-        Yast::SystemdSocket.find(socket_name)
+        Yast2::Systemd::Socket.find(socket_name)
       end
 
       # Convenience method which return whether the socket is enabled or not

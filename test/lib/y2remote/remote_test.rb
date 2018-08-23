@@ -298,13 +298,13 @@ describe Y2Remote::Remote do
 
     before do
       allow(subject).to receive(:modes).and_return(modes)
-      allow(Yast::SystemdTarget).to receive(:set_default)
+      allow(Yast2::Systemd::Target).to receive(:set_default)
       allow(display_manager).to receive(:restart)
     end
 
     context "when vnc is enabled" do
       it "sets graphical as the default systemd target" do
-        expect(Yast::SystemdTarget).to receive(:set_default)
+        expect(Yast2::Systemd::Target).to receive(:set_default)
           .with(Y2Remote::Remote::GRAPHICAL_TARGET)
         subject.restart_services
       end
