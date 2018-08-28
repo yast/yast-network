@@ -54,7 +54,6 @@ module Yast
       Yast.import "ProductFeatures"
       Yast.import "Routing"
       Yast.import "String"
-      Yast.import "SuSEFirewall4Network"
       Yast.import "Wizard"
       Yast.import "Map"
 
@@ -1047,10 +1046,10 @@ module Yast
     end
 
     # Initialize value of firewall zone widget
-    # (disables it when SuSEFirewall is not installed)
+    # (disables it when firewalld is not installed)
     # @param _key [String] id of the widget
     def InitFwZone(_key)
-      if SuSEFirewall4Network.IsInstalled
+      if firewalld.installed?
         UI.ChangeWidget(
           Id("FWZONE"),
           :Value,
