@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Sep 12 11:20:35 UTC 2018 - mfilka@suse.com
+
+- bnc#1105230
+  - do not crash with internal error when 0.0.0.0 netmask is used
+    in the routing tab
+- 3.2.54 
+
+-------------------------------------------------------------------
 Fri Jul 27 12:30:00 UTC 2018 - mvidner@suse.com
 
 - Activate s390 network devices before applying udev naming rules,
