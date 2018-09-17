@@ -1667,13 +1667,6 @@ module Yast
     #-------------------
     # PRIVATE FUNCTIONS
 
-    # Return 10 free devices
-    # @param [String] type device type
-    # @return [Array] of 10 free devices
-    def FreeDevices(type)
-      NetworkInterfaces.GetFreeDevices(type, 10)
-    end
-
     def SetDefaultsForHW
       Builtins.y2milestone("SetDefaultsForHW type %1", @type)
       @mtu = "1492" if Arch.s390 && Builtins.contains(["lcs", "eth"], @type)
@@ -2882,7 +2875,6 @@ module Yast
     publish function: :isCurrentDHCP, type: "boolean ()"
     publish function: :GetItemDescription, type: "string ()"
     publish function: :SelectHWMap, type: "void (map)"
-    publish function: :FreeDevices, type: "list (string)"
     publish function: :SetDefaultsForHW, type: "void ()"
     publish function: :SetDeviceVars, type: "void (map, map)"
     publish function: :Select, type: "boolean (string)"
