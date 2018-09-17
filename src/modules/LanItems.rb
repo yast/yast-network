@@ -1861,7 +1861,7 @@ module Yast
 
       # FIXME: encapsulate into LanItems.GetItemType ?
       @type = Ops.get_string(@Items, [@current, "hwinfo", "type"], "eth")
-      @device = @type + NetworkInterfaces.GetFreeDevice(@type)
+      @device = new_type_device(@type)
 
       # TODO: instead of udev use hwinfo dev_name
       NetworkInterfaces.Name = GetItemUdev("NAME")
@@ -2523,6 +2523,29 @@ module Yast
       ret
     end
 
+    # Returns unused name for device of given type
+    #
+    # When already having eht0, eth1, enp0s3 devices (eth type) and asks for new
+    # device of eth type it will e.g. return eth2 as a free name.
+    #
+    # Method always returns name in the oldfashioned schema (eth0, br1, ...)
+    #
+    # Raises an exception when type is incorrect.
+    #
+    # @param [String] device type
+    # @return [String] available device name
+    def new_type_device(type)
+      raise ArgumentError, "Valid device type expected" if type.nil? || type.empty?
+
+      known_devs = find_type_ifaces(type)
+
+      return type << "0" if known_devs.empty?
+
+      candidates = Array(0..known_devs.size).map { |c| "#{type}#{c}" }
+
+      (candidates - known_devs).first
+    end
+
     # This helper allows YARD to extract DSL-defined attributes.
     # Unfortunately YARD has problems with the Capitalized ones,
     # so those must be done manually.
@@ -2762,6 +2785,18 @@ module Yast
         ifcfg = GetDeviceMap(iface) || {}
 
         yield(ifcfg)
+      end
+
+      GetDeviceNames(items)
+    end
+
+    # Finds all items of given device type
+    #
+    # @param type [String] device type
+    # @return [Array] list of device names
+    def find_type_ifaces(type)
+      items = GetNetcardInterfaces().select do |iface|
+        GetDeviceType(iface) == type
       end
 
       GetDeviceNames(items)
