@@ -319,7 +319,6 @@ end
 describe "LanClass#ProposeVirtualized" do
 
   before do
-    allow(Yast::NetworkInterfaces).to receive(:GetFreeDevice).with("br").and_return("1")
     allow(Yast::LanItems).to receive(:IsCurrentConfigured).and_return(true)
     allow(Yast::Lan).to receive(:ProposeItem)
     allow(Yast::Lan).to receive(:configure_as_bridge!)
@@ -367,20 +366,20 @@ describe "LanClass#ProposeVirtualized" do
     end
 
     it "configures a new bridge with the given interface as a bridge port" do
-      expect(Yast::Lan).to receive(:configure_as_bridge!).with("eth0", "br1")
+      expect(Yast::Lan).to receive(:configure_as_bridge!).with("eth0", "br0")
 
       Yast::Lan.ProposeVirtualized
     end
 
     it "configures the given interface as a bridge port" do
-      expect(Yast::Lan).to receive(:configure_as_bridge!).with("eth0", "br1").and_return(true)
+      expect(Yast::Lan).to receive(:configure_as_bridge!).with("eth0", "br0").and_return(true)
       expect(Yast::Lan).to receive(:configure_as_bridge_port).with("eth0")
 
       Yast::Lan.ProposeVirtualized
     end
 
     it "refreshes lan items with the new interfaces" do
-      expect(Yast::Lan).to receive(:configure_as_bridge!).with("eth0", "br1").and_return(true)
+      expect(Yast::Lan).to receive(:configure_as_bridge!).with("eth0", "br0").and_return(true)
       expect(Yast::Lan).to receive(:configure_as_bridge_port).with("eth0")
       expect(Yast::Lan).to receive(:refresh_lan_items)
 
