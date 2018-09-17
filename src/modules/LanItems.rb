@@ -1871,7 +1871,7 @@ module Yast
 
       # FIXME: encapsulate into LanItems.GetItemType ?
       @type = Ops.get_string(@Items, [@current, "hwinfo", "type"], "eth")
-      @device = @type + NetworkInterfaces.GetFreeDevice(@type)
+      @device = new_type_device(@type)
 
       # TODO: instead of udev use hwinfo dev_name
       NetworkInterfaces.Name = GetItemUdev("NAME")
@@ -2825,6 +2825,18 @@ module Yast
         ifcfg = GetDeviceMap(iface) || {}
 
         yield(ifcfg)
+      end
+
+      GetDeviceNames(items)
+    end
+
+    # Finds all items of given device type
+    #
+    # @param type [String] device type
+    # @return [Array] list of device names
+    def find_type_ifaces(type)
+      items = GetNetcardInterfaces().select do |iface|
+        GetDeviceType(iface) == type
       end
 
       GetDeviceNames(items)

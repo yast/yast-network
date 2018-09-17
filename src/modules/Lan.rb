@@ -963,7 +963,7 @@ module Yast
       # then each configuration (except bridges) move to the bridge
       # and add old device name into bridge_ports
       LanItems.Items.each do |current, config|
-        bridge_name = format("br%s", NetworkInterfaces.GetFreeDevice("br"))
+        bridge_name = LanItems.new_type_device("br")
         next unless connected_and_bridgeable?(bridge_name, current, config)
         LanItems.current = current
         # first configure all connected unconfigured devices with dhcp (with default parameters)
