@@ -2525,7 +2525,7 @@ module Yast
 
     # Returns unused name for device of given type
     #
-    # When already having eht0, eth1, enp0s3 devices (eth type) and asks for new
+    # When already having eth0, eth1, enp0s3 devices (eth type) and asks for new
     # device of eth type it will e.g. return eth2 as a free name.
     #
     # Method always returns name in the oldfashioned schema (eth0, br1, ...)
@@ -2539,9 +2539,7 @@ module Yast
 
       known_devs = find_type_ifaces(type)
 
-      return type << "0" if known_devs.empty?
-
-      candidates = Array(0..known_devs.size).map { |c| "#{type}#{c}" }
+      candidates = (0..known_devs.size).map { |c| "#{type}#{c}" }
 
       (candidates - known_devs).first
     end
@@ -2779,7 +2777,7 @@ module Yast
     #
     # ifcfg hash<string, string> is in form { <sysconfig_key> -> <value> }
     #
-    # @return [Array] list of device names
+    # @return [Array<String>] list of device names
     def find_by_sysconfig
       items = GetNetcardInterfaces().select do |iface|
         ifcfg = GetDeviceMap(iface) || {}
@@ -2793,7 +2791,7 @@ module Yast
     # Finds all items of given device type
     #
     # @param type [String] device type
-    # @return [Array] list of device names
+    # @return [Array<String>] list of device names
     def find_type_ifaces(type)
       items = GetNetcardInterfaces().select do |iface|
         GetDeviceType(iface) == type
