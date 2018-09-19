@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Sep 18 07:31:10 UTC 2018 - mfilka@suse.com
+
+- bnc#964856
+  - adapted to changes in NetworkInterfaces API
+  - GetFreeDevice and GetFreeDevices was dropped
+- 4.1.7
+
+-------------------------------------------------------------------
 Wed Aug 22 07:19:45 UTC 2018 - dgonzalez@suse.com
 
 - Update calls to YaST2 systemd classes (related to fate#319428)

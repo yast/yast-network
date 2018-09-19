@@ -1667,13 +1667,6 @@ module Yast
     #-------------------
     # PRIVATE FUNCTIONS
 
-    # Return 10 free devices
-    # @param [String] type device type
-    # @return [Array] of 10 free devices
-    def FreeDevices(type)
-      NetworkInterfaces.GetFreeDevices(type, 10)
-    end
-
     def SetDefaultsForHW
       Builtins.y2milestone("SetDefaultsForHW type %1", @type)
       @mtu = "1492" if Arch.s390 && Builtins.contains(["lcs", "eth"], @type)
@@ -1868,7 +1861,7 @@ module Yast
 
       # FIXME: encapsulate into LanItems.GetItemType ?
       @type = Ops.get_string(@Items, [@current, "hwinfo", "type"], "eth")
-      @device = @type + NetworkInterfaces.GetFreeDevice(@type)
+      @device = new_type_device(@type)
 
       # TODO: instead of udev use hwinfo dev_name
       NetworkInterfaces.Name = GetItemUdev("NAME")
@@ -2530,6 +2523,27 @@ module Yast
       ret
     end
 
+    # Returns unused name for device of given type
+    #
+    # When already having eth0, eth1, enp0s3 devices (eth type) and asks for new
+    # device of eth type it will e.g. return eth2 as a free name.
+    #
+    # Method always returns name in the oldfashioned schema (eth0, br1, ...)
+    #
+    # Raises an exception when type is incorrect.
+    #
+    # @param [String] device type
+    # @return [String] available device name
+    def new_type_device(type)
+      raise ArgumentError, "Valid device type expected" if type.nil? || type.empty?
+
+      known_devs = find_type_ifaces(type)
+
+      candidates = (0..known_devs.size).map { |c| "#{type}#{c}" }
+
+      (candidates - known_devs).first
+    end
+
     # This helper allows YARD to extract DSL-defined attributes.
     # Unfortunately YARD has problems with the Capitalized ones,
     # so those must be done manually.
@@ -2763,12 +2777,24 @@ module Yast
     #
     # ifcfg hash<string, string> is in form { <sysconfig_key> -> <value> }
     #
-    # @return [Array] list of device names
+    # @return [Array<String>] list of device names
     def find_by_sysconfig
       items = GetNetcardInterfaces().select do |iface|
         ifcfg = GetDeviceMap(iface) || {}
 
         yield(ifcfg)
+      end
+
+      GetDeviceNames(items)
+    end
+
+    # Finds all items of given device type
+    #
+    # @param type [String] device type
+    # @return [Array<String>] list of device names
+    def find_type_ifaces(type)
+      items = GetNetcardInterfaces().select do |iface|
+        GetDeviceType(iface) == type
       end
 
       GetDeviceNames(items)
@@ -2882,7 +2908,6 @@ module Yast
     publish function: :isCurrentDHCP, type: "boolean ()"
     publish function: :GetItemDescription, type: "string ()"
     publish function: :SelectHWMap, type: "void (map)"
-    publish function: :FreeDevices, type: "list (string)"
     publish function: :SetDefaultsForHW, type: "void ()"
     publish function: :SetDeviceVars, type: "void (map, map)"
     publish function: :Select, type: "boolean (string)"
