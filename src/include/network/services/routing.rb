@@ -272,7 +272,7 @@ module Yast
         end
         route = Builtins.add(route, val)
         val = Convert.to_string(UI.QueryWidget(Id(:genmask), :Value))
-        if val != "-" && val != "0.0.0.0" && !valid_netmask?(val)
+        if val != "-" && !valid_netmask?(val)
           # Popup::Error text
           Popup.Error(_("Subnetmask is invalid."))
           UI.SetFocus(Id(:genmask))
@@ -429,9 +429,19 @@ module Yast
       nil
     end
 
+    # Checks if the param is valid IPv4 / IPv6
+    #
+    # @param gw [String] IPv4 or IPv6 address
+    # @return [Bolean] true if given param is valid
+    def valid_gateway?(gw)
+      !gw.nil? && (gw.empty? || IP.Check(gw))
+    end
+
+    # An input validator for the Routing dialog
     def validateRouting(_key, _event)
       gw = UI.QueryWidget(Id(:gw), :Value)
-      return true if gw == "" || IP.Check(gw)
+
+      return true if valid_gateway?(gw)
 
       Popup.Error(_("The default gateway is invalid."))
       UI.SetFocus(Id(:gw))

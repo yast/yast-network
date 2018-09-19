@@ -17,6 +17,7 @@ module Yast
 
     def initialize
       # import has to be done here, there are some collisions otherwise
+      Yast.import "Arch"
       Yast.import "Lan"
       Yast.import "LanItems"
       Yast.import "Linuxrc"
@@ -68,6 +69,10 @@ module Yast
 
       no_rules &&= ex_udev_rules.empty?
       return if no_rules
+
+      # for the purpose of setting the persistent names, create the devices 1st
+      s390_devices = ay_networking_section.fetch("s390-devices", {})
+      s390_devices.each { |rule| LanItems.createS390Device(rule) } if Arch.s390
 
       LanItems.Read
 
