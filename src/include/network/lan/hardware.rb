@@ -240,24 +240,8 @@ module Yast
 
       Builtins.y2milestone("hotplug=%1", LanItems.hotplug)
 
-      Ops.set(
-        @hardware,
-        "devices",
-        LanItems.FreeDevices(Ops.get_string(@hardware, "realtype", ""))
-      ) # TODO: id-, bus-, ... here
-      if !Builtins.contains(
-        Ops.get_list(@hardware, "devices", []),
-        Ops.get_string(@hardware, "device", "")
-      )
-        Ops.set(
-          @hardware,
-          "devices",
-          Builtins.prepend(
-            Ops.get_list(@hardware, "devices", []),
-            Ops.get_string(@hardware, "device", "")
-          )
-        )
-      end
+      # list of free device names when e.g. adding new device
+      @hardware["devices"] = LanItems.new_type_devices(@hardware["realtype"], 10)
 
       Ops.set(
         @hardware,
@@ -612,9 +596,7 @@ module Yast
           UI.ChangeWidget(
             Id(:ifcfg_name),
             :Items,
-            LanItems.FreeDevices(@hardware["realtype"]).map do |index|
-              @hardware["realtype"] + index
-            end
+            LanItems.new_type_devices(@hardware["realtype"], 10)
           )
         end
         Builtins.y2debug("type=%1", Ops.get_string(@hardware, "type", ""))

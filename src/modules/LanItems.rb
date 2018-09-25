@@ -2535,13 +2535,18 @@ module Yast
     # @param [String] device type
     # @return [String] available device name
     def new_type_device(type)
+      new_type_devices(type, 1).first
+    end
+
+    def new_type_devices(type, count)
       raise ArgumentError, "Valid device type expected" if type.nil? || type.empty?
+      return [] if count < 1
 
       known_devs = find_type_ifaces(type)
 
-      candidates = (0..known_devs.size).map { |c| "#{type}#{c}" }
+      candidates = (0..known_devs.size + count -1).map { |c| "#{type}#{c}" }
 
-      (candidates - known_devs).first
+      (candidates - known_devs)[0..count-1]
     end
 
     # This helper allows YARD to extract DSL-defined attributes.
