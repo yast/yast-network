@@ -338,19 +338,35 @@ describe "LanItems#find_type_ifaces" do
   end
 end
 
-describe "LanItems#new_type_device" do
+context "When proposing device names candidates" do
   before(:each) do
     allow(Yast::LanItems).to receive(:find_type_ifaces).and_return([])
     allow(Yast::LanItems).to receive(:find_type_ifaces).with("eth").and_return(["eth0", "eth2", "eth3"])
   end
 
-  it "generates a valid device name" do
-    expect(Yast::LanItems.new_type_device("br")).to eql "br0"
-    expect(Yast::LanItems.new_type_device("eth")).to eql "eth1"
+  describe "LanItems#new_type_device" do
+    it "generates a valid device name" do
+      expect(Yast::LanItems.new_type_device("br")).to eql "br0"
+      expect(Yast::LanItems.new_type_device("eth")).to eql "eth1"
+    end
+
+    it "raises an error when no type is provided" do
+      expect { Yast::LanItems.new_type_device(nil) }.to raise_error(ArgumentError)
+    end
   end
 
-  it "raises an error when no type is provided" do
-    expect { Yast::LanItems.new_type_device(nil) }.to raise_error(ArgumentError)
+  describe "LanItems#new_type_devices" do
+    it "generates as many new device names as requested" do
+      candidates = Yast::LanItems.new_type_devices("eth", 10)
+
+      expect(candidates.size).to eql 10
+      expect(candidates).not_to include(*["eth0", "eth2", "eth3"])
+    end
+
+    it "returns empty lists for device name count < 1" do
+      expect(Yast::LanItems.new_type_devices("eth", 0)).to be_empty
+      expect(Yast::LanItems.new_type_devices("eth", -1)).to be_empty
+    end
   end
 end
 
