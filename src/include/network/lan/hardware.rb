@@ -328,7 +328,7 @@ module Yast
           Id(:ifcfg_name),
           Opt(:editable, :hstretch),
           _("&Configuration Name"),
-          [@hardware["device"] || ""]
+          @hardware["devices"]
         )
       )
 
