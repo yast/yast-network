@@ -360,7 +360,7 @@ context "When proposing device names candidates" do
       candidates = Yast::LanItems.new_type_devices("eth", 10)
 
       expect(candidates.size).to eql 10
-      expect(candidates).not_to include(*["eth0", "eth2", "eth3"])
+      expect(candidates).not_to include("eth0", "eth2", "eth3")
     end
 
     it "returns empty lists for device name count < 1" do
