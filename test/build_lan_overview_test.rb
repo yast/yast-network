@@ -45,6 +45,13 @@ describe "LanItemsClass#BuildLanOverview" do
     allow(Yast::NetworkInterfaces)
       .to receive(:Current)
       .and_return(wlan_ifcfg)
+    allow(Yast::NetworkInterfaces)
+      .to receive(:GetType)
+      .and_call_original
+    allow(Yast::NetworkInterfaces)
+      .to receive(:GetType)
+      .with("wlan0")
+      .and_return("wlan")
     allow(FastGettext)
       .to receive(:locale)
       .and_return("de")

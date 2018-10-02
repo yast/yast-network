@@ -33,6 +33,9 @@ include Yast::UIShortcuts
 
 module Yast
   module NetworkLanHardwareInclude
+    # how many device names is proposed in Hardware dialog
+    NEW_DEVICES_COUNT = 10
+
     def initialize_network_lan_hardware(include_target)
       Yast.import "UI"
 
@@ -240,24 +243,8 @@ module Yast
 
       Builtins.y2milestone("hotplug=%1", LanItems.hotplug)
 
-      Ops.set(
-        @hardware,
-        "devices",
-        LanItems.FreeDevices(Ops.get_string(@hardware, "realtype", ""))
-      ) # TODO: id-, bus-, ... here
-      if !Builtins.contains(
-        Ops.get_list(@hardware, "devices", []),
-        Ops.get_string(@hardware, "device", "")
-      )
-        Ops.set(
-          @hardware,
-          "devices",
-          Builtins.prepend(
-            Ops.get_list(@hardware, "devices", []),
-            Ops.get_string(@hardware, "device", "")
-          )
-        )
-      end
+      # list of free device names when e.g. adding new device
+      @hardware["devices"] = LanItems.new_type_devices(@hardware["realtype"], NEW_DEVICES_COUNT)
 
       Ops.set(
         @hardware,
@@ -344,7 +331,7 @@ module Yast
           Id(:ifcfg_name),
           Opt(:editable, :hstretch),
           _("&Configuration Name"),
-          [@hardware["device"] || ""]
+          @hardware["devices"]
         )
       )
 
@@ -612,9 +599,7 @@ module Yast
           UI.ChangeWidget(
             Id(:ifcfg_name),
             :Items,
-            LanItems.FreeDevices(@hardware["realtype"]).map do |index|
-              @hardware["realtype"] + index
-            end
+            LanItems.new_type_devices(@hardware["realtype"], NEW_DEVICES_COUNT)
           )
         end
         Builtins.y2debug("type=%1", Ops.get_string(@hardware, "type", ""))

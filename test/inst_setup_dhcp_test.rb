@@ -8,28 +8,33 @@ describe Yast::SetupDhcp do
   subject { Yast::SetupDhcp.instance }
 
   describe "#main" do
+    let(:nac) { Yast::NetworkAutoconfiguration.instance }
 
-    it "returns :next when autoconfiguration is performed" do
-      allow(Yast::NetworkAutoconfiguration)
+    it "returns :next when autoconfiguration is not performed" do
+      allow(nac)
         .to receive(:any_iface_active?)
         .and_return(true)
 
       expect(subject.main).to eql :next
     end
 
-    it "returns :next when autoconfiguration is not performed" do
-      allow(Yast::NetworkAutoconfiguration)
+    it "returns :next when autoconfiguration is performed" do
+      allow(nac)
         .to receive(:any_iface_active?)
         .and_return(false)
+      allow(nac)
+        .to receive(:configure_dhcp)
+        .and_return(true)
 
       expect(subject.main).to eql :next
     end
 
     it "runs network dhcp autoconfiguration if no active interfaces" do
-      allow(Yast::NetworkAutoconfiguration)
+      allow(nac)
         .to receive(:any_iface_active?)
         .and_return(false)
-      expect(Yast::NetworkAutoconfiguration.instance)
+
+      expect(nac)
         .to receive(:configure_dhcp)
 
       subject.main
@@ -37,6 +42,10 @@ describe Yast::SetupDhcp do
 
     context "in the initial Stage" do
       it "writes DHCLIENT_SET_HOSTNAME in /etc/sysconfig/network/dhcp" do
+        allow(nac)
+          .to receive(:any_iface_active?)
+          .and_return(true)
+
         expect(Yast::Stage).to receive(:initial).and_return(true)
         expect(subject).to receive(:set_dhcp_hostname!)
 

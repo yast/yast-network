@@ -70,6 +70,8 @@ describe Yast::LanItems do
     allow(Yast::NetworkInterfaces).to receive(:FilterDevices).with("netcard") { netconfig_items }
     allow(Yast::NetworkInterfaces).to receive(:adapt_old_config!)
     allow(Yast::NetworkInterfaces).to receive(:CleanHotplugSymlink).and_return(true)
+    allow(Yast::NetworkInterfaces).to receive(:GetType).and_call_original
+    allow(Yast::NetworkInterfaces).to receive(:GetType).with("tun0").and_return("tun") # tun type detection relies on sysfs
 
     allow(Yast::LanItems).to receive(:ReadHardware) { hwinfo_items }
 
