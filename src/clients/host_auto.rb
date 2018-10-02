@@ -145,7 +145,7 @@ module Yast
     # Semantic AutoYaST profile check
     #
     # Problems will be stored in AutoInstall.issues_list.
-    # @param [Hash] input autoyast settings
+    # @param imported_hosts [Hash] autoyast settings
     def check_profile_for_errors(imported_hosts)
       # Checking for empty hostnames
       imported_hosts.each do |ip, hosts|
