@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Oct  2 19:59:14 UTC 2018 - mfilka@suse.com
+
+- bnc#1109312
+  - fixed internal error (replaced calls to LanItems::FreeDevices 
+    which was removed)
+- 4.1.8
+
+-------------------------------------------------------------------
 Tue Sep 18 07:31:10 UTC 2018 - mfilka@suse.com
 
 - bnc#964856
