@@ -1,4 +1,16 @@
 -------------------------------------------------------------------
+Wed Oct  3 07:33:01 UTC 2018 - mfilka@suse.com
+
+- bnc#1105230
+  - do not crash with internal error when 0.0.0.0 netmask is used
+    in the routing tab
+- Activate s390 network devices before applying udev naming rules,
+  avoiding "Invalid key/value pair in
+  /etc/udev/rules.d/70-persistent-net.rules" (bsc#1095761)
+  (by mvidner@suse.com)
+- 4.0.40
+
+-------------------------------------------------------------------
 Fri Aug  3 16:42:04 UTC 2018 - knut.anderssen@suse.com
 
 - Fixes to the networking AY schema (bsc#1103712)
