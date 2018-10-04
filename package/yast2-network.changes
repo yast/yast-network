@@ -3,6 +3,7 @@ Thu Oct  4 21:46:23 UTC 2018 - knut.anderssen@suse.com
 
 - Fixes to the networking AY schema (bsc#1103712, bsc#1108852)
   - Permitted the use of 'listentry' element in list entries.
+  - Added missed s390 device 'layer2' boolean element.
 - 3.2.55
 
 -------------------------------------------------------------------
