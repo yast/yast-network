@@ -89,6 +89,7 @@ s390-devices =
 device =
   element (device | listentry) {
     element type { text }? &
+    element layer2 { BOOLEAN}? &
     element chanids { text }? &
     element portname { text }? &
     element protocol { text }? &
