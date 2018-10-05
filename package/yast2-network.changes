@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Oct  4 21:46:23 UTC 2018 - knut.anderssen@suse.com
+
+- Fixes to the networking AY schema (bsc#1108852)
+  - Added missed s390 device 'layer2' boolean element.
+- 4.0.41
+
+-------------------------------------------------------------------
 Wed Oct  3 07:33:01 UTC 2018 - mfilka@suse.com
 
 - bnc#1105230
