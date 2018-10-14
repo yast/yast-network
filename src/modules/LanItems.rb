@@ -2540,6 +2540,52 @@ module Yast
       ret
     end
 
+    # Returns unused name for device of given type
+    #
+    # When already having eth0, eth1, enp0s3 devices (eth type) and asks for new
+    # device of eth type it will e.g. return eth2 as a free name.
+    #
+    # Method always returns name in the oldfashioned schema (eth0, br1, ...)
+    #
+    # @raise [ArgumentError] when type is nil or empty
+    # @param type [String] device type
+    # @return [String] available device name
+    def new_type_device(type)
+      new_type_devices(type, 1).first
+    end
+
+    # Returns a list of unused names for devices of given type
+    #
+    # Also @see new_type_device
+    #
+    # @raise [ArgumentError] when type is nil or empty
+    # @param type [String] device type
+    # @param count [Integer] requested count of names
+    # @return [Array<String>] list of free names, empty if count is < 1
+    def new_type_devices(type, count)
+      raise ArgumentError, "Valid device type expected" if type.nil? || type.empty?
+      return [] if count < 1
+
+      known_devs = find_type_ifaces(type)
+
+      candidates = (0..known_devs.size + count - 1).map { |c| "#{type}#{c}" }
+
+      (candidates - known_devs)[0..count - 1]
+    end
+
+    # Returns hash of NTP servers
+    #
+    # Provides map with NTP servers obtained via any of dhcp aware interfaces
+    #
+    # @return [Hash<String, Array<String>] key is device name, value
+    #                                      is list of ntp servers obtained from the device
+    def dhcp_ntp_servers
+      dhcp_ifaces = find_dhcp_ifaces
+
+      result = dhcp_ifaces.map { |iface| [iface, parse_ntp_servers(iface)] }.to_h
+      result.delete_if { |iface, ntps| ntps.empty? }
+    end
+
     # This helper allows YARD to extract DSL-defined attributes.
     # Unfortunately YARD has problems with the Capitalized ones,
     # so those must be done manually.
