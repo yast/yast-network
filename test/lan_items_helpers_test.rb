@@ -311,6 +311,91 @@ describe "#update_item_udev_rule!" do
   end
 end
 
+describe "LanItems#find_type_ifaces" do
+  let(:mocked_items) do
+    {
+      0 => { "ifcfg" => "eth0" },
+      1 => { "hwinfo" => { "dev_name" => "enp0s3" } },
+      2 => { "ifcfg" => "bond0" }
+    }
+  end
+
+  before(:each) do
+    allow(Yast::LanItems).to receive(:Items).and_return(mocked_items)
+
+    allow(Yast::LanItems).to receive(:GetDeviceType).and_return("eth")
+    allow(Yast::LanItems).to receive(:GetDeviceType).with(0).and_return("eth")
+    allow(Yast::LanItems).to receive(:GetDeviceType).with(1).and_return("eth")
+    allow(Yast::LanItems).to receive(:GetDeviceType).with(2).and_return("bond")
+  end
+
+  it "lists all eth devices when asked for" do
+    expect(Yast::LanItems.send(:find_type_ifaces, "eth")).to eql ["eth0", "enp0s3"]
+  end
+
+  it "returns an empty array when invalid type is given" do
+    expect(Yast::LanItems.send(:find_type_ifaces, nil)).to eql []
+  end
+end
+
+context "When proposing device names candidates" do
+  before(:each) do
+    allow(Yast::LanItems).to receive(:find_type_ifaces).and_return([])
+    allow(Yast::LanItems).to receive(:find_type_ifaces).with("eth").and_return(["eth0", "eth2", "eth3"])
+  end
+
+  describe "LanItems#new_type_device" do
+    it "generates a valid device name" do
+      expect(Yast::LanItems.new_type_device("br")).to eql "br0"
+      expect(Yast::LanItems.new_type_device("eth")).to eql "eth1"
+    end
+
+    it "raises an error when no type is provided" do
+      expect { Yast::LanItems.new_type_device(nil) }.to raise_error(ArgumentError)
+    end
+  end
+
+  describe "LanItems#new_type_devices" do
+    it "generates as many new device names as requested" do
+      candidates = Yast::LanItems.new_type_devices("eth", 10)
+
+      expect(candidates.size).to eql 10
+      expect(candidates).not_to include("eth0", "eth2", "eth3")
+    end
+
+    it "returns empty lists for device name count < 1" do
+      expect(Yast::LanItems.new_type_devices("eth", 0)).to be_empty
+      expect(Yast::LanItems.new_type_devices("eth", -1)).to be_empty
+    end
+  end
+
+  describe "LanItems#dhcp_ntp_servers" do
+    it "lists ntp servers for every device which provides them" do
+      result = {
+        "eth0" => ["1.0.0.1"],
+        "eth1" => ["1.0.0.2", "1.0.0.3"]
+      }
+
+      allow(Yast::LanItems)
+        .to receive(:parse_ntp_servers)
+        .and_return([])
+      allow(Yast::LanItems)
+        .to receive(:parse_ntp_servers)
+        .with("eth0")
+        .and_return(["1.0.0.1"])
+      allow(Yast::LanItems)
+        .to receive(:parse_ntp_servers)
+        .with("eth1")
+        .and_return(["1.0.0.2", "1.0.0.3"])
+      allow(Yast::LanItems)
+        .to receive(:find_dhcp_ifaces)
+        .and_return(["eth0", "eth1", "eth2"])
+
+      expect(Yast::LanItems.dhcp_ntp_servers).to eql result
+    end
+  end
+end
+
 describe "DHCLIENT_SET_HOSTNAME helpers" do
   def mock_items(dev_maps)
     # mock LanItems#Items
