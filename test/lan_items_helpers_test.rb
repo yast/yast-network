@@ -368,6 +368,32 @@ context "When proposing device names candidates" do
       expect(Yast::LanItems.new_type_devices("eth", -1)).to be_empty
     end
   end
+
+  describe "LanItems#dhcp_ntp_servers" do
+    it "lists ntp servers for every device which provides them" do
+      result = {
+        "eth0" => ["1.0.0.1"],
+        "eth1" => ["1.0.0.2", "1.0.0.3"]
+      }
+
+      allow(Yast::LanItems)
+        .to receive(:parse_ntp_servers)
+        .and_return([])
+      allow(Yast::LanItems)
+        .to receive(:parse_ntp_servers)
+        .with("eth0")
+        .and_return(["1.0.0.1"])
+      allow(Yast::LanItems)
+        .to receive(:parse_ntp_servers)
+        .with("eth1")
+        .and_return(["1.0.0.2", "1.0.0.3"])
+      allow(Yast::LanItems)
+        .to receive(:find_dhcp_ifaces)
+        .and_return(["eth0", "eth1", "eth2"])
+
+      expect(Yast::LanItems.dhcp_ntp_servers).to eql result
+    end
+  end
 end
 
 describe "DHCLIENT_SET_HOSTNAME helpers" do
