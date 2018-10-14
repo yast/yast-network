@@ -1,8 +1,6 @@
 # encoding: utf-8
 
 require "yast"
-require "rubygems"
-require "nokogiri"
 
 module Yast
   module Wicked
@@ -29,9 +27,9 @@ module Yast
 
       lease_files = ["ipv4", "ipv6"].map { |ip| "/var/lib/wicked/lease-#{iface}-dhcp-#{ip}.xml" }
       lease_files.find_all { |f| File::file?(f) }.reduce([]) do |stack, file|
-        doc = Nokogiri::XML(File.open(file))
+        result = SCR.Execute(path(".target.bash_output"), "wicked xpath --file #{file} \"%{//ntp/server}\"")
 
-        stack + doc.xpath("//ntp/server").map { |node| node.text }
+        stack + result.fetch("stdout", "").split("\n")
       end
     end
   end
