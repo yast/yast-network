@@ -1,6 +1,8 @@
 # encoding: utf-8
 
 require "yast"
+require "rubygems"
+require "nokogiri"
 
 module Yast
   module Wicked
@@ -25,7 +27,12 @@ module Yast
       raise ArgumentError, "A network device has to be specified" if iface.nil? || iface.empty?
       raise RuntimeError, "Parsing NTP Servers not supported for network service in use" if !NetworkService.is_wicked
 
-      []
+      lease_files = ["ipv4", "ipv6"].map { |ip| "/var/lib/wicked/lease-#{iface}-dhcp-#{ip}.xml" }
+      lease_files.find_all { |f| File::file?(f) }.reduce([]) do |stack, file|
+        doc = Nokogiri::XML(File.open(file))
+
+        stack + doc.xpath("//ntp/server").map { |node| node.text }
+      end
     end
   end
 end
