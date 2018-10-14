@@ -49,6 +49,9 @@ BuildRequires:  yast2-packager >= 4.0.18
 # cfa for parsing hosts
 BuildRequires:  rubygem(%rb_default_ruby_abi:cfa) >= 0.6.4
 Requires:       rubygem(%rb_default_ruby_abi:cfa) >= 0.6.4
+# nokogiri for parsing xml
+BuildRequires:  rubygem(%rb_default_ruby_abi:nokogiri)
+Requires:       rubygem(%rb_default_ruby_abi:nokogiri)
 # lenses are needed to use cfa
 BuildRequires:  augeas-lenses
 Requires:       augeas-lenses
