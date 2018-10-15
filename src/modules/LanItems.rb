@@ -2550,7 +2550,7 @@ module Yast
       dhcp_ifaces = find_dhcp_ifaces
 
       result = dhcp_ifaces.map { |iface| [iface, parse_ntp_servers(iface)] }.to_h
-      result.delete_if { |iface, ntps| ntps.empty? }
+      result.delete_if { |_, ntps| ntps.empty? }
     end
 
     # This helper allows YARD to extract DSL-defined attributes.
