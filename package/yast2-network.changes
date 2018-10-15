@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Oct 15 08:38:58 UTC 2018 - mfilka@suse.com
+
+- fate#323454
+  - wicked compatible parsing of NTP servers from  dhcp leases 
+- 4.0.42
+
+-------------------------------------------------------------------
 Thu Oct  4 21:46:23 UTC 2018 - knut.anderssen@suse.com
 
 - Fixes to the networking AY schema (bsc#1108852)
