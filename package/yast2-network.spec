@@ -107,7 +107,7 @@ rake install DESTDIR="%{buildroot}"
 
 %dir %{yast_docdir}
 %doc %{yast_docdir}/CONTRIBUTING.md
-%license %{yast_docdir}/COPYING
+%license COPYING
 %doc %{yast_docdir}/README.md
 
 %changelog
