@@ -2556,6 +2556,19 @@ module Yast
       (candidates - known_devs)[0..count - 1]
     end
 
+    # Returns hash of NTP servers
+    #
+    # Provides map with NTP servers obtained via any of dhcp aware interfaces
+    #
+    # @return [Hash<String, Array<String>] key is device name, value
+    #                                      is list of ntp servers obtained from the device
+    def dhcp_ntp_servers
+      dhcp_ifaces = find_dhcp_ifaces
+
+      result = dhcp_ifaces.map { |iface| [iface, parse_ntp_servers(iface)] }.to_h
+      result.delete_if { |_, ntps| ntps.empty? }
+    end
+
     # This helper allows YARD to extract DSL-defined attributes.
     # Unfortunately YARD has problems with the Capitalized ones,
     # so those must be done manually.
