@@ -59,7 +59,7 @@ module Yast
       Builtins.y2milestone("Lan autoinst callback: #{@func}")
 
       if @func == "Summary"
-        @ret = Ops.get_string(Lan.Summary("summary"), 0, "")
+        @ret = Lan.Summary("summary")
       elsif @func == "Reset"
         Lan.Import({})
         @ret = {}

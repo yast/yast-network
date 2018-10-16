@@ -940,6 +940,15 @@ module Yast
       end
     end
 
+    # Find all NICs configured statically
+    #
+    # @return [Array<String>] list of NIC names which have a static config
+    def find_static_ifaces
+      find_by_sysconfig do |ifcfg|
+        ifcfg.fetch("BOOTPROTO", "").match(/static/i)
+      end
+    end
+
     # Finds all devices which has DHCLIENT_SET_HOSTNAME set to "yes"
     #
     # @return [Array<String>] list of NIC names which has the option set to "yes"
@@ -2579,8 +2588,6 @@ module Yast
       publish variable: name, type: type
     end
 
-  private
-
     # Returns a formated string with the interfaces that are part of a bridge
     # or of a bond interface.
     #
@@ -2608,6 +2615,8 @@ module Yast
 
       false
     end
+
+  private
 
     # Checks if given lladdr can be written into ifcfg
     #

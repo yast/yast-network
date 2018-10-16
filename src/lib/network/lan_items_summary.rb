@@ -56,6 +56,29 @@ module Yast
       Summary.DevicesList(items)
     end
 
+    # Generates a summary in RichText format for the configured interfaces
+    #
+    # @example
+    #   LanItemsSummary.new.proposal
+    #   => "<ul><li><p>Configured with DHCP: eth0, eth1<br></p></li>" \
+    #      "<li><p>br0 (Bridge)<br>IP address: 192.168.122.60/24" \
+    #      "<br>Bridge Ports: eth2 eth3</p></li></ul>"
+    #
+    # @see Summary
+    # @return [String] summary in RichText
+    def proposal
+      items = []
+
+      items << "<li>#{dhcp_summary}</li>" unless dhcp_ifaces.empty?
+      static_ifaces.each do |name|
+        items << Summary.Device(summary_label_for(name), summary_details_for(name))
+      end
+
+      return Summary.NotConfigured if items.empty?
+
+      Summary.DevicesList(items)
+    end
+
     # Generates a one line text summary for the configured interfaces.
     #
     # @example with one configured interface
@@ -108,6 +131,62 @@ module Yast
       else
         LanItems.DeviceProtocol(ifcfg)
       end
+    end
+
+    # Return the label name for the given interface
+    #
+    # @return [String] label name for the given interfave
+    def summary_label_for(name)
+      case NetworkInterfaces.GetType(name)
+      when "br"
+        "#{name} (Bridge)"
+      when "bond"
+        "#{name} (Bond Master)"
+      else
+        name
+      end
+    end
+
+    # Return extra details for the interfave given like the ip address and also
+    # the slaved interfaces in case of a bridge or a bond device.
+    #
+    # @return [String] interface summary details
+    def summary_details_for(name)
+      dev_map = NetworkInterfaces.devmap(name)
+      output = LanItems.ip_overview(dev_map).first
+      type = NetworkInterfaces.GetType(name)
+      output += "<br>#{LanItems.slaves_desc(type, name)}" if ["br", "bond"].include?(type)
+
+      output
+    end
+
+    # Return a summary of the interfaces configurew with DHCP
+    #
+    # @return [String] interfaces configured with DHCP summary
+    def dhcp_summary
+      # TRANSLATORS: %s is the list of interfaces configured by DHCP
+      _("Configured with DHCP: %s") % dhcp_ifaces.join(", ")
+    end
+
+    # Convenience method that obtains the list of dhcp configured interfaces
+    #
+    # @return [Array<String>] dhcp configured interface names
+    def dhcp_ifaces
+      LanItems.find_dhcp_ifaces
+    end
+
+    # Convenience method that obtains the list of static configured interfaces
+    #
+    # @return [Array<String>] static configured interface names
+    def static_ifaces
+      LanItems.find_static_ifaces
+    end
+
+    # Convenience method that obtains the list of static configured interfaces
+    #
+    # @return [Array<String>] static configured interface names
+    def configured_ifaces
+      LanItems.getNetworkInterfaces
     end
   end
 end
