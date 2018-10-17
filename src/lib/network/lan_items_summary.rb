@@ -135,13 +135,16 @@ module Yast
 
     # Return the label name for the given interface
     #
+    # @param name [String] interface name
     # @return [String] label name for the given interfave
     def summary_label_for(name)
       case NetworkInterfaces.GetType(name)
       when "br"
-        "#{name} (Bridge)"
+        # TRANSLATORS: %s is the bridge interface name
+        _("%s (Bridge)") % name
       when "bond"
-        "#{name} (Bond Master)"
+        # TRANSLATORS: %s is the bonding interface name
+        _("%s (Bonding Master)") % name
       else
         name
       end
@@ -150,6 +153,7 @@ module Yast
     # Return extra details for the interfave given like the ip address and also
     # the slaved interfaces in case of a bridge or a bond device.
     #
+    # @param name [String] interface name
     # @return [String] interface summary details
     def summary_details_for(name)
       dev_map = NetworkInterfaces.devmap(name)
@@ -180,13 +184,6 @@ module Yast
     # @return [Array<String>] static configured interface names
     def static_ifaces
       LanItems.find_static_ifaces
-    end
-
-    # Convenience method that obtains the list of static configured interfaces
-    #
-    # @return [Array<String>] static configured interface names
-    def configured_ifaces
-      LanItems.getNetworkInterfaces
     end
   end
 end
