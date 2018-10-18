@@ -980,14 +980,15 @@ module Yast
 
     # Get list of all configured interfaces
     #
+    # @param type [String] only obtains configured interfaces of the given type
     # return [Array] list of strings - interface names (eth0, ...)
     # FIXME: rename e.g. to configured_interfaces
-    def getNetworkInterfaces
+    def getNetworkInterfaces(type = nil)
       configurations = NetworkInterfaces.FilterDevices("netcard")
-      devtypes = NetworkInterfaces.CardRegex["netcard"].to_s.split("|")
+      devtypes = type ? [type] : NetworkInterfaces.CardRegex["netcard"].to_s.split("|")
 
-      devtypes.inject([]) do |acc, type|
-        conf = configurations[type].to_h
+      devtypes.inject([]) do |acc, conf_type|
+        conf = configurations[conf_type].to_h
         acc.concat(conf.keys)
       end
     end

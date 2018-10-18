@@ -12,7 +12,10 @@ describe Yast::LanItemsSummary do
     [
       { "BOOTPROTO" => "dhcp" },
       { "BOOTPROTO" => "none" },
-      { "IPADDR" => "1.2.3.4", "NETMASK" => "255.255.255.0" }
+      { "BOOTPROTO"    => "static",
+        "IPADDR"       => "1.2.3.4",
+        "NETMASK"      => "255.255.255.0",
+        "BRIDGE_PORTS" => "eth1" }
     ].freeze
   end
 
@@ -27,9 +30,11 @@ describe Yast::LanItemsSummary do
   before do
     allow(Yast::LanItems).to receive(:Items).and_return(items)
     allow(Yast::LanItems).to receive(:IsItemConfigured).and_return(true)
+    allow(Yast::NetworkInterfaces).to receive(:FilterDevices).with("netcard").and_return("br" => { "br0" => dhcp_maps[2] })
     dhcp_maps.each_with_index do |item, index|
       allow(Yast::LanItems).to receive(:GetDeviceMap).with(index).and_return(item)
     end
+    allow(subject).to receive(:bridges).and_return(["br0"])
   end
 
   describe "#default" do
@@ -46,6 +51,26 @@ describe Yast::LanItemsSummary do
       allow(Yast::LanItems).to receive(:IsItemConfigured).and_return(false)
 
       expect(subject.default).to eql Yast::Summary.NotConfigured
+    end
+  end
+
+  describe "#proposal" do
+    it "returns a Richtext summary of the configured interfaces" do
+      expect(subject.proposal)
+        .to eql "<ul>" \
+                "<li>Configured with DHCP: eth0</li>" \
+                "<li>Statically configured: br0</li>" \
+                "<li>Bridges: br0 (eth1)</li>" \
+                "</ul>"
+    end
+
+    it "returns Summary.NotConfigured in case of not configured interfaces" do
+      allow(Yast::LanItems).to receive(:find_dhcp_ifaces).and_return([])
+      allow(Yast::LanItems).to receive(:find_static_ifaces).and_return([])
+      allow(subject).to receive(:bridges).and_return([])
+      allow(subject).to receive(:bonds).and_return([])
+
+      expect(subject.proposal).to eql Yast::Summary.NotConfigured
     end
   end
 
