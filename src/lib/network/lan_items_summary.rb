@@ -138,7 +138,7 @@ module Yast
     # @return [String] interfaces configured with DHCP summary
     def dhcp_summary
       # TRANSLATORS: %s is the list of interfaces configured by DHCP
-      _("Configured with DHCP: %s") % LanItems.find_dhcp_ifaces.join(", ")
+      _("Configured with DHCP: %s") % LanItems.find_dhcp_ifaces.sort.join(", ")
     end
 
     # Return a summary of the interfaces configured statically
@@ -146,35 +146,35 @@ module Yast
     # @return [String] statically configured interfaces summary
     def static_summary
       # TRANSLATORS: %s is the list of interfaces configured by DHCP
-      _("Statically configured: %s") % LanItems.find_static_ifaces.join(", ")
+      _("Statically configured: %s") % LanItems.find_static_ifaces.sort.join(", ")
     end
 
     # Return a summary of the configured bridge interfaces
     #
     # @return [String] bridge configured interfaces summary
     def bridge_summary
-      _("Bridges: %s") % bridges.map { |n| "#{n} (#{LanItems.bridge_slaves(n).join(", ")})" }
+      _("Bridges: %s") % bridges.map { |n| "#{n} (#{LanItems.bridge_slaves(n).sort.join(", ")})" }
     end
 
     # Return a summary of the configured bonding interfaces
     #
     # @return [String] bonding configured interfaces summary
     def bonding_summary
-      _("Bonds: %s") % bonds.map { |n| "#{n} (#{LanItems.GetBondSlaves(n).join(", ")})" }
+      _("Bonds: %s") % bonds.map { |n| "#{n} (#{LanItems.GetBondSlaves(n).sort.join(", ")})" }
     end
 
     # Convenience method that obtains the list of bonding configured interfaces
     #
     # @return [Array<String>] bonding configured interface names
     def bonds
-      LanItems.getNetworkInterfaces("bond")
+      LanItems.getNetworkInterfaces("bond").sort
     end
 
     # Convenience method that obtains the list of bridge configured interfaces
     #
     # @return [Array<String>] bridge configured interface names
     def bridges
-      LanItems.getNetworkInterfaces("br")
+      LanItems.getNetworkInterfaces("br").sort
     end
   end
 end
