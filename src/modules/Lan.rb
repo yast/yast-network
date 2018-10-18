@@ -794,26 +794,18 @@ module Yast
     end
 
     # Create a textual summary and a list of unconfigured devices
-    # @param [String] mode "split": split configured and unconfigured?<br />
-    #             "summary": add resolver and routing symmary,
-    #		"proposal": for proposal, add links for direct config
+    # @param [String] mode "summary": add resolver and routing summary,
+    #   "proposal": for proposal also with resolver an routing summary
     # @return summary of the current configuration
     def Summary(mode)
-      sum = LanItems.BuildLanOverview
-
-      # Testing improved summary
-      if mode == "summary"
-        Ops.set(
-          sum,
-          0,
-          Ops.add(
-            Ops.add(Ops.get_string(sum, 0, ""), DNS.Summary),
-            Routing.Summary
-          )
-        )
+      case mode
+      when "summary"
+        "#{LanItems.BuildLanOverview.first}#{DNS.Summary}#{Routing.Summary}"
+      when "proposal"
+        "#{LanItems.summary(:proposal)}#{DNS.Summary}#{Routing.Summary}"
+      else
+        LanItems.BuildLanOverview.first
       end
-
-      deep_copy(sum)
     end
 
     # Create a textual summary for the general network settings

@@ -97,6 +97,13 @@ describe "LanItemsClass#getNetworkInterfaces" do
     allow(Yast::NetworkInterfaces).to receive(:FilterDevices) { NETCONFIG_ITEMS }
     expect(Yast::LanItems.getNetworkInterfaces).to match_array(EXPECTED_INTERFACES)
   end
+
+  context "when a type is given" do
+    it "returns the list of known interfaces of the given type" do
+      allow(Yast::NetworkInterfaces).to receive(:FilterDevices) { NETCONFIG_ITEMS }
+      expect(Yast::LanItems.getNetworkInterfaces("br")).to eql(["br0"])
+    end
+  end
 end
 
 describe "LanItemsClass#s390_correct_lladdr" do

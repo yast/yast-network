@@ -56,6 +56,29 @@ module Yast
       Summary.DevicesList(items)
     end
 
+    # Generates a summary in RichText format for the configured interfaces
+    #
+    # @example
+    #   LanItemsSummary.new.proposal
+    #   => "<ul><li><p>Configured with DHCP: eth0, eth1<br></p></li>" \
+    #      "<li><p>br0 (Bridge)<br>IP address: 192.168.122.60/24" \
+    #      "<br>Bridge Ports: eth2 eth3</p></li></ul>"
+    #
+    # @see Summary
+    # @return [String] summary in RichText
+    def proposal
+      items = []
+
+      items << "<li>#{dhcp_summary}</li>" unless LanItems.find_dhcp_ifaces.empty?
+      items << "<li>#{static_summary}</li>" unless LanItems.find_static_ifaces.empty?
+      items << "<li>#{bridge_summary}</li>" unless bridges.empty?
+      items << "<li>#{bonding_summary}</li>" unless bonds.empty?
+
+      return Summary.NotConfigured if items.empty?
+
+      Summary.DevicesList(items)
+    end
+
     # Generates a one line text summary for the configured interfaces.
     #
     # @example with one configured interface
@@ -108,6 +131,50 @@ module Yast
       else
         LanItems.DeviceProtocol(ifcfg)
       end
+    end
+
+    # Return a summary of the interfaces configurew with DHCP
+    #
+    # @return [String] interfaces configured with DHCP summary
+    def dhcp_summary
+      # TRANSLATORS: %s is the list of interfaces configured by DHCP
+      _("Configured with DHCP: %s") % LanItems.find_dhcp_ifaces.sort.join(", ")
+    end
+
+    # Return a summary of the interfaces configured statically
+    #
+    # @return [String] statically configured interfaces summary
+    def static_summary
+      # TRANSLATORS: %s is the list of interfaces configured by DHCP
+      _("Statically configured: %s") % LanItems.find_static_ifaces.sort.join(", ")
+    end
+
+    # Return a summary of the configured bridge interfaces
+    #
+    # @return [String] bridge configured interfaces summary
+    def bridge_summary
+      _("Bridges: %s") % bridges.map { |n| "#{n} (#{LanItems.bridge_slaves(n).sort.join(", ")})" }
+    end
+
+    # Return a summary of the configured bonding interfaces
+    #
+    # @return [String] bonding configured interfaces summary
+    def bonding_summary
+      _("Bonds: %s") % bonds.map { |n| "#{n} (#{LanItems.GetBondSlaves(n).sort.join(", ")})" }
+    end
+
+    # Convenience method that obtains the list of bonding configured interfaces
+    #
+    # @return [Array<String>] bonding configured interface names
+    def bonds
+      LanItems.getNetworkInterfaces("bond").sort
+    end
+
+    # Convenience method that obtains the list of bridge configured interfaces
+    #
+    # @return [Array<String>] bridge configured interface names
+    def bridges
+      LanItems.getNetworkInterfaces("br").sort
     end
   end
 end

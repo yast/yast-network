@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Oct 16 19:29:30 UTC 2018 - knut.anderssen@suse.com
+
+- Simplified the installation network proposal collecting all the
+  configured dhcp interfaces in a single entry (fate#326480)
+- 4.1.13
+
+-------------------------------------------------------------------
 Tue Oct 16 09:02:26 UTC 2018 - mfilka@suse.com
 
 - bsc#1110598
