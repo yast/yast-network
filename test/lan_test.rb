@@ -9,6 +9,7 @@ Yast.import "Lan"
 describe "LanClass#Packages" do
   packages = {
     "wpa_supplicant" => "wlan",
+    "iw"             => "wlan",
     "vlan"           => "vlan",
     "tunctl"         => "tun"
   }
@@ -27,6 +28,9 @@ describe "LanClass#Packages" do
         .and_return([])
       allow(Yast::NetworkService)
         .to receive(:is_network_manager)
+        .and_return(false)
+      allow(Yast::PackageSystem)
+        .to receive(:Installed)
         .and_return(false)
 
       expect(Yast::PackageSystem)
