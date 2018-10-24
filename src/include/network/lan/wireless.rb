@@ -1182,7 +1182,7 @@ module Yast
       InitializeWidget(key)
       # enable/disable
       mode = Ops.get_string(LanItems.wl_wpa_eap, "WPA_EAP_MODE", "")
-      UI.ChangeWidget(Id(key), :Enabled, mode == "peap")
+      UI.ChangeWidget(Id(key), :Enabled, mode.downcase == "peap")
 
       nil
     end
