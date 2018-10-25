@@ -3,7 +3,9 @@ Wed Oct 24 08:26:24 UTC 2018 - mfilka@suse.com
 
 - bnc#1111925
   - always propose wpa_supplicant when configuring wlan
-- 3.3.2 
+- bsc#1113080
+  - Fix detection of peap mode (jreidinger@suse.com)
+- 3.3.2
 
 -------------------------------------------------------------------
 Thu Oct  4 21:46:23 UTC 2018 - knut.anderssen@suse.com
