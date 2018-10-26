@@ -510,6 +510,10 @@ module Yast
       UI.ChangeWidget(Id(:authmode), :Value, authmode)
       UI.ChangeWidget(Id(:type_g), :CurrentButton, type) if authmode != "eap"
 
+      # Require wireless-tools installation in order to be able to scan the
+      # wlan network (bsc#1112952)
+      UI.ChangeWidget(Id(:scan_for_networks), :Enabled, scan_supported?)
+
       ckey = nil
       ret = nil
       loop do
@@ -1393,6 +1397,20 @@ module Yast
         "next_button"        => Label.OKButton,
         "fallback_functions" => functions
       )
+    end
+
+  private
+
+    IWLIST_PKG = "wireless-tools".freeze
+
+    def scan_supported?
+      return true if Stage.initial || Package.Installed(IWLIST_PKG) || Package.Install(IWLIST_PKG)
+
+      Popup.Error(
+        _("The required package is not installed.\n" \
+          "Some options could not be available")
+      )
+      false
     end
   end
 end
