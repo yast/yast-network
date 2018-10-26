@@ -23,7 +23,7 @@ ip addr show dev $BASEDEVICE
 echo "ok 1 $BASEDEVICE: found"
 
 echo "# add a (virtual) interface"
-$YAST lan add name=vlan50 ethdevice=$BASEDEVICE bootproto=dhcp || tapfail
+$YAST lan add name=vlan50 type=vlan ethdevice=$BASEDEVICE bootproto=dhcp || tapfail
 echo "ok 2 vlan50: added"
 
 # check it has worked
