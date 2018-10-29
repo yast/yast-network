@@ -76,11 +76,11 @@ module Yast
           "opt"    => [:notify],
           "items"  => [
             # combo box item, one of WPA EAP modes
-            ["TTLS", _("TTLS")],
-            # combo box item, one of WPA EAP modes
             ["PEAP", _("PEAP")],
             # combo box item, one of WPA EAP modes
-            ["TLS", _("TLS")]
+            ["TLS", _("TLS")],
+            # combo box item, one of WPA EAP modes
+            ["TTLS", _("TTLS")]
           ],
           "help"   => _(
             "<p>WPA-EAP uses a RADIUS server to authenticate users. There\n" \
@@ -1350,9 +1350,7 @@ module Yast
 
       auth_names = {
         # combo box item, any of EAP authentication methods
-        ""         => _(
-          "Any"
-        ),
+        ""         => _("Any"),
         # combo box item, an EAP authentication method
         "MD5"      => _("MD5"),
         # combo box item, an EAP authentication method
@@ -1362,13 +1360,9 @@ module Yast
         # combo box item, an EAP authentication method
         "PAP"      => _("PAP"),
         # combo box item, an EAP authentication method
-        "MSCHAP"   => _(
-          "MSCHAPv1"
-        ),
+        "MSCHAP"   => _("MSCHAPv1"),
         # combo box item, an EAP authentication method
-        "MSCHAPV2" => _(
-          "MSCHAPv2"
-        )
+        "MSCHAPV2" => _("MSCHAPv2")
       }
       auth_items = {
         "TTLS" => ["", "MD5", "GTC", "CHAP", "PAP", "MSCHAP", "MSCHAPV2"],
