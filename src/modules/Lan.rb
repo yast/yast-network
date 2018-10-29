@@ -888,37 +888,22 @@ module Yast
       # various device types require some special packages ...
       type_requires = {
         # for wlan require iw instead of wireless-tools (bnc#539669)
-        "wlan" => "iw",
-        "vlan" => "vlan",
-        "tun"  => "tunctl",
-        "tap"  => "tunctl"
-      }
-      # ... and some options require special packages as well
-      option_requires = {
-        "WIRELESS_AUTH_MODE" => {
-          "psk" => "wpa_supplicant",
-          "eap" => "wpa_supplicant"
-        }
+        # allways require wpa_supplicant
+        "wlan" => ["wpa_supplicant", "iw"],
+        "vlan" => ["vlan"],
+        "tun"  => ["tunctl"],
+        "tap"  => ["tunctl"]
       }
 
       pkgs = []
-      type_requires.each do |type, package|
+      type_requires.each do |type, packages|
         ifaces = NetworkInterfaces.List(type)
         next if ifaces.empty?
 
         Builtins.y2milestone(
-          "Network interface type #{type} requires package #{package}"
+          "Network interface type #{type} requires packages #{packages.inspect}"
         )
-        pkgs << package if !PackageSystem.Installed(package)
-      end
-
-      option_requires.each do |option, option_values|
-        option_values.each do |value, package|
-          next if NetworkInterfaces.Locate(option, value) == []
-
-          Builtins.y2milestone(
-            "Network interface with option #{option}=#{value} requires package #{package}"
-          )
+        packages.each do |package|
           pkgs << package if !PackageSystem.Installed(package)
         end
       end
