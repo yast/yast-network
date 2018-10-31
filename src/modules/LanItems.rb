@@ -2797,6 +2797,18 @@ module Yast
       GetDeviceNames(items)
     end
 
+    # Finds all items of given device type
+    #
+    # @param type [String] device type
+    # @return [Array] list of device names
+    def find_type_ifaces(type)
+      items = GetNetcardInterfaces().select do |iface|
+        GetDeviceType(iface) == type
+      end
+
+      GetDeviceNames(items)
+    end
+
     # @attribute Items
     # @return [Hash<Integer, Hash<String, Object> >]
     # Each item, indexed by an Integer in a Hash, aggregates several aspects
