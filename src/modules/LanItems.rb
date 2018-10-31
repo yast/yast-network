@@ -934,6 +934,18 @@ module Yast
       GetDeviceNames(GetNetcardInterfaces())
     end
 
+    # Finds all items of given device type
+    #
+    # @param type [String] device type
+    # @return [Array] list of device names
+    def find_type_ifaces(type)
+      items = GetNetcardInterfaces().select do |iface|
+        GetDeviceType(iface) == type
+      end
+
+      GetDeviceNames(items)
+    end
+
     # Finds all NICs configured with DHCP
     #
     # @return [Array<String>] list of NIC names which are configured to use (any) dhcp
@@ -2792,18 +2804,6 @@ module Yast
         ifcfg = GetDeviceMap(iface) || {}
 
         yield(ifcfg)
-      end
-
-      GetDeviceNames(items)
-    end
-
-    # Finds all items of given device type
-    #
-    # @param type [String] device type
-    # @return [Array] list of device names
-    def find_type_ifaces(type)
-      items = GetNetcardInterfaces().select do |iface|
-        GetDeviceType(iface) == type
       end
 
       GetDeviceNames(items)
