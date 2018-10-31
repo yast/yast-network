@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Wed Oct 24 08:26:24 UTC 2018 - mfilka@suse.com
+
+- bnc#1111925
+  - always propose wpa_supplicant when configuring wlan
+- bsc#1113080
+  - Fix detection of peap mode (jreidinger@suse.com)
+- Propose most commonly used setup for WPA by default
+- 4.0.43
+-------------------------------------------------------------------
 Mon Oct 15 08:38:58 UTC 2018 - mfilka@suse.com
 
 - fate#323454
