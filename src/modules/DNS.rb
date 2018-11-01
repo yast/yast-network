@@ -88,17 +88,6 @@ module Yast
       @initialized = false
     end
 
-    # Use the parameter, coming usually from install.inf, if it is defined.
-    # Used when there is nothing better.
-    # @param [String] ns ip of the nameserver
-    # @return true if success
-    def ReadNameserver(ns)
-      return false if ns == "" || ns.nil?
-      @nameservers = [ns]
-      # modified = true;
-      true
-    end
-
     # Handles input as one line of getent output. Returns first hostname found
     # on the line (= canonical hostname).
     #
