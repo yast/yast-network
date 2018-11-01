@@ -466,6 +466,7 @@ module Yast
     # Calls Read () function before querying any data
     # @param [String] check_host string hostname or IP address to check
     # @return [Boolean] true if hostname is local host
+    # NOTE: used in yast2-nis-server, yast2-samba-server, yast2-dhcp-server
     def IsHostLocal(check_host)
       Read()
       NetworkInterfaces.Read
