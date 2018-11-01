@@ -59,9 +59,6 @@ module Yast
       Yast.include self, "network/routines.rb"
       Yast.include self, "network/runtime.rb"
 
-      # Should the hostname be proposed? #152218
-      @proposal_valid = false
-
       # Short Hostname
       @hostname = ""
 
@@ -642,7 +639,6 @@ module Yast
       SYSCFG_TO_BOOL[SCR.Read(path(".sysconfig.network.dhcp.WRITE_HOSTNAME_TO_HOSTS"))]
     end
 
-    publish variable: :proposal_valid, type: "boolean"
     publish variable: :hostname, type: "string"
     publish variable: :domain, type: "string"
     publish variable: :nameservers, type: "list <string>"
