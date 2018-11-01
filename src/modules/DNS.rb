@@ -111,42 +111,6 @@ module Yast
       true
     end
 
-    # Get current hostname and IP Address
-    # if these are set by DHCP
-    # @return map with ip, hostname_short and hostname_fq keys
-    def GetDHCPHostnameIP
-      ret = {}
-
-      output = Convert.to_map(
-        SCR.Execute(path(".target.bash_output"), "hostname -i")
-      )
-      Ops.set(
-        ret,
-        "ip",
-        Builtins.deletechars(Ops.get_string(output, "stdout", ""), " \n")
-      )
-
-      output = Convert.to_map(
-        SCR.Execute(path(".target.bash_output"), "hostname")
-      )
-      Ops.set(
-        ret,
-        "hostname_short",
-        Builtins.deletechars(Ops.get_string(output, "stdout", ""), " \n")
-      )
-
-      output = Convert.to_map(
-        SCR.Execute(path(".target.bash_output"), "hostname -f")
-      )
-      Ops.set(
-        ret,
-        "hostname_fq",
-        Builtins.deletechars(Ops.get_string(output, "stdout", ""), " \n")
-      )
-
-      deep_copy(ret)
-    end
-
     # Handles input as one line of getent output. Returns first hostname found
     # on the line (= canonical hostname).
     #
@@ -712,7 +676,6 @@ module Yast
     publish variable: :modified, type: "boolean"
     publish function: :ReadNameserver, type: "boolean (string)"
     publish function: :ReadHostDomain, type: "boolean (string, string)"
-    publish function: :GetDHCPHostnameIP, type: "map <string, string> ()"
     publish function: :DefaultWriteHostname, type: "boolean ()"
     publish function: :ReadHostname, type: "void ()"
     publish function: :ProposeHostname, type: "void ()"
