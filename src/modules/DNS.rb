@@ -99,18 +99,6 @@ module Yast
       true
     end
 
-    # Use this host and domain name, if they are defined
-    # @param [String] hn hostname
-    # @param [String] dn domain name
-    # @return true if the hostname has been assigned
-    def ReadHostDomain(hn, dn)
-      return false if hn == "" || hn.nil? || dn.nil?
-      @hostname = hn
-      @domain = dn
-      # modified = true;
-      true
-    end
-
     # Handles input as one line of getent output. Returns first hostname found
     # on the line (= canonical hostname).
     #
@@ -675,7 +663,6 @@ module Yast
     publish variable: :resolv_conf_policy, type: "string"
     publish variable: :modified, type: "boolean"
     publish function: :ReadNameserver, type: "boolean (string)"
-    publish function: :ReadHostDomain, type: "boolean (string, string)"
     publish function: :DefaultWriteHostname, type: "boolean ()"
     publish function: :ReadHostname, type: "void ()"
     publish function: :ProposeHostname, type: "void ()"
