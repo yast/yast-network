@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Mon Nov  5 11:06:36 CET 2018 - schubi@suse.de
+
+- Added "bridge" settings to networking.rnc file (bsc#1113896)
+- Fixes to the networking AY schema (bsc#1103712, bsc#1108852)
+  - Permitted the use of 'listentry' element in list entries.
+  - Added missed s390 device 'layer2' boolean element.  
+- 2.17.199.6  
+
+-------------------------------------------------------------------
 Wed Nov  4 13:48:57 UTC 2015 - mfilka@suse.com
 
 - bnc#951330
