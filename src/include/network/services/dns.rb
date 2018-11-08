@@ -92,27 +92,6 @@ module Yast
             "void (string, map)"
           )
         },
-        "DOMAIN"          => {
-          "widget"            => :textentry,
-          "label"             => _("&Domain Name"),
-          "opt"               => [],
-          # Do nothing (the widget doesnt have notify anyway)
-          # In particular do not disable the host and domain name widgets,
-          # setting of FQDN should be possible even if DHCP overrides it.
-          # N#28427, N#63423.
-          "valid_chars"       => Hostname.ValidCharsDomain(
-          ),
-          "validate_type"     => :function_no_popup,
-          "validate_function" => fun_ref(
-            method(:ValidateDomain),
-            "boolean (string, map)"
-          ),
-          # validation error popup
-          "validate_help"     => Ops.add(
-            _("The domain name is invalid.") + "\n",
-            Hostname.ValidDomain
-          )
-        },
         "DHCP_HOSTNAME"   => {
           "widget"        => :custom,
           "custom_widget" => HBox(
@@ -123,12 +102,6 @@ module Yast
           ),
           "init"          => fun_ref(method(:InitDhcpHostname), "void (string)"),
           "store"         => fun_ref(method(:StoreDhcpHostname), "void (string, map)")
-        },
-        "WRITE_HOSTNAME"  => {
-          "widget" => :checkbox,
-          "label"  => _("&Assign Hostname to Loopback IP"),
-          "opt"    => [],
-          "help"   => Ops.get_string(@help, "write_hostname", "")
         },
         "MODIFY_RESOLV"   => {
           "widget" => :combobox,
@@ -209,22 +182,17 @@ module Yast
       Ops.set(@widget_descr_dns, ["NAMESERVER_3", "label"], _("Name Server &3"))
 
       @dns_contents = VBox(
-        Frame(
-          _("Hostname and Domain Name"),
+        VBox(
+          HBox(
+            "HOSTNAME",
+            "HOSTNAME_GLOBAL" # global help, init, store for all dialog
+          ),
+          VSpacing(0.49),
           VBox(
-            HBox(
-              "HOSTNAME",
-              "HOSTNAME_GLOBAL", # global help, init, store for all dialog
-              HSpacing(1),
-              "DOMAIN"
-            ),
-            VBox(
-              Left("WRITE_HOSTNAME"),
-              Left("DHCP_HOSTNAME")
-            )
+            Left("DHCP_HOSTNAME")
           )
         ),
-        VSpacing(0.49),
+        VSpacing(1),
         Left(HBox("MODIFY_RESOLV", HSpacing(1), "PLAIN_POLICY")),
         Frame(
           _("Name Servers and Domain Search List"),
@@ -244,14 +212,13 @@ module Yast
 
       @dns_td = {
         "resolv" => {
-          "header"       => _("Hostname/DNS"),
+          "header"       => _("DHCP/DNS"),
           "contents"     => @dns_contents,
           "widget_names" => [
             "HOSTNAME",
             "HOSTNAME_GLOBAL",
             "DOMAIN",
             "DHCP_HOSTNAME",
-            "WRITE_HOSTNAME",
             "MODIFY_RESOLV",
             "PLAIN_POLICY",
             "NAMESERVER_1",
@@ -274,8 +241,6 @@ module Yast
     def InitSettings
       settings = {
         "HOSTNAME"       => DNS.hostname,
-        "DOMAIN"         => DNS.domain,
-        "WRITE_HOSTNAME" => DNS.write_hostname,
         "PLAIN_POLICY"   => DNS.resolv_conf_policy
       }
       # the rest is not so straightforward,
@@ -312,10 +277,8 @@ module Yast
       )
 
       DNS.hostname = Ops.get_string(settings, "HOSTNAME", "")
-      DNS.domain = Ops.get_string(settings, "DOMAIN", "")
       DNS.nameservers = NonEmpty(nameservers)
       DNS.searchlist = NonEmpty(searchlist)
-      DNS.write_hostname = Ops.get_boolean(settings, "WRITE_HOSTNAME", true)
       DNS.resolv_conf_policy = settings["PLAIN_POLICY"]
 
       # update modified flag
@@ -511,23 +474,6 @@ module Yast
 
       return Hostname.Check(value) if !dhn || value != ""
       true
-    end
-
-    # Validator for domain name, no_popup
-    # @param key [String] the widget being validated
-    # @param _event [Hash] the event being handled
-    # @return whether valid
-    def ValidateDomain(key, _event)
-      dhn = has_dhcp? && use_dhcp_hostname?
-      return true if dhn
-
-      value = UI.QueryWidget(Id(key), :Value).to_s
-      return true if value.empty?
-
-      msg = _("It's not recommended to use .local as domainname due to Multicast DNS. Use it at your own risk?")
-      return false if value == "local" && !Popup.YesNo(msg)
-
-      Hostname.CheckDomain(value)
     end
 
     # Validator for the search list
