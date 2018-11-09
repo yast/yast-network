@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Nov  9 16:38:35 UTC 2018 - dgonzalez@suse.com
+
+- Allow to swich the network backend from the proposal
+- 4.1.16
+
+-------------------------------------------------------------------
 Wed Oct 31 08:37:13 UTC 2018 - mfilka@suse.com
 
 - bnc#1111925
