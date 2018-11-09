@@ -240,8 +240,8 @@ module Yast
     # @return initial settings for this dialog in one map, from DNS::
     def InitSettings
       settings = {
-        "HOSTNAME"       => DNS.hostname,
-        "PLAIN_POLICY"   => DNS.resolv_conf_policy
+        "HOSTNAME"     => DNS.hostname,
+        "PLAIN_POLICY" => DNS.resolv_conf_policy
       }
       # the rest is not so straightforward,
       # because we have list variables but non-list widgets
