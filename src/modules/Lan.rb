@@ -808,52 +808,6 @@ module Yast
       end
     end
 
-    # Create a textual summary for the general network settings
-    # proposal (NetworkManager + ipv6)
-    # @return [rich text, links]
-    def SummaryGeneral
-      # header for network summary list
-      header_nm = _("Network Mode")
-
-      if NetworkService.is_network_manager
-        href_nm = "lan--nm-disable"
-        # network mode: the interfaces are controlled by the user
-        status_nm = _("Interfaces controlled by NetworkManager")
-        # switch from network manager to wicked
-        link_nm = Hyperlink(href_nm, _("switch to Wicked"))
-      else
-        href_nm = "lan--nm-enable"
-        # network mode
-        status_nm = _("Traditional network setup with Wicked")
-        # switch from wicked to network manager
-        link_nm = Hyperlink(href_nm, _("switch to NetworkManager"))
-      end
-
-      if @ipv6
-        href_v6 = "ipv6-disable"
-        # ipv6 support is enabled
-        status_v6 = _("Support for IPv6 protocol is enabled")
-        # disable ipv6 support
-        link_v6 = Hyperlink(href_v6, _("disable"))
-      else
-        href_v6 = "ipv6-enable"
-        # ipv6 support is disabled
-        status_v6 = _("Support for IPv6 protocol is disabled")
-        # enable ipv6 support
-        link_v6 = Hyperlink(href_v6, _("enable"))
-      end
-      descr = Builtins.sformat(
-        "<ul><li>%1: %2 (%3)</li></ul> \n\t\t\t     <ul><li>%4 (%5)</li></ul>",
-        header_nm,
-        status_nm,
-        link_nm,
-        status_v6,
-        link_v6
-      )
-      links = [href_nm, href_v6]
-      [descr, links]
-    end
-
     # Add a new device
     # @return true if success
     def Add
@@ -1005,7 +959,6 @@ module Yast
     publish function: :Import, type: "boolean (map)"
     publish function: :Export, type: "map ()"
     publish function: :Summary, type: "list (string)"
-    publish function: :SummaryGeneral, type: "list ()"
     publish function: :Add, type: "boolean ()"
     publish function: :Delete, type: "boolean ()"
     publish function: :AnyDHCPDevice, type: "boolean ()"
