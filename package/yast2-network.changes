@@ -1,7 +1,8 @@
 -------------------------------------------------------------------
 Fri Nov  9 16:38:35 UTC 2018 - dgonzalez@suse.com
 
-- Allow to swich the network backend from the proposal
+- Allow to swich the network backend from the proposal (related to
+  fate#326480)
 - 4.1.16
 
 -------------------------------------------------------------------
