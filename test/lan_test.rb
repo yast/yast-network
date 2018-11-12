@@ -452,13 +452,14 @@ describe "Yast::LanClass#dhcp_ntp_servers" do
   let(:servers) do
     {
       "eth0" => ["0.pool.ntp.org", "1.pool.ntp.org"],
-      "eth1" => ["2.pool.ntp.org"]
+      "eth1" => ["1.pool.ntp.org", "2.pool.ntp.org"]
     }
   end
 
   before do
     allow(Yast::NetworkService).to receive(:isNetworkRunning).and_return(running)
     allow(Yast::NetworkService).to receive(:is_network_manager).and_return(nm_enabled)
+    allow(Yast::LanItems).to receive(:dhcp_ntp_servers).and_return(servers)
   end
 
   context "when the network is not running" do
@@ -484,8 +485,7 @@ describe "Yast::LanClass#dhcp_ntp_servers" do
     end
 
     it "returns a list of the ntp_servers provided by dhcp " do
-      expect(Yast::LanItems).to receive(:dhcp_ntp_servers).and_return(servers)
-      expect(subject.dhcp_ntp_servers)
+      expect(subject.dhcp_ntp_servers.sort)
         .to eql(["0.pool.ntp.org", "1.pool.ntp.org", "2.pool.ntp.org"])
     end
   end

@@ -1024,7 +1024,7 @@ module Yast
       return [] if !NetworkService.isNetworkRunning || Yast::NetworkService.is_network_manager
 
       ReadWithCacheNoGUI()
-      Yast::LanItems.dhcp_ntp_servers.values.reduce(&:concat) || []
+      Yast::LanItems.dhcp_ntp_servers.values.flatten.uniq
     end
 
     publish variable: :ipv6, type: "boolean"
