@@ -20,27 +20,116 @@ describe Yast::NetworkProposal do
   end
 
   describe "#make_proposal" do
-    it "returns a map with 'label_proposal' as an array with one line summary'" do
-      expect(subject.make_proposal({})["label_proposal"]).to eql(["one_line_summary"])
+    let(:using_wicked) { true }
+    let(:proposal) { subject.make_proposal({}) }
+
+    before do
+      allow(Yast::NetworkService).to receive(:wicked?).and_return(using_wicked)
     end
 
-    it "returns a map with 'preformatted_proposal' as an array with the network summary'" do
-      expect(subject.make_proposal({})["preformatted_proposal"]).to eql("rich_text_summary")
+    it "returns a hash describing the proposal" do
+      expect(proposal).to include("label_proposal", "preformatted_proposal", "links")
+    end
+
+    context "when using the wicked backend" do
+      it "includes the Yast::Lan proposal summary" do
+        expect(proposal["preformatted_proposal"]).to include("rich_text_summary")
+      end
+
+      it "includes a link for switch to NetworkManager" do
+        expect(proposal["preformatted_proposal"]).to match(/.*href.*NetworkManager.*/)
+      end
+
+      it "does not include a link for switch to wicked" do
+        expect(proposal["preformatted_proposal"]).to_not match(/.*href.*wicked.*/)
+      end
+    end
+
+    context "when using the NetworkManager backend" do
+      let(:using_wicked) { false }
+
+      it "does not include the Yast::Lan proposal summary" do
+        expect(proposal["preformatted_proposal"]).to_not include("rich_text_summary")
+      end
+
+      it "does not include a link for switch to NetworkManager" do
+        expect(proposal["preformatted_proposal"]).to_not match(/.*href.*NetworkManager.*/)
+      end
+
+      it "includes a link for switch to wicked" do
+        expect(proposal["preformatted_proposal"]).to match(/.*href.*wicked.*/)
+      end
     end
   end
 
   describe "#ask_user" do
-    it "launchs the inst_lan client forcing the manual configuration" do
-      expect(Yast::WFM).to receive(:CallFunction).with("inst_lan", [{ "skip_detection" => true }])
-      subject.ask_user({})
+    let(:chosen_id) { "" }
+    let(:args) do
+      {
+        "chosen_id"      => chosen_id,
+        "skip_detection" => false
+      }
+    end
+
+    before do
+      allow(Yast::WFM).to receive(:CallFunction)
+        .with("inst_lan", anything)
+        .and_return("result")
     end
 
     it "returns a map with 'workflow_sequence' as the result of the client output" do
-      allow(Yast::WFM).to receive(:CallFunction)
-        .with("inst_lan", [{ "skip_detection" => true }])
-        .and_return("result")
+      expect(subject.ask_user(args)).to have_key("workflow_sequence")
+    end
 
-      expect(subject.ask_user({})).to eql("workflow_sequence" => "result")
+    context "by default" do
+      let(:args) { { "chosen_id" => "network" } }
+
+      it "launchs the inst_lan client forcing the manual configuration" do
+        expect(Yast::WFM).to receive(:CallFunction)
+          .with("inst_lan", [hash_including("skip_detection" => true)])
+
+        subject.ask_user(args)
+      end
+
+      it "returns the result of the client output as 'workflow_sequence'" do
+        expect(subject.ask_user(args)).to eql("workflow_sequence" => "result")
+      end
+    end
+
+    context "when 'chosen_id' is 'network--switch-to-wicked'" do
+      let(:args) { { "chosen_id" => "network--switch-to-wicked" } }
+
+      it "does not launchs the inst_lan client" do
+        expect(Yast::WFM).to_not receive(:CallFuntion).with("inst_lan", anything)
+      end
+
+      it "changes the netwotk backend to wicked" do
+        expect(Yast::NetworkService).to receive(:use_wicked)
+
+        subject.ask_user(args)
+      end
+
+      it "returns :next as 'workflow_sequence'" do
+        expect(subject.ask_user(args)).to include("workflow_sequence" => :next)
+      end
+    end
+
+    context "when 'chosen_id' is 'network--switch-to-wicked'" do
+      let(:args) { { "chosen_id" => "network--switch-to-nm" } }
+
+      it "does not launchs the inst_lan client" do
+        expect(Yast::WFM).to_not receive(:CallFuntion).with("inst_lan", anything)
+      end
+
+      it "changes the netwotk backend to NetworkManager" do
+        expect(Yast::NetworkService).to receive(:use_network_manager)
+
+        subject.ask_user(args)
+      end
+
+      it "returns :next as 'workflow_sequence'" do
+        expect(subject.ask_user(args)).to include("workflow_sequence" => :next)
+      end
     end
   end
 end
