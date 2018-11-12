@@ -31,33 +31,33 @@ describe Yast::NetworkProposal do
       expect(proposal).to include("label_proposal", "preformatted_proposal", "links")
     end
 
-    context "when using a Wicked backend" do
+    context "when using the wicked backend" do
       it "includes the Yast::Lan proposal summary" do
         expect(proposal["preformatted_proposal"]).to include("rich_text_summary")
       end
 
-      it "includes a link for switch to Network Manager" do
-        expect(proposal["preformatted_proposal"]).to match(/.*href.*Network Manager.*/)
+      it "includes a link for switch to NetworkManager" do
+        expect(proposal["preformatted_proposal"]).to match(/.*href.*NetworkManager.*/)
       end
 
-      it "does not include a link for switch to Wicked" do
-        expect(proposal["preformatted_proposal"]).to_not match(/.*href.*Wicked.*/)
+      it "does not include a link for switch to wicked" do
+        expect(proposal["preformatted_proposal"]).to_not match(/.*href.*wicked.*/)
       end
     end
 
-    context "when using a Network Manager backend" do
+    context "when using the NetworkManager backend" do
       let(:using_wicked) { false }
 
       it "does not include the Yast::Lan proposal summary" do
         expect(proposal["preformatted_proposal"]).to_not include("rich_text_summary")
       end
 
-      it "does not include a link for switch to Network Manager" do
-        expect(proposal["preformatted_proposal"]).to_not match(/.*href.*Network Manager.*/)
+      it "does not include a link for switch to NetworkManager" do
+        expect(proposal["preformatted_proposal"]).to_not match(/.*href.*NetworkManager.*/)
       end
 
-      it "includes a link for switch to Wicked" do
-        expect(proposal["preformatted_proposal"]).to match(/.*href.*Wicked.*/)
+      it "includes a link for switch to wicked" do
+        expect(proposal["preformatted_proposal"]).to match(/.*href.*wicked.*/)
       end
     end
   end
@@ -103,7 +103,7 @@ describe Yast::NetworkProposal do
         expect(Yast::WFM).to_not receive(:CallFuntion).with("inst_lan", anything)
       end
 
-      it "changes the netwotk backend to Wicked" do
+      it "changes the netwotk backend to wicked" do
         expect(Yast::NetworkService).to receive(:use_wicked)
 
         subject.ask_user(args)
@@ -121,7 +121,7 @@ describe Yast::NetworkProposal do
         expect(Yast::WFM).to_not receive(:CallFuntion).with("inst_lan", anything)
       end
 
-      it "changes the netwotk backend to Network Manager" do
+      it "changes the netwotk backend to NetworkManager" do
         expect(Yast::NetworkService).to receive(:use_network_manager)
 
         subject.ask_user(args)

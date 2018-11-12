@@ -1,3 +1,4 @@
+require "cgi"
 require "installation/proposal_client"
 
 module Yast
@@ -58,26 +59,29 @@ module Yast
     end
 
     def switch_backend_link
+      # TRANSLATORS: information about the network backend in use. %s is the name of backend,
+      # example "wicked" or "NetworkManager"
+      backend_in_use = _("Using <b>%s</b>")
+      # TRANSLATORS: text of link for switch to another network backend. %s is the name of backend,
+      # example "wicked" or "NetworkManager"
+      switch_to = _("switch to %s")
+
       if wicked_backend?
-        info     = _("Using Wicked")
-        switcher = Hyperlink(SWITCH_TO_NETWORK_MANAGER, _("switch to Network Manager"))
+        current_backend         = "wicked"
+        link_to_another_backend = Hyperlink(SWITCH_TO_NETWORK_MANAGER, switch_to % "NetworkManager")
       else
-        info     = _("Using Network Manager")
-        switcher = Hyperlink(SWITCH_TO_WICKED, _("switch to Wicked"))
+        current_backend         = "NetworkManager"
+        link_to_another_backend = Hyperlink(SWITCH_TO_WICKED, switch_to % "wicked")
       end
 
-      "<ul><li>#{info} (#{switcher})</li></ul>"
+      "<ul><li>#{backend_in_use % current_backend} (#{link_to_another_backend})</li></ul>"
     end
 
     def launch_network_configuration(args)
       log.info "Launching network configuration"
-
       Yast::Wizard.OpenAcceptDialog
-
       result = Yast::WFM.CallFunction("inst_lan", [args.merge("skip_detection" => true)])
-
       log.info "Returning from the network configuration with: #{result}"
-
       result
     ensure
       Yast::Wizard.CloseDialog
@@ -85,13 +89,11 @@ module Yast
 
     def switch_to_wicked
       Yast::NetworkService.use_wicked
-
       :next
     end
 
     def switch_to_network_manager
       Yast::NetworkService.use_network_manager
-
       :next
     end
 
@@ -101,7 +103,7 @@ module Yast
 
     # TODO: move to HTML.ycp
     def Hyperlink(href, text)
-      Builtins.sformat("<a href=\"%1\">%2</a>", href, text)
+      Builtins.sformat("<a href=\"%1\">%2</a>", href, CGI.escapeHTML(text))
     end
   end
 end
