@@ -519,20 +519,6 @@ module Yast
       false
     end
 
-    # Creates symlink /etc/HOSTNAME -> /etc/hostname to gurantee backward compatibility
-    # after changes in bnc#858908
-    def create_hostname_link
-      link_name = "/etc/HOSTNAME"
-      return if FileUtils.IsLink(link_name)
-
-      log.info "Creating #{link_name} symlink"
-
-      SCR.Execute(path(".target.bash"), "rm #{link_name}") if FileUtils.Exists(link_name)
-      SCR.Execute(path(".target.bash"), "ln -s #{DNSClass::HOSTNAME_PATH} #{link_name}")
-
-      nil
-    end
-
   private
 
     def read_hostname_from_install_inf
@@ -595,8 +581,6 @@ module Yast
         HOSTNAME_PATH,
         Ops.add(fqhostname, "\n")
       )
-
-      create_hostname_link
     end
 
     # Updates /etc/sysconfig/network/config
