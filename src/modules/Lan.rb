@@ -944,6 +944,20 @@ module Yast
       have_br
     end
 
+    # Provides a list with the NTP servers obtained via any of dhcp aware
+    # interfaces
+    #
+    # @note parsing dhcp ntp servers when NetworkManager is in use is not
+    #   supported yet (bsc#798886)
+    #
+    # @return [Array<String>] list of ntp servers obtained byg DHCP
+    def dhcp_ntp_servers
+      return [] if !NetworkService.isNetworkRunning || Yast::NetworkService.is_network_manager
+
+      ReadWithCacheNoGUI()
+      Yast::LanItems.dhcp_ntp_servers.values.flatten.uniq
+    end
+
     publish variable: :ipv6, type: "boolean"
     publish variable: :AbortFunction, type: "block <boolean>"
     publish variable: :bond_autoconf_slaves, type: "list <string>"
