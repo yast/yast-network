@@ -1,7 +1,7 @@
 -------------------------------------------------------------------
 Thu Nov 22 11:54:59 UTC 2018 - mfilka@suse.com
 
-- bnc#110740
+- bnc#1107470
   - this bug is fixed since 3.2.47
 - version bump since SLE-12-SP4 got GM
 - 3.4.0
