@@ -17,7 +17,7 @@
 
 
 Name:           yast2-network
-Version:        3.3.2
+Version:        3.4.0
 Release:        0
 BuildArch:      noarch
 
@@ -68,7 +68,7 @@ Requires:       yast2-ruby-bindings >= 1.0.0
 Obsoletes:      yast2-network-devel-doc
 
 Summary:        YaST2 - Network Configuration
-License:        GPL-2.0
+License:        GPL-2.0-only
 Group:          System/YaST
 
 %description 
