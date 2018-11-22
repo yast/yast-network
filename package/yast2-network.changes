@@ -9,14 +9,13 @@ Sun Nov 11 16:29:30 UTC 2018 - knut.anderssen@suse.com
 
 - Yast::Lan: Added method for obtaining the NTP servers offered by
   DHCP (fate#323454)
-- 4.0.44
+- 4.1.17
 
 -------------------------------------------------------------------
 Fri Nov  9 16:38:35 UTC 2018 - dgonzalez@suse.com
 
-- fate#326480
-  - Allow to swich the network backend from the proposal (related to
-    fate#326480)
+- Allow to swich the network backend from the proposal (related to
+  fate#326480)
 - 4.1.16
 
 -------------------------------------------------------------------
