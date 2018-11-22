@@ -444,3 +444,49 @@ describe "LanClass#FromAY" do
     expect(actual["config"]).to eq(expected_config)
   end
 end
+
+describe "Yast::LanClass#dhcp_ntp_servers" do
+  subject { Yast::Lan }
+  let(:running) { true }
+  let(:nm_enabled) { true }
+  let(:servers) do
+    {
+      "eth0" => ["0.pool.ntp.org", "1.pool.ntp.org"],
+      "eth1" => ["1.pool.ntp.org", "2.pool.ntp.org"]
+    }
+  end
+
+  before do
+    allow(Yast::NetworkService).to receive(:isNetworkRunning).and_return(running)
+    allow(Yast::NetworkService).to receive(:is_network_manager).and_return(nm_enabled)
+    allow(Yast::LanItems).to receive(:dhcp_ntp_servers).and_return(servers)
+  end
+
+  context "when the network is not running" do
+    let(:running) { false }
+    it "returns an empty array" do
+      expect(subject.dhcp_ntp_servers).to eq([])
+    end
+  end
+
+  context "when NetworkManager is in use" do
+    let(:nm_enabled) { true }
+    it "returns an empty array" do
+      expect(subject.dhcp_ntp_servers).to eq([])
+    end
+  end
+
+  context "when wicked is in use" do
+    let(:nm_enabled) { false }
+
+    it "reads the current network configuration" do
+      expect(Yast::Lan).to receive(:ReadWithCacheNoGUI)
+      subject.dhcp_ntp_servers
+    end
+
+    it "returns a list of the ntp_servers provided by dhcp " do
+      expect(subject.dhcp_ntp_servers.sort)
+        .to eql(["0.pool.ntp.org", "1.pool.ntp.org", "2.pool.ntp.org"])
+    end
+  end
+end

@@ -5,6 +5,13 @@ Thu Nov 22 11:54:59 UTC 2018 - mfilka@suse.com
   - this bug is fixed since 4.0.14 (3.2.47)
 
 -------------------------------------------------------------------
+Sun Nov 11 16:29:30 UTC 2018 - knut.anderssen@suse.com
+
+- Yast::Lan: Added method for obtaining the NTP servers offered by
+  DHCP (fate#323454)
+- 4.0.44
+
+-------------------------------------------------------------------
 Wed Oct 24 08:26:24 UTC 2018 - mfilka@suse.com
 
 - bnc#1111925
