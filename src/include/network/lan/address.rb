@@ -784,8 +784,6 @@ module Yast
     # Group called FOO has buttons FOO_bar FOO_qux and values bar qux
     # @param [String] key id of the widget
     def initBootProto(_key)
-      #  if (LanItems::type=="br") UI::ReplaceWidget(`rp, `Empty());
-      # 	else
       if LanItems.type != "eth"
         UI.ReplaceWidget(
           :rp,
