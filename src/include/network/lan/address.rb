@@ -982,20 +982,6 @@ module Yast
       true
     end
 
-    # Validator for network masks adresses
-    # @param [String] key	the widget being validated
-    # @param [Hash] event	the event being handled
-    # @return whether valid
-    def ValidateNetmask(key, _event)
-      # TODO: general CWM improvement idea: validate and save only nondisabled
-      # widgets
-      if UI.QueryWidget(:bootproto, :CurrentButton) == :static
-        ipa = Convert.to_string(UI.QueryWidget(Id(key), :Value))
-        return Netmask.Check(ipa)
-      end
-      true
-    end
-
     # Validator for ifcfg names
     # @param [String] key	the widget being validated
     # @param [Hash] event	the event being handled
