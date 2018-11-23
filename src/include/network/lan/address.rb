@@ -35,7 +35,6 @@ module Yast
 
       textdomain "network"
 
-      Yast.import "Arch"
       Yast.import "CWM"
       Yast.import "CWMTab"
       Yast.import "DNS"
@@ -53,7 +52,6 @@ module Yast
       Yast.import "String"
       Yast.import "SuSEFirewall4Network"
       Yast.import "Wizard"
-      Yast.import "NetworkService"
       Yast.import "Map"
 
       Yast.include include_target, "network/summary.rb"
