@@ -17,7 +17,7 @@
 
 
 Name:           yast2-network
-Version:        4.1.17
+Version:        4.1.18
 Release:        0
 BuildArch:      noarch
 
@@ -104,7 +104,7 @@ rake install DESTDIR="%{buildroot}"
 %dir %{yast_libdir}/cfa/
 %{yast_libdir}/cfa/hosts.rb
 %{yast_ydatadir}/network
-
+%{_datadir}/icons/*
 %dir %{yast_docdir}
 %doc %{yast_docdir}/CONTRIBUTING.md
 %license COPYING
