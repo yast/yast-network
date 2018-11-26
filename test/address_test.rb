@@ -133,14 +133,23 @@ describe "NetworkLanAddressInclude" do
     let(:initial_hostname) { "initial.hostname.com" }
     let(:new_hostname) { "new.hostname.com" }
 
-    it "drops old /etc/hosts record if hostname was changed" do
+    before(:each) do
       allow(Yast::LanItems)
         .to receive(:ipaddr)
         .and_return(ip)
       allow(subject)
         .to receive(:initial_hostname)
         .and_return(initial_hostname)
+      allow(Yast::Host)
+        .to receive(:names)
+        .and_call_original
+      allow(Yast::Host)
+        .to receive(:names)
+        .with(ip)
+        .and_return(["#{initial_hostname} custom-name"])
+    end
 
+    it "drops old /etc/hosts record if hostname was changed" do
       expect(Yast::Host)
         .to receive(:remove_ip)
         .with(ip)
@@ -149,6 +158,15 @@ describe "NetworkLanAddressInclude" do
         .with(initial_hostname, new_hostname, ip)
 
       subject.send(:update_hostname, ip, new_hostname)
+    end
+
+    it "keeps names untouched when only the ip was changed" do
+      new_ip = "2.2.2.2"
+
+      original_names = Yast::Host.names(ip)
+      subject.send(:update_hostname, new_ip, initial_hostname)
+
+      expect(Yast::Host.names(new_ip)).to eql original_names
     end
   end
 
