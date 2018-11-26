@@ -35,7 +35,6 @@ module Yast
 
       textdomain "network"
 
-      Yast.import "Arch"
       Yast.import "CWM"
       Yast.import "CWMTab"
       Yast.import "DNS"
@@ -53,7 +52,6 @@ module Yast
       Yast.import "String"
       Yast.import "SuSEFirewall4Network"
       Yast.import "Wizard"
-      Yast.import "NetworkService"
       Yast.import "Map"
 
       Yast.include include_target, "network/summary.rb"
@@ -393,12 +391,6 @@ module Yast
         "HWDIALOG",
         Ops.get(widget_descr_hardware, "HWDIALOG", {})
       )
-    end
-
-    # obsoleted by GetDefaultsForHW
-    # @return `next
-    def ChangeDefaults
-      :next
     end
 
     # `RadioButtonGroup uses CurrentButton instead of Value, grrr
@@ -792,8 +784,6 @@ module Yast
     # Group called FOO has buttons FOO_bar FOO_qux and values bar qux
     # @param [String] key id of the widget
     def initBootProto(_key)
-      #  if (LanItems::type=="br") UI::ReplaceWidget(`rp, `Empty());
-      # 	else
       if LanItems.type != "eth"
         UI.ReplaceWidget(
           :rp,
@@ -988,20 +978,6 @@ module Yast
       event = deep_copy(event)
       if UI.QueryWidget(:bootproto, :CurrentButton) == :static
         return ValidateIP(key, event)
-      end
-      true
-    end
-
-    # Validator for network masks adresses
-    # @param [String] key	the widget being validated
-    # @param [Hash] event	the event being handled
-    # @return whether valid
-    def ValidateNetmask(key, _event)
-      # TODO: general CWM improvement idea: validate and save only nondisabled
-      # widgets
-      if UI.QueryWidget(:bootproto, :CurrentButton) == :static
-        ipa = Convert.to_string(UI.QueryWidget(Id(key), :Value))
-        return Netmask.Check(ipa)
       end
       true
     end
@@ -1632,10 +1608,20 @@ module Yast
 
       return if !(ip_changed || hostname_changed || hostname.empty?)
 
-      log.info("Dropping record for #{LanItems.ipaddr} from /etc/hosts")
-
+      # store old names, remove the record
+      names = Host.names(LanItems.ipaddr).first
       Host.remove_ip(LanItems.ipaddr)
-      Host.Update(initial_hostname, hostname, ipaddr) if !hostname.empty?
+
+      if ip_changed && !hostname_changed
+        log.info("Dropping record for #{LanItems.ipaddr} from /etc/hosts")
+
+        Host.add_name(ipaddr, names)
+      end
+      if !hostname.empty? && hostname_changed
+        log.info("Updating cannonical name for #{LanItems.ipaddr} in /etc/hosts")
+
+        Host.Update(initial_hostname, hostname, ipaddr)
+      end
 
       nil
     end
