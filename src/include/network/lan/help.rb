@@ -220,7 +220,8 @@ module Yast
                                _(
                                  "<p>For <b>Static Address Setup</b> enter the static IP address for your computer (for example: <tt>192.168.100.99</tt>) and\n" \
                                  "the network mask (usually <tt>255.255.255.0</tt> or just length of prefix <tt>/24</tt>).Optionally, you can enter\n" \
-                                 "a fully qualified hostname for this IP address. The hostname will be written to <tt>/etc/hosts</tt>.</p>\n"
+                                 "a fully qualified hostname for this IP address. The hostname will be written to <tt>/etc/hosts</tt> as canonical name.</p>\n" \
+                                 "YaST2 will also create aliases from the canonical name automatically.\n"
                                ) +
                                  # Address dialog help 8/8
                                  _(
