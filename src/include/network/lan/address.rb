@@ -1608,10 +1608,20 @@ module Yast
 
       return if !(ip_changed || hostname_changed || hostname.empty?)
 
-      log.info("Dropping record for #{LanItems.ipaddr} from /etc/hosts")
-
+      # store old names, remove the record
+      names = Host.names(LanItems.ipaddr).first
       Host.remove_ip(LanItems.ipaddr)
-      Host.Update(initial_hostname, hostname, ipaddr) if !hostname.empty?
+
+      if ip_changed && !hostname_changed
+        log.info("Dropping record for #{LanItems.ipaddr} from /etc/hosts")
+
+        Host.add_name(ipaddr, names)
+      end
+      if !hostname.empty? && hostname_changed
+        log.info("Updating cannonical name for #{LanItems.ipaddr} in /etc/hosts")
+
+        Host.Update(initial_hostname, hostname, ipaddr)
+      end
 
       nil
     end
