@@ -131,14 +131,6 @@ module Yast
                                  "option. However this option can lead to strange behavior if you have a multihomed system \n" \
                                  "connected to more DHCP networks.</p>\n" \
                                ),
-        "write_hostname"    =>
-                               _(
-                                 "<p><b>Assign Hostname to Loopback IP</b> associates your hostname with \n" \
-                                 "the IP address <tt>127.0.0.2</tt> (loopback) in <tt>/etc/hosts</tt>. This is a \n" \
-                                 "useful option if you want to have the hostname resolvable at all times, even \n" \
-                                 "without an active network. In all other cases, use it carefully, especially \n" \
-                                 "if this computer provides some network services.</p>\n"
-                               ),
         "searchlist_s"      =>
                                _(
                                  "<p>Enter the name servers and domain search list for resolving \nhostnames. Usually they can be obtained by DHCP.</p>\n"
@@ -158,10 +150,10 @@ module Yast
                                  ),
         "hostname_global"   =>
                                _(
-                                 "<p>Enter the short name for this computer (e.g. <i>mymachine</i>) and the DNS domain\n" \
-                                 "(e.g. <i>example.com</i>) that it belongs to. The domain is especially important if this \n" \
-                                 "computer is a mail server. You can view the hostname of you computer using the <i>hostname</i> \n" \
-                                 "command.</p>"
+                                 "<p>Enter local name for this computer (e.g. <i>mymachine</i>). The name will\n" \
+                                 "be stored in <i>/etc/hostname</i>. You can also choose whether the hostname can\n" \
+                                 "be obtained from DHCP. In such case you can pick particular dhcp interface which\n" \
+                                 "will be used for obtaining the hostname or leave it up to the network service.</p>\n"
                                ),
         "dns_config_policy" =>
                                _(
