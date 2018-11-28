@@ -104,7 +104,7 @@ rake install DESTDIR="%{buildroot}"
 %dir %{yast_libdir}/cfa/
 %{yast_libdir}/cfa/hosts.rb
 %{yast_ydatadir}/network
-%{_datadir}/icons/*
+%{yast_icondir}
 %dir %{yast_docdir}
 %doc %{yast_docdir}/CONTRIBUTING.md
 %license COPYING
