@@ -212,7 +212,7 @@ module Yast
 
       @dns_td = {
         "resolv" => {
-          "header"       => _("DHCP/DNS"),
+          "header"       => _("Hostname/DNS"),
           "contents"     => @dns_contents,
           "widget_names" => [
             "HOSTNAME",
