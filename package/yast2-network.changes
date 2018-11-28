@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Nov 26 11:57:35 UTC 2018 - mfilka@suse.com
+
+- bnc#934055, bnc#972463
+  - cleanup in Hostname / DNS tab - removed obsolete or unsupported
+    options.
+- 4.1.19 
+
+-------------------------------------------------------------------
 Mon Nov 26 09:28:29 UTC 2018 - mfilka@suse.com
 
 - bnc#709176
