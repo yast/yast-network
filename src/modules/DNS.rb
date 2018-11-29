@@ -59,9 +59,6 @@ module Yast
       Yast.include self, "network/routines.rb"
       Yast.include self, "network/runtime.rb"
 
-      # Should the hostname be proposed? #152218
-      @proposal_valid = false
-
       # Short Hostname
       @hostname = ""
 
@@ -86,65 +83,6 @@ module Yast
 
       # True if DNS is already read
       @initialized = false
-    end
-
-    # Use the parameter, coming usually from install.inf, if it is defined.
-    # Used when there is nothing better.
-    # @param [String] ns ip of the nameserver
-    # @return true if success
-    def ReadNameserver(ns)
-      return false if ns == "" || ns.nil?
-      @nameservers = [ns]
-      # modified = true;
-      true
-    end
-
-    # Use this host and domain name, if they are defined
-    # @param [String] hn hostname
-    # @param [String] dn domain name
-    # @return true if the hostname has been assigned
-    def ReadHostDomain(hn, dn)
-      return false if hn == "" || hn.nil? || dn.nil?
-      @hostname = hn
-      @domain = dn
-      # modified = true;
-      true
-    end
-
-    # Get current hostname and IP Address
-    # if these are set by DHCP
-    # @return map with ip, hostname_short and hostname_fq keys
-    def GetDHCPHostnameIP
-      ret = {}
-
-      output = Convert.to_map(
-        SCR.Execute(path(".target.bash_output"), "hostname -i")
-      )
-      Ops.set(
-        ret,
-        "ip",
-        Builtins.deletechars(Ops.get_string(output, "stdout", ""), " \n")
-      )
-
-      output = Convert.to_map(
-        SCR.Execute(path(".target.bash_output"), "hostname")
-      )
-      Ops.set(
-        ret,
-        "hostname_short",
-        Builtins.deletechars(Ops.get_string(output, "stdout", ""), " \n")
-      )
-
-      output = Convert.to_map(
-        SCR.Execute(path(".target.bash_output"), "hostname -f")
-      )
-      Ops.set(
-        ret,
-        "hostname_fq",
-        Builtins.deletechars(Ops.get_string(output, "stdout", ""), " \n")
-      )
-
-      deep_copy(ret)
     end
 
     # Handles input as one line of getent output. Returns first hostname found
@@ -528,6 +466,7 @@ module Yast
     # Calls Read () function before querying any data
     # @param [String] check_host string hostname or IP address to check
     # @return [Boolean] true if hostname is local host
+    # NOTE: used in yast2-nis-server, yast2-samba-server, yast2-dhcp-server
     def IsHostLocal(check_host)
       Read()
       NetworkInterfaces.Read
@@ -578,20 +517,6 @@ module Yast
         return true
       end
       false
-    end
-
-    # Creates symlink /etc/HOSTNAME -> /etc/hostname to gurantee backward compatibility
-    # after changes in bnc#858908
-    def create_hostname_link
-      link_name = "/etc/HOSTNAME"
-      return if FileUtils.IsLink(link_name)
-
-      log.info "Creating #{link_name} symlink"
-
-      SCR.Execute(path(".target.bash"), "rm #{link_name}") if FileUtils.Exists(link_name)
-      SCR.Execute(path(".target.bash"), "ln -s #{DNSClass::HOSTNAME_PATH} #{link_name}")
-
-      nil
     end
 
   private
@@ -656,8 +581,6 @@ module Yast
         HOSTNAME_PATH,
         Ops.add(fqhostname, "\n")
       )
-
-      create_hostname_link
     end
 
     # Updates /etc/sysconfig/network/config
@@ -701,7 +624,6 @@ module Yast
       SYSCFG_TO_BOOL[SCR.Read(path(".sysconfig.network.dhcp.WRITE_HOSTNAME_TO_HOSTS"))]
     end
 
-    publish variable: :proposal_valid, type: "boolean"
     publish variable: :hostname, type: "string"
     publish variable: :domain, type: "string"
     publish variable: :nameservers, type: "list <string>"
@@ -711,8 +633,6 @@ module Yast
     publish variable: :resolv_conf_policy, type: "string"
     publish variable: :modified, type: "boolean"
     publish function: :ReadNameserver, type: "boolean (string)"
-    publish function: :ReadHostDomain, type: "boolean (string, string)"
-    publish function: :GetDHCPHostnameIP, type: "map <string, string> ()"
     publish function: :DefaultWriteHostname, type: "boolean ()"
     publish function: :ReadHostname, type: "void ()"
     publish function: :ProposeHostname, type: "void ()"

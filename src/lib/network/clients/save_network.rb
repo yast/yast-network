@@ -247,8 +247,6 @@ module Yast
       return if Mode.autoinst
 
       NetworkAutoconfiguration.instance.configure_dns
-
-      DNS.create_hostname_link
     end
 
     # Creates target's /etc/hosts configuration
