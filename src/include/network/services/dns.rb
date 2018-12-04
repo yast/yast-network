@@ -145,8 +145,7 @@ module Yast
             "boolean (string, map)"
           ),
           # validation error popup
-          "validate_help"     =>
-            _("The IP address of the name server is invalid.") + "\n\n" +
+          "validate_help"     => _("The IP address of the name server is invalid.") + "\n\n" +
             IP.Valid4 + "\n\n" + IP.Valid6
         },
         # NAMESERVER_2 and NAMESERVER_3 are cloned in the dialog function
