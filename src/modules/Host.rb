@@ -261,20 +261,16 @@ module Yast
     # Create summary
     # @return summary text
     def Summary
-      summary = ""
       return Summary.NotConfigured if @hosts.hosts.empty?
 
-      summary = Summary.OpenList(summary)
+      summary = Summary.OpenList("")
       @hosts.hosts.each do |k, v|
-        Builtins.foreach(v) do |hn|
-          summary = Summary.AddListItem(summary, Ops.add(Ops.add(k, " - "), hn))
-        end if !Builtins.contains(
-          GetSystemHosts(),
-          k
-        )
+        next if GetSystemHosts().include?(k)
+        # currently all names are placed as a one string in first array item
+        summary = Summary.AddListItem(summary, "#{k} - #{v.first}")
       end
-      summary = Summary.CloseList(summary)
-      summary
+
+      Summary.CloseList(summary)
     end
 
     # Creates a list os static ips present in the system
@@ -362,8 +358,7 @@ module Yast
     @hosts.load
 
     # save hosts to check for changes later
-    @hosts_init = CFA::Hosts.new
-    @hosts_init.load
+    @hosts_init = @hosts.clone
 
     true
 
