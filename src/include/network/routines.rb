@@ -26,6 +26,9 @@
 # Summary:	Miscellaneous routines
 # Authors:	Michal Svec <msvec@suse.cz>
 #
+
+require "shellwords"
+
 module Yast
   module NetworkRoutinesInclude
     include I18n
@@ -674,10 +677,16 @@ module Yast
 
     # TODO: begin:
     # Following functions should be generalized and ported into yast-yast2
+    # and security-hardened in the process by making sure a command always uses
+    # an absolute path and all arguments are properly quoted (e.g. with
+    # shellescape()).
 
     # @param command [String] Shell command to run
     # @return Hash in form $[ "exit": <command-exit-status>, "output": [ <1st line>, <2nd line>, ... ] ]
     def RunAndRead(command)
+      if !command.lstrip.start_with?("/")
+        log.warn("Command does not have an absolute path: #{command}")
+      end
       ret = { "exit" => false, "output" => [] }
       result = Convert.to_map(SCR.Execute(path(".target.bash_output"), command))
       output = Ops.get_string(result, "stdout", "")
@@ -705,9 +714,16 @@ module Yast
       deep_copy(ret)
     end
 
+    # Run an external command on the target machine and check if it was
+    # successful. Remember to always use a full path for the command and to
+    # quote the arguments. Using shellescape() is recommended.
+    #
     # @param command [String] Shell command to run
     # @return whether command execution succeeds
     def Run(command)
+      if !command.lstrip.start_with?("/")
+        log.warn("Command does not have an absolute path: #{command}")
+      end
       ret = SCR.Execute(path(".target.bash"), command).zero?
 
       Builtins.y2error("Run <%1>: Command execution failed.", command) if !ret
@@ -724,7 +740,7 @@ module Yast
     # @return [Array] of interface names.
     # FIXME: rename e.g. to sys_interfaces
     def GetAllInterfaces
-      result = RunAndRead("ls /sys/class/net")
+      result = RunAndRead("/bin/ls /sys/class/net")
 
       if Ops.get_boolean(result, "exit", false)
         Ops.get_list(result, "output", [])
@@ -738,7 +754,7 @@ module Yast
     # @param dev_name [String] name of interface to 'set link up'
     def SetLinkUp(dev_name)
       log.info("Setting link up for interface #{dev_name}")
-      Run("ip link set #{dev_name} up")
+      Run("/sbin/ip link set #{dev_name.shellescape} up")
     end
 
     # Wrapper to call 'ip link set down' with the given interface
@@ -746,7 +762,7 @@ module Yast
     # @param dev_name [String] name of interface to 'set link down'
     def SetLinkDown(dev_name)
       log.info("Setting link down for interface #{dev_name}")
-      Run("ip link set #{dev_name} down")
+      Run("/sbin/ip link set #{dev_name.shellescape} down")
     end
 
     # Calls wicked ifup with the given interface
@@ -754,7 +770,7 @@ module Yast
     # @param dev_name [String] name of interface to put down
     def SetIfaceUp(dev_name)
       log.info("Setting interface #{dev_name} up")
-      Run("ifup #{dev_name}")
+      Run("/sbin/ifup #{dev_name.shellescape}")
     end
 
     # Calls wicked ifdown with the given interface
@@ -762,7 +778,7 @@ module Yast
     # @param dev_name [String] name of interface to put down
     def SetIfaceDown(dev_name)
       log.info("Setting interface #{dev_name} down")
-      Run("ifdown #{dev_name}")
+      Run("/sbin/ifdown #{dev_name.shellescape}")
     end
 
     # Tries to set the link up of all available interfaces
