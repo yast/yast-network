@@ -76,7 +76,7 @@ module Yast
     #
     # @return [boolean] false when new configuration cannot be activated
     def update_udevd
-      SCR.Execute(path(".target.bash"), "udevadm control --reload")
+      SCR.Execute(path(".target.bash"), "/usr/bin/udevadm control --reload")
 
       # When configuring a new s390 card, we neglect to fill
       # its Items[i, "udev", "net"], causing jumbled names (bnc#721520)
@@ -84,7 +84,7 @@ module Yast
       # (which it already has done, but we have overwritten them now).
       ret = SCR.Execute(
         path(".target.bash"),
-        "udevadm trigger --subsystem-match=net --action=add"
+        "/usr/bin/udevadm trigger --subsystem-match=net --action=add"
       )
       ret.zero?
     end

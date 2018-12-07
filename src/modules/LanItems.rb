@@ -28,6 +28,8 @@ require "network/install_inf_convertor"
 require "network/wicked"
 require "network/lan_items_summary"
 
+require "shellwords"
+
 module Yast
   # Does way too many things.
   #
@@ -702,7 +704,7 @@ module Yast
       # wait so that ifcfgs written in NetworkInterfaces are newer
       # (1-second-wise) than netcontrol status files,
       # and rcnetwork reload actually works (bnc#749365)
-      SCR.Execute(path(".target.bash"), "udevadm settle")
+      SCR.Execute(path(".target.bash"), "/usr/bin/udevadm settle")
       sleep(1)
 
       nil
@@ -2354,22 +2356,22 @@ module Yast
       case @type
       when "hsi", "qeth"
         @portnumber_param = if Ops.greater_than(Builtins.size(@qeth_portnumber), 0)
-          Builtins.sformat("-n %1", @qeth_portnumber)
+          Builtins.sformat("-n %1", @qeth_portnumber.to_s.shellescape)
         else
           ""
         end
         @portname_param = if Ops.greater_than(Builtins.size(@qeth_portname), 0)
-          Builtins.sformat("-p %1", @qeth_portname)
+          Builtins.sformat("-p %1", @qeth_portname.shellescape)
         else
           ""
         end
         @options_param = if Ops.greater_than(Builtins.size(@qeth_options), 0)
-          Builtins.sformat("-o %1", @qeth_options)
+          Builtins.sformat("-o %1", @qeth_options.shellescape)
         else
           ""
         end
         command1 = Builtins.sformat(
-          "qeth_configure %1 %2 %3 %4 %5 1",
+          "/sbin/qeth_configure %1 %2 %3 %4 %5 1",
           @options_param,
           @qeth_layer2 ? "-l" : "",
           @portname_param,
@@ -2377,47 +2379,43 @@ module Yast
           @qeth_chanids
         )
         command2 = Builtins.sformat(
-          "ls /sys/devices/qeth/%1/net/|head -n1|tr -d '\n'",
+          "/usr/bin/ls /sys/devices/qeth/%1/net/ | /usr/bin/head -n1 | /usr/bin/tr -d '\n'",
           Ops.get(Builtins.splitstring(@qeth_chanids, " "), 0, "")
         )
       when "ctc"
         # chan_ids (read, write), protocol
         command1 = Builtins.sformat(
-          "ctc_configure %1 1 %2",
+          "/sbin/ctc_configure %1 1 %2",
           @qeth_chanids,
-          @chan_mode
+          @chan_mode.shellescape
         )
         command2 = Builtins.sformat(
-          "ls /sys/devices/ctcm/%1/net/|head -n1|tr -d '\n'",
-          Ops.get(Builtins.splitstring(@qeth_chanids, " "), 0, "")
+          "/usr/bin/ls /sys/devices/ctcm/%1/net/ | /usr/bin/head -n1 | /usr/bin/tr -d '\n'",
+          Ops.get(Builtins.splitstring(@qeth_chanids, " "), 0, "").shellescape
         )
       when "lcs"
         # chan_ids (read, write), protocol
         command1 = Builtins.sformat(
-          "ctc_configure %1 1 %2",
+          "/sbin/ctc_configure %1 1 %2",
           @qeth_chanids,
-          @chan_mode
+          @chan_mode.shellescape
         )
         command2 = Builtins.sformat(
-          "ls /sys/devices/lcs/%1/net/|head -n1|tr -d '\n'",
-          Ops.get(Builtins.splitstring(@qeth_chanids, " "), 0, "")
+          "/usr/bin/ls /sys/devices/lcs/%1/net/ | /usr/bin/head -n1 | /usr/bin/tr -d '\n'",
+          Ops.get(Builtins.splitstring(@qeth_chanids, " "), 0, "").shellescape
         )
       when "iucv"
         # router
-        command1 = Builtins.sformat("iucv_configure %1 1", @iucv_user)
+        command1 = Builtins.sformat("/sbin/iucv_configure %1 1", @iucv_user.shellescape)
         command2 = Builtins.sformat(
-          "ls /sys/devices/%1/*/net/|head -n1|tr -d '\n'",
-          @type
+          "/usr/bin/ls /sys/devices/%1/*/net/ | /usr/bin/head -n1 | /usr/bin/tr -d '\n'",
+          @type.shellescape
         )
       else
         Builtins.y2error("Unsupported type : %1", @type)
       end
       Builtins.y2milestone("execute %1", command1)
-      output1 = Convert.convert(
-        SCR.Execute(path(".target.bash_output"), command1),
-        from: "any",
-        to:   "map <string, any>"
-      )
+      output1 = SCR.Execute(path(".target.bash_output"), command1)
       if Ops.get_integer(output1, "exit", -1) == 0 &&
           Builtins.size(Ops.get_string(output1, "stderr", "")) == 0
         Builtins.y2milestone("Success : %1", output1)
@@ -2667,16 +2665,12 @@ module Yast
           )
         end
         Builtins.foreach(devs) do |device|
-          driver = Convert.convert(
-            SCR.Execute(
-              path(".target.bash_output"),
-              Builtins.sformat(
-                "driver=$(ls -l /sys/class/net/%1/device/driver);echo ${driver##*/}|tr -d '\n'",
-                device
-              )
-            ),
-            from: "any",
-            to:   "map <string, any>"
+          driver = SCR.Execute(
+            path(".target.bash_output"),
+            Builtins.sformat(
+              "driver=$(/usr/bin/ls -l /sys/class/net/%1/device/driver); /usr/bin/echo ${driver##*/} | /usr/bin/tr -d '\n'",
+              device.shellescape
+            )
           )
           device_type = ""
           chanids = ""
@@ -2704,8 +2698,8 @@ module Yast
             SCR.Execute(
               path(".target.bash_output"),
               Builtins.sformat(
-                "for i in $(seq 0 2);do chanid=$(ls -l /sys/class/net/%1/device/cdev$i);echo ${chanid##*/};done|tr '\n' ' '",
-                device
+                "for i in $(seq 0 2); do chanid=$(/usr/bin/ls -l /sys/class/net/%1/device/cdev$i); /usr/bin/echo ${chanid##*/}; done | /usr/bin/tr '\n' ' '",
+                device.shellescape
               )
             ),
             from: "any",
@@ -2717,45 +2711,31 @@ module Yast
           )
             chanids = String.CutBlanks(Ops.get_string(chan_ids, "stdout", ""))
           end
-          port_name = Convert.convert(
-            SCR.Execute(
-              path(".target.bash_output"),
-              Builtins.sformat(
-                "cat /sys/class/net/%1/device/portname|tr -d '\n'",
-                device
-              )
-            ),
-            from: "any",
-            to:   "map <string, any>"
+          port_name = SCR.Execute(
+            path(".target.bash_output"),
+            Builtins.sformat(
+              "/usr/bin/cat /sys/class/net/%1/device/portname | /usr/bin/tr -d '\n'",
+              device.shellescape
+            )
           )
-          if Ops.greater_than(
-            Builtins.size(Ops.get_string(port_name, "stdout", "")),
-            0
-          )
+          if !port_name["stdout"].empty?
             portname = String.CutBlanks(Ops.get_string(port_name, "stdout", ""))
           end
-          proto = Convert.convert(
-            SCR.Execute(
-              path(".target.bash_output"),
-              Builtins.sformat(
-                "cat /sys/class/net/%1/device/protocol|tr -d '\n'",
-                device
-              )
-            ),
-            from: "any",
-            to:   "map <string, any>"
+          proto = SCR.Execute(
+            path(".target.bash_output"),
+            Builtins.sformat(
+              "/usr/bin/cat /sys/class/net/%1/device/protocol | /usr/bin/tr -d '\n'",
+              device.shellescape
+            )
           )
-          if Ops.greater_than(
-            Builtins.size(Ops.get_string(proto, "stdout", "")),
-            0
-          )
+          if !proto["stdout"].empty?
             protocol = String.CutBlanks(Ops.get_string(proto, "stdout", ""))
           end
           layer2_ret = SCR.Execute(
             path(".target.bash"),
             Builtins.sformat(
-              "grep -q 1 /sys/class/net/%1/device/layer2",
-              device
+              "/usr/bin/grep -q 1 /sys/class/net/%1/device/layer2",
+              device.shellescape
             )
           )
           layer2 = layer2_ret == 0
@@ -2770,22 +2750,15 @@ module Yast
             Ops.set(ay, ["s390-devices", device, "protocol"], protocol)
           end
           Ops.set(ay, ["s390-devices", device, "layer2"], true) if layer2
-          port0 = Convert.convert(
-            SCR.Execute(
-              path(".target.bash_output"),
-              Builtins.sformat(
-                "port0=$(ls -l /sys/class/net/%1/device/cdev0);echo ${port0##*/}|tr -d '\n'",
-                device
-              )
-            ),
-            from: "any",
-            to:   "map <string, any>"
+          port0 = SCR.Execute(
+            path(".target.bash_output"),
+            Builtins.sformat(
+              "port0=$(/usr/bin/ls -l /sys/class/net/%1/device/cdev0); /usr/bin/echo ${port0##*/} | /usr/bin/tr -d '\n'",
+              device
+            )
           )
           Builtins.y2milestone("port0 %1", port0)
-          if Ops.greater_than(
-            Builtins.size(Ops.get_string(port0, "stdout", "")),
-            0
-          )
+          if !port0["stdout"].empty?
             value = Ops.get_string(port0, "stdout", "")
             Ops.set(
               ay,

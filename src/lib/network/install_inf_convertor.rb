@@ -8,8 +8,6 @@ module Yast
     include Yast # for path shortcuts
     include I18n # for textdomain
 
-    BASH_PATH = Path.new(".target.bash")
-
     # Class for accessing /etc/install.inf.
     # See http://en.opensuse.org/SDB:Linuxrc_install.inf
     class InstallInf
@@ -88,10 +86,6 @@ module Yast
 
       Proxy.Import(ex)
       Proxy.Write
-    end
-
-    def stdout_of(command)
-      SCR.Execute(path(".target.bash_output"), command)["stdout"].to_s
     end
   end
 end

@@ -57,6 +57,7 @@
 # </ul>
 #
 require "yast"
+require "shellwords"
 
 module Yast
   class NetHwDetectionClass < Module
@@ -124,7 +125,7 @@ module Yast
         load && !m.nil? && m != "" &&
           SCR.Execute(
             path(".target.bash"),
-            Builtins.sformat("grep ^%1 /proc/modules", m)
+            Builtins.sformat("/usr/bin/grep ^%1 /proc/modules", m.shellescape)
           ) != 0
       end
       @detection_modules = Builtins.maplist(needed_modules) { |m, _a| m }
@@ -135,7 +136,7 @@ module Yast
         Builtins.y2milestone("Loading module: %1", mod)
         SCR.Execute(
           path(".target.bash"),
-          Builtins.sformat("/sbin/modprobe --use-blacklist %1 2>&1", mod)
+          Builtins.sformat("/sbin/modprobe --use-blacklist %1 2>&1", mod.shellescape)
         )
       end
 
@@ -197,8 +198,8 @@ module Yast
       # floods logs.
       return false if ip.nil? || ip.empty?
 
-      command = "LC_ALL=C ip link show|grep BROADCAST|grep -v NOARP|cut -d: -f2"
-      exe = Convert.to_map(SCR.Execute(path(".target.bash_output"), command))
+      command = "LC_ALL=C /sbin/ip link show | /usr/bin/grep BROADCAST | /usr/bin/grep -v NOARP | /usr/bin/cut -d: -f2"
+      exe = SCR.Execute(path(".target.bash_output"), command)
       ifs = Ops.get_string(exe, "stdout", "")
       ifsl = Builtins.filter(Builtins.splitstring(ifs, " \t\n")) { |i| i != "" }
 
@@ -210,10 +211,7 @@ module Yast
       # find the interface that detects the dup
       ifc = Builtins.find(ifsl) do |ifname|
         # no need to be quiet, diagnostics is good
-        command = Ops.add(
-          Ops.add(Ops.add("arping  -D -c2 -w3 -I", ifname), " "),
-          ip
-        )
+        command = "/usr/sbin/arping  -D -c2 -w3 -I#{ifname.shellescape} #{ip.shellescape}"
         # 0 no dup, 1 dup, 2 other error (eg. ifc not up, #182473)
         SCR.Execute(path(".target.bash"), command) == 1
       end
@@ -233,16 +231,14 @@ module Yast
           Convert.to_integer(
             SCR.Execute(
               path(".target.bash"),
-              Builtins.sformat("grep -q %1 /etc/hosts", ip)
+              Builtins.sformat("/usr/bin/grep -q %1 /etc/hosts", ip.shellescape)
             )
           ) != 0
         return ""
       end
 
-      command = "/usr/bin/getent hosts \"%1\" | sed \"s/^[0-9.: \t]\\+//g\""
-      getent = Convert.to_map(
-        SCR.Execute(path(".target.bash_output"), Builtins.sformat(command, ip))
-      )
+      command = "/usr/bin/getent hosts #{ip.shellescape} | /usr/bin/sed \"s/^[0-9.: \t]\\+//g\""
+      getent = SCR.Execute(path(".target.bash_output"), command)
       hnent = Ops.get_string(getent, "stdout", "")
       Builtins.y2debug("%1", hnent)
       hnent = String.FirstChunk(hnent, " \t\n")

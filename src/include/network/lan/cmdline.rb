@@ -26,6 +26,9 @@
 # Summary:	Network cards cmdline handlers
 # Authors:	Michal Svec <msvec@suse.cz>
 #
+
+require "shellwords"
+
 module Yast
   module NetworkLanCmdlineInclude
     def initialize_network_lan_cmdline(_include_target)
@@ -134,8 +137,8 @@ module Yast
           if key == Ops.get(options, "id", "0")
             # create plain text from formated HTML
             text = Builtins.sformat(
-              "echo \"%1\"|sed s/'<br>'/'\\n'/g|sed s/'<\\/li>'/'\\n'/g|sed s/'<[/a-z]*>'/''/g",
-              Ops.get_string(value, "rich_descr", "")
+              "/usr/bin/echo %1 | /usr/bin/sed 's/<br>/\\n/g;s/<\\/li>/\\n/g;s/<[/a-z]*>//g'",
+              Ops.get_string(value, "rich_descr", "").shellescape
             )
             descr = Convert.convert(
               SCR.Execute(path(".target.bash_output"), text),

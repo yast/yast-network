@@ -22,7 +22,7 @@ describe "#reload_config" do
 
   it "returns true if given devices reload successfully" do
     expect(Yast::SCR).to receive(:Execute)
-      .with(DummyNetwork::BASH_PATH, "wicked ifreload eth0 eth1").and_return(0)
+      .with(DummyNetwork::BASH_PATH, "/usr/sbin/wicked ifreload eth0 eth1").and_return(0)
 
     expect(subject.reload_config(["eth0", "eth1"])).to eql(true)
   end

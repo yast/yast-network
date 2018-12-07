@@ -28,6 +28,7 @@
 #
 
 require "network/edit_nic_name"
+require "shellwords"
 
 include Yast::UIShortcuts
 
@@ -767,7 +768,8 @@ module Yast
           timeout,
           device
         )
-        cmd = Builtins.sformat("ethtool -p %1 %2", device, timeout)
+        cmd = Builtins.sformat("/usr/sbin/ethtool -p %1 %2",
+          device.shellescape, timeout.to_s.shellescape)
         Builtins.y2milestone(
           "%1 : %2",
           cmd,
