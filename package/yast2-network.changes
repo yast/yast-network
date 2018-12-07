@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Dec  7 14:02:40 UTC 2018 - jreidinger@suse.com
+
+- always use absolute path to binaries (bsc#1118291)
+- properly escape shell arguments (bsc#1118291)
+- 4.1.23
+
+-------------------------------------------------------------------
 Thu Dec  6 10:58:23 UTC 2018 - Stefan Hundhammer <shundhammer@suse.com>
 
 - Security audit fixes: Use absolute paths when calling external
