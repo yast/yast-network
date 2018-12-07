@@ -144,7 +144,7 @@ module Yast
     # @param [String] ip given IP address
     # @return resolved canonical hostname (FQDN) for given IP or empty string in case of failure.
     def ResolveIP(ip)
-      command = Builtins.sformat("/usr/bin/getent hosts \"%1\"", ip.shellescape)
+      command = Builtins.sformat("/usr/bin/getent hosts %1", ip.shellescape)
       getent = SCR.Execute(path(".target.bash_output"), command)
       exit_code = Ops.get_integer(getent, "exit", -1)
 
