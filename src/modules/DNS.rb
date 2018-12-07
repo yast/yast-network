@@ -569,7 +569,7 @@ module Yast
       log.info("domain=#{@domain}")
 
       # change the hostname
-      SCR.Execute(path(".target.bash"), "/bin/hostname #{@hostname.shellwords}")
+      SCR.Execute(path(".target.bash"), "/bin/hostname #{@hostname.shellescape}")
 
       # build and write FQDN hostname
       fqhostname = Hostname.MergeFQ(@hostname, @domain)
