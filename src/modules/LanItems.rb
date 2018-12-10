@@ -2678,16 +2678,13 @@ module Yast
           protocol = ""
           case driver
           when "qeth"
-            device_type = Ops.get_string(driver, "stdout", "")
+            device_type = driver
           when "ctcm"
             device_type = "ctc"
           when "netiucv"
             device_type = "iucv"
           else
-            Builtins.y2error(
-              "unknown driver type :%1",
-              Ops.get_string(driver, "stdout", "")
-            )
+            Builtins.y2error("unknown driver type :#{driver}")
           end
           chan_ids = SCR.Execute(
             path(".target.bash_output"),
