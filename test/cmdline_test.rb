@@ -22,4 +22,3 @@ describe "NetworkLanCmdlineInclude" do
     end
   end
 end
-

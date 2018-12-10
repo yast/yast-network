@@ -9,14 +9,14 @@ module CFA
     include Yast::Logger
 
     def initialize(path, file_handler: nil)
-      super(AugeasParser.new("Sysconfig.lns"), path,file_handler: file_handler)
+      super(AugeasParser.new("Sysconfig.lns"), path, file_handler: file_handler)
     end
 
     # attributes in file
     # @return [Hash<String, String>] key with its value
     def attributes
-      attrs = data.select(CFA::Matcher.new { |k, v| k != "#comment[]" })
-      Hash[attrs.map { |v| [v[:key], v[:value]] } ]
+      attrs = data.select(CFA::Matcher.new { |k, _v| k != "#comment[]" })
+      Hash[attrs.map { |v| [v[:key], v[:value]] }]
     end
 
     # do merge of sysconfigs value in a sense that values not in new file is kept in
@@ -31,7 +31,7 @@ module CFA
       begin
         target_model.load
       rescue IOError, Errno => e
-        log.error "Failed to load #{original_path}. Copying just old content."
+        log.error "Failed to load #{original_path} with #{e.inspect}. Copying just old content."
         ::FileUtils.cp modified_path, original_path
         return
       end
@@ -44,4 +44,3 @@ module CFA
     end
   end
 end
-

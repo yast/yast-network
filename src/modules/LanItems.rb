@@ -2666,7 +2666,11 @@ module Yast
         end
         Builtins.foreach(devs) do |device|
           begin
-            driver = File.readlink("/sys/class/net/#{device}/device/driver") rescue nil
+            driver = begin
+                       File.readlink("/sys/class/net/#{device}/device/driver")
+                     rescue
+                       nil
+                     end
           rescue Errno => e
             Builtins.y2error("Failed to read driver #{e.inspect}")
             next
@@ -2674,8 +2678,6 @@ module Yast
           driver = File.basename(driver)
           device_type = ""
           chanids = ""
-          portname = ""
-          protocol = ""
           case driver
           when "qeth"
             device_type = driver
@@ -2698,7 +2700,7 @@ module Yast
           end
           # we already know that kernel device exist, otherwise next above would apply
           portname = ::File.read("/sys/class/net/#{device}/device/portname").strip
-          portname = ::File.read("/sys/class/net/#{device}/device/protocol").strip
+          protocol = ::File.read("/sys/class/net/#{device}/device/protocol").strip
           layer2_ret = SCR.Execute(
             path(".target.bash"),
             Builtins.sformat(
