@@ -271,8 +271,6 @@ module Yast
       # set proper network service
       set_network_service
 
-      SCR.Execute(path(".target.bash"), "/usr/bin/chkconfig network on")
-
       # if portmap running - start it after reboot
       WFM.Execute(
         path(".local.bash"),
