@@ -183,17 +183,7 @@ module Yast
             to:   "list <string>"
           )
         ) do |devname|
-          mac = Ops.get_string(
-            SCR.Execute(
-              path(".target.bash_output"),
-              Builtins.sformat(
-                "/usr/bin/cat /sys/class/net/%1/address | /usr/bin/tr -d '\n'",
-                devname.shellescape
-              )
-            ),
-            "stdout",
-            ""
-          )
+          mac = ::File.read("/sys/class/net/#{devname}/address").chomp
           Builtins.y2milestone("confname %1", mac)
           if !Builtins.haskey(link_status, mac)
             Builtins.y2error(

@@ -136,7 +136,7 @@ module Yast
         Builtins.y2milestone("Loading module: %1", mod)
         SCR.Execute(
           path(".target.bash"),
-          Builtins.sformat("/sbin/modprobe --use-blacklist %1 2>&1", mod.shellescape)
+          Builtins.sformat("/usr/sbin/modprobe --use-blacklist %1 2>&1", mod.shellescape)
         )
       end
 
@@ -155,7 +155,7 @@ module Yast
 
       Builtins.y2milestone(
         "IFCONFIG1: %1",
-        SCR.Execute(path(".target.bash_output"), "/sbin/ip addr show")
+        SCR.Execute(path(".target.bash_output"), "/usr/sbin/ip addr show")
       )
       ret = false
       if LoadNetModules()
@@ -165,7 +165,7 @@ module Yast
 
       Builtins.y2milestone(
         "IFCONFIG2: %1",
-        SCR.Execute(path(".target.bash_output"), "/sbin/ip addr show")
+        SCR.Execute(path(".target.bash_output"), "/usr/sbin/ip addr show")
       )
       Builtins.y2milestone("Detection start result: %1", ret)
       ret
@@ -182,7 +182,7 @@ module Yast
 
       Builtins.y2milestone(
         "IFCONFIG3: %1",
-        SCR.Execute(path(".target.bash_output"), "/sbin/ip addr show")
+        SCR.Execute(path(".target.bash_output"), "/usr/sbin/ip addr show")
       )
 
       Builtins.y2milestone("Detection stop ")
@@ -198,7 +198,7 @@ module Yast
       # floods logs.
       return false if ip.nil? || ip.empty?
 
-      command = "LC_ALL=C /sbin/ip link show | /usr/bin/grep BROADCAST | /usr/bin/grep -v NOARP | /usr/bin/cut -d: -f2"
+      command = "LC_ALL=C /usr/sbin/ip link show | /usr/bin/grep BROADCAST | /usr/bin/grep -v NOARP | /usr/bin/cut -d: -f2"
       exe = SCR.Execute(path(".target.bash_output"), command)
       ifs = Ops.get_string(exe, "stdout", "")
       ifsl = Builtins.filter(Builtins.splitstring(ifs, " \t\n")) { |i| i != "" }
