@@ -89,9 +89,5 @@ module Yast
       Proxy.Import(ex)
       Proxy.Write
     end
-
-    def stdout_of(command)
-      SCR.Execute(path(".target.bash_output"), command)["stdout"].to_s
-    end
   end
 end
