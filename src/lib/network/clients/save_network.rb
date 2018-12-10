@@ -3,6 +3,8 @@ require "network/install_inf_convertor"
 require "network/network_autoconfiguration"
 require "network/network_autoyast"
 
+require "cfa/generic_sysconfig"
+
 require "shellwords"
 
 module Yast
@@ -84,7 +86,7 @@ module Yast
 
         log.info("Copying #{copy_from} to #{copy_to}")
 
-        cmd = "cp " << copy_from.shellescape << " " << copy_to.shellescape
+        cmd = "cp #{copy_from.shellescape} #{copy_to.shellescape}"
         ret = SCR.Execute(path(".target.bash_output"), cmd)
 
         log.warn("cmd: '#{cmd}' failed: #{ret}") if ret["exit"] != 0
@@ -94,28 +96,9 @@ module Yast
 
       # merge files with default installed by sysconfig
       ["dhcp", "config"].each do |file|
-        source_file = SYSCONFIG + file
+        modified_file = SYSCONFIG + file
         dest_file = copy_to + file
-        # apply options from initrd configuration files into installed system
-        # i.e. just modify (not replace) files from sysconfig rpm
-        # FIXME: this must be ripped out, refactored and tested
-        # In particular, values containing slashes will break the last sed
-        command = "\n" \
-          "source_file=#{source_file.shellescape};dest_file=#{dest_file.shellescape}\n" \
-          "grep -v \"^[[:space:]]*#\" $source_file | grep = | while read option\n" \
-          " do\n" \
-          "  key=${option%=*}=\n" \
-          "  grep -v \"^[[:space:]]*#\" $dest_file | grep -q $key\n" \
-          "  if [ $? != \"0\" ]\n" \
-          "   then\n" \
-          "    echo \"$option\" >> $dest_file\n" \
-          "   else\n" \
-          "    sed -i s/\"^[[:space:]]*$key.*\"/\"$option\"/g $dest_file\n" \
-          "  fi\n" \
-          " done"
-        ret = SCR.Execute(path(".target.bash_output"), command)
-
-        log.error("Execute file merging script failed: #{ret}") if ret["exit"] != 0
+        CFA::GenericSysconfig.merge_files(dest_file, modified_file)
       end
       # FIXME: proxy
 
