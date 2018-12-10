@@ -2665,72 +2665,43 @@ module Yast
           )
         end
         Builtins.foreach(devs) do |device|
-          driver = SCR.Execute(
-            path(".target.bash_output"),
-            Builtins.sformat(
-              "driver=$(/usr/bin/ls -l /sys/class/net/%1/device/driver); /usr/bin/echo ${driver##*/} | /usr/bin/tr -d '\n'",
-              device.shellescape
-            )
-          )
+          begin
+            driver = File.readlink("/sys/class/net/#{device}/device/driver") rescue nil
+          rescue Errno => e
+            Builtins.y2error("Failed to read driver #{e.inspect}")
+            next
+          end
+          driver = File.basename(driver)
           device_type = ""
           chanids = ""
           portname = ""
           protocol = ""
-          if Ops.get_integer(driver, "exit", -1) == 0
-            case Ops.get_string(driver, "stdout", "")
-            when "qeth"
-              device_type = Ops.get_string(driver, "stdout", "")
-            when "ctcm"
-              device_type = "ctc"
-            when "netiucv"
-              device_type = "iucv"
-            else
-              Builtins.y2error(
-                "unknown driver type :%1",
-                Ops.get_string(driver, "stdout", "")
-              )
-            end
+          case driver
+          when "qeth"
+            device_type = Ops.get_string(driver, "stdout", "")
+          when "ctcm"
+            device_type = "ctc"
+          when "netiucv"
+            device_type = "iucv"
           else
-            Builtins.y2error("%1", driver)
-            next
+            Builtins.y2error(
+              "unknown driver type :%1",
+              Ops.get_string(driver, "stdout", "")
+            )
           end
-          chan_ids = Convert.convert(
-            SCR.Execute(
-              path(".target.bash_output"),
-              Builtins.sformat(
-                "for i in $(seq 0 2); do chanid=$(/usr/bin/ls -l /sys/class/net/%1/device/cdev$i); /usr/bin/echo ${chanid##*/}; done | /usr/bin/tr '\n' ' '",
-                device.shellescape
-              )
-            ),
-            from: "any",
-            to:   "map <string, any>"
+          chan_ids = SCR.Execute(
+            path(".target.bash_output"),
+            Builtins.sformat(
+              "for i in $(seq 0 2); do chanid=$(/usr/bin/ls -l /sys/class/net/%1/device/cdev$i); /usr/bin/echo ${chanid##*/}; done | /usr/bin/tr '\n' ' '",
+              device.shellescape
+            )
           )
-          if Ops.greater_than(
-            Builtins.size(Ops.get_string(chan_ids, "stdout", "")),
-            0
-          )
+          if !chan_ids["stdout"].empty?
             chanids = String.CutBlanks(Ops.get_string(chan_ids, "stdout", ""))
           end
-          port_name = SCR.Execute(
-            path(".target.bash_output"),
-            Builtins.sformat(
-              "/usr/bin/cat /sys/class/net/%1/device/portname | /usr/bin/tr -d '\n'",
-              device.shellescape
-            )
-          )
-          if !port_name["stdout"].empty?
-            portname = String.CutBlanks(Ops.get_string(port_name, "stdout", ""))
-          end
-          proto = SCR.Execute(
-            path(".target.bash_output"),
-            Builtins.sformat(
-              "/usr/bin/cat /sys/class/net/%1/device/protocol | /usr/bin/tr -d '\n'",
-              device.shellescape
-            )
-          )
-          if !proto["stdout"].empty?
-            protocol = String.CutBlanks(Ops.get_string(proto, "stdout", ""))
-          end
+          # we already know that kernel device exist, otherwise next above would apply
+          portname = ::File.read("/sys/class/net/#{device}/device/portname").strip
+          portname = ::File.read("/sys/class/net/#{device}/device/protocol").strip
           layer2_ret = SCR.Execute(
             path(".target.bash"),
             Builtins.sformat(
@@ -2740,15 +2711,9 @@ module Yast
           )
           layer2 = layer2_ret == 0
           Ops.set(ay, ["s390-devices", device], "type" => device_type)
-          if Ops.greater_than(Builtins.size(chanids), 0)
-            Ops.set(ay, ["s390-devices", device, "chanids"], chanids)
-          end
-          if Ops.greater_than(Builtins.size(portname), 0)
-            Ops.set(ay, ["s390-devices", device, "portname"], portname)
-          end
-          if Ops.greater_than(Builtins.size(protocol), 0)
-            Ops.set(ay, ["s390-devices", device, "protocol"], protocol)
-          end
+          Ops.set(ay, ["s390-devices", device, "chanids"], chanids) if !chanids.empty?
+          Ops.set(ay, ["s390-devices", device, "portname"], portname) if !portname.empty?
+          Ops.set(ay, ["s390-devices", device, "protocol"], protocol) if !protocol.empty?
           Ops.set(ay, ["s390-devices", device, "layer2"], true) if layer2
           port0 = SCR.Execute(
             path(".target.bash_output"),
