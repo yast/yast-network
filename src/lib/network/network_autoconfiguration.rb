@@ -3,6 +3,8 @@
 require "yast"
 require "network/wicked"
 
+require "shellwords"
+
 module Yast
   # The class is responsible for generating / proposing automatic
   # configuration during installation workflow
