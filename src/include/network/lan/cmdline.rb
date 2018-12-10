@@ -123,30 +123,23 @@ module Yast
     # Handler for action "show"
     # @param [Hash{String => String}] options action options
     def ShowHandler(options)
-      options = deep_copy(options)
       config = getConfigList("")
-      return false if validateId(options, config) == false
-      Builtins.foreach(config) do |row|
-        Builtins.foreach(
-          Convert.convert(
-            row,
-            from: "map <string, any>",
-            to:   "map <string, map <string, any>>"
-          )
-        ) do |key, value|
-          if key == Ops.get(options, "id", "0")
-            # create plain text from formated HTML
-            text = Builtins.sformat(
-              "/usr/bin/echo %1 | /usr/bin/sed 's/<br>/\\n/g;s/<\\/li>/\\n/g;s/<[/a-z]*>//g'",
-              Ops.get_string(value, "rich_descr", "").shellescape
-            )
-            descr = Convert.convert(
-              SCR.Execute(path(".target.bash_output"), text),
-              from: "any",
-              to:   "map <string, any>"
-            )
-            CommandLine.Print(Ops.get_string(descr, "stdout", ""))
-          end
+      return false unless validateId(options, config)
+
+      required_id = options["id"]
+      config.each do |row|
+        row.each_pair do |key, value|
+          next if key != required_id
+
+          # create plain text from formated HTML
+          descr = value["rich_descr"]
+          descr.gsub!(/(<br>)|(<\/li>)/, "\n")
+          descr.gsub!(/<[^>]+>/, "")
+
+          # to keep it backward compatible. Previously echo was called which adds additional new line"
+          descr << "\n"
+
+          CommandLine.Print(descr)
         end
       end
       true
