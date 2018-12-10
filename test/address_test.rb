@@ -4,14 +4,14 @@ require_relative "test_helper"
 
 Yast.import "UI"
 
-class DummyClass < Yast::Module
+class DummyClassForAddressTest < Yast::Module
   def initialize
     Yast.include self, "network/lan/address.rb"
   end
 end
 
 describe "NetworkLanAddressInclude" do
-  subject { DummyClass.new }
+  subject { DummyClassForAddressTest.new }
 
   describe "#justify_dev_name" do
 
