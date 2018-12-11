@@ -3,6 +3,7 @@
 require_relative "test_helper"
 
 require "yast"
+require "yast2/target_file"
 require "cfa/memory_file"
 require "cfa/base_model"
 require "cfa/hosts"
@@ -15,9 +16,16 @@ describe Yast::Host do
     CFA::MemoryFile.new(File.read(file_path))
   end
 
-  before do
+  around do |test|
     # use only testing file
     CFA::BaseModel.default_file_handler = file
+
+    test.call
+
+    CFA::BaseModel.default_file_handler = Yast::TargetFile
+  end
+
+  before do
 
     allow(Yast::SCR).to receive(:Read).with(path(".target.size"), "/etc/hosts").and_return(50)
 
