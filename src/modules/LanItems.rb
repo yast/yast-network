@@ -2666,12 +2666,8 @@ module Yast
         end
         Builtins.foreach(devs) do |device|
           begin
-            driver = begin
-                       File.readlink("/sys/class/net/#{device}/device/driver")
-                     rescue
-                       nil
-                     end
-          rescue Errno => e
+            driver = File.readlink("/sys/class/net/#{device}/device/driver")
+          rescue SystemCallError => e
             Builtins.y2error("Failed to read driver #{e.inspect}")
             next
           end
