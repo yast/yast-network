@@ -30,7 +30,7 @@ module CFA
       # if old part into which we merge does not exist, then just copy new content
       begin
         target_model.load
-      rescue IOError, Errno => e
+      rescue IOError, SystemCallError => e
         log.error "Failed to load #{original_path} with #{e.inspect}. Copying just old content."
         ::FileUtils.cp modified_path, original_path
         return

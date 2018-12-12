@@ -29,5 +29,17 @@ describe CFA::GenericSysconfig do
 
       expect(File.read(file_path("dhcp"))).to eq File.read(file_path("dhcp.expected"))
     end
+
+    context "if the original is missing" do
+      before do
+        ::FileUtils.rm(file_path("dhcp"))
+      end
+
+      it "copies the modified file" do
+        described_class.merge_files(file_path("dhcp"), file_path("dhcp.modified"))
+
+        expect(File.read(file_path("dhcp"))).to eq File.read(file_path("dhcp.modified"))
+      end
+    end
   end
 end
