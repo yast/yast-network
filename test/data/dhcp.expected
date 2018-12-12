@@ -41,3 +41,4 @@ DHCLIENT_SET_HOSTNAME="no"
 # empty to not send any hostname.
 #
 DHCLIENT_HOSTNAME_OPTION=
+DHCLIENT_NEW_OPTION="foo"
