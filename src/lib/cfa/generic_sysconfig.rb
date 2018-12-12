@@ -31,7 +31,7 @@ module CFA
       begin
         target_model.load
       rescue IOError, SystemCallError => e
-        log.error "Failed to load #{original_path} with #{e.inspect}. Copying just old content."
+        log.error "Failed to load #{original_path} with #{e.inspect}. Copying just new content."
         ::FileUtils.cp modified_path, original_path
         return
       end
