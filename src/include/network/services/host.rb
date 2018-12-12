@@ -96,7 +96,7 @@ module Yast
 
         name, *aliases = names.first.split(/\s/).delete_if(&:empty?)
 
-        item = Item(
+        Item(
           Id(table_items.size),
           host,
           Punycode.DecodeDomainName(name),
