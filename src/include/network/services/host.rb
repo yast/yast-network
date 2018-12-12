@@ -81,7 +81,6 @@ module Yast
           "<p>Enter a host <b>IP Address</b>, a <b>Hostname</b>, and optional\n<b>Host Aliases</b>, separated by spaces.</p>\n"
         )
 
-      max = 0
       table_items = []
       deleted_items = []
       hosts = Host.name_map
@@ -89,25 +88,22 @@ module Yast
       Builtins.y2debug("hosts=%1", hosts)
 
       # make ui items from the hosts list
-      Builtins.maplist(hosts) do |host, names|
-        if Ops.less_than(Builtins.size(names), 1)
+      table_items = hosts.map do |host, names|
+        if names.empty?
           Builtins.y2error("Invalid host: %1, (%2)", host, names)
           next
         end
-        Builtins.foreach(names) do |s|
-          name = Builtins.regexpsub(s, "^([^ \t]+)[ \t]*.*$", "\\1")
-          aliases = Builtins.regexpsub(s, "^[^ \t]+[ \t]*(.*)[ \t]*$", "\\1")
-          item = Item(
-            Id(Builtins.size(table_items)),
-            host,
-            Punycode.DecodeDomainName(name),
-            Ops.get(Punycode.DecodePunycodes([aliases]), 0, "")
-          )
-          table_items = Builtins.add(table_items, item)
-        end
+
+        name, *aliases = names.first.split(/\s/).delete_if(&:empty?)
+
+        item = Item(
+          Id(table_items.size),
+          host,
+          Punycode.DecodeDomainName(name),
+          Punycode.DecodePunycodes([aliases.join(" ")]).first || ""
+        )
       end
       Builtins.y2debug("table_items=%1", table_items)
-      max = Builtins.size(table_items)
 
       # Hosts dialog contents
       contents = HBox(
@@ -175,36 +171,31 @@ module Yast
       end
 
       UI.ChangeWidget(Id(:table), :Items, table_items)
-      UI.SetFocus(Id(:table)) if Ops.greater_than(Builtins.size(table_items), 0)
+      UI.SetFocus(Id(:table)) if !table_items.empty?
 
       ret = nil
       loop do
-        UI.ChangeWidget(
-          Id(:edit),
-          :Enabled,
-          Ops.greater_than(Builtins.size(table_items), 0)
-        )
-        UI.ChangeWidget(
-          Id(:delete),
-          :Enabled,
-          Ops.greater_than(Builtins.size(table_items), 0)
-        )
+        UI.ChangeWidget(Id(:edit), :Enabled, !table_items.empty?)
+        UI.ChangeWidget(Id(:delete), :Enabled, !table_items.empty?)
 
         ret = UI.UserInput
-        Builtins.y2debug("ret=%1", ret)
 
         # abort?
         if ret == :abort || ret == :cancel
           ReallyAbortCond(Host.GetModified) ? break : next
         # add host
         elsif ret == :add
+          max = table_items.size
           item = HostDialog(max, term(:empty))
+
           next if item.nil?
-          table_items = Builtins.add(table_items, item)
+
+          table_items = table_items.push(item)
+
           UI.ChangeWidget(Id(:table), :Items, table_items)
           UI.ChangeWidget(Id(:table), :CurrentItem, max)
-          max = Ops.add(max, 1)
           Host.SetModified
+
           next
         # edit host
         elsif ret == :edit || ret == :table
