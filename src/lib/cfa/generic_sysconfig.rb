@@ -21,6 +21,9 @@ module CFA
 
     # do merge of sysconfigs value in a sense that values not in new file is kept in
     # the original one and also all comments are kept.
+    # @param original_path [String] path to the original file. SCR root is NOT applied
+    # @param modified_path [String] path to the modified file. SCR root is NOT applied
+    
     def self.merge_files(original_path, modified_path)
       # use ::File handle to ensure that SCR is not taken in account
       modified_model = new(modified_path, file_handler: ::File)
