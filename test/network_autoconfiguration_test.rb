@@ -100,17 +100,17 @@ describe Yast::NetworkAutoconfiguration do
       # - interfaces are up
       allow(Yast::SCR)
         .to receive(:Execute)
-        .with(path(".target.bash"), /^wicked ifstatus/)
+        .with(path(".target.bash"), /^\/usr\/sbin\/wicked ifstatus/)
         .and_return 0
       # - reload works
       allow(Yast::SCR)
         .to receive(:Execute)
-        .with(path(".target.bash"), /^wicked ifreload/)
+        .with(path(".target.bash"), /^\/usr\/sbin\/wicked ifreload/)
         .and_return 0
       # - ping works
       allow(Yast::SCR)
         .to receive(:Execute)
-        .with(path(".target.bash"), /^ping/)
+        .with(path(".target.bash"), /^\/usr\/bin\/ping/)
         .and_return 0
 
       # These "expect" should be "allow", but then it does not work out,

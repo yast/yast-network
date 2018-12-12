@@ -1,0 +1,7 @@
+# This comment will be ignored
+
+# This comment will be ignored too
+DHCLIENT_HOSTNAME_OPTION=
+
+# All comments in the modified file are in fact ignored
+DHCLIENT_NEW_OPTION="foo"

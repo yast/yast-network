@@ -30,6 +30,7 @@
 # See routes(5)
 # Does not work with interface-specific routes yet (ifroute-lo...)
 require "yast"
+require "shellwords"
 
 module Yast
   class RoutingClass < Module
@@ -185,7 +186,7 @@ module Yast
       )
       SCR.Write(path(SYSCTL_AGENT_PATH), nil)
 
-      SCR.Execute(path(".target.bash"), "sysctl -w #{IPV4_SYSCTL}=#{sysctl_val}")
+      SCR.Execute(path(".target.bash"), "/usr/sbin/sysctl -w #{IPV4_SYSCTL}=#{sysctl_val.shellescape}")
 
       nil
     end
@@ -202,7 +203,7 @@ module Yast
       )
       SCR.Write(path(SYSCTL_AGENT_PATH), nil)
 
-      SCR.Execute(path(".target.bash"), "sysctl -w #{IPV6_SYSCTL}=#{sysctl_val}")
+      SCR.Execute(path(".target.bash"), "/usr/sbin/sysctl -w #{IPV6_SYSCTL}=#{sysctl_val.shellescape}")
 
       nil
     end

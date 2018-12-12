@@ -26,6 +26,9 @@
 # Summary:	Network cards configuration wizards
 # Authors:	Michal Svec <msvec@suse.cz>
 #
+
+require "shellwords"
+
 module Yast
   module NetworkLanWirelessInclude
     def initialize_network_lan_wireless(include_target)
@@ -641,8 +644,10 @@ module Yast
           break
         when :scan_for_networks
           command = Builtins.sformat(
-            "ip link set %1 up && iwlist %1 scan|grep ESSID|cut -d':' -f2|cut -d'\"' -f2|sort -u",
-            Ops.get_string(LanItems.Items, [LanItems.current, "ifcfg"], "")
+            "/usr/sbin/ip link set %1 up && /usr/sbin/iwlist %1 scan | " \
+              "/usr/bin/grep ESSID | /usr/bin/cut -d':' -f2 | " \
+              "/usr/bin/cut -d'\"' -f2 | /usr/bin/sort -u",
+            Ops.get_string(LanItems.Items, [LanItems.current, "ifcfg"], "").shellescape
           )
           output = Convert.convert(
             SCR.Execute(path(".target.bash_output"), command),

@@ -3,6 +3,10 @@ require "network/install_inf_convertor"
 require "network/network_autoconfiguration"
 require "network/network_autoyast"
 
+require "cfa/generic_sysconfig"
+
+require "shellwords"
+
 module Yast
   class SaveNetworkClient < Client
     include Logger
@@ -48,7 +52,7 @@ module Yast
       # tune ifcfg file for remote filesystem
       SCR.Execute(
         path(".target.bash"),
-        "sed -i s/^[[:space:]]*STARTMODE=.*/STARTMODE='nfsroot'/ #{file}"
+        "/usr/bin/sed -i s/^[[:space:]]*STARTMODE=.*/STARTMODE='nfsroot'/ #{file.shellescape}"
       )
     end
 
@@ -77,12 +81,12 @@ module Yast
         file = receipt[:dir] + receipt[:file]
         adjust_for_network_disks(file) if file.include?("ifcfg-")
 
-        copy_from = String.Quote(file)
-        copy_to = String.Quote(inst_dir + receipt[:dir])
+        copy_from = file
+        copy_to = inst_dir + receipt[:dir]
 
         log.info("Copying #{copy_from} to #{copy_to}")
 
-        cmd = "cp " << copy_from << " " << copy_to
+        cmd = "cp #{copy_from.shellescape} #{copy_to.shellescape}"
         ret = SCR.Execute(path(".target.bash_output"), cmd)
 
         log.warn("cmd: '#{cmd}' failed: #{ret}") if ret["exit"] != 0
@@ -92,28 +96,9 @@ module Yast
 
       # merge files with default installed by sysconfig
       ["dhcp", "config"].each do |file|
-        source_file = SYSCONFIG + file
+        modified_file = SYSCONFIG + file
         dest_file = copy_to + file
-        # apply options from initrd configuration files into installed system
-        # i.e. just modify (not replace) files from sysconfig rpm
-        # FIXME: this must be ripped out, refactored and tested
-        # In particular, values containing slashes will break the last sed
-        command = "\n" \
-          "source_file=#{source_file};dest_file=#{dest_file}\n" \
-          "grep -v \"^[[:space:]]*#\" $source_file | grep = | while read option\n" \
-          " do\n" \
-          "  key=${option%=*}=\n" \
-          "  grep -v \"^[[:space:]]*#\" $dest_file | grep -q $key\n" \
-          "  if [ $? != \"0\" ]\n" \
-          "   then\n" \
-          "    echo \"$option\" >> $dest_file\n" \
-          "   else\n" \
-          "    sed -i s/\"^[[:space:]]*$key.*\"/\"$option\"/g $dest_file\n" \
-          "  fi\n" \
-          " done"
-        ret = SCR.Execute(path(".target.bash_output"), command)
-
-        log.error("Execute file merging script failed: #{ret}") if ret["exit"] != 0
+        CFA::GenericSysconfig.merge_files(dest_file, modified_file)
       end
       # FIXME: proxy
 
@@ -131,7 +116,7 @@ module Yast
           Builtins.sformat(
             "/bin/cp -p %1/51-* '%2%1'",
             "/etc/udev/rules.d",
-            dest_root
+            dest_root.shellescape
           )
         )
       end
@@ -155,7 +140,7 @@ module Yast
         log.info("#{udev_rules_destdir} does not exist yet, creating it")
         WFM.Execute(
           path(".local.bash"),
-          "mkdir -p '#{udev_rules_destdir}'"
+          "/usr/bin/mkdir -p #{udev_rules_destdir.shellescape}"
         )
       else
         log.info("File #{udev_rules_destdir} exists")
@@ -165,7 +150,7 @@ module Yast
         log.info("Copying #{net_srcfile} to the installed system ")
         WFM.Execute(
           path(".local.bash"),
-          "/bin/cp -p '#{udev_rules_srcdir}/#{net_srcfile}' '#{net_destfile}'"
+          "/bin/cp -p #{udev_rules_srcdir.shellescape}/#{net_srcfile.shellescape} #{net_destfile.shellescape}"
         )
       else
         log.info("Not copying file #{net_destfile} - update mode")
@@ -286,12 +271,10 @@ module Yast
       # set proper network service
       set_network_service
 
-      SCR.Execute(path(".target.bash"), "chkconfig network on")
-
       # if portmap running - start it after reboot
       WFM.Execute(
         path(".local.bash"),
-        "pidofproc rpcbind && touch /var/lib/YaST2/network_install_rpcbind"
+        "/sbin/pidofproc rpcbind && /usr/bin/touch /var/lib/YaST2/network_install_rpcbind"
       )
 
       nil

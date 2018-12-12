@@ -84,10 +84,13 @@ describe "LanItemsClass#export_udevs" do
 
     # kind of smoke test
     it "produces s390 specific content in exported AY profile" do
-      allow(scr)
-        .to receive(:Execute)
-        .with(Yast::Path.new(".target.bash_output"), /^driver=.*/)
-        .and_return("exit" => 0, "stdout" => "qeth", "stderr" => "")
+      allow(::File)
+        .to receive(:readlink)
+        .and_return("../../../qeth")
+
+      allow(::File)
+        .to receive(:read)
+        .and_return("")
 
       ay = subject.send(:export_udevs, devices)
 

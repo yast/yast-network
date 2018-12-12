@@ -1,6 +1,7 @@
 # encoding: utf-8
 
 require "yast"
+require "shellwords"
 
 module Yast
   module Wicked
@@ -14,7 +15,7 @@ module Yast
       raise ArgumentError if devs.nil?
       return true if devs.empty?
 
-      SCR.Execute(BASH_PATH, "wicked ifreload #{devs.join(" ")}").zero?
+      SCR.Execute(BASH_PATH, "/usr/sbin/wicked ifreload #{devs.map(&:shellescape).join(" ")}").zero?
     end
 
     # Parses wicked runtime configuration and returns list of ntp servers
@@ -27,7 +28,7 @@ module Yast
 
       lease_files = ["ipv4", "ipv6"].map { |ip| "/var/lib/wicked/lease-#{iface}-dhcp-#{ip}.xml" }
       lease_files.find_all { |f| File.file?(f) }.reduce([]) do |stack, file|
-        result = SCR.Execute(path(".target.bash_output"), "wicked xpath --file #{file} \"%{//ntp/server}\"")
+        result = SCR.Execute(path(".target.bash_output"), "/usr/sbin/wicked xpath --file #{file.shellescape} \"%{//ntp/server}\"")
 
         stack + result.fetch("stdout", "").split("\n")
       end

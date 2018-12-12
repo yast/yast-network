@@ -3,6 +3,8 @@
 require "yast"
 require "network/wicked"
 
+require "shellwords"
+
 module Yast
   # The class is responsible for generating / proposing automatic
   # configuration during installation workflow
@@ -18,6 +20,8 @@ module Yast
     Yast.import "DNS"
     Yast.import "Arch"
     Yast.import "Host"
+
+    BASH_PATH = Path.new(".target.bash")
 
     # Checks if any of available interfaces is configured and active
     #
@@ -177,7 +181,7 @@ module Yast
     #
     # active device <=> a device which is reported as "up" by wicked
     def active_config?(devname)
-      wicked_query = "wicked ifstatus --brief #{devname} | grep 'up$'"
+      wicked_query = "/usr/sbin/wicked ifstatus --brief #{devname.shellescape} | /usr/bin/grep 'up$'"
       SCR.Execute(BASH_PATH, wicked_query).zero?
     end
 
@@ -198,7 +202,7 @@ module Yast
       end
 
       reached = target_servers.any? do |server|
-        ping_cmd = "ping -I #{devname} -c 3 #{server}"
+        ping_cmd = "/usr/bin/ping -I #{devname.shellescape} -c 3 #{server.shellescape}"
         SCR.Execute(BASH_PATH, ping_cmd) == 0
       end
 

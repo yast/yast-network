@@ -8,8 +8,6 @@ module Yast
     include Yast # for path shortcuts
     include I18n # for textdomain
 
-    BASH_PATH = Path.new(".target.bash")
-
     # Class for accessing /etc/install.inf.
     # See http://en.opensuse.org/SDB:Linuxrc_install.inf
     class InstallInf

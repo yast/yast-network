@@ -33,6 +33,8 @@ require "yast"
 require "network/confirm_virt_proposal"
 require "ui/text_helpers"
 
+require "shellwords"
+
 module Yast
   class LanClass < Module
     include ::UI::TextHelpers
@@ -119,7 +121,7 @@ module Yast
           Convert.convert(
             SCR.Execute(
               path(".target.bash_output"),
-              "ls /sys/class/net/ | grep -v lo | tr '\n' ','"
+              "/usr/bin/ls /sys/class/net/ | /usr/bin/grep -v lo | /usr/bin/tr '\n' ','"
             ),
             from: "any",
             to:   "map <string, any>"
@@ -135,16 +137,12 @@ module Yast
       Builtins.foreach(net_devices) do |net_dev|
         row = Builtins.splitstring(
           Ops.get_string(
-            Convert.convert(
-              SCR.Execute(
-                path(".target.bash_output"),
-                Builtins.sformat(
-                  "ip address show dev %1 | grep 'inet\\|link' | sed 's/^ \\+//g'|cut -d' ' -f-2",
-                  net_dev
-                )
-              ),
-              from: "any",
-              to:   "map <string, any>"
+            SCR.Execute(
+              path(".target.bash_output"),
+              Builtins.sformat(
+                "/usr/sbin/ip address show dev %1 | /usr/bin/grep 'inet\\|link' | /usr/bin/sed 's/^ \\+//g'| /usr/bin/cut -d' ' -f-2",
+                net_dev.shellescape
+              )
             ),
             "stdout",
             ""
@@ -185,21 +183,7 @@ module Yast
             to:   "list <string>"
           )
         ) do |devname|
-          mac = Ops.get_string(
-            Convert.convert(
-              SCR.Execute(
-                path(".target.bash_output"),
-                Builtins.sformat(
-                  "cat /sys/class/net/%1/address|tr -d '\n'",
-                  devname
-                )
-              ),
-              from: "any",
-              to:   "map <string, any>"
-            ),
-            "stdout",
-            ""
-          )
+          mac = ::File.read("/sys/class/net/#{devname}/address").chomp
           Builtins.y2milestone("confname %1", mac)
           if !Builtins.haskey(link_status, mac)
             Builtins.y2error(
@@ -302,7 +286,7 @@ module Yast
         )
           Builtins.y2milestone("ndiswrapper: configuration found")
           if Convert.to_integer(
-            SCR.Execute(path(".target.bash"), "lsmod |grep -q ndiswrapper")
+            SCR.Execute(path(".target.bash"), "/usr/sbin/lsmod | /usr/bin/grep -q ndiswrapper")
           ) != 0 &&
               Popup.YesNo(
                 _(
@@ -437,7 +421,7 @@ module Yast
       SCR.Execute(
         path(".target.bash"),
         Builtins.sformat(
-          "sysctl -w net.ipv6.conf.all.disable_ipv6=%1",
+          "/usr/sbin/sysctl -w net.ipv6.conf.all.disable_ipv6=%1",
           !@ipv6 ? "1" : "0"
         )
       )

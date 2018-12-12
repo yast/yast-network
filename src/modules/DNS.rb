@@ -30,6 +30,7 @@
 # Manages resolv.conf and (fully qualified) hostname, also
 # respecting DHCP.
 require "yast"
+require "shellwords"
 
 module Yast
   class DNSClass < Module
@@ -143,14 +144,11 @@ module Yast
     # @param [String] ip given IP address
     # @return resolved canonical hostname (FQDN) for given IP or empty string in case of failure.
     def ResolveIP(ip)
-      command = "/usr/bin/getent hosts \"%1\""
-      getent = Convert.to_map(
-        SCR.Execute(path(".target.bash_output"), Builtins.sformat(command, ip))
-      )
+      getent = SCR.Execute(path(".target.bash_output"), "/usr/bin/getent hosts #{ip.shellescape}")
       exit_code = Ops.get_integer(getent, "exit", -1)
 
       if exit_code != 0
-        Builtins.y2error("ResolveIP: getent call failed (%1)", exit_code)
+        Builtins.y2error("ResolveIP: getent call failed (%1)", getent)
 
         return ""
       end
@@ -570,7 +568,7 @@ module Yast
       log.info("domain=#{@domain}")
 
       # change the hostname
-      SCR.Execute(path(".target.bash"), Ops.add("/bin/hostname ", @hostname))
+      SCR.Execute(path(".target.bash"), "/bin/hostname #{@hostname.shellescape}")
 
       # build and write FQDN hostname
       fqhostname = Hostname.MergeFQ(@hostname, @domain)

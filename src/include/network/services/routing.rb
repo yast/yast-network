@@ -30,6 +30,9 @@
 # Routing configuration dialogs
 module Yast
   module NetworkServicesRoutingInclude
+    include Yast::I18n
+    include Yast::UIShortcuts
+
     def initialize_network_services_routing(include_target)
       Yast.import "UI"
 
