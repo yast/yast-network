@@ -30,6 +30,8 @@
 # Hosts configuration dialogs
 module Yast
   module NetworkServicesHostInclude
+    include Logger
+
     def initialize_network_services_host(include_target)
       Yast.import "UI"
 
@@ -85,12 +87,10 @@ module Yast
       deleted_items = []
       hosts = Host.name_map
 
-      Builtins.y2debug("hosts=%1", hosts)
-
       # make ui items from the hosts list
       table_items = hosts.map do |host, names|
         if names.empty?
-          Builtins.y2error("Invalid host: %1, (%2)", host, names)
+          log.error("Invalid host: %1, (%2)", host, names)
           next
         end
 
@@ -103,7 +103,6 @@ module Yast
           Punycode.DecodePunycodes([aliases.join(" ")]).first || ""
         )
       end
-      Builtins.y2debug("table_items=%1", table_items)
 
       # Hosts dialog contents
       contents = HBox(
@@ -171,12 +170,12 @@ module Yast
       end
 
       UI.ChangeWidget(Id(:table), :Items, table_items)
-      UI.SetFocus(Id(:table)) if !table_items.empty?
+      UI.SetFocus(Id(:table)) if table_items.any?
 
       ret = nil
       loop do
-        UI.ChangeWidget(Id(:edit), :Enabled, !table_items.empty?)
-        UI.ChangeWidget(Id(:delete), :Enabled, !table_items.empty?)
+        UI.ChangeWidget(Id(:edit), :Enabled, table_items.any?)
+        UI.ChangeWidget(Id(:delete), :Enabled, table_items.any?)
 
         ret = UI.UserInput
 
@@ -185,15 +184,15 @@ module Yast
           ReallyAbortCond(Host.GetModified) ? break : next
         # add host
         elsif ret == :add
-          max = table_items.size
-          item = HostDialog(max, term(:empty))
+          new_item_position = table_items.size
+          item = HostDialog(new_item_position, term(:empty))
 
           next if item.nil?
 
-          table_items = table_items.push(item)
+          table_items.push(item)
 
           UI.ChangeWidget(Id(:table), :Items, table_items)
-          UI.ChangeWidget(Id(:table), :CurrentItem, max)
+          UI.ChangeWidget(Id(:table), :CurrentItem, new_item_position)
           Host.SetModified
 
           next
