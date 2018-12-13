@@ -316,14 +316,6 @@ module Yast
       @modified
     end
 
-    # Function sets internal variable, which indicates, that any
-    # settings were modified, to "true"
-    def SetModified
-      @modified = true
-
-      nil
-    end
-
     publish function: :NeedDummyIP, type: "boolean ()"
     publish function: :EnsureHostnameResolvable, type: "void ()"
     publish function: :Read, type: "boolean ()"
@@ -335,7 +327,6 @@ module Yast
     publish function: :Summary, type: "string ()"
     publish function: :ResolveHostnameToStaticIPs, type: "void ()"
     publish function: :GetModified, type: "boolean ()"
-    publish function: :SetModified, type: "void ()"
 
   private
 

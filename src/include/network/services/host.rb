@@ -173,6 +173,7 @@ module Yast
       UI.SetFocus(Id(:table)) if table_items.any?
 
       ret = nil
+      modified = false
       loop do
         UI.ChangeWidget(Id(:edit), :Enabled, table_items.any?)
         UI.ChangeWidget(Id(:delete), :Enabled, table_items.any?)
@@ -181,7 +182,7 @@ module Yast
 
         # abort?
         if ret == :abort || ret == :cancel
-          ReallyAbortCond(Host.GetModified) ? break : next
+          ReallyAbortCond(modified) ? break : next
         # add host
         elsif ret == :add
           new_item_position = table_items.size
@@ -193,7 +194,7 @@ module Yast
 
           UI.ChangeWidget(Id(:table), :Items, table_items)
           UI.ChangeWidget(Id(:table), :CurrentItem, new_item_position)
-          Host.SetModified
+          modified = true
 
           next
         # edit host
@@ -236,7 +237,7 @@ module Yast
           end
           UI.ChangeWidget(Id(:table), :Items, table_items)
           UI.ChangeWidget(Id(:table), :CurrentItem, cur)
-          Host.SetModified
+          modified = true
           next
         # delete host
         elsif ret == :delete
@@ -263,13 +264,13 @@ module Yast
             true
           end
           UI.ChangeWidget(Id(:table), :Items, table_items)
-          Host.SetModified
+          modified = true
           next
         elsif ret == :back
           break
         elsif ret == :next
           # check_
-          if Host.GetModified
+          if modified
             Host.clear
             Builtins.foreach(table_items) do |row|
               value = Builtins.mergestring(
@@ -300,7 +301,6 @@ module Yast
       entry = deep_copy(entry)
       Builtins.y2debug("id=%1", id)
       Builtins.y2debug("entry=%1", entry)
-      # y2debug("forbidden=%1", forbidden);
 
       UI.OpenDialog(
         Opt(:decorated),
@@ -336,9 +336,6 @@ module Yast
       )
 
       UI.ChangeWidget(Id(:host), :ValidChars, IP.ValidChars)
-      #    anything allowed here - will be converted to punycode (#448486)
-      #    UI::ChangeWidget(`id(`name), `ValidChars, Hostname::ValidCharsFQ);
-      #    UI::ChangeWidget(`id(`aliases), `ValidChars, Hostname::ValidCharsFQ + " ");
 
       if entry == term(:empty)
         UI.SetFocus(Id(:host))
@@ -347,7 +344,6 @@ module Yast
       end
 
       ret = nil
-      host = nil
 
       loop do
         host = nil
@@ -402,8 +398,7 @@ module Yast
       UI.CloseDialog
       return nil if ret != :ok
 
-      Host.SetModified
-      deep_copy(host)
+      host
     end
   end
 end
