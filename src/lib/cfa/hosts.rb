@@ -6,6 +6,17 @@ require "cfa/matcher"
 require "cfa/augeas_parser"
 
 module CFA
+  class AugeasTree
+    def initialize_clone(source)
+      # Cloning internal data representation
+      @data = source.data.map do |d|
+        nd = d.clone
+        nd[:value] = d[:value].clone if is_a? AugeasTree
+        nd
+      end
+    end
+  end
+
   # class representings /etc/hosts file model. It provides helper to manipulate
   # with file. It uses CFA framework and Augeas parser.
   # @see http://www.rubydoc.info/github/config-files-api/config_files_api/CFA/BaseModel
@@ -16,6 +27,11 @@ module CFA
 
     def initialize(file_handler: nil)
       super(AugeasParser.new("hosts.lns"), PATH, file_handler: file_handler)
+    end
+
+    def initialize_clone(source)
+      # Cloning AugeasTree
+      @data = source.data.clone
     end
 
     # The old format used by {Yast::HostClass}.

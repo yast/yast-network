@@ -336,6 +336,7 @@ module Yast
     @hosts.load
 
     # save hosts to check for changes later
+    @initial_hosts = nil
     @initial_hosts = @hosts.clone if !load_only
 
     true
