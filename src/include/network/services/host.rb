@@ -344,9 +344,9 @@ module Yast
       end
 
       ret = nil
+      host = nil
 
       loop do
-        host = nil
         ret = UI.UserInput
         break if ret != :ok
 
