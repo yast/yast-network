@@ -174,7 +174,7 @@ module Yast
 
       ret = nil
       modified = false
-      loop do
+      while ![:abort, :cancel, :back, :next].include?(ret) do
         UI.ChangeWidget(Id(:edit), :Enabled, table_items.any?)
         UI.ChangeWidget(Id(:delete), :Enabled, table_items.any?)
 
@@ -182,7 +182,7 @@ module Yast
 
         # abort?
         if ret == :abort || ret == :cancel
-          ReallyAbortCond(modified) ? break : next
+          ret = nil if !ReallyAbortCond(modified)
         # add host
         elsif ret == :add
           new_item_position = table_items.size
@@ -195,17 +195,12 @@ module Yast
           UI.ChangeWidget(Id(:table), :Items, table_items)
           UI.ChangeWidget(Id(:table), :CurrentItem, new_item_position)
           modified = true
-
-          next
         # edit host
         elsif ret == :edit || ret == :table
           cur = Convert.to_integer(UI.QueryWidget(Id(:table), :CurrentItem))
           cur_item = Builtins.filter(table_items) do |e|
             cur == Ops.get(e, [0, 0])
           end
-
-          Builtins.y2debug("cur=%1", cur)
-          Builtins.y2debug("cur_item=%1", cur_item)
 
           olditem = Ops.get(cur_item, 0)
 
@@ -221,10 +216,6 @@ module Yast
                 " "
               )
 
-              Builtins.y2debug("item: %1", item)
-              Builtins.y2debug("olditem: %1", olditem)
-              Builtins.y2debug("oldentry: %1", oldentry)
-
               ip = Ops.get_string(item, 1, "")
               oldip = Ops.get_string(olditem, 1, "")
 
@@ -238,16 +229,12 @@ module Yast
           UI.ChangeWidget(Id(:table), :Items, table_items)
           UI.ChangeWidget(Id(:table), :CurrentItem, cur)
           modified = true
-          next
         # delete host
         elsif ret == :delete
           cur = Convert.to_integer(UI.QueryWidget(Id(:table), :CurrentItem))
           cur_item = Builtins.filter(table_items) do |e|
             cur == Ops.get(e, [0, 0])
           end
-
-          Builtins.y2debug("cur=%1", cur)
-          Builtins.y2debug("cur_item=%1", cur_item)
 
           item = Ops.get(cur_item, 0)
 
@@ -265,36 +252,25 @@ module Yast
           end
           UI.ChangeWidget(Id(:table), :Items, table_items)
           modified = true
-          next
-        elsif ret == :back
-          break
         elsif ret == :next
           # check_
-          if modified
-            Host.clear
-            Builtins.foreach(table_items) do |row|
-              value = Builtins.mergestring(
-                Builtins.prepend(
-                  Punycode.EncodePunycodes([Ops.get_string(row, 3, "")]),
-                  Punycode.EncodeDomainName(Ops.get_string(row, 2, ""))
-                ),
-                " "
-              )
-              key = Ops.get_string(row, 1, "")
-              Host.add_name(key, value)
-            end
+          next if !modified
+          Host.clear
+
+          table_items.each do |row|
+            encoded_aliases = Punycode.EncodePunycodes([row.fetch(3, "")])
+            encoded_canonical = Punycode.EncodeDomainName(row.fetch(2, ""))
+            value = encoded_canonical + " " + encoded_aliases.join(" ")
+            key = row.fetch(1, "")
+
+            Host.add_name(key, value)
           end
-          break
         else
-          Builtins.y2error("unexpected retcode: %1", ret)
-          next
+          log.error("unexpected retcode: %1", ret)
         end
       end
 
-      Builtins.y2debug("table_items=%1", table_items)
-      Builtins.y2debug("hosts=%1", hosts)
-
-      Convert.to_symbol(ret)
+      ret
     end
 
     def HostDialog(id, entry)
