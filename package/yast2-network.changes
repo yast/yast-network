@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Dec 18 12:49:47 UTC 2018 - mfilka@suse.com
+
+- bnc#1119723
+  - properly copy ifcfg files from instsys to target
+- 4.1.25 
+
+-------------------------------------------------------------------
 Mon Dec 10 14:02:40 UTC 2018 - jreidinger@suse.com
 
 - always use absolute path to binaries (bsc#1118291)

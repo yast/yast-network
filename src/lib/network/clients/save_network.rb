@@ -36,6 +36,9 @@ module Yast
 
   private
 
+    # Updates ifcfg file as needed when the "/" filesystem is accessed over network
+    #
+    # @param file [String] ifcfg name
     def adjust_for_network_disks(file)
       # storage-ng
       # Check if installation is targeted to a remote destination.
@@ -68,7 +71,7 @@ module Yast
 
       inst_dir = Installation.destdir
 
-      copy_receipts = [
+      copy_recipes = [
         { dir: SYSCONFIG, file: "ifcfg-*" },
         { dir: SYSCONFIG, file: "ifroute-*" },
         { dir: SYSCONFIG, file: "routes" },
@@ -77,19 +80,23 @@ module Yast
       ]
 
       # just copy files
-      copy_receipts.each do |receipt|
-        file = receipt[:dir] + receipt[:file]
-        adjust_for_network_disks(file) if file.include?("ifcfg-")
+      copy_recipes.each do |recipe|
+        # can be shell pattern like ifcfg-*
+        file_pattern = recipe[:dir] + recipe[:file]
+        copy_to = inst_dir + recipe[:dir]
 
-        copy_from = file
-        copy_to = inst_dir + receipt[:dir]
+        Dir.glob(file_pattern).each do |file|
+          adjust_for_network_disks(file) if file.include?("ifcfg-")
 
-        log.info("Copying #{copy_from} to #{copy_to}")
+          copy_from = file
 
-        cmd = "cp #{copy_from.shellescape} #{copy_to.shellescape}"
-        ret = SCR.Execute(path(".target.bash_output"), cmd)
+          log.info("Copying #{copy_from} to #{copy_to}")
 
-        log.warn("cmd: '#{cmd}' failed: #{ret}") if ret["exit"] != 0
+          cmd = "cp #{copy_from.shellescape} #{copy_to.shellescape}"
+          ret = SCR.Execute(path(".target.bash_output"), cmd)
+
+          log.warn("cmd: '#{cmd}' failed: #{ret}") if ret["exit"] != 0
+        end
       end
 
       copy_to = String.Quote(inst_dir + SYSCONFIG)
