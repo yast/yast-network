@@ -71,7 +71,7 @@ module Yast
 
       inst_dir = Installation.destdir
 
-      copy_receipts = [
+      copy_recipes = [
         { dir: SYSCONFIG, file: "ifcfg-*" },
         { dir: SYSCONFIG, file: "ifroute-*" },
         { dir: SYSCONFIG, file: "routes" },
@@ -80,10 +80,10 @@ module Yast
       ]
 
       # just copy files
-      copy_receipts.each do |receipt|
+      copy_recipes.each do |recipe|
         # can be shell pattern like ifcfg-*
-        file_pattern = receipt[:dir] + receipt[:file]
-        copy_to = inst_dir + receipt[:dir]
+        file_pattern = recipe[:dir] + recipe[:file]
+        copy_to = inst_dir + recipe[:dir]
 
         Dir.glob(file_pattern).each do |file|
           adjust_for_network_disks(file) if file.include?("ifcfg-")
