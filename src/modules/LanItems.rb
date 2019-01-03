@@ -1373,6 +1373,10 @@ module Yast
         "hotplug" => _(
           "Started automatically at boot"
         ),
+        # summary description of STARTMODE=nfsroot
+        "nfsroot" => _(
+          "Started automatically at boot"
+        ),
         # summary description of STARTMODE=ifplugd
         "ifplugd" => _(
           "Started automatically on cable connection"
