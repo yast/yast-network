@@ -35,37 +35,37 @@ describe "LanItemsClass#BuildLanOverview" do
   end
   let(:lan_items) do
     {
-      0=>{"hwinfo"=>{
-            "name"=>"Ethernet Card 0",
-            "type"=>"eth",
-            "udi"=>"",
-            "sysfs_id"=>"/devices/pci0000:00/0000:00:03.0/virtio0",
-            "dev_name"=>"eth0",
-            "requires"=>[],
-            "modalias"=>"virtio:d00000001v00001AF4",
-            "unique"=>"vWuh.VIRhsc57kTD",
-            "driver"=>"virtio_net",
-            "num"=>0,
-            "active"=>true,
-            "module"=>"virtio_net",
-            "bus"=>"Virtio",
-            "busid"=>"virtio0",
-            "mac"=>"02:00:00:12:34:56",
-            "link"=>true},
-          "udev"=>{
-            "net"=>["SUBSYSTEM==\"net\"", "ACTION==\"add\"", "DRIVERS==\"virtio-pci\"",
-                    "ATTR{dev_id}==\"0x0\"", "KERNELS==\"0000:00:03.0\"",
-                    "ATTR{type}==\"1\"", "KERNEL==\"eth*\"", "NAME=\"eth0\""],
-            "driver"=>""},
-          "ifcfg"=>"eth0"
-        }
+      0 => { "hwinfo" => {
+        "name"     => "Ethernet Card 0",
+        "type"     => "eth",
+        "udi"      => "",
+        "sysfs_id" => "/devices/pci0000:00/0000:00:03.0/virtio0",
+        "dev_name" => "eth0",
+        "requires" => [],
+        "modalias" => "virtio:d00000001v00001AF4",
+        "unique"   => "vWuh.VIRhsc57kTD",
+        "driver"   => "virtio_net",
+        "num"      => 0,
+        "active"   => true,
+        "module"   => "virtio_net",
+        "bus"      => "Virtio",
+        "busid"    => "virtio0",
+        "mac"      => "02:00:00:12:34:56",
+        "link"     => true
+      },
+             "udev"   => {
+               "net"    => ["SUBSYSTEM==\"net\"", "ACTION==\"add\"", "DRIVERS==\"virtio-pci\"",
+                            "ATTR{dev_id}==\"0x0\"", "KERNELS==\"0000:00:03.0\"",
+                            "ATTR{type}==\"1\"", "KERNEL==\"eth*\"", "NAME=\"eth0\""],
+               "driver" => ""
+             },
+             "ifcfg"  => "eth0" }
     }
   end
   let(:lan_ifcfg) do
-    { "STARTMODE"=>"nfsroot",
-      "BOOTPROTO"=>"dhcp",
-      "DHCLIENT_SET_DEFAULT_ROUTE"=>"yes"
-    }
+    { "STARTMODE"                  => "nfsroot",
+      "BOOTPROTO"                  => "dhcp",
+      "DHCLIENT_SET_DEFAULT_ROUTE" => "yes" }
   end
 
   # targeted mainly against bnc#906694
