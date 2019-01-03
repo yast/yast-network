@@ -86,14 +86,14 @@ describe "LanItemsClass#BuildLanOverview" do
       allow(Yast::NetworkInterfaces)
         .to receive(:GetType)
         .with("wlan0")
-        .and_return("wlan")      
+        .and_return("wlan")
       allow(FastGettext)
         .to receive(:locale)
         .and_return("de")
     end
     it "returns translated network device textual description for wlan device" do
       # locale search path
-      stub_const("Yast::I18n::LOCALE_DIR", File.expand_path("../locale", __FILE__))      
+      stub_const("Yast::I18n::LOCALE_DIR", File.expand_path("../locale", __FILE__))
 
       textdomain("network")
 
