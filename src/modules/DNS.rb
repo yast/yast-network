@@ -519,6 +519,27 @@ module Yast
 
   private
 
+    # Get current hostname and IP Address
+    # if these are set by DHCP
+    # @return map with ip, hostname_short and hostname_fq keys
+    def GetDHCPHostnameIP
+      ret = {}
+
+      output =  SCR.Execute(path(".target.bash_output"), "/bin/hostname -i")
+      ret["ip"] = output["stdout"] || ""
+      ret["ip"].strip!
+
+      output = SCR.Execute(path(".target.bash_output"), "/bin/hostname")
+      ret["hostname_short"] = output["stdout"] || ""
+      ret["hostname_short"].strip!
+
+      output =  SCR.Execute(path(".target.bash_output"), "/bin/hostname -f")
+      ret["hostname_fq"] = output["stdout"] || ""
+      ret["hostname_fq"].strip!
+
+      deep_copy(ret)
+    end
+
     def read_hostname_from_install_inf
       install_inf_hostname = SCR.Read(path(".etc.install_inf.Hostname")) || ""
       log.info("Got #{install_inf_hostname} from install.inf")

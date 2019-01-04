@@ -106,5 +106,31 @@ module Yast
         end
       end
     end
+
+    describe ".IsHostLocal" do
+      before do
+        allow(DNS).to receive(:Read)
+      end
+
+      context "hostname is \"localhost\"" do
+        it "returns true" do
+          expect(Yast::SCR)
+            .to receive(:Execute)
+            .with(path(".target.bash_output"), "/bin/hostname -i")
+            .and_return("10.111.66.75")
+          expect(Yast::SCR)
+            .to receive(:Execute)
+            .with(path(".target.bash_output"), "/bin/hostname")
+            .and_return("test")
+          expect(Yast::SCR)
+            .to receive(:Execute)
+            .with(path(".target.bash_output"), "/bin/hostname -f")
+            .and_return("test.test.de")
+
+          DNS.dhcp_hostname = true
+          expect(DNS.IsHostLocal("localhost")).to eql(true)
+        end
+      end
+    end
   end
 end
