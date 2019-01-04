@@ -96,12 +96,10 @@ module Yast
 
       # main ui function
       ret = HostsMainDialog(true)
-      Builtins.y2debug("ret == %1", ret)
 
       Host.Write if ret == :next && Host.GetModified
 
       UI.CloseDialog
-      deep_copy(ret)
     end
 
     # Handler for action "list"

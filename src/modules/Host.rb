@@ -28,6 +28,8 @@ require "cfa/hosts"
 
 module Yast
   class HostClass < Module
+    include Logger
+
     def main
       Yast.import "UI"
       textdomain "network"
@@ -40,10 +42,6 @@ module Yast
 
       Yast.include self, "network/routines.rb"
 
-      # Data was modified?
-      # TODO: Drop the flag. It is useless since we have @hosts and @hosts_init
-      @modified = false
-
       @initialized = false
 
       @hosts = CFA::Hosts.new
@@ -54,7 +52,6 @@ module Yast
       @hosts.hosts.keys.each do |ip|
         @hosts.delete_by_ip(ip)
       end
-      @modified = true
     end
 
     # @return [hash] address->list of names
@@ -77,8 +74,6 @@ module Yast
     def add_name(address, name)
       canonical, *aliases = name.split(" ")
       @hosts.add_entry(address, canonical, aliases)
-
-      @modified = true
     end
 
     def NeedDummyIP
@@ -95,13 +90,11 @@ module Yast
 
         fqhostname = Hostname.MergeFQ(DNS.hostname, DNS.domain)
         set_names(local_ip, ["#{fqhostname} #{DNS.hostname}"])
-        @modified = true
       elsif @hosts.include_ip?(local_ip)
         # Do not add it if product default says no
         # and remove 127.0.02 entry if it exists
 
         @hosts.delete_by_ip(local_ip)
-        @modified = true
       end
 
       nil
@@ -124,16 +117,11 @@ module Yast
     # Write hosts settings and apply changes
     # @return true if success
     def Write(gui: false)
-      Builtins.y2milestone("Writing hosts configuration")
-
-      if !@modified
-        Builtins.y2milestone("No changes to Host -> nothing to write")
-        return true
-      end
+      log.info("Writing hosts configuration")
 
       # Check if there is anything to do
-      if @hosts_init == @hosts
-        Builtins.y2milestone("Hosts not modified")
+      if !GetModified()
+        log.info("No changes to Host -> nothing to write")
         return true
       end
 
@@ -167,10 +155,9 @@ module Yast
     #               expected format of settings["hosts"] is { "ip" => [list, of, names] }
     # @return true if success
     def Import(settings)
-      @modified = true # trigger Write
       @initialized = true # don't let Read discard our data
 
-      load_hosts
+      load_hosts(load_only: true)
 
       imported_hosts = settings.fetch("hosts", {})
 
@@ -228,8 +215,6 @@ module Yast
 
       log.info("Updating /etc/hosts: #{oldhn} -> #{newhn}: #{ip}")
 
-      @modified = true
-
       # Remove old hostname from hosts
       @hosts.delete_hostname(oldhn) if !oldhn.empty?
 
@@ -261,20 +246,16 @@ module Yast
     # Create summary
     # @return summary text
     def Summary
-      summary = ""
       return Summary.NotConfigured if @hosts.hosts.empty?
 
-      summary = Summary.OpenList(summary)
+      summary = Summary.OpenList("")
       @hosts.hosts.each do |k, v|
-        Builtins.foreach(v) do |hn|
-          summary = Summary.AddListItem(summary, Ops.add(Ops.add(k, " - "), hn))
-        end if !Builtins.contains(
-          GetSystemHosts(),
-          k
-        )
+        next if GetSystemHosts().include?(k)
+        # currently all names are placed as a one string in first array item
+        summary = Summary.AddListItem(summary, "#{k} - #{v.first}")
       end
-      summary = Summary.CloseList(summary)
-      summary
+
+      Summary.CloseList(summary)
     end
 
     # Creates a list os static ips present in the system
@@ -317,15 +298,7 @@ module Yast
     # Function which returns if the settings were modified
     # @return [Boolean]  settings were modified
     def GetModified
-      @modified
-    end
-
-    # Function sets internal variable, which indicates, that any
-    # settings were modified, to "true"
-    def SetModified
-      @modified = true
-
-      nil
+      @hosts.hosts != @initial_hosts.hosts
     end
 
     publish function: :NeedDummyIP, type: "boolean ()"
@@ -339,7 +312,6 @@ module Yast
     publish function: :Summary, type: "string ()"
     publish function: :ResolveHostnameToStaticIPs, type: "void ()"
     publish function: :GetModified, type: "boolean ()"
-    publish function: :SetModified, type: "void ()"
 
   private
 
@@ -350,20 +322,22 @@ module Yast
         canonical, *aliases = name.split(" ")
         @hosts.add_entry(address, canonical, aliases)
       end
-      @modified = true
     end
   end
 
   # Initializes internal state according the /etc/hosts
-  def load_hosts
+  #
+  # @param load_only [Boolean] true if you want load data and do not need to
+  #                                 detect changes later (@see Host::GetModified)
+  def load_hosts(load_only: false)
     return false if SCR.Read(path(".target.size"), CFA::Hosts::PATH) <= 0
 
     @hosts = CFA::Hosts.new
     @hosts.load
 
     # save hosts to check for changes later
-    @hosts_init = CFA::Hosts.new
-    @hosts_init.load
+    @initial_hosts = nil
+    @initial_hosts = @hosts.clone if !load_only
 
     true
 
@@ -374,7 +348,7 @@ module Yast
 
     # get clean environment, crashing due to exception is no option here
     @hosts = CFA::Hosts.new
-    @hosts_init = nil
+    @initial_hosts = nil
 
     # reraise the exception - let the gui takes care of it
     raise

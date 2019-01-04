@@ -374,9 +374,12 @@ describe Yast::Host do
         CFA::MemoryFile.new(File.read(file_path))
       end
 
-      it "does not set Host as modified" do
+      before do
         allow(Yast::DNS).to receive(:write_hostname).and_return(false)
+        Yast::Host.Read
+      end
 
+      it "does not set Host as modified" do
         expect { Yast::Host.EnsureHostnameResolvable }
           .not_to change { Yast::Host.GetModified }.from(false)
       end

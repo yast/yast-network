@@ -30,6 +30,8 @@
 # Hosts configuration dialogs
 module Yast
   module NetworkServicesHostInclude
+    include Logger
+
     def initialize_network_services_host(include_target)
       Yast.import "UI"
 
@@ -81,33 +83,27 @@ module Yast
           "<p>Enter a host <b>IP Address</b>, a <b>Hostname</b>, and optional\n<b>Host Aliases</b>, separated by spaces.</p>\n"
         )
 
-      max = 0
       table_items = []
       deleted_items = []
       hosts = Host.name_map
 
-      Builtins.y2debug("hosts=%1", hosts)
-
       # make ui items from the hosts list
-      Builtins.maplist(hosts) do |host, names|
-        if Ops.less_than(Builtins.size(names), 1)
-          Builtins.y2error("Invalid host: %1, (%2)", host, names)
+      hosts.each do |host, names|
+        if names.empty?
+          log.error("Invalid host: %1, (%2)", host, names)
           next
         end
-        Builtins.foreach(names) do |s|
-          name = Builtins.regexpsub(s, "^([^ \t]+)[ \t]*.*$", "\\1")
-          aliases = Builtins.regexpsub(s, "^[^ \t]+[ \t]*(.*)[ \t]*$", "\\1")
-          item = Item(
-            Id(Builtins.size(table_items)),
-            host,
-            Punycode.DecodeDomainName(name),
-            Ops.get(Punycode.DecodePunycodes([aliases]), 0, "")
-          )
-          table_items = Builtins.add(table_items, item)
-        end
+
+        name, *aliases = names.first.split(/\s/).delete_if(&:empty?)
+
+        item = Item(
+          Id(table_items.size),
+          host,
+          Punycode.DecodeDomainName(name),
+          Punycode.DecodePunycodes([aliases.join(" ")]).first || ""
+        )
+        table_items.push(item)
       end
-      Builtins.y2debug("table_items=%1", table_items)
-      max = Builtins.size(table_items)
 
       # Hosts dialog contents
       contents = HBox(
@@ -175,46 +171,37 @@ module Yast
       end
 
       UI.ChangeWidget(Id(:table), :Items, table_items)
-      UI.SetFocus(Id(:table)) if Ops.greater_than(Builtins.size(table_items), 0)
+      UI.SetFocus(Id(:table)) if table_items.any?
 
       ret = nil
-      loop do
-        UI.ChangeWidget(
-          Id(:edit),
-          :Enabled,
-          Ops.greater_than(Builtins.size(table_items), 0)
-        )
-        UI.ChangeWidget(
-          Id(:delete),
-          :Enabled,
-          Ops.greater_than(Builtins.size(table_items), 0)
-        )
+      modified = false
+      until [:abort, :cancel, :back, :next].include?(ret)
+        UI.ChangeWidget(Id(:edit), :Enabled, table_items.any?)
+        UI.ChangeWidget(Id(:delete), :Enabled, table_items.any?)
 
         ret = UI.UserInput
-        Builtins.y2debug("ret=%1", ret)
 
         # abort?
         if ret == :abort || ret == :cancel
-          ReallyAbortCond(Host.GetModified) ? break : next
+          ret = nil if !ReallyAbortCond(modified)
         # add host
         elsif ret == :add
-          item = HostDialog(max, term(:empty))
+          new_item_position = table_items.size
+          item = HostDialog(new_item_position, term(:empty))
+
           next if item.nil?
-          table_items = Builtins.add(table_items, item)
+
+          table_items.push(item)
+
           UI.ChangeWidget(Id(:table), :Items, table_items)
-          UI.ChangeWidget(Id(:table), :CurrentItem, max)
-          max = Ops.add(max, 1)
-          Host.SetModified
-          next
+          UI.ChangeWidget(Id(:table), :CurrentItem, new_item_position)
+          modified = true
         # edit host
         elsif ret == :edit || ret == :table
           cur = Convert.to_integer(UI.QueryWidget(Id(:table), :CurrentItem))
           cur_item = Builtins.filter(table_items) do |e|
             cur == Ops.get(e, [0, 0])
           end
-
-          Builtins.y2debug("cur=%1", cur)
-          Builtins.y2debug("cur_item=%1", cur_item)
 
           olditem = Ops.get(cur_item, 0)
 
@@ -225,15 +212,6 @@ module Yast
 
           table_items = Builtins.maplist(table_items) do |e|
             if cur == Ops.get_integer(e, [0, 0], -1)
-              oldentry = Builtins.mergestring(
-                [Ops.get_string(olditem, 2, ""), Ops.get_string(olditem, 3, "")],
-                " "
-              )
-
-              Builtins.y2debug("item: %1", item)
-              Builtins.y2debug("olditem: %1", olditem)
-              Builtins.y2debug("oldentry: %1", oldentry)
-
               ip = Ops.get_string(item, 1, "")
               oldip = Ops.get_string(olditem, 1, "")
 
@@ -246,17 +224,13 @@ module Yast
           end
           UI.ChangeWidget(Id(:table), :Items, table_items)
           UI.ChangeWidget(Id(:table), :CurrentItem, cur)
-          Host.SetModified
-          next
+          modified = true
         # delete host
         elsif ret == :delete
           cur = Convert.to_integer(UI.QueryWidget(Id(:table), :CurrentItem))
           cur_item = Builtins.filter(table_items) do |e|
             cur == Ops.get(e, [0, 0])
           end
-
-          Builtins.y2debug("cur=%1", cur)
-          Builtins.y2debug("cur_item=%1", cur_item)
 
           item = Ops.get(cur_item, 0)
 
@@ -273,44 +247,32 @@ module Yast
             true
           end
           UI.ChangeWidget(Id(:table), :Items, table_items)
-          Host.SetModified
-          next
-        elsif ret == :back
-          break
+          modified = true
         elsif ret == :next
           # check_
-          if Host.GetModified
-            Host.clear
-            Builtins.foreach(table_items) do |row|
-              value = Builtins.mergestring(
-                Builtins.prepend(
-                  Punycode.EncodePunycodes([Ops.get_string(row, 3, "")]),
-                  Punycode.EncodeDomainName(Ops.get_string(row, 2, ""))
-                ),
-                " "
-              )
-              key = Ops.get_string(row, 1, "")
-              Host.add_name(key, value)
-            end
+          next if !modified
+          Host.clear
+
+          table_items.each do |row|
+            encoded_aliases = Punycode.EncodePunycodes([row.fetch(3, "")])
+            encoded_canonical = Punycode.EncodeDomainName(row.fetch(2, ""))
+            value = encoded_canonical + " " + encoded_aliases.join(" ")
+            key = row.fetch(1, "")
+
+            Host.add_name(key, value)
           end
-          break
         else
-          Builtins.y2error("unexpected retcode: %1", ret)
-          next
+          log.error("unexpected retcode: %1", ret)
         end
       end
 
-      Builtins.y2debug("table_items=%1", table_items)
-      Builtins.y2debug("hosts=%1", hosts)
-
-      Convert.to_symbol(ret)
+      ret
     end
 
     def HostDialog(id, entry)
       entry = deep_copy(entry)
       Builtins.y2debug("id=%1", id)
       Builtins.y2debug("entry=%1", entry)
-      # y2debug("forbidden=%1", forbidden);
 
       UI.OpenDialog(
         Opt(:decorated),
@@ -346,9 +308,6 @@ module Yast
       )
 
       UI.ChangeWidget(Id(:host), :ValidChars, IP.ValidChars)
-      #    anything allowed here - will be converted to punycode (#448486)
-      #    UI::ChangeWidget(`id(`name), `ValidChars, Hostname::ValidCharsFQ);
-      #    UI::ChangeWidget(`id(`aliases), `ValidChars, Hostname::ValidCharsFQ + " ");
 
       if entry == term(:empty)
         UI.SetFocus(Id(:host))
@@ -360,7 +319,6 @@ module Yast
       host = nil
 
       loop do
-        host = nil
         ret = UI.UserInput
         break if ret != :ok
 
@@ -412,8 +370,7 @@ module Yast
       UI.CloseDialog
       return nil if ret != :ok
 
-      Host.SetModified
-      deep_copy(host)
+      host
     end
   end
 end
