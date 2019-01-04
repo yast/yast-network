@@ -175,7 +175,7 @@ module Yast
 
       ret = nil
       modified = false
-      while ![:abort, :cancel, :back, :next].include?(ret) do
+      until [:abort, :cancel, :back, :next].include?(ret)
         UI.ChangeWidget(Id(:edit), :Enabled, table_items.any?)
         UI.ChangeWidget(Id(:delete), :Enabled, table_items.any?)
 
@@ -212,11 +212,6 @@ module Yast
 
           table_items = Builtins.maplist(table_items) do |e|
             if cur == Ops.get_integer(e, [0, 0], -1)
-              oldentry = Builtins.mergestring(
-                [Ops.get_string(olditem, 2, ""), Ops.get_string(olditem, 3, "")],
-                " "
-              )
-
               ip = Ops.get_string(item, 1, "")
               oldip = Ops.get_string(olditem, 1, "")
 
