@@ -525,19 +525,19 @@ module Yast
     def GetDHCPHostnameIP
       ret = {}
 
-      output =  SCR.Execute(path(".target.bash_output"), "/bin/hostname -i")
+      output =  Yast::Execute.on_target!("/bin/hostname -i")
       ret["ip"] = output["stdout"] || ""
       ret["ip"].strip!
 
-      output = SCR.Execute(path(".target.bash_output"), "/bin/hostname")
+      output = Yast::Execute.on_target!("/bin/hostname")
       ret["hostname_short"] = output["stdout"] || ""
       ret["hostname_short"].strip!
 
-      output = SCR.Execute(path(".target.bash_output"), "/bin/hostname -f")
+      output = Yast::Execute.on_target!("/bin/hostname -f")
       ret["hostname_fq"] = output["stdout"] || ""
       ret["hostname_fq"].strip!
 
-      deep_copy(ret)
+      ret
     end
 
     def read_hostname_from_install_inf

@@ -114,17 +114,17 @@ module Yast
 
       context "hostname is \"localhost\"" do
         it "returns true" do
-          expect(Yast::SCR)
-            .to receive(:Execute)
-            .with(path(".target.bash_output"), "/bin/hostname -i")
+          expect(Yast::Execute)
+            .to receive(:on_target!)
+            .with("/bin/hostname -i")
             .and_return("10.111.66.75")
-          expect(Yast::SCR)
-            .to receive(:Execute)
-            .with(path(".target.bash_output"), "/bin/hostname")
+          expect(Yast::Execute)
+            .to receive(:on_target!)
+            .with("/bin/hostname")
             .and_return("test")
-          expect(Yast::SCR)
-            .to receive(:Execute)
-            .with(path(".target.bash_output"), "/bin/hostname -f")
+          expect(Yast::Execute)
+            .to receive(:on_target!)
+            .with("/bin/hostname -f")
             .and_return("test.test.de")
 
           DNS.dhcp_hostname = true
