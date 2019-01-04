@@ -533,7 +533,7 @@ module Yast
       ret["hostname_short"] = output["stdout"] || ""
       ret["hostname_short"].strip!
 
-      output =  SCR.Execute(path(".target.bash_output"), "/bin/hostname -f")
+      output = SCR.Execute(path(".target.bash_output"), "/bin/hostname -f")
       ret["hostname_fq"] = output["stdout"] || ""
       ret["hostname_fq"].strip!
 
