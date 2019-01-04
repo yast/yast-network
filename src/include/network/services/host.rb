@@ -88,7 +88,7 @@ module Yast
       hosts = Host.name_map
 
       # make ui items from the hosts list
-      table_items = hosts.map do |host, names|
+      hosts.each do |host, names|
         if names.empty?
           log.error("Invalid host: %1, (%2)", host, names)
           next
@@ -96,12 +96,13 @@ module Yast
 
         name, *aliases = names.first.split(/\s/).delete_if(&:empty?)
 
-        Item(
+        item = Item(
           Id(table_items.size),
           host,
           Punycode.DecodeDomainName(name),
           Punycode.DecodePunycodes([aliases.join(" ")]).first || ""
         )
+        table_items.push(item)
       end
 
       # Hosts dialog contents
