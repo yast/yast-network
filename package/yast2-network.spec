@@ -31,9 +31,9 @@ Requires:       yast2-proxy
 #for install task
 BuildRequires:  rubygem(%rb_default_ruby_abi:yast-rake)
 
-# Yast2::Systemd::Socket
-BuildRequires:  yast2 >= 4.1.3
-Requires:       yast2 >= 4.1.3
+# Yast::Execute.stdout.on_target!
+BuildRequires:  yast2 >= 4.1.42
+Requires:       yast2 >= 4.1.42
 
 # Product control need xml agent
 BuildRequires:  yast2-xml

@@ -474,7 +474,7 @@ module Yast
         Builtins.size(NetworkInterfaces.Locate("BOOTPROTO", "dhcp")),
         0
       ) || @dhcp_hostname
-        dhcp_data = GetDHCPHostnameIP()
+        dhcp_data = dhcp_data()
         Builtins.y2milestone("Got DHCP-configured data: %1", dhcp_data)
       end
       # FIXME: May not work properly in following situations:
@@ -519,25 +519,15 @@ module Yast
 
   private
 
-    # Get current hostname and IP Address
-    # if these are set by DHCP
-    # @return map with ip, hostname_short and hostname_fq keys
-    def GetDHCPHostnameIP
-      ret = {}
-
-      output =  Yast::Execute.on_target!("/bin/hostname -i")
-      ret["ip"] = output["stdout"] || ""
-      ret["ip"].strip!
-
-      output = Yast::Execute.on_target!("/bin/hostname")
-      ret["hostname_short"] = output["stdout"] || ""
-      ret["hostname_short"].strip!
-
-      output = Yast::Execute.on_target!("/bin/hostname -f")
-      ret["hostname_fq"] = output["stdout"] || ""
-      ret["hostname_fq"].strip!
-
-      ret
+    # Return current IP and hostname values
+    #
+    # @return [Hash<String>] a map containing ip, hostname_short, and hostname_fq keys
+    def dhcp_data
+      {
+        "ip"             => Yast::Execute.stdout.on_target!("/bin/hostname -i").strip,
+        "hostname_short" => Yast::Execute.stdout.on_target!("/bin/hostname").strip,
+        "hostname_fq"    => Yast::Execute.stdout.on_target!("/bin/hostname -f").strip
+      }
     end
 
     def read_hostname_from_install_inf

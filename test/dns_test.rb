@@ -108,27 +108,49 @@ module Yast
     end
 
     describe ".IsHostLocal" do
+      let(:ip) { "10.111.66.75" }
+      let(:hostname_short) { "test" }
+      let(:hostname_fq) { "test.test.de" }
+      let(:output) { { "ip" => ip, "hostname_short" => hostname_short, "hostname_fq" => hostname_fq } }
+      let(:ipv4) { false }
+      let(:ipv6) { false }
+      let(:stdout) { double }
+
       before do
+        DNS.dhcp_hostname = true
+
         allow(DNS).to receive(:Read)
+        allow(IP).to receive(:Check4).and_return(ipv4)
+        allow(IP).to receive(:Check6).and_return(ipv6)
+        allow(Yast::Execute).to receive(:stdout).and_return(stdout)
+        allow(stdout).to receive(:on_target!).with("/bin/hostname -i").and_return(ip)
+        allow(stdout).to receive(:on_target!).with("/bin/hostname").and_return(hostname_short)
+        allow(stdout).to receive(:on_target!).with("/bin/hostname -f").and_return(hostname_fq)
       end
 
-      context "hostname is \"localhost\"" do
-        it "returns true" do
-          expect(Yast::Execute)
-            .to receive(:on_target!)
-            .with("/bin/hostname -i")
-            .and_return("10.111.66.75")
-          expect(Yast::Execute)
-            .to receive(:on_target!)
-            .with("/bin/hostname")
-            .and_return("test")
-          expect(Yast::Execute)
-            .to receive(:on_target!)
-            .with("/bin/hostname -f")
-            .and_return("test.test.de")
+      ["localhost", "localhost.localdomain", "::1", "127.0.0.1"].each do |host|
+        it "returns true when host is \"#{host}\"" do
+          expect(DNS.IsHostLocal(host)).to eq(true)
+        end
+      end
 
-          DNS.dhcp_hostname = true
-          expect(DNS.IsHostLocal("localhost")).to eql(true)
+      it "returns true when the short hostname is given" do
+        expect(DNS.IsHostLocal(hostname_short)).to eq(true)
+      end
+
+      it "returns true when the fq hostname is given" do
+        expect(DNS.IsHostLocal(hostname_fq)).to eq(true)
+      end
+
+      context "for IPv4" do
+        let(:ipv4) { true }
+
+        it "returns true when the ip of local machine is given" do
+          expect(DNS.IsHostLocal(ip)).to eq(true)
+        end
+
+        it "returns false when the ip of local machine is not given" do
+          expect(DNS.IsHostLocal("1.2.3.4")).to eq(false)
         end
       end
     end
