@@ -186,7 +186,6 @@ module Yast
         [LanItems.current, "ifcfg"],
         Ops.get_string(LanItems.getCurrentItem, ["hwinfo", "dev_name"], "")
       )
-      Ops.set(LanItems.Items, [LanItems.current, "commited"], false)
       LanItems.operation = :edit
       fw = ""
       if LanItems.needFirmwareCurrentItem

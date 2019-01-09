@@ -754,7 +754,6 @@ module Yast
 
     def AddNew
       @current = @Items.to_h.size
-      @Items[@current] = { "commited" => false }
       @operation = :add
 
       nil
@@ -2176,16 +2175,15 @@ module Yast
     # Remove a half-configured item.
     # @return [true] so that this can be used for the :abort callback
     def Rollback
-      if getCurrentItem["commited"] == false
-        log.info "rollback item #{@current}"
-        if getCurrentItem.fetch("hwinfo", {}).empty?
-          LanItems.Items.delete(@current)
-        elsif IsCurrentConfigured()
-          if !getNetworkInterfaces.include?(getCurrentItem["ifcfg"])
-            LanItems.Items[@current].delete("ifcfg")
-          end
+      log.info "rollback item #{@current}"
+      if getCurrentItem.fetch("hwinfo", {}).empty?
+        LanItems.Items.delete(@current)
+      elsif IsCurrentConfigured()
+        if !getNetworkInterfaces.include?(getCurrentItem["ifcfg"])
+          LanItems.Items[@current].delete("ifcfg")
         end
       end
+
       true
     end
 
