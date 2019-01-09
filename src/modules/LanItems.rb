@@ -284,6 +284,11 @@ module Yast
     #
     # @param itemId [Integer] a key for {#Items}
     def GetDeviceType(itemId)
+      # in such case ifcfg is not existing and /sys might not contain
+      # any device info (especially for virtual devices like vlan)
+      # @type variable is already initialized by @see HardwareDialog
+      # resp its storage handler @see storeHW
+      return @type if @operation == :add
       NetworkInterfaces.GetType(GetDeviceName(itemId))
     end
 
