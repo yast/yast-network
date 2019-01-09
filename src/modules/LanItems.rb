@@ -1152,19 +1152,19 @@ module Yast
       NetworkInterfaces.CleanHotplugSymlink
 
       interfaces = getNetworkInterfaces
+      items = LanItems.Items
       # match configurations to Items list with hwinfo
       interfaces.each do |confname|
-        @Items.each do |key, value|
+        items.each do |key, value|
           match = value.fetch("hwinfo", {}).fetch("dev_name", "") == confname
-          @Items[key]["ifcfg"] = confname if match
+          items[key]["ifcfg"] = confname if match
         end
       end
 
       interfaces.each do |confname|
-        next if @Items.keys.any? { |key| @Items.fetch(key, {}).fetch("ifcfg", "") == confname }
+        next if items.keys.any? { |key| items.fetch(key, {}).fetch("ifcfg", "") == confname }
 
-        AddNew()
-        @Items[@current] = { "ifcfg" => confname }
+        items[items.size] = { "ifcfg" => confname }
       end
 
       log.info "Read Configuration LanItems::Items #{@Items}"
@@ -1196,10 +1196,10 @@ module Yast
     def Import(settings)
       reset_cache
 
+      items = LanItems.Items
       NetworkInterfaces.Import("netcard", settings["devices"] || {})
       NetworkInterfaces.List("netcard").each do |device|
-        AddNew()
-        LanItems.Items[current] = { "ifcfg" => device }
+        items[items.size] = { "ifcfg" => device }
       end
 
       @autoinstall_settings["start_immediately"] = settings.fetch("start_immediately", false)
