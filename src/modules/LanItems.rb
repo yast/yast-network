@@ -284,6 +284,11 @@ module Yast
     #
     # @param itemId [Integer] a key for {#Items}
     def GetDeviceType(itemId)
+      # in such case ifcfg is not existing and /sys might not contain
+      # any device info (especially for virtual devices like vlan)
+      # @type variable is already initialized by @see HardwareDialog
+      # resp its storage handler @see storeHW
+      return @type if @operation == :add
       NetworkInterfaces.GetType(GetDeviceName(itemId))
     end
 
@@ -749,7 +754,6 @@ module Yast
 
     def AddNew
       @current = @Items.to_h.size
-      @Items[@current] = { "commited" => false }
       @operation = :add
 
       nil
@@ -1148,19 +1152,19 @@ module Yast
       NetworkInterfaces.CleanHotplugSymlink
 
       interfaces = getNetworkInterfaces
+      items = LanItems.Items
       # match configurations to Items list with hwinfo
       interfaces.each do |confname|
-        @Items.each do |key, value|
+        items.each do |key, value|
           match = value.fetch("hwinfo", {}).fetch("dev_name", "") == confname
-          @Items[key]["ifcfg"] = confname if match
+          items[key]["ifcfg"] = confname if match
         end
       end
 
       interfaces.each do |confname|
-        next if @Items.keys.any? { |key| @Items.fetch(key, {}).fetch("ifcfg", "") == confname }
+        next if items.values.any? { |item| item && item["ifcfg"] == confname }
 
-        AddNew()
-        @Items[@current] = { "ifcfg" => confname }
+        items[items.size] = { "ifcfg" => confname }
       end
 
       log.info "Read Configuration LanItems::Items #{@Items}"
@@ -1192,10 +1196,10 @@ module Yast
     def Import(settings)
       reset_cache
 
+      items = LanItems.Items
       NetworkInterfaces.Import("netcard", settings["devices"] || {})
       NetworkInterfaces.List("netcard").each do |device|
-        AddNew()
-        LanItems.Items[current] = { "ifcfg" => device }
+        items[items.size] = { "ifcfg" => device }
       end
 
       @autoinstall_settings["start_immediately"] = settings.fetch("start_immediately", false)
@@ -2171,16 +2175,15 @@ module Yast
     # Remove a half-configured item.
     # @return [true] so that this can be used for the :abort callback
     def Rollback
-      if getCurrentItem["commited"] == false
-        log.info "rollback item #{@current}"
-        if getCurrentItem.fetch("hwinfo", {}).empty?
-          LanItems.Items.delete(@current)
-        elsif IsCurrentConfigured()
-          if !getNetworkInterfaces.include?(getCurrentItem["ifcfg"])
-            LanItems.Items[@current].delete("ifcfg")
-          end
+      log.info "rollback item #{@current}"
+      if getCurrentItem.fetch("hwinfo", {}).empty?
+        LanItems.Items.delete(@current)
+      elsif IsCurrentConfigured()
+        if !getNetworkInterfaces.include?(getCurrentItem["ifcfg"])
+          LanItems.Items[@current].delete("ifcfg")
         end
       end
+
       true
     end
 
