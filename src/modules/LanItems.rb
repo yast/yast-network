@@ -1162,7 +1162,7 @@ module Yast
       end
 
       interfaces.each do |confname|
-        next if items.keys.any? { |key| items.fetch(key, {}).fetch("ifcfg", "") == confname }
+        next if items.values.any? { |item| item && item["ifcfg"] == confname }
 
         items[items.size] = { "ifcfg" => confname }
       end
