@@ -298,6 +298,9 @@ module Yast
     # Function which returns if the settings were modified
     # @return [Boolean]  settings were modified
     def GetModified
+      # when importing AY profile @initial_hosts is not initialized
+      # bcs it would be the same as @hosts and modification would not be detected
+      return true if @hosts && @initial_hosts.nil?
       @hosts.hosts != @initial_hosts.hosts
     end
 
