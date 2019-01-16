@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Jan 16 09:23:11 UTC 2019 - mfilka@suse.com
+
+- bnc#1121421
+  - do not crash with internal error when installing using
+    AutoYaST profile with networking section
+- 4.1.30 
+
+-------------------------------------------------------------------
 Thu Jan 10 08:29:43 UTC 2019 - mfilka@suse.com
 
 - bnc#1111483
