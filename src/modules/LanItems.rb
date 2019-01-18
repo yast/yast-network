@@ -754,6 +754,8 @@ module Yast
 
     def AddNew
       @current = @Items.to_h.size
+      # Items[@current] is expected to always exist
+      @Items[@current] = {}
       @operation = :add
 
       nil
