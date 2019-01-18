@@ -183,7 +183,8 @@ module Yast
             to:   "list <string>"
           )
         ) do |devname|
-          mac = ::File.read("/sys/class/net/#{devname}/address").chomp
+          address_file = "/sys/class/net/#{devname}/address"
+          mac = ::File.read(address_file).chomp if ::File.file?(address_file)
           Builtins.y2milestone("confname %1", mac)
           if !Builtins.haskey(link_status, mac)
             Builtins.y2error(
