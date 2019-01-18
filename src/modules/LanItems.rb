@@ -754,6 +754,7 @@ module Yast
 
     def AddNew
       @current = @Items.to_h.size
+      @Items[@current] = {}
       @operation = :add
 
       nil
