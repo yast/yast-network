@@ -123,9 +123,13 @@ module Yast
         @ret = Host.Write
         Progress.set(@progress_orig)
       elsif @func == "SetModified"
-        @ret = Host.SetModified
+        # SetModified always return(ed) true anyway
+        @ret = true
       elsif @func == "GetModified"
-        @ret = Host.GetModified
+        # When cloning the sequence of this client callbacks invocation is
+        # Read -> SetModified -> GetModified so it should return always true
+        # (bcs of SetModified)
+        @ret = true
       else
         Builtins.y2error("Unknown function: %1", @func)
         @ret = false
