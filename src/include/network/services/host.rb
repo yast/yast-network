@@ -69,6 +69,23 @@ module Yast
       Popup.AnyQuestion("", text, Label.YesButton, Label.NoButton, :focus_no)
     end
 
+    # Encode canonical name and aliases using puny code
+    #
+    # @param canonical [String] canonical hostname
+    # @param aliases [Array<String>] space separated list of aliases
+    # @return [String] space separated list of hostnames encoded using puny codes
+    #                  canonical name is the first one
+    def encode_hosts_line(canonical, aliases)
+      encoded_aliases = !aliases.nil? ? Punycode.EncodePunycodes(aliases) : []
+      encoded_canonical = !canonical.nil? ? Punycode.EncodeDomainName(canonical) : ""
+
+      encoded = ""
+      encoded << encoded_canonical if !encoded_canonical.empty?
+      encoded << " " + encoded_aliases.join(" ") if !encoded_aliases.empty?
+
+      encoded
+    end
+
     # Main hosts dialog
     # @param [Boolean] standalone true if not run from another ycp client
     # @return dialog result
@@ -253,12 +270,9 @@ module Yast
           Host.clear
 
           table_items.each do |row|
-            encoded_aliases = Punycode.EncodePunycodes([row[3] || ""])
-            encoded_canonical = Punycode.EncodeDomainName(row[2] || "")
-            value = encoded_canonical + " " + encoded_aliases.join(" ")
-            key = row[1] || ""
+            hostnames = encode_hosts_line(row[2], (row[3] || "").split)
 
-            Host.add_name(key, value)
+            Host.add_name(row[1] || "", hostnames)
           end
         else
           log.error("unexpected retcode: %1", ret)
