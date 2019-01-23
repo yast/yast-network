@@ -249,15 +249,14 @@ module Yast
           UI.ChangeWidget(Id(:table), :Items, table_items)
           modified = true
         elsif ret == :next
-          # check_
           next if !modified
           Host.clear
 
           table_items.each do |row|
-            encoded_aliases = Punycode.EncodePunycodes([row.fetch(3, "")])
-            encoded_canonical = Punycode.EncodeDomainName(row.fetch(2, ""))
+            encoded_aliases = Punycode.EncodePunycodes([row[3] || ""])
+            encoded_canonical = Punycode.EncodeDomainName(row[2] || "")
             value = encoded_canonical + " " + encoded_aliases.join(" ")
-            key = row.fetch(1, "")
+            key = row[1] || ""
 
             Host.add_name(key, value)
           end
