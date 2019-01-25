@@ -510,10 +510,6 @@ module Yast
       UI.ChangeWidget(Id(:authmode), :Value, authmode)
       UI.ChangeWidget(Id(:type_g), :CurrentButton, type) if authmode != "eap"
 
-      # Require wireless-tools installation in order to be able to scan the
-      # wlan network (bsc#1112952)
-      UI.ChangeWidget(Id(:scan_for_networks), :Enabled, scan_supported?)
-
       ckey = nil
       ret = nil
       loop do
@@ -647,25 +643,27 @@ module Yast
           end
           break
         when :scan_for_networks
-          command = Builtins.sformat(
-            "/usr/sbin/ip link set %1 up && /usr/sbin/iwlist %1 scan | " \
-              "/usr/bin/grep ESSID | /usr/bin/cut -d':' -f2 | " \
-              "/usr/bin/cut -d'\"' -f2 | /usr/bin/sort -u",
-            Ops.get_string(LanItems.Items, [LanItems.current, "ifcfg"], "").shellescape
-          )
-          output = Convert.convert(
-            SCR.Execute(path(".target.bash_output"), command),
-            from: "any",
-            to:   "map <string, any>"
-          )
-
-          if Ops.get_integer(output, "exit", -1) == 0
-            networks = Builtins.splitstring(
-              Ops.get_string(output, "stdout", ""),
-              "\n"
+          if scan_supported?
+            command = Builtins.sformat(
+              "/usr/sbin/ip link set %1 up && /usr/sbin/iwlist %1 scan | " \
+                "/usr/bin/grep ESSID | /usr/bin/cut -d':' -f2 | " \
+                "/usr/bin/cut -d'\"' -f2 | /usr/bin/sort -u",
+              Ops.get_string(LanItems.Items, [LanItems.current, "ifcfg"], "").shellescape
             )
-            Builtins.y2milestone("Found networks : %1", networks)
-            UI.ChangeWidget(:essid, :Items, networks)
+            output = Convert.convert(
+              SCR.Execute(path(".target.bash_output"), command),
+              from: "any",
+              to:   "map <string, any>"
+            )
+
+            if Ops.get_integer(output, "exit", -1) == 0
+              networks = Builtins.splitstring(
+                Ops.get_string(output, "stdout", ""),
+                "\n"
+              )
+              Builtins.y2milestone("Found networks : %1", networks)
+              UI.ChangeWidget(:essid, :Items, networks)
+            end
           end
         when :authmode
           # do nothing
@@ -1404,11 +1402,13 @@ module Yast
     IWLIST_PKG = "wireless-tools".freeze
 
     def scan_supported?
+      # Require wireless-tools installation in order to be able to scan the
+      # wlan network (bsc#1112952)
       return true if Stage.initial || Package.Installed(IWLIST_PKG) || Package.Install(IWLIST_PKG)
 
       Popup.Error(
-        _("The required package is not installed.\n" \
-          "Some options could not be available")
+        _("The package %s was not installed. It is needed in order to " \
+          "be able to scan the network") % IWLIST_PKG
       )
       false
     end
