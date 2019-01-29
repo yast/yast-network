@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Jan 29 10:32:17 UTC 2019 - mfilka@suse.com
+
+- bnc#1123102
+  - do not crash with internal error when no hostname is set when
+    submitting device with static configuration
+- 4.1.36
+
+-------------------------------------------------------------------
 Fri Jan 25 13:24:03 UTC 2019 - knut.anderssen@suse.com
 
 - bsc#112952
