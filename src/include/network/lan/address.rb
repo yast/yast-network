@@ -1620,7 +1620,7 @@ module Yast
       names = Host.names(LanItems.ipaddr).first
       Host.remove_ip(LanItems.ipaddr)
 
-      if ip_changed && !hostname_changed
+      if ip_changed && !hostname_changed && !names.nil?
         log.info("Dropping record for #{LanItems.ipaddr} from /etc/hosts")
 
         Host.add_name(ipaddr, names)
