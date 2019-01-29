@@ -1350,8 +1350,6 @@ module Yast
 
       Builtins.y2milestone("ShowAndRun: %1", ret)
 
-      LanItems.Rollback if ret == :abort
-
       if ret != :back && ret != :abort
         # general tab
         LanItems.startmode = Ops.get_string(@settings, "STARTMODE", "")
