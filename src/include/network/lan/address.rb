@@ -1129,7 +1129,12 @@ module Yast
     end
 
     def address_tab
-      type = LanItems.GetCurrentType
+      # in such case ifcfg is not existing and /sys might not contain
+      # any device info (especially for virtual devices like vlan)
+      # @type variable is already initialized by @see HardwareDialog
+      # resp its storage handler @see storeHW
+      type = LanItems.type
+
       drvtype = DriverType(type)
       is_ptp = drvtype == "ctc" || drvtype == "iucv"
       # TODO: dynamic for dummy. or add dummy from outside?
