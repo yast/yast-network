@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri Jan 25 13:24:03 UTC 2019 - knut.anderssen@suse.com
+
+- bsc#112952
+  - Try to install the wireless-tools package when the package is
+    not installed and the wifi networks are scanned.
+- 4.1.35
+
+-------------------------------------------------------------------
 Wed Jan 23 08:52:03 UTC 2019 - mfilka@suse.com
 
 - bnc#1122387
