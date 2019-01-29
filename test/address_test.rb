@@ -168,6 +168,17 @@ describe "NetworkLanAddressInclude" do
 
       expect(Yast::Host.names(new_ip)).to eql original_names
     end
+
+    it "does not crash when ip was changed, no hostnames exist and the hostname is empty" do
+      new_ip = "2.2.2.2"
+
+      # targeted especially against newly created devices ;-)
+      allow(Yast::LanItems)
+        .to receive(:ipaddr)
+        .and_return("")
+
+      expect { subject.send(:update_hostname, new_ip, "") }.not_to raise_error
+    end
   end
 
 end
