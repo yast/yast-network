@@ -1129,7 +1129,7 @@ module Yast
     end
 
     def address_tab
-      # in such case ifcfg is not existing and /sys might not contain
+      # in case that ifcfg does not exist, /sys might not cointain
       # any device info (especially for virtual devices like vlan)
       # @type variable is already initialized by @see HardwareDialog
       # resp its storage handler @see storeHW
