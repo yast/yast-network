@@ -1129,7 +1129,12 @@ module Yast
     end
 
     def address_tab
-      type = LanItems.GetCurrentType
+      # in case that ifcfg does not exist, /sys might not cointain
+      # any device info (especially for virtual devices like vlan)
+      # @type variable is already initialized by @see HardwareDialog
+      # resp its storage handler @see storeHW
+      type = LanItems.type
+
       drvtype = DriverType(type)
       is_ptp = drvtype == "ctc" || drvtype == "iucv"
       # TODO: dynamic for dummy. or add dummy from outside?
@@ -1350,8 +1355,6 @@ module Yast
 
       Builtins.y2milestone("ShowAndRun: %1", ret)
 
-      LanItems.Rollback if ret == :abort
-
       if ret != :back && ret != :abort
         # general tab
         LanItems.startmode = Ops.get_string(@settings, "STARTMODE", "")
@@ -1521,7 +1524,7 @@ module Yast
       names = Host.names(LanItems.ipaddr).first
       Host.remove_ip(LanItems.ipaddr)
 
-      if ip_changed && !hostname_changed
+      if ip_changed && !hostname_changed && !names.nil?
         log.info("Dropping record for #{LanItems.ipaddr} from /etc/hosts")
 
         Host.add_name(ipaddr, names)
