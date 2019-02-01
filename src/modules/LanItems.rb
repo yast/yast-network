@@ -1715,7 +1715,6 @@ module Yast
       @prefix            = d["PREFIXLEN"]
       @remoteip          = d["REMOTE_IPADDR"]
       @netmask           = d["NETMASK"]
-      @firewall_zone     = d["ZONE"]
       @set_default_route = case d["DHCLIENT_SET_DEFAULT_ROUTE"]
       when "yes" then true
       when "no" then  false

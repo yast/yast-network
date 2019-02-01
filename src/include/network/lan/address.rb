@@ -27,10 +27,11 @@
 # Authors:	Michal Svec <msvec@suse.cz>
 #
 require "ui/text_helpers"
-require "y2firewall/firewalld"
+require "y2firewall/helpers/interfaces"
 
 module Yast
   module NetworkLanAddressInclude
+    include Y2Firewall::Helpers::Interfaces
     include Yast::Logger
     include ::UI::TextHelpers
 
@@ -1053,13 +1054,21 @@ module Yast
         UI.ChangeWidget(
           Id("FWZONE"),
           :Value,
-          Ops.get_string(@settings, "FWZONE", "")
+          current_zone
         )
       else
         UI.ChangeWidget(Id("FWZONE"), :Enabled, false)
       end
 
       nil
+    end
+
+    def current_zone
+      ifcfg_zone = NetworkInterfaces.Current["ZONE"]
+      return ifcfg_zone if ifcfg_zone
+      zone = interface_zone(LanItems.device)
+      return if zone.nil?
+      zone.name
     end
 
     # @param [Array<String>] types network card types
@@ -1426,7 +1435,7 @@ module Yast
         "STARTMODE"        => LanItems.startmode,
         "IFPLUGD_PRIORITY" => LanItems.ifplugd_priority,
         # problems when renaming the interface?
-        "FWZONE"           => LanItems.firewall_zone,
+        "FWZONE"           => current_zone,
         "MTU"              => LanItems.mtu,
         # address tab:
         "BOOTPROTO"        => LanItems.bootproto,
@@ -1557,21 +1566,12 @@ module Yast
     def firewall_zones
       zones = [["", _("Automatically Assigned Zone")]]
       if firewalld.installed?
-        Y2Firewall::Firewalld::Zone.known_zones.map do |name, full_name|
-          zones << [name, Builtins.dgettext("base", full_name)]
-        end
+        firewalld.zones.each { |z| zones << [z.name, z.short] }
       else
         zones = [["", _("Firewall is not installed.")]]
       end
 
       zones
-    end
-
-    # Convenience method which returns an instance of Y2Firewall::Firewalld
-    #
-    # @return [Y2Firewall::Firewalld] instance
-    def firewalld
-      @firewalld ||= Y2Firewall::Firewalld.instance
     end
   end
 end
