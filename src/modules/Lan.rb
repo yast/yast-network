@@ -32,6 +32,7 @@
 require "yast"
 require "network/confirm_virt_proposal"
 require "ui/text_helpers"
+require "y2firewall/firewalld"
 
 require "shellwords"
 
@@ -226,6 +227,30 @@ module Yast
       ipv6
     end
 
+    def read_step_labels
+      steps = [
+        # Progress stage 1/8
+        _("Detect network devices"),
+        # Progress stage 2/8
+        _("Read driver information"),
+        # Progress stage 3/8 - multiple devices may be present, really plural
+        _("Read device configuration"),
+        # Progress stage 4/8
+        _("Read network configuration"),
+        # Progress stage 5/8
+        _("Read hostname and DNS configuration"),
+        # Progress stage 6/8
+        _("Read installation information"),
+        # Progress stage 7/8
+        _("Read routing configuration"),
+        # Progress stage 8/8
+        _("Detect current status")
+      ]
+
+      steps << _("Read firewall configuration") if firewalld.installed?
+      steps
+    end
+
     # Read all network settings from the SCR
     # @param cache [Symbol] :cache=use cached data, :nocache=reread from disk TODO pass to submodules
     # @return true on success
@@ -237,7 +262,6 @@ module Yast
 
       # Read dialog caption
       caption = _("Initializing Network Configuration")
-      steps = 9
 
       sl = 0 # 1000; /* TESTING
       Builtins.sleep(sl)
@@ -246,25 +270,8 @@ module Yast
         Progress.New(
           caption,
           " ",
-          steps,
-          [
-            # Progress stage 1/8
-            _("Detect network devices"),
-            # Progress stage 2/8
-            _("Read driver information"),
-            # Progress stage 3/8 - multiple devices may be present, really plural
-            _("Read device configuration"),
-            # Progress stage 4/8
-            _("Read network configuration"),
-            # Progress stage 5/8
-            _("Read hostname and DNS configuration"),
-            # Progress stage 6/8
-            _("Read installation information"),
-            # Progress stage 8/8
-            _("Read routing configuration"),
-            # Progress stage 9/8
-            _("Detect current status")
-          ],
+          read_step_labels.size,
+          read_step_labels,
           [],
           ""
         )
@@ -347,6 +354,13 @@ module Yast
         ProgressNextStage(_("Detecting current status...")) if @gui
         NetworkService.Read
         Builtins.sleep(sl)
+
+        return false if Abort()
+        if firewalld.installed? && !firewalld.read?
+          ProgressNextStage(_("Reading firewall configuration...")) if @gui
+          firewalld.read
+          Builtins.sleep(sl)
+        end
 
         return false if Abort()
       rescue IOError, SystemCallError, RuntimeError => error
@@ -1060,6 +1074,10 @@ module Yast
       # cache according NetworkInterfaces' one. As NetworkInterfaces'
       # cache was edited directly, LanItems is not aware of changes.
       LanItems.SetModified
+    end
+
+    def firewalld
+      Y2Firewall::Firewalld.instance
     end
   end
 
