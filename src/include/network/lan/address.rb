@@ -28,6 +28,7 @@
 #
 require "ui/text_helpers"
 require "y2firewall/helpers/interfaces"
+require "y2network/widgets/firewall_zone"
 
 module Yast
   module NetworkLanAddressInclude
@@ -132,14 +133,7 @@ module Yast
           "opt"    => [:hstretch],
           "help"   => _("<p>TODO kind of vague!</p>")
         },
-        "FWZONE"       => {
-          "widget" => :combobox,
-          # Combo Box label
-          "label"  => _("Assign Interface to Firewall &Zone"),
-          "opt"    => [:hstretch],
-          "help"   => Ops.get_string(@help, "fwzone", ""),
-          "init"   => fun_ref(method(:InitFwZone), "void (string)")
-        },
+        "FWZONE"       => firewall_zone.cwm_definition,
         "MANDATORY"    => {
           "widget" => :checkbox,
           # check box label
@@ -1046,31 +1040,6 @@ module Yast
       true
     end
 
-    # Initialize value of firewall zone widget
-    # (disables it when firewalld is not installed)
-    # @param _key [String] id of the widget
-    def InitFwZone(_key)
-      if firewalld.installed?
-        UI.ChangeWidget(
-          Id("FWZONE"),
-          :Value,
-          current_zone
-        )
-      else
-        UI.ChangeWidget(Id("FWZONE"), :Enabled, false)
-      end
-
-      nil
-    end
-
-    def current_zone
-      ifcfg_zone = NetworkInterfaces.Current["ZONE"]
-      return ifcfg_zone if ifcfg_zone
-      zone = interface_zone(LanItems.device)
-      return if zone.nil?
-      zone.name
-    end
-
     # @param [Array<String>] types network card types
     # @return their descriptions for CWM
     def BuildTypesListCWM(types)
@@ -1288,8 +1257,6 @@ module Yast
         ]
       )
 
-      wd["FWZONE"]["items"] = firewall_zones
-
       if LanItems.GetCurrentType == "ib"
         wd["IPOIB_MODE"] = ipoib_mode_widget
         wd["MTU"]["items"] = ipoib_mtu_items
@@ -1298,6 +1265,7 @@ module Yast
       end
 
       @settings["IFCFG"] = LanItems.device if LanItems.operation != :add
+      firewall_zone.value = @settings["FWZONE"]
 
       functions = {
         "init"  => fun_ref(method(:InitAddrWidget), "void (string)"),
@@ -1366,8 +1334,8 @@ module Yast
       if ret != :back && ret != :abort
         # general tab
         LanItems.startmode = Ops.get_string(@settings, "STARTMODE", "")
-        LanItems.firewall_zone = @settings.fetch("FWZONE", "")
         LanItems.mtu = Ops.get_string(@settings, "MTU", "")
+        LanItems.firewall_zone = firewall_zone.value
 
         # address tab
         bootproto = @settings.fetch("BOOTPROTO", "")
@@ -1435,8 +1403,8 @@ module Yast
         "STARTMODE"        => LanItems.startmode,
         "IFPLUGD_PRIORITY" => LanItems.ifplugd_priority,
         # problems when renaming the interface?
-        "FWZONE"           => current_zone,
         "MTU"              => LanItems.mtu,
+        "FWZONE"           => LanItems.firewall_zone,
         # address tab:
         "BOOTPROTO"        => LanItems.bootproto,
         "IPADDR"           => LanItems.ipaddr,
@@ -1558,6 +1526,10 @@ module Yast
       String.FirstChunk(Ops.get(host_list, 0, ""), " \t")
     end
 
+    def firewall_zone
+      @fw_zone ||= Y2Network::Widgets::FirewallZone.new
+    end
+
     # Return a list of items for ComboBox with all the known firewalld zones
     # and also an empty string option for the default zone.
     #
@@ -1565,6 +1537,7 @@ module Yast
     # known zones
     def firewall_zones
       zones = [["", _("Automatically Assigned Zone")]]
+
       if firewalld.installed?
         firewalld.zones.each { |z| zones << [z.name, z.short] }
       else

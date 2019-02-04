@@ -125,6 +125,7 @@ module Yast
       @wl_key = []
       @wl_default_key = 0
       @wl_nick = ""
+      @firewall_zone = nil
 
       # FIXME: We should unify bridge_ports and bond_slaves variables
 
@@ -1715,6 +1716,7 @@ module Yast
       @prefix            = d["PREFIXLEN"]
       @remoteip          = d["REMOTE_IPADDR"]
       @netmask           = d["NETMASK"]
+      @firewall_zone     = d["ZONE"]
       @set_default_route = case d["DHCLIENT_SET_DEFAULT_ROUTE"]
       when "yes" then true
       when "no" then  false
