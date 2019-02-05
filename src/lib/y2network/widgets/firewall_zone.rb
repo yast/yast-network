@@ -1,15 +1,17 @@
 require "cwm"
 require "y2firewall/firewalld"
 require "y2firewall/helpers/interfaces"
+require "y2firewall/firewalld/interface"
 
 module Y2Network
   module Widgets
     class FirewallZone < ::CWM::CustomWidget
       include Y2Firewall::Helpers::Interfaces
 
-      def initialize
+      def initialize(name)
         textdomain "network"
         @value = nil
+        @interface = Y2Firewall::Firewalld::Interface.new(name)
       end
 
       def label
@@ -25,7 +27,8 @@ module Y2Network
       def contents
         VBox(
           Left(manage_widget),
-          Left(zones_widget)
+          Left(zones_widget),
+          Left(current_zone_widget)
         )
       end
 
@@ -52,10 +55,28 @@ module Y2Network
         @value = value
       end
 
+      def store_zone
+        @interface.zone = @value if current_zone != @value
+        @value
+      end
+
     private
 
+      def current_zone_widget
+        return Empty() unless current_zone
+        VBox(
+          VSpacing(1),
+          Label(_("Current ZONE (permanent config): %s") % current_zone)
+        )
+      end
+
+      def current_zone
+        return unless @interface.zone
+        @interface.zone.name
+      end
+
       def manage_widget
-        Yast::UI.CheckBox(Id(:manage_zone), Opt(:notify), _("Manage interface ZONE"))
+        Yast::UI.CheckBox(Id(:manage_zone), Opt(:notify), _("Define Ifcfg ZONE"))
       end
 
       def managed?

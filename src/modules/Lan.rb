@@ -482,6 +482,9 @@ module Yast
         _("Set up network services")
       ]
 
+      # Progress stage 8
+      step_labels << _("Writing firewall configuration") if firewalld.installed?
+
       # Progress stage 9
       if !@write_only
         step_labels = Builtins.add(step_labels, _("Activate network services"))
@@ -541,6 +544,14 @@ module Yast
       ProgressNextStage(_("Setting up network services..."))
       writeIPv6
       Builtins.sleep(sl)
+
+      if firewalld.installed?
+        return false if Abort()
+        # Progress step 7
+        ProgressNextStage(_("Writing firewall configuration..."))
+        firewalld.write
+        Builtins.sleep(sl)
+      end
 
       if !@write_only
         return false if Abort()

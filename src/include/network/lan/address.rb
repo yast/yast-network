@@ -133,7 +133,6 @@ module Yast
           "opt"    => [:hstretch],
           "help"   => _("<p>TODO kind of vague!</p>")
         },
-        "FWZONE"       => firewall_zone.cwm_definition,
         "MANDATORY"    => {
           "widget" => :checkbox,
           # check box label
@@ -1265,6 +1264,8 @@ module Yast
       end
 
       @settings["IFCFG"] = LanItems.device if LanItems.operation != :add
+      firewall_zone = Y2Network::Widgets::FirewallZone.new(LanItems.device)
+      wd["FWZONE"] = firewall_zone.cwm_definition
       firewall_zone.value = @settings["FWZONE"]
 
       functions = {
@@ -1335,7 +1336,7 @@ module Yast
         # general tab
         LanItems.startmode = Ops.get_string(@settings, "STARTMODE", "")
         LanItems.mtu = Ops.get_string(@settings, "MTU", "")
-        LanItems.firewall_zone = firewall_zone.value
+        LanItems.firewall_zone = firewall_zone.store_zone
 
         # address tab
         bootproto = @settings.fetch("BOOTPROTO", "")
@@ -1524,27 +1525,6 @@ module Yast
       end
 
       String.FirstChunk(Ops.get(host_list, 0, ""), " \t")
-    end
-
-    def firewall_zone
-      @fw_zone ||= Y2Network::Widgets::FirewallZone.new
-    end
-
-    # Return a list of items for ComboBox with all the known firewalld zones
-    # and also an empty string option for the default zone.
-    #
-    # @return [Array <Array <String, String>>] list of names an description of
-    # known zones
-    def firewall_zones
-      zones = [["", _("Automatically Assigned Zone")]]
-
-      if firewalld.installed?
-        firewalld.zones.each { |z| zones << [z.name, z.short] }
-      else
-        zones = [["", _("Firewall is not installed.")]]
-      end
-
-      zones
     end
   end
 end
