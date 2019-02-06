@@ -2701,14 +2701,11 @@ module Yast
 
           # we already know that kernel device exist, otherwise next above would apply
           # FIXME: It seems that it is not always the case (bsc#1124002)
-          begin
-            portname = ::File.read("/sys/class/net/#{device}/device/portname").strip
-            protocol = ::File.read("/sys/class/net/#{device}/device/protocol").strip
-          rescue SystemCallError => e
-            log.error("Failed to read portname or protocol: #{e.inspect}")
-            portname = ""
-            protocol = ""
-          end
+          portname_file = "/sys/class/net/#{device}/device/portname"
+          portname = ::File.exist?(portname_file) ? ::File.read(portname_file).strip : ""
+
+          protocol_file = "/sys/class/net/#{device}/device/protocol"
+          protocol = ::File.exist?(protocol_file) ? ::File.read(protocol_file).strip : ""
 
           layer2_ret = SCR.Execute(
             path(".target.bash"),
