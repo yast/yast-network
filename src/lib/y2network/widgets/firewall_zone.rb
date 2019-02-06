@@ -56,17 +56,27 @@ module Y2Network
       end
 
       def store_zone
-        @interface.zone = @value if current_zone != @value
+        @interface.zone = converted_value if zone_changed?
         @value
       end
 
     private
 
+      def converted_value
+        return "" if @value == ""
+        @value
+      end
+
+      def zone_changed?
+        @value && (current_zone.to_s != converted_value)
+      end
+
       def current_zone_widget
-        return Empty() unless current_zone
+        label = current_zone ? current_zone : _("DEFAULT")
+
         VBox(
           VSpacing(1),
-          Label(_("Current ZONE (permanent config): %s") % current_zone)
+          Label(_("Current ZONE (permanent config): %s") % label)
         )
       end
 
