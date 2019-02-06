@@ -2698,9 +2698,18 @@ module Yast
           if !chan_ids["stdout"].empty?
             chanids = String.CutBlanks(Ops.get_string(chan_ids, "stdout", ""))
           end
+
           # we already know that kernel device exist, otherwise next above would apply
-          portname = ::File.read("/sys/class/net/#{device}/device/portname").strip
-          protocol = ::File.read("/sys/class/net/#{device}/device/protocol").strip
+          # FIXME: It seems that it is not always the case (bsc#1124002)
+          begin
+            portname = ::File.read("/sys/class/net/#{device}/device/portname").strip
+            protocol = ::File.read("/sys/class/net/#{device}/device/protocol").strip
+          rescue SystemCallError => e
+            log.error("Failed to read portname or protocol: #{e.inspect}")
+            portname = ""
+            protocol = ""
+          end
+
           layer2_ret = SCR.Execute(
             path(".target.bash"),
             Builtins.sformat(
