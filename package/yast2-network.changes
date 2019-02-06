@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Feb  6 14:16:54 UTC 2019 - knut.anderssen@suse.com
+
+- bsc#1124002
+  - do not crash when cloning and trying to read a device protocol
+    or portname.
+- 4.1.37
+
+-------------------------------------------------------------------
 Tue Jan 29 10:32:17 UTC 2019 - mfilka@suse.com
 
 - bnc#1123102
