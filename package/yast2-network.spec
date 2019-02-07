@@ -100,6 +100,7 @@ rake install DESTDIR="%{buildroot}"
 %{yast_schemadir}/autoyast/rnc/networking.rnc
 %{yast_schemadir}/autoyast/rnc/host.rnc
 %{yast_libdir}/network
+%{yast_libdir}/y2network
 %{yast_libdir}/y2remote
 %{yast_libdir}/cfa/
 %{yast_ydatadir}/network
