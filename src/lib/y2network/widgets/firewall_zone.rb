@@ -44,6 +44,7 @@ module Y2Network
       # @see CWM::AbstractWidget
       # @return [String]
       def label
+        # TRANSLATORS: label for Firewall ZONE assignment
         _("Assign Interface to Firewall &Zone")
       end
 
@@ -57,6 +58,7 @@ module Y2Network
 
       # @see CWM::AbstractWidget
       def contents
+        # TRANSLATORS: firewall is not installed label
         return Label(_("Firewall is not installed.")) unless installed?
 
         Left(zones_widget)
@@ -105,10 +107,12 @@ module Y2Network
       # @see CWM::AbstractWidget
       def help
         help_text =
+          # TRANSLATORS: Firewall ZONE widget help description
           _("<p><b><big>FIREWALL ZONE</big></b></p>" \
             "<p>A network zone defines the level of trust for network connections. " \
             "The selected ZONE will be added to the ifcfg as well as the firewalld " \
-            "permanent configuration.")
+            "permanent configuration.</p>")
+
         help_text << zones_help if installed?
         help_text
       end
@@ -124,11 +128,14 @@ module Y2Network
 
       # @return [String]
       def default_label
+        # TRANSLATORS: List item describing an assigment of the interface
+        # to the default ZONE
         _("Assign to the default ZONE")
       end
 
       # @return [String]
       def no_zone_label
+        # TRANSLATORS: List item to no interface ZONE assignment
         _("Do not assign ZONE")
       end
 
@@ -190,6 +197,8 @@ module Y2Network
         description = firewalld.zones.map { |z| zone_description(z) }
         return "" if description.empty?
 
+        # TRANSLATORS: Firewall zones description (%s are list element with
+        # each of the zones decription)
         _("<p>Find below the available zones description: <ul>%s</ul></p>") % description.join
       end
 
