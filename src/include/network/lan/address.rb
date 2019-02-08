@@ -27,10 +27,12 @@
 # Authors:	Michal Svec <msvec@suse.cz>
 #
 require "ui/text_helpers"
-require "y2firewall/firewalld"
+require "y2firewall/helpers/interfaces"
+require "y2network/widgets/firewall_zone"
 
 module Yast
   module NetworkLanAddressInclude
+    include Y2Firewall::Helpers::Interfaces
     include Yast::Logger
     include ::UI::TextHelpers
 
@@ -54,7 +56,6 @@ module Yast
       Yast.import "ProductFeatures"
       Yast.import "Routing"
       Yast.import "String"
-      Yast.import "SuSEFirewall4Network"
       Yast.import "Wizard"
       Yast.import "Map"
 
@@ -131,14 +132,6 @@ module Yast
           "label"  => _("&Name of Interface"),
           "opt"    => [:hstretch],
           "help"   => _("<p>TODO kind of vague!</p>")
-        },
-        "FWZONE"       => {
-          "widget" => :combobox,
-          # Combo Box label
-          "label"  => _("Assign Interface to Firewall &Zone"),
-          "opt"    => [:hstretch],
-          "help"   => Ops.get_string(@help, "fwzone", ""),
-          "init"   => fun_ref(method(:InitFwZone), "void (string)")
         },
         "MANDATORY"    => {
           "widget" => :checkbox,
@@ -1046,23 +1039,6 @@ module Yast
       true
     end
 
-    # Initialize value of firewall zone widget
-    # (disables it when SuSEFirewall is not installed)
-    # @param _key [String] id of the widget
-    def InitFwZone(_key)
-      if SuSEFirewall4Network.IsInstalled
-        UI.ChangeWidget(
-          Id("FWZONE"),
-          :Value,
-          Ops.get_string(@settings, "FWZONE", "")
-        )
-      else
-        UI.ChangeWidget(Id("FWZONE"), :Enabled, false)
-      end
-
-      nil
-    end
-
     # @param [Array<String>] types network card types
     # @return their descriptions for CWM
     def BuildTypesListCWM(types)
@@ -1280,8 +1256,6 @@ module Yast
         ]
       )
 
-      wd["FWZONE"]["items"] = firewall_zones
-
       if LanItems.GetCurrentType == "ib"
         wd["IPOIB_MODE"] = ipoib_mode_widget
         wd["MTU"]["items"] = ipoib_mtu_items
@@ -1290,6 +1264,9 @@ module Yast
       end
 
       @settings["IFCFG"] = LanItems.device if LanItems.operation != :add
+      firewall_zone = Y2Network::Widgets::FirewallZone.new(LanItems.device)
+      wd["FWZONE"] = firewall_zone.cwm_definition
+      firewall_zone.value = @settings["FWZONE"] if firewalld.installed?
 
       functions = {
         "init"  => fun_ref(method(:InitAddrWidget), "void (string)"),
@@ -1358,8 +1335,8 @@ module Yast
       if ret != :back && ret != :abort
         # general tab
         LanItems.startmode = Ops.get_string(@settings, "STARTMODE", "")
-        LanItems.firewall_zone = @settings.fetch("FWZONE", "")
         LanItems.mtu = Ops.get_string(@settings, "MTU", "")
+        LanItems.firewall_zone = firewall_zone.store_permanent if firewalld.installed?
 
         # address tab
         bootproto = @settings.fetch("BOOTPROTO", "")
@@ -1427,8 +1404,8 @@ module Yast
         "STARTMODE"        => LanItems.startmode,
         "IFPLUGD_PRIORITY" => LanItems.ifplugd_priority,
         # problems when renaming the interface?
-        "FWZONE"           => LanItems.firewall_zone,
         "MTU"              => LanItems.mtu,
+        "FWZONE"           => LanItems.firewall_zone,
         # address tab:
         "BOOTPROTO"        => LanItems.bootproto,
         "IPADDR"           => LanItems.ipaddr,
@@ -1548,31 +1525,6 @@ module Yast
       end
 
       String.FirstChunk(Ops.get(host_list, 0, ""), " \t")
-    end
-
-    # Return a list of items for ComboBox with all the known firewalld zones
-    # and also an empty string option for the default zone.
-    #
-    # @return [Array <Array <String, String>>] list of names an description of
-    # known zones
-    def firewall_zones
-      zones = [["", _("Automatically Assigned Zone")]]
-      if firewalld.installed?
-        Y2Firewall::Firewalld::Zone.known_zones.map do |name, full_name|
-          zones << [name, Builtins.dgettext("base", full_name)]
-        end
-      else
-        zones = [["", _("Firewall is not installed.")]]
-      end
-
-      zones
-    end
-
-    # Convenience method which returns an instance of Y2Firewall::Firewalld
-    #
-    # @return [Y2Firewall::Firewalld] instance
-    def firewalld
-      @firewalld ||= Y2Firewall::Firewalld.instance
     end
   end
 end

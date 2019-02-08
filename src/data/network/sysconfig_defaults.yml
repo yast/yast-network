@@ -42,4 +42,3 @@ BONDING_MODULE_OPTS: mode=active-backup miimon=100
 TUNNEL_SET_OWNER: ''
 TUNNEL_SET_GROUP: ''
 BRIDGE_PORTS: ''
-ZONE: ''

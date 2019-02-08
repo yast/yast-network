@@ -248,14 +248,6 @@ module Yast
       }
     end
 
-    def firewall_widget
-      if SuSEFirewall4Network.IsInstalled
-        SuSEFirewall4Network.FirewallZonesComboBoxItems
-      else
-        [["", _("Firewall is not installed.")]]
-      end
-    end
-
     def common_mtu_items
       [
         # translators: MTU value description (size in bytes, desc)

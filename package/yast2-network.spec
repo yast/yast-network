@@ -17,7 +17,7 @@
 
 
 Name:           yast2-network
-Version:        4.1.37
+Version:        4.1.38
 Release:        0
 BuildArch:      noarch
 
@@ -31,9 +31,9 @@ Requires:       yast2-proxy
 #for install task
 BuildRequires:  rubygem(%rb_default_ruby_abi:yast-rake)
 
-# Yast::Execute.stdout.on_target!
-BuildRequires:  yast2 >= 4.1.42
-Requires:       yast2 >= 4.1.42
+# Y2Firewall interface zone mapping methods
+BuildRequires:  yast2 >= 4.1.53
+Requires:       yast2 >= 4.1.53
 
 # Product control need xml agent
 BuildRequires:  yast2-xml
@@ -100,6 +100,7 @@ rake install DESTDIR="%{buildroot}"
 %{yast_schemadir}/autoyast/rnc/networking.rnc
 %{yast_schemadir}/autoyast/rnc/host.rnc
 %{yast_libdir}/network
+%{yast_libdir}/y2network
 %{yast_libdir}/y2remote
 %{yast_libdir}/cfa/
 %{yast_ydatadir}/network

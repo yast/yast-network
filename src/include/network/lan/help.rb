@@ -223,16 +223,6 @@ module Yast
                                _(
                                  "<p>DHCP configuration is not recommended for this product.\nComponents of this product might not work with DHCP.</p>"
                                ),
-        "fwzone"            =>
-                               _(
-                                 "<p><b><big>Firewall Zone</big></b></p>\n" \
-                                 "<p>Select the firewall zone to put the interface into. If you\n" \
-                                 "select a zone, the firewall will be enabled. If you do not and other \n" \
-                                 "firewalled interfaces exist, the firewall\n" \
-                                 "will stay enabled but all traffic will be blocked for this\n" \
-                                 "interface. If you do not select a zone and no others exist, \n" \
-                                 "the firewall will be disabled.</p>"
-                               ),
         "mandatory"         =>
                                _(
                                  "<p><b>Mandatory Interface</b> specifies whether the network service reports failure if the interface fails to start at boot time.</p>"

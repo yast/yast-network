@@ -125,6 +125,7 @@ module Yast
       @wl_key = []
       @wl_default_key = 0
       @wl_nick = ""
+      @firewall_zone = nil
 
       # FIXME: We should unify bridge_ports and bond_slaves variables
 
@@ -2142,8 +2143,10 @@ module Yast
         newdev["INTERFACETYPE"] = @type
       end
 
-      current_map = (GetCurrentMap() || {}).select { |_, v| !v.nil? && !v.empty? }
-      new_map = newdev.select { |_, v| !v.nil? && !v.empty? }
+      # ZONE uses an empty string as the default ZONE which means that is not
+      # the same than not defining the attribute
+      current_map = (GetCurrentMap() || {}).select { |k, v| !v.nil? && (k == "ZONE" || !v.empty?) }
+      new_map = newdev.select { |k, v| !v.nil? && (k == "ZONE" || !v.empty?) }
 
       # CanonicalizeIP is called to get new device map into the same shape as
       # NetworkInterfaces provides the current one.
