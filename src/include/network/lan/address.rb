@@ -1266,7 +1266,7 @@ module Yast
       @settings["IFCFG"] = LanItems.device if LanItems.operation != :add
       firewall_zone = Y2Network::Widgets::FirewallZone.new(LanItems.device)
       wd["FWZONE"] = firewall_zone.cwm_definition
-      firewall_zone.value = @settings["FWZONE"]
+      firewall_zone.value = @settings["FWZONE"] if firewalld.installed?
 
       functions = {
         "init"  => fun_ref(method(:InitAddrWidget), "void (string)"),
@@ -1336,7 +1336,7 @@ module Yast
         # general tab
         LanItems.startmode = Ops.get_string(@settings, "STARTMODE", "")
         LanItems.mtu = Ops.get_string(@settings, "MTU", "")
-        LanItems.firewall_zone = firewall_zone.store_zone
+        LanItems.firewall_zone = firewall_zone.store_permanent if firewalld.installed?
 
         # address tab
         bootproto = @settings.fetch("BOOTPROTO", "")

@@ -53,26 +53,13 @@ module Y2Network
 
         populate_select(firewall_zones)
         self.value = @value
-        enable_zones(managed?)
       end
 
       # @see CWM::AbstractWidget
       def contents
         return Label(_("Firewall is not installed.")) unless installed?
 
-        VBox(
-          Left(manage_widget),
-          Left(zones_widget),
-          Left(permanent_config_widget)
-        )
-      end
-
-      # @see CWM::AbstractWidget
-      # @param event [Hash]
-      def handle(event)
-        enable_zones(managed?) if event["ID"] == :manage_zone
-
-        nil
+        Left(zones_widget)
       end
 
       # Stores the given name and when it is enabled to configure the
@@ -84,7 +71,7 @@ module Y2Network
       def value=(name)
         @value = name
         return unless installed?
-        manage_zone!(!!name) && select_zone(name)
+        select_zone(name)
       end
 
       # It returns the current ZONE selection or nil in case of not enabled
@@ -92,9 +79,8 @@ module Y2Network
       #
       # @return [String, nil] current zone or nil when not managed
       def value
-        return @value unless Yast::UI.WidgetExists(Id(:manage_zone))
-
-        managed? ? selected_zone : nil
+        return @value unless Yast::UI.WidgetExists(Id(:zones))
+        selected_zone
       end
 
       # Stores the current value
@@ -109,7 +95,7 @@ module Y2Network
       # enabled to be managed through the ifcfg files
       #
       # @return [String, nil] the current zone selection
-      def store_zone
+      def store_permanent
         return @value unless installed?
 
         @interface.zone = @value if zone_changed?
@@ -121,12 +107,8 @@ module Y2Network
         help_text =
           _("<p><b><big>FIREWALL ZONE</big></b></p>" \
             "<p>A network zone defines the level of trust for network connections. " \
-            "The <b>ZONE</b> can be set by yast-firewall, by different firewalld " \
-            "utilities or via the ifcfg file.</p>" \
-            "<p>When enabled in yast-network, it sets the <b>ZONE</b> which this " \
-            "interface belongs to modifying also the firewalld permanent " \
-            "configuration</p>")
-
+            "The selected ZONE will be added to the ifcfg as well as the firewalld " \
+            "permanent configuration.")
         help_text << zones_help if installed?
         help_text
       end
@@ -140,54 +122,44 @@ module Y2Network
         @value && (current_zone.to_s != @value)
       end
 
+      # @return [String]
       def default_label
-        _("DEFAULT")
+        _("Assign to the default ZONE")
       end
 
-      def permanent_config_widget
-        label = current_zone ? current_zone : default_label
-
-        VBox(
-          VSpacing(1),
-          Label(_("Current ZONE (permanent config): %s") % label),
-          Label(_("Default ZONE (permanent config): %s") % firewalld.default_zone)
-        )
+      # @return [String]
+      def no_zone_label
+        _("Do not assign ZONE")
       end
 
+      # Current {Y2Firewall::Firewalld::Interface} name
+      # @return [String, nil]
       def current_zone
         return unless @interface.zone
         @interface.zone.name
       end
 
-      def manage_widget
-        CheckBox(Id(:manage_zone), Opt(:notify), _("Define Ifcfg ZONE"))
-      end
-
-      def manage_zone!(value)
-        Yast::UI.ChangeWidget(Id(:manage_zone), :Value, value)
-        value
-      end
-
-      def managed?
-        Yast::UI.QueryWidget(Id(:manage_zone), :Value)
-      end
-
+      # @return [Yast::Term] zones select list
       def zones_widget
-        ComboBox(Id(:zones), Opt(:notify, :hstretch), _("ZONE"))
+        ComboBox(Id(:zones), Opt(:notify, :hstretch), label)
       end
 
+      # Convenince method to select an specific zone from the zones list
+      #
+      # @param zone [String]
       def select_zone(zone)
         Yast::UI.ChangeWidget(Id(:zones), :Value, zone)
       end
 
+      # Convenince method which returns the selected zone from the zones list
+      #
+      # @return [String, nil]
       def selected_zone
         Yast::UI.QueryWidget(Id(:zones), :Value)
       end
 
-      def enable_zones(value)
-        Yast::UI.ChangeWidget(Id(:zones), :Enabled, value)
-      end
-
+      # @param zones [Array <Array <String, String>>] list of available zones
+      # names
       def populate_select(zones)
         items = zones.map { |z| Item(Id(z[0]), z[1]) }
         Yast::UI.ChangeWidget(Id(:zones), :Items, items)
@@ -197,17 +169,23 @@ module Y2Network
       # and also an empty string option for the default zone.
       #
       # @return [Array <Array <String, String>>] list of names an description of
-      # known zones
+      # available zones
       def firewall_zones
-        zones = [["", default_label]]
-        firewalld.zones.each { |z| zones << [z.name, z.short] }
+        zones = [[nil, no_zone_label], ["", default_label]]
+        firewalld.zones.each { |z| zones << [z.name, z.name] }
         zones
       end
 
+      # Convenience method to check whether firewalld is installed or not
+      #
+      # @return [Boolean] whether firewalld is installed or not
       def installed?
         @installed ||= firewalld.installed?
       end
 
+      # Help text with the description of the available zones
+      #
+      # @return [String] zones help description
       def zones_help
         description = firewalld.zones.map { |z| zone_description(z) }
         return "" if description.empty?
@@ -215,6 +193,10 @@ module Y2Network
         _("<p>Find below the available zones description: <ul>%s</ul></p>") % description.join
       end
 
+      # Return the description of the given zone as a HTML list entry
+      #
+      # @param zone [Y2Firewall::Firewalld::Zone]
+      # @return [String] zone description
       def zone_description(zone)
         "<li><b>#{zone.short}: </b>" \
         "#{zone.description} " \
