@@ -2184,7 +2184,10 @@ module Yast
     # @return [true] so that this can be used for the :abort callback
     def Rollback
       log.info "rollback item #{@current}"
-      if getCurrentItem.fetch("hwinfo", {}).empty?
+      # Do not delete elements that are :edited but does not contain hwinfo
+      # yet (Add a virtual device and then edit it canceling the process during the
+      # edition)
+      if LanItems.operation == :add && getCurrentItem.fetch("hwinfo", {}).empty?
         LanItems.Items.delete(@current)
       elsif IsCurrentConfigured()
         if !getNetworkInterfaces.include?(getCurrentItem["ifcfg"])

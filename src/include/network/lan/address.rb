@@ -1211,6 +1211,8 @@ module Yast
     def AddressDialog
       initialize_address_settings
 
+      cached_name = LanItems.current_name
+
       wd = Convert.convert(
         Builtins.union(@widget_descr, @widget_descr_local),
         from: "map",
@@ -1391,14 +1393,13 @@ module Yast
       # proceed with WLAN settings if appropriate, #42420
       ret = :wire if ret == :next && LanItems.type == "wlan"
 
-      if LanItems.current_renamed?
+      if cached_name != LanItems.current_name
         Routing.SetDevices(LanItems.current_device_names)
-        update_routes! if update_routes?
+        update_routes!(cached_name) if update_routes?(cached_name)
       end
 
       deep_copy(ret)
     end
-
 
   private
 
@@ -1445,25 +1446,25 @@ module Yast
     # update the interface name in the related routes or not.
     #
     # return [Boolean] whether the routes have to be updated or not
-    def update_routes?
-      return false unless Routing.device_routes?(LanItems.GetCurrentName)
+    def update_routes?(previous_name)
+      return false unless Routing.device_routes?(previous_name)
 
       Popup.YesNoHeadline(
         Label.WarningMsg,
         # TRANSLATORS: Ask for fixing a possible conflict after renaming
         # an interface, %1 is the previous interface name %2 is the current one
-        format(_("The interface %s has been renamed to %s. There are some " \
-                 "routes that still use the previous name.\n\n" \
-                 "Would you like to update them now?\n"),
-          "'#{LanItems.current_name}'",
-          "'#{LanItems.GetCurrentName}'")
+        format(_("The interface %s has been renamed to %s. There are \n" \
+                  "some routes that still use the previous name.\n\n" \
+                  "Would you like to update them now?\n"),
+          "'#{previous_name}'",
+          "'#{LanItems.current_name}'")
       )
     end
 
     # It modifies the interface name with the new one of all the routes
     # that belongs to the current renamed {LanItem}
-    def update_routes!
-      Routing.device_routes(LanItems.GetCurrentName).each do |route|
+    def update_routes!(previous_name)
+      Routing.device_routes(previous_name).each do |route|
         route["device"] = LanItems.current_name
       end
     end

@@ -147,7 +147,6 @@ module Yast
       true
     end
 
-
     def device_routes(device)
       @Routes.select { |r| r["device"] == device }
     end
