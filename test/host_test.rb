@@ -176,7 +176,7 @@ describe Yast::Host do
     end
 
     context "import an emtpy host section" do
-      let(:org_etx_hosts) {file.content}
+      let(:org_etx_hosts) { file.content }
 
       before do
         Yast::Host.Import("hosts" => {})
@@ -184,7 +184,8 @@ describe Yast::Host do
 
       it "does not reset /etc/hosts" do
         expect(file).to receive(:write).with(
-          "/etc/hosts", file.content)
+          "/etc/hosts", file.content
+        )
         Yast::Host.Write
       end
     end
