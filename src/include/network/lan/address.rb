@@ -34,6 +34,7 @@ module Yast
   module NetworkLanAddressInclude
     include Y2Firewall::Helpers::Interfaces
     include Yast::Logger
+    include Yast::I18n
     include ::UI::TextHelpers
 
     def initialize_network_lan_address(include_target)
@@ -1390,10 +1391,14 @@ module Yast
       # proceed with WLAN settings if appropriate, #42420
       ret = :wire if ret == :next && LanItems.type == "wlan"
 
-      Routing.SetDevices(NetworkInterfaces.List("")) if ret == :routing
+      if LanItems.current_renamed?
+        Routing.SetDevices(LanItems.current_device_names)
+        update_routes! if update_routes?
+      end
 
       deep_copy(ret)
     end
+
 
   private
 
@@ -1434,6 +1439,33 @@ module Yast
 
       # #65524
       @settings["BOOTPROTO"] = "static" if LanItems.operation == :add && @force_static_ip
+    end
+
+    # When an interface name has changed, it returns whether the user wants to
+    # update the interface name in the related routes or not.
+    #
+    # return [Boolean] whether the routes have to be updated or not
+    def update_routes?
+      return false unless Routing.device_routes?(LanItems.GetCurrentName)
+
+      Popup.YesNoHeadline(
+        Label.WarningMsg,
+        # TRANSLATORS: Ask for fixing a possible conflict after renaming
+        # an interface, %1 is the previous interface name %2 is the current one
+        format(_("The interface %s has been renamed to %s. There are some " \
+                 "routes that still use the previous name.\n\n" \
+                 "Would you like to update them now?\n"),
+          "'#{LanItems.current_name}'",
+          "'#{LanItems.GetCurrentName}'")
+      )
+    end
+
+    # It modifies the interface name with the new one of all the routes
+    # that belongs to the current renamed {LanItem}
+    def update_routes!
+      Routing.device_routes(LanItems.GetCurrentName).each do |route|
+        route["device"] = LanItems.current_name
+      end
     end
 
     # Given a map of duplicated port ids with device names, aks the user if he

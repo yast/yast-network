@@ -276,6 +276,14 @@ module Yast
       items.map { |itemId| GetDeviceName(itemId) }.reject(&:empty?)
     end
 
+    def current_name
+      renamed?(@current) ? renamed_to(@current) : GetDeviceName(@current)
+    end
+
+    def current_device_names
+      GetNetcardInterfaces().map { |i| renamed?(i) ? renamed_to(i) : GetDeviceName(i) }.reject(&:empty?)
+    end
+
     # Returns device name for current lan item (see LanItems::current)
     def GetCurrentName
       GetDeviceName(@current)
