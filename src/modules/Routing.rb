@@ -253,8 +253,8 @@ module Yast
     # @return true if success
     def Read
       # read available devices
-      LanItems.Read
-      @devices = LanItems.current_device_names
+      NetworkInterfaces.Read
+      @devices = NetworkInterfaces.List("")
 
       # read routes
       @Routes = SCR.Read(path(".routes")) || []
