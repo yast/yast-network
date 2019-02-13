@@ -407,6 +407,7 @@ module Yast
     end
 
     def writeIPv6
+      log.info("writeIPv6: IPv6 is #{@ipv6 ? "enabled" : "disabled"}")
       filename = "/etc/sysctl.conf"
       sysctl = Convert.to_string(SCR.Read(path(".target.string"), filename))
       sysctl_row = Builtins.sformat(

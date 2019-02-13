@@ -45,6 +45,8 @@ module Yast
       @initialized = false
 
       @hosts = CFA::Hosts.new
+
+      @configuration_imported = false
     end
 
     # Remove all entries from the host table.
@@ -52,6 +54,7 @@ module Yast
       @hosts.hosts.keys.each do |ip|
         @hosts.delete_by_ip(ip)
       end
+      @configuration_imported = false
     end
 
     # @return [hash] address->list of names
@@ -142,6 +145,12 @@ module Yast
 
       @hosts.save
 
+      # Reset that the configuration has been taken from AY file because the settings
+      # are now on the target system.
+      @configuration_imported = false
+      # Syncing after the settings have been written.
+      @initial_hosts = @hosts.clone
+
       Progress.NextStage if gui
 
       true
@@ -156,6 +165,7 @@ module Yast
     # @return true if success
     def Import(settings)
       @initialized = true # don't let Read discard our data
+      @configuration_imported = true if settings.key?("hosts")
 
       load_hosts(load_only: true)
 
@@ -298,10 +308,8 @@ module Yast
     # Function which returns if the settings were modified
     # @return [Boolean]  settings were modified
     def GetModified
-      # when importing AY profile @initial_hosts is not initialized
-      # bcs it would be the same as @hosts and modification would not be detected
-      return true if @hosts && @initial_hosts.nil?
-      @hosts.hosts != @initial_hosts.hosts
+      return true if @configuration_imported # hosts section has been imported.
+      @initial_hosts && (@hosts.hosts != @initial_hosts.hosts)
     end
 
     publish function: :NeedDummyIP, type: "boolean ()"

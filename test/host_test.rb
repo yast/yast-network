@@ -94,10 +94,17 @@ describe Yast::Host do
   end
 
   describe ".Write" do
-    it "do nothing if not modified" do
-      expect(file).to_not receive(:write)
-      Yast::Host.Read
-      Yast::Host.Write
+    context "settings have not been modified" do
+      it "does nothing" do
+        expect(file).to_not receive(:write)
+        Yast::Host.Write
+      end
+
+      it "does nothing although system settings have been read" do
+        expect(file).to_not receive(:write)
+        Yast::Host.Read
+        Yast::Host.Write
+      end
     end
 
     it "writes content of file" do
@@ -165,6 +172,21 @@ describe Yast::Host do
         Yast::Host.Import("hosts" => hosts)
 
         expect(Yast::Host.name_map["10.20.1.29"]).to eql([holder_entries.join(" ")])
+      end
+    end
+
+    context "import an emtpy host section" do
+      let(:org_etx_hosts) { file.content }
+
+      before do
+        Yast::Host.Import("hosts" => {})
+      end
+
+      it "does not reset /etc/hosts" do
+        expect(file).to receive(:write).with(
+          "/etc/hosts", file.content
+        )
+        Yast::Host.Write
       end
     end
   end
