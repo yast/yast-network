@@ -454,6 +454,7 @@ module Yast
           end
 
           LanItems.DeleteItem
+          update_route_devices!
           initOverview("")
         end
       end
@@ -570,6 +571,11 @@ module Yast
       ret[:delete] = Label.DeleteButton
 
       ret
+    end
+
+    # Convenience method to update the {Yast::Routing} devices list
+    def update_route_devices!
+      Routing.SetDevices(LanItems.current_device_names)
     end
   end
 end

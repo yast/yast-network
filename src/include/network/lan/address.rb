@@ -1211,8 +1211,6 @@ module Yast
     def AddressDialog
       initialize_address_settings
 
-      cached_name = LanItems.current_name
-
       wd = Convert.convert(
         Builtins.union(@widget_descr, @widget_descr_local),
         from: "map",
@@ -1267,6 +1265,8 @@ module Yast
       end
 
       @settings["IFCFG"] = LanItems.device if LanItems.operation != :add
+
+      # Firewall config
       firewall_zone = Y2Network::Widgets::FirewallZone.new(LanItems.device)
       wd["FWZONE"] = firewall_zone.cwm_definition
       firewall_zone.value = @settings["FWZONE"] if firewalld.installed?
@@ -1370,6 +1370,10 @@ module Yast
             Routing.RemoveDefaultGw
           end
         end
+
+        # When virtual interfaces are added the list of routing devices needs
+        # to be updated to offer them
+        update_route_devices! if update_route_devices?
       end
 
       if LanItems.type == "vlan"
@@ -1392,11 +1396,6 @@ module Yast
 
       # proceed with WLAN settings if appropriate, #42420
       ret = :wire if ret == :next && LanItems.type == "wlan"
-
-      if cached_name != LanItems.current_name
-        Routing.SetDevices(LanItems.current_device_names)
-        update_routes!(cached_name) if update_routes?(cached_name)
-      end
 
       deep_copy(ret)
     end
@@ -1442,31 +1441,17 @@ module Yast
       @settings["BOOTPROTO"] = "static" if LanItems.operation == :add && @force_static_ip
     end
 
-    # When an interface name has changed, it returns whether the user wants to
-    # update the interface name in the related routes or not.
+    # Return wether the {Yast:Routing} devices list needs to be updated or not
+    # to include the current interface name
     #
-    # return [Boolean] whether the routes have to be updated or not
-    def update_routes?(previous_name)
-      return false unless Routing.device_routes?(previous_name)
-
-      Popup.YesNoHeadline(
-        Label.WarningMsg,
-        # TRANSLATORS: Ask for fixing a possible conflict after renaming
-        # an interface, %1 is the previous interface name %2 is the current one
-        format(_("The interface %s has been renamed to %s. There are \n" \
-                  "some routes that still use the previous name.\n\n" \
-                  "Would you like to update them now?\n"),
-          "'#{previous_name}'",
-          "'#{LanItems.current_name}'")
-      )
+    # @return [Boolean] false if the current interface name is already present
+    def update_route_devices?
+      !Routing.devices.include?(LanItems.current_name)
     end
 
-    # It modifies the interface name with the new one of all the routes
-    # that belongs to the current renamed {LanItem}
-    def update_routes!(previous_name)
-      Routing.device_routes(previous_name).each do |route|
-        route["device"] = LanItems.current_name
-      end
+    # Convenience method to update the {Yast::Routing} devices list
+    def update_route_devices!
+      Routing.SetDevices(LanItems.current_device_names)
     end
 
     # Given a map of duplicated port ids with device names, aks the user if he
