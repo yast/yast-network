@@ -1373,7 +1373,7 @@ module Yast
 
         # When virtual interfaces are added the list of routing devices needs
         # to be updated to offer them
-        update_route_devices! if update_route_devices?
+        update_routing_devices! if update_routing_devices?
       end
 
       if LanItems.type == "vlan"
@@ -1445,12 +1445,12 @@ module Yast
     # to include the current interface name
     #
     # @return [Boolean] false if the current interface name is already present
-    def update_route_devices?
+    def update_routing_devices?
       !Routing.devices.include?(LanItems.current_name)
     end
 
     # Convenience method to update the {Yast::Routing} devices list
-    def update_route_devices!
+    def update_routing_devices!
       Routing.SetDevices(LanItems.current_device_names)
     end
 

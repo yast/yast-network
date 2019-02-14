@@ -141,5 +141,4 @@ describe "NetworkLanAddressInclude" do
       end
     end
   end
-
 end
