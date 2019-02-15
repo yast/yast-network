@@ -94,6 +94,8 @@ module Yast
 
       # Lan::Read (`cache) will do nothing if initialized already.
       @initialized = false
+
+      @backend = nil
     end
 
     #------------------

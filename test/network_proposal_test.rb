@@ -24,7 +24,8 @@ describe Yast::NetworkProposal do
     let(:proposal) { subject.make_proposal({}) }
 
     before do
-      allow(Yast::NetworkService).to receive(:wicked?).and_return(using_wicked)
+      allow(Yast::Lan).to receive(:UseNetworkManager).and_return(!using_wicked)
+      Y2Network::ProposalSettings.create_instance
     end
 
     it "returns a hash describing the proposal" do
@@ -63,6 +64,7 @@ describe Yast::NetworkProposal do
   end
 
   describe "#ask_user" do
+    let(:settings) { Y2Network::ProposalSettings.instance }
     let(:chosen_id) { "" }
     let(:args) do
       {
@@ -103,8 +105,8 @@ describe Yast::NetworkProposal do
         expect(Yast::WFM).to_not receive(:CallFuntion).with("inst_lan", anything)
       end
 
-      it "changes the netwotk backend to wicked" do
-        expect(Yast::NetworkService).to receive(:use_wicked)
+      it "changes the network backend to wicked" do
+        expect(settings).to receive(:enable_wicked!)
 
         subject.ask_user(args)
       end
@@ -122,7 +124,7 @@ describe Yast::NetworkProposal do
       end
 
       it "changes the netwotk backend to NetworkManager" do
-        expect(Yast::NetworkService).to receive(:use_network_manager)
+        expect(settings).to receive(:enable_network_manager!)
 
         subject.ask_user(args)
       end
