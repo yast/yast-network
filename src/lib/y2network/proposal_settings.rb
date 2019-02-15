@@ -20,6 +20,7 @@
 # find current contact information at www.suse.com.
 
 require "yast"
+require "y2packager/package"
 
 module Y2Network
   # Class that stores the proposal settings for network during installation.
@@ -35,7 +36,7 @@ module Y2Network
       Yast.import "PackagesProposal"
       Yast.import "Lan"
 
-      @backend = Yast::Lan.UseNetworkManager ? :network_manager : :wicked
+      @backend = use_network_manager? ? :network_manager : :wicked
     end
 
     # Services
@@ -43,14 +44,16 @@ module Y2Network
     # Add the NetworkManager package to be installed and sets NetworkManager as
     # the backend to be used
     def enable_network_manager!
-      Yast::PackagesProposal.AddResolvables("NetworkManager", :package, ["NetworkManager"])
+      Yast::PackagesProposal.AddResolvables("network", :package, ["NetworkManager"])
+      Yast::PackagesProposal.RemoveResolvables("network", :package, ["wicked"])
 
       log.info "Enabling NetworkManager"
       self.backend = :network_manager
     end
 
     def enable_wicked!
-      Yast::PackagesProposal.AddResolvables("wicked", :package, ["wicked"])
+      Yast::PackagesProposal.AddResolvables("network", :package, ["wicked"])
+      Yast::PackagesProposal.RemoveResolvables("network", :package, ["NetworkManager"])
 
       log.info "Enabling Wicked"
       self.backend = :wicked
@@ -71,6 +74,21 @@ module Y2Network
       # Make sure only .instance and .create_instance can be used to
       # create objects
       private :new, :allocate
+    end
+
+    def network_manager_available?
+      p = Y2Packager::Package.find("NetworkManager").first
+      return false if p.nil?
+      log.info("The NetworkManager package status: #{p.status}")
+      true
+    end
+
+  private
+
+    def use_network_manager?
+      return false unless network_manager_available?
+
+      Yast::Lan.UseNetworkManager
     end
   end
 end

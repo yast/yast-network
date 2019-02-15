@@ -413,12 +413,6 @@ module Yast
           )
         )
       end
-      if !@write_hostname
-        summary = Summary.AddListItem(
-          summary,
-          _("Hostname will not be written to /etc/hosts")
-        )
-      end
 
       # if (has_dhcp && NetworkConfig::DHCP["DHCLIENT_MODIFY_RESOLV_CONF"]:false) {
       # Summary text

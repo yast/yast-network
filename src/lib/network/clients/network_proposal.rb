@@ -54,8 +54,10 @@ module Yast
   private
 
     def preformatted_proposal
+      return lan_summary unless settings.network_manager_available?
+
       proposal_text = switch_backend_link
-      proposal_text.prepend(Yast::Lan.Summary("proposal")) if wicked_backend?
+      proposal_text.prepend(lan_summary) if wicked_backend?
       proposal_text
     end
 
@@ -106,6 +108,10 @@ module Yast
     def Hyperlink(href, text)
       Builtins.sformat("<a href=\"%1\">%2</a>", href, CGI.escapeHTML(text))
     end
+  end
+
+  def lan_summary
+    Yast::Lan.Summary("proposal")
   end
 
   def settings

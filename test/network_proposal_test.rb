@@ -20,12 +20,13 @@ describe Yast::NetworkProposal do
   end
 
   describe "#make_proposal" do
+    let(:settings) { Y2Network::ProposalSettings.create_instance }
     let(:using_wicked) { true }
     let(:proposal) { subject.make_proposal({}) }
 
     before do
       allow(Yast::Lan).to receive(:UseNetworkManager).and_return(!using_wicked)
-      Y2Network::ProposalSettings.create_instance
+      allow(settings).to receive(:network_manager_available?).and_return(true)
     end
 
     it "returns a hash describing the proposal" do
@@ -47,6 +48,10 @@ describe Yast::NetworkProposal do
     end
 
     context "when using the NetworkManager backend" do
+      before do
+        settings.backend = :network_manager
+      end
+
       let(:using_wicked) { false }
 
       it "does not include the Yast::Lan proposal summary" do
