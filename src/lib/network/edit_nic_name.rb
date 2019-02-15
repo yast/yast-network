@@ -173,7 +173,7 @@ module Yast
       Popup.YesNoHeadline(
         Label.WarningMsg,
         # TRANSLATORS: Ask for fixing a possible conflict after renaming
-        # an interface, %1 is the previous interface name %2 is the current one
+        # an interface, %s are the previous and current interface names
         format(_("The interface %s has been renamed to %s. There are \n" \
                   "some routes that still use the previous name.\n\n" \
                   "Would you like to update them now?\n"),

@@ -5,17 +5,13 @@ require_relative "../../test_helper"
 require "yast"
 require "network/edit_nic_name"
 
-current_name = "spec0".freeze
-new_name = "new1".freeze
-existing_new_name = "existing_new_name".freeze
-
 Yast.import "LanItems"
 
 describe Yast::EditNicName do
   let(:subject) { described_class.new }
   let(:current_name) { "spec0" }
   let(:new_name) { "new1" }
-  let(:existing_new_name) { existing_new_name }
+  let(:existing_new_name) { "existing_new_name" }
   let(:interface_hwinfo) { { "dev_name" => current_name, "mac" => "00:01:02:03:04:05" } }
 
   describe "#run" do

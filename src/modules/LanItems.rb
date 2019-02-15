@@ -276,12 +276,18 @@ module Yast
       items.map { |itemId| GetDeviceName(itemId) }.reject(&:empty?)
     end
 
+    # Return the actual name of the current {LanItem}
+    #
+    # @return [String] the actual name for the current device
     def current_name
-      renamed?(@current) ? renamed_to(@current) : GetDeviceName(@current)
+      current_name_for?(@current)
     end
 
+    # Return the current device names
+    #
+    # @ return [Array<String>]
     def current_device_names
-      GetNetcardInterfaces().map { |i| renamed?(i) ? renamed_to(i) : GetDeviceName(i) }.reject(&:empty?)
+      GetNetcardInterfaces().map { |i| current_name_for?(i) }.reject(&:empty?)
     end
 
     # Returns device name for current lan item (see LanItems::current)
@@ -2646,6 +2652,13 @@ module Yast
     end
 
   private
+
+    # Return the current name of the {LanItem} given
+    #
+    # @param item_id [Integer] a key for {#Items}
+    def current_name_for?(item_id)
+      renamed?(item_id) ? renamed_to(item_id) : GetDeviceName(item_id)
+    end
 
     # Checks if given lladdr can be written into ifcfg
     #
