@@ -33,6 +33,7 @@ module Y2Network
 
     # Constructor
     def initialize
+      Yast.import "ProductFeatures"
       Yast.import "PackagesProposal"
       Yast.import "Lan"
 
@@ -95,7 +96,26 @@ module Y2Network
     def use_network_manager?
       return false unless network_manager_available?
 
-      Yast::Lan.UseNetworkManager
+      network_manager_default?
+    end
+
+    # Determine whether NetworkManager should be selected by default according
+    # to the product control file
+    #
+    # @return [Boolean] true if NM should be enabled; false otherwise
+    def network_manager_default?
+      case Yast::ProductFeatures.GetStringFeature("network", "network_manager")
+      when ""
+        # compatibility: use the boolean feature
+        # (defaults to false)
+        Yast::ProductFeatures.GetBooleanFeature("network", "network_manager_is_default")
+      when "always"
+        true
+      when "laptop"
+        laptop = Arch.is_laptop
+        log.info("Is a laptop: #{laptop}")
+        laptop
+      end
     end
   end
 end
