@@ -28,7 +28,7 @@ module Y2Network
     include Yast::Logger
     include Yast::I18n
 
-    # [Boolean] network service to be used after the installation
+    # @return [Boolean] network service to be used after the installation
     attr_accessor :backend
 
     # Constructor
@@ -39,10 +39,8 @@ module Y2Network
       @backend = use_network_manager? ? :network_manager : :wicked
     end
 
-    # Services
-
-    # Add the NetworkManager package to be installed and sets NetworkManager as
-    # the backend to be used
+    # Adds the NetworkManager package to the {Yast::PackagesProposal} and sets
+    # NetworkManager as the backend to be used
     def enable_network_manager!
       Yast::PackagesProposal.AddResolvables("network", :package, ["NetworkManager"])
       Yast::PackagesProposal.RemoveResolvables("network", :package, ["wicked"])
@@ -51,6 +49,8 @@ module Y2Network
       self.backend = :network_manager
     end
 
+    # Add the wicked package to the {Yast::PackagesProposal} and sets wicked
+    # as the backend to be used
     def enable_wicked!
       Yast::PackagesProposal.AddResolvables("network", :package, ["wicked"])
       Yast::PackagesProposal.RemoveResolvables("network", :package, ["NetworkManager"])
@@ -59,11 +59,21 @@ module Y2Network
       self.backend = :wicked
     end
 
+    # Convenience method to obtain whether the NetworkManager package is
+    # available or not.
+    #
+    # @return [Boolean] false if no package available, true otherwise
+    def network_manager_available?
+      p = Y2Packager::Package.find("NetworkManager").first
+      return false if p.nil?
+      log.info("The NetworkManager package status: #{p.status}")
+      true
+    end
+
     class << self
       # Singleton instance
       def instance
-        create_instance unless @instance
-        @instance
+        @instance ||= create_instance
       end
 
       # Enforce a new clean instance
@@ -76,15 +86,12 @@ module Y2Network
       private :new, :allocate
     end
 
-    def network_manager_available?
-      p = Y2Packager::Package.find("NetworkManager").first
-      return false if p.nil?
-      log.info("The NetworkManager package status: #{p.status}")
-      true
-    end
-
   private
 
+    # Convenienve method that verify if Network Manager should be used or not
+    # according to the control file defaults and package availability.
+    #
+    # @return [Boolean] true if should be used; false otherwise
     def use_network_manager?
       return false unless network_manager_available?
 
