@@ -2,6 +2,7 @@ require "y2storage"
 require "network/install_inf_convertor"
 require "network/network_autoconfiguration"
 require "network/network_autoyast"
+require "y2network/proposal_settings"
 
 require "cfa/generic_sysconfig"
 
@@ -296,7 +297,8 @@ module Yast
 
       log.info("Setting network service according to product preferences")
 
-      if Lan.UseNetworkManager
+      case Y2Network::ProposalSettings.instance.backend
+      when :network_manager
         log.info("- using NetworkManager")
         NetworkService.use_network_manager
       else

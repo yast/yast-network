@@ -20,15 +20,30 @@ describe Yast::NetworkProposal do
   end
 
   describe "#make_proposal" do
-    let(:using_wicked) { true }
+    let(:settings) { Y2Network::ProposalSettings.create_instance }
+    let(:current_backend) { :wicked }
+    let(:nm_available) { true }
     let(:proposal) { subject.make_proposal({}) }
 
     before do
-      allow(Yast::NetworkService).to receive(:wicked?).and_return(using_wicked)
+      settings.backend = current_backend
+      allow(settings).to receive(:network_manager_available?).and_return(nm_available)
     end
 
     it "returns a hash describing the proposal" do
       expect(proposal).to include("label_proposal", "preformatted_proposal", "links")
+    end
+
+    context "when NetworkManager is not available" do
+      let(:nm_available) { false }
+
+      it "includes the Yast::Lan proposal summary" do
+        expect(proposal["preformatted_proposal"]).to include("rich_text_summary")
+      end
+
+      it "does not include any link to switch between backends" do
+        expect(proposal["preformatted_proposal"]).to_not match(/.*Using*.*href.*.switch to*./)
+      end
     end
 
     context "when using the wicked backend" do
@@ -46,7 +61,7 @@ describe Yast::NetworkProposal do
     end
 
     context "when using the NetworkManager backend" do
-      let(:using_wicked) { false }
+      let(:current_backend) { :network_manager }
 
       it "does not include the Yast::Lan proposal summary" do
         expect(proposal["preformatted_proposal"]).to_not include("rich_text_summary")
@@ -63,6 +78,7 @@ describe Yast::NetworkProposal do
   end
 
   describe "#ask_user" do
+    let(:settings) { Y2Network::ProposalSettings.instance }
     let(:chosen_id) { "" }
     let(:args) do
       {
@@ -103,8 +119,8 @@ describe Yast::NetworkProposal do
         expect(Yast::WFM).to_not receive(:CallFuntion).with("inst_lan", anything)
       end
 
-      it "changes the netwotk backend to wicked" do
-        expect(Yast::NetworkService).to receive(:use_wicked)
+      it "changes the network backend to wicked" do
+        expect(settings).to receive(:enable_wicked!)
 
         subject.ask_user(args)
       end
@@ -122,7 +138,7 @@ describe Yast::NetworkProposal do
       end
 
       it "changes the netwotk backend to NetworkManager" do
-        expect(Yast::NetworkService).to receive(:use_network_manager)
+        expect(settings).to receive(:enable_network_manager!)
 
         subject.ask_user(args)
       end

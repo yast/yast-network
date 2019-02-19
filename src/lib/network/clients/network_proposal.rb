@@ -1,5 +1,6 @@
 require "cgi"
 require "installation/proposal_client"
+require "y2network/proposal_settings"
 
 module Yast
   # Proposal client for Network configuration
@@ -53,8 +54,10 @@ module Yast
   private
 
     def preformatted_proposal
+      return lan_summary unless settings.network_manager_available?
+
       proposal_text = switch_backend_link
-      proposal_text.prepend(Yast::Lan.Summary("proposal")) if wicked_backend?
+      proposal_text.prepend(lan_summary) if wicked_backend?
       proposal_text
     end
 
@@ -88,22 +91,30 @@ module Yast
     end
 
     def switch_to_wicked
-      Yast::NetworkService.use_wicked
+      settings.enable_wicked!
       :next
     end
 
     def switch_to_network_manager
-      Yast::NetworkService.use_network_manager
+      settings.enable_network_manager!
       :next
     end
 
     def wicked_backend?
-      Yast::NetworkService.wicked?
+      settings.backend != :network_manager
     end
 
     # TODO: move to HTML.ycp
     def Hyperlink(href, text)
       Builtins.sformat("<a href=\"%1\">%2</a>", href, CGI.escapeHTML(text))
     end
+  end
+
+  def lan_summary
+    Yast::Lan.Summary("proposal")
+  end
+
+  def settings
+    Y2Network::ProposalSettings.instance
   end
 end
