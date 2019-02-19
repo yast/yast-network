@@ -33,11 +33,16 @@ module Y2Network
 
     # Constructor
     def initialize
+      Yast.import "Arch"
       Yast.import "ProductFeatures"
       Yast.import "PackagesProposal"
       Yast.import "Lan"
 
       @backend = use_network_manager? ? :network_manager : :wicked
+
+      log.info("The default proposed network backend is: #{@backend}")
+
+      @backend
     end
 
     # Adds the NetworkManager package to the {Yast::PackagesProposal} and sets
@@ -66,7 +71,10 @@ module Y2Network
     # @return [Boolean] false if no package available, true otherwise
     def network_manager_available?
       p = Y2Packager::Package.find("NetworkManager").first
-      return false if p.nil?
+      if p.nil?
+        log.info("The NetworkManager package is not available")
+        return false
+      end
       log.info("The NetworkManager package status: #{p.status}")
       true
     end
@@ -112,7 +120,7 @@ module Y2Network
       when "always"
         true
       when "laptop"
-        laptop = Arch.is_laptop
+        laptop = Yast::Arch.is_laptop
         log.info("Is a laptop: #{laptop}")
         laptop
       end
