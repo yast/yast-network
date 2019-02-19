@@ -21,16 +21,29 @@ describe Yast::NetworkProposal do
 
   describe "#make_proposal" do
     let(:settings) { Y2Network::ProposalSettings.create_instance }
-    let(:using_wicked) { true }
+    let(:current_backend) { :wicked }
+    let(:nm_available) { true }
     let(:proposal) { subject.make_proposal({}) }
 
     before do
-      allow(Yast::Lan).to receive(:UseNetworkManager).and_return(!using_wicked)
-      allow(settings).to receive(:network_manager_available?).and_return(true)
+      settings.backend = current_backend
+      allow(settings).to receive(:network_manager_available?).and_return(nm_available)
     end
 
     it "returns a hash describing the proposal" do
       expect(proposal).to include("label_proposal", "preformatted_proposal", "links")
+    end
+
+    context "when NetworkManager is not available" do
+      let(:nm_available) { false }
+
+      it "includes the Yast::Lan proposal summary" do
+        expect(proposal["preformatted_proposal"]).to include("rich_text_summary")
+      end
+
+      it "does not include any link to switch between backends" do
+        expect(proposal["preformatted_proposal"]).to_not match(/.*Using*.*href.*.switch to*./)
+      end
     end
 
     context "when using the wicked backend" do
@@ -48,11 +61,7 @@ describe Yast::NetworkProposal do
     end
 
     context "when using the NetworkManager backend" do
-      before do
-        settings.backend = :network_manager
-      end
-
-      let(:using_wicked) { false }
+      let(:current_backend) { :network_manager }
 
       it "does not include the Yast::Lan proposal summary" do
         expect(proposal["preformatted_proposal"]).to_not include("rich_text_summary")
