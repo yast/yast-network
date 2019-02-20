@@ -584,6 +584,7 @@ describe "LanItems renaming methods" do
 
   before do
     allow(Yast::LanItems).to receive(:Items).and_return(0 => item_0)
+    Yast::Routing.SetDevices(["eth0"])
   end
 
   describe "LanItems#current_name_for" do
@@ -617,6 +618,60 @@ describe "LanItems renaming methods" do
       it "uses the new name to detect the collision" do
         expect(Yast::LanItems.colliding_name_item_id("enp0s3")).to be 0
       end
+    end
+  end
+
+  describe "LanItems.update_routing_devices!" do
+    let(:renamed_to) { "new1" }
+
+    it "updates the list of Routing devices with current device names" do
+      Yast::LanItems.update_routing_devices!
+      expect(Yast::Routing.devices).to eql([renamed_to])
+    end
+  end
+
+  describe "LanItems.update_routing_devices?" do
+    context "when there are no changes in the device names" do
+      it "returns false" do
+        expect(Yast::LanItems.update_routing_devices?).to eql(false)
+      end
+    end
+
+    context "when some interface have been renaming and Routing device names differs" do
+      let(:renamed_to) { "new1" }
+      it "returns true" do
+        expect(Yast::LanItems.update_routing_devices?).to eql(true)
+      end
+    end
+  end
+
+  describe "LanItems.update_routes" do
+    let(:renamed_to) { "new1" }
+
+    let(:original_routes) do
+      [{
+        "destination" => "192.168.1.0",
+        "device"      => "eth0",
+        "gateway"     => "10.1.188.1",
+        "netmask"     => "255.255.255.0"
+      },
+       {
+         "destination" => "default",
+         "device"      => "eth0",
+         "gateway"     => "172.24.88.1",
+         "netmask"     => "-"
+       }]
+    end
+
+    before do
+      Yast::Routing.Routes = original_routes
+    end
+
+    it "modifies all existent device routes with the current device name" do
+      Yast::LanItems.update_routes!("eth0")
+      routes = Yast::Routing.Routes().select { |r| r["device"] == renamed_to }
+      expect(routes.size).to eql(2)
+      expect(routes.map { |r| r["destination"] }.sort).to eql(["default", "192.168.1.0"].sort)
     end
   end
 end
