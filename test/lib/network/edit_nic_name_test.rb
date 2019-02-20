@@ -66,9 +66,9 @@ describe Yast::EditNicName do
         allow(Yast::UI).to receive(:QueryWidget).with(:dev_name, :Value) { new_name }
         allow(Yast::UI).to receive(:QueryWidget).with(:udev_type, :CurrentButton) { :mac }
         allow(Yast::UI).to receive(:UserInput) { :ok }
-        allow(subject).to receive(:update_routing_devices!)
+        allow(Yast::LanItems).to receive(:update_routing_devices!)
         allow(subject).to receive(:update_routes?).and_return(false)
-        allow(subject).to receive(:update_routes!)
+        allow(Yast::LanItems).to receive(:update_routes!)
       end
 
       context "and closed confirming the changes" do
@@ -87,7 +87,7 @@ describe Yast::EditNicName do
         end
 
         it "updates the Routing devices list with the new name" do
-          expect(subject).to receive(:update_routing_devices!).and_call_original
+          expect(Yast::LanItems).to receive(:update_routing_devices!).and_call_original
           subject.run
           expect(Yast::Routing.devices).to include(new_name)
         end
@@ -96,7 +96,7 @@ describe Yast::EditNicName do
           before do
             allow(Yast::Routing).to receive(:device_routes?).with(current_name).and_return(true)
             expect(subject).to receive(:update_routes?).with(current_name).and_call_original
-            allow(subject).to receive(:update_routes!).with(current_name)
+            allow(Yast::LanItems).to receive(:update_routes!).with(current_name)
           end
 
           it "asks the user about updating the routes device name" do
@@ -107,14 +107,14 @@ describe Yast::EditNicName do
 
           it "updates the routes if the user accepts to do it" do
             expect(Yast::Popup).to receive(:YesNoHeadline).and_return(true)
-            expect(subject).to receive(:update_routes!).with(current_name)
+            expect(Yast::LanItems).to receive(:update_routes!).with(current_name)
 
             subject.run
           end
 
           it "does not touch the routes if the user does not want to touch them" do
             expect(Yast::Popup).to receive(:YesNoHeadline).and_return(false)
-            expect(subject).to_not receive(:update_routes!)
+            expect(Yast::LanItems).to_not receive(:update_routes!)
             subject.run
           end
         end

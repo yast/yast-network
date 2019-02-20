@@ -1373,7 +1373,7 @@ module Yast
 
         # When virtual interfaces are added the list of routing devices needs
         # to be updated to offer them
-        update_routing_devices! if update_routing_devices?
+        LanItems.update_routing_devices! if LanItems.update_routing_devices?
       end
 
       if LanItems.type == "vlan"
@@ -1439,19 +1439,6 @@ module Yast
 
       # #65524
       @settings["BOOTPROTO"] = "static" if LanItems.operation == :add && @force_static_ip
-    end
-
-    # Return wether the {Yast:Routing} devices list needs to be updated or not
-    # to include the current interface name
-    #
-    # @return [Boolean] false if the current interface name is already present
-    def update_routing_devices?
-      !Routing.devices.include?(LanItems.current_name)
-    end
-
-    # Convenience method to update the {Yast::Routing} devices list
-    def update_routing_devices!
-      Routing.SetDevices(LanItems.current_device_names)
     end
 
     # Given a map of duplicated port ids with device names, aks the user if he

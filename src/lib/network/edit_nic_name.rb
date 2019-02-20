@@ -76,8 +76,8 @@ module Yast
         LanItems.update_item_udev_rule!(udev_type)
 
         if new_name != old_name
-          update_routing_devices!
-          update_routes!(old_name) if update_routes?(old_name)
+          LanItems.update_routing_devices!
+          LanItems.update_routes!(old_name) if update_routes?(old_name)
         end
       end
 
@@ -180,18 +180,6 @@ module Yast
           "'#{previous_name}'",
           "'#{LanItems.current_name}'")
       )
-    end
-
-    # It modifies the interface name with the new one of all the routes
-    # that belongs to the current renamed {LanItem}
-    def update_routes!(previous_name)
-      Routing.device_routes(previous_name).each do |route|
-        route["device"] = LanItems.current_name
-      end
-    end
-
-    def update_routing_devices!
-      Routing.SetDevices(LanItems.current_device_names)
     end
   end
 end
