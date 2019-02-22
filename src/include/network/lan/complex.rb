@@ -374,6 +374,7 @@ module Yast
       if Ops.get_string(event, "EventReason", "") == "Activated"
         case Ops.get_symbol(event, "ID")
         when :add
+          LanItems.create_backup!
           LanItems.AddNew
           Lan.Add
 
@@ -388,6 +389,7 @@ module Yast
 
           return :add
         when :edit
+          LanItems.create_backup!
           if LanItems.IsCurrentConfigured
             LanItems.SetItem
 

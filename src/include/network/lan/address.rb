@@ -1336,6 +1336,14 @@ module Yast
       Builtins.y2milestone("ShowAndRun: %1", ret)
 
       if ret != :back && ret != :abort
+        # When virtual interfaces are added the list of routing devices needs
+        # to be updated to offer them
+        LanItems.update_routing_devices! if LanItems.update_routing_devices?
+        if !@settings.fetch("IFCFG", "").empty? && (@settings["IFCFG"] != LanItems.device)
+          LanItems.update_routes!(@settings["IFCFG"]) if update_routes?(@settings["IFCFG"])
+        end
+
+        LanItems.reset_backup!
         # general tab
         LanItems.startmode = Ops.get_string(@settings, "STARTMODE", "")
         LanItems.mtu = Ops.get_string(@settings, "MTU", "")
@@ -1371,27 +1379,23 @@ module Yast
           end
         end
 
-        # When virtual interfaces are added the list of routing devices needs
-        # to be updated to offer them
-        LanItems.update_routing_devices! if LanItems.update_routing_devices?
-      end
-
-      if LanItems.type == "vlan"
-        LanItems.vlan_etherdevice = Ops.get_string(@settings, "ETHERDEVICE", "")
-        LanItems.vlan_id = Builtins.tostring(
-          Ops.get_integer(@settings, "VLAN_ID", 0)
-        )
-      elsif Builtins.contains(["tun", "tap"], LanItems.type)
-        LanItems.tunnel_set_owner = Ops.get_string(
-          @settings,
-          "TUNNEL_SET_OWNER",
-          ""
-        )
-        LanItems.tunnel_set_group = Ops.get_string(
-          @settings,
-          "TUNNEL_SET_GROUP",
-          ""
-        )
+        if LanItems.type == "vlan"
+          LanItems.vlan_etherdevice = Ops.get_string(@settings, "ETHERDEVICE", "")
+          LanItems.vlan_id = Builtins.tostring(
+            Ops.get_integer(@settings, "VLAN_ID", 0)
+          )
+        elsif Builtins.contains(["tun", "tap"], LanItems.type)
+          LanItems.tunnel_set_owner = Ops.get_string(
+            @settings,
+            "TUNNEL_SET_OWNER",
+            ""
+          )
+          LanItems.tunnel_set_group = Ops.get_string(
+            @settings,
+            "TUNNEL_SET_GROUP",
+            ""
+          )
+        end
       end
 
       # proceed with WLAN settings if appropriate, #42420
@@ -1401,6 +1405,25 @@ module Yast
     end
 
   private
+
+    # When an interface name has changed, it returns whether the user wants to
+    # update the interface name in the related routes or not.
+    #
+    # return [Boolean] whether the routes have to be updated or not
+    def update_routes?(previous_name)
+      return false unless Routing.device_routes?(previous_name)
+
+      Popup.YesNoHeadline(
+        Label.WarningMsg,
+        # TRANSLATORS: Ask for fixing a possible conflict after renaming
+        # an interface, %s are the previous and current interface names
+        format(_("The interface %s has been renamed to %s. There are \n" \
+                  "some routes that still use the previous name.\n\n" \
+                  "Would you like to update them now?\n"),
+          "'#{previous_name}'",
+          "'#{LanItems.current_name}'")
+      )
+    end
 
     # Initializes the Address Dialog @settings with the corresponding LanItems values
     def initialize_address_settings

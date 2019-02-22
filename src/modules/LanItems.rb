@@ -50,6 +50,7 @@ module Yast
     attr_reader :ipoib_modes
     attr_accessor :ipoib_mode
     attr_accessor :firewall_zone
+    attr_accessor :current_backup
 
     include Logger
     include Wicked
@@ -1993,6 +1994,7 @@ module Yast
     def Commit
       if @operation != :add && @operation != :edit
         log.error("Unknown operation: #{@operation}")
+        reset_backup!
         raise ArgumentError, "Unknown operation: #{@operation}"
       end
 
@@ -2184,22 +2186,21 @@ module Yast
       end
 
       @operation = nil
+      reset_backup!
       true
     end
 
     # Remove a half-configured item.
     # @return [true] so that this can be used for the :abort callback
     def Rollback
-      log.info "rollback item #{@current}"
+      log.info "rollback item #{@current} and operation #{LanItems.operation}"
       # Do not delete elements that are :edited but does not contain hwinfo
       # yet (Add a virtual device and then edit it canceling the process during the
       # edition)
       if LanItems.operation == :add && getCurrentItem.fetch("hwinfo", {}).empty?
         LanItems.Items.delete(@current)
-      elsif IsCurrentConfigured()
-        if !getNetworkInterfaces.include?(getCurrentItem["ifcfg"])
-          LanItems.Items[@current].delete("ifcfg")
-        end
+      else
+        LanItems.restore_backup!
       end
 
       true
@@ -2655,6 +2656,7 @@ module Yast
     # Return the current name of the {LanItem} given
     #
     # @param item_id [Integer] a key for {#Items}
+    # @return [String] device name
     def current_name_for(item_id)
       renamed?(item_id) ? renamed_to(item_id) : GetDeviceName(item_id)
     end
@@ -2685,6 +2687,21 @@ module Yast
     # that belongs to the current renamed {LanItem}
     def update_routes!(previous_name)
       Routing.device_routes(previous_name).each { |r| r["device"] = current_name }
+    end
+
+    def restore_backup!
+      return unless current_backup
+
+      Items()[@current] = Marshal.load(current_backup)
+      reset_backup!
+    end
+
+    def create_backup!
+      @current_backup = Marshal.dump(getCurrentItem)
+    end
+
+    def reset_backup!
+      @current_backup = nil
     end
 
   private
