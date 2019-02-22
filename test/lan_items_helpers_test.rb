@@ -572,13 +572,7 @@ describe "LanItems renaming methods" do
   let(:item_0) do
     {
       "ifcfg"      => "eth0",
-      "renamed_to" => renamed_to,
-      "udev"       => {
-        "net" => [
-          "ATTR{address}==\"24:be:05:ce:1e:91\"",
-          "NAME=\"#{renamed_to}\""
-        ]
-      }
+      "renamed_to" => renamed_to
     }
   end
 
@@ -603,20 +597,20 @@ describe "LanItems renaming methods" do
     end
   end
 
-  describe "LanItems#colliding_name_item_id" do
+  describe "LanItems#colliding_item" do
     it "returns nothing if no collision was found" do
-      expect(Yast::LanItems.colliding_name_item_id("enp0s3")).to be nil
+      expect(Yast::LanItems.colliding_item("enp0s3")).to be nil
     end
 
     it "returns the Item index which is in collision" do
-      expect(Yast::LanItems.colliding_name_item_id("eth0")).to be 0
+      expect(Yast::LanItems.colliding_item("eth0")).to be 0
     end
 
     context "if some of the devices were renamed" do
       let(:renamed_to) { "enp0s3" }
 
       it "uses the new name to detect the collision" do
-        expect(Yast::LanItems.colliding_name_item_id("enp0s3")).to be 0
+        expect(Yast::LanItems.colliding_item("enp0s3")).to be 0
       end
     end
   end

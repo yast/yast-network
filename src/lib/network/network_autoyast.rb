@@ -344,7 +344,7 @@ module Yast
         log.info("Matching device found - renaming <#{name_from}> -> <#{name_to}>")
 
         # rename item in collision
-        rename_lan_item(LanItems.colliding_name_item_id(name_to), name_from)
+        rename_lan_item(LanItems.colliding_item(name_to), name_from)
 
         # rename matching item
         rename_lan_item(item_id, name_to, attr, key)

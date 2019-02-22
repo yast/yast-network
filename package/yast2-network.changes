@@ -1,11 +1,12 @@
 -------------------------------------------------------------------
 Thu Feb 21 17:50:32 UTC 2019 - knut.anderssen@suse.com
 
-- When renaming a interface (bsc#1060207):
+- When renaming an interface (bsc#1060207):
   - Offer to the user the option to update device routes that
     belongs to the previous interface name.
   - Update the Routing devices list with the new one when needed.
-- Only delete a LanItem when canceling an addition (bsc#998540)
+- Do not drop configured elements from the list when canceling
+  an edition (bsc#998540)
 - 4.1.41
 
 -------------------------------------------------------------------

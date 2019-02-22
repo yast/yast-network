@@ -31,7 +31,7 @@ describe "LanItemsClass" do
   describe "#Rollback" do
     context "when the current item is edited" do
       before do
-        Yast::LanItems.operation = :edited
+        Yast::LanItems.operation = :edit
         subject.Items = mocked_items
         subject.current = 1
       end

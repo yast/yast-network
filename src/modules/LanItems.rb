@@ -2663,7 +2663,7 @@ module Yast
     #
     # @param name [String] a device name (eth0, ...)
     # @return [Integer, nil] item id (see LanItems::Items)
-    def colliding_name_item_id(name)
+    def colliding_item(name)
       item_id, _item_map = Items().find { |i, _| name == current_name_for(i) }
       item_id
     end
