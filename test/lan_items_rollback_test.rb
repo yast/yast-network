@@ -29,8 +29,9 @@ describe "LanItemsClass" do
   end
 
   describe "#Rollback" do
-    context "when the current item is committed" do
+    context "when the current item is edited" do
       before do
+        Yast::LanItems.operation = :edit
         subject.Items = mocked_items
         subject.current = 1
       end
@@ -41,8 +42,9 @@ describe "LanItemsClass" do
       end
     end
 
-    context "when the current item is uncommitted; without hwinfo" do
+    context "when the current item is added (configured without hwinfo)" do
       before do
+        Yast::LanItems.operation = :add
         subject.Items = mocked_items
         subject.current = 2
       end
@@ -53,8 +55,9 @@ describe "LanItemsClass" do
       end
     end
 
-    context "when the current item is uncommitted; with hwinfo" do
+    context "when the current item is edited; (unconfigured but with hwinfo)" do
       before do
+        Yast::LanItems.operation = :edit
         subject.Items = mocked_items
         subject.current = 3
       end

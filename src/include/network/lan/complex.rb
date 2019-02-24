@@ -454,6 +454,7 @@ module Yast
           end
 
           LanItems.DeleteItem
+          LanItems.update_routing_devices!
           initOverview("")
         end
       end

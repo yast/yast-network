@@ -6,6 +6,7 @@ module Yast
   Yast.import "UI"
   Yast.import "LanItems"
   Yast.import "Popup"
+  Yast.import "Routing"
 
   # The class represents a simple dialog which allows user to input new NIC
   # name. It also allows to select a device attribute (MAC, Bus id, ...) which will
@@ -13,6 +14,11 @@ module Yast
   class EditNicName
     include UIShortcuts
     include I18n
+
+    # @return [String] current udev name before modifying it
+    attr_accessor :old_name
+    # @return [String] current udev match criteria
+    attr_accessor :old_key
 
     # udev rule attribute for MAC address
     MAC_UDEV_ATTR   = "ATTR{address}".freeze
@@ -68,11 +74,16 @@ module Yast
         # FIXME: it changes udev key used for device identification
         #  and / or its value only, name is changed elsewhere
         LanItems.update_item_udev_rule!(udev_type)
+
+        if new_name != old_name
+          LanItems.update_routing_devices!
+          LanItems.update_routes!(old_name) if update_routes?(old_name)
+        end
       end
 
       close
 
-      new_name || @old_name
+      new_name || old_name
     end
 
   private
@@ -84,7 +95,7 @@ module Yast
           Left(
             HBox(
               Label(_("Device Name:")),
-              InputField(Id(:dev_name), Opt(:hstretch), "", @old_name)
+              InputField(Id(:dev_name), Opt(:hstretch), "", old_name)
             )
           ),
           VSpacing(0.5),
@@ -118,7 +129,7 @@ module Yast
         )
       )
 
-      case @old_key
+      case old_key
       when MAC_UDEV_ATTR
         UI.ChangeWidget(Id(:udev_type), :CurrentButton, :mac)
       when BUSID_UDEV_ATTR
@@ -150,6 +161,25 @@ module Yast
       end
 
       true
+    end
+
+    # When an interface name has changed, it returns whether the user wants to
+    # update the interface name in the related routes or not.
+    #
+    # return [Boolean] whether the routes have to be updated or not
+    def update_routes?(previous_name)
+      return false unless Routing.device_routes?(previous_name)
+
+      Popup.YesNoHeadline(
+        Label.WarningMsg,
+        # TRANSLATORS: Ask for fixing a possible conflict after renaming
+        # an interface, %s are the previous and current interface names
+        format(_("The interface %s has been renamed to %s. There are \n" \
+                  "some routes that still use the previous name.\n\n" \
+                  "Would you like to update them now?\n"),
+          "'#{previous_name}'",
+          "'#{LanItems.current_name}'")
+      )
     end
   end
 end

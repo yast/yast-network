@@ -34,6 +34,7 @@ module Yast
   module NetworkLanAddressInclude
     include Y2Firewall::Helpers::Interfaces
     include Yast::Logger
+    include Yast::I18n
     include ::UI::TextHelpers
 
     def initialize_network_lan_address(include_target)
@@ -1264,6 +1265,8 @@ module Yast
       end
 
       @settings["IFCFG"] = LanItems.device if LanItems.operation != :add
+
+      # Firewall config
       firewall_zone = Y2Network::Widgets::FirewallZone.new(LanItems.device)
       wd["FWZONE"] = firewall_zone.cwm_definition
       firewall_zone.value = @settings["FWZONE"] if firewalld.installed?
@@ -1367,6 +1370,10 @@ module Yast
             Routing.RemoveDefaultGw
           end
         end
+
+        # When virtual interfaces are added the list of routing devices needs
+        # to be updated to offer them
+        LanItems.update_routing_devices! if LanItems.update_routing_devices?
       end
 
       if LanItems.type == "vlan"
@@ -1389,8 +1396,6 @@ module Yast
 
       # proceed with WLAN settings if appropriate, #42420
       ret = :wire if ret == :next && LanItems.type == "wlan"
-
-      Routing.SetDevices(NetworkInterfaces.List("")) if ret == :routing
 
       deep_copy(ret)
     end

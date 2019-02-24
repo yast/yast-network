@@ -408,41 +408,6 @@ describe "NetworkAutoYast" do
         )
     end
 
-    describe "#item_name" do
-      it "returns old name when the device has not been renamed" do
-        mock_lan_item
-
-        expect(network_autoyast.send(:item_name, 0)).to eql "eth0"
-      end
-
-      it "returns new name when the device has been renamed" do
-        new_name = "new1"
-        mock_lan_item(renamed_to: new_name)
-
-        expect(network_autoyast.send(:item_name, 0)).to eql new_name
-      end
-    end
-
-    describe "#colliding_item" do
-      it "returns nothing if no collision was found" do
-        mock_lan_item
-
-        expect(network_autoyast.send(:colliding_item, "enp0s3")).to be nil
-      end
-
-      it "returns device name which is in collision" do
-        mock_lan_item
-
-        expect(network_autoyast.send(:colliding_item, "eth0")).to be 0
-      end
-
-      it "returns device name when the device was already renamed before and we new name is in collision" do
-        mock_lan_item(renamed_to: "enp0s3")
-
-        expect(network_autoyast.send(:colliding_item, "enp0s3")).to be 0
-      end
-    end
-
     describe "#assign_udevs_to_devs" do
       Yast.import "LanItems"
 

@@ -376,31 +376,6 @@ context "When proposing device names candidates" do
     end
   end
 
-  describe "LanItems#dhcp_ntp_servers" do
-    it "lists ntp servers for every device which provides them" do
-      result = {
-        "eth0" => ["1.0.0.1"],
-        "eth1" => ["1.0.0.2", "1.0.0.3"]
-      }
-
-      allow(Yast::LanItems)
-        .to receive(:parse_ntp_servers)
-        .and_return([])
-      allow(Yast::LanItems)
-        .to receive(:parse_ntp_servers)
-        .with("eth0")
-        .and_return(["1.0.0.1"])
-      allow(Yast::LanItems)
-        .to receive(:parse_ntp_servers)
-        .with("eth1")
-        .and_return(["1.0.0.2", "1.0.0.3"])
-      allow(Yast::LanItems)
-        .to receive(:find_dhcp_ifaces)
-        .and_return(["eth0", "eth1", "eth2"])
-
-      expect(Yast::LanItems.dhcp_ntp_servers).to eql result
-    end
-  end
 end
 
 describe "LanItems#dhcp_ntp_servers" do
@@ -587,6 +562,110 @@ describe "DHCLIENT_SET_HOSTNAME helpers" do
 
       expect(Yast::LanItems.invalid_dhcp_cfgs).to be_empty
       expect(Yast::LanItems.valid_dhcp_cfg?).to be true
+    end
+  end
+end
+
+describe "LanItems renaming methods" do
+  let(:renamed_to) { nil }
+  let(:current) { 0 }
+  let(:item_0) do
+    {
+      "ifcfg"      => "eth0",
+      "renamed_to" => renamed_to
+    }
+  end
+
+  before do
+    allow(Yast::LanItems).to receive(:Items).and_return(0 => item_0)
+    Yast::Routing.SetDevices(["eth0"])
+  end
+
+  describe "LanItems#current_name_for" do
+    context "when the LanItem has not been renamed" do
+      it "returns the item name" do
+        expect(Yast::LanItems.current_name_for(0)).to eql "eth0"
+      end
+    end
+
+    context "when the LanItem has been renamed" do
+      let(:renamed_to) { "new1" }
+
+      it "returns the new name" do
+        expect(Yast::LanItems.current_name_for(0)).to eql "new1"
+      end
+    end
+  end
+
+  describe "LanItems#colliding_item" do
+    it "returns nothing if no collision was found" do
+      expect(Yast::LanItems.colliding_item("enp0s3")).to be nil
+    end
+
+    it "returns the Item index which is in collision" do
+      expect(Yast::LanItems.colliding_item("eth0")).to be 0
+    end
+
+    context "if some of the devices were renamed" do
+      let(:renamed_to) { "enp0s3" }
+
+      it "uses the new name to detect the collision" do
+        expect(Yast::LanItems.colliding_item("enp0s3")).to be 0
+      end
+    end
+  end
+
+  describe "LanItems.update_routing_devices!" do
+    let(:renamed_to) { "new1" }
+
+    it "updates the list of Routing devices with current device names" do
+      Yast::LanItems.update_routing_devices!
+      expect(Yast::Routing.devices).to eql([renamed_to])
+    end
+  end
+
+  describe "LanItems.update_routing_devices?" do
+    context "when there are no changes in the device names" do
+      it "returns false" do
+        expect(Yast::LanItems.update_routing_devices?).to eql(false)
+      end
+    end
+
+    context "when some interface have been renaming and Routing device names differs" do
+      let(:renamed_to) { "new1" }
+      it "returns true" do
+        expect(Yast::LanItems.update_routing_devices?).to eql(true)
+      end
+    end
+  end
+
+  describe "LanItems.update_routes" do
+    let(:renamed_to) { "new1" }
+
+    let(:original_routes) do
+      [{
+        "destination" => "192.168.1.0",
+        "device"      => "eth0",
+        "gateway"     => "10.1.188.1",
+        "netmask"     => "255.255.255.0"
+      },
+       {
+         "destination" => "default",
+         "device"      => "eth0",
+         "gateway"     => "172.24.88.1",
+         "netmask"     => "-"
+       }]
+    end
+
+    before do
+      Yast::Routing.Routes = original_routes
+    end
+
+    it "modifies all existent device routes with the current device name" do
+      Yast::LanItems.update_routes!("eth0")
+      routes = Yast::Routing.Routes().select { |r| r["device"] == renamed_to }
+      expect(routes.size).to eql(2)
+      expect(routes.map { |r| r["destination"] }.sort).to eql(["default", "192.168.1.0"].sort)
     end
   end
 end

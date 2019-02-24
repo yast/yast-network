@@ -58,6 +58,7 @@ module Yast
       Yast.import "UI"
       textdomain "network"
 
+      Yast.import "Routing"
       Yast.import "NetworkInterfaces"
       Yast.import "ProductFeatures"
       Yast.import "NetworkConfig"
@@ -274,6 +275,20 @@ module Yast
       return [] unless items
 
       items.map { |itemId| GetDeviceName(itemId) }.reject(&:empty?)
+    end
+
+    # Return the actual name of the current {LanItem}
+    #
+    # @return [String] the actual name for the current device
+    def current_name
+      current_name_for(@current)
+    end
+
+    # Return the current device names
+    #
+    # @ return [Array<String>]
+    def current_device_names
+      GetNetcardInterfaces().map { |i| current_name_for(i) }.reject(&:empty?)
     end
 
     # Returns device name for current lan item (see LanItems::current)
@@ -2176,7 +2191,10 @@ module Yast
     # @return [true] so that this can be used for the :abort callback
     def Rollback
       log.info "rollback item #{@current}"
-      if getCurrentItem.fetch("hwinfo", {}).empty?
+      # Do not delete elements that are :edited but does not contain hwinfo
+      # yet (Add a virtual device and then edit it canceling the process during the
+      # edition)
+      if LanItems.operation == :add && getCurrentItem.fetch("hwinfo", {}).empty?
         LanItems.Items.delete(@current)
       elsif IsCurrentConfigured()
         if !getNetworkInterfaces.include?(getCurrentItem["ifcfg"])
@@ -2632,6 +2650,41 @@ module Yast
       return true if bond_index[ifcfg_name] || bridge_index[ifcfg_name]
 
       false
+    end
+
+    # Return the current name of the {LanItem} given
+    #
+    # @param item_id [Integer] a key for {#Items}
+    def current_name_for(item_id)
+      renamed?(item_id) ? renamed_to(item_id) : GetDeviceName(item_id)
+    end
+
+    # Finds a LanItem which name is in collision to the provided name
+    #
+    # @param name [String] a device name (eth0, ...)
+    # @return [Integer, nil] item id (see LanItems::Items)
+    def colliding_item(name)
+      item_id, _item_map = Items().find { |i, _| name == current_name_for(i) }
+      item_id
+    end
+
+    # Return wether the {Yast:Routing} devices list needs to be updated or not
+    # to include the current interface name
+    #
+    # @return [Boolean] false if the current interface name is already present
+    def update_routing_devices?
+      !Routing.devices.include?(current_name)
+    end
+
+    # Convenience method to update the {Yast::Routing} devices list
+    def update_routing_devices!
+      Routing.SetDevices(current_device_names)
+    end
+
+    # It modifies the interface name with the new one of all the routes
+    # that belongs to the current renamed {LanItem}
+    def update_routes!(previous_name)
+      Routing.device_routes(previous_name).each { |r| r["device"] = current_name }
     end
 
   private
