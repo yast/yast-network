@@ -29,7 +29,7 @@ module Y2Network
     include Yast::I18n
 
     # @return [Boolean] network service to be used after the installation
-    attr_accessor :backend
+    attr_accessor :selected_backend
 
     # Constructor
     def initialize
@@ -39,29 +39,47 @@ module Y2Network
       Yast.import "PackagesProposal"
       Yast.import "Lan"
 
-      @backend = use_network_manager? ? :network_manager : :wicked
-      log.info("The default proposed network backend is: #{@backend}")
-      @backend
+      @selected_backend = nil
+    end
+
+    def current_backend
+      selected_backend || default_backend
+    end
+
+    def default_backend
+      default = use_network_manager? ? :network_manager : :wicked
+      log.info "The default backend is: #{default}"
+      default
     end
 
     # Adds the NetworkManager package to the {Yast::PackagesProposal} and sets
     # NetworkManager as the backend to be used
     def enable_network_manager!
-      Yast::PackagesProposal.AddResolvables("network", :package, ["NetworkManager"])
-      Yast::PackagesProposal.RemoveResolvables("network", :package, ["wicked"])
-
       log.info "Enabling NetworkManager"
-      self.backend = :network_manager
+      self.selected_backend = :network_manager
+      refresh_packages
+
+      selected_backend
     end
 
     # Add the wicked package to the {Yast::PackagesProposal} and sets wicked
     # as the backend to be used
     def enable_wicked!
-      Yast::PackagesProposal.AddResolvables("network", :package, ["wicked"])
-      Yast::PackagesProposal.RemoveResolvables("network", :package, ["NetworkManager"])
-
       log.info "Enabling Wicked"
-      self.backend = :wicked
+      self.selected_backend = :wicked
+      refresh_packages
+
+      selected_backend
+    end
+
+    def refresh_packages
+      if current_backend == :network_manager
+        Yast::PackagesProposal.AddResolvables("network", :package, ["NetworkManager"])
+        Yast::PackagesProposal.RemoveResolvables("network", :package, ["wicked"])
+      else
+        Yast::PackagesProposal.AddResolvables("network", :package, ["wicked"])
+        Yast::PackagesProposal.RemoveResolvables("network", :package, ["NetworkManager"])
+      end
     end
 
     # Convenience method to obtain whether the NetworkManager package is
@@ -82,7 +100,7 @@ module Y2Network
     # depending on the backend selected during the proposal and the packages
     # installed
     def network_service
-      case backend
+      case current_backend
       when :network_manager
         network_manager_installed? ? :network_manager : :wicked
       else

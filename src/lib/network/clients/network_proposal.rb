@@ -20,7 +20,7 @@ module Yast
 
       textdomain "installation"
 
-      wicked_backend? ? settings.enable_wicked! : settings.enable_network_manager!
+      settings.refresh_packages
     end
 
     def description
@@ -103,7 +103,7 @@ module Yast
     end
 
     def wicked_backend?
-      settings.backend != :network_manager
+      settings.current_backend != :network_manager
     end
 
     # TODO: move to HTML.ycp

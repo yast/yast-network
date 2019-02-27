@@ -26,7 +26,7 @@ describe Yast::NetworkProposal do
     let(:proposal) { subject.make_proposal({}) }
 
     before do
-      settings.backend = current_backend
+      settings.selected_backend = current_backend
       allow(settings).to receive(:network_manager_available?).and_return(nm_available)
     end
 
