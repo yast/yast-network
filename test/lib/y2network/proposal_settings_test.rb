@@ -19,19 +19,6 @@ describe Y2Network::ProposalSettings do
     Yast::ProductFeatures.Import(features)
   end
 
-  def expect_backend(name)
-    case name
-    when :network_manager
-      expect_any_instance_of(described_class)
-        .to receive(:enable_network_manager!).and_call_original
-      expect(created_instance.backend).to eql(:network_manager)
-    else
-      expect_any_instance_of(described_class)
-        .to receive(:enable_wicked!).and_call_original
-      expect(created_instance.backend).to eql(:wicked)
-    end
-  end
-
   describe ".instance" do
     context "no instance has been created yet" do
       before do
@@ -73,9 +60,7 @@ describe Y2Network::ProposalSettings do
     end
 
     context "when the NetworkManager package is not available" do
-      it "enables :wicked as the default backend" do
-        expect_any_instance_of(described_class)
-          .to receive(:enable_wicked!).and_call_original
+      it "sets :wicked as the default backend" do
         expect(created_instance.backend).to eql(:wicked)
       end
     end
@@ -87,23 +72,23 @@ describe Y2Network::ProposalSettings do
         context "and neither .network.network_manager_is_default is" do
           let(:feature) { { "network" => {} } }
 
-          it "enables :wicked as the default backend" do
-            expect_backend(:wicked)
+          it "sets :wicked as the default backend" do
+            expect(created_instance.backend).to eql(:wicked)
           end
         end
 
         context "but .network.network_manager_is_default is" do
           let(:feature) { { "network" => { "network_manager_is_default" => true } } }
 
-          it "enables :network_manager as the default backend" do
-            expect_backend(:network_manager)
+          it "sets :network_manager as the default backend" do
+            expect(created_instance.backend).to eql(:network_manager)
           end
         end
       end
 
       context "and the ProductFeature .network.network_manager is 'always'" do
-        it "enables :network_manager as the default backend" do
-          expect_backend(:network_manager)
+        it "sets :network_manager as the default backend" do
+          expect(created_instance.backend).to eql(:network_manager)
         end
       end
 
@@ -116,15 +101,15 @@ describe Y2Network::ProposalSettings do
         end
 
         context "and the machine is a laptop" do
-          it "enables :network_manager as the backend to be used" do
-            expect_backend(:network_manager)
+          it "sets :network_manager as the backend to be used" do
+          expect(created_instance.backend).to eql(:network_manager)
           end
         end
 
         context "and the machine is not a laptop" do
           let(:is_laptop) { false }
-          it "enables :wicked as the backend to be used" do
-            expect_backend(:wicked)
+          it "sets :wicked as the backend to be used" do
+            expect(created_instance.backend).to eql(:wicked)
           end
         end
       end
@@ -219,6 +204,42 @@ describe Y2Network::ProposalSettings do
       it "logs the status of the NetworkManager package" do
         expect(settings.log).to receive(:info).with(/status: available/)
         settings.network_manager_available?
+      end
+    end
+  end
+
+  describe "#network_service" do
+    let(:settings) { described_class.instance }
+    let(:backend) { :wicked }
+    let(:nm_installed) { true }
+
+    before do
+      allow(settings).to receive(:backend).and_return(backend)
+      allow(Yast::Package).to receive(:Installed)
+        .with("NetworkManager").and_return(nm_installed)
+    end
+
+    context "when the backend selected is wicked" do
+      it "returns :wicked" do
+        expect(settings.network_service).to eql(:wicked)
+      end
+    end
+
+    context "when the backend selected is NetworkManager" do
+      let(:backend) { :network_manager }
+
+      context "and the NetworkManager package is installed" do
+        it "returns :network_manager" do
+          expect(settings.network_service).to eql(:network_manager)
+        end
+      end
+
+      context "and the NetworkManager package is not installed" do
+        let(:nm_installed) { false }
+
+        it "returns :wicked" do
+          expect(settings.network_service).to eql(:wicked)
+        end
       end
     end
   end

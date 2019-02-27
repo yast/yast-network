@@ -19,6 +19,8 @@ module Yast
       Yast.import "LanItems"
 
       textdomain "installation"
+
+      wicked_backend? ? settings.enable_wicked! : settings.enable_network_manager!
     end
 
     def description

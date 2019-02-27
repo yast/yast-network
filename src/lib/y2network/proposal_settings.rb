@@ -35,10 +35,11 @@ module Y2Network
     def initialize
       Yast.import "Arch"
       Yast.import "ProductFeatures"
+      Yast.import "Package"
       Yast.import "PackagesProposal"
       Yast.import "Lan"
 
-      use_network_manager? ? enable_network_manager! : enable_wicked!
+      @backend = use_network_manager? ? :network_manager : :wicked
       log.info("The default proposed network backend is: #{@backend}")
       @backend
     end
@@ -77,6 +78,18 @@ module Y2Network
       true
     end
 
+    # Propose the network service to be use at the end of the installation
+    # depending on the backend selected during the proposal and the packages
+    # installed
+    def network_service
+      case backend
+      when :network_manager
+        network_manager_installed? ? :network_manager : :wicked
+      else
+        :wicked
+      end
+    end
+
     class << self
       # Singleton instance
       def instance
@@ -103,6 +116,13 @@ module Y2Network
       return false unless network_manager_available?
 
       network_manager_default?
+    end
+
+    # Convenience method to determine if the NM package is installed or not
+    #
+    # @return [Boolean] true if NetworkManager is installed; false otherwise
+    def network_manager_installed?
+      Yast::Package.Installed("NetworkManager")
     end
 
     # Determine whether NetworkManager should be selected by default according
