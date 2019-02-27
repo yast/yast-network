@@ -19,6 +19,19 @@ describe Y2Network::ProposalSettings do
     Yast::ProductFeatures.Import(features)
   end
 
+  def expect_backend(name)
+    case name
+    when :network_manager
+      expect_any_instance_of(described_class)
+        .to receive(:enable_network_manager!).and_call_original
+      expect(created_instance.backend).to eql(:network_manager)
+    else
+      expect_any_instance_of(described_class)
+        .to receive(:enable_wicked!).and_call_original
+      expect(created_instance.backend).to eql(:wicked)
+    end
+  end
+
   describe ".instance" do
     context "no instance has been created yet" do
       before do
@@ -51,6 +64,7 @@ describe Y2Network::ProposalSettings do
   describe ".create_instance" do
     let(:created_instance) { described_class.create_instance }
     let(:logger) { double(info: true) }
+    let(:nm_available) { false }
 
     it "creates a new network proposal settings instance" do
       instance = described_class.instance
@@ -59,35 +73,37 @@ describe Y2Network::ProposalSettings do
     end
 
     context "when the NetworkManager package is not available" do
-      let(:nm_available) { false }
-
-      it "sets :wicked as the default backend" do
+      it "enables :wicked as the default backend" do
+        expect_any_instance_of(described_class)
+          .to receive(:enable_wicked!).and_call_original
         expect(created_instance.backend).to eql(:wicked)
       end
     end
 
     context "when the NetworkManager package is available" do
+      let(:nm_available) { true }
+
       context "and the ProductFeature .network.network_manager is not defined" do
         context "and neither .network.network_manager_is_default is" do
           let(:feature) { { "network" => {} } }
 
-          it "sets :wicked as the default backend" do
-            expect(created_instance.backend).to eql(:wicked)
+          it "enables :wicked as the default backend" do
+            expect_backend(:wicked)
           end
         end
 
         context "but .network.network_manager_is_default is" do
           let(:feature) { { "network" => { "network_manager_is_default" => true } } }
 
-          it "sets :network_manager as the default backend" do
-            expect(created_instance.backend).to eql(:network_manager)
+          it "enables :network_manager as the default backend" do
+            expect_backend(:network_manager)
           end
         end
       end
 
       context "and the ProductFeature .network.network_manager is 'always'" do
-        it "sets :network_manager as the default backend" do
-          expect(created_instance.backend).to eql(:network_manager)
+        it "enables :network_manager as the default backend" do
+          expect_backend(:network_manager)
         end
       end
 
@@ -100,15 +116,15 @@ describe Y2Network::ProposalSettings do
         end
 
         context "and the machine is a laptop" do
-          it "sets :network_manager as the backend to be used" do
-            expect(created_instance.backend).to eql(:network_manager)
+          it "enables :network_manager as the backend to be used" do
+            expect_backend(:network_manager)
           end
         end
 
         context "and the machine is not a laptop" do
           let(:is_laptop) { false }
-          it "sets :wicked as the backend to be used" do
-            expect(created_instance.backend).to eql(:wicked)
+          it "enables :wicked as the backend to be used" do
+            expect_backend(:wicked)
           end
         end
       end
@@ -122,12 +138,16 @@ describe Y2Network::ProposalSettings do
 
     it "logs which backend has been selected as the default" do
       allow_any_instance_of(described_class).to receive(:log).and_return(logger)
-      expect(logger).to receive(:info).with(/backend is: network_manager/)
+      expect(logger).to receive(:info).with(/backend is: wicked/)
       described_class.create_instance
     end
   end
 
   describe "#enable_wicked!" do
+    before do
+      subject
+    end
+
     it "adds the wicked package to the list of resolvables " do
       expect(Yast::PackagesProposal).to receive(:AddResolvables)
         .with("network", :package, ["wicked"])
@@ -146,6 +166,10 @@ describe Y2Network::ProposalSettings do
   end
 
   describe "#enable_network_manager!" do
+    before do
+      subject
+    end
+
     it "adds the NetworkManager package to the list of resolvables " do
       expect(Yast::PackagesProposal).to receive(:AddResolvables)
         .with("network", :package, ["NetworkManager"])
