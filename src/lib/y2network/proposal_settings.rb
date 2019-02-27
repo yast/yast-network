@@ -38,11 +38,7 @@ module Y2Network
       Yast.import "PackagesProposal"
       Yast.import "Lan"
 
-      @backend = use_network_manager? ? :network_manager : :wicked
-
-      log.info("The default proposed network backend is: #{@backend}")
-
-      @backend
+      use_network_manager? ? enable_network_manager! : enable_wicked!
     end
 
     # Adds the NetworkManager package to the {Yast::PackagesProposal} and sets
