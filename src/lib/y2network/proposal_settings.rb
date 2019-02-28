@@ -37,7 +37,6 @@ module Y2Network
       Yast.import "ProductFeatures"
       Yast.import "Package"
       Yast.import "PackagesProposal"
-      Yast.import "Lan"
 
       @selected_backend = nil
     end
