@@ -297,7 +297,7 @@ module Yast
 
       log.info("Setting network service according to product preferences")
 
-      case Y2Network::ProposalSettings.instance.backend
+      case Y2Network::ProposalSettings.instance.network_service
       when :network_manager
         log.info("- using NetworkManager")
         NetworkService.use_network_manager

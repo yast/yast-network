@@ -1,4 +1,16 @@
 -------------------------------------------------------------------
+Wed Feb 27 15:08:09 UTC 2019 - knut.anderssen@suse.com
+
+- Installation proposal (bsc#1127228, bsc#1124478, bsc#1124498):
+  - Fixed issue refreshing the list of packages needed for the
+    default backend the first time the proposal is called.
+  - Do not cache the default network backend but only the current
+    one when modified by the user in the proposal
+  - Fallback to :wicked when saving the network if NetworkManager
+    is selected as the service to be used but not installed.
+- 4.1.42
+
+-------------------------------------------------------------------
 Thu Feb 21 17:50:32 UTC 2019 - knut.anderssen@suse.com
 
 - When renaming an interface (bsc#1060207):

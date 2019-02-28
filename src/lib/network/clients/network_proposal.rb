@@ -19,6 +19,8 @@ module Yast
       Yast.import "LanItems"
 
       textdomain "installation"
+
+      settings.refresh_packages
     end
 
     def description
@@ -101,7 +103,7 @@ module Yast
     end
 
     def wicked_backend?
-      settings.backend != :network_manager
+      settings.current_backend != :network_manager
     end
 
     # TODO: move to HTML.ycp
