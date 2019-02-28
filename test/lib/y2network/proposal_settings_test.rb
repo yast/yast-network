@@ -135,9 +135,10 @@ describe Y2Network::ProposalSettings do
 
   describe "#current_backend" do
     let(:selected_backend) { :wicked }
-    let(:default_backend) { "wicked_or_nm" }
+    let(:default_backend) { "wicked_or_nm_based_on_control_file" }
+
     before do
-      allow(subject).to receive(:default_backend).and_return("wicked_or_nm")
+      allow(subject).to receive(:default_backend).and_return(default_backend)
       subject.selected_backend = selected_backend
     end
 
@@ -157,10 +158,6 @@ describe Y2Network::ProposalSettings do
   end
 
   describe "#enable_wicked!" do
-    before do
-      subject
-    end
-
     it "adds the wicked package to the list of resolvables " do
       expect(Yast::PackagesProposal).to receive(:AddResolvables)
         .with("network", :package, ["wicked"])
@@ -219,9 +216,6 @@ describe Y2Network::ProposalSettings do
   end
 
   describe "#enable_network_manager!" do
-    before do
-      subject
-    end
     before do
       subject.selected_backend = nil
     end
