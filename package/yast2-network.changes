@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Mar  6 12:08:05 UTC 2019 - Ladislav Slezák <lslezak@suse.cz>
+
+- Fixed "can't modify frozen String" crashes (related to
+  bsc#1125006 and gh#yast/yast-ruby-bindings#228)
+- 4.1.43
+
+-------------------------------------------------------------------
 Wed Feb 27 15:08:09 UTC 2019 - knut.anderssen@suse.com
 
 - Installation proposal (bsc#1127228, bsc#1124478, bsc#1124498):
