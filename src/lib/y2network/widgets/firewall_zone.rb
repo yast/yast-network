@@ -113,7 +113,7 @@ module Y2Network
             "The selected ZONE will be added to the ifcfg as well as the firewalld " \
             "permanent configuration.</p>")
 
-        help_text << zones_help if installed?
+        help_text += zones_help if installed?
         help_text
       end
 
