@@ -2154,7 +2154,7 @@ module Yast
       # FIXME: INTERFACETYPE confuses sysconfig, bnc#458412
       # Only test when newdev has enough info for GetTypeFromIfcfg to work.
       implied_type = NetworkInterfaces.GetTypeFromIfcfg(newdev)
-      if !implied_type.nil? && implied_type != @type
+      if @type == "dummy" || !implied_type.nil? && implied_type != @type
         newdev["INTERFACETYPE"] = @type
       end
 
