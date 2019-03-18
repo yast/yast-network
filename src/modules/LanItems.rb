@@ -2128,6 +2128,8 @@ module Yast
 
       when "ib"
         newdev["IPOIB_MODE"] = @ipoib_mode
+      when "dummy"
+        newdev["INTERFACETYPE"] = @type
       end
 
       if DriverType(@type) == "ctc"
@@ -2148,14 +2150,6 @@ module Yast
           "TUNNEL_SET_OWNER" => @tunnel_set_owner,
           "TUNNEL_SET_GROUP" => @tunnel_set_group
         }
-      end
-
-      # L3: bnc#585458
-      # FIXME: INTERFACETYPE confuses sysconfig, bnc#458412
-      # Only test when newdev has enough info for GetTypeFromIfcfg to work.
-      implied_type = NetworkInterfaces.GetTypeFromIfcfg(newdev)
-      if @type == "dummy" || !implied_type.nil? && implied_type != @type
-        newdev["INTERFACETYPE"] = @type
       end
 
       # ZONE uses an empty string as the default ZONE which means that is not
