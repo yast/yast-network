@@ -30,14 +30,38 @@ describe Y2Network::ConfigReader::Sysconfig do
     )
   end
 
+  let(:routing) do
+    instance_double(
+      Yast::RoutingClass,
+      Read: nil,
+      Routes: [
+        {
+          "destination" => "192.168.122.0", "device" => "eth0",
+          "gateway" => "192.168.122.1", "netmask" => "255.255.255.0"
+        }
+      ]
+    )
+  end
+
+  # FIXME: "gateway" => "-", "netmask" => "-"
+
   describe "" do
     before do
       stub_const("Yast::NetworkInterfaces", network_interfaces)
+      stub_const("Yast::Routing", routing)
     end
 
     it "returns a configuration including network devices" do
       config = reader.config
       expect(config.interfaces.map(&:name)).to eq(["lo", "eth0", "wlan0"])
+    end
+
+    it "returns a configuration including network devices" do
+      config = reader.config
+      expect(config.routes.size).to eq(1)
+      route = config.routes.first
+      expect(route.to).to eq(IPAddr.new("192.168.122.0/24"))
+      expect(route.interface.name).to eq("eth0")
     end
   end
 end

@@ -21,16 +21,16 @@ module Y2Network
   class Route
     # @return [IPAddr]
     attr_reader :to
-    # @return [Device]
-    attr_reader :device
+    # @return [Interface]
+    attr_reader :interface
     # @return [IPAddr,nil]
     attr_reader :source
     # @return [IPAddr,nil]
     attr_reader :gateway
 
-    def initialize(to, device, gateway: nil, source: nil, preference: nil)
+    def initialize(to, interface, gateway: nil, source: nil, preference: nil)
       @to = to
-      @device = device
+      @interface = interface
       @gateway = gateway
       @source = source
       @preference = preference
