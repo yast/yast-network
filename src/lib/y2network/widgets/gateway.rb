@@ -26,7 +26,7 @@ module Y2Network
       end
 
       def init
-        Yast::UI.ChangeWidget(Id(:gateway), :ValidChars, Yast::IP.ValidChars +"-")
+        Yast::UI.ChangeWidget(Id(widget_id), :ValidChars, Yast::IP.ValidChars +"-")
         # TODO: init from route object
       end
 
