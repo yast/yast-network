@@ -25,7 +25,7 @@ describe Y2Network::ConfigReader::Wicked do
   let(:lan_items) do
     instance_double(
       Yast::LanItemsClass,
-      Read: nil,
+      Read:                 nil,
       current_device_names: ["lo", "eth0", "wlan0"]
     )
   end

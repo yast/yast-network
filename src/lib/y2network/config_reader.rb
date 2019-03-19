@@ -25,7 +25,7 @@ module Y2Network
     def self.for(source = :wicked)
       require "y2network/config_reader/#{source}"
       name = source.to_s.split("_").map(&:capitalize).join
-      klass = self.const_get(name)
+      klass = const_get(name)
       klass.new
     end
   end
