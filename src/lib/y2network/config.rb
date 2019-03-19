@@ -28,6 +28,8 @@ module Y2Network
   class Config
     # @return [Array<Interface>]
     attr_reader :interfaces
+    # @return [Array<RoutingTable>]
+    attr_reader :routing_tables
 
     # @param source [Symbol] Source to read the configuration from
     class << self
@@ -38,8 +40,13 @@ module Y2Network
     end
 
     # @param devices [Array<Device>]
-    def initialize(interfaces:)
+    def initialize(interfaces:, routing_tables:)
       @interfaces = interfaces
+      @routing_tables = routing_tables
+    end
+
+    def routes
+      routing_tables.flat_map(&:routes)
     end
   end
 end

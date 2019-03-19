@@ -22,9 +22,9 @@ module Y2Network
 
     # MAIN_TABLE_ID = 254
 
-    def initialize
+    def initialize(routes = [])
       # @id = MAIN_TABLE_ID
-      @routes = []
+      @routes = routes
     end
 
     # @param route [Y2Network::Route] Route to add
