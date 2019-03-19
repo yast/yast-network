@@ -16,28 +16,26 @@
 #
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
-require_relative "../../test_helper"
-require "y2network/config_reader/wicked"
+require "y2network/config"
 
-describe Y2Network::ConfigReader::Wicked do
-  subject(:reader) { described_class.new }
+Yast.import "NetworkInterfaces"
 
-  let(:network_interfaces) do
-    instance_double(
-      Yast::NetworkInterfacesClass,
-      Read: nil,
-      List: ["lo", "eth0", "wlan0"]
-    )
-  end
+module Y2Network
+  module ConfigReader
+    # This class reads the current configuration from the system
+    class Sysconfig
+      # @return [Y2Network::Config] Network configuration
+      def config
+        Yast::NetworkInterfaces.Read
+        Config.new(interfaces: interfaces)
+      end
 
-  describe "" do
-    before do
-      stub_const("Yast::NetworkInterfaces", network_interfaces)
-    end
-
-    it "returns a configuration including network devices" do
-      config = reader.config
-      expect(config.interfaces.map(&:name)).to eq(["lo", "eth0", "wlan0"])
+      def interfaces
+        # TODO: for the time being, we are just relying in the underlying stuff.
+        Yast::NetworkInterfaces.List("").map do |name|
+          Y2Network::Interface.new(name)
+        end
+      end
     end
   end
 end

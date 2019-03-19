@@ -23,7 +23,7 @@ module Y2Network
   # routes, etc.
   #
   # @example Reading from wicked
-  #   config = Y2Network::Config.from(:wicked)
+  #   config = Y2Network::Config.from(:sysconfig)
   #   config.interfaces.map(&:name) #=> ["lo", eth0", "wlan0"]
   class Config
     # @return [Array<Interface>]
@@ -31,7 +31,7 @@ module Y2Network
 
     # @param source [Symbol] Source to read the configuration from
     class << self
-      def from(source = :wicked)
+      def from(source)
         builder = ConfigReader.for(source)
         builder.network_config
       end
