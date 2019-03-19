@@ -18,7 +18,7 @@
 # find current contact information at www.suse.com.
 require "y2network/config"
 
-Yast.import "LanItems"
+Yast.import "NetworkInterfaces"
 
 module Y2Network
   module ConfigReader
@@ -26,13 +26,13 @@ module Y2Network
     class Wicked
       # @return [Y2Network::Config] Network configuration
       def config
-        Yast::LanItems.Read
+        Yast::NetworkInterfaces.Read
         Config.new(interfaces: interfaces)
       end
 
       def interfaces
         # TODO: for the time being, we are just relying in the underlying stuff.
-        Yast::LanItems.current_device_names.map do |name|
+        Yast::NetworkInterfaces.List("").map do |name|
           Y2Network::Interface.new(name)
         end
       end

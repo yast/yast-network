@@ -22,18 +22,17 @@ require "y2network/config_reader/wicked"
 describe Y2Network::ConfigReader::Wicked do
   subject(:reader) { described_class.new }
 
-  let(:lan_items) do
+  let(:network_interfaces) do
     instance_double(
-      Yast::LanItemsClass,
-      Read:                 nil,
-      current_device_names: ["lo", "eth0", "wlan0"]
+      Yast::NetworkInterfacesClass,
+      Read: nil,
+      List: ["lo", "eth0", "wlan0"]
     )
   end
 
   describe "" do
     before do
-      allow(Yast).to receive(:import).with("LanItems")
-      stub_const("Yast::LanItems", lan_items)
+      stub_const("Yast::NetworkInterfaces", network_interfaces)
     end
 
     it "returns a configuration including network devices" do
