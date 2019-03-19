@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Mar 18 10:17:32 UTC 2019 - knut.anderssen@suse.com
+
+- Add the INTERFACETYPE to dummy ifcfg-files when adding them
+  (bsc#1129552)
+- Removed dead code.
+- 4.1.44
+
+-------------------------------------------------------------------
 Wed Mar  6 12:08:05 UTC 2019 - Ladislav Slezák <lslezak@suse.cz>
 
 - Fixed "can't modify frozen String" crashes (related to

@@ -560,16 +560,6 @@ module Yast
         return false if Abort()
         # Progress step 9
         ProgressNextStage(_("Activating network services..."))
-        # during installation export sysconfig settings into NetworkManager (bnc#433084)
-        if Mode.installation && NetworkService.is_network_manager
-          Builtins.y2internal(
-            "Export sysconfig settings into NetworkManager %1",
-            SCR.Execute(
-              path(".target.bash_output"),
-              "/usr/lib/NetworkManager/nm-opensuse-sysconfig-merge --connections"
-            )
-          )
-        end
 
         activate_network_service
 
