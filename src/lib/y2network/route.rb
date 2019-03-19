@@ -21,21 +21,18 @@ module Y2Network
   class Route
     # @return [IPAddr]
     attr_reader :to
-    # @return [Symbol] :local, :multicast, etc.
-    attr_reader :type
     # @return [Device]
     attr_reader :device
     # @return [IPAddr,nil]
     attr_reader :source
     # @return [IPAddr,nil]
-    attr_reader :via
+    attr_reader :gateway
 
-    def initialize(to, device, via: nil, source: nil, preference: nil, type: :unicast)
+    def initialize(to, device, gateway: nil, source: nil, preference: nil)
       @to = to
       @device = device
-      @via = via
+      @gateway = gateway
       @source = source
-      @type = type
       @preference = preference
     end
 
