@@ -26,6 +26,8 @@ module Y2Network
   #   config = Y2Network::Config.from(:sysconfig)
   #   config.interfaces.map(&:name) #=> ["lo", eth0", "wlan0"]
   class Config
+    # @return [Symbol] Configuration ID
+    attr_reader :id
     # @return [Array<Interface>]
     attr_reader :interfaces
     # @return [Array<RoutingTable>]
@@ -39,8 +41,13 @@ module Y2Network
       end
     end
 
-    # @param devices [Array<Device>]
-    def initialize(interfaces:, routing_tables:)
+    # Constructor
+    #
+    # @param id             [Symbol] Configuration ID
+    # @param interfaces     [Array<Interface>] List of interfaces
+    # @param routing_tables [Array<RoutingTable>] List of routing tables
+    def initialize(id: :system, interfaces:, routing_tables:)
+      @id = id
       @interfaces = interfaces
       @routing_tables = routing_tables
     end
