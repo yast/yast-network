@@ -44,8 +44,6 @@ module Y2Network
       # It currently allows to use netmask for IPv4 (e.g. 255.0.0.0) or
       # prefix length. If prefix length is used it has to start with '/'.
       # For IPv6 network, only prefix length is allowed.
-      #
-      # @param [String] netmask or /<prefix length>
       def valid_netmask?
         netmask = value
         return false if netmask.nil? || netmask.empty?
