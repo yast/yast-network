@@ -28,7 +28,7 @@ module Y2Network
     # @return [IPAddr,nil]
     attr_reader :gateway
 
-    def initialize(to, interface, gateway: nil, source: nil, preference: nil)
+    def initialize(to: :default, interface: :any, gateway: nil, source: nil, preference: nil)
       @to = to
       @interface = interface
       @gateway = gateway
@@ -40,7 +40,7 @@ module Y2Network
     #
     # @return [Boolean]
     def default?
-      @to.nil?
+      to == :default
     end
   end
 end
