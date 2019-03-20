@@ -24,7 +24,7 @@ require "ipaddr"
 
 describe Y2Network::Route do
   subject(:route) do
-    described_class.new(to, interface)
+    described_class.new(to: to, interface: interface)
   end
 
   let(:to) { IPAddr.new("192.168.122.1") }
@@ -32,7 +32,7 @@ describe Y2Network::Route do
 
   describe "#default?" do
     context "when it is the default route" do
-      let(:to) { nil }
+      let(:to) { :default }
 
       it "returns true" do
         expect(route.default?).to eq(true)
