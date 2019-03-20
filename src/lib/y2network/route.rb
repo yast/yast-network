@@ -19,21 +19,28 @@
 module Y2Network
   # This class represents a network route
   class Route
-    # @return [IPAddr]
+    # @return [IPAddr,:default] Destination; :default if it is the default route
     attr_reader :to
-    # @return [Interface]
+    # @return [Interface,:any] Interface to associate the route to; :any if no interface is given
     attr_reader :interface
-    # @return [IPAddr,nil]
+    # @return [IPAddr,nil] Source IP address ('src' in ip route)
     attr_reader :source
-    # @return [IPAddr,nil]
+    # @return [IPAddr,nil] Gateway IP address ('via' in ip route)
     attr_reader :gateway
+    # @return [String] Additional options
+    attr_reader :options
 
-    def initialize(to: :default, interface: :any, gateway: nil, source: nil, preference: nil)
+    # @param to        [IPAddr,:default] Destination
+    # @param interface [Interface,:any] Interface to associate the root to
+    # @param gateway   [IPAddr,nil] Gateway IP
+    # @param source    [IPAddr,nil] Source IP
+    # @param options   [String] Additional options
+    def initialize(to: :default, interface: :any, gateway: nil, source: nil, options: "")
       @to = to
       @interface = interface
       @gateway = gateway
       @source = source
-      @preference = preference
+      @options = options
     end
 
     # Determines whether it is the default route or not
