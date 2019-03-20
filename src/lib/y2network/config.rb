@@ -45,8 +45,13 @@ module Y2Network
       @routing_tables = routing_tables
     end
 
+    # Routes in the configuration
+    #
+    # Convenience method to iterate through the routes in all routing tables.
+    #
+    # @return [Array<Route>] List of routes which are defined in the configuration
     def routes
-      routing_tables.flat_map(&:routes)
+      routing_tables.flat_map(&:to_a)
     end
   end
 end
