@@ -2,6 +2,8 @@ Yast.import "IP"
 Yast.import "Popup"
 Yast.import "UI"
 
+require "ipaddr"
+
 require "cwm/common_widgets"
 
 module Y2Network
@@ -10,6 +12,8 @@ module Y2Network
       # @param route route object to get and store gateway value
       def initialize(route)
         textdomain "network"
+
+        @route = route
       end
 
       def label
@@ -26,8 +30,9 @@ module Y2Network
       end
 
       def init
-        Yast::UI.ChangeWidget(Id(widget_id), :ValidChars, Yast::IP.ValidChars +"-")
-        # TODO: init from route object
+        Yast::UI.ChangeWidget(Id(widget_id), :ValidChars, Yast::IP.ValidChars + "-")
+
+        self.value = @route.gateway.nil? ? "-" : @route.gateway.to_s
       end
 
       def validate
@@ -38,6 +43,11 @@ module Y2Network
         Yast::Popup.Error(_("Gateway IP address is invalid."))
         focus
         false
+      end
+
+      def store
+        gw = value
+        @route.gateway = gw == "-" ? nil : IPAddr.new(gw)
       end
     end
   end

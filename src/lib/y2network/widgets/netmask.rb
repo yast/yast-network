@@ -5,10 +5,13 @@ require "cwm/common_widgets"
 module Y2Network
   module Widgets
     class Netmask < CWM::InputField
-     # @param route route object to get and store netmask value
-     # TODO: I expect it will be useful on multiple places, so we need find way how to store it
+      # @param route route object to get and store netmask value
+      # TODO: so far not clear if we should do it
+      # separately or keep prefix in destination as already. So not working now
       def initialize(route)
         textdomain "network"
+
+        @route = route
       end
 
       def label
@@ -25,8 +28,7 @@ module Y2Network
       end
 
       def init
-        Yast::UI.ChangeWidget(Id(widget_id), :ValidChars, Yast::Netmask.ValidChars +"-/")
-        # TODO: init from route object
+        Yast::UI.ChangeWidget(Id(widget_id), :ValidChars, Yast::Netmask.ValidChars + "-/")
       end
 
       def validate

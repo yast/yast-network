@@ -8,6 +8,7 @@ module Y2Network
         textdomain "network"
 
         @devices = available_devices
+        @route = route
       end
 
       def label
@@ -29,7 +30,13 @@ module Y2Network
       end
 
       def init
-        # TODO: init from route object
+        interface = @route.interface
+        self.value = interface == :any ? "" : interface
+      end
+
+      def store
+        interface = value
+        @route.interface = interface.empty? ? :any : interface
       end
     end
   end
