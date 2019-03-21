@@ -50,15 +50,7 @@ module Y2Network
         MinWidth(60,
           VBox(
             HBox(
-              HWeight(70, Widgets::Destination.new(@route)),
-              HSpacing(1),
-              HWeight(30,
-                InputField(
-                  Id(:genmask),
-                  Opt(:hstretch),
-                  _("&Netmask"),
-                  "TODO"
-                ))
+              HWeight(100, Widgets::Destination.new(@route)),
             ),
             HBox(
               HWeight(70, Widgets::Gateway.new(@route)),
