@@ -32,6 +32,8 @@ module Y2Network
     attr_reader :interfaces
     # @return [Array<RoutingTable>]
     attr_reader :routing_tables
+    # @return [Symbol] Information source (see {Y2Network::Reader} and {Y2Network::Writer})
+    attr_reader :source
 
     # @param source [Symbol] Source to read the configuration from
     class << self
@@ -46,10 +48,11 @@ module Y2Network
     # @param id             [Symbol] Configuration ID
     # @param interfaces     [Array<Interface>] List of interfaces
     # @param routing_tables [Array<RoutingTable>] List of routing tables
-    def initialize(id: :system, interfaces:, routing_tables:)
+    def initialize(id: :system, interfaces:, routing_tables:, source:)
       @id = id
       @interfaces = interfaces
       @routing_tables = routing_tables
+      @source = source
     end
 
     # Routes in the configuration

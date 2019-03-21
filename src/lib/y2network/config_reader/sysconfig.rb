@@ -32,7 +32,7 @@ module Y2Network
       def config
         interfaces = find_interfaces
         routing_tables = find_routing_tables(interfaces)
-        Config.new(interfaces: interfaces, routing_tables: routing_tables)
+        Config.new(interfaces: interfaces, routing_tables: routing_tables, source: :sysconfig)
       end
 
     private
