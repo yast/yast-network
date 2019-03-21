@@ -21,10 +21,10 @@ module Y2Network
         @route_id = params[0]
         # TODO: netmask
         @route = ::Y2Network::Route.new(
-          to: (params[1] || "-") == "-" ? :default : IPAddr.new(params[1]),
+          to:        (params[1] || "-") == "-" ? :default : IPAddr.new(params[1]),
           interface: (params[4].nil? || params[4].empty?) ? :any : params[4],
-          gateway: (params[2] || "-" ) == "-" ? nil : IPAddr.new(params[2]),
-          options: params[5] || ""
+          gateway:   (params[2] || "-" ) == "-" ? nil : IPAddr.new(params[2]),
+          options:   params[5] || ""
         )
 
         @available_devices = available_devices
@@ -47,15 +47,16 @@ module Y2Network
       end
 
       def contents
-        MinWidth(60,
+        MinWidth(
+          60,
           VBox(
             HBox(
-              HWeight(100, Widgets::Destination.new(@route)),
+              HWeight(100, Widgets::Destination.new(@route))
             ),
             HBox(
               HWeight(70, Widgets::Gateway.new(@route)),
               HSpacing(1),
-              HWeight(30, Widgets::Devices.new(@route, @available_devices)),
+              HWeight(30, Widgets::Devices.new(@route, @available_devices))
             ),
             Widgets::RouteOptions.new(@route)
           )
