@@ -67,6 +67,11 @@ describe Y2Network::ConfigReader::Sysconfig do
       expect(route.interface.name).to eq("eth0")
     end
 
+    it "sets the config source to :sysconfig" do
+      config = reader.config
+      expect(config.source).to eq(:sysconfig)
+    end
+
     context "when there is not gateway" do
       let(:gateway) { "-" }
 

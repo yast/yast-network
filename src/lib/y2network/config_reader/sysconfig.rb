@@ -32,7 +32,7 @@ module Y2Network
       def config
         interfaces = find_interfaces
         routing_tables = find_routing_tables(interfaces)
-        Config.new(interfaces: interfaces, routing_tables: routing_tables)
+        Config.new(interfaces: interfaces, routing_tables: routing_tables, source: :sysconfig)
       end
 
     private
@@ -81,12 +81,12 @@ module Y2Network
         )
       end
 
-      # Given an IP and a netmaks, returns a valid IPAddr objecto
+      # Given an IP and a netmask, returns a valid IPAddr object
       #
       # @param ip_str      [String] IP address; {MISSING_VALUE} means that the IP is not defined
       # @param netmask_str [String] Netmask; {MISSING_VALUE} means than no netmaks was specified
       # @return [IPAddr,nil] The IP address or `nil` if the IP is missing
-      def build_ip(ip_str, netmask_str = nil)
+      def build_ip(ip_str, netmask_str = MISSING_VALUE)
         return nil if ip_str == MISSING_VALUE
         ip = IPAddr.new(ip_str)
         netmask_str == MISSING_VALUE ? ip : ip.mask(netmask_str)
