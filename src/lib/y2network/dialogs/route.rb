@@ -23,7 +23,7 @@ module Y2Network
         @route = ::Y2Network::Route.new(
           to:        (params[1] || "-") == "-" ? :default : IPAddr.new(params[1]),
           interface: (params[4].nil? || params[4].empty?) ? :any : params[4],
-          gateway:   (params[2] || "-" ) == "-" ? nil : IPAddr.new(params[2]),
+          gateway:   (params[2] || "-") == "-" ? nil : IPAddr.new(params[2]),
           options:   params[5] || ""
         )
 
