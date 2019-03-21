@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Mar 21 10:09:32 UTC 2019 - knut.anderssen@suse.com
+
+- bnc#1094934
+  - Fixed internal error when writing remote configuration by
+    cmdline (yast remote allow set=yes).
+- 4.1.44
+
+-------------------------------------------------------------------
 Wed Mar  6 12:08:05 UTC 2019 - Ladislav Slezák <lslezak@suse.cz>
 
 - Fixed "can't modify frozen String" crashes (related to
