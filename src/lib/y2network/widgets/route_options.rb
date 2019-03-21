@@ -13,7 +13,7 @@ module Y2Network
       end
 
       def label
-        Yast::LAbel.Options
+        Yast::Label.Options
       end
 
       def help

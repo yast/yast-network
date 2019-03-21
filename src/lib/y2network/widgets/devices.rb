@@ -2,7 +2,7 @@ require "cwm/common_widgets"
 
 module Y2Network
   module Widgets
-    class Gateway < CWM::ComboBox
+    class Devices < CWM::ComboBox
       # @param route route object to get and store gateway value
       def initialize(route, available_devices)
         textdomain "network"
