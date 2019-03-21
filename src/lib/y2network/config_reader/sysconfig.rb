@@ -40,7 +40,7 @@ module Y2Network
       MISSING_VALUE = "-".freeze
       private_constant :MISSING_VALUE
 
-      # Find network interfaces
+      # Find configured network interfaces
       #
       # @return [Array<Interface>] Detected interfaces
       # @see Yast::NetworkInterfaces.Read

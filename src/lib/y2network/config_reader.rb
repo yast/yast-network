@@ -19,8 +19,8 @@
 module Y2Network
   # This module contains a set of classes to read the network configuration from the system
   #
-  # For the time being, only the wicked reader ({Y2Network::ConfigReader::Sysconfig}) reader is
-  # available.
+  # For the time being, only the wicked via its backward compatibility with sysconfig
+  # is available in ({Y2Network::ConfigReader::Sysconfig}) reader
   module ConfigReader
     # Config reader for a given source
     #
