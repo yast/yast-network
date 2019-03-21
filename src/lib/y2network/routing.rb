@@ -22,6 +22,10 @@ module Y2Network
     # @return [Array<RoutingTable>]
     attr_reader :tables
 
+    def initialize(tables:)
+      @tables = tables
+    end
+
     # Checks whether IPv4 forwarding is enabled
     def forward_ipv4?
     end

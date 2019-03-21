@@ -18,6 +18,7 @@
 # find current contact information at www.suse.com.
 require "y2network/config"
 require "y2network/interface"
+require "y2network/routing"
 require "y2network/routing_table"
 require "y2network/route"
 
@@ -31,8 +32,8 @@ module Y2Network
       # @return [Y2Network::Config] Network configuration
       def config
         interfaces = find_interfaces
-        routing_tables = find_routing_tables(interfaces)
-        Config.new(interfaces: interfaces, routing_tables: routing_tables)
+        routing = Y2Network::Routing.new(tables: find_routing_tables(interfaces))
+        Config.new(interfaces: interfaces, routing: routing)
       end
 
     private
