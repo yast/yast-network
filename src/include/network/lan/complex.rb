@@ -144,6 +144,8 @@ module Yast
       Wizard.RestoreHelp(Ops.get_string(@help, "read", ""))
       Lan.AbortFunction = -> { PollAbort() }
       ret = Lan.Read(:cache)
+      # Currently just a smoketest for new config storage - something what should replace Lan module in the bright future
+      Y2Network::Config.from(:sysconfig)
 
       if Lan.HaveXenBridge
         if !Popup.ContinueCancel(
