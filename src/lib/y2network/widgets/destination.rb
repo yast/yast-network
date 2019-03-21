@@ -1,4 +1,5 @@
 Yast.import "IP"
+Yast.import "Popup"
 
 require "ipaddr"
 
@@ -30,7 +31,7 @@ module Y2Network
       def init
         Yast::UI.ChangeWidget(Id(widget_id), :ValidChars, Yast::IP.ValidChars + "-/")
         val = @route.to
-        self.value = val == :default ? "-" : val.to_s
+        self.value = val == :default ? "-" : ( val.to_s + "/" + val.prefix.to_s )
       end
 
       def validate
