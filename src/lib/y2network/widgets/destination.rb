@@ -8,7 +8,7 @@ require "cwm/common_widgets"
 module Y2Network
   module Widgets
     class Destination < CWM::InputField
-     # @param route [Y2Network::Route] route to modify by widget
+      # @param route [Y2Network::Route] route to modify by widget
       def initialize(route)
         textdomain "network"
 
@@ -31,7 +31,7 @@ module Y2Network
       def init
         Yast::UI.ChangeWidget(Id(widget_id), :ValidChars, Yast::IP.ValidChars + "-/")
         val = @route.to
-        self.value = val == :default ? "-" : ( val.to_s + "/" + val.prefix.to_s )
+        self.value = val == :default ? "-" : (val.to_s + "/" + val.prefix.to_s)
       end
 
       def validate

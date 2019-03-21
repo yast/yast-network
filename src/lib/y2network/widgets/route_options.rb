@@ -6,10 +6,11 @@ require "cwm/common_widgets"
 module Y2Network
   module Widgets
     class RouteOptions < CWM::InputField
-     # @param route route object to get and store netmask value
-     # TODO: I expect it will be useful on multiple places, so we need find way how to store it
+      # @param route route object to get and store options
       def initialize(route)
         textdomain "network"
+
+        @route = route
       end
 
       def label
@@ -26,7 +27,11 @@ module Y2Network
       end
 
       def init
-        # TODO: init from route object
+        self.value = @route.options
+      end
+
+      def store
+        @route.options = value
       end
     end
   end
