@@ -29,17 +29,18 @@ describe Y2Network::ConfigWriter::Sysconfig do
   describe "#write" do
     let(:config) do
       Y2Network::Config.new(
-        interfaces: [eth0],
-        routing_tables: [routing_table]
+        interfaces:     [eth0],
+        routing_tables: [routing_table],
+        source:         :sysconfig
       )
     end
 
     let(:eth0) { Y2Network::Interface.new("eth0") }
     let(:route) do
       Y2Network::Route.new(
-        to: IPAddr.new("10.0.0.2/8"),
+        to:        IPAddr.new("10.0.0.2/8"),
         interface: eth0,
-        gateway: IPAddr.new("192.168.122.1")
+        gateway:   IPAddr.new("192.168.122.1")
       )
     end
     let(:routing_table) { Y2Network::RoutingTable.new([route]) }
