@@ -42,11 +42,12 @@ module Y2Network
     # @return [Symbol] Information source (see {Y2Network::Reader} and {Y2Network::Writer})
     attr_reader :source
 
-    # @param source [Symbol] Source to read the configuration from
     class << self
+      # @param source [Symbol] Source to read the configuration from
+      # @return [Y2Network::Config]
       def from(source)
-        builder = ConfigReader.for(source)
-        builder.network_config
+        reader = ConfigReader.for(source)
+        reader.config
       end
     end
 

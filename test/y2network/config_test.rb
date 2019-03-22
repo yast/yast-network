@@ -37,6 +37,21 @@ describe Y2Network::Config do
 
   let(:routing_tables) { [table1, table2] }
 
+  describe ".from" do
+    let(:reader) do
+      instance_double(Y2Network::ConfigReader::Sysconfig, config: config)
+    end
+
+    before do
+      allow(Y2Network::ConfigReader).to receive(:for).with(:sysconfig)
+        .and_return(reader)
+    end
+
+    it "returns the configuration from the given reader" do
+      expect(described_class.from(:sysconfig)).to eq(config)
+    end
+  end
+
   describe "#routes" do
     it "returns routes from all tables" do
       expect(config.routes).to eq([route1, route2])
