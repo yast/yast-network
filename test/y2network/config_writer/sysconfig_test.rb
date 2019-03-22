@@ -44,12 +44,20 @@ describe Y2Network::ConfigWriter::Sysconfig do
         gateway:   IPAddr.new("192.168.122.1")
       )
     end
-    let(:routing) { Y2Network::RoutingConfig.new(tables: [routing_table]) }
     let(:routing_table) { Y2Network::RoutingTable.new([route]) }
+    let(:routing) do
+      Y2Network::RoutingConfig.new(
+        tables:     [routing_table],
+        forward_v4: true,
+        forward_v6: true
+      )
+    end
 
     it "imports defined routes using placeholders" do
       expect(Yast::Routing).to receive(:Import).with(
-        "routes" => [
+        "ipv4_forward" => true,
+        "ipv6_forward" => true,
+        "routes"       => [
           { "destination" => "10.0.0.0", "device" => "eth0",
             "gateway" => "192.168.122.1", "netmask" => "255.0.0.0" }
         ]
@@ -64,9 +72,11 @@ describe Y2Network::ConfigWriter::Sysconfig do
 
       it "imports defined routes using placeholders" do
         expect(Yast::Routing).to receive(:Import).with(
-          "routes" => [
-            { "destination" => "-", "device" => "-", "gateway" => "-", "netmask" => "-" }
-          ]
+          hash_including(
+            "routes" => [
+              { "destination" => "-", "device" => "-", "gateway" => "-", "netmask" => "-" }
+            ]
+          )
         )
         writer.write(config)
       end
