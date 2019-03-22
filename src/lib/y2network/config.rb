@@ -37,10 +37,8 @@ module Y2Network
     attr_reader :id
     # @return [Array<Interface>]
     attr_reader :interfaces
-    # @return [Array<RoutingTable>]
-    attr_reader :routing_tables
     # @return [Array<RoutingConfig>]
-    attr_reader :routing_config
+    attr_reader :routing
     # @return [Symbol] Information source (see {Y2Network::Reader} and {Y2Network::Writer})
     attr_reader :source
 
@@ -55,15 +53,13 @@ module Y2Network
 
     # Constructor
     #
-    # @param id             [Symbol] Configuration ID
-    # @param interfaces     [Array<Interface>] List of interfaces
-    # @param routing_tables [Array<RoutingTable>] List of routing tables
-    # @param routing_config [Array<RoutingConfig>] Routing configuration
-    def initialize(id: :system, interfaces:, routing_tables:, routing_config:, source:)
+    # @param id         [Symbol] Configuration ID
+    # @param interfaces [Array<Interface>] List of interfaces
+    # @param routing    [Array<RoutingConfig>] Routing configuration
+    def initialize(id: :system, interfaces:, routing:, source:)
       @id = id
       @interfaces = interfaces
-      @routing_tables = routing_tables
-      @routing_config = routing_config
+      @routing = routing
       @source = source
     end
 
@@ -73,7 +69,7 @@ module Y2Network
     #
     # @return [Array<Route>] List of routes which are defined in the configuration
     def routes
-      routing_tables.flat_map(&:to_a)
+      routing.routes
     end
 
     # Writes the configuration into the YaST modules

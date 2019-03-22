@@ -33,10 +33,9 @@ module Y2Network
       def config
         interfaces = find_interfaces
         Config.new(
-          interfaces:     interfaces,
-          routing_tables: find_routing_tables(interfaces),
-          routing_config: find_routing_config,
-          source:         :sysconfig
+          interfaces: interfaces,
+          routing:    find_routing_config(interfaces),
+          source:     :sysconfig
         )
       end
 
@@ -57,6 +56,16 @@ module Y2Network
         end
       end
 
+      def find_routing_config(interfaces)
+        Yast::Routing.Read
+        tables = find_routing_tables(interfaces)
+        Y2Network::RoutingConfig.new(
+          tables:     tables,
+          forward_v4: Yast::Routing.Forward_v4,
+          forward_v6: Yast::Routing.Forward_v6
+        )
+      end
+
       # Find routing tables
       #
       # @note For the time being, only one routing table is considered.
@@ -66,17 +75,9 @@ module Y2Network
       #
       # @see Yast::Routing.Routes
       def find_routing_tables(interfaces)
-        Yast::Routing.Read
         routes = Yast::Routing.Routes.map { |h| build_route(interfaces, h) }
         table = Y2Network::RoutingTable.new(routes)
         [table]
-      end
-
-      def find_routing_config
-        Y2Network::RoutingConfig.new(
-          forward_v4: Yast::Routing.Forward_v4,
-          forward_v6: Yast::Routing.Forward_v6
-        )
       end
 
       # Build a route given a hash from the SCR agent

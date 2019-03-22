@@ -79,7 +79,7 @@ describe Y2Network::ConfigReader::Sysconfig do
     describe "routing settings" do
       context "when IP forwarding is enabled for IPv4" do
         it "sets the IPv4 forwarding to true in the routing configuration" do
-          routing = reader.config.routing_config
+          routing = reader.config.routing
           expect(routing.forward_v4).to eq(true)
         end
       end
@@ -88,7 +88,7 @@ describe Y2Network::ConfigReader::Sysconfig do
         let(:forward_v4) { false }
 
         it "sets the IPv4 forwarding to false in the routing configuration" do
-          routing = reader.config.routing_config
+          routing = reader.config.routing
           expect(routing.forward_v4).to eq(false)
         end
       end
