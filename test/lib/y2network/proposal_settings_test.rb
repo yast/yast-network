@@ -17,6 +17,8 @@ describe Y2Network::ProposalSettings do
   def stub_features(features)
     Yast.import "ProductFeatures"
     Yast::ProductFeatures.Import(features)
+    # stub restore as during Stage normal it restores features
+    allow(Yast::ProductFeatures).to receive(:Restore)
   end
 
   describe ".instance" do
@@ -121,7 +123,7 @@ describe Y2Network::ProposalSettings do
 
       it "initializes the default network backend from the product control file" do
         expect(subject.default_backend).to eql(:network_manager)
-        stub_features("network" => { "network_manager" => "" })
+        stub_features("network" => { "network_manager" => "", "network_manager_is_default" => false })
         expect(subject.default_backend).to eql(:wicked)
       end
     end

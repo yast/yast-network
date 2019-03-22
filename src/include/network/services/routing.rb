@@ -28,10 +28,14 @@
 #
 #
 # Routing configuration dialogs
+
+require "y2network/dialogs/route"
+
 module Yast
   module NetworkServicesRoutingInclude
     include Yast::I18n
     include Yast::UIShortcuts
+    include Yast::Logger
 
     def initialize_network_services_routing(include_target)
       Yast.import "UI"
@@ -91,158 +95,6 @@ module Yast
           "widget_names" => ["ROUTING"]
         }
       }
-    end
-
-    # Validates user's input obtained from Netmask field
-    #
-    # It currently allows to use netmask for IPv4 (e.g. 255.0.0.0) or
-    # prefix length. If prefix length is used it has to start with '/'.
-    # For IPv6 network, only prefix length is allowed.
-    #
-    # @param [String] netmask or /<prefix length>
-    def valid_netmask?(netmask)
-      return false if netmask.nil? || netmask.empty?
-      return true if Netmask.Check4(netmask)
-
-      if netmask.start_with?("/")
-        return true if netmask[1..-1].to_i.between?(1, 128)
-      end
-
-      false
-    end
-
-    # Route edit dialog
-    # @param [Fixnum] id id of the edited route
-    # @param [Yast::Term] entry edited entry
-    # @param [Array] devs available devices
-    # @return route or nil, if canceled
-    def RoutingEditDialog(id, entry, devs)
-      entry = deep_copy(entry)
-      devs = deep_copy(devs)
-
-      UI.OpenDialog(
-        Opt(:decorated),
-        MinWidth(60,
-          VBox(
-            HSpacing(1),
-            VBox(
-              HBox(
-                HWeight(70,
-                  InputField(
-                    Id(:destination),
-                    Opt(:hstretch),
-                    _("&Destination"),
-                    Ops.get_string(entry, 1, "")
-                  )),
-                HSpacing(1),
-                HWeight(30,
-                  InputField(
-                    Id(:genmask),
-                    Opt(:hstretch),
-                    _("&Netmask"),
-                    Ops.get_string(entry, 3, "-")
-                  ))
-              ),
-              HBox(
-                HWeight(70,
-                  InputField(
-                    Id(:gateway),
-                    Opt(:hstretch),
-                    _("&Gateway"),
-                    Ops.get_string(entry, 2, "-")
-                  )),
-                HSpacing(1),
-                HWeight(30,
-                  ComboBox(
-                    Id(:device),
-                    Opt(:editable, :hstretch),
-                    _("De&vice"),
-                    devs
-                  ))
-              ),
-              # ComboBox label
-              InputField(
-                Id(:options),
-                Opt(:hstretch),
-                Label.Options,
-                Ops.get_string(entry, 5, "")
-              )
-            ),
-            HSpacing(1),
-            HBox(
-              PushButton(Id(:ok), Opt(:default), Label.OKButton),
-              PushButton(Id(:cancel), Label.CancelButton)
-            )
-          ))
-      )
-
-      # Allow declaring route without iface (for gateway) #93996
-      # if empty, use '-' which stands for any
-      if Ops.get_string(entry, 4, "") != ""
-        UI.ChangeWidget(Id(:device), :Value, Ops.get_string(entry, 4, ""))
-      else
-        UI.ChangeWidget(Id(:device), :Items, devs)
-      end
-      UI.ChangeWidget(
-        Id(:destination),
-        :ValidChars,
-        Ops.add(Ops.add(IP.ValidChars, "default"), "/-")
-      )
-      UI.ChangeWidget(Id(:gateway), :ValidChars, Ops.add(IP.ValidChars, "-"))
-      # user can enter IPv4 netmask or prefix length (has to start with '/')
-      UI.ChangeWidget(Id(:genmask), :ValidChars, Netmask.ValidChars + "-/")
-
-      if entry == term(:empty)
-        UI.SetFocus(Id(:destination))
-      else
-        UI.SetFocus(Id(:gateway))
-      end
-
-      ret = nil
-      route = nil
-
-      loop do
-        ret = UI.UserInput
-        break if ret != :ok
-
-        route = Item(Id(id))
-        val = Convert.to_string(UI.QueryWidget(Id(:destination), :Value))
-        slash = Builtins.search(val, "/")
-        noprefix = slash.nil? ? val : Builtins.substring(val, 0, slash)
-        if val != "default" && !IP.Check(noprefix)
-          # Popup::Error text
-          Popup.Error(_("Destination is invalid."))
-          UI.SetFocus(Id(:destination))
-          next
-        end
-        route = Builtins.add(route, val)
-        val = Convert.to_string(UI.QueryWidget(Id(:gateway), :Value))
-        if val != "-" && !IP.Check(val)
-          # Popup::Error text
-          Popup.Error(_("Gateway IP address is invalid."))
-          UI.SetFocus(Id(:gateway))
-          next
-        end
-        route = Builtins.add(route, val)
-        val = Convert.to_string(UI.QueryWidget(Id(:genmask), :Value))
-        if val != "-" && !valid_netmask?(val)
-          # Popup::Error text
-          Popup.Error(_("Subnetmask is invalid."))
-          UI.SetFocus(Id(:genmask))
-          next
-        end
-        route = Builtins.add(route, val)
-        val = Convert.to_string(UI.QueryWidget(Id(:device), :Value))
-        route = Builtins.add(route, val)
-        val = Convert.to_string(UI.QueryWidget(Id(:options), :Value))
-        route = Builtins.add(route, val)
-        break
-      end
-
-      UI.CloseDialog
-      return nil if ret != :ok
-      Builtins.y2debug("route=%1", route)
-      deep_copy(route)
     end
 
     def initRouting(_key)
@@ -330,14 +182,12 @@ module Yast
           Ops.get_string(event, "EventReason", "") == "ValueChanged"
         case Ops.get_symbol(event, "ID", :nil)
         when :add
-          item = RoutingEditDialog(
-            Builtins.size(@r_items),
-            term(:empty),
-            devs
-          )
+          term = Item(Id(@r_items.size))
+          term = Y2Network::Dialogs::Route.run(term, devs)
+          log.info "route dialog term #{term.inspect}"
 
-          if !item.nil?
-            @r_items = Builtins.add(@r_items, item)
+          if !term.nil?
+            @r_items << term
             UI.ChangeWidget(Id(:table), :Items, @r_items)
           end
         when :delete
@@ -357,7 +207,7 @@ module Yast
           end
           devs = Builtins.sort(devs)
 
-          item = RoutingEditDialog(cur, item, devs)
+          item = Y2Network::Dialogs::Route.run(item, devs)
           if !item.nil?
             @r_items = Builtins.maplist(@r_items) do |e|
               next deep_copy(item) if cur == Ops.get_integer(e, [0, 0], -1)

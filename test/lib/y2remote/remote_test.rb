@@ -300,6 +300,7 @@ describe Y2Remote::Remote do
       allow(subject).to receive(:modes).and_return(modes)
       allow(Yast2::Systemd::Target).to receive(:set_default)
       allow(display_manager).to receive(:restart)
+      allow(Y2Remote::Modes).to receive(:restart_modes)
     end
 
     context "when vnc is enabled" do
