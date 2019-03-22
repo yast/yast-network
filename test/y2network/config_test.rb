@@ -18,13 +18,19 @@
 # find current contact information at www.suse.com.
 require_relative "../test_helper"
 require "y2network/config"
+require "y2network/routing_config"
 require "y2network/routing_table"
 require "y2network/interface"
 require "y2network/config_writer/sysconfig"
 
 describe Y2Network::Config do
   subject(:config) do
-    described_class.new(interfaces: [eth0], routing_tables: routing_tables, source: :sysconfig)
+    described_class.new(
+      interfaces:     [eth0],
+      routing_tables: routing_tables,
+      routing_config: routing_config,
+      source:         :sysconfig
+    )
   end
 
   let(:route1) { double("Y2Network::Route") }
@@ -32,6 +38,7 @@ describe Y2Network::Config do
 
   let(:table1) { Y2Network::RoutingTable.new([route1]) }
   let(:table2) { Y2Network::RoutingTable.new([route2]) }
+  let(:routing_config) { double("Y2Network::RoutingConfig")}
 
   let(:eth0) { Y2Network::Interface.new("eth0") }
 

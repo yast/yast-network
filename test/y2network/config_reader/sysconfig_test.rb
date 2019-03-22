@@ -33,8 +33,10 @@ describe Y2Network::ConfigReader::Sysconfig do
   let(:routing) do
     instance_double(
       Yast::RoutingClass,
-      Read:   nil,
-      Routes: [scr_route]
+      Read:       nil,
+      Routes:     [scr_route],
+      Forward_v4: forward_v4,
+      Forward_v6: forward_v6
     )
   end
 
@@ -47,6 +49,8 @@ describe Y2Network::ConfigReader::Sysconfig do
   let(:device) { "eth0" }
   let(:gateway) { "192.168.122.1" }
   let(:netmask) { "255.255.255.0" }
+  let(:forward_v4) { true }
+  let(:forward_v6) { true }
 
   describe "#config" do
     before do
@@ -70,6 +74,24 @@ describe Y2Network::ConfigReader::Sysconfig do
     it "sets the config source to :sysconfig" do
       config = reader.config
       expect(config.source).to eq(:sysconfig)
+    end
+
+    describe "routing settings" do
+      context "when IP forwarding is enabled for IPv4" do
+        it "sets the IPv4 forwarding to true in the routing configuration" do
+          routing = reader.config.routing_config
+          expect(routing.forward_v4).to eq(true)
+        end
+      end
+
+      context "when IP forwarding is disabled for IPv4" do
+        let(:forward_v4) { false }
+
+        it "sets the IPv4 forwarding to false in the routing configuration" do
+          routing = reader.config.routing_config
+          expect(routing.forward_v4).to eq(false)
+        end
+      end
     end
 
     context "when there is not gateway" do

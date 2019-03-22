@@ -31,6 +31,7 @@ describe Y2Network::ConfigWriter::Sysconfig do
       Y2Network::Config.new(
         interfaces:     [eth0],
         routing_tables: [routing_table],
+        routing_config: routing_config,
         source:         :sysconfig
       )
     end
@@ -43,6 +44,7 @@ describe Y2Network::ConfigWriter::Sysconfig do
         gateway:   IPAddr.new("192.168.122.1")
       )
     end
+    let(:routing_config) { Y2Network::RoutingConfig }
     let(:routing_table) { Y2Network::RoutingTable.new([route]) }
 
     it "imports defined routes using placeholders" do

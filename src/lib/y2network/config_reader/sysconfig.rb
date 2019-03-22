@@ -18,6 +18,7 @@
 # find current contact information at www.suse.com.
 require "y2network/config"
 require "y2network/interface"
+require "y2network/routing_config"
 require "y2network/routing_table"
 require "y2network/route"
 
@@ -31,8 +32,12 @@ module Y2Network
       # @return [Y2Network::Config] Network configuration
       def config
         interfaces = find_interfaces
-        routing_tables = find_routing_tables(interfaces)
-        Config.new(interfaces: interfaces, routing_tables: routing_tables, source: :sysconfig)
+        Config.new(
+          interfaces:     interfaces,
+          routing_tables: find_routing_tables(interfaces),
+          routing_config: find_routing_config,
+          source:         :sysconfig
+        )
       end
 
     private
@@ -65,6 +70,13 @@ module Y2Network
         routes = Yast::Routing.Routes.map { |h| build_route(interfaces, h) }
         table = Y2Network::RoutingTable.new(routes)
         [table]
+      end
+
+      def find_routing_config
+        Y2Network::RoutingConfig.new(
+          forward_v4: Yast::Routing.Forward_v4,
+          forward_v6: Yast::Routing.Forward_v6
+        )
       end
 
       # Build a route given a hash from the SCR agent
