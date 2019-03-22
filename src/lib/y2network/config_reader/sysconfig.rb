@@ -17,10 +17,8 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 require "y2network/config"
-require "y2network/interface"
 require "y2network/routing_config"
-require "y2network/routing_table"
-require "y2network/route"
+require "y2network/config_reader/routing_helpers"
 
 Yast.import "NetworkInterfaces"
 Yast.import "Routing"
@@ -29,6 +27,8 @@ module Y2Network
   module ConfigReader
     # This class reads the current configuration from `/etc/sysconfig` files
     class Sysconfig
+      include RoutingHelpers
+
       # @return [Y2Network::Config] Network configuration
       def config
         interfaces = find_interfaces
@@ -37,23 +37,6 @@ module Y2Network
           routing:    find_routing_config(interfaces),
           source:     :sysconfig
         )
-      end
-
-    private
-
-      MISSING_VALUE = "-".freeze
-      private_constant :MISSING_VALUE
-
-      # Find network interfaces
-      #
-      # @return [Array<Interface>] Detected interfaces
-      # @see Yast::NetworkInterfaces.Read
-      def find_interfaces
-        Yast::NetworkInterfaces.Read
-        # TODO: for the time being, we are just relying in the underlying stuff.
-        Yast::NetworkInterfaces.List("").map do |name|
-          Y2Network::Interface.new(name)
-        end
       end
 
       def find_routing_config(interfaces)
@@ -78,31 +61,6 @@ module Y2Network
         routes = Yast::Routing.Routes.map { |h| build_route(interfaces, h) }
         table = Y2Network::RoutingTable.new(routes)
         [table]
-      end
-
-      # Build a route given a hash from the SCR agent
-      #
-      # @param interfaces [Array<Interface>] List of detected interfaces
-      # @param hash [Hash] Hash from the `.routes` SCR agent
-      # @return Route
-      def build_route(interfaces, hash)
-        iface = interfaces.find { |i| i.name == hash["device"] }
-        Y2Network::Route.new(
-          to:        build_ip(hash["destination"], hash["netmask"]) || :default,
-          interface: iface,
-          gateway:   build_ip(hash["gateway"], MISSING_VALUE)
-        )
-      end
-
-      # Given an IP and a netmask, returns a valid IPAddr object
-      #
-      # @param ip_str      [String] IP address; {MISSING_VALUE} means that the IP is not defined
-      # @param netmask_str [String] Netmask; {MISSING_VALUE} means than no netmaks was specified
-      # @return [IPAddr,nil] The IP address or `nil` if the IP is missing
-      def build_ip(ip_str, netmask_str = MISSING_VALUE)
-        return nil if ip_str == MISSING_VALUE
-        ip = IPAddr.new(ip_str)
-        netmask_str == MISSING_VALUE ? ip : ip.mask(netmask_str)
       end
     end
   end

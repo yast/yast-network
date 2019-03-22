@@ -18,6 +18,7 @@
 # find current contact information at www.suse.com.
 require "y2network/interface"
 require "y2network/config_writer"
+require "y2network/config_reader"
 
 module Y2Network
   # This class represents the current network configuration including interfaces,
