@@ -20,15 +20,15 @@ module Y2Network
   # This class represents a network route
   class Route
     # @return [IPAddr,:default] Destination; :default if it is the default route
-    attr_reader :to
+    attr_accessor :to
     # @return [Interface,:any] Interface to associate the route to; :any if no interface is given
-    attr_reader :interface
+    attr_accessor :interface
     # @return [IPAddr,nil] Source IP address ('src' in ip route)
-    attr_reader :source
+    attr_accessor :source
     # @return [IPAddr,nil] Gateway IP address ('via' in ip route)
-    attr_reader :gateway
+    attr_accessor :gateway
     # @return [String] Additional options
-    attr_reader :options
+    attr_accessor :options
 
     # @param to        [IPAddr,:default] Destination
     # @param interface [Interface,:any] Interface to associate the root to

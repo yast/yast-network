@@ -17,6 +17,7 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 require "y2network/interface"
+require "y2network/config_writer"
 
 module Y2Network
   # This class represents the current network configuration including interfaces,
@@ -25,6 +26,12 @@ module Y2Network
   # @example Reading from wicked
   #   config = Y2Network::Config.from(:sysconfig)
   #   config.interfaces.map(&:name) #=> ["lo", eth0", "wlan0"]
+  #
+  # @example Adding a default route to the first routing table
+  #   config = Y2Network::Config.from(:sysconfig)
+  #   route = Y2Network::Route.new(to: :default, interface: :any)
+  #   config.routing.tables.first << route
+  #   config.write
   class Config
     # @return [Symbol] Configuration ID
     attr_reader :id
@@ -32,6 +39,8 @@ module Y2Network
     attr_reader :interfaces
     # @return [Routing] @see {Y2Network::Routing}
     attr_reader :routing
+    # @return [Symbol] Information source (see {Y2Network::Reader} and {Y2Network::Writer})
+    attr_reader :source
 
     # @param source [Symbol] Source to read the configuration from
     class << self
@@ -46,10 +55,18 @@ module Y2Network
     # @param id             [Symbol] Configuration ID
     # @param interfaces     [Array<Interface>] List of interfaces
     # @param routing        [Routing] Object with routing configuration
-    def initialize(id: :system, interfaces:, routing:)
+    def initialize(id: :system, interfaces:, routing:, source:)
       @id = id
       @interfaces = interfaces
       @routing= routing
+      @source = source
+    end
+
+    # Writes the configuration into the YaST modules
+    #
+    # @see Y2Network::ConfigWriter
+    def write
+      Y2Network::ConfigWriter.for(source).write(self)
     end
   end
 end

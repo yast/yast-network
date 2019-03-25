@@ -31,12 +31,12 @@ module Y2Network
     # This class reads the current configuration from `/etc/sysconfig` files
     class Sysconfig
       # @return [Y2Network::Config] Network configuration
-      def config
+      def network_config
         interfaces = find_interfaces
         # load /etc/sysconfig/network/routes
         routing = Y2Network::Routing.new(tables: [RoutesReader.new.config])
         # TODO: RoutesReader(s) for ifroute-* files
-        Config.new(interfaces: interfaces, routing: routing)
+        Config.new(interfaces: interfaces, routing: routing, source: :sysconfig)
       end
 
     private
