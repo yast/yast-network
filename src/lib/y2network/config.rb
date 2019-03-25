@@ -58,7 +58,7 @@ module Y2Network
     def initialize(id: :system, interfaces:, routing:, source:)
       @id = id
       @interfaces = interfaces
-      @routing= routing
+      @routing = routing
       @source = source
     end
 

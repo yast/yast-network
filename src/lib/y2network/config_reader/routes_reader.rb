@@ -22,7 +22,7 @@ require "yast"
 
 module Y2Network
   module ConfigReader
-    DEFAULT_ROUTES_FILE = "/etc/sysconfig/network/routes"
+    DEFAULT_ROUTES_FILE = "/etc/sysconfig/network/routes".freeze
 
     # This class reads the current configuration from a file in routes format
     # (@see man routes)
@@ -30,11 +30,8 @@ module Y2Network
       # @param routes_file [<String>] full path to a file in routes format, when
       #                               not defined, then /etc/sysconfig/network/routes is used
       def initialize(routes_file: DEFAULT_ROUTES_FILE)
-        if routes_file == DEFAULT_ROUTES_FILE
-          @routes_file = Yast::Path.new(".routes")
-        else
-          #TODO: dynamic agent registration (e.g. ifroute-<device> file(s))
-        end
+        @routes_file = Yast::Path.new(".routes") if routes_file == DEFAULT_ROUTES_FILE
+        # TODO: dynamic agent registration (e.g. ifroute-<device> file(s))
       end
 
       # Load routing tables

@@ -29,9 +29,9 @@ describe Y2Network::ConfigWriter::Sysconfig do
   describe "#write" do
     let(:config) do
       Y2Network::Config.new(
-        interfaces:     [eth0],
-        routing:        routing,
-        source:         :sysconfig
+        interfaces: [eth0],
+        routing:    routing,
+        source:     :sysconfig
       )
     end
 
