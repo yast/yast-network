@@ -30,14 +30,6 @@ describe Y2Network::ConfigReader::Sysconfig do
     )
   end
 
-  let(:routing) do
-    instance_double(
-      Yast::RoutingClass,
-      Read:   nil,
-      Routes: [scr_route]
-    )
-  end
-
   let(:scr_route) do
     {
       "destination" => destination, "device" => device, "gateway" => gateway, "netmask" => netmask
@@ -51,7 +43,7 @@ describe Y2Network::ConfigReader::Sysconfig do
   describe "#config" do
     before do
       stub_const("Yast::NetworkInterfaces", network_interfaces)
-      stub_const("Yast::Routing", routing)
+      allow(Yast::SCR).to receive(:Read).and_return([scr_route])
     end
 
     it "returns a configuration including network devices" do
