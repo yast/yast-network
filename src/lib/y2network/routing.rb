@@ -21,17 +21,13 @@ module Y2Network
   class Routing
     # @return [Array<RoutingTable>]
     attr_reader :tables
+    # @return [Boolean] whether IPv4 forwarding is enabled
+    attr_reader :forward_ipv4
+    # @return [Boolean] whether IPv6 forwarding is enabled
+    attr_reader :forward_ipv6
 
     def initialize(tables:)
       @tables = tables
-    end
-
-    # Checks whether IPv4 forwarding is enabled
-    def forward_ipv4?
-    end
-
-    # Checks whether IPv6 forwarding is enabled
-    def forward_ipv6?
     end
 
     # Routes in the configuration
@@ -40,7 +36,7 @@ module Y2Network
     #
     # @return [Array<Route>] List of routes which are defined in the configuration
     def routes
-      tables.flat_map(&:to_a)
+      @tables.flat_map(&:to_a)
     end
   end
 end
