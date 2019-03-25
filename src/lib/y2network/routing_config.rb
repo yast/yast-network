@@ -16,6 +16,9 @@
 #
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
+
+require "y2network/routing_helpers"
+
 module Y2Network
   # This class stores general routing configuration options, like IP forwarding
   # configuration.
@@ -40,6 +43,14 @@ module Y2Network
     # @return [Array<Route>] List of routes which are defined in the configuration
     def routes
       tables.flat_map(&:routes)
+    end
+
+    def to_h
+      {
+        "ipv4_forward" => forward_v4,
+        "ipv6_forward" => forward_v6,
+        "routes"       => routes.map { |r| route_to_hash(r) }
+      }
     end
   end
 end

@@ -96,6 +96,9 @@ module Yast
       @initialized = false
 
       @backend = nil
+
+      # @return [Array<Y2Network::Config>]
+      @configs = []
     end
 
     #------------------

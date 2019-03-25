@@ -18,6 +18,8 @@
 # find current contact information at www.suse.com.
 
 require "yast"
+require "y2network/routing_helpers"
+
 Yast.import "Routing"
 
 module Y2Network
@@ -27,6 +29,7 @@ module Y2Network
     # Ideally, it should be responsible of writing the changes to the underlying
     # system. But, for the time being, it just relies in {Yast::Routing}.
     class Sysconfig
+      include RoutingHelpers
       # Writes the configuration into YaST network related modules
       #
       # @param config [Y2Network::Config] Configuration to write
@@ -37,37 +40,6 @@ module Y2Network
           "ipv6_forward" => config.routing.forward_v6,
           "routes"       => routes
         )
-      end
-
-    private
-
-      # Returns a hash containing the route information to be imported into {Yast::Routing}
-      #
-      # @param route [Y2Network::Route]
-      # @return [Hash]
-      def route_to_hash(route)
-        hash =
-          if route.default?
-            { "destination" => "-", "netmask" => "-" }
-          else
-            { "destination" => route.to.to_s, "netmask" => netmask(route.to) }
-          end
-        hash.merge(
-          "gateway" => route.gateway ? route.gateway.to_s : "-",
-          "device"  => route.interface == :any ? "-" : route.interface.name
-        )
-      end
-
-      IPV4_MASK = "255.255.255.255".freeze
-      IPV6_MASK = "fffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff".freeze
-
-      # Returns the netmask
-      #
-      # @param ip [IPAddr]
-      # @return [IPAddr]
-      def netmask(ip)
-        mask = ip.ipv4? ? IPV4_MASK : IPV6_MASK
-        IPAddr.new(mask).mask(ip.prefix).to_s
       end
     end
   end

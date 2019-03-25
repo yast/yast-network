@@ -18,7 +18,7 @@
 # find current contact information at www.suse.com.
 require "y2network/config"
 require "y2network/routing_config"
-require "y2network/config_reader/routing_helpers"
+require "y2network/routing_helpers"
 
 Yast.import "NetworkInterfaces"
 Yast.import "Routing"
