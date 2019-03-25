@@ -36,7 +36,7 @@ module Y2Network
     #
     # @return [Array<Route>] List of routes which are defined in the configuration
     def routes
-      @tables.flat_map(&:to_a)
+      tables.flat_map(&:to_a)
     end
   end
 end
