@@ -69,5 +69,12 @@ module Y2Network
     def write
       Y2Network::ConfigWriter.for(source).write(self)
     end
+
+    # Returns a deep-copy of the configuration
+    #
+    # @return [Config]
+    def copy
+      Marshal.load(Marshal.dump(self))
+    end
   end
 end
