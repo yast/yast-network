@@ -3,6 +3,7 @@
 require_relative "test_helper"
 
 require "yast"
+require "y2network/config"
 
 Yast.import "Lan"
 
@@ -487,5 +488,48 @@ describe "Yast::LanClass#dhcp_ntp_servers" do
       expect(subject.dhcp_ntp_servers.sort)
         .to eql(["0.pool.ntp.org", "1.pool.ntp.org", "2.pool.ntp.org"])
     end
+  end
+end
+
+describe "Yast::Lan#find_config" do
+  let(:system_config) { instance_double(Y2Network::Config, "System", id: :system) }
+  let(:autoyast_config) { instance_double(Y2Network::Config, "AutoYaST", id: :autoyast) }
+
+  before do
+    Yast::Lan.main
+    Yast::Lan.add_config(system_config)
+    Yast::Lan.add_config(autoyast_config)
+  end
+
+  it "retuns the network configuration with the given ID" do
+    expect(Yast::Lan.find_config(id: :autoyast)).to eq(autoyast_config)
+  end
+
+  context "when a network configuration with the given ID is not found" do
+    it "returns nil" do
+      expect(Yast::Lan.find_config(id: :missing)).to be_nil
+    end
+  end
+end
+
+describe "Yast::Lan#clear_configs" do
+  let(:system_config) { instance_double(Y2Network::Config, "System", id: :system) }
+
+  before do
+    Yast::Lan.add_config(system_config)
+  end
+
+  it "cleans the configurations list" do
+    expect { Yast::Lan.clear_configs }.to change { Yast::Lan.find_config(id: :system) }
+      .from(system_config).to(nil)
+  end
+end
+
+describe "Yast::Lan#add_config" do
+  let(:system_config) { instance_double(Y2Network::Config, "System", id: :system) }
+
+  it "adds the configuration to the list" do
+    expect { Yast::Lan.add_config(system_config) }.to change { Yast::Lan.find_config(id: :system) }
+      .from(nil).to(system_config)
   end
 end

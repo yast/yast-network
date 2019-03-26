@@ -96,6 +96,9 @@ module Yast
       @initialized = false
 
       @backend = nil
+
+      # Y2Network::Config objects
+      @configs = []
     end
 
     #------------------
@@ -961,6 +964,26 @@ module Yast
       Yast::LanItems.dhcp_ntp_servers.values.flatten.uniq
     end
 
+    # Returns the network configuration with the given ID
+    #
+    # @param id [Symbol] Network configuration ID
+    # @return [Y2Network::Config,nil] Network configuration with the given ID or nil if not found
+    def find_config(id: :system)
+      configs.find { |c| c.id == id }
+    end
+
+    # Adds the configuration
+    #
+    # @param config [Y2Network::Config] Network configuration
+    def add_config(config)
+      configs << config
+    end
+
+    # Clears the network configurations list
+    def clear_configs
+      configs.clear
+    end
+
     publish variable: :ipv6, type: "boolean"
     publish variable: :AbortFunction, type: "block <boolean>"
     publish variable: :bond_autoconf_slaves, type: "list <string>"
@@ -984,6 +1007,9 @@ module Yast
     publish function: :HaveXenBridge, type: "boolean ()"
 
   private
+
+    # @return [Array<Y2Network::Config>]
+    attr_reader :configs
 
     def activate_network_service
       # If the second installation stage has been called by yast.ssh via
