@@ -32,6 +32,8 @@
 require "y2network/dialogs/route"
 require "y2network/routing_table"
 require "y2network/widgets/routing_table"
+require "y2network/widgets/ip4_forwarding"
+require "y2network/widgets/ip6_forwarding"
 require "y2network/config"
 require "y2network/config_reader" # FIXME: workaround
 
@@ -71,7 +73,7 @@ module Yast
         "route" => {
           "header"       => _("Routing"),
           "contents"     => content,
-          "widget_names" => [routing_table.widget_id]
+          "widget_names" => [routing_table.widget_id, ip4_forwarding.widget_id, ip6_forwarding.widget_id]
         }
       }
     end
@@ -307,13 +309,11 @@ module Yast
         :abort  => fun_ref(method(:ReallyAbort), "boolean ()")
       }
 
-      contents = VBox("ROUTING")
-
       Wizard.HideBackButton
 
       CWM.ShowAndRun(
         "widget_descr"       => @wd_routing,
-        "contents"           => contents,
+        "contents"           => content,
         "caption"            => caption,
         "back_button"        => Label.BackButton,
         "next_button"        => Label.NextButton,
@@ -385,20 +385,37 @@ module Yast
       )
     end
 
-    def routing_table
-      return @routing_table_widget if @routing_table_widget
+    def config
+      # TODO: get it from some config holder
+      @routing_config ||= Y2Network::Config.from(:sysconfig)
+    end
 
-      config = Y2Network::Config.from(:sysconfig)
-      @routing_table_widget = Y2Network::Widgets::RoutingTable.new(config.routing_tables.first)
+    def routing_table
+      @routing_table_widget ||= Y2Network::Widgets::RoutingTable.new(config.routing_tables.first)
+    end
+
+    def ip4_forwarding
+      @ip4_forwarding_widget ||= Y2Network::Widgets::IP4Forwarding.new(config)
+    end
+
+    def ip6_forwarding
+      @ip6_forwarding_widget ||= Y2Network::Widgets::IP6Forwarding.new(config)
     end
 
     def content
-      VBox(routing_table.widget_id)
+      VBox(
+        Left(ip4_forwarding.widget_id),
+        Left(ip6_forwarding.widget_id),
+        VSpacing(),
+        routing_table.widget_id
+      )
     end
 
     def widgets
       {
-        routing_table.widget_id => routing_table.cwm_definition
+        routing_table.widget_id => routing_table.cwm_definition,
+        ip4_forwarding.widget_id => ip4_forwarding.cwm_definition,
+        ip6_forwarding.widget_id => ip6_forwarding.cwm_definition
       }
     end
   end
