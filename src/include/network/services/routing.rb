@@ -30,6 +30,10 @@
 # Routing configuration dialogs
 
 require "y2network/dialogs/route"
+require "y2network/routing_table"
+require "y2network/widgets/routing_table"
+require "y2network/config"
+require "y2network/config_reader" # FIXME: workaround
 
 module Yast
   module NetworkServicesRoutingInclude
@@ -62,37 +66,12 @@ module Yast
 
       @defgw6 = ""
       @defgwdev6 = ""
-      @wd_routing = {
-        "ROUTING" => {
-          "widget"            => :custom,
-          "custom_widget"     => HBox(
-            HSpacing(5),
-            routing_box_widget,
-            HSpacing(5)
-          ),
-          "init"              => fun_ref(method(:initRouting), "void (string)"),
-          "handle"            => fun_ref(
-            method(:handleRouting),
-            "symbol (string, map)"
-          ),
-          "validate_type"     => :function,
-          "validate_function" => fun_ref(
-            method(:validateRouting),
-            "boolean (string, map)"
-          ),
-          "store"             => fun_ref(
-            method(:storeRouting),
-            "void (string, map)"
-          ),
-          "help"              => Ops.get_string(@help, "routing", "")
-        }
-      }
-
+      @wd_routing = widgets
       @route_td = {
         "route" => {
           "header"       => _("Routing"),
-          "contents"     => VBox("ROUTING"),
-          "widget_names" => ["ROUTING"]
+          "contents"     => content,
+          "widget_names" => [routing_table.widget_id]
         }
       }
     end
@@ -404,6 +383,23 @@ module Yast
         Left(CheckBox(Id(:forward_v6), _("Enable I&Pv6 Forwarding"))),
         VStretch()
       )
+    end
+
+    def routing_table
+      return @routing_table_widget if @routing_table_widget
+
+      config = Y2Network::Config.from(:sysconfig)
+      @routing_table_widget = Y2Network::Widgets::RoutingTable.new(config.routing_tables.first)
+    end
+
+    def content
+      VBox(routing_table.widget_id)
+    end
+
+    def widgets
+      {
+        routing_table.widget_id => routing_table.cwm_definition
+      }
     end
   end
 end

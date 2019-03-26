@@ -1,6 +1,7 @@
 require "ipaddr"
 
 require "cwm/table"
+require "y2network/interface"
 
 Yast.import "Label"
 
@@ -23,14 +24,14 @@ module Y2Network
       end
 
       def items
-        @routing_table.routes.each_with_index do |route, index|
+        @routing_table.routes.map.each_with_index do |route, index|
           [
             index,
             route.to.yield_self do |to|
               to == :default ? "default" : (to.to_s + "/" + to.prefix.to_s)
             end,
             route.gateway.nil? ? "-" : route.gateway.to_s,
-            route.device.to_s,
+            route.interface == :any ? "-" : route.interface.name,
             route.options.to_s
           ]
         end
@@ -45,7 +46,8 @@ module Y2Network
           _id, destination, gateway, device, options = item.params
           destination = destination == "default" ? :default : IPAddr.new(destination)
           gateway = gateway == "-" ? "nil" : IPAddr.new(gateway)
-          r = Route.new(to: destination, gateway: gateway, device: device, options: options)
+          device = device == "-" ? :any : Interface.new(device)
+          r = Route.new(to: destination, gateway: gateway, interface: device, options: options)
           @routing_table.routes << r
         end
       end
