@@ -75,7 +75,7 @@ module Y2Network
       def build_route(interfaces, hash)
         iface = interfaces.find { |i| i.name == hash["device"] }
         Y2Network::Route.new(
-          to:        build_ip(hash["destination"], hash["netmask"]) || :default,
+          to:        hash["destination"] == "default" ? :default : build_ip(hash["destination"], hash["netmask"]),
           interface: iface,
           gateway:   build_ip(hash["gateway"], MISSING_VALUE)
         )
