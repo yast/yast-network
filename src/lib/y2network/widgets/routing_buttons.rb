@@ -36,6 +36,8 @@ module Y2Network
       end
 
       def handle
+        return nil unless @table.selected_route
+
         route = @table.selected_route.dup
         res = Y2Network::Dialogs::Route.run(route, Yast::Routing.GetDevices + ["-"])
         @table.replace_route(route) if res == :ok
@@ -55,6 +57,8 @@ module Y2Network
       end
 
       def handle
+        return nil unless @table.selected_route
+
         @table.delete_route
 
         nil
