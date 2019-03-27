@@ -47,12 +47,12 @@ describe Y2Network::ConfigReader::Sysconfig do
     end
 
     it "returns a configuration including network devices" do
-      config = reader.network_config
+      config = reader.config
       expect(config.interfaces.map(&:name)).to eq(["lo", "eth0", "wlan0"])
     end
 
     it "returns a configuration including routes" do
-      config = reader.network_config
+      config = reader.config
       expect(config.routing.routes.size).to eq(1)
       route = config.routing.routes.first
       expect(route.to).to eq(IPAddr.new("192.168.122.0/24"))
@@ -60,7 +60,7 @@ describe Y2Network::ConfigReader::Sysconfig do
     end
 
     it "sets the config source to :sysconfig" do
-      config = reader.network_config
+      config = reader.config
       expect(config.source).to eq(:sysconfig)
     end
 
@@ -68,7 +68,7 @@ describe Y2Network::ConfigReader::Sysconfig do
       let(:gateway) { "-" }
 
       it "sets the gateway to nil" do
-        config = reader.network_config
+        config = reader.config
         route = config.routing.routes.first
         expect(route.gateway).to be_nil
       end
@@ -78,7 +78,7 @@ describe Y2Network::ConfigReader::Sysconfig do
       let(:netmask) { "-" }
 
       it "does not set destination netmask" do
-        config = reader.network_config
+        config = reader.config
         route = config.routing.routes.first
         expect(route.to).to eq(IPAddr.new("192.168.122.1/255.255.255.255"))
       end
@@ -88,7 +88,7 @@ describe Y2Network::ConfigReader::Sysconfig do
       let(:destination) { "-" }
 
       it "considers the route to be the default one" do
-        config = reader.network_config
+        config = reader.config
         route = config.routing.routes.first
         expect(route.to).to eq(:default)
       end

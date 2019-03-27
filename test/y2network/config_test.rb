@@ -39,7 +39,7 @@ describe Y2Network::Config do
 
   describe ".from" do
     let(:reader) do
-      instance_double(Y2Network::ConfigReader::Sysconfig, network_config: config)
+      instance_double(Y2Network::ConfigReader::Sysconfig, config: config)
     end
 
     before do

@@ -45,16 +45,16 @@ module Y2Network
     # @param source [Symbol] Source to read the configuration from
     class << self
       def from(source)
-        builder = ConfigReader.for(source)
-        builder.network_config
+        reader = ConfigReader.for(source)
+        reader.config
       end
     end
 
     # Constructor
     #
-    # @param id             [Symbol] Configuration ID
-    # @param interfaces     [Array<Interface>] List of interfaces
-    # @param routing        [Routing] Object with routing configuration
+    # @param id         [Symbol] Configuration ID
+    # @param interfaces [Array<Interface>] List of interfaces
+    # @param routing    [Routing] Object with routing configuration
     def initialize(id: :system, interfaces:, routing:, source:)
       @id = id
       @interfaces = interfaces
