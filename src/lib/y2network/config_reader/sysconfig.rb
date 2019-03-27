@@ -43,6 +43,8 @@ module Y2Network
 
       # Find configured network interfaces
       #
+      # Configured interfaces has a configuration (ifcfg file) assigned.
+      #
       # @return [Array<Interface>] Detected interfaces
       # @see Yast::NetworkInterfaces.Read
       def find_interfaces
