@@ -30,14 +30,6 @@ describe Y2Network::ConfigReader::Sysconfig do
     )
   end
 
-  let(:routing) do
-    instance_double(
-      Yast::RoutingClass,
-      Read:   nil,
-      Routes: [scr_route]
-    )
-  end
-
   let(:scr_route) do
     {
       "destination" => destination, "device" => device, "gateway" => gateway, "netmask" => netmask
@@ -51,7 +43,7 @@ describe Y2Network::ConfigReader::Sysconfig do
   describe "#config" do
     before do
       stub_const("Yast::NetworkInterfaces", network_interfaces)
-      stub_const("Yast::Routing", routing)
+      allow(Yast::SCR).to receive(:Read).and_return([scr_route])
     end
 
     it "returns a configuration including network devices" do
@@ -61,8 +53,8 @@ describe Y2Network::ConfigReader::Sysconfig do
 
     it "returns a configuration including routes" do
       config = reader.config
-      expect(config.routes.size).to eq(1)
-      route = config.routes.first
+      expect(config.routing.routes.size).to eq(1)
+      route = config.routing.routes.first
       expect(route.to).to eq(IPAddr.new("192.168.122.0/24"))
       expect(route.interface.name).to eq("eth0")
     end
@@ -72,12 +64,12 @@ describe Y2Network::ConfigReader::Sysconfig do
       expect(config.source).to eq(:sysconfig)
     end
 
-    context "when there is not gateway" do
+    context "when gateway is missing" do
       let(:gateway) { "-" }
 
       it "sets the gateway to nil" do
         config = reader.config
-        route = config.routes.first
+        route = config.routing.routes.first
         expect(route.gateway).to be_nil
       end
     end
@@ -87,7 +79,7 @@ describe Y2Network::ConfigReader::Sysconfig do
 
       it "does not set destination netmask" do
         config = reader.config
-        route = config.routes.first
+        route = config.routing.routes.first
         expect(route.to).to eq(IPAddr.new("192.168.122.1/255.255.255.255"))
       end
     end
@@ -97,7 +89,7 @@ describe Y2Network::ConfigReader::Sysconfig do
 
       it "considers the route to be the default one" do
         config = reader.config
-        route = config.routes.first
+        route = config.routing.routes.first
         expect(route.to).to eq(:default)
       end
     end
