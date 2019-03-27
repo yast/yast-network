@@ -77,14 +77,14 @@ describe Y2Network::Config do
     it "returns a copy of the object" do
       copy = config.copy
       expect(copy).to_not be(config)
-      expect(copy.routing_tables.size).to eq(2)
+      expect(copy.routing.tables.size).to eq(2)
     end
 
     it "returns a copy whose changes won't affect to the original object" do
       copy = config.copy
-      copy.routing_tables.clear
-      expect(copy.routing_tables).to be_empty
-      expect(config.routing_tables.size).to eq(2)
+      copy.routing.tables.clear
+      expect(copy.routing.tables).to be_empty
+      expect(config.routing.tables.size).to eq(2)
     end
   end
 end
