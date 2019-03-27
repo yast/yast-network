@@ -31,7 +31,6 @@ module Y2Network
       #                               not defined, then /etc/sysconfig/network/routes is used
       def initialize(routes_file: DEFAULT_ROUTES_FILE)
         @routes_file = Yast::Path.new(".routes") if routes_file == DEFAULT_ROUTES_FILE
-        # TODO: dynamic agent registration (e.g. ifroute-<device> file(s))
       end
 
       # Load routing tables
@@ -76,21 +75,20 @@ module Y2Network
         routes.map do |route|
           subnet, prefix = route["destination"].split("/")
 
-          if !prefix.nil?
-            route["destination"] = subnet
-            route["netmask"] = "/#{prefix}"
-          end
+          next if prefix.nil?
 
+          route["destination"] = subnet
+          route["netmask"] = "/#{prefix}"
           route
         end
       end
 
-      # Given an IP and a netmask, returns a valid IPAddr object
+      # Given an IP and a netmaks, returns a valid IPAddr objecto
       #
       # @param ip_str      [String] IP address; {MISSING_VALUE} means that the IP is not defined
-      # @param netmask_str [String] Netmask; {MISSING_VALUE} means than no netmaks was specified
+      # @param netmask_str [String] Netmask; {MISSING_VALUE} means than no netmask was specified
       # @return [IPAddr,nil] The IP address or `nil` if the IP is missing
-      def build_ip(ip_str, netmask_str = MISSING_VALUE)
+      def build_ip(ip_str, netmask_str = nil)
         return nil if ip_str == MISSING_VALUE
         ip = IPAddr.new(ip_str)
         netmask_str == MISSING_VALUE ? ip : ip.mask(netmask_str)
