@@ -37,6 +37,7 @@ module Y2Network
     attr_reader :routes
 
     def_delegator :@routes, :each
+    def_delegator :@routes, :concat
 
     def initialize(routes = [])
       @routes = routes

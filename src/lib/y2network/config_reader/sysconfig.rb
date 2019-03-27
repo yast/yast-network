@@ -33,9 +33,14 @@ module Y2Network
       def config
         interfaces = find_interfaces
         # load /etc/sysconfig/network/routes
-        routing = Y2Network::Routing.new(tables: [SysconfigRoutesReader.new.config])
-        # TODO: SysconfigRoutesReader(s) for ifroute-* files
-        Config.new(interfaces: interfaces, routing: routing, source: :sysconfig)
+        routes = SysconfigRoutesReader.new.config
+        # load /etc/sysconfig/network/ifroute-*
+        dev_routes = interfaces.map do |iface|
+          SysconfigRoutesReader.new(routes_file: "/etc/sysconfig/network/ifroute-#{iface.name}").config
+        end
+        routing = dev_routes.inject(routes) { |memo, r| memo.concat(r.routes) }.uniq
+
+        Config.new(interfaces: interfaces, routing: Routing.new(tables: [routing]), source: :sysconfig)
       end
 
     private
