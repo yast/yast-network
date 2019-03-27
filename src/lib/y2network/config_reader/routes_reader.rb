@@ -75,10 +75,11 @@ module Y2Network
         routes.map do |route|
           subnet, prefix = route["destination"].split("/")
 
-          next if prefix.nil?
+          next route if prefix.nil?
 
           route["destination"] = subnet
           route["netmask"] = "/#{prefix}"
+
           route
         end
       end
@@ -88,7 +89,7 @@ module Y2Network
       # @param ip_str      [String] IP address; {MISSING_VALUE} means that the IP is not defined
       # @param netmask_str [String] Netmask; {MISSING_VALUE} means than no netmask was specified
       # @return [IPAddr,nil] The IP address or `nil` if the IP is missing
-      def build_ip(ip_str, netmask_str = nil)
+      def build_ip(ip_str, netmask_str = MISSING_VALUE)
         return nil if ip_str == MISSING_VALUE
         ip = IPAddr.new(ip_str)
         netmask_str == MISSING_VALUE ? ip : ip.mask(netmask_str)
