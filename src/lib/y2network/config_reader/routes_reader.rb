@@ -26,7 +26,7 @@ module Y2Network
 
     # This class reads the current configuration from a file in routes format
     # (@see man routes)
-    class RoutesReader
+    class SysconfigRoutesReader
       # @param routes_file [<String>] full path to a file in routes format, when
       #                               not defined, then /etc/sysconfig/network/routes is used
       def initialize(routes_file: DEFAULT_ROUTES_FILE)

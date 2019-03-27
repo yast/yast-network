@@ -33,8 +33,8 @@ module Y2Network
       def config
         interfaces = find_interfaces
         # load /etc/sysconfig/network/routes
-        routing = Y2Network::Routing.new(tables: [RoutesReader.new.config])
-        # TODO: RoutesReader(s) for ifroute-* files
+        routing = Y2Network::Routing.new(tables: [SysconfigRoutesReader.new.config])
+        # TODO: SysconfigRoutesReader(s) for ifroute-* files
         Config.new(interfaces: interfaces, routing: routing, source: :sysconfig)
       end
 
