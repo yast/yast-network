@@ -19,6 +19,7 @@
 require "y2network/routing_table"
 
 require "yast"
+require "y2network/interface"
 
 module Y2Network
   module ConfigReader
@@ -86,7 +87,7 @@ module Y2Network
         end
       end
 
-      # Given an IP and a netmaks, returns a valid IPAddr objecto
+      # Given an IP and a netmask, returns a valid IPAddr object
       #
       # @param ip_str      [String] IP address; {MISSING_VALUE} means that the IP is not defined
       # @param netmask_str [String] Netmask; {MISSING_VALUE} means than no netmask was specified

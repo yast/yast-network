@@ -38,13 +38,13 @@ module Y2Network
     attr_reader :id
     # @return [Array<Interface>]
     attr_reader :interfaces
-    # @return [Routing] @see {Y2Network::Routing}
+    # @return [Routing]
     attr_reader :routing
     # @return [Symbol] Information source (see {Y2Network::Reader} and {Y2Network::Writer})
     attr_reader :source
 
-    # @param source [Symbol] Source to read the configuration from
     class << self
+      # @param source [Symbol] Source to read the configuration from
       def from(source)
         reader = ConfigReader.for(source)
         reader.config

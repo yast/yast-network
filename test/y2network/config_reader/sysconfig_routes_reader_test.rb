@@ -19,29 +19,13 @@
 require_relative "../../test_helper"
 
 require "y2network/config_reader/sysconfig_routes_reader"
+require "yast/rspec"
 
 describe Y2Network::ConfigReader::SysconfigRoutesReader do
   subject(:reader) { described_class.new }
 
   describe "#config" do
-    old_SCR = Yast::WFM.SCRGetDefault
-
-    def agent_stub_scr_read(agent)
-      new_SCR = Yast::WFM.SCROpen("chroot=#{DATA_PATH}/scr_read:scr", false)
-
-      Yast::WFM.SCRSetDefault(new_SCR)
-      info = Yast::SCR.Read(agent)
-
-      mock_path(agent, info)
-    end
-
-    before(:each) do
-      agent_stub_scr_read(".routes")
-    end
-
-    after(:each) do
-      Yast::WFM.SCRSetDefault(old_SCR)
-    end
+    around { |example| change_scr_root("#{DATA_PATH}/scr_read/", &example) }
 
     it "returns a RoutingTable with routes" do
       routing_table = reader.config
