@@ -51,10 +51,6 @@ module Yast
       Yast.import "Wizard"
       Yast.import "CWM"
 
-      # TODO: check if it is needed
-      Yast.include include_target, "network/lan/help.rb"
-      Yast.include include_target, "network/routines.rb"
-
       # Keep this variables as it is used elsewhere for CWMTab
       # TODO: Use CWM objects for tabs
       @wd_routing = widgets
