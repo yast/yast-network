@@ -85,7 +85,7 @@ describe Y2Network::ConfigReader::Sysconfig do
     end
 
     context "when there is no destination" do
-      let(:destination) { "-" }
+      let(:destination) { "default" }
 
       it "considers the route to be the default one" do
         config = reader.config
