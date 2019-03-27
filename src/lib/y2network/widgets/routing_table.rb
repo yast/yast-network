@@ -37,19 +37,34 @@ module Y2Network
         end
       end
 
-      def store
-        @routing_table.clear
-        items = Yast::UI.QueryWidget(Id(widget_id), :Items)
-        log.info "storing routing #{items.inspect}"
+      def selected_route
+        return nil unless value
 
-        items.each do |item|
-          _id, destination, gateway, device, options = item.params
-          destination = destination == "default" ? :default : IPAddr.new(destination)
-          gateway = gateway == "-" ? "nil" : IPAddr.new(gateway)
-          device = device == "-" ? :any : Interface.new(device)
-          r = Route.new(to: destination, gateway: gateway, interface: device, options: options)
-          @routing_table.routes << r
-        end
+        @routing_table.routes[value]
+      end
+
+      def add_route(route)
+        @routing_table.routes << route
+
+        redraw_table
+      end
+
+      # Replaces selected route with new one
+      def replace_route(route)
+        @routing_table.routes[value] = route
+
+        redraw_table
+      end
+
+      # deletes selected route
+      def delete_route
+        @routing_table.routes.delete_at(value)
+
+        redraw_table
+      end
+
+      def redraw_table
+        change_items(items)
       end
     end
   end

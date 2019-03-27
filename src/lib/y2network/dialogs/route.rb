@@ -17,33 +17,9 @@ module Y2Network
       def initialize(route, available_devices)
         log.info "route dialog with route: #{route.inspect} " \
           "and devices #{available_devices.inspect}"
-        params = route.params
-        @route_id = params[0]
-        # TODO: netmask
-        @route = ::Y2Network::Route.new(
-          to:        (params[1] || "-") == "-" ? :default : IPAddr.new(params[1]),
-          interface: (params[4].nil? || params[4].empty?) ? :any : params[4],
-          gateway:   (params[2] || "-") == "-" ? nil : IPAddr.new(params[2]),
-          options:   params[5] || ""
-        )
+        @route = route
 
         @available_devices = available_devices
-      end
-
-      def run
-        res = super
-        log.info "route dialog result #{res.inspect}"
-        return nil if res != :ok
-
-        Yast::Term.new(
-          :item,
-          @route_id,
-          @route.to == :default ? "-" : @route.to.to_s,
-          @route.gateway.nil? ? "-" : @route.gateway.to_s,
-          "-", # TODO: netmask
-          @route.interface == :any ? "" : @route.interface,
-          @route.options
-        )
       end
 
       def contents

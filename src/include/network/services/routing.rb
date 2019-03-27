@@ -32,6 +32,7 @@
 require "y2network/dialogs/route"
 require "y2network/routing_table"
 require "y2network/widgets/routing_table"
+require "y2network/widgets/routing_buttons"
 require "y2network/widgets/ip4_forwarding"
 require "y2network/widgets/ip6_forwarding"
 require "y2network/config"
@@ -73,7 +74,7 @@ module Yast
         "route" => {
           "header"       => _("Routing"),
           "contents"     => content,
-          "widget_names" => [routing_table.widget_id, ip4_forwarding.widget_id, ip6_forwarding.widget_id]
+          "widget_names" => widgets.keys
         }
       }
     end
@@ -402,12 +403,35 @@ module Yast
       @ip6_forwarding_widget ||= Y2Network::Widgets::IP6Forwarding.new(config)
     end
 
+    def add_button
+      @add_button ||= Y2Network::Widgets::AddRoute.new(routing_table)
+    end
+
+    def edit_button
+      @edit_button ||= Y2Network::Widgets::EditRoute.new(routing_table)
+    end
+
+    def delete_button
+      @delete_button ||= Y2Network::Widgets::DeleteRoute.new(routing_table)
+    end
+
     def content
       VBox(
         Left(ip4_forwarding.widget_id),
         Left(ip6_forwarding.widget_id),
         VSpacing(),
-        routing_table.widget_id
+        # Frame label
+        Frame(
+          _("Routing Table"),
+          VBox(
+            routing_table.widget_id,
+            HBox(
+              add_button.widget_id,
+              edit_button.widget_id,
+              delete_button.widget_id
+            )
+          )
+        )
       )
     end
 
@@ -415,7 +439,10 @@ module Yast
       {
         routing_table.widget_id => routing_table.cwm_definition,
         ip4_forwarding.widget_id => ip4_forwarding.cwm_definition,
-        ip6_forwarding.widget_id => ip6_forwarding.cwm_definition
+        ip6_forwarding.widget_id => ip6_forwarding.cwm_definition,
+        add_button.widget_id => add_button.cwm_definition,
+        edit_button.widget_id => edit_button.cwm_definition,
+        delete_button.widget_id => delete_button.cwm_definition
       }
     end
   end
