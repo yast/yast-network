@@ -51,7 +51,7 @@ describe Y2Network::ConfigReader::SysconfigRoutesReader do
     end
 
     it "contains default gw definition" do
-      expect(reader.config.routes.any? { |r| r.default? }).to be_truthy
+      expect(reader.config.routes.any?(&:default?)).to be_truthy
     end
 
     it "accepts prefix from gateway field" do
