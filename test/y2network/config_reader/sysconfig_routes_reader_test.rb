@@ -24,8 +24,44 @@ describe Y2Network::ConfigReader::SysconfigRoutesReader do
   subject(:reader) { described_class.new }
 
   describe "#config" do
-    it "returns a RoutingTable object" do
-      expect(reader.config).to be_instance_of Y2Network::RoutingTable
+    old_SCR = Yast::WFM.SCRGetDefault
+
+    def agent_stub_scr_read(agent)
+      new_SCR = Yast::WFM.SCROpen("chroot=#{DATA_PATH}/scr_read:scr", false)
+
+      Yast::WFM.SCRSetDefault(new_SCR)
+      info = Yast::SCR.Read(agent)
+
+      mock_path(agent, info)
+    end
+
+    before(:each) do
+      agent_stub_scr_read(".routes")
+    end
+
+    after(:each) do
+      Yast::WFM.SCRSetDefault(old_SCR)
+    end
+
+    it "returns a RoutingTable with routes" do
+      routing_table = reader.config
+
+      expect(routing_table).to be_instance_of Y2Network::RoutingTable
+      expect(routing_table.routes).not_to be_empty
+    end
+
+    it "contains default gw definition" do
+      expect(reader.config.routes.any? { |r| r.default? }).to be_truthy
+    end
+
+    it "accepts prefix from gateway field" do
+      route = reader.config.routes.find { |r| r.to == "10.192.0.0" }
+
+      expect(route.to.prefix).to eql 10
+    end
+
+    it "stores device when set" do
+      expect(reader.config.routes.any? { |r| r.interface.name == "eth0" }).to be_truthy
     end
   end
 end

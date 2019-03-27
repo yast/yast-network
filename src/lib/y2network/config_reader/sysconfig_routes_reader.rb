@@ -47,6 +47,8 @@ module Y2Network
 
       MISSING_VALUE = "-".freeze
       private_constant :MISSING_VALUE
+      DEFAULT_DEST = "default".freeze
+      private_constant :DEFAULT_DEST
 
       # Loads routes from system
       #
@@ -91,6 +93,7 @@ module Y2Network
       # @return [IPAddr,nil] The IP address or `nil` if the IP is missing
       def build_ip(ip_str, netmask_str = MISSING_VALUE)
         return nil if ip_str == MISSING_VALUE
+
         ip = IPAddr.new(ip_str)
         netmask_str == MISSING_VALUE ? ip : ip.mask(netmask_str)
       end
@@ -108,7 +111,7 @@ module Y2Network
         mask = hash["netmask"] =~ /\/[0-9]+/ ? hash["netmask"][1..-1] : hash["netmask"]
 
         Y2Network::Route.new(
-          to:        build_ip(hash["destination"], mask) || :default,
+          to:        hash["destination"] != DEFAULT_DEST ? build_ip(hash["destination"], mask) : :default,
           interface: iface,
           gateway:   build_ip(hash["gateway"], MISSING_VALUE)
         )

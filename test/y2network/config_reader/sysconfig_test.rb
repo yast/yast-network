@@ -64,7 +64,7 @@ describe Y2Network::ConfigReader::Sysconfig do
       expect(config.source).to eq(:sysconfig)
     end
 
-    context "when there is not gateway" do
+    context "when gateway is missing" do
       let(:gateway) { "-" }
 
       it "sets the gateway to nil" do
