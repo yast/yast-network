@@ -24,7 +24,6 @@ require "y2network/route"
 require "y2network/config_reader/routes_reader"
 
 Yast.import "NetworkInterfaces"
-Yast.import "Routing"
 
 module Y2Network
   module ConfigReader
