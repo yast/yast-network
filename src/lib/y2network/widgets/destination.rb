@@ -24,8 +24,11 @@ module Y2Network
       end
 
       def help
-        # TODO: original also does not have help, so write new one
-        ""
+        _(
+          "<p><b>Default Route</b> matches all destination for given IP " \
+            "version as long as no specific route matches. <b>Destination</b>" \
+            "specifies IP address with prefix for which route applies.</p>"
+        )
       end
 
       def handle

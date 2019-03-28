@@ -16,8 +16,10 @@ module Y2Network
       end
 
       def help
-        # TODO: original also does not have help
-        ""
+        _(
+          "<p><b>Device</b> specifies the device throught which the traffic" \
+            " to the defined network will be routed.</p>"
+        )
       end
 
       def items

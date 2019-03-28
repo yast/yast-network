@@ -18,8 +18,10 @@ module Y2Network
       end
 
       def help
-        # TODO: original also does not have help
-        ""
+        _(
+          "<p><b>Options</b> specifies additional options for route. It is directly passed " \
+            "to <i>ip route add</i> with exception of <i>to</i>,<i>via</i> and <i>dev</i>."
+        )
       end
 
       def opt

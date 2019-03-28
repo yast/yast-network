@@ -21,8 +21,12 @@ module Y2Network
       end
 
       def help
-        # TODO: original also does not have help
-        ""
+        _(
+          "<p><b>Gateway</b> defines gateway for given route. Special value here is '-' " \
+            "which means do not use gateway for given destination which for non direct " \
+            "connections result in reject of connection. For direct destination route is " \
+            "created automatically.</p>"
+        )
       end
 
       def opt
