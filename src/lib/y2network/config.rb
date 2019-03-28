@@ -43,8 +43,9 @@ module Y2Network
 
     class << self
       # @param source [Symbol] Source to read the configuration from
-      def from(source)
-        reader = ConfigReader.for(source)
+      # @param opts   [Hash]   Reader options
+      def from(source, opts = {})
+        reader = ConfigReader.for(source, opts)
         reader.config
       end
     end

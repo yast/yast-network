@@ -44,7 +44,7 @@ describe Y2Network::Config do
     end
 
     before do
-      allow(Y2Network::ConfigReader).to receive(:for).with(:sysconfig)
+      allow(Y2Network::ConfigReader).to receive(:for).with(:sysconfig, {})
         .and_return(reader)
     end
 

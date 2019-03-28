@@ -20,6 +20,7 @@ require_relative "../../test_helper"
 require "y2network/config_writer/sysconfig"
 require "y2network/config"
 require "y2network/interface"
+require "y2network/routing"
 require "y2network/route"
 require "y2network/routing_table"
 

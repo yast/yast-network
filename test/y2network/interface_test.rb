@@ -40,5 +40,13 @@ describe Y2Network::Interface do
         expect(interface).to_not eq(other)
       end
     end
+
+    context "comparing with a symbol" do
+      let(:other) { :any }
+
+      it "returns false" do
+        expect(interface).to_not eq(other)
+      end
+    end
   end
 end

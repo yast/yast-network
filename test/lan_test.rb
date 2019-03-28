@@ -4,12 +4,13 @@ require_relative "test_helper"
 
 require "yast"
 require "y2network/config"
+require "y2network/routing"
 
 Yast.import "Lan"
 
 describe "LanClass" do
   subject { Yast::Lan }
-  let(:system_config) { instance_double(Y2Network::Config, "System", id: :system) }
+  let(:system_config) { instance_double(Y2Network::Config, "System") }
 
   describe "#Packages" do
     before(:each) do
@@ -147,7 +148,6 @@ describe "LanClass" do
     def reset_modification_statuses
       allow(Yast::LanItems).to receive(:GetModified).and_return false
       allow(Yast::DNS).to receive(:modified).and_return false
-      allow(Yast::Routing).to receive(:Modified).and_return false
       allow(Yast::NetworkConfig).to receive(:Modified).and_return false
       allow(Yast::NetworkService).to receive(:Modified).and_return false
       allow(Yast::Host).to receive(:GetModified).and_return false
@@ -172,8 +172,21 @@ describe "LanClass" do
       expect_modification_succeedes(Yast::DNS, :modified)
     end
 
+    let(:config) do
+      Y2Network::Config.new(interfaces: [], routing: routing, source: :sysconfig)
+    end
+    let(:routing) { Y2Network::Routing.new(tables: []) }
+
     it "returns true when Routing module was modified" do
-      expect_modification_succeedes(Yast::Routing, :Modified)
+      Yast::Lan.clear_configs
+      Yast::Lan.add_config(:system, config)
+      yast_config = config.copy
+      yast_config.routing.forward_ipv4 = !config.routing.forward_ipv4
+      Yast::Lan.add_config(:yast, yast_config)
+
+      reset_modification_statuses
+      expect(Yast::Lan.Modified).to eq(true)
+      Yast::Lan.clear_configs
     end
 
     it "returns true when NetworkConfig module was modified" do
@@ -496,21 +509,21 @@ describe "LanClass" do
   end
 
   describe "#find_config" do
-    let(:autoyast_config) { instance_double(Y2Network::Config, "AutoYaST", id: :autoyast) }
+    let(:yast_config) { instance_double(Y2Network::Config, "YaST") }
 
     before do
       subject.main
-      subject.add_config(system_config)
-      subject.add_config(autoyast_config)
+      subject.add_config(:system, system_config)
+      subject.add_config(:yast, yast_config)
     end
 
     it "retuns the network configuration with the given ID" do
-      expect(subject.find_config(id: :autoyast)).to eq(autoyast_config)
+      expect(subject.find_config(:yast)).to eq(yast_config)
     end
 
     context "when a network configuration with the given ID is not found" do
       it "returns nil" do
-        expect(subject.find_config(id: :missing)).to be_nil
+        expect(subject.find_config(:missing)).to be_nil
       end
     end
   end
@@ -518,12 +531,12 @@ describe "LanClass" do
   describe "#clear_configs" do
     before do
       subject.main
-      subject.add_config(system_config)
+      subject.add_config(:system, system_config)
     end
 
     it "cleans the configurations list" do
       expect { subject.clear_configs }
-        .to change { subject.find_config(id: :system) }
+        .to change { subject.find_config(:system) }
         .from(system_config).to(nil)
     end
   end
@@ -532,7 +545,8 @@ describe "LanClass" do
     before { subject.main }
 
     it "adds the configuration to the list" do
-      expect { subject.add_config(system_config) }.to change { subject.find_config(id: :system) }
+      expect { subject.add_config(:system, system_config) }
+        .to change { subject.find_config(:system) }
         .from(nil).to(system_config)
     end
   end
