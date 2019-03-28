@@ -19,8 +19,27 @@
 
 require_relative "../../test_helper"
 require "y2network/autoinst_profile/networking_section"
+require "y2network/config"
 
 describe Y2Network::AutoinstProfile::NetworkingSection do
+  describe ".new_from_network" do
+    let(:config) do
+      Y2Network::Config.new(interfaces: [], routing: routing, source: :sysconfig)
+    end
+    let(:routing) { double("Y2Network::Routing") }
+    let(:routing_section) { double("RoutingSection") }
+
+    before do
+      allow(Y2Network::AutoinstProfile::RoutingSection).to receive(:new_from_network)
+        .with(routing).and_return(routing_section)
+    end
+
+    it "initializes the routing section" do
+      section = described_class.new_from_network(config)
+      expect(section.routing).to eq(routing_section)
+    end
+  end
+
   describe ".new_from_hashes" do
     let(:hash) do
       {

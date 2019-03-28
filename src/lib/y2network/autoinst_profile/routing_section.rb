@@ -44,7 +44,7 @@ module Y2Network
         [
           { name: :ipv4_forward },
           { name: :ipv6_forward },
-          { name: :routes}
+          { name: :routes }
         ]
       end
 
@@ -59,15 +59,39 @@ module Y2Network
       # @!attribute routes
       #   @return [Array<RouteSection>]
 
+      # Clones network routing settings into an AutoYaST routing section
+      #
+      # @param routing [Y2Network::Routing] Routing settings
+      # @return [RoutingSection]
+      def self.new_from_network(routing)
+        result = new
+        initialized = result.init_from_network(routing)
+        initialized ? result : nil
+      end
+
+      # Constructor
       def initialize(_parent = nil)
         super
         @routes = []
       end
 
+      # Method used by {.new_from_hashes} to populate the attributes when importing a profile
+      #
       # @param hash [Hash] see {.new_from_hashes}
       def init_from_hashes(hash)
         super
         @routes = routes_from_hash(hash)
+      end
+
+      # Method used by {.new_from_network} to populate the attributes when cloning routing settings
+      #
+      # @param routing [Y2Network::Routing] Network settings
+      # @return [Boolean]
+      def init_from_network(routing)
+        @ipv4_forward = routing.forward_ipv4
+        @ipv6_forward = routing.forward_ipv6
+        @routes = routes_section(routing.routes)
+        true
       end
 
     private
@@ -78,6 +102,10 @@ module Y2Network
       def routes_from_hash(hash)
         hashes = hash["routes"] || []
         hashes.map { |h| RouteSection.new_from_hashes(h) }
+      end
+
+      def routes_section(routes)
+        routes.map { |r| Y2Network::AutoinstProfile::RouteSection.new_from_network(r) }
       end
     end
   end

@@ -34,6 +34,16 @@ module Y2Network
         result
       end
 
+      # Creates an instance based on the network configuration representation
+      #
+      # @param config [Y2Network::Config]
+      # @return [NetworkingSection]
+      def self.new_from_network(config)
+        result = new
+        result.routing = RoutingSection.new_from_network(config.routing)
+        result
+      end
+
       def to_hashes
         { "routing" => routing.to_hashes }
       end

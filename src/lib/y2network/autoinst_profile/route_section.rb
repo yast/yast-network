@@ -36,10 +36,10 @@ module Y2Network
       def self.attributes
         [
           { name: :destination },
+          { name: :netmask },
           { name: :device },
-          { name: :extrapara },
           { name: :gateway },
-          { name: :netmask }
+          { name: :extrapara }
         ]
       end
 
@@ -59,6 +59,78 @@ module Y2Network
 
       # @!attribute netmask
       #  @return [String] Netmask
+
+      # Clones a network route into an AutoYaST route section
+      #
+      # @param route [Y2Network::Route] Network route
+      # @return [RouteSection]
+      def self.new_from_network(route)
+        result = new
+        result.init_from_route(route)
+        result
+      end
+
+      # Method used by {.new_from_network} to populate the attributes when cloning a network route
+      #
+      # @param route [Y2Network::Route] Network route
+      # @return [Boolean]
+      def init_from_route(route)
+        @destination = destination_from_route(route)
+        @netmask = netmask_from_route(route)
+        @device = device_from_route(route)
+        @gateway = gateway_from_route(route)
+        @extrapara = extrapara_from_route(route)
+        true
+      end
+
+    private
+
+      # Returns the destination for the given route
+      #
+      # @param route [Route] Route to get the destination from
+      # @return [String] Route destination
+      def destination_from_route(route)
+        route.default? ? "default" : route.to.to_s
+      end
+
+      IPV4_MASK = "255.255.255.255".freeze
+      IPV6_MASK = "fffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff".freeze
+
+      # Returns the netmask
+      #
+      # @param route [Route] Route to get the destination from
+      # @return [String] Route netmask
+      def netmask_from_route(route)
+        return "-" if route.default?
+        mask = route.to.ipv4? ? IPV4_MASK : IPV6_MASK
+        IPAddr.new(mask).mask(route.to.prefix).to_s
+      end
+
+      # Returns the device (interface) for the given route
+      #
+      # @param route [Route] Route to get the device from
+      # @return [String] Device name
+      def device_from_route(route)
+        return "-" unless route.interface.respond_to?(:name)
+        route.interface.name
+      end
+
+      # Returns the gateway for the given route
+      #
+      # @param route [Route] Route to get the gateway from
+      # @return [String] Gateway address
+      def gateway_from_route(route)
+        return "-" unless route.gateway
+        route.gateway.to_s
+      end
+
+      # Returns the extra parameters for the given route
+      #
+      # @param route [Route] Route to get the options from
+      # @return [String] Extra parameters
+      def extrapara_from_route(route)
+        route.options.to_s
+      end
     end
   end
 end
