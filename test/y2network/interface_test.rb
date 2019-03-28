@@ -16,25 +16,29 @@
 #
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
-module Y2Network
-  # Network interface.
-  class Interface
-    # @return [String] Device name (eth0, wlan0, etc.)
-    attr_reader :name
+require_relative "../test_helper"
+require "y2network/interface"
 
-    # Constructor
-    #
-    # @param name [String] Interface name (e.g., "eth0")
-    def initialize(name)
-      @name = name
+describe Y2Network::Interface do
+  subject(:interface) do
+    described_class.new("eth0")
+  end
+
+  describe "#==" do
+    context "given two interfaces with the same name" do
+      let(:other) { Y2Network::Interface.new(interface.name) }
+
+      it "returns true" do
+        expect(interface).to eq(other)
+      end
     end
 
-    # Determines whether two interfaces are equal
-    def ==(other)
-      return false unless other.respond_to?(:name)
-      name == other.name
-    end
+    context "given two interfaces with a different name" do
+      let(:other) { Y2Network::Interface.new("eth1")}
 
-    alias_method :eql?, :==
+      it "returns false" do
+        expect(interface).to_not eq(other)
+      end
+    end
   end
 end

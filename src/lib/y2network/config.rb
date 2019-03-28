@@ -35,9 +35,9 @@ module Y2Network
   #   config.write
   class Config
     # @return [Symbol] Configuration ID
-    attr_reader :id
+    attr_accessor :id
     # @return [Array<Interface>]
-    attr_reader :interfaces
+    attr_accessor :interfaces
     # @return [Routing]
     attr_reader :routing
     # @return [Symbol] Information source (see {Y2Network::Reader} and {Y2Network::Writer})
@@ -76,5 +76,15 @@ module Y2Network
     def copy
       Marshal.load(Marshal.dump(self))
     end
+
+    # Determines whether two configurations are equal
+    #
+    # @return [Boolean] true if both configurations are equal; false otherwise
+    def ==(other)
+      source == other.source && (interfaces - other.interfaces).empty? &&
+        routing == other.routing
+    end
+
+    alias_method :eql?, :==
   end
 end

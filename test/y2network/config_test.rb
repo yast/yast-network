@@ -28,8 +28,8 @@ describe Y2Network::Config do
     described_class.new(interfaces: [eth0], routing: routing, source: :sysconfig)
   end
 
-  let(:route1) { double("Y2Network::Route") }
-  let(:route2) { double("Y2Network::Route") }
+  let(:route1) { Y2Network::Route.new }
+  let(:route2) { Y2Network::Route.new }
 
   let(:table1) { Y2Network::RoutingTable.new([route1]) }
   let(:table2) { Y2Network::RoutingTable.new([route2]) }
@@ -85,6 +85,37 @@ describe Y2Network::Config do
       copy.routing.tables.clear
       expect(copy.routing.tables).to be_empty
       expect(config.routing.tables.size).to eq(2)
+    end
+  end
+
+  describe "#==" do
+    let(:copy) { config.copy }
+
+    context "when both configuration contains the same information" do
+      it "returns true" do
+        expect(copy).to eq(config)
+      end
+    end
+
+    context "when both configuration contains the same information but different ID" do
+      it "returns true" do
+        copy.id = :another
+        expect(copy).to eq(config)
+      end
+    end
+
+    context "when interfaces list is different" do
+      it "returns false" do
+        copy.interfaces = [Y2Network::Interface.new("eth1")]
+        expect(copy).to_not eq(config)
+      end
+    end
+
+    context "when routing information is differt" do
+      it "returns false" do
+        copy.routing.forward_ipv4 = !config.routing.forward_ipv4
+        expect(copy).to_not eq(config)
+      end
     end
   end
 end
