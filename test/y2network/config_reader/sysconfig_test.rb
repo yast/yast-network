@@ -43,7 +43,7 @@ describe Y2Network::ConfigReader::Sysconfig do
   describe "#config" do
     before do
       stub_const("Yast::NetworkInterfaces", network_interfaces)
-      allow(Yast::SCR).to receive(:Read).and_return([scr_route])
+      allow(Yast::SCR).to receive(:Read).with(Yast::Path.new(".routes")).and_return([scr_route])
     end
 
     it "returns a configuration including network devices" do
