@@ -66,8 +66,8 @@ module Y2Network
         # Macro used in the subclasses to define accessors for all the
         # attributes defined by {.attributes}
         def define_attr_accessors
-          attributes.each do |attrib|
-            attr_accessor attrib[:name]
+          attributes.each do |attribute|
+            attr_accessor attribute[:name]
           end
         end
       end
@@ -102,11 +102,11 @@ module Y2Network
       #     attributes defined in the section. Blank attributes are not
       #     included.
       def to_hashes
-        attributes.each_with_object({}) do |attrib, result|
-          value = attrib_value(attrib)
-          next if attrib_skip?(value)
+        attributes.each_with_object({}) do |attribute, result|
+          value = attribute_value(attribute)
+          next if attribute_skip?(value)
 
-          key = attrib_key(attrib)
+          key = attribute_key(attribute)
           result[key] = value
         end
       end
@@ -134,39 +134,42 @@ module Y2Network
         self.class.attributes
       end
 
+      # Values to skip when exporting
+      VALUES_TO_SKIP = [nil, [], ""].freeze
+
       # Whether an attribute must be skipped during import/export.
       #
       # @return [Boolean] true is the value is blank
-      def attrib_skip?(value)
-        value.nil? || value == [] || value == ""
+      def attribute_skip?(value)
+        VALUES_TO_SKIP.include?(value)
       end
 
-      def attrib_key(attrib)
-        (attrib[:xml_name] || attrib[:name]).to_s
+      def attribute_key(attribute)
+        (attribute[:xml_name] || attribute[:name]).to_s
       end
 
-      def attrib_value(attrib)
-        value = send(attrib[:name])
+      def attribute_value(attribute)
+        value = public_send(attribute[:name])
         if value.is_a?(Array)
-          value.map { |v| attrib_scalar(v) }
+          value.map { |v| attribute_scalar(v) }
         else
-          attrib_scalar(value)
+          attribute_scalar(value)
         end
       end
 
-      def attrib_scalar(element)
+      def attribute_scalar(element)
         element.respond_to?(:to_hashes) ? element.to_hashes : element
       end
 
-      def attrib_name(key)
-        attrib = attributes.detect { |a| a[:xml_name] == key.to_sym || a[:name] == key.to_sym }
-        return nil unless attrib
-        attrib[:name]
+      def attribute_name(key)
+        attribute = attributes.detect { |a| a[:xml_name] == key.to_sym || a[:name] == key.to_sym }
+        return nil unless attribute
+        attribute[:name]
       end
 
       def init_scalars_from_hash(hash)
         hash.each_pair do |key, value|
-          name = attrib_name(key)
+          name = attribute_name(key)
 
           if name.nil?
             log.warn "Attribute #{key} not recognized by #{self.class}. Check the XML schema."
@@ -176,12 +179,12 @@ module Y2Network
           # This method only reads scalar values
           next if value.is_a?(Array) || value.is_a?(Hash)
 
-          if attrib_skip?(value)
+          if attribute_skip?(value)
             log.debug "Ignored blank value (#{value}) for #{key}"
             next
           end
 
-          send(:"#{name}=", value)
+          public_send(:"#{name}=", value)
         end
       end
     end

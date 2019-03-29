@@ -70,7 +70,7 @@ module Y2Network
       end
 
       # Constructor
-      def initialize(_parent = nil)
+      def initialize(*_args)
         super
         @routes = []
       end
@@ -86,7 +86,7 @@ module Y2Network
       # Method used by {.new_from_network} to populate the attributes when cloning routing settings
       #
       # @param routing [Y2Network::Routing] Network settings
-      # @return [Boolean]
+      # @return [Boolean] Result true on success or false otherwise
       def init_from_network(routing)
         @ipv4_forward = routing.forward_ipv4
         @ipv6_forward = routing.forward_ipv6

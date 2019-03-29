@@ -17,6 +17,8 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
+require "y2network/autoinst_profile/routing_section"
+
 module Y2Network
   module AutoinstProfile
     # This class represents an AutoYaST <networking> section
