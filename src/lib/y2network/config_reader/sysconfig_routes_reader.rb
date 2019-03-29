@@ -118,7 +118,8 @@ module Y2Network
         Y2Network::Route.new(
           to:        hash["destination"] != DEFAULT_DEST ? build_ip(hash["destination"], mask) : :default,
           interface: iface,
-          gateway:   build_ip(hash["gateway"], MISSING_VALUE)
+          gateway:   build_ip(hash["gateway"], MISSING_VALUE),
+          options:   hash["extrapara"] || ""
         )
       end
 
