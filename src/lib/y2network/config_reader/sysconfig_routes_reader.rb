@@ -127,43 +127,43 @@ module Y2Network
       def ifroute_term(path)
         raise ArgumentError if path.nil? || path.empty?
 
-        non_empty_str_term = Yast::term(:String, "^ \t\n")
-        whitespace_term = Yast::term(:Whitespace)
-        optional_whitespace_term = Yast::term(:Optional, whitespace_term)
-        routes_content_term = Yast::term(
+        non_empty_str_term = Yast.term(:String, "^ \t\n")
+        whitespace_term = Yast.term(:Whitespace)
+        optional_whitespace_term = Yast.term(:Optional, whitespace_term)
+        routes_content_term = Yast.term(
           :List,
-          Yast::term(
+          Yast.term(
             :Tuple,
-            Yast::term(
+            Yast.term(
               :destination,
               non_empty_str_term
             ),
             whitespace_term,
-            Yast::term(:gateway, non_empty_str_term),
+            Yast.term(:gateway, non_empty_str_term),
             whitespace_term,
-            Yast::term(:netmask, non_empty_str_term),
+            Yast.term(:netmask, non_empty_str_term),
             optional_whitespace_term,
-            Yast::term(
+            Yast.term(
               :Optional,
-              Yast::term(:device, non_empty_str_term)
+              Yast.term(:device, non_empty_str_term)
             ),
             optional_whitespace_term,
-            Yast::term(
+            Yast.term(
               :Optional,
-              Yast::term(
+              Yast.term(
                 :extrapara,
-                Yast::term(:String, "^\n")
+                Yast.term(:String, "^\n")
               )
             )
           ),
           "\n"
         )
 
-        Yast::term(
+        Yast.term(
           :ag_anyagent,
-          Yast::term(
+          Yast.term(
             :Description,
-            Yast::term(:File, path),
+            Yast.term(:File, path),
             "#\n",
             false,
             routes_content_term

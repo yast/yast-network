@@ -67,7 +67,7 @@ module Y2Network
           SysconfigRoutesReader.new(routes_file: "/etc/sysconfig/network/ifroute-#{iface.name}").config
         end
 
-        dev_routes.inject(routes) { |memo, r| memo.concat(r.routes) }.uniq
+        dev_routes.inject(routes) { |a, e| a.concat(e.routes) }.uniq
       end
     end
   end

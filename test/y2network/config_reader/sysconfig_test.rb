@@ -33,9 +33,9 @@ describe Y2Network::ConfigReader::Sysconfig do
   let(:scr_route) do
     {
       "destination" => destination,
-      "device" => "eth0",
-      "gateway" => gateway,
-      "netmask" => netmask
+      "device"      => "eth0",
+      "gateway"     => gateway,
+      "netmask"     => netmask
     }
   end
   let(:destination) { "192.168.122.1" }
@@ -63,7 +63,6 @@ describe Y2Network::ConfigReader::Sysconfig do
       config = reader.config
       expect(config.source).to eq(:sysconfig)
     end
-
 
     context "when gateway is missing" do
       let(:gateway) { "-" }
