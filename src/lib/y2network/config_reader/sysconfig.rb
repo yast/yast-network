@@ -32,15 +32,9 @@ module Y2Network
       # @return [Y2Network::Config] Network configuration
       def config
         interfaces = find_interfaces
-        # load /etc/sysconfig/network/routes
-        routes = SysconfigRoutesReader.new.config
-        # load /etc/sysconfig/network/ifroute-*
-        dev_routes = interfaces.map do |iface|
-          SysconfigRoutesReader.new(routes_file: "/etc/sysconfig/network/ifroute-#{iface.name}").config
-        end
-        routing = dev_routes.inject(routes) { |memo, r| memo.concat(r.routes) }.uniq
+        routing = Routing.new(tables: [load_routes])
 
-        Config.new(interfaces: interfaces, routing: Routing.new(tables: [routing]), source: :sysconfig)
+        Config.new(interfaces: interfaces, routing: routing, source: :sysconfig)
       end
 
     private
@@ -57,6 +51,23 @@ module Y2Network
         Yast::NetworkInterfaces.List("").map do |name|
           Y2Network::Interface.new(name)
         end
+      end
+
+      # Reads routes
+      #
+      # Merges routes from /etc/sysconfig/network/routes and /etc/sysconfig/network/ifroute-*
+      # TODO: currently it implicitly loads main/default routing table
+      #
+      # return [RoutingTable] an object with routes
+      def load_routes
+        # load /etc/sysconfig/network/routes
+        routes = SysconfigRoutesReader.new.config
+        # load /etc/sysconfig/network/ifroute-*
+        dev_routes = find_interfaces.map do |iface|
+          SysconfigRoutesReader.new(routes_file: "/etc/sysconfig/network/ifroute-#{iface.name}").config
+        end
+
+        dev_routes.inject(routes) { |memo, r| memo.concat(r.routes) }.uniq
       end
     end
   end

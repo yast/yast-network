@@ -179,7 +179,7 @@ module Y2Network
       # @raise  [RuntimeError] if it fails
       def register_ifroute_agent_for_path(path)
         # /etc/sysconfig/network/ifroute-eth0 define .ifroute-eth0 agent
-        # collisions not handled
+        # TODO: collisions not handled
         scr_path = Yast::Path.new(".#{File.basename(path)}")
         Yast::SCR.RegisterAgent(scr_path, ifroute_term(path)) ||
           raise("Cannot register agent (#{scr_path})")
