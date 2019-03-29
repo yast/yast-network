@@ -19,6 +19,15 @@
 
 module Y2Network
   module AutoinstProfile
+    # This class represents an AutoYaST <networking> section
+    #
+    #  <networking>
+    #    <routing>
+    #      <!-- the routing configuration -->
+    #    </routing>
+    #  </networking>
+    #
+    # @see RoutingSection
     class NetworkingSection
       # @return [RoutingSection]
       attr_accessor :routing
@@ -44,6 +53,9 @@ module Y2Network
         result
       end
 
+      # Export the section to a hash so it might be used when cloning the system
+      #
+      # @return [Hash]
       def to_hashes
         { "routing" => routing.to_hashes }
       end
