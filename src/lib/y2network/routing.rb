@@ -17,20 +17,26 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 module Y2Network
-  # This module contains a set of classes to read the network configuration from the system
-  #
-  # For the time being, only the wicked via its backward compatibility with sysconfig
-  # is available in ({Y2Network::ConfigReader::Sysconfig}) reader
-  module ConfigReader
-    # Config reader for a given source
+  # General routing configuration storage (routing tables, forwarding setup, ...)
+  class Routing
+    # @return [Array<RoutingTable>]
+    attr_reader :tables
+    # @return [Boolean] whether IPv4 forwarding is enabled
+    attr_reader :forward_ipv4
+    # @return [Boolean] whether IPv6 forwarding is enabled
+    attr_reader :forward_ipv6
+
+    def initialize(tables:)
+      @tables = tables
+    end
+
+    # Routes in the configuration
     #
-    # @param source [Symbol] Source name (e.g., :sysconfig)
-    # @return [#config] Configuration reader from {Y2Network::ConfigReader}
-    def self.for(source)
-      require "y2network/config_reader/#{source}"
-      name = source.to_s.split("_").map(&:capitalize).join
-      klass = const_get(name)
-      klass.new
+    # Convenience method to iterate through the routes in all routing tables.
+    #
+    # @return [Array<Route>] List of routes which are defined in the configuration
+    def routes
+      tables.flat_map(&:to_a)
     end
   end
 end

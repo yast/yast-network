@@ -24,7 +24,7 @@ require "y2network/config_writer/sysconfig"
 
 describe Y2Network::Config do
   subject(:config) do
-    described_class.new(interfaces: [eth0], routing_tables: routing_tables, source: :sysconfig)
+    described_class.new(interfaces: [eth0], routing: routing, source: :sysconfig)
   end
 
   let(:route1) { double("Y2Network::Route") }
@@ -35,7 +35,7 @@ describe Y2Network::Config do
 
   let(:eth0) { Y2Network::Interface.new("eth0") }
 
-  let(:routing_tables) { [table1, table2] }
+  let(:routing) { Y2Network::Routing.new(tables: [table1, table2]) }
 
   describe ".from" do
     let(:reader) do
@@ -54,7 +54,7 @@ describe Y2Network::Config do
 
   describe "#routes" do
     it "returns routes from all tables" do
-      expect(config.routes).to eq([route1, route2])
+      expect(config.routing.routes).to eq([route1, route2])
     end
   end
 

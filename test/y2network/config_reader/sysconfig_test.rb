@@ -30,29 +30,24 @@ describe Y2Network::ConfigReader::Sysconfig do
     )
   end
 
-  let(:routing) do
-    instance_double(
-      Yast::RoutingClass,
-      Read:   nil,
-      Routes: [scr_route]
-    )
-  end
-
   let(:scr_route) do
     {
-      "destination" => destination, "device" => device, "gateway" => gateway, "netmask" => netmask
+      "destination" => destination,
+      "device"      => "eth0",
+      "gateway"     => gateway,
+      "netmask"     => netmask
     }
   end
   let(:destination) { "192.168.122.1" }
-  let(:device) { "eth0" }
-  let(:gateway) { "192.168.122.1" }
-  let(:netmask) { "255.255.255.0" }
+  let(:gateway)     { "192.168.122.1" }
+  let(:netmask)     { "255.255.255.0" }
 
   describe "#config" do
     before do
       stub_const("Yast::NetworkInterfaces", network_interfaces)
-      stub_const("Yast::Routing", routing)
     end
+
+    around { |example| change_scr_root("#{DATA_PATH}/scr_read/", &example) }
 
     it "returns a configuration including network devices" do
       config = reader.config
@@ -61,10 +56,7 @@ describe Y2Network::ConfigReader::Sysconfig do
 
     it "returns a configuration including routes" do
       config = reader.config
-      expect(config.routes.size).to eq(1)
-      route = config.routes.first
-      expect(route.to).to eq(IPAddr.new("192.168.122.0/24"))
-      expect(route.interface.name).to eq("eth0")
+      expect(config.routing.routes.size).to eq(4)
     end
 
     it "sets the config source to :sysconfig" do
@@ -72,12 +64,17 @@ describe Y2Network::ConfigReader::Sysconfig do
       expect(config.source).to eq(:sysconfig)
     end
 
-    context "when there is not gateway" do
+    context "when gateway is missing" do
       let(:gateway) { "-" }
+
+      before(:each) do
+        allow(Yast::SCR).to receive(:Read).and_return(nil)
+        allow(Yast::SCR).to receive(:Read).with(Yast::Path.new(".routes")).and_return([scr_route])
+      end
 
       it "sets the gateway to nil" do
         config = reader.config
-        route = config.routes.first
+        route = config.routing.routes.first
         expect(route.gateway).to be_nil
       end
     end
@@ -85,9 +82,14 @@ describe Y2Network::ConfigReader::Sysconfig do
     context "when there is no netmask" do
       let(:netmask) { "-" }
 
+      before(:each) do
+        allow(Yast::SCR).to receive(:Read).and_return(nil)
+        allow(Yast::SCR).to receive(:Read).with(Yast::Path.new(".routes")).and_return([scr_route])
+      end
+
       it "does not set destination netmask" do
         config = reader.config
-        route = config.routes.first
+        route = config.routing.routes.first
         expect(route.to).to eq(IPAddr.new("192.168.122.1/255.255.255.255"))
       end
     end
@@ -95,9 +97,14 @@ describe Y2Network::ConfigReader::Sysconfig do
     context "when there is no destination" do
       let(:destination) { "default" }
 
+      before(:each) do
+        allow(Yast::SCR).to receive(:Read).and_return(nil)
+        allow(Yast::SCR).to receive(:Read).with(Yast::Path.new(".routes")).and_return([scr_route])
+      end
+
       it "considers the route to be the default one" do
         config = reader.config
-        route = config.routes.first
+        route = config.routing.routes.first
         expect(route.to).to eq(:default)
       end
     end

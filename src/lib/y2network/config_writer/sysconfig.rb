@@ -31,7 +31,7 @@ module Y2Network
       #
       # @param config [Y2Network::Config] Configuration to write
       def write(config)
-        routes = config.routes.map { |r| route_to_hash(r) }
+        routes = config.routing.routes.map { |r| route_to_hash(r) }
         Yast::Routing.Import("routes" => routes)
       end
 

@@ -31,21 +31,20 @@ module Y2Network
   # @example Adding a default route to the first routing table
   #   config = Y2Network::Config.from(:sysconfig)
   #   route = Y2Network::Route.new(to: :default, interface: :any)
-  #   config.routing_tables.first << route
+  #   config.routing.tables.first << route
   #   config.write
   class Config
     # @return [Symbol] Configuration ID
     attr_reader :id
     # @return [Array<Interface>]
     attr_reader :interfaces
-    # @return [Array<RoutingTable>]
-    attr_reader :routing_tables
+    # @return [Routing]
+    attr_reader :routing
     # @return [Symbol] Information source (see {Y2Network::Reader} and {Y2Network::Writer})
     attr_reader :source
 
     class << self
       # @param source [Symbol] Source to read the configuration from
-      # @return [Y2Network::Config]
       def from(source)
         reader = ConfigReader.for(source)
         reader.config
@@ -54,23 +53,14 @@ module Y2Network
 
     # Constructor
     #
-    # @param id             [Symbol] Configuration ID
-    # @param interfaces     [Array<Interface>] List of interfaces
-    # @param routing_tables [Array<RoutingTable>] List of routing tables
-    def initialize(id: :system, interfaces:, routing_tables:, source:)
+    # @param id         [Symbol] Configuration ID
+    # @param interfaces [Array<Interface>] List of interfaces
+    # @param routing    [Routing] Object with routing configuration
+    def initialize(id: :system, interfaces:, routing:, source:)
       @id = id
       @interfaces = interfaces
-      @routing_tables = routing_tables
+      @routing = routing
       @source = source
-    end
-
-    # Routes in the configuration
-    #
-    # Convenience method to iterate through the routes in all routing tables.
-    #
-    # @return [Array<Route>] List of routes which are defined in the configuration
-    def routes
-      routing_tables.flat_map(&:to_a)
     end
 
     # Writes the configuration into the YaST modules
