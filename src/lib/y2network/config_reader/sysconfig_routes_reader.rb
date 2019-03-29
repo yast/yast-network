@@ -16,10 +16,10 @@
 #
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
-require "y2network/routing_table"
 
 require "yast"
 require "y2network/interface"
+require "y2network/routing_table"
 
 module Y2Network
   module ConfigReader
@@ -90,7 +90,7 @@ module Y2Network
       # Given an IP and a netmask, returns a valid IPAddr object
       #
       # @param ip_str      [String] IP address; {MISSING_VALUE} means that the IP is not defined
-      # @param netmask_str [String] Netmask; {MISSING_VALUE} means than no netmask was specified
+      # @param netmask_str [String] Netmask; {MISSING_VALUE} means that no netmask was specified
       # @return [IPAddr,nil] The IP address or `nil` if the IP is missing
       def build_ip(ip_str, netmask_str = MISSING_VALUE)
         return nil if ip_str == MISSING_VALUE

@@ -16,6 +16,7 @@
 #
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
+
 module Y2Network
   # General routing configuration storage (routing tables, forwarding setup, ...)
   class Routing
@@ -26,8 +27,10 @@ module Y2Network
     # @return [Boolean] whether IPv6 forwarding is enabled
     attr_reader :forward_ipv6
 
-    def initialize(tables:)
+    def initialize(tables:, forward_ipv4: false, forward_ipv6: false)
       @tables = tables
+      @forward_ipv4 = forward_ipv4
+      @forward_ipv6 = forward_ipv6
     end
 
     # Routes in the configuration

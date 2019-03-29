@@ -16,24 +16,34 @@
 #
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
-require "y2network/config"
-require "y2network/interface"
-require "y2network/routing"
-require "y2network/config_reader/sysconfig_routes_reader"
 
-Yast.import "NetworkInterfaces"
+require "yast"
+require "y2network/interface"
+require "y2network/config"
+require "y2network/config_reader/autoyast_routing"
+require "y2network/autoinst_profile/networking_section"
+
+Yast.import "Lan"
 
 module Y2Network
   module ConfigReader
-    # This class reads the current configuration from `/etc/sysconfig` files
-    class Sysconfig
+    # This class is responsible of importing Autoyast configuration
+    class Autoyast
+      # @return [AutoinstProfile::NetworkingSection]
+      attr_reader :section
+
+      # Constructor
+      #
+      # @param section [AutoinstProfile::NetworkingSection]
+      def initialize(section)
+        @section = section
+      end
+
       # @return [Y2Network::Config] Network configuration
       def config
         interfaces = find_interfaces
-        # load /etc/sysconfig/network/routes
-        routing = Y2Network::Routing.new(tables: [SysconfigRoutesReader.new.config])
-        # TODO: SysconfigRoutesReader(s) for ifroute-* files
-        Config.new(interfaces: interfaces, routing: routing, source: :sysconfig)
+        routing = AutoyastRouting.new(section.routing).config
+        Y2Network::Config.new(interfaces: interfaces, routing: routing, source: :autoyast)
       end
 
     private
@@ -54,3 +64,4 @@ module Y2Network
     end
   end
 end
+
