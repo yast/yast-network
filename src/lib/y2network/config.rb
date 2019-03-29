@@ -34,8 +34,6 @@ module Y2Network
   #   config.routing.tables.first << route
   #   config.write
   class Config
-    # @return [Symbol] Configuration ID
-    attr_accessor :id
     # @return [Array<Interface>]
     attr_accessor :interfaces
     # @return [Routing]
@@ -53,11 +51,10 @@ module Y2Network
 
     # Constructor
     #
-    # @param id         [Symbol] Configuration ID
     # @param interfaces [Array<Interface>] List of interfaces
     # @param routing    [Routing] Object with routing configuration
-    def initialize(id: :system, interfaces:, routing:, source:)
-      @id = id
+    # @param source     [Symbol] Configuration source
+    def initialize(interfaces:, routing:, source:)
       @interfaces = interfaces
       @routing = routing
       @source = source

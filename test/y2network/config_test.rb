@@ -97,13 +97,6 @@ describe Y2Network::Config do
       end
     end
 
-    context "when both configuration contains the same information but different ID" do
-      it "returns true" do
-        copy.id = :another
-        expect(copy).to eq(config)
-      end
-    end
-
     context "when interfaces list is different" do
       it "returns false" do
         copy.interfaces = [Y2Network::Interface.new("eth1")]
