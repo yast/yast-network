@@ -42,6 +42,7 @@ module Y2Network
       end
 
     private
+
       # sysctl keys, used as *single* SCR path components below
       IPV4_SYSCTL = "net.ipv4.ip_forward".freeze
       IPV6_SYSCTL = "net.ipv6.conf.all.forwarding".freeze
