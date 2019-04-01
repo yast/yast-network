@@ -16,6 +16,7 @@
 #
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
+require "yast"
 require "y2network/config"
 require "y2network/interface"
 require "y2network/routing"
@@ -35,12 +36,19 @@ module Y2Network
       # @return [Y2Network::Config] Network configuration
       def config
         interfaces = find_interfaces
-        routing = Routing.new(tables: [load_routes])
+        routing = Routing.new(tables: [load_routes], forward_ipv4: forward_ipv4?, forward_ipv6: forward_ipv6?)
 
         Config.new(interfaces: interfaces, routing: routing, source: :sysconfig)
       end
 
     private
+      # sysctl keys, used as *single* SCR path components below
+      IPV4_SYSCTL = "net.ipv4.ip_forward".freeze
+      IPV6_SYSCTL = "net.ipv6.conf.all.forwarding".freeze
+      # SCR paths
+      SYSCTL_AGENT_PATH = ".etc.sysctl_conf".freeze
+      SYSCTL_IPV4_PATH = SYSCTL_AGENT_PATH + ".\"#{IPV4_SYSCTL}\""
+      SYSCTL_IPV6_PATH = SYSCTL_AGENT_PATH + ".\"#{IPV6_SYSCTL}\""
 
       # Find configured network interfaces
       #
@@ -77,6 +85,20 @@ module Y2Network
         end
         routing_table.routes.uniq!
         routing_table
+      end
+
+      # Reads IPv4 forwarding status
+      #
+      # return [Boolean] true when IPv4 forwarding is allowed
+      def forward_ipv4?
+        Yast::SCR.Read(Yast::Path.new(SYSCTL_IPV4_PATH)) == "1"
+      end
+
+      # Reads IPv6 forwarding status
+      #
+      # return [Boolean] true when IPv6 forwarding is allowed
+      def forward_ipv6?
+        Yast::SCR.Read(Yast::Path.new(SYSCTL_IPV6_PATH)) == "1"
       end
     end
   end
