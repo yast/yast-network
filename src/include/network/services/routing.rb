@@ -44,7 +44,7 @@ module Yast
     include Yast::UIShortcuts
     include Yast::Logger
 
-    def initialize_network_services_routing(include_target)
+    def initialize_network_services_routing(_include_target)
       textdomain "network"
 
       Yast.import "Label"
@@ -69,7 +69,7 @@ module Yast
       caption = _("Routing Configuration")
 
       functions = {
-        :abort  => fun_ref(method(:ReallyAbort), "boolean ()")
+        abort: fun_ref(method(:ReallyAbort), "boolean ()")
       }
 
       Wizard.HideBackButton
@@ -137,12 +137,12 @@ module Yast
 
     def widgets
       {
-        routing_table.widget_id => routing_table.cwm_definition,
+        routing_table.widget_id  => routing_table.cwm_definition,
         ip4_forwarding.widget_id => ip4_forwarding.cwm_definition,
         ip6_forwarding.widget_id => ip6_forwarding.cwm_definition,
-        add_button.widget_id => add_button.cwm_definition,
-        edit_button.widget_id => edit_button.cwm_definition,
-        delete_button.widget_id => delete_button.cwm_definition
+        add_button.widget_id     => add_button.cwm_definition,
+        edit_button.widget_id    => edit_button.cwm_definition,
+        delete_button.widget_id  => delete_button.cwm_definition
       }
     end
   end

@@ -41,7 +41,7 @@ module Y2Network
         Yast::UI.ChangeWidget(Id(:destination), :ValidChars, Yast::IP.ValidChars + "/")
         val = @route.to
         Yast::UI.ChangeWidget(Id(:default), :Value, val == :default)
-        Yast::UI.ChangeWidget(Id(:destination), :Value, (val.to_s + "/" + val.prefix.to_s) ) if val != :default
+        Yast::UI.ChangeWidget(Id(:destination), :Value, (val.to_s + "/" + val.prefix.to_s)) if val != :default
         handle
       end
 

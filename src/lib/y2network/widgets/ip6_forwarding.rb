@@ -10,12 +10,11 @@ module Y2Network
       end
 
       def init
-        # TODO:
+        # TODO: define when config is final
       end
 
-
       def store
-        # TODO:
+        # TODO: define when config is final
       end
 
       def label
@@ -23,7 +22,7 @@ module Y2Network
       end
 
       def help
-        # TODO:
+        # TODO: define when config is final
       end
     end
   end
