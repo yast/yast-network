@@ -112,13 +112,27 @@ describe Y2Network::ConfigReader::Sysconfig do
 
   describe "#forward_ipv4?" do
     it "returns true when IPv4 forwarding is allowed" do
-      expect(reader.send(:forward_ipv4?)).to be true
+      expect(reader.config.routing.forward_ipv4).to be true
+    end
+
+    it "returns false when IPv4 forwarding is disabled" do
+      allow(reader).to receive(:load_routes).and_return(nil)
+      allow(Yast::SCR).to receive(:Read).and_return("0")
+
+      expect(reader.config.routing.forward_ipv4).to be false
     end
   end
 
   describe "#forward_ipv6?" do
     it "returns false when IPv6 forwarding is disabled" do
-      expect(reader.send(:forward_ipv6?)).to be false
+      allow(reader).to receive(:load_routes).and_return(nil)
+      allow(Yast::SCR).to receive(:Read).and_return("1")
+
+      expect(reader.config.routing.forward_ipv6).to be true
+    end
+
+    it "returns false when IPv6 forwarding is disabled" do
+      expect(reader.config.routing.forward_ipv6).to be false
     end
   end
 end
