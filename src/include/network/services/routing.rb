@@ -92,7 +92,7 @@ module Yast
     end
 
     def routing_table
-      @routing_table_widget ||= Y2Network::Widgets::RoutingTable.new(config.routing_tables.first)
+      @routing_table_widget ||= Y2Network::Widgets::RoutingTable.new(config.routing.tables.first)
     end
 
     def ip4_forwarding
