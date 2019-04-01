@@ -27,13 +27,12 @@ describe Y2Network::AutoinstProfile::RouteSection do
   describe ".new_from_network" do
     let(:route) do
       Y2Network::Route.new(
-        to: to, interface: interface, gateway: gateway, source: source, options: options
+        to: to, interface: interface, gateway: gateway, options: options
       )
     end
     let(:to) { IPAddr.new("192.168.122.0/24") }
     let(:interface) { double("interface", name: "eth0") }
     let(:gateway) { IPAddr.new("192.168.122.1") }
-    let(:source) { IPAddr.new("192.168.122.122") }
     let(:options) { "some-option" }
 
     it "initializes the destination value" do

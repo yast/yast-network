@@ -52,7 +52,7 @@ module Y2Network
     # @return [Boolean]
     def ==(other)
       to == other.to && interface == other.interface && gateway == other.gateway &&
-        source == other.source && options == other.options
+        options == other.options
     end
 
     alias_method :eql?, :==
