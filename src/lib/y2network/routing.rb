@@ -45,7 +45,7 @@ module Y2Network
     # @return [Boolean]
     def ==(other)
       forward_ipv4 == other.forward_ipv4 && forward_ipv6 == other.forward_ipv6 &&
-        (tables - other.tables).empty?
+        ((tables - other.tables) | (other.tables - tables)).empty?
     end
 
     alias_method :eql?, :==

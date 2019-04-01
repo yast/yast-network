@@ -34,6 +34,8 @@ module Y2Network
 
       # Returns the summary of network configuration settings in text form
       #
+      # @todo Implement the real summary.
+      #
       # @param mode [Symbol] Summary mode (:summary or :proposal)
       # @return [String]
       def text(mode:)

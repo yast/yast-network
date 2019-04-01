@@ -110,7 +110,7 @@ module Yast
     def Modified
       return true if LanItems.GetModified
       return true if DNS.modified
-      return true unless running_config == yast_config
+      return true unless system_config == yast_config
       return true if NetworkConfig.Modified
       return true if NetworkService.Modified
       return true if Host.GetModified
@@ -265,9 +265,9 @@ module Yast
         return true
       end
 
-      running_config = Y2Network::Config.from(:sysconfig)
-      add_config(:system, running_config)
-      add_config(:yast, running_config.copy)
+      system_config = Y2Network::Config.from(:sysconfig)
+      add_config(:system, system_config)
+      add_config(:yast, system_config.copy)
 
       # Read dialog caption
       caption = _("Initializing Network Configuration")
@@ -989,6 +989,24 @@ module Yast
       configs.clear
     end
 
+    # Returns the system configuration
+    #
+    # Just a convenience method.
+    #
+    # @return [Y2Network::Config]
+    def system_config
+      find_config(:system)
+    end
+
+    # Returns YaST configuration
+    #
+    # Just a convenience method.
+    #
+    # @return [Y2Network::Config]
+    def yast_config
+      find_config(:yast)
+    end
+
     publish variable: :ipv6, type: "boolean"
     publish variable: :AbortFunction, type: "block <boolean>"
     publish variable: :bond_autoconf_slaves, type: "list <string>"
@@ -1119,24 +1137,6 @@ module Yast
       config = find_config(:yast)
       presenter = Y2Network::Presenters::RoutingSummary.new(config.routing)
       presenter.text(mode: mode.to_sym)
-    end
-
-    # Returns the system configuration
-    #
-    # Just a convenience method.
-    #
-    # @return [Y2Network::Config]
-    def running_config
-      find_config(:system)
-    end
-
-    # Returns YaST configuration
-    #
-    # Just a convenience method.
-    #
-    # @return [Y2Network::Config]
-    def yast_config
-      find_config(:yast)
     end
 
     def firewalld

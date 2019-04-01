@@ -110,7 +110,7 @@ describe "LanClass" do
     end
   end
 
-  describe "#Import" do
+  xdescribe "#Import" do
     let(:ay_profile) do
       {
         "devices" => {

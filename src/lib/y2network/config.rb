@@ -43,7 +43,8 @@ module Y2Network
 
     class << self
       # @param source [Symbol] Source to read the configuration from
-      # @param opts   [Hash]   Reader options
+      # @param opts   [Hash]   Reader options. Check readers documentation to find out
+      #                        supported options.
       def from(source, opts = {})
         reader = ConfigReader.for(source, opts)
         reader.config
@@ -79,7 +80,8 @@ module Y2Network
     #
     # @return [Boolean] true if both configurations are equal; false otherwise
     def ==(other)
-      source == other.source && (interfaces - other.interfaces).empty? &&
+      source == other.source &&
+        ((interfaces - other.interfaces) | (other.interfaces - interfaces)).empty? &&
         routing == other.routing
     end
 

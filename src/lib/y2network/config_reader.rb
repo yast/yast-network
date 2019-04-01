@@ -31,7 +31,7 @@ module Y2Network
       require "y2network/config_reader/#{source}"
       name = source.to_s.split("_").map(&:capitalize).join
       klass = const_get(name)
-      klass.new
+      klass.new(opts)
     end
   end
 end
