@@ -42,6 +42,15 @@ module Y2Network
       tables.flat_map(&:to_a)
     end
 
+    # Returns the default route
+    #
+    # @todo Should we implement a `default_routes` which returns an array instead?
+    #
+    # @return [Route] Returns the first found default route
+    def default_route
+      routes.find(&:default?)
+    end
+
     # Determines whether two set of routing settings are equal
     #
     # @param other [Routing] Routing settings to compare with
