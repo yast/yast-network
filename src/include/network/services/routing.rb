@@ -35,8 +35,6 @@ require "y2network/widgets/routing_table"
 require "y2network/widgets/routing_buttons"
 require "y2network/widgets/ip4_forwarding"
 require "y2network/widgets/ip6_forwarding"
-require "y2network/config"
-require "y2network/config_reader" # FIXME: workaround
 
 module Yast
   module NetworkServicesRoutingInclude
@@ -50,17 +48,22 @@ module Yast
       Yast.import "Label"
       Yast.import "Wizard"
       Yast.import "CWM"
+      Yast.import "Lan"
+    end
 
-      # Keep this variables as it is used elsewhere for CWMTab
-      # TODO: Use CWM objects for tabs
-      @wd_routing = widgets
-      @route_td = {
+    def route_td
+      {
         "route" => {
           "header"       => _("Routing"),
           "contents"     => content,
           "widget_names" => widgets.keys
         }
       }
+    end
+
+    # TODO: just for CWM fallback function
+    def ReallyAbort
+      Popup.ReallyAbort(true)
     end
 
     # Main routing dialog
@@ -88,7 +91,7 @@ module Yast
 
     def config
       # TODO: get it from some config holder
-      @routing_config ||= Y2Network::Config.from(:sysconfig)
+      @routing_config ||= Yast::Lan.yast_config
     end
 
     def routing_table

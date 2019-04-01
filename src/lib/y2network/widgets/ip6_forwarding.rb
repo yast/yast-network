@@ -10,11 +10,11 @@ module Y2Network
       end
 
       def init
-        # TODO: define when config is final
+        self.value = @config.routing.forward_ipv6
       end
 
       def store
-        # TODO: define when config is final
+        @config.routing.forward_ipv6 = value
       end
 
       def label
@@ -22,7 +22,12 @@ module Y2Network
       end
 
       def help
-        # TODO: define when config is final
+        _(
+          "<p>Enable <b>IPv6 Forwarding</b> (forwarding packets from external networks\n" \
+            "to the internal one) if this system is a router.\n" \
+            "<b>Warning:</b> IPv6 forwarding disables IPv6 stateless address\n" \
+            "autoconfiguration (SLAAC).</p>"
+        )
       end
     end
   end
