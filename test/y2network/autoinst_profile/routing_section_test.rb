@@ -92,5 +92,33 @@ describe Y2Network::AutoinstProfile::RoutingSection do
         expect(section.routes).to eq([])
       end
     end
+
+    context "when ip_forward is enabled" do
+      let(:hash) { { "ip_forward" => true } }
+
+      it "enables ip4_forward" do
+        section = described_class.new_from_hashes(hash)
+        expect(section.ipv4_forward).to eq(true)
+      end
+
+      it "enables ip6_forward" do
+        section = described_class.new_from_hashes(hash)
+        expect(section.ipv6_forward).to eq(true)
+      end
+    end
+
+    context "when ip_forward is disabled" do
+      let(:hash) { { "ip_forward" => false } }
+
+      it "disables ip4_forward" do
+        section = described_class.new_from_hashes(hash)
+        expect(section.ipv4_forward).to eq(false)
+      end
+
+      it "disables ip6_forward" do
+        section = described_class.new_from_hashes(hash)
+        expect(section.ipv6_forward).to eq(false)
+      end
+    end
   end
 end

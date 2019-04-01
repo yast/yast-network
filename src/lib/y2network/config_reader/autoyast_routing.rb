@@ -39,9 +39,9 @@ module Y2Network
       # @return [Routing] the imported {Routing} config
       def config
         tables = [Y2Network::RoutingTable.new(build_routes)]
-        Y2Network::Routing.new(tables: tables,
-                                forward_ipv4: !!section.ipv4_forward,
-                                forward_ipv6: !!section.ipv6_forward)
+        Y2Network::Routing.new(tables:       tables,
+                               forward_ipv4: !!section.ipv4_forward,
+                               forward_ipv6: !!section.ipv6_forward)
       end
 
     private
@@ -51,10 +51,10 @@ module Y2Network
       # @return Route
       def build_routes
         section.routes.map do |route_section|
-          Y2Network::Route.new(to: route_section.destination,
-                               gateway: route_section.gateway,
+          Y2Network::Route.new(to:        route_section.destination,
+                               gateway:   route_section.gateway,
                                interface: route_section.device,
-                               options: route_section.extrapara)
+                               options:   route_section.extrapara)
         end
       end
     end

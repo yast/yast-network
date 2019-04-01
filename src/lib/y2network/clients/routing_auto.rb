@@ -21,6 +21,7 @@ require "yast"
 require "installation/auto_client"
 require "y2network/config"
 require "y2network/routing"
+require "y2network/autoinst_profile/networking_section"
 require "y2network/config_reader/routing_autoyast"
 
 Yast.import "NetworkInterfaces"
@@ -51,7 +52,8 @@ module Y2Network
       def import(profile = {})
         return false unless config
 
-        config.routing = autoyast.import(profile)
+        routing_section = Y2Network::AutoinstProfile::RoutingSection.new_from_hashes(profile)
+        config.routing = Y2Network::ConfigReader::RoutingAutoyast.new(routing_section).config
         modified!
       end
 
@@ -60,7 +62,8 @@ module Y2Network
       # @return [Hash] current routing configuration
       def export
         # TODO: should use a presenter
-        config.routing
+        routing = Y2Network::AutoinstProfile::RoutingSection.new_from_network(config.routing)
+        routing.to_hashes
       end
 
       # Reset changes
@@ -87,14 +90,8 @@ module Y2Network
       #
       # @return [Config] current network config
       def config
-        Yast::Lan.find_config
-      end
-
-      # @return [RoutingAutoyast]
-      def autoyast
-        @autoyast ||= Y2Network::ConfigReader::RoutingAutoyast.new
+        Yast::Lan.find_config(id: "yast")
       end
     end
   end
 end
-
