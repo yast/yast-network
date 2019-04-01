@@ -17,29 +17,72 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
+require "yast"
+Yast.import "Summary"
+Yast.import "NetHwDetection"
+
 module Y2Network
   module Presenters
     # This class converts a routing configuration object into a hash to be used
     # in an AutoYaST summary
     class RoutingSummary
-      # @return [Y2Network::Config]
-      attr_reader :config
+      include Yast::I18n
+
+      # @return [Y2Network::Routing]
+      attr_reader :routing
 
       # Constructor
       #
-      # @param config [Y2Network::Config] Network configuration to represent
-      def initialize(config)
-        @config = config
+      # @param config [Y2Network::Routing] Network configuration to represent
+      def initialize(routing)
+        textdomain "network"
+        @routing = routing
       end
 
       # Returns the summary of network configuration settings in text form
       #
       # @todo Implement the real summary.
       #
-      # @param mode [Symbol] Summary mode (:summary or :proposal)
       # @return [String]
-      def text(mode:)
-        "Config summary in #{mode} mode"
+      def text
+        summary = ""
+        return summary if routing.nil? || routing.routes.empty?
+
+        gateway_string = gateway_string_from(routing)
+        if gateway_string
+          summary = Yast::Summary.AddListItem(summary, _("Gateway: %s") % gateway_string)
+        end
+        summary = Yast::Summary.AddListItem(
+          summary, format(_("IP Forwarding for IPv4: %s"), boolean_to_human(routing.forward_ipv4))
+        )
+        summary = Yast::Summary.AddListItem(
+          summary, format(_("IP Forwarding for IPv6: %s"), boolean_to_human(routing.forward_ipv6))
+        )
+
+        "<ul>#{summary}</ul>"
+      end
+
+    private
+
+      # Returns a text representation of the gateway
+      #
+      # @param routing [Y2Network::Routing] Routing configuration
+      # @return [String]
+      def gateway_string_from(routing)
+        default_route = routing.default_route
+        return nil if default_route.nil?
+        gateway = default_route.gateway.to_s
+        hostname = Yast::NetHwDetection.ResolveIP(gateway)
+        return gateway if hostname.empty?
+        "#{gateway} (#{hostname})"
+      end
+
+      # Converts a boolean into a on/off string
+      #
+      # @param value [Boolean] Value to convert
+      # @return [String] "on" if +value+ is true; false otherwise
+      def boolean_to_human(value)
+        value ? _("on") : _("off")
       end
     end
   end

@@ -811,9 +811,9 @@ module Yast
     def Summary(mode)
       case mode
       when "summary"
-        "#{LanItems.BuildLanOverview.first}#{DNS.Summary}#{routing_summary(mode)}"
+        "#{LanItems.BuildLanOverview.first}#{DNS.Summary}#{routing_summary}"
       when "proposal"
-        "#{LanItems.summary(:proposal)}#{DNS.Summary}#{routing_summary(mode)}"
+        "#{LanItems.summary(:proposal)}#{DNS.Summary}#{routing_summary}"
       else
         LanItems.BuildLanOverview.first
       end
@@ -1132,12 +1132,11 @@ module Yast
 
     # Returns the routing summary
     #
-    # @param mode [String,Symbol] Summary mode
     # @return [String]
-    def routing_summary(mode)
+    def routing_summary
       config = find_config(:yast)
       presenter = Y2Network::Presenters::RoutingSummary.new(config.routing)
-      presenter.text(mode: mode.to_sym)
+      presenter.text
     end
 
     def firewalld
