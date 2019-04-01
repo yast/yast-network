@@ -22,9 +22,9 @@ module Y2Network
     # @return [Array<RoutingTable>]
     attr_reader :tables
     # @return [Boolean] whether IPv4 forwarding is enabled
-    attr_reader :forward_ipv4
+    attr_accessor :forward_ipv4
     # @return [Boolean] whether IPv6 forwarding is enabled
-    attr_reader :forward_ipv6
+    attr_accessor :forward_ipv6
 
     def initialize(tables:)
       @tables = tables
@@ -38,5 +38,16 @@ module Y2Network
     def routes
       tables.flat_map(&:to_a)
     end
+
+    # Determines whether two set of routing settings are equal
+    #
+    # @param other [Routing] Routing settings to compare with
+    # @return [Boolean]
+    def ==(other)
+      forward_ipv4 == other.forward_ipv4 && forward_ipv6 == other.forward_ipv6 &&
+        ((tables - other.tables) | (other.tables - tables)).empty?
+    end
+
+    alias_method :eql?, :==
   end
 end

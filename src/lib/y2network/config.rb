@@ -34,10 +34,8 @@ module Y2Network
   #   config.routing.tables.first << route
   #   config.write
   class Config
-    # @return [Symbol] Configuration ID
-    attr_reader :id
     # @return [Array<Interface>]
-    attr_reader :interfaces
+    attr_accessor :interfaces
     # @return [Routing]
     attr_reader :routing
     # @return [Symbol] Information source (see {Y2Network::Reader} and {Y2Network::Writer})
@@ -45,19 +43,20 @@ module Y2Network
 
     class << self
       # @param source [Symbol] Source to read the configuration from
-      def from(source)
-        reader = ConfigReader.for(source)
+      # @param opts   [Hash]   Reader options. Check readers documentation to find out
+      #                        supported options.
+      def from(source, opts = {})
+        reader = ConfigReader.for(source, opts)
         reader.config
       end
     end
 
     # Constructor
     #
-    # @param id         [Symbol] Configuration ID
     # @param interfaces [Array<Interface>] List of interfaces
     # @param routing    [Routing] Object with routing configuration
-    def initialize(id: :system, interfaces:, routing:, source:)
-      @id = id
+    # @param source     [Symbol] Configuration source
+    def initialize(interfaces:, routing:, source:)
       @interfaces = interfaces
       @routing = routing
       @source = source
@@ -69,5 +68,23 @@ module Y2Network
     def write
       Y2Network::ConfigWriter.for(source).write(self)
     end
+
+    # Returns a deep-copy of the configuration
+    #
+    # @return [Config]
+    def copy
+      Marshal.load(Marshal.dump(self))
+    end
+
+    # Determines whether two configurations are equal
+    #
+    # @return [Boolean] true if both configurations are equal; false otherwise
+    def ==(other)
+      source == other.source &&
+        ((interfaces - other.interfaces) | (other.interfaces - interfaces)).empty? &&
+        routing == other.routing
+    end
+
+    alias_method :eql?, :==
   end
 end

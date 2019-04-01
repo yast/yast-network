@@ -42,5 +42,15 @@ module Y2Network
     def initialize(routes = [])
       @routes = routes
     end
+
+    # Determines whether two routing tables are equal
+    #
+    # @param other [RoutingTable] Routing table to compare with
+    # @return [Boolean]
+    def ==(other)
+      routes == other.routes
+    end
+
+    alias_method :eql?, :==
   end
 end

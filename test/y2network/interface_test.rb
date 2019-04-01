@@ -16,22 +16,37 @@
 #
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
-module Y2Network
-  # This module contains a set of classes to read the network configuration from the system
-  #
-  # For the time being, only the wicked via its backward compatibility with sysconfig
-  # is available in ({Y2Network::ConfigReader::Sysconfig}) reader
-  module ConfigReader
-    # Config reader for a given source
-    #
-    # @param source [Symbol] Source name (e.g., :sysconfig)
-    # @param opts   [Hash] Reader options
-    # @return [#config] Configuration reader from {Y2Network::ConfigReader}
-    def self.for(source, opts = {})
-      require "y2network/config_reader/#{source}"
-      name = source.to_s.split("_").map(&:capitalize).join
-      klass = const_get(name)
-      klass.new(opts)
+require_relative "../test_helper"
+require "y2network/interface"
+
+describe Y2Network::Interface do
+  subject(:interface) do
+    described_class.new("eth0")
+  end
+
+  describe "#==" do
+    context "given two interfaces with the same name" do
+      let(:other) { Y2Network::Interface.new(interface.name) }
+
+      it "returns true" do
+        expect(interface).to eq(other)
+      end
+    end
+
+    context "given two interfaces with a different name" do
+      let(:other) { Y2Network::Interface.new("eth1") }
+
+      it "returns false" do
+        expect(interface).to_not eq(other)
+      end
+    end
+
+    context "comparing with a symbol" do
+      let(:other) { :any }
+
+      it "returns false" do
+        expect(interface).to_not eq(other)
+      end
     end
   end
 end

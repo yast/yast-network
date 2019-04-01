@@ -22,8 +22,22 @@ module Y2Network
     # @return [String] Device name (eth0, wlan0, etc.)
     attr_reader :name
 
+    # Constructor
+    #
+    # @param name [String] Interface name (e.g., "eth0")
     def initialize(name)
       @name = name
     end
+
+    # Determines whether two interfaces are equal
+    #
+    # @param other [Interface,:any] Interface to compare with
+    # @return [Boolean]
+    def ==(other)
+      return false if other == :any
+      name == other.name
+    end
+
+    alias_method :eql?, :==
   end
 end

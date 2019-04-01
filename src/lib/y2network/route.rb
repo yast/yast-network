@@ -49,5 +49,16 @@ module Y2Network
     def default?
       to == :default
     end
+
+    # Determines whether two routes are equal
+    #
+    # @param other [Route] Route to compare with
+    # @return [Boolean]
+    def ==(other)
+      to == other.to && interface == other.interface && gateway == other.gateway &&
+        source == other.source && options == other.options
+    end
+
+    alias_method :eql?, :==
   end
 end

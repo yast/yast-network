@@ -16,22 +16,33 @@
 #
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
-module Y2Network
-  # This module contains a set of classes to read the network configuration from the system
-  #
-  # For the time being, only the wicked via its backward compatibility with sysconfig
-  # is available in ({Y2Network::ConfigReader::Sysconfig}) reader
-  module ConfigReader
-    # Config reader for a given source
-    #
-    # @param source [Symbol] Source name (e.g., :sysconfig)
-    # @param opts   [Hash] Reader options
-    # @return [#config] Configuration reader from {Y2Network::ConfigReader}
-    def self.for(source, opts = {})
-      require "y2network/config_reader/#{source}"
-      name = source.to_s.split("_").map(&:capitalize).join
-      klass = const_get(name)
-      klass.new(opts)
+
+require_relative "../test_helper"
+require "y2network/routing_table"
+require "y2network/route"
+
+describe Y2Network::RoutingTable do
+  subject(:table) { described_class.new([route]) }
+
+  let(:route) { Y2Network::Route.new(to: :any) }
+
+  describe "#==" do
+    let(:other) { Y2Network::RoutingTable.new([other_route]) }
+
+    context "given two routing tables containing the same set of routes" do
+      let(:other_route) { Y2Network::Route.new(to: :any) }
+
+      it "returns true" do
+        expect(table).to eq(other)
+      end
+    end
+
+    context "given two routing tables with different set of routes" do
+      let(:other_route) { Y2Network::Route.new(to: IPAddr.new("10.0.0.0/8")) }
+
+      it "returns false" do
+        expect(table).to_not eq(other)
+      end
     end
   end
 end
