@@ -48,8 +48,8 @@ module Y2Network
       IPV6_SYSCTL = "net.ipv6.conf.all.forwarding".freeze
       # SCR paths
       SYSCTL_AGENT_PATH = ".etc.sysctl_conf".freeze
-      SYSCTL_IPV4_PATH = SYSCTL_AGENT_PATH + ".\"#{IPV4_SYSCTL}\""
-      SYSCTL_IPV6_PATH = SYSCTL_AGENT_PATH + ".\"#{IPV6_SYSCTL}\""
+      SYSCTL_IPV4_PATH = (SYSCTL_AGENT_PATH + ".\"#{IPV4_SYSCTL}\"").freeze
+      SYSCTL_IPV6_PATH = (SYSCTL_AGENT_PATH + ".\"#{IPV6_SYSCTL}\"").freeze
 
       # Find configured network interfaces
       #
