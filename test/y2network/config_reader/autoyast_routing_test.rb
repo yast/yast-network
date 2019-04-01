@@ -59,16 +59,18 @@ describe Y2Network::ConfigReader::AutoyastRouting do
       expect(subject.config.forward_ipv4).to eq(true)
       expect(subject.config.forward_ipv6).to eq(false)
       expect(subject.config.routes.size).to eq(2)
+      default = subject.config.routes.find { |r| r.default? }
+      expect(default.default?).to eq(true)
     end
 
     context "when ip forwarding is not set" do
       let(:routing_profile) { { "routing" => { "routes" => routes } } }
 
-      it "disables ip4_forward" do
+      it "disables ipv4_forward" do
         expect(subject.config.forward_ipv4).to eq(false)
       end
 
-      it "disables ip6_forward" do
+      it "disables ipv6_forward" do
         expect(subject.config.forward_ipv6).to eq(false)
       end
     end
@@ -76,11 +78,11 @@ describe Y2Network::ConfigReader::AutoyastRouting do
     context "when ip forwarding is set" do
       let(:routing_profile) { { "ip_forward" => true, "routing" => { "routes" => routes } } }
 
-      it "enables ip4_forward" do
+      it "enables ipv4_forward" do
         expect(subject.config.forward_ipv4).to eq(true)
       end
 
-      it "disables ip6_forward" do
+      it "disables ipv6_forward" do
         expect(subject.config.forward_ipv6).to eq(true)
       end
     end

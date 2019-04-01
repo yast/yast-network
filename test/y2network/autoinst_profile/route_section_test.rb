@@ -117,6 +117,14 @@ describe Y2Network::AutoinstProfile::RouteSection do
       }
     end
 
+    let(:default_gateway) do
+      {
+        "destination" => "default",
+        "device"      => "eth1",
+        "gateway"     => "192.168.1.1"
+      }
+    end
+
     it "initializes destination" do
       section = described_class.new_from_hashes(hash)
       expect(section.destination).to eq(hash["destination"])

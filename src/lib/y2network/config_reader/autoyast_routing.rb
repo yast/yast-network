@@ -51,10 +51,10 @@ module Y2Network
       # @return [Array<Route>]
       def build_routes
         section.routes.map do |route_section|
-          Y2Network::Route.new(to:        route_section.destination || :default,
+          Y2Network::Route.new(to:        route_section.destination,
                                gateway:   route_section.gateway,
-                               interface: route_section.device || :any,
-                               options:   route_section.extrapara || "")
+                               interface: route_section.device,
+                               options:   route_section.extrapara)
         end
       end
     end
