@@ -22,10 +22,8 @@ module Y2Network
 
       def help
         _(
-          "<p><b>Gateway</b> defines gateway for given route. Special value here is '-' " \
-            "which means do not use gateway for given destination which for non direct " \
-            "connections result in reject of connection. For direct destination route is " \
-            "created automatically.</p>"
+          "<p><b>Gateway</b> defines the IP address of a host which routes the packets " \
+            "to a remote host or network. It can be blank for rejection or device routes. "
         )
       end
 
