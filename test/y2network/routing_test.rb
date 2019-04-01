@@ -22,12 +22,12 @@ require "y2network/routing_table"
 require "y2network/routing"
 
 describe Y2Network::Routing do
-  subject(:routing) { described_class.new(tables: [table1])}
+  subject(:routing) { described_class.new(tables: [table1]) }
   let(:table1) { Y2Network::RoutingTable.new([route1]) }
   let(:route1) { double("Y2Network::Route") }
 
   describe "#==" do
-    let(:other) { described_class.new(tables: [table1])}
+    let(:other) { described_class.new(tables: [table1]) }
 
     context "given two routing settings with the same values" do
       it "returns true" do

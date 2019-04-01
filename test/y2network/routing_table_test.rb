@@ -27,7 +27,7 @@ describe Y2Network::RoutingTable do
   let(:route) { Y2Network::Route.new(to: :any) }
 
   describe "#==" do
-    let(:other) { Y2Network::RoutingTable.new([other_route])}
+    let(:other) { Y2Network::RoutingTable.new([other_route]) }
 
     context "given two routing tables containing the same set of routes" do
       let(:other_route) { Y2Network::Route.new(to: :any) }

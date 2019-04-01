@@ -53,7 +53,7 @@ describe Y2Network::Route do
     let(:other_source) { nil }
     let(:other_options) { "" }
 
-    let(:other)  do
+    let(:other) do
       described_class.new(
         to: other_to, interface: other_interface, gateway: other_gateway,
         source: other_source, options: other_options

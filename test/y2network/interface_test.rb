@@ -34,7 +34,7 @@ describe Y2Network::Interface do
     end
 
     context "given two interfaces with a different name" do
-      let(:other) { Y2Network::Interface.new("eth1")}
+      let(:other) { Y2Network::Interface.new("eth1") }
 
       it "returns false" do
         expect(interface).to_not eq(other)
