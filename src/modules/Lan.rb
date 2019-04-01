@@ -33,6 +33,7 @@ require "yast"
 require "network/confirm_virt_proposal"
 require "ui/text_helpers"
 require "y2firewall/firewalld"
+require "y2network/autoinst_profile/networking_section"
 
 require "shellwords"
 
@@ -56,7 +57,6 @@ module Yast
       Yast.import "NetworkService"
       Yast.import "Package"
       Yast.import "ProductFeatures"
-      Yast.import "Routing"
       Yast.import "Progress"
       Yast.import "String"
       Yast.import "FileUtils"
@@ -98,7 +98,7 @@ module Yast
       @backend = nil
 
       # Y2Network::Config objects
-      @configs = []
+      @configs = {}
     end
 
     #------------------
@@ -110,7 +110,7 @@ module Yast
     def Modified
       return true if LanItems.GetModified
       return true if DNS.modified
-      return true if Routing.Modified
+      return true unless system_config == yast_config
       return true if NetworkConfig.Modified
       return true if NetworkService.Modified
       return true if Host.GetModified
@@ -265,6 +265,10 @@ module Yast
         return true
       end
 
+      system_config = Y2Network::Config.from(:sysconfig)
+      add_config(:system, system_config)
+      add_config(:yast, system_config.copy)
+
       # Read dialog caption
       caption = _("Initializing Network Configuration")
 
@@ -348,11 +352,6 @@ module Yast
         DNS.Read
 
         Host.Read
-        Builtins.sleep(sl)
-
-        return false if Abort()
-        ProgressNextStage(_("Reading routing configuration...")) if @gui
-        Routing.Read
         Builtins.sleep(sl)
 
         return false if Abort()
@@ -528,7 +527,8 @@ module Yast
       # Progress step 5
       ProgressNextStage(_("Writing routing configuration..."))
       orig = Progress.set(false)
-      Routing.Write(gui: gui)
+
+      yast_config.write
       Progress.set(orig)
       Builtins.sleep(sl)
 
@@ -748,10 +748,13 @@ module Yast
     def Import(settings)
       settings = {} if settings.nil?
 
+      profile = Y2Network::AutoinstProfile::NetworkingSection.new_from_hashes(settings)
+      config = Y2Network::Config.from(:autoyast, profile)
+      add_config(:yast, config)
+
       LanItems.Import(settings)
       NetworkConfig.Import(settings["config"] || {})
       DNS.Import(settings["dns"] || {})
-      Routing.Import(settings["routing"] || {})
 
       # Ensure that the /etc/hosts has been read to no blank out it in case of
       # not defined <host> section (bsc#1058396)
@@ -769,6 +772,7 @@ module Yast
     # we export a 2-level map of typed "devices"
     # @return dumped settings
     def Export
+      profile = Y2Network::AutoinstProfile::NetworkingSection.new_from_network(yast_config)
       devices = NetworkInterfaces.Export("")
       udev_rules = LanItems.export(devices)
       ay = {
@@ -782,7 +786,7 @@ module Yast
         "config"               => NetworkConfig.Export,
         "devices"              => devices,
         "ipv6"                 => @ipv6,
-        "routing"              => Routing.Export,
+        "routing"              => profile.routing,
         "managed"              => NetworkService.is_network_manager,
         "start_immediately"    => Ops.get_boolean(
           LanItems.autoinstall_settings,
@@ -806,9 +810,9 @@ module Yast
     def Summary(mode)
       case mode
       when "summary"
-        "#{LanItems.BuildLanOverview.first}#{DNS.Summary}#{Routing.Summary}"
+        "#{LanItems.BuildLanOverview.first}#{DNS.Summary}#{routing_summary(mode)}"
       when "proposal"
-        "#{LanItems.summary(:proposal)}#{DNS.Summary}#{Routing.Summary}"
+        "#{LanItems.summary(:proposal)}#{DNS.Summary}#{routing_summary(mode)}"
       else
         LanItems.BuildLanOverview.first
       end
@@ -968,20 +972,39 @@ module Yast
     #
     # @param id [Symbol] Network configuration ID
     # @return [Y2Network::Config,nil] Network configuration with the given ID or nil if not found
-    def find_config(id: :system)
-      configs.find { |c| c.id == id }
+    def find_config(id)
+      configs[id]
     end
 
     # Adds the configuration
     #
+    # @param id     [Symbol] Configuration ID
     # @param config [Y2Network::Config] Network configuration
-    def add_config(config)
-      configs << config
+    def add_config(id, config)
+      configs[id] = config
     end
 
     # Clears the network configurations list
     def clear_configs
       configs.clear
+    end
+
+    # Returns the system configuration
+    #
+    # Just a convenience method.
+    #
+    # @return [Y2Network::Config]
+    def system_config
+      find_config(:system)
+    end
+
+    # Returns YaST configuration
+    #
+    # Just a convenience method.
+    #
+    # @return [Y2Network::Config]
+    def yast_config
+      find_config(:yast)
     end
 
     publish variable: :ipv6, type: "boolean"
@@ -1104,6 +1127,16 @@ module Yast
       # cache according NetworkInterfaces' one. As NetworkInterfaces'
       # cache was edited directly, LanItems is not aware of changes.
       LanItems.SetModified
+    end
+
+    # Returns the routing summary
+    #
+    # @param mode [String,Symbol] Summary mode
+    # @return [String]
+    def routing_summary(mode)
+      config = find_config(:yast)
+      presenter = Y2Network::Presenters::RoutingSummary.new(config.routing)
+      presenter.text(mode: mode.to_sym)
     end
 
     def firewalld

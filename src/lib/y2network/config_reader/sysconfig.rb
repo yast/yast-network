@@ -29,6 +29,9 @@ module Y2Network
   module ConfigReader
     # This class reads the current configuration from `/etc/sysconfig` files
     class Sysconfig
+      def initialize(_opts = {})
+      end
+
       # @return [Y2Network::Config] Network configuration
       def config
         interfaces = find_interfaces

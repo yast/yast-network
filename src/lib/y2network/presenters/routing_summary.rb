@@ -16,22 +16,31 @@
 #
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
+
 module Y2Network
-  # This module contains a set of classes to read the network configuration from the system
-  #
-  # For the time being, only the wicked via its backward compatibility with sysconfig
-  # is available in ({Y2Network::ConfigReader::Sysconfig}) reader
-  module ConfigReader
-    # Config reader for a given source
-    #
-    # @param source [Symbol] Source name (e.g., :sysconfig)
-    # @param opts   [Hash] Reader options
-    # @return [#config] Configuration reader from {Y2Network::ConfigReader}
-    def self.for(source, opts = {})
-      require "y2network/config_reader/#{source}"
-      name = source.to_s.split("_").map(&:capitalize).join
-      klass = const_get(name)
-      klass.new(opts)
+  module Presenters
+    # This class converts a routing configuration object into a hash to be used
+    # in an AutoYaST summary
+    class RoutingSummary
+      # @return [Y2Network::Config]
+      attr_reader :config
+
+      # Constructor
+      #
+      # @param config [Y2Network::Config] Network configuration to represent
+      def initialize(config)
+        @config = config
+      end
+
+      # Returns the summary of network configuration settings in text form
+      #
+      # @todo Implement the real summary.
+      #
+      # @param mode [Symbol] Summary mode (:summary or :proposal)
+      # @return [String]
+      def text(mode:)
+        "Config summary in #{mode} mode"
+      end
     end
   end
 end
