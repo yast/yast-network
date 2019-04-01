@@ -67,7 +67,7 @@ describe Y2Network::ConfigWriter::Sysconfig do
         expect(Yast::Routing).to receive(:Import).with(
           "ipv4_forward" => false,
           "ipv6_forward" => false,
-          "routes" => [
+          "routes"       => [
             { "destination" => "default", "device" => "-", "gateway" => "-", "netmask" => "-" }
           ]
         )

@@ -37,9 +37,9 @@ module Y2Network
     # @return [Array<Interface>]
     attr_accessor :interfaces
     # @return [Routing]
-    attr_reader :routing
+    attr_accessor :routing
     # @return [Symbol] Information source (see {Y2Network::Reader} and {Y2Network::Writer})
-    attr_reader :source
+    attr_accessor :source
 
     class << self
       # @param source [Symbol] Source to read the configuration from
