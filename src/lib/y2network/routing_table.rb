@@ -37,10 +37,16 @@ module Y2Network
     attr_reader :routes
 
     def_delegator :@routes, :each
-    def_delegator :@routes, :concat
 
     def initialize(routes = [])
       @routes = routes
+    end
+
+    # @param routing_table [RoutingTable] Routing table
+    # @return [RoutingTable]
+    def concat(routing_table)
+      @routes.concat(routing_table)
+      self
     end
 
     # Determines whether two routing tables are equal

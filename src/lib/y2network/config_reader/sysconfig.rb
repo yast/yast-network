@@ -64,13 +64,19 @@ module Y2Network
       # return [RoutingTable] an object with routes
       def load_routes
         # load /etc/sysconfig/network/routes
-        routes = SysconfigRoutesReader.new.config
+        routing_table = SysconfigRoutesReader.new.config
         # load /etc/sysconfig/network/ifroute-*
-        dev_routes = find_interfaces.map do |iface|
-          SysconfigRoutesReader.new(routes_file: "/etc/sysconfig/network/ifroute-#{iface.name}").config
+        dev_routing_tables = find_interfaces.map do |iface|
+          SysconfigRoutesReader.new(
+            routes_file: "/etc/sysconfig/network/ifroute-#{iface.name}"
+          ).config
         end
 
-        dev_routes.inject(routes) { |a, e| a.concat(e.routes) }.uniq
+        dev_routing_tables.reduce(routing_table) do |rt, dev_rt|
+          rt.concat(dev_rt.routes)
+        end
+        routing_table.routes.uniq!
+        routing_table
       end
     end
   end
