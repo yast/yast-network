@@ -26,7 +26,7 @@ require "y2network/route"
 module Y2Network
   module ConfigReader
     # This class is responsible of importing the AutoYast routing section
-    class AutoyastRouting
+    class AutoinstRouting
       # @return [AutoinstProfile::RoutingSection]
       attr_reader :section
 
@@ -59,6 +59,10 @@ module Y2Network
         end
       end
 
+      # Return the IPAddr of de given host/network or :default in case of it
+      # is defined as the "default" route.
+      #
+      # @return [IPAddr, :default]
       def destination_from(route_section)
         destination = route_section.destination
         return :default if destination == :default
@@ -68,6 +72,9 @@ module Y2Network
         IPAddr.new("#{destination}/#{netmask}")
       end
 
+      # Return the IPAddr of de host defined as the gateway.
+      #
+      # @return [IPAddr, :default]
       def gateway_from(route_section)
         return unless route_section.gateway
         IPAddr.new(route_section.gateway)
