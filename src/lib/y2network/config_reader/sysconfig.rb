@@ -20,6 +20,7 @@ require "yast"
 require "y2network/config"
 require "y2network/interface"
 require "y2network/routing"
+require "y2network/sysconfig_paths"
 require "y2network/config_reader/sysconfig_routes_reader"
 
 Yast.import "NetworkInterfaces"
@@ -41,13 +42,7 @@ module Y2Network
 
     private
 
-      # sysctl keys, used as *single* SCR path components below
-      IPV4_SYSCTL = "net.ipv4.ip_forward".freeze
-      IPV6_SYSCTL = "net.ipv6.conf.all.forwarding".freeze
-      # SCR paths
-      SYSCTL_AGENT_PATH = ".etc.sysctl_conf".freeze
-      SYSCTL_IPV4_PATH = (SYSCTL_AGENT_PATH + ".\"#{IPV4_SYSCTL}\"").freeze
-      SYSCTL_IPV6_PATH = (SYSCTL_AGENT_PATH + ".\"#{IPV6_SYSCTL}\"").freeze
+      include SysconfigPaths
 
       # Find configured network interfaces
       #
