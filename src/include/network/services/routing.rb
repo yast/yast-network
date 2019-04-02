@@ -72,7 +72,7 @@ module Yast
       caption = _("Routing Configuration")
 
       functions = {
-        abort: fun_ref(method(:ReallyAbort), "boolean ()")
+        abort: Yast::FunRef.new(method(:ReallyAbort), "boolean ()")
       }
 
       Wizard.HideBackButton
