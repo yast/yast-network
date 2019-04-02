@@ -21,8 +21,10 @@ module Y2Network
       end
 
       def help
-        # TODO: original also does not have help
-        ""
+        _(
+          "<p><b>Gateway</b> defines the IP address of a host which routes the packets " \
+            "to a remote host or network. It can be blank for rejection or device routes. "
+        )
       end
 
       def opt

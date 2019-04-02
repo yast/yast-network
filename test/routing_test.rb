@@ -7,7 +7,7 @@ require "yast"
 include Yast::I18n
 Yast.import "Routing"
 
-describe Yast::Routing do
+xdescribe Yast::Routing do
   before(:all) do
     SYSCTL_IPV4_PATH = path(Yast::RoutingClass::SYSCTL_IPV4_PATH)
     SYSCTL_IPV6_PATH = path(Yast::RoutingClass::SYSCTL_IPV6_PATH)

@@ -34,6 +34,7 @@ require "network/confirm_virt_proposal"
 require "ui/text_helpers"
 require "y2firewall/firewalld"
 require "y2network/autoinst_profile/networking_section"
+require "y2network/config"
 
 require "shellwords"
 

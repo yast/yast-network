@@ -24,27 +24,30 @@ require "y2network/route"
 require "y2network/widgets/destination"
 
 describe Y2Network::Widgets::Destination do
-  let(:widget_value) { "-" }
+  let(:default) { true }
+  let(:destination) { "127.0.0.1" }
   let(:route) { Y2Network::Route.new }
   subject { described_class.new(route) }
 
   before do
-    allow(subject).to receive(:value).and_return(widget_value)
+    allow(Yast::UI).to receive(:QueryWidget).with(Id(:default), :Value).and_return(default)
+    allow(Yast::UI).to receive(:QueryWidget).with(Id(:destination), :Value).and_return(destination)
     allow(Yast::UI).to receive(:ChangeWidget)
   end
 
-  include_examples "CWM::InputField"
+  include_examples "CWM::CustomWidget"
 
   describe "#validate" do
     context "when invalid ip is used" do
-      let(:widget_value) { "666.0.0.1" }
+      let(:default) { false }
+      let(:destination) { "666.0.0.1" }
 
       it "returns false" do
         expect(subject.validate).to eq false
       end
 
       it "focus widget" do
-        expect(subject).to receive(:focus)
+        expect(Yast::UI).to receive(:SetFocus)
 
         subject.validate
       end
@@ -59,7 +62,7 @@ describe Y2Network::Widgets::Destination do
 
   describe "#init" do
     it "sets valid characters for widget" do
-      expect(Yast::UI).to receive(:ChangeWidget).with(anything, :ValidChars, anything)
+      expect(Yast::UI).to receive(:ChangeWidget).with(Id(:destination), :ValidChars, anything)
 
       subject.init
     end
@@ -67,8 +70,8 @@ describe Y2Network::Widgets::Destination do
     context "route.to is :default" do
       let(:route) { Y2Network::Route.new(to: :default) }
 
-      it "sets values to '-'" do
-        expect(subject).to receive(:value=).with("-")
+      it "checks default route checkbox" do
+        expect(Yast::UI).to receive(:ChangeWidget).with(Id(:default), :Value, true)
 
         subject.init
       end
@@ -77,7 +80,7 @@ describe Y2Network::Widgets::Destination do
     context "route.to is IPAddr" do
       let(:route) { Y2Network::Route.new(to: IPAddr.new("127.0.0.1/24")) }
       it "sets value including prefix" do
-        expect(subject).to receive(:value=).with("127.0.0.0/24")
+        expect(Yast::UI).to receive(:ChangeWidget).with(Id(:destination), :Value, "127.0.0.0/24")
 
         subject.init
       end
@@ -85,8 +88,8 @@ describe Y2Network::Widgets::Destination do
   end
 
   describe "#store" do
-    context "value is '-'" do
-      let(:widget_value) { "-" }
+    context "default route is checked" do
+      let(:default) { true }
 
       it "stores :default to route" do
         subject.store
@@ -96,7 +99,8 @@ describe Y2Network::Widgets::Destination do
     end
 
     context "value is ip address" do
-      let(:widget_value) { "127.0.0.1/24" }
+      let(:default) { false }
+      let(:destination) { "127.0.0.1/24" }
 
       it "stores IPAddr to route" do
         subject.store
