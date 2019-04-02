@@ -60,7 +60,6 @@ module Yast
       Yast.include include_target, "network/widgets.rb"
 
       @shown = false
-
     end
 
     def wd
@@ -138,7 +137,6 @@ module Yast
       @tabs_descr = Builtins.union(@tabs_descr, route_td)
       @tabs_descr = Builtins.union(@tabs_descr, @dns_td)
     end
-
 
     # Commit changes to internal structures
     # @return always `next
