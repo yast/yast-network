@@ -18,6 +18,7 @@
 # find current contact information at www.suse.com.
 
 require "yast"
+require "ipaddr"
 require "y2network/routing_table"
 require "y2network/routing"
 require "y2network/route"
@@ -51,11 +52,24 @@ module Y2Network
       # @return [Array<Route>]
       def build_routes
         section.routes.map do |route_section|
-          Y2Network::Route.new(to:        route_section.destination,
-                               gateway:   route_section.gateway,
+          Y2Network::Route.new(to:        destination_from(route_section),
+                               gateway:   gateway_from(route_section),
                                interface: route_section.device,
                                options:   route_section.extrapara)
         end
+      end
+
+      def destination_from(route_section)
+        destination = route_section.destination
+        return :default if destination == :default
+        return IPAddr.new(destination) unless netmask
+        netmask = route_section.netmask.delete("/")
+        IPAddr.new("#{destination}/#{netmask}")
+      end
+
+      def gateway_from(route_section)
+        return unless route_section.gateway
+        IPAddr.new(route_section.gateway)
       end
     end
   end

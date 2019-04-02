@@ -59,7 +59,7 @@ describe Y2Network::ConfigReader::AutoyastRouting do
       expect(subject.config.forward_ipv4).to eq(true)
       expect(subject.config.forward_ipv6).to eq(false)
       expect(subject.config.routes.size).to eq(2)
-      default = subject.config.routes.find { |r| r.default? }
+      default = subject.config.routes.find(&:default?)
       expect(default.default?).to eq(true)
     end
 
