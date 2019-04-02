@@ -974,7 +974,7 @@ module Yast
     # @param id [Symbol] Network configuration ID
     # @return [Y2Network::Config,nil] Network configuration with the given ID or nil if not found
     def find_config(id)
-      configs[id]
+      Y2Network::Config.find(id)
     end
 
     # Adds the configuration
@@ -982,12 +982,12 @@ module Yast
     # @param id     [Symbol] Configuration ID
     # @param config [Y2Network::Config] Network configuration
     def add_config(id, config)
-      configs[id] = config
+      Y2Network::Config.add(id, config)
     end
 
     # Clears the network configurations list
     def clear_configs
-      configs.clear
+      Y2Network::Config.reset
     end
 
     # Returns the system configuration

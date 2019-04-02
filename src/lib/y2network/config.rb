@@ -49,6 +49,34 @@ module Y2Network
         reader = ConfigReader.for(source, opts)
         reader.config
       end
+
+      # Adds the configuration to the register
+      #
+      # @param id     [Symbol] Configuration ID
+      # @param config [Y2Network::Config] Network configuration
+      def add(id, config)
+        configs[id] = config
+      end
+
+      # Finds the configuration in the register
+      #
+      # @param id [Symbol] Configuration ID
+      # @return [Config,nil] Configuration with the given ID or nil if not found
+      def find(id)
+        configs[id]
+      end
+
+      # Resets the configuration register
+      def reset
+        configs.clear
+      end
+
+    private
+
+      # Configuration register
+      def configs
+        @configs ||= {}
+      end
     end
 
     # Constructor

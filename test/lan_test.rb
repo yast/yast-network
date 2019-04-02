@@ -12,6 +12,10 @@ describe "LanClass" do
   subject { Yast::Lan }
   let(:system_config) { instance_double(Y2Network::Config, "System") }
 
+  before do
+    Yast::Lan.clear_configs
+  end
+
   describe "#Packages" do
     before(:each) do
       allow(Yast::NetworkService)
@@ -178,7 +182,6 @@ describe "LanClass" do
     let(:routing) { Y2Network::Routing.new(tables: []) }
 
     it "returns true when Routing module was modified" do
-      Yast::Lan.clear_configs
       Yast::Lan.add_config(:system, config)
       yast_config = config.copy
       yast_config.routing.forward_ipv4 = !config.routing.forward_ipv4
