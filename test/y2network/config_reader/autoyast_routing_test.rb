@@ -39,8 +39,14 @@ describe Y2Network::ConfigReader::AutoyastRouting do
         "device"      => "-"
       },
       {
-        "destination" => "172.26.0/24",
+        "destination" => "172.26.0.0/24",
         "device"      => "eth0"
+      },
+      {
+        "destination" => "192.168.0.0",
+        "gateway"     => "192.168.0.34",
+        "netmask"     => "255.255.255.0",
+        "device"      => "em1"
       }
     ]
   end
@@ -58,7 +64,7 @@ describe Y2Network::ConfigReader::AutoyastRouting do
       expect(subject.config).to be_a Y2Network::Routing
       expect(subject.config.forward_ipv4).to eq(true)
       expect(subject.config.forward_ipv6).to eq(false)
-      expect(subject.config.routes.size).to eq(2)
+      expect(subject.config.routes.size).to eq(3)
       default = subject.config.routes.find(&:default?)
       expect(default.default?).to eq(true)
     end

@@ -149,5 +149,12 @@ describe Y2Network::AutoinstProfile::RouteSection do
       section = described_class.new_from_hashes(hash)
       expect(section.extrapara).to eq(hash["extrapara"])
     end
+
+    context "when destination is the default one" do
+      it "sets destination as :default" do
+        section = described_class.new_from_hashes(default_gateway)
+        expect(section.destination).to eq(:default)
+      end
+    end
   end
 end

@@ -100,7 +100,7 @@ module Y2Network
     private
 
       def destination_from_hash(hash)
-        return :default if hash.fetch("destination", "default")
+        hash["destination"] == "default" ? :default : hash["destination"]
       end
 
       def gateway_from_hash(hash)

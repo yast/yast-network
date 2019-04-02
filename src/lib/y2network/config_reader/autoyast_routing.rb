@@ -62,8 +62,9 @@ module Y2Network
       def destination_from(route_section)
         destination = route_section.destination
         return :default if destination == :default
+        netmask = route_section.netmask
         return IPAddr.new(destination) unless netmask
-        netmask = route_section.netmask.delete("/")
+        netmask.delete!("/")
         IPAddr.new("#{destination}/#{netmask}")
       end
 

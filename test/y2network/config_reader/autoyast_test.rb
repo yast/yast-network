@@ -42,7 +42,7 @@ describe Y2Network::ConfigReader::Autoyast do
         "device"      => "-"
       },
       {
-        "destination" => "172.26.0/24",
+        "destination" => "172.26.0.0/24",
         "device"      => "eth0"
       }
     ]

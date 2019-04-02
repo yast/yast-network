@@ -35,6 +35,8 @@ module Y2Network
       #
       # @param config [Y2Network::Config] Configuration to write
       def write(config)
+        return unless config.routing
+
         routes = config.routing.routes.map { |r| route_to_hash(r) }
         Yast::Routing.Import(
           "ipv4_forward" => config.routing.forward_ipv4,
