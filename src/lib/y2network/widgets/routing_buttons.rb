@@ -2,8 +2,6 @@ require "cwm/common_widgets"
 require "y2network/dialogs/route"
 require "y2network/route"
 
-Yast.import "NetworkService"
-
 module Y2Network
   module Widgets
     class AddRoute < CWM::PushButton

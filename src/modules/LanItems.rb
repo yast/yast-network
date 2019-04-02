@@ -27,6 +27,7 @@ require "y2storage"
 require "network/install_inf_convertor"
 require "network/wicked"
 require "network/lan_items_summary"
+require "y2network/config"
 
 require "shellwords"
 
@@ -58,7 +59,6 @@ module Yast
       Yast.import "UI"
       textdomain "network"
 
-      Yast.import "Routing"
       Yast.import "NetworkInterfaces"
       Yast.import "ProductFeatures"
       Yast.import "NetworkConfig"
@@ -2667,18 +2667,43 @@ module Yast
     #
     # @return [Boolean] false if the current interface name is already present
     def update_routing_devices?
-      !Routing.devices.include?(current_name)
+      device_names = yast_config.interfaces.map(&:name)
+      !device_names.include?(current_name)
     end
 
-    # Convenience method to update the {Yast::Routing} devices list
-    def update_routing_devices!
-      Routing.SetDevices(current_device_names)
+    # Adds a new interface with the given name
+    #
+    # @todo This method exists just to keep some compatibility during
+    #       the migration to network-ng.
+    # @param name [String] Device name
+    def add_current_device_to_routing
+      name = current_name
+      return if yast_config.interfaces.any? { |i| i.name == name }
+      yast_config.interfaces << Y2Network::Interface.new(name)
     end
 
-    # It modifies the interface name with the new one of all the routes
-    # that belongs to the current renamed {LanItem}
-    def update_routes!(previous_name)
-      Routing.device_routes(previous_name).each { |r| r["device"] = current_name }
+    # Renames an interface
+    #
+    # @todo This method exists just to keep some compatibility during
+    #       the migration to network-ng.
+
+    # @param old_name [String] Old device name
+    def rename_current_device_in_routing(old_name)
+      interface = yast_config.interfaces.find { |i| i.name == old_name }
+      return unless interface
+      interface.name = current_name
+    end
+
+    # Removes the interface with the given name
+    #
+    # @todo This method exists just to keep some compatibility during
+    #       the migration to network-ng.
+    # @fixme It does not check orphan routes.
+    # @param name [String] Device name
+    def remove_current_device_from_routing
+      name = current_name
+      return if name.empty?
+      yast_config.interfaces.reject! { |i| i.name == name }
     end
 
   private
@@ -2826,6 +2851,14 @@ module Yast
       end
 
       GetDeviceNames(items)
+    end
+
+    # Convenience method
+    #
+    # @todo It should not be called outside this module.
+    # @return [Y2Network::Config] YaST network configuration
+    def yast_config
+      Y2Network::Config.find(:yast)
     end
 
     # @attribute Items

@@ -55,7 +55,6 @@ module Yast
       Yast.import "NetworkInterfaces"
       Yast.import "Popup"
       Yast.import "ProductFeatures"
-      Yast.import "Routing"
       Yast.import "String"
       Yast.import "Wizard"
       Yast.import "Map"
@@ -1367,13 +1366,14 @@ module Yast
           #		 "No IP address" case, then default gw must stay (#460262)
           # and also: don't delete default GW for usb/pcmcia devices (#307102)
           if LanItems.isCurrentDHCP && !LanItems.isCurrentHotplug
-            Routing.RemoveDefaultGw
+            # FIXME: network-ng
+            # Routing.RemoveDefaultGw
           end
         end
 
         # When virtual interfaces are added the list of routing devices needs
         # to be updated to offer them
-        LanItems.update_routing_devices! if LanItems.update_routing_devices?
+        LanItems.add_current_device_to_routing if LanItems.update_routing_devices?
       end
 
       if LanItems.type == "vlan"
