@@ -42,12 +42,12 @@ describe Y2Network::ConfigReader::Sysconfig do
   let(:gateway)     { "192.168.122.1" }
   let(:netmask)     { "255.255.255.0" }
 
+  around { |example| change_scr_root("#{DATA_PATH}/scr_read/", &example) }
+
   describe "#config" do
     before do
       stub_const("Yast::NetworkInterfaces", network_interfaces)
     end
-
-    around { |example| change_scr_root("#{DATA_PATH}/scr_read/", &example) }
 
     it "returns a configuration including network devices" do
       config = reader.config
@@ -107,6 +107,32 @@ describe Y2Network::ConfigReader::Sysconfig do
         route = config.routing.routes.first
         expect(route.to).to eq(:default)
       end
+    end
+  end
+
+  describe "#forward_ipv4?" do
+    it "returns true when IPv4 forwarding is allowed" do
+      expect(reader.config.routing.forward_ipv4).to be true
+    end
+
+    it "returns false when IPv4 forwarding is disabled" do
+      allow(reader).to receive(:load_routes).and_return(nil)
+      allow(Yast::SCR).to receive(:Read).and_return("0")
+
+      expect(reader.config.routing.forward_ipv4).to be false
+    end
+  end
+
+  describe "#forward_ipv6?" do
+    it "returns false when IPv6 forwarding is disabled" do
+      allow(reader).to receive(:load_routes).and_return(nil)
+      allow(Yast::SCR).to receive(:Read).and_return("1")
+
+      expect(reader.config.routing.forward_ipv6).to be true
+    end
+
+    it "returns false when IPv6 forwarding is disabled" do
+      expect(reader.config.routing.forward_ipv6).to be false
     end
   end
 end
