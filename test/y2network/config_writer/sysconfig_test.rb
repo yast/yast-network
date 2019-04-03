@@ -48,7 +48,9 @@ describe Y2Network::ConfigWriter::Sysconfig do
 
     it "imports defined routes using placeholders" do
       expect(Yast::Routing).to receive(:Import).with(
-        "routes" => [
+        "ipv4_forward" => false,
+        "ipv6_forward" => false,
+        "routes"       => [
           { "destination" => "10.0.0.0", "device" => "eth0",
             "gateway" => "192.168.122.1", "netmask" => "255.0.0.0" }
         ]
@@ -63,8 +65,10 @@ describe Y2Network::ConfigWriter::Sysconfig do
 
       it "imports defined routes using placeholders" do
         expect(Yast::Routing).to receive(:Import).with(
-          "routes" => [
-            { "destination" => "-", "device" => "-", "gateway" => "-", "netmask" => "-" }
+          "ipv4_forward" => false,
+          "ipv6_forward" => false,
+          "routes"       => [
+            { "destination" => "default", "device" => "-", "gateway" => "-", "netmask" => "-" }
           ]
         )
         writer.write(config)

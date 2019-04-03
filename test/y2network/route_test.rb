@@ -50,13 +50,11 @@ describe Y2Network::Route do
     let(:other_to) { IPAddr.new("192.168.122.0/24") }
     let(:other_interface) { Y2Network::Interface.new("eth0") }
     let(:other_gateway) { nil }
-    let(:other_source) { nil }
     let(:other_options) { "" }
 
     let(:other) do
       described_class.new(
-        to: other_to, interface: other_interface, gateway: other_gateway,
-        source: other_source, options: other_options
+        to: other_to, interface: other_interface, gateway: other_gateway, options: other_options
       )
     end
 
@@ -84,14 +82,6 @@ describe Y2Network::Route do
 
     context "when the gateway is different" do
       let(:other_gateway) { IPAddr.new("192.168.122.1") }
-
-      it "returns false" do
-        expect(route).to_not eq(other)
-      end
-    end
-
-    context "when the source is different" do
-      let(:other_source) { IPAddr.new("192.168.122.1") }
 
       it "returns false" do
         expect(route).to_not eq(other)

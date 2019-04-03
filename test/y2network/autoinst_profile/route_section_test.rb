@@ -27,13 +27,12 @@ describe Y2Network::AutoinstProfile::RouteSection do
   describe ".new_from_network" do
     let(:route) do
       Y2Network::Route.new(
-        to: to, interface: interface, gateway: gateway, source: source, options: options
+        to: to, interface: interface, gateway: gateway, options: options
       )
     end
     let(:to) { IPAddr.new("192.168.122.0/24") }
     let(:interface) { double("interface", name: "eth0") }
     let(:gateway) { IPAddr.new("192.168.122.1") }
-    let(:source) { IPAddr.new("192.168.122.122") }
     let(:options) { "some-option" }
 
     it "initializes the destination value" do
@@ -118,6 +117,14 @@ describe Y2Network::AutoinstProfile::RouteSection do
       }
     end
 
+    let(:default_gateway) do
+      {
+        "destination" => "default",
+        "device"      => "eth1",
+        "gateway"     => "192.168.1.1"
+      }
+    end
+
     it "initializes destination" do
       section = described_class.new_from_hashes(hash)
       expect(section.destination).to eq(hash["destination"])
@@ -141,6 +148,13 @@ describe Y2Network::AutoinstProfile::RouteSection do
     it "initializes extrapara" do
       section = described_class.new_from_hashes(hash)
       expect(section.extrapara).to eq(hash["extrapara"])
+    end
+
+    context "when destination is the default one" do
+      it "sets destination as :default" do
+        section = described_class.new_from_hashes(default_gateway)
+        expect(section.destination).to eq(:default)
+      end
     end
   end
 end

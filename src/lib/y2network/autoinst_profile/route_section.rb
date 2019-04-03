@@ -70,6 +70,20 @@ module Y2Network
         result
       end
 
+      # Method used by {.new_from_hashes} to populate the attributes.
+      #
+      # @parm hash [Hash] see {.new_from_hashes}
+      # @return [Boolean]
+      def init_from_hashes(hash)
+        @destination = destination_from_hash(hash)
+        @gateway = gateway_from_hash(hash)
+        @netmask = netmask_from_hash(hash)
+        @device = device_from_hash(hash)
+        @extrapara = hash["extrapara"]
+
+        true
+      end
+
       # Method used by {.new_from_network} to populate the attributes when cloning a network route
       #
       # @param route [Y2Network::Route] Network route
@@ -84,6 +98,22 @@ module Y2Network
       end
 
     private
+
+      def destination_from_hash(hash)
+        hash["destination"] == "default" ? :default : hash["destination"]
+      end
+
+      def gateway_from_hash(hash)
+        hash["gateway"] if hash["gateway"] != "-"
+      end
+
+      def netmask_from_hash(hash)
+        hash["netmask"] if hash["netmask"] != "-"
+      end
+
+      def device_from_hash(hash)
+        hash["device"] if hash["device"] != "-"
+      end
 
       # Returns the destination for the given route
       #

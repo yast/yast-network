@@ -20,8 +20,6 @@ require "yast"
 require "y2network/config"
 require "y2network/interface"
 require "y2network/routing"
-require "y2network/routing_table"
-require "y2network/route"
 require "y2network/config_reader/sysconfig_routes_reader"
 
 Yast.import "NetworkInterfaces"

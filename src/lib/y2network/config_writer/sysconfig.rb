@@ -18,6 +18,10 @@
 # find current contact information at www.suse.com.
 
 require "yast"
+require "y2network/interface"
+require "y2network/routing_table"
+require "y2network/route"
+
 Yast.import "Routing"
 
 module Y2Network
@@ -31,8 +35,14 @@ module Y2Network
       #
       # @param config [Y2Network::Config] Configuration to write
       def write(config)
+        return unless config.routing
+
         routes = config.routing.routes.map { |r| route_to_hash(r) }
-        Yast::Routing.Import("routes" => routes)
+        Yast::Routing.Import(
+          "ipv4_forward" => config.routing.forward_ipv4,
+          "ipv6_forward" => config.routing.forward_ipv6,
+          "routes"       => routes
+        )
       end
 
     private
@@ -44,10 +54,11 @@ module Y2Network
       def route_to_hash(route)
         hash =
           if route.default?
-            { "destination" => "-", "netmask" => "-" }
+            { "destination" => "default", "netmask" => "-" }
           else
             { "destination" => route.to.to_s, "netmask" => netmask(route.to) }
           end
+        hash.merge("options" => route.options) unless route.options.to_s.empty?
         hash.merge(
           "gateway" => route.gateway ? route.gateway.to_s : "-",
           "device"  => route.interface == :any ? "-" : route.interface.name
