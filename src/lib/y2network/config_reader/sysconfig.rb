@@ -79,7 +79,7 @@ module Y2Network
 
       # Load a set of routes for a given path
       def load_routes_from(path = nil)
-        file = Y2Network::SysconfigRoutesFile.new(path)
+        file = path ? Y2Network::SysconfigRoutesFile.new(path) : Y2Network::SysconfigRoutesFile.new
         file.load
         file.routes
       end

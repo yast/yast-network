@@ -40,13 +40,12 @@ module Y2Network
     attr_reader :routes
 
     # @param path [String] File path
-    def initialize(path = nil)
-      path ||= DEFAULT_ROUTES_FILE
-      @file =
-        if path == DEFAULT_ROUTES_FILE
+    def initialize(file_path = DEFAULT_ROUTES_FILE)
+      @path =
+        if file_path == DEFAULT_ROUTES_FILE
           Yast::Path.new(".routes")
         else
-          register_ifroute_agent_for_path(path)
+          register_ifroute_agent_for_path(file_path)
         end
     end
 
@@ -56,7 +55,7 @@ module Y2Network
     #                                       as provided by SCR agent.
     #                                       keys: destination, gateway, netmask, [device, [extrapara]]
     def load
-      entries = Yast::SCR.Read(file) || []
+      entries = Yast::SCR.Read(path) || []
       entries = normalize_entries(entries.uniq)
       @routes = entries.map { |r| build_route(r) }
     end
@@ -64,7 +63,7 @@ module Y2Network
   private
 
     # @return [Yast::Path]
-    attr_reader :file
+    attr_reader :path
 
     MISSING_VALUE = "-".freeze
     private_constant :MISSING_VALUE
