@@ -21,7 +21,8 @@ require "y2network/config"
 require "y2network/interface"
 require "y2network/routing"
 require "y2network/sysconfig_paths"
-require "y2network/config_reader/sysconfig_routes_reader"
+require "y2network/routing_table"
+require "y2network/sysconfig_routes_file"
 
 Yast.import "NetworkInterfaces"
 
@@ -35,7 +36,10 @@ module Y2Network
       # @return [Y2Network::Config] Network configuration
       def config
         interfaces = find_interfaces
-        routing = Routing.new(tables: [load_routes], forward_ipv4: forward_ipv4?, forward_ipv6: forward_ipv6?)
+        routing_tables = find_routing_tables
+        routing = Routing.new(
+          tables: routing_tables, forward_ipv4: forward_ipv4?, forward_ipv6: forward_ipv6?
+        )
 
         Config.new(interfaces: interfaces, routing: routing, source: :sysconfig)
       end
@@ -64,21 +68,20 @@ module Y2Network
       # TODO: currently it implicitly loads main/default routing table
       #
       # return [RoutingTable] an object with routes
-      def load_routes
-        # load /etc/sysconfig/network/routes
-        routing_table = SysconfigRoutesReader.new.config
-        # load /etc/sysconfig/network/ifroute-*
-        dev_routing_tables = find_interfaces.map do |iface|
-          SysconfigRoutesReader.new(
-            routes_file: "/etc/sysconfig/network/ifroute-#{iface.name}"
-          ).config
+      def find_routing_tables
+        main_routes = load_routes_from
+        iface_routes = find_interfaces.flat_map do |iface|
+          load_routes_from("/etc/sysconfig/network/ifroute-#{iface.name}")
         end
+        all_routes = main_routes + iface_routes
+        [Y2Network::RoutingTable.new(all_routes.uniq)]
+      end
 
-        dev_routing_tables.reduce(routing_table) do |rt, dev_rt|
-          rt.concat(dev_rt.routes)
-        end
-        routing_table.routes.uniq!
-        routing_table
+      # Load a set of routes for a given path
+      def load_routes_from(path = nil)
+        file = Y2Network::SysconfigRoutesFile.new(path)
+        file.load
+        file.routes
       end
 
       # Reads IPv4 forwarding status
