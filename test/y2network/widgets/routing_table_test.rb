@@ -33,5 +33,81 @@ describe Y2Network::Widgets::RoutingTable do
   end
   subject { described_class.new(routing_table) }
 
+  before do
+    allow(Yast::UI).to receive(:ChangeWidget)
+  end
+
   include_examples "CWM::Table"
+
+  describe "#selected_route" do
+    it "returns Route object according to selected row in table" do
+      allow(Yast::UI).to receive(:QueryWidget)
+        .with(Id(subject.widget_id), :SelectedItems).and_return(Id(1))
+
+      expect(subject.selected_route).to eq Y2Network::Route.new(to: :default)
+    end
+  end
+
+  describe "#add_route" do
+    it "appends to routing table new route" do
+      route = Y2Network::Route.new(to: IPAddr.new("10.100.0.0/24"))
+      subject.add_route(route)
+
+      expect(routing_table.routes.last).to eq route
+    end
+
+    it "calls #redraw_table" do
+      expect(subject).to receive(:redraw_table)
+
+      route = Y2Network::Route.new(to: IPAddr.new("10.100.0.0/24"))
+      subject.add_route(route)
+    end
+  end
+
+  describe "#replace_route" do
+    before do
+      allow(Yast::UI).to receive(:QueryWidget)
+        .with(Id(subject.widget_id), :SelectedItems).and_return(Id(0))
+    end
+
+    it "replaces currently selected route with new one" do
+      route = Y2Network::Route.new(to: IPAddr.new("10.100.0.0/24"))
+      expect { subject.replace_route(route) }.to_not change { routing_table.routes.size }
+
+      expect(routing_table.routes.first).to eq route
+    end
+
+    it "calls #redraw_table" do
+      expect(subject).to receive(:redraw_table)
+
+      route = Y2Network::Route.new(to: IPAddr.new("10.100.0.0/24"))
+      subject.replace_route(route)
+    end
+  end
+
+  describe "#delete_route" do
+    before do
+      allow(Yast::UI).to receive(:QueryWidget)
+        .with(Id(subject.widget_id), :SelectedItems).and_return(Id(0))
+    end
+
+    it "deletes currently selected route" do
+      expect { subject.delete_route }.to change { routing_table.routes.size }.from(2).to(1)
+    end
+
+    it "calls #redraw_table" do
+      expect(subject).to receive(:redraw_table)
+
+      subject.delete_route
+    end
+  end
+
+  describe "#redraw_table" do
+    it "changes widget items with current routes of routing table" do
+      routing_table.routes.delete_at(0)
+      expect(Yast::UI).to receive(:ChangeWidget).with(Id(subject.widget_id), :Items, [anything])
+
+      subject.redraw_table
+    end
+  end
 end
