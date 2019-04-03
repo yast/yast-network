@@ -27,12 +27,11 @@ require "y2network/routing_table"
 describe Y2Network::Widgets::RoutingTable do
   let(:routing_table) do
     Y2Network::RoutingTable.new([
-      Y2Network::Route.new(to: IPAddr.new("127.0.0.1/24")),
-      Y2Network::Route.new(to: :default)
-    ])
+                                  Y2Network::Route.new(to: IPAddr.new("127.0.0.1/24")),
+                                  Y2Network::Route.new(to: :default)
+                                ])
   end
   subject { described_class.new(routing_table) }
 
   include_examples "CWM::Table"
 end
-
