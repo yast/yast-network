@@ -16,6 +16,11 @@
 #
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
+
+require "yast"
+require "y2network/interface"
+require "y2network/route"
+
 module Y2Network
   # This class represents a file containing a set of routes
   #
@@ -186,6 +191,5 @@ module Y2Network
         raise("Cannot register agent (#{scr_path})")
       scr_path
     end
-
   end
 end
