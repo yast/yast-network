@@ -1,6 +1,6 @@
 #!/usr/bin/env rspec
 
-require_relative "../../test_helper"
+require_relative "../test_helper"
 require "y2network/proposal_settings"
 
 describe Y2Network::ProposalSettings do
