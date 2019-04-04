@@ -288,7 +288,7 @@ module Yast
           parent_busid = i["hwinfo"]["parent_busid"] || busid
           mac = i["hwinfo"]["mac"]
 
-          [busid, parent_busid, mac].any? { |v| v.casecmp?(key) }
+          [busid, parent_busid, mac].any? { |v| v.casecmp(key).zero? }
         end
         next if !matching_item
 
