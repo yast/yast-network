@@ -46,33 +46,11 @@ describe Y2Network::ConfigWriter::Sysconfig do
     end
     let(:routing) { Y2Network::Routing.new(tables: [Y2Network::RoutingTable.new([route])]) }
 
-    it "imports defined routes using placeholders" do
-      expect(Yast::Routing).to receive(:Import).with(
-        "ipv4_forward" => false,
-        "ipv6_forward" => false,
-        "routes"       => [
-          { "destination" => "10.0.0.0", "device" => "eth0",
-            "gateway" => "192.168.122.1", "netmask" => "255.0.0.0" }
-        ]
-      )
-      writer.write(config)
-    end
-
     context "when routes elements are not defined" do
       let(:route) do
         Y2Network::Route.new(to: :default, interface: :any)
       end
 
-      it "imports defined routes using placeholders" do
-        expect(Yast::Routing).to receive(:Import).with(
-          "ipv4_forward" => false,
-          "ipv6_forward" => false,
-          "routes"       => [
-            { "destination" => "default", "device" => "-", "gateway" => "-", "netmask" => "-" }
-          ]
-        )
-        writer.write(config)
-      end
     end
   end
 end
