@@ -34,12 +34,22 @@ module Y2Network
       def write(config)
         return unless config.routing
 
-        routes = config.routing.routes.map { |r| route_to_hash(r) }
-        Yast::Routing.Import(
-          "ipv4_forward" => config.routing.forward_ipv4,
-          "ipv6_forward" => config.routing.forward_ipv6,
-          "routes"       => routes
-        )
+        write_ip_forwarding(config.routing)
+        # list of devices used in routes
+        devices = config.routing.routes.map { |r| r.interface.name }.uniq
+        devices.each do |dev|
+          routes = config.routing.routes.select { |r| r.interface.name == dev }
+
+          writer = if dev == :any
+            ConfigWriter::SysconfigRoutesWriter.new
+          else
+            ConfigWriter::SysconfigRoutesWriter.new(
+              routes_file: "/etc/sysconfig/network/ifroute-#{dev}"
+            )
+          end
+
+          writer.write(routes)
+        end
       end
 
     private
@@ -84,36 +94,6 @@ module Y2Network
         SCR.Write(path(SYSCTL_AGENT_PATH), nil)
 
         SCR.Execute(path(".target.bash"), "/usr/sbin/sysctl -w #{IPV6_SYSCTL}=#{sysctl_val.shellescape}") == 0
-      end
-
-      # Returns a hash containing the route information to be imported into {Yast::Routing}
-      #
-      # @param route [Y2Network::Route]
-      # @return [Hash]
-      def route_to_hash(route)
-        hash =
-          if route.default?
-            { "destination" => "default", "netmask" => "-" }
-          else
-            { "destination" => route.to.to_s, "netmask" => netmask(route.to) }
-          end
-        hash.merge("options" => route.options) unless route.options.to_s.empty?
-        hash.merge(
-          "gateway" => route.gateway ? route.gateway.to_s : "-",
-          "device"  => route.interface == :any ? "-" : route.interface.name
-        )
-      end
-
-      IPV4_MASK = "255.255.255.255".freeze
-      IPV6_MASK = "fffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff".freeze
-
-      # Returns the netmask
-      #
-      # @param ip [IPAddr]
-      # @return [IPAddr]
-      def netmask(ip)
-        mask = ip.ipv4? ? IPV4_MASK : IPV6_MASK
-        IPAddr.new(mask).mask(ip.prefix).to_s
       end
     end
   end

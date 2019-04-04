@@ -20,22 +20,17 @@
 require "yast"
 require "y2network/interface"
 require "y2network/routing_table"
+require "y2network/sysconfig_routes"
 
 module Y2Network
   module ConfigReader
-    DEFAULT_ROUTES_FILE = "/etc/sysconfig/network/routes".freeze
-
     # This class reads the current configuration from a file in routes format
     # (@see man routes)
-    class SysconfigRoutesReader
+    class SysconfigRoutesReader < Y2Network::SysconfigRoutes
       # @param routes_file [<String>] full path to a file in routes format, when
       #                               not defined, then /etc/sysconfig/network/routes is used
       def initialize(routes_file: DEFAULT_ROUTES_FILE)
-        @routes_file = if routes_file == DEFAULT_ROUTES_FILE
-          Yast::Path.new(".routes")
-        else
-          register_ifroute_agent_for_path(routes_file)
-        end
+        super(routes_file: routes_file)
       end
 
       # Load routing tables
@@ -121,69 +116,6 @@ module Y2Network
           gateway:   build_ip(hash["gateway"], MISSING_VALUE),
           options:   hash["extrapara"] || ""
         )
-      end
-
-      # SCR agent for routes files definition
-      def ifroute_term(path)
-        raise ArgumentError if path.nil? || path.empty?
-
-        non_empty_str_term = Yast.term(:String, "^ \t\n")
-        whitespace_term = Yast.term(:Whitespace)
-        optional_whitespace_term = Yast.term(:Optional, whitespace_term)
-        routes_content_term = Yast.term(
-          :List,
-          Yast.term(
-            :Tuple,
-            Yast.term(
-              :destination,
-              non_empty_str_term
-            ),
-            whitespace_term,
-            Yast.term(:gateway, non_empty_str_term),
-            whitespace_term,
-            Yast.term(:netmask, non_empty_str_term),
-            optional_whitespace_term,
-            Yast.term(
-              :Optional,
-              Yast.term(:device, non_empty_str_term)
-            ),
-            optional_whitespace_term,
-            Yast.term(
-              :Optional,
-              Yast.term(
-                :extrapara,
-                Yast.term(:String, "^\n")
-              )
-            )
-          ),
-          "\n"
-        )
-
-        Yast.term(
-          :ag_anyagent,
-          Yast.term(
-            :Description,
-            Yast.term(:File, path),
-            "#\n",
-            false,
-            routes_content_term
-          )
-        )
-      end
-
-      # Registers SCR agent which is used for accessing particular ifroute-device
-      # file
-      #
-      # @param device [String] full path to a file in routes format (e.g. /etc/sysconfig/network/ifroute-eth0)
-      # @return [Path] SCR path of the agent
-      # @raise  [RuntimeError] if it fails
-      def register_ifroute_agent_for_path(path)
-        # /etc/sysconfig/network/ifroute-eth0 define .ifroute-eth0 agent
-        # TODO: collisions not handled
-        scr_path = Yast::Path.new(".#{File.basename(path)}")
-        Yast::SCR.RegisterAgent(scr_path, ifroute_term(path)) ||
-          raise("Cannot register agent (#{scr_path})")
-        scr_path
       end
     end
   end
