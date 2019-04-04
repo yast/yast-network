@@ -18,11 +18,8 @@
 # find current contact information at www.suse.com.
 
 require "yast"
-require "y2network/interface"
-require "y2network/routing_table"
-require "y2network/route"
-
-Yast.import "Routing"
+require "y2network/sysconfig_paths"
+require "y2network/config_reader/sysconfig_routes_reader"
 
 module Y2Network
   module ConfigWriter
@@ -46,6 +43,48 @@ module Y2Network
       end
 
     private
+
+      include SysconfigPaths
+
+      # Writes ip forwarding setup
+      #
+      # @param routing [Y2Network::Routing] routing configuration
+      # @return [Boolean] true on success
+      def write_ip_forwarding(routing)
+        write_ipv4_forwarding(routing.forward_ipv4) && write_ipv6_forwarding(routing.forward_ipv6)
+      end
+
+      # Configures system for IPv4 forwarding
+      #
+      # @param forward_ipv4 [Boolean] true when forwarding should be enabled
+      # @return [Boolean] true on success
+      def write_ipv4_forwarding(forward_ipv4)
+        sysctl_val = forward_ipv4 ? "1" : "0"
+
+        SCR.Write(
+          path(SYSCTL_IPV4_PATH),
+          sysctl_val
+        )
+        SCR.Write(path(SYSCTL_AGENT_PATH), nil)
+
+        SCR.Execute(path(".target.bash"), "/usr/sbin/sysctl -w #{IPV4_SYSCTL}=#{sysctl_val.shellescape}") == 0
+      end
+
+      # Configures system for IPv6 forwarding
+      #
+      # @param forward_ipv6 [Boolean] true when forwarding should be enabled
+      # @return [Boolean] true on success
+      def write_ipv6_forwarding(forward_ipv6)
+        sysctl_val = forward_ipv6 ? "1" : "0"
+
+        SCR.Write(
+          path(SYSCTL_IPV6_PATH),
+          sysctl_val
+        )
+        SCR.Write(path(SYSCTL_AGENT_PATH), nil)
+
+        SCR.Execute(path(".target.bash"), "/usr/sbin/sysctl -w #{IPV6_SYSCTL}=#{sysctl_val.shellescape}") == 0
+      end
 
       # Returns a hash containing the route information to be imported into {Yast::Routing}
       #
