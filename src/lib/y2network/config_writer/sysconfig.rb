@@ -36,9 +36,9 @@ module Y2Network
 
         write_ip_forwarding(config.routing)
         # list of devices used in routes
-        devices = config.routing.routes.map { |r| r.interface.name }.uniq
+        devices = config.routing.routes.map { |r| r.interface == :any ? :any : r.interface.name }.uniq
         devices.each do |dev|
-          routes = config.routing.routes.select { |r| r.interface.name == dev }
+          routes = config.routing.routes.select { |r| dev == :any || r.interface.name == dev }
 
           writer = if dev == :any
             ConfigWriter::SysconfigRoutesWriter.new
@@ -61,7 +61,8 @@ module Y2Network
       # @param routing [Y2Network::Routing] routing configuration
       # @return [Boolean] true on success
       def write_ip_forwarding(routing)
-        write_ipv4_forwarding(routing.forward_ipv4) && write_ipv6_forwarding(routing.forward_ipv6)
+        write_ipv4_forwarding(routing.forward_ipv4)
+        write_ipv6_forwarding(routing.forward_ipv6)
       end
 
       # Configures system for IPv4 forwarding
@@ -71,13 +72,13 @@ module Y2Network
       def write_ipv4_forwarding(forward_ipv4)
         sysctl_val = forward_ipv4 ? "1" : "0"
 
-        SCR.Write(
-          path(SYSCTL_IPV4_PATH),
+        Yast::SCR.Write(
+          Yast::Path.new(SYSCTL_IPV4_PATH),
           sysctl_val
         )
-        SCR.Write(path(SYSCTL_AGENT_PATH), nil)
+        Yast::SCR.Write(Yast::Path.new(SYSCTL_AGENT_PATH), nil)
 
-        SCR.Execute(path(".target.bash"), "/usr/sbin/sysctl -w #{IPV4_SYSCTL}=#{sysctl_val.shellescape}") == 0
+        Yast::SCR.Execute(Yast::Path.new(".target.bash"), "/usr/sbin/sysctl -w #{IPV4_SYSCTL}=#{sysctl_val.shellescape}") == 0
       end
 
       # Configures system for IPv6 forwarding
@@ -87,13 +88,13 @@ module Y2Network
       def write_ipv6_forwarding(forward_ipv6)
         sysctl_val = forward_ipv6 ? "1" : "0"
 
-        SCR.Write(
-          path(SYSCTL_IPV6_PATH),
+        Yast::SCR.Write(
+          Yast::Path.new(SYSCTL_IPV6_PATH),
           sysctl_val
         )
-        SCR.Write(path(SYSCTL_AGENT_PATH), nil)
+        Yast::SCR.Write(Yast::Path.new(SYSCTL_AGENT_PATH), nil)
 
-        SCR.Execute(path(".target.bash"), "/usr/sbin/sysctl -w #{IPV6_SYSCTL}=#{sysctl_val.shellescape}") == 0
+        Yast::SCR.Execute(Yast::Path.new(".target.bash"), "/usr/sbin/sysctl -w #{IPV6_SYSCTL}=#{sysctl_val.shellescape}") == 0
       end
     end
   end

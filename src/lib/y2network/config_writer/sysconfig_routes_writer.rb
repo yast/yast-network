@@ -43,13 +43,13 @@ module Y2Network
       # @return [Boolean] true on success
       def write(routes)
         # create if not exists, otherwise backup
-        if FileUtils.Exists(@routes_file)
+        if Yast::FileUtils.Exists(@routes_file)
           Yast::SCR.Execute(
-            path(".target.bash"),
+            Yast::Path.new(".target.bash"),
             "/bin/cp #{@routes_file} #{@routes_file}.YaST2save"
           )
         else
-          Yast::SCR.Write(path(".target.string"), @routes_file, "")
+          Yast::SCR.Write(Yast::Path.new(".target.string"), @routes_file, "")
         end
 
         clear_routes_file if routes.empty?
