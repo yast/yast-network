@@ -20,20 +20,8 @@
 require "yast"
 
 module Y2Network
+  module SysconfigRoutes
     DEFAULT_ROUTES_FILE = "/etc/sysconfig/network/routes".freeze
-
-    class SysconfigRoutes
-      # @param routes_file [<String>] full path to a file in routes format, when
-      #                               not defined, then /etc/sysconfig/network/routes is used
-      def initialize(routes_file: DEFAULT_ROUTES_FILE)
-        @routes_file = if routes_file == DEFAULT_ROUTES_FILE
-          Yast::Path.new(".routes")
-        else
-          register_ifroute_agent_for_path(routes_file)
-        end
-      end
-
-    private
 
       # SCR agent for routes files definition
       def ifroute_term(path)

@@ -24,11 +24,17 @@ module Y2Network
   module ConfigWriter
     # This class writes the current routing configuration into a file in routes format
     # (@see man routes)
-    class SysconfigRoutesWriter < Y2Network::SysconfigRoutes
+    class SysconfigRoutesWriter
+      include SysconfigRoutes
+
       # @param routes_file [<String>] full path to a file in routes format, when
       #                               not defined, then /etc/sysconfig/network/routes is used
       def initialize(routes_file: DEFAULT_ROUTES_FILE)
-        super(routes_file: routes_file)
+        @routes_file = if routes_file == DEFAULT_ROUTES_FILE
+          Yast::Path.new(".routes")
+        else
+          register_ifroute_agent_for_path(routes_file)
+        end
       end
 
       def write(routes)
@@ -55,12 +61,12 @@ module Y2Network
       def clear_routes_file
         # work around bnc#19476
         if @routes_file == Yast::Path.new(DEFAULT_ROUTES_FILE)
-          return Yast::SCR.Write(path(".target.string"), DEFAULT_ROUTES_FILE, "")
+          Yast::SCR.Write(path(".target.string"), DEFAULT_ROUTES_FILE, "")
         else
           filename = @routes_file.to_s.gsub(/\./,"/")
 
           return Yast::SCR.Execute(path(".target.remove"), filename) if FileUtils.Exists(filename)
-          return true
+          true
         end
       end
 
