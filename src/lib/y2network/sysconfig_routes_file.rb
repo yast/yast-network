@@ -39,14 +39,13 @@ module Y2Network
     # @return [Array<Route>] Routes
     attr_reader :routes
 
+    # @return [String] File path
+    attr_reader :file_path
+
     # @param file_path [String] File path
     def initialize(file_path = DEFAULT_ROUTES_FILE)
-      @path =
-        if file_path == DEFAULT_ROUTES_FILE
-          Yast::Path.new(".routes")
-        else
-          register_ifroute_agent_for_path(file_path)
-        end
+      @register_agent = file_path != DEFAULT_ROUTES_FILE
+      @file_path = file_path
     end
 
     # Loads routes from system
@@ -55,15 +54,12 @@ module Y2Network
     #                                       as provided by SCR agent.
     #                                       keys: destination, gateway, netmask, [device, [extrapara]]
     def load
-      entries = Yast::SCR.Read(path) || []
-      entries = normalize_entries(entries.uniq)
+      entries = with_registered_ifroute_agent(file_path) { |a| Yast::SCR.Read(a) }
+      entries = entries ? normalize_entries(entries.uniq) : []
       @routes = entries.map { |r| build_route(r) }
     end
 
   private
-
-    # @return [Yast::Path]
-    attr_reader :path
 
     MISSING_VALUE = "-".freeze
     private_constant :MISSING_VALUE
@@ -176,17 +172,47 @@ module Y2Network
       )
     end
 
+    # Executes a block of passing the ifroute agent as a parameter
+    #
+    # @param file_path [String] Path to the routes file
+    # @param block     [Proc] Code to execute
+    # @return [Object] Returns the value of the block
+    def with_registered_ifroute_agent(file_path, &block)
+      scr_path = ifroute_agent_scr_path(file_path)
+      block.call(scr_path)
+    ensure
+      Yast::SCR.UnregisterAgent(scr_path) if register_agent?
+    end
+
+    # Returns the path to the SCR agent
+    #
+    # If needed, it registers the agent
+    #
+    # @return [Yast::Path]
+    def ifroute_agent_scr_path(file_path)
+      return Yast::Path.new(".routes") unless register_agent?
+      register_ifroute_agent_for_path(file_path)
+    end
+
+    # Determines whether the agent should be registered on the fly
+    #
+    # @return [Boolean] true if the agent needs to be registered
+    def register_agent?
+      @register_agent
+    end
+
     # Registers SCR agent which is used for accessing particular ifroute-device
     # file
     #
-    # @param path [String] full path to a file in routes format (e.g. /etc/sysconfig/network/ifroute-eth0)
-    # @return [Path] SCR path of the agent
+    # @param file_path [String] full path to a file in routes format
+    #   (e.g. /etc/sysconfig/network/ifroute-eth0)
+    # @return [Yast::Path] SCR path of the agent
     # @raise  [RuntimeError] if it fails
-    def register_ifroute_agent_for_path(path)
+    def register_ifroute_agent_for_path(file_path)
       # /etc/sysconfig/network/ifroute-eth0 define .ifroute-eth0 agent
       # TODO: collisions not handled
-      scr_path = Yast::Path.new(".#{File.basename(path)}")
-      Yast::SCR.RegisterAgent(scr_path, ifroute_term(path)) ||
+      scr_path = Yast::Path.new(".#{File.basename(file_path)}")
+      Yast::SCR.RegisterAgent(scr_path, ifroute_term(file_path)) ||
         raise("Cannot register agent (#{scr_path})")
       scr_path
     end
