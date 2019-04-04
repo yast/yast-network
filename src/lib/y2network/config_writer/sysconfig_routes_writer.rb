@@ -63,7 +63,7 @@ module Y2Network
         if @routes_file == Yast::Path.new(DEFAULT_ROUTES_FILE)
           Yast::SCR.Write(path(".target.string"), DEFAULT_ROUTES_FILE, "")
         else
-          filename = @routes_file.to_s.gsub(/\./,"/")
+          filename = @routes_file.to_s.tr(".", "/")
 
           return Yast::SCR.Execute(path(".target.remove"), filename) if FileUtils.Exists(filename)
           true
@@ -82,7 +82,7 @@ module Y2Network
         else
           dest = route.to
           # netmask column of routes file has been marked as deprecated -> using prefix
-          { "destination" => "#{dest.to_s}/#{dest.prefix}", "netmask" => "-" }
+          { "destination" => "#{dest}/#{dest.prefix}", "netmask" => "-" }
         end
 
         hash.merge("options" => route.options) unless route.options.to_s.empty?
