@@ -74,6 +74,16 @@ describe Y2Network::SysconfigRoutesFile do
         route = file.routes.first
         expect(route.to).to eq(IPAddr.new("192.168.122.1/255.255.255.255"))
       end
+
+      context "but there is a prefix" do
+        let(:destination) { "192.168.122.0/24" }
+
+        it "sets the prefix" do
+          file.load
+          route = file.routes.last
+          expect(route.to).to eq(IPAddr.new("192.168.122.0/255.255.255.0"))
+        end
+      end
     end
 
     context "when there is no destination" do
