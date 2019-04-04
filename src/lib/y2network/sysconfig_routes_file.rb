@@ -39,7 +39,7 @@ module Y2Network
     # @return [Array<Route>] Routes
     attr_reader :routes
 
-    # @param path [String] File path
+    # @param file_path [String] File path
     def initialize(file_path = DEFAULT_ROUTES_FILE)
       @path =
         if file_path == DEFAULT_ROUTES_FILE
@@ -79,7 +79,7 @@ module Y2Network
     # and keeps just <ip> part in "destination" and puts "/<prefix_len>" into
     # "netmask"
     #
-    # @param routes [Array<Hash>] in quad or CIDR flavors (see {#Routes})
+    # @param entries [Array<Hash>] in quad or CIDR flavors (see {#Routes})
     # @return [Array<Hash>] in quad or slash flavor
     def normalize_entries(entries)
       return entries if entries.nil? || entries.empty?
@@ -118,7 +118,7 @@ module Y2Network
       # normalized SCR output contains either subnet mask or /<prefix length> under
       # "netmask" key
       # TODO: this should be improved in normalize_routes
-      mask = hash["netmask"] =~ /\/[0-9]+/ ? hash["netmask"][1..-1] : hash["netmask"]
+      mask = hash["netmask"].delete("/")
 
       Y2Network::Route.new(
         to:        hash["destination"] != DEFAULT_DEST ? build_ip(hash["destination"], mask) : :default,
@@ -128,50 +128,50 @@ module Y2Network
       )
     end
 
+    NON_EMPTY_STR_TERM = Yast.term(:String, "^ \t\n").freeze
+    WHITESPACE_TERM = Yast.term(:Whitespace).freeze
+    OPTIONAL_WHITESPACE_TERM = Yast.term(:Optional, WHITESPACE_TERM).freeze
+    ROUTES_CONTENT_TERM = Yast.term(
+      :List,
+      Yast.term(
+        :Tuple,
+        Yast.term(
+          :destination,
+          NON_EMPTY_STR_TERM
+        ),
+        WHITESPACE_TERM,
+        Yast.term(:gateway, NON_EMPTY_STR_TERM),
+        WHITESPACE_TERM,
+        Yast.term(:netmask, NON_EMPTY_STR_TERM),
+        OPTIONAL_WHITESPACE_TERM,
+        Yast.term(
+          :Optional,
+          Yast.term(:device, NON_EMPTY_STR_TERM)
+        ),
+        OPTIONAL_WHITESPACE_TERM,
+        Yast.term(
+          :Optional,
+          Yast.term(
+            :extrapara,
+            Yast.term(:String, "^\n")
+          )
+        )
+      ),
+      "\n"
+    ).freeze
+
     # SCR agent for routes files definition
     def ifroute_term(path)
       raise ArgumentError if path.nil? || path.empty?
-
-      non_empty_str_term = Yast.term(:String, "^ \t\n")
-      whitespace_term = Yast.term(:Whitespace)
-      optional_whitespace_term = Yast.term(:Optional, whitespace_term)
-      routes_content_term = Yast.term(
-        :List,
-        Yast.term(
-          :Tuple,
-          Yast.term(
-            :destination,
-            non_empty_str_term
-          ),
-          whitespace_term,
-          Yast.term(:gateway, non_empty_str_term),
-          whitespace_term,
-          Yast.term(:netmask, non_empty_str_term),
-          optional_whitespace_term,
-          Yast.term(
-            :Optional,
-            Yast.term(:device, non_empty_str_term)
-          ),
-          optional_whitespace_term,
-          Yast.term(
-            :Optional,
-            Yast.term(
-              :extrapara,
-              Yast.term(:String, "^\n")
-            )
-          )
-        ),
-        "\n"
-      )
 
       Yast.term(
         :ag_anyagent,
         Yast.term(
           :Description,
           Yast.term(:File, path),
-          "#\n",
+          "#\n", # TODO: document these arguments
           false,
-          routes_content_term
+          ROUTES_CONTENT_TERM
         )
       )
     end
@@ -179,7 +179,7 @@ module Y2Network
     # Registers SCR agent which is used for accessing particular ifroute-device
     # file
     #
-    # @param device [String] full path to a file in routes format (e.g. /etc/sysconfig/network/ifroute-eth0)
+    # @param path [String] full path to a file in routes format (e.g. /etc/sysconfig/network/ifroute-eth0)
     # @return [Path] SCR path of the agent
     # @raise  [RuntimeError] if it fails
     def register_ifroute_agent_for_path(path)
