@@ -22,7 +22,7 @@ require "y2network/sysconfig_routes"
 
 module Y2Network
   module ConfigWriter
-    # This class writes the current routing configuration into a file in routes format
+    # This class writes the current routes into a file in routes format
     # (@see man routes)
     class SysconfigRoutesWriter
       include SysconfigRoutes
@@ -37,6 +37,10 @@ module Y2Network
         end
       end
 
+      # Writes configured routes
+      #
+      # @param routes [Array<Route>] list of routes
+      # @return [Boolean] true on success
       def write(routes)
         # create if not exists, otherwise backup
         if FileUtils.Exists(@routes_file)
