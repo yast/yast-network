@@ -19,12 +19,38 @@
 
 require_relative "../../test_helper"
 require "y2network/route"
+require "y2network/interface"
 require "y2network/widgets/devices"
 
 require "cwm/rspec"
 
 describe Y2Network::Widgets::Devices do
-  subject { described_class.new(Y2Network::Route.new, ["eth0", "lo"]) }
+  let(:route) { Y2Network::Route.new(interface: :any) }
+  subject { described_class.new(route, ["eth0", "lo"]) }
 
   include_examples "CWM::ComboBox"
+
+  describe "#init" do
+    context "route contain specific interface" do
+      let(:route) { Y2Network::Route.new(interface: Y2Network::Interface.new("lo")) }
+
+      it "is selected" do
+        expect(subject).to receive(:value=).with("lo")
+
+        subject.init
+      end
+    end
+  end
+
+  describe "#store" do
+    context "specific interface is selected" do
+      it "is stored to route" do
+        expect(subject).to receive(:value).and_return("eth0")
+
+        subject.store
+
+        expect(route.interface.name).to eq "eth0"
+      end
+    end
+  end
 end

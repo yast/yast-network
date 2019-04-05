@@ -1,3 +1,4 @@
+require "y2network/interface"
 require "cwm/common_widgets"
 
 module Y2Network
@@ -33,12 +34,12 @@ module Y2Network
 
       def init
         interface = @route.interface
-        self.value = interface == :any ? "" : interface
+        self.value = interface == :any ? "" : interface.name
       end
 
       def store
         interface = value
-        @route.interface = interface.empty? ? :any : interface
+        @route.interface = interface.empty? ? :any : Interface.new(interface)
       end
     end
   end
