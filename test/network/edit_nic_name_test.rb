@@ -1,6 +1,6 @@
 #!/usr/bin/env rspec
 
-require_relative "../../test_helper"
+require_relative "../test_helper"
 
 require "yast"
 require "network/edit_nic_name"
