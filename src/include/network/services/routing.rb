@@ -78,7 +78,7 @@ module Yast
       Wizard.HideBackButton
 
       CWM.ShowAndRun(
-        "widget_descr"       => @wd_routing,
+        "widget_descr"       => widgets,
         "contents"           => content,
         "caption"            => caption,
         "back_button"        => Label.BackButton,
