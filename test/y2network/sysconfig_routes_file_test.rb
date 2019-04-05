@@ -36,9 +36,15 @@ describe Y2Network::SysconfigRoutesFile do
   let(:gateway)     { "192.168.122.1" }
   let(:netmask)     { "255.255.255.0" }
 
-  around { |e| change_scr_root(File.join(DATA_PATH, "scr_read"), &e) }
+  around do |example|
+    create_scr_root = !Dir.exist?(scr_root)
+    ::FileUtils.mkdir_p(File.join(scr_root, "/etc/sysconfig/network")) if create_scr_root
+    change_scr_root(scr_root, &example)
+    ::FileUtils.rm_r(scr_root) if create_scr_root
+  end
 
   describe "#load" do
+    let(:scr_root) { File.join(DATA_PATH, "scr_read") }
     let(:path) { "/etc/sysconfig/network/routes" }
 
     it "loads the routes from the given file" do
@@ -98,6 +104,45 @@ describe Y2Network::SysconfigRoutesFile do
         file.load
         route = file.routes.first
         expect(route.to).to eq(:default)
+      end
+    end
+  end
+
+  describe "#save" do
+    let(:scr_root) { File.join(DATA_PATH, "scr_write") }
+    let(:path) { "/etc/sysconfig/network/routes" }
+    let(:real_path) { File.join(scr_root, path) }
+
+    let(:routes) { [Y2Network::Route.new] }
+
+    it "writes routes to the file" do
+      file.routes = routes
+      file.save
+      content = File.read(real_path)
+      expect(content).to eq("default - - - \n")
+    end
+
+    context "when there are no routes" do
+      let(:routes) { [] }
+
+      it "writes an empty file" do
+        file.routes = routes
+        file.save
+        content = File.read(real_path)
+        expect(content).to eq("")
+      end
+    end
+
+    context "when the file exists" do
+      before do
+        FileUtils.touch(real_path)
+      end
+
+      it "backups the file" do
+        file.routes = routes
+        expect(Yast::SCR).to receive(:Execute)
+          .with(Yast::Path.new(".target.bash"), "/bin/cp #{path} #{path}.YaST2save")
+        file.save
       end
     end
   end
