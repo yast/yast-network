@@ -334,20 +334,25 @@ module Yast
         key.downcase!
 
         # find item which matches to the given rule definition
-        item, matching_item = LanItems.Items.find do |_, i|
-          i["hwinfo"] &&
-            (i["hwinfo"]["busid"].downcase == key || i["hwinfo"]["mac"].downcase == key)
+        item_id, matching_item = LanItems.Items.find do |_, i|
+          next unless i["hwinfo"]
+          busid = i["hwinfo"]["busid"]
+          # Match also parent busid if exist (bsc#1129012)
+          parent_busid = i["hwinfo"]["parent_busid"] || busid
+          mac = i["hwinfo"]["mac"]
+
+          [busid, parent_busid, mac].any? { |v| v.casecmp(key).zero? }
         end
         next if !matching_item
 
-        name_from = item_name(item)
+        name_from = item_name(item_id)
         log.info("Matching device found - renaming <#{name_from}> -> <#{name_to}>")
 
         # rename item in collision
         rename_lan_item(colliding_item(name_to), name_from)
 
         # rename matching item
-        rename_lan_item(item, name_to, attr, key)
+        rename_lan_item(item_id, name_to, attr, key)
       end
     end
 
