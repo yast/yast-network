@@ -140,8 +140,7 @@ describe Y2Network::SysconfigRoutesFile do
 
       it "backups the file" do
         file.routes = routes
-        expect(Yast::SCR).to receive(:Execute)
-          .with(Yast::Path.new(".target.bash"), "/bin/cp #{path} #{path}.YaST2save")
+        expect(Yast::Execute).to receive(:on_target).with("/bin/cp", path, path + ".YaST2save")
         file.save
       end
     end

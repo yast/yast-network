@@ -18,6 +18,7 @@
 # find current contact information at www.suse.com.
 
 require "yast"
+require "yast2/execute"
 require "y2network/interface"
 require "y2network/route"
 Yast.import "FileUtils"
@@ -66,12 +67,7 @@ module Y2Network
     def save
       # create if not exists, otherwise backup
       if Yast::FileUtils.Exists(file_path)
-        Yast::SCR.Execute(
-          Yast::Path.new(".target.bash"),
-          "/bin/cp #{file_path} #{file_path}.YaST2save"
-        )
-      else
-        Yast::SCR.Write(Yast::Path.new(".target.string"), file_path, "")
+        Yast::Execute.on_target("/bin/cp", file_path, file_path + ".YaST2save")
       end
 
       with_registered_ifroute_agent(file_path) do |scr|

@@ -42,6 +42,8 @@ module Y2Network
         devices.each do |dev|
           routes = find_routes_for(dev, config.routing.routes)
           file = routes_file_for(dev)
+
+          # Remove ifroutes-* if empty, but not /etc/sysconfig/network/route
           if dev != :any && routes.empty?
             file.remove
           else
