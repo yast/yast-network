@@ -74,7 +74,7 @@ module Y2Network
     # Registers SCR agent which is used for accessing particular ifroute-device
     # file
     #
-    # @param device [String] full path to a file in routes format (e.g. /etc/sysconfig/network/ifroute-eth0)
+    # @param path [String] full path to a file in routes format (e.g. /etc/sysconfig/network/ifroute-eth0)
     # @return [Path] SCR path of the agent
     # @raise  [RuntimeError] if it fails
     def register_ifroute_agent_for_path(path)
