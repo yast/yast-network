@@ -33,35 +33,88 @@ describe "LanItemsClass#BuildLanOverview" do
       "WIRELESS_KEY_0"     => ""
     }
   end
+  let(:lan_items) do
+    {
+      0 => { "hwinfo" => {
+        "name"     => "Ethernet Card 0",
+        "type"     => "eth",
+        "udi"      => "",
+        "sysfs_id" => "/devices/pci0000:00/0000:00:03.0/virtio0",
+        "dev_name" => "eth0",
+        "requires" => [],
+        "modalias" => "virtio:d00000001v00001AF4",
+        "unique"   => "vWuh.VIRhsc57kTD",
+        "driver"   => "virtio_net",
+        "num"      => 0,
+        "active"   => true,
+        "module"   => "virtio_net",
+        "bus"      => "Virtio",
+        "busid"    => "virtio0",
+        "mac"      => "02:00:00:12:34:56",
+        "link"     => true
+      },
+             "udev"   => {
+               "net"    => ["SUBSYSTEM==\"net\"", "ACTION==\"add\"", "DRIVERS==\"virtio-pci\"",
+                            "ATTR{dev_id}==\"0x0\"", "KERNELS==\"0000:00:03.0\"",
+                            "ATTR{type}==\"1\"", "KERNEL==\"eth*\"", "NAME=\"eth0\""],
+               "driver" => ""
+             },
+             "ifcfg"  => "eth0" }
+    }
+  end
+  let(:lan_ifcfg) do
+    { "STARTMODE"                  => "nfsroot",
+      "BOOTPROTO"                  => "dhcp",
+      "DHCLIENT_SET_DEFAULT_ROUTE" => "yes" }
+  end
 
   # targeted mainly against bnc#906694
-  it "returns translated network device textual description for wlan device" do
-    allow(Yast::LanItems)
-      .to receive(:Items)
-      .and_return(wlan_items)
-    allow(Yast::LanItems)
-      .to receive(:GetDeviceMap)
-      .and_return(wlan_ifcfg)
-    allow(Yast::NetworkInterfaces)
-      .to receive(:Current)
-      .and_return(wlan_ifcfg)
-    allow(FastGettext)
-      .to receive(:locale)
-      .and_return("de")
+  context "with an wlan interface" do
+    before do
+      allow(Yast::LanItems)
+        .to receive(:Items)
+        .and_return(wlan_items)
+      allow(Yast::LanItems)
+        .to receive(:GetDeviceMap)
+        .and_return(wlan_ifcfg)
+      allow(Yast::NetworkInterfaces)
+        .to receive(:Current)
+        .and_return(wlan_ifcfg)
+      allow(FastGettext)
+        .to receive(:locale)
+        .and_return("de")
+    end
+    it "returns translated network device textual description for wlan device" do
+      # locale search path
+      stub_const("Yast::I18n::LOCALE_DIR", File.expand_path("../locale", __FILE__))
 
-    # locale search path
-    stub_const("Yast::I18n::LOCALE_DIR", File.expand_path("../locale", __FILE__))
+      textdomain("network")
 
-    textdomain("network")
+      # other checks depends on this
+      # - output of BuildLanOverview changes according number of devices
+      # even for "failing" (unknown devices) path
+      expect(Yast::LanItems.Items.size).to eql 1
 
-    # other checks depends on this
-    # - output of BuildLanOverview changes according number of devices
-    # even for "failing" (unknown devices) path
-    expect(Yast::LanItems.Items.size).to eql 1
+      overview = Yast::LanItems.BuildLanOverview
+      expect(overview).not_to eql unknown_device_overview
+      expect(overview).to eql german_translation_overview
+    end
+  end
 
-    overview = Yast::LanItems.BuildLanOverview
-    expect(overview).not_to eql unknown_device_overview
-    expect(overview).to eql german_translation_overview
+  context "with an lan interface" do
+    before do
+      allow(Yast::LanItems).to receive(:Items)
+        .and_return(lan_items)
+      allow(Yast::LanItems).to receive(:GetDeviceMap)
+        .and_return(lan_ifcfg)
+      allow(Yast::NetworkInterfaces).to receive(:Current)
+        .and_return(lan_ifcfg)
+    end
+    it "returns description for lan device with the correct start option" do
+      Yast::LanItems.BuildLanOverview
+      expect(Yast::LanItems.Items.size).to eql 1
+      expect(Yast::LanItems.Items[0]["table_descr"]["rich_descr"].include?("Started automatically at boot")).to eql(true)
+    end
   end
 end
 
