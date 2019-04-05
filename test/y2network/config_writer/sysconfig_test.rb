@@ -18,7 +18,6 @@
 # find current contact information at www.suse.com.
 require_relative "../../test_helper"
 require "y2network/config_writer/sysconfig"
-require "y2network/config_writer/sysconfig_routes_writer"
 require "y2network/config"
 require "y2network/interface"
 require "y2network/routing"
