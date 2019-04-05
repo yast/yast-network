@@ -90,8 +90,6 @@ rake install DESTDIR="%{buildroot}"
 %defattr(-,root,root)
 %{yast_yncludedir}/network
 %{yast_clientdir}/*.rb
-%dir %{yast_moduledir}/YaPI
-%{yast_moduledir}/YaPI/NETWORK.pm
 %{yast_moduledir}/*.rb
 %{yast_desktopdir}/*.desktop
 %{yast_scrconfdir}/*.scr
