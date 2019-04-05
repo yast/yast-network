@@ -31,7 +31,7 @@ describe Y2Network::ConfigWriter::SysconfigRoutesWriter do
         gateway:   IPAddr.new("192.168.122.1")
       )
     end
-    let(:scr) { class_double(Yast::SCR).as_stubbed_const(:transfer_nested_constants => true) }
+    let(:scr) { class_double(Yast::SCR).as_stubbed_const(transfer_nested_constants: true) }
 
     context "When modifying global default routes file" do
       before(:each) do
@@ -46,12 +46,15 @@ describe Y2Network::ConfigWriter::SysconfigRoutesWriter do
 
           expect(scr)
             .to receive(:Write)
-            .with(instance_of(Yast::Path), [{
-              "destination" => "10.0.0.0/8",
-              "netmask" =>     "-",
-              "gateway" =>     "192.168.122.1",
-              "device" =>      "eth0"
-            }])
+            .with(instance_of(Yast::Path),
+              [
+                {
+                  "destination" => "10.0.0.0/8",
+                  "netmask"     => "-",
+                  "gateway"     => "192.168.122.1",
+                  "device"      => "eth0"
+                }
+              ])
 
           writer.write([route])
         end
