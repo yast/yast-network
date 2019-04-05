@@ -49,7 +49,7 @@ describe Y2Network::Widgets::RoutingTable do
   end
 
   describe "#add_route" do
-    it "appends to routing table new route" do
+    it "appends the new route to the routing table" do
       route = Y2Network::Route.new(to: IPAddr.new("10.100.0.0/24"))
       subject.add_route(route)
 
