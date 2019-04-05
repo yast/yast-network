@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Apr  5 07:53:29 UTC 2019 - jreidinger <jreidinger@suse.com>
+
+- publish find dhcp interfaces to component system, so yapi can be
+  dropped from yast2-samba-client (fate#323734)
+- 4.2.0
+
+-------------------------------------------------------------------
 Thu Mar 21 10:09:32 UTC 2019 - knut.anderssen@suse.com
 
 - bnc#1094934
