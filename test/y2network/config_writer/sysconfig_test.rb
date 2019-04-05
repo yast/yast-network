@@ -50,7 +50,7 @@ describe Y2Network::ConfigWriter::Sysconfig do
     let(:forward_ipv6) { false }
     let(:routing) do
       Y2Network::Routing.new(
-        tables: [Y2Network::RoutingTable.new([route])],
+        tables:       [Y2Network::RoutingTable.new([route])],
         forward_ipv4: forward_ipv4,
         forward_ipv6: forward_ipv6
       )
@@ -82,7 +82,7 @@ describe Y2Network::ConfigWriter::Sysconfig do
           .to receive(:Write)
           .with(Yast::Path.new(Y2Network::SysconfigPaths::SYSCTL_IPV6_PATH), "0")
 
-          writer.write(config)
+        writer.write(config)
       end
     end
 
@@ -99,7 +99,7 @@ describe Y2Network::ConfigWriter::Sysconfig do
           .to receive(:Write)
           .with(Yast::Path.new(Y2Network::SysconfigPaths::SYSCTL_IPV6_PATH), "1")
 
-          writer.write(config)
+        writer.write(config)
       end
     end
 
