@@ -35,19 +35,13 @@ module Y2Network
         return unless config.routing
 
         write_ip_forwarding(config.routing)
-        # list of devices used in routes
-        devices = config.routing.routes.map { |r| r.interface == :any ? :any : r.interface.name }.uniq
+
+        # list of devices used by routes
+        devices = config.routing.routes.map(&:interface).uniq
+
         devices.each do |dev|
-          routes = config.routing.routes.select { |r| dev == :any || r.interface.name == dev }
-
-          file = if dev == :any
-            Y2Network::SysconfigRoutesFile.new
-          else
-            Y2Network::SysconfigRoutesFile.new(
-              "/etc/sysconfig/network/ifroute-#{dev}"
-            )
-          end
-
+          routes = find_routes_for(dev, config.routing.routes)
+          file = routes_file_for(dev)
           file.routes = routes
           file.save
         end
@@ -97,6 +91,43 @@ module Y2Network
         Yast::SCR.Write(Yast::Path.new(SYSCTL_AGENT_PATH), nil)
 
         Yast::SCR.Execute(Yast::Path.new(".target.bash"), "/usr/sbin/sysctl -w #{IPV6_SYSCTL}=#{sysctl_val.shellescape}") == 0
+      end
+
+      # Finds routes for a given interface
+      #
+      # @param iface  [Interface,:any] Interface to search routes for
+      # @param routes [Array<Route>] List of routes to search in
+      # @return [Array<Route>] List of routes for the given interface
+      #
+      # @see #find_routes_for_any
+      # @see #find_routes_for_iface
+      def find_routes_for(iface, routes)
+        iface == :any ? find_routes_for_any(routes) : find_routes_for_iface(iface, routes)
+      end
+
+      # Finds routes which are not tied to an specific interface
+      def find_routes_for_any(routes)
+        routes.select { |r| r.interface == :any }
+      end
+
+      # Finds routes for a given interface
+      #
+      # @param iface  [Interface,:any] Interface to search routes for
+      # @param routes [Array<Route>] List of routes to search in
+      # @return [Array<Route>] List of routes for the given interface
+      def find_routes_for_iface(iface, routes)
+        routes.select do |route|
+          route.interface != :any && route.interface.name == iface.name
+        end
+      end
+
+      # Returns the routes file for a given interace
+      #
+      # @param iface  [Interface,:any] Interface to search routes for
+      # @return [Y2Network::SysconfigRoutesFile]
+      def routes_file_for(iface)
+        return Y2Network::SysconfigRoutesFile.new if iface == :any
+        Y2Network::SysconfigRoutesFile.new("/etc/sysconfig/network/ifroute-#{iface.name}")
       end
     end
   end

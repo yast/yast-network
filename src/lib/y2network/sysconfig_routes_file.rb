@@ -79,7 +79,6 @@ module Y2Network
       with_registered_ifroute_agent(file_path) do |scr|
         Yast::SCR.Write(scr, routes.map { |r| route_to_hash(r) })
       end
-
     end
 
   private
