@@ -7,8 +7,9 @@ Yast.import "Routing"
 module Y2Network
   module Widgets
     class AddRoute < CWM::PushButton
-      def initialize(table)
+      def initialize(table, config)
         @table = table
+        @config = config
         textdomain "network"
       end
 
@@ -18,7 +19,7 @@ module Y2Network
 
       def handle
         route = Y2Network::Route.new
-        res = Y2Network::Dialogs::Route.run(route, Yast::Routing.GetDevices + ["-"])
+        res = Y2Network::Dialogs::Route.run(route, @config.interfaces)
         @table.add_route(route) if res == :ok
 
         nil
@@ -26,8 +27,9 @@ module Y2Network
     end
 
     class EditRoute < CWM::PushButton
-      def initialize(table)
+      def initialize(table, config)
         @table = table
+        @config = config
         textdomain "network"
       end
 
@@ -39,7 +41,7 @@ module Y2Network
         return nil unless @table.selected_route
 
         route = @table.selected_route.dup
-        res = Y2Network::Dialogs::Route.run(route, Yast::Routing.GetDevices + ["-"])
+        res = Y2Network::Dialogs::Route.run(route, @config.interfaces)
         @table.replace_route(route) if res == :ok
 
         nil

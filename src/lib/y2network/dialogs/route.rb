@@ -13,16 +13,17 @@ module Y2Network
   module Dialogs
     # Dialog to create or edit route.
     class Route < CWM::Popup
-      # @param route is now term from table, but it should be object for single route
+      # @param route [Y2Network::Route]
+      # @param available_devices[Array<Interface>] list of known interfaces
       def initialize(route, available_devices)
         log.info "route dialog with route: #{route.inspect} " \
           "and devices #{available_devices.inspect}"
         @route = route
-
         @available_devices = available_devices
       end
 
       def contents
+        devices = @available_devices.map(&:name) + [""]
         MinWidth(
           60,
           VBox(
@@ -32,7 +33,7 @@ module Y2Network
             HBox(
               HWeight(70, Widgets::Gateway.new(@route)),
               HSpacing(1),
-              HWeight(30, Widgets::Devices.new(@route, @available_devices))
+              HWeight(30, Widgets::Devices.new(@route, devices))
             ),
             Widgets::RouteOptions.new(@route)
           )
