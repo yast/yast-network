@@ -72,7 +72,7 @@ module Y2Network
 
       # Method used by {.new_from_hashes} to populate the attributes.
       #
-      # @parm hash [Hash] see {.new_from_hashes}
+      # @param hash [Hash] see {.new_from_hashes}
       # @return [Boolean]
       def init_from_hashes(hash)
         @destination = destination_from_hash(hash)

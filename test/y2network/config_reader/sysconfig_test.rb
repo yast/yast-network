@@ -30,19 +30,9 @@ describe Y2Network::ConfigReader::Sysconfig do
     )
   end
 
-  let(:scr_route) do
-    {
-      "destination" => destination,
-      "device"      => "eth0",
-      "gateway"     => gateway,
-      "netmask"     => netmask
-    }
-  end
-  let(:destination) { "192.168.122.1" }
-  let(:gateway)     { "192.168.122.1" }
-  let(:netmask)     { "255.255.255.0" }
+  let(:routes_file) { instance_double(Y2Network::SysconfigRoutesFile, load: nil, routes: []) }
 
-  around { |example| change_scr_root("#{DATA_PATH}/scr_read/", &example) }
+  around { |e| change_scr_root(File.join(DATA_PATH, "scr_read"), &e) }
 
   describe "#config" do
     before do
@@ -63,60 +53,18 @@ describe Y2Network::ConfigReader::Sysconfig do
       config = reader.config
       expect(config.source).to eq(:sysconfig)
     end
-
-    context "when gateway is missing" do
-      let(:gateway) { "-" }
-
-      before(:each) do
-        allow(Yast::SCR).to receive(:Read).and_return(nil)
-        allow(Yast::SCR).to receive(:Read).with(Yast::Path.new(".routes")).and_return([scr_route])
-      end
-
-      it "sets the gateway to nil" do
-        config = reader.config
-        route = config.routing.routes.first
-        expect(route.gateway).to be_nil
-      end
-    end
-
-    context "when there is no netmask" do
-      let(:netmask) { "-" }
-
-      before(:each) do
-        allow(Yast::SCR).to receive(:Read).and_return(nil)
-        allow(Yast::SCR).to receive(:Read).with(Yast::Path.new(".routes")).and_return([scr_route])
-      end
-
-      it "does not set destination netmask" do
-        config = reader.config
-        route = config.routing.routes.first
-        expect(route.to).to eq(IPAddr.new("192.168.122.1/255.255.255.255"))
-      end
-    end
-
-    context "when there is no destination" do
-      let(:destination) { "default" }
-
-      before(:each) do
-        allow(Yast::SCR).to receive(:Read).and_return(nil)
-        allow(Yast::SCR).to receive(:Read).with(Yast::Path.new(".routes")).and_return([scr_route])
-      end
-
-      it "considers the route to be the default one" do
-        config = reader.config
-        route = config.routing.routes.first
-        expect(route.to).to eq(:default)
-      end
-    end
   end
 
   describe "#forward_ipv4?" do
+    before do
+      allow(Y2Network::SysconfigRoutesFile).to receive(:new).and_return(routes_file)
+    end
+
     it "returns true when IPv4 forwarding is allowed" do
       expect(reader.config.routing.forward_ipv4).to be true
     end
 
     it "returns false when IPv4 forwarding is disabled" do
-      allow(reader).to receive(:load_routes).and_return(nil)
       allow(Yast::SCR).to receive(:Read).and_return("0")
 
       expect(reader.config.routing.forward_ipv4).to be false
@@ -124,8 +72,11 @@ describe Y2Network::ConfigReader::Sysconfig do
   end
 
   describe "#forward_ipv6?" do
+    before do
+      allow(Y2Network::SysconfigRoutesFile).to receive(:new).and_return(routes_file)
+    end
+
     it "returns false when IPv6 forwarding is disabled" do
-      allow(reader).to receive(:load_routes).and_return(nil)
       allow(Yast::SCR).to receive(:Read).and_return("1")
 
       expect(reader.config.routing.forward_ipv6).to be true

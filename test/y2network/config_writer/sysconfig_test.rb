@@ -18,7 +18,6 @@
 # find current contact information at www.suse.com.
 require_relative "../../test_helper"
 require "y2network/config_writer/sysconfig"
-require "y2network/config_writer/sysconfig_routes_writer"
 require "y2network/config"
 require "y2network/interface"
 require "y2network/routing"
@@ -46,27 +45,70 @@ describe Y2Network::ConfigWriter::Sysconfig do
         gateway:   IPAddr.new("192.168.122.1")
       )
     end
+    let(:default_route) do
+      Y2Network::Route.new(
+        interface: :any,
+        gateway:   IPAddr.new("192.168.122.2")
+      )
+    end
     let(:forward_ipv4) { false }
     let(:forward_ipv6) { false }
     let(:routing) do
       Y2Network::Routing.new(
-        tables:       [Y2Network::RoutingTable.new([route])],
+        tables:       [Y2Network::RoutingTable.new(routes)],
         forward_ipv4: forward_ipv4,
         forward_ipv6: forward_ipv6
       )
     end
 
-    it "Creates writer for ifroute file" do
-      sysconfig_writer = instance_double(Y2Network::ConfigWriter::SysconfigRoutesWriter)
+    let(:ifroute_eth0) do
+      instance_double(Y2Network::SysconfigRoutesFile, save: nil, :routes= => nil)
+    end
 
-      expect(Y2Network::ConfigWriter::SysconfigRoutesWriter)
-        .to receive(:new)
-        .with(routes_file: "/etc/sysconfig/network/ifroute-eth0")
-        .and_return(sysconfig_writer)
-      expect(sysconfig_writer)
-        .to receive(:write)
+    let(:routes_file) do
+      instance_double(Y2Network::SysconfigRoutesFile, save: nil, :routes= => nil)
+    end
 
+    let(:routes) { [route, default_route] }
+
+    before do
+      allow(Y2Network::SysconfigRoutesFile).to receive(:new)
+        .with("/etc/sysconfig/network/ifroute-eth0")
+        .and_return(ifroute_eth0)
+      allow(Y2Network::SysconfigRoutesFile).to receive(:new)
+        .with(no_args)
+        .and_return(routes_file)
+    end
+
+    it "saves general routes to main routes file" do
+      expect(routes_file).to receive(:routes=).with([default_route])
+      expect(routes_file).to receive(:save)
       writer.write(config)
+    end
+
+    it "saves interface specific routes to the ifroute-* file" do
+      expect(ifroute_eth0).to receive(:routes=).with([route])
+      expect(ifroute_eth0).to receive(:save)
+      writer.write(config)
+    end
+
+    context "when there are no general routes" do
+      let(:routes) { [route] }
+
+      it "removes the ifroute file" do
+        expect(routes_file).to_not receive(:remove)
+        expect(routes_file).to receive(:save)
+        writer.write(config)
+      end
+    end
+
+    context "when there are no routes for an specific interface" do
+      let(:routes) { [default_route] }
+
+      it "removes the ifroute file" do
+        expect(ifroute_eth0).to receive(:remove)
+        writer.write(config)
+      end
     end
 
     context "When IPv4 forwarding is set" do
@@ -98,25 +140,6 @@ describe Y2Network::ConfigWriter::Sysconfig do
         expect(Yast::SCR)
           .to receive(:Write)
           .with(Yast::Path.new(Y2Network::SysconfigPaths::SYSCTL_IPV6_PATH), "1")
-
-        writer.write(config)
-      end
-    end
-
-    context "when routes elements are not defined" do
-      let(:route) do
-        Y2Network::Route.new(to: :default, interface: :any)
-      end
-
-      it "Creates writer for global /etc/sysconfig/network/routes file if route's device is not set" do
-        sysconfig_writer = instance_double(Y2Network::ConfigWriter::SysconfigRoutesWriter)
-
-        expect(Y2Network::ConfigWriter::SysconfigRoutesWriter)
-          .to receive(:new)
-          .with(no_args)
-          .and_return(sysconfig_writer)
-        expect(sysconfig_writer)
-          .to receive(:write)
 
         writer.write(config)
       end
