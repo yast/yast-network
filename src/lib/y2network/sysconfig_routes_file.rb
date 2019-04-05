@@ -20,6 +20,7 @@
 require "yast"
 require "y2network/interface"
 require "y2network/route"
+Yast.import "FileUtils"
 
 module Y2Network
   # This class represents a file containing a set of routes
@@ -37,7 +38,7 @@ module Y2Network
     DEFAULT_ROUTES_FILE = "/etc/sysconfig/network/routes".freeze
 
     # @return [Array<Route>] Routes
-    attr_reader :routes
+    attr_accessor :routes
 
     # @return [String] File path
     attr_reader :file_path
@@ -57,6 +58,28 @@ module Y2Network
       entries = with_registered_ifroute_agent(file_path) { |a| Yast::SCR.Read(a) }
       entries = entries ? normalize_entries(entries.uniq) : []
       @routes = entries.map { |r| build_route(r) }
+    end
+
+    # Writes configured routes
+    #
+    # @return [Boolean] true on success
+    def save
+      # create if not exists, otherwise backup
+      if Yast::FileUtils.Exists(file_path)
+        Yast::SCR.Execute(
+          Yast::Path.new(".target.bash"),
+          "/bin/cp #{file_path} #{file_path}.YaST2save"
+        )
+      else
+        Yast::SCR.Write(Yast::Path.new(".target.string"), file_path, "")
+      end
+
+      clear_routes_file if routes.empty?
+
+      with_registered_ifroute_agent(file_path) do |scr|
+        Yast::SCR.Write(scr, routes.map { |r| route_to_hash(r) })
+      end
+
     end
 
   private
@@ -121,6 +144,43 @@ module Y2Network
         interface: iface,
         gateway:   build_ip(hash["gateway"], MISSING_VALUE),
         options:   hash["extrapara"] || ""
+      )
+    end
+
+    # Clear file with routes definitions for particular device
+    #
+    # @return [true, false] if succeedes
+    def clear_routes_file
+      # work around bnc#19476
+      if file_path == Yast::Path.new(DEFAULT_ROUTES_FILE)
+        Yast::SCR.Write(path(".target.string"), DEFAULT_ROUTES_FILE, "")
+      else
+        filename = file_path.to_s.tr(".", "/")
+
+        return Yast::SCR.Execute(path(".target.remove"), filename) if FileUtils.Exists(filename)
+        true
+      end
+    end
+
+    # Returns a hash containing the route information
+    #
+    # Hash is provided in format suitable for .etc.routes SCR agent
+    #
+    # @param route [Y2Network::Route]
+    # @return [Hash]
+    def route_to_hash(route)
+      hash = if route.default?
+               { "destination" => "default", "netmask" => "-" }
+             else
+               dest = route.to
+               # netmask column of routes file has been marked as deprecated -> using prefix
+               { "destination" => "#{dest}/#{dest.prefix}", "netmask" => "-" }
+             end
+
+      hash.merge("options" => route.options) unless route.options.to_s.empty?
+      hash.merge(
+        "gateway" => route.gateway ? route.gateway.to_s : "-",
+        "device"  => route.interface == :any ? "-" : route.interface.name
       )
     end
 

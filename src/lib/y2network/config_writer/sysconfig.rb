@@ -19,7 +19,7 @@
 
 require "yast"
 require "y2network/sysconfig_paths"
-require "y2network/config_reader/sysconfig_routes_reader"
+require "y2network/sysconfig_routes_file"
 
 module Y2Network
   module ConfigWriter
@@ -40,15 +40,16 @@ module Y2Network
         devices.each do |dev|
           routes = config.routing.routes.select { |r| dev == :any || r.interface.name == dev }
 
-          writer = if dev == :any
-            ConfigWriter::SysconfigRoutesWriter.new
+          file = if dev == :any
+            Y2Network::SysconfigRoutesFile.new
           else
-            ConfigWriter::SysconfigRoutesWriter.new(
-              routes_file: "/etc/sysconfig/network/ifroute-#{dev}"
+            Y2Network::SysconfigRoutesFile.new(
+              "/etc/sysconfig/network/ifroute-#{dev}"
             )
           end
 
-          writer.write(routes)
+          file.routes = routes
+          file.save
         end
       end
 
