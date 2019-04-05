@@ -98,7 +98,7 @@ module Y2Network
 
       def PrintableRoutingTable(items)
         table_items =
-          current_routes.map do |route|
+          items.map do |route|
             route_hash = serializer.to_hash(route)
             %w(destination gateway netmask device extrapara).map { |attr| route_hash[attr] }
           end
@@ -208,13 +208,11 @@ module Y2Network
 
       def route_from_options(options)
         serializer.from_hash(
-          {
-            "destination" => options.fetch("dest", "default"),
-            "gateway"     => options.fetch("gateway", "-"),
-            "netmask"     => options.fetch("netmask", "-"),
-            "device"      => options.fetch("dev", "-"),
-            "extrapara"   => options["options"]
-          }
+          "destination" => options.fetch("dest", "default"),
+          "gateway"     => options.fetch("gateway", "-"),
+          "netmask"     => options.fetch("netmask", "-"),
+          "device"      => options.fetch("dev", "-"),
+          "extrapara"   => options["options"]
         )
       end
 
@@ -226,7 +224,7 @@ module Y2Network
         route.destination = edited_route.destination
         route.gateway = edited_route.gateway
         route.options = edited_route.options
-        route.device= edited_route.device
+        route.device  = edited_route.device
       end
 
       def find_route_by_destination(destination)
@@ -238,7 +236,7 @@ module Y2Network
         gateway = options["gateway"]
 
         case action
-        when  :add
+        when :add
           unless destination && gateway
             CommandLine.Error(
               _(
@@ -371,14 +369,13 @@ module Y2Network
           "help"       => _("Routing Configuration"),
           "id"         => "routing",
           "guihandler" => fun_ref(method(:RoutingGUI), "any ()"),
-          "initialize" => fun_ref(method(:read), "boolean ()"), # FIXME
-          "finish"     => fun_ref(method(:write), "boolean ()"), # FIXME
+          "initialize" => fun_ref(method(:read), "boolean ()"),
+          "finish"     => fun_ref(method(:write), "boolean ()"),
           "actions"    => {
             "list"            => {
               "help"    => _("Show complete routing table"),
               "handler" => fun_ref(method(:ListHandler),
-                "boolean (map <string, string>)"
-              )
+                "boolean (map <string, string>)")
             },
             "show"            => {
               "help"    => _("Show routing table entry for selected destination"),

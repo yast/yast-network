@@ -38,11 +38,10 @@ module Y2Network
           { "destination" => "#{dest}/#{dest.prefix}", "netmask" => "-" }
         end
 
-        hash.merge("options" => route.options) unless route.options.to_s.empty?
-        hash.merge(
-          "gateway" => route.gateway ? route.gateway.to_s : "-",
-          "device"  => route.interface == :any ? "-" : route.interface.name
-        )
+        hash["extrapara"] = route.options unless route.options.to_s.empty?
+        hash["gateway"] = route.gateway ? route.gateway.to_s : "-"
+        hash["device"] = route.interface == :any ? "-" : route.interface.name
+        hash
       end
 
       # Build a route given a hash based on sysconfig route files syntax
