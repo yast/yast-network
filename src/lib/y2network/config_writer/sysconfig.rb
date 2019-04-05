@@ -18,11 +18,8 @@
 # find current contact information at www.suse.com.
 
 require "yast"
-require "y2network/interface"
-require "y2network/routing_table"
-require "y2network/route"
-
-Yast.import "Routing"
+require "y2network/sysconfig_paths"
+require "y2network/config_reader/sysconfig_routes_reader"
 
 module Y2Network
   module ConfigWriter
@@ -37,44 +34,68 @@ module Y2Network
       def write(config)
         return unless config.routing
 
-        routes = config.routing.routes.map { |r| route_to_hash(r) }
-        Yast::Routing.Import(
-          "ipv4_forward" => config.routing.forward_ipv4,
-          "ipv6_forward" => config.routing.forward_ipv6,
-          "routes"       => routes
-        )
+        write_ip_forwarding(config.routing)
+        # list of devices used in routes
+        devices = config.routing.routes.map { |r| r.interface == :any ? :any : r.interface.name }.uniq
+        devices.each do |dev|
+          routes = config.routing.routes.select { |r| dev == :any || r.interface.name == dev }
+
+          writer = if dev == :any
+            ConfigWriter::SysconfigRoutesWriter.new
+          else
+            ConfigWriter::SysconfigRoutesWriter.new(
+              routes_file: "/etc/sysconfig/network/ifroute-#{dev}"
+            )
+          end
+
+          writer.write(routes)
+        end
       end
 
     private
 
-      # Returns a hash containing the route information to be imported into {Yast::Routing}
+      include SysconfigPaths
+
+      # Writes ip forwarding setup
       #
-      # @param route [Y2Network::Route]
-      # @return [Hash]
-      def route_to_hash(route)
-        hash =
-          if route.default?
-            { "destination" => "default", "netmask" => "-" }
-          else
-            { "destination" => route.to.to_s, "netmask" => netmask(route.to) }
-          end
-        hash.merge("options" => route.options) unless route.options.to_s.empty?
-        hash.merge(
-          "gateway" => route.gateway ? route.gateway.to_s : "-",
-          "device"  => route.interface == :any ? "-" : route.interface.name
-        )
+      # @param routing [Y2Network::Routing] routing configuration
+      def write_ip_forwarding(routing)
+        write_ipv4_forwarding(routing.forward_ipv4)
+        write_ipv6_forwarding(routing.forward_ipv6)
+
+        nil
       end
 
-      IPV4_MASK = "255.255.255.255".freeze
-      IPV6_MASK = "fffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff".freeze
-
-      # Returns the netmask
+      # Configures system for IPv4 forwarding
       #
-      # @param ip [IPAddr]
-      # @return [IPAddr]
-      def netmask(ip)
-        mask = ip.ipv4? ? IPV4_MASK : IPV6_MASK
-        IPAddr.new(mask).mask(ip.prefix).to_s
+      # @param forward_ipv4 [Boolean] true when forwarding should be enabled
+      # @return [Boolean] true on success
+      def write_ipv4_forwarding(forward_ipv4)
+        sysctl_val = forward_ipv4 ? "1" : "0"
+
+        Yast::SCR.Write(
+          Yast::Path.new(SYSCTL_IPV4_PATH),
+          sysctl_val
+        )
+        Yast::SCR.Write(Yast::Path.new(SYSCTL_AGENT_PATH), nil)
+
+        Yast::SCR.Execute(Yast::Path.new(".target.bash"), "/usr/sbin/sysctl -w #{IPV4_SYSCTL}=#{sysctl_val.shellescape}") == 0
+      end
+
+      # Configures system for IPv6 forwarding
+      #
+      # @param forward_ipv6 [Boolean] true when forwarding should be enabled
+      # @return [Boolean] true on success
+      def write_ipv6_forwarding(forward_ipv6)
+        sysctl_val = forward_ipv6 ? "1" : "0"
+
+        Yast::SCR.Write(
+          Yast::Path.new(SYSCTL_IPV6_PATH),
+          sysctl_val
+        )
+        Yast::SCR.Write(Yast::Path.new(SYSCTL_AGENT_PATH), nil)
+
+        Yast::SCR.Execute(Yast::Path.new(".target.bash"), "/usr/sbin/sysctl -w #{IPV6_SYSCTL}=#{sysctl_val.shellescape}") == 0
       end
     end
   end
