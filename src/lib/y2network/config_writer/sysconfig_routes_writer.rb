@@ -52,9 +52,11 @@ module Y2Network
           Yast::SCR.Write(Yast::Path.new(".target.string"), @routes_file, "")
         end
 
-        clear_routes_file if routes.empty?
-
-        Yast::SCR.Write(@routes_file, routes.map { |r| route_to_hash(r) })
+        if routes.empty?
+          clear_routes_file
+        else
+          Yast::SCR.Write(@routes_file, routes.map { |r| route_to_hash(r) })
+        end
       end
 
     private
@@ -64,12 +66,11 @@ module Y2Network
       # @return [true, false] if succeedes
       def clear_routes_file
         # work around bnc#19476
-        if @routes_file == Yast::Path.new(DEFAULT_ROUTES_FILE)
-          Yast::SCR.Write(path(".target.string"), DEFAULT_ROUTES_FILE, "")
+        if @routes_file == Yast::Path.new(".routes")
+          Yast::SCR.Write(Yast::Path.new(".target.string"), DEFAULT_ROUTES_FILE, "")
         else
           filename = @routes_file.to_s.tr(".", "/")
-
-          return Yast::SCR.Execute(path(".target.remove"), filename) if FileUtils.Exists(filename)
+          return Yast::SCR.Execute(Yast::Path.new(".target.remove"), filename) if Yast::FileUtils.Exists(filename)
           true
         end
       end
