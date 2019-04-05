@@ -59,10 +59,11 @@ module Y2Network
       # Writes ip forwarding setup
       #
       # @param routing [Y2Network::Routing] routing configuration
-      # @return [Boolean] true on success
       def write_ip_forwarding(routing)
         write_ipv4_forwarding(routing.forward_ipv4)
         write_ipv6_forwarding(routing.forward_ipv6)
+
+        nil
       end
 
       # Configures system for IPv4 forwarding
