@@ -160,12 +160,12 @@ module Y2Network
     # @return [Hash]
     def route_to_hash(route)
       hash = if route.default?
-               { "destination" => "default", "netmask" => "-" }
-             else
-               dest = route.to
-               # netmask column of routes file has been marked as deprecated -> using prefix
-               { "destination" => "#{dest}/#{dest.prefix}", "netmask" => "-" }
-             end
+        { "destination" => "default", "netmask" => "-" }
+      else
+        dest = route.to
+        # netmask column of routes file has been marked as deprecated -> using prefix
+        { "destination" => "#{dest}/#{dest.prefix}", "netmask" => "-" }
+      end
 
       hash.merge("options" => route.options) unless route.options.to_s.empty?
       hash.merge(

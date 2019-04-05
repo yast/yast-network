@@ -46,12 +46,12 @@ describe Y2Network::ConfigWriter::Sysconfig do
         gateway:   IPAddr.new("192.168.122.1")
       )
     end
-    let(:default_route) {
+    let(:default_route) do
       Y2Network::Route.new(
         interface: :any,
         gateway:   IPAddr.new("192.168.122.2")
       )
-    }
+    end
     let(:forward_ipv4) { false }
     let(:forward_ipv6) { false }
     let(:routing) do
