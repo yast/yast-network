@@ -74,11 +74,17 @@ module Y2Network
         Yast::SCR.Write(Yast::Path.new(".target.string"), file_path, "")
       end
 
-      clear_routes_file if routes.empty?
-
       with_registered_ifroute_agent(file_path) do |scr|
+        # work around bnc#19476
+        Yast::SCR.Write(Yast::Path.new(".target.string"), file_path, "")
         Yast::SCR.Write(scr, routes.map { |r| route_to_hash(r) })
       end
+    end
+
+    # Removes the file
+    def remove
+      return unless Yast::FileUtils.Exists(file_path)
+      Yast::SCR.Execute(Yast::Path.new(".target.remove"), file_path)
     end
 
   private
@@ -144,21 +150,6 @@ module Y2Network
         gateway:   build_ip(hash["gateway"], MISSING_VALUE),
         options:   hash["extrapara"] || ""
       )
-    end
-
-    # Clear file with routes definitions for particular device
-    #
-    # @return [true, false] if succeedes
-    def clear_routes_file
-      # work around bnc#19476
-      if file_path == Yast::Path.new(DEFAULT_ROUTES_FILE)
-        Yast::SCR.Write(path(".target.string"), DEFAULT_ROUTES_FILE, "")
-      else
-        filename = file_path.to_s.tr(".", "/")
-
-        return Yast::SCR.Execute(path(".target.remove"), filename) if FileUtils.Exists(filename)
-        true
-      end
     end
 
     # Returns a hash containing the route information

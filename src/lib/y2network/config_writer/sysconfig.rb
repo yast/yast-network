@@ -37,13 +37,17 @@ module Y2Network
         write_ip_forwarding(config.routing)
 
         # list of devices used by routes
-        devices = config.routing.routes.map(&:interface).uniq
+        devices = config.interfaces + [:any]
 
         devices.each do |dev|
           routes = find_routes_for(dev, config.routing.routes)
           file = routes_file_for(dev)
-          file.routes = routes
-          file.save
+          if dev != :any && routes.empty?
+            file.remove
+          else
+            file.routes = routes
+            file.save
+          end
         end
       end
 

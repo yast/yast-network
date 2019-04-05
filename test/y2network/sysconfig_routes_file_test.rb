@@ -35,6 +35,7 @@ describe Y2Network::SysconfigRoutesFile do
   let(:destination) { "192.168.122.1" }
   let(:gateway)     { "192.168.122.1" }
   let(:netmask)     { "255.255.255.0" }
+  let(:path) { "/etc/sysconfig/network/routes" }
 
   around do |example|
     create_scr_root = !Dir.exist?(scr_root)
@@ -45,7 +46,6 @@ describe Y2Network::SysconfigRoutesFile do
 
   describe "#load" do
     let(:scr_root) { File.join(DATA_PATH, "scr_read") }
-    let(:path) { "/etc/sysconfig/network/routes" }
 
     it "loads the routes from the given file" do
       file.load
@@ -143,6 +143,34 @@ describe Y2Network::SysconfigRoutesFile do
         expect(Yast::SCR).to receive(:Execute)
           .with(Yast::Path.new(".target.bash"), "/bin/cp #{path} #{path}.YaST2save")
         file.save
+      end
+    end
+  end
+
+  describe "#rm" do
+    let(:scr_root) { File.join(DATA_PATH, "scr_write") }
+
+    before do
+      allow(Yast::FileUtils).to receive(:Exists).with(file.file_path)
+        .and_return(exists?)
+    end
+
+    context "when the file exsits" do
+      let(:exists?) { true }
+
+      it "removes the file" do
+        expect(Yast::SCR).to receive(:Execute)
+          .with(Yast::Path.new(".target.remove"), file.file_path)
+        file.remove
+      end
+    end
+
+    context "when the file does not exist" do
+      let(:exists?) { false }
+
+      it "removes the file" do
+        expect(Yast::SCR).to_not receive(:Execute)
+        file.remove
       end
     end
   end
