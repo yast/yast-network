@@ -107,11 +107,11 @@ module Yast
     end
 
     def add_button
-      @add_button ||= Y2Network::Widgets::AddRoute.new(routing_table)
+      @add_button ||= Y2Network::Widgets::AddRoute.new(routing_table, config)
     end
 
     def edit_button
-      @edit_button ||= Y2Network::Widgets::EditRoute.new(routing_table)
+      @edit_button ||= Y2Network::Widgets::EditRoute.new(routing_table, config)
     end
 
     def delete_button

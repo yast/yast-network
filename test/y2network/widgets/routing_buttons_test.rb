@@ -29,7 +29,8 @@ describe Y2Network::Widgets::AddRoute do
   end
 
   let(:routing_table) { double.as_null_object }
-  subject { described_class.new(routing_table) }
+  let(:config) { double(interfaces: [Y2Network::Interface.new("eth0")]) }
+  subject { described_class.new(routing_table, config) }
 
   include_examples "CWM::PushButton"
 end
@@ -40,7 +41,8 @@ describe Y2Network::Widgets::EditRoute do
   end
 
   let(:routing_table) { double.as_null_object }
-  subject { described_class.new(routing_table) }
+  let(:config) { double(interfaces: [Y2Network::Interface.new("eth0")]) }
+  subject { described_class.new(routing_table, config) }
 
   include_examples "CWM::PushButton"
 end

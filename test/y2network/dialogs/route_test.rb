@@ -24,7 +24,9 @@ require "y2network/dialogs/route"
 
 describe Y2Network::Dialogs::Route do
   let(:route) { Yast::Term.new(:empty) }
-  subject { described_class.new(route, ["eth0", "lo"]) }
+  subject do
+    described_class.new(route, [Y2Network::Interface.new("eth0"), Y2Network::Interface.new("lo")])
+  end
 
   include_examples "CWM::Dialog"
 end
