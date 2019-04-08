@@ -4,6 +4,7 @@ require "cwm/table"
 require "y2network/interface"
 
 Yast.import "Label"
+Yast.import "NetworkService"
 
 module Y2Network
   module Widgets
@@ -40,6 +41,7 @@ module Y2Network
       # TODO: just workaround to make it work with old hash based CWM
       def init
         redraw_table
+        disable if Yast::NetworkService.network_manager?
       end
 
       def selected_route

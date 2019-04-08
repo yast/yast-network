@@ -2,7 +2,7 @@ require "cwm/common_widgets"
 require "y2network/dialogs/route"
 require "y2network/route"
 
-Yast.import "Routing"
+Yast.import "NetworkService"
 
 module Y2Network
   module Widgets
@@ -23,6 +23,10 @@ module Y2Network
         @table.add_route(route) if res == :ok
 
         nil
+      end
+
+      def init
+        disable if Yast::NetworkService.network_manager?
       end
     end
 
@@ -46,6 +50,10 @@ module Y2Network
 
         nil
       end
+
+      def init
+        disable if Yast::NetworkService.network_manager?
+      end
     end
 
     class DeleteRoute < CWM::PushButton
@@ -64,6 +72,10 @@ module Y2Network
         @table.delete_route
 
         nil
+      end
+
+      def init
+        disable if Yast::NetworkService.network_manager?
       end
     end
   end
