@@ -37,6 +37,11 @@ module Y2Network
         end
       end
 
+      # TODO: just workaround to make it work with old hash based CWM
+      def init
+        redraw_table
+      end
+
       def selected_route
         return nil unless value
 
