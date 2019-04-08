@@ -95,9 +95,13 @@ module Y2Network
         ret
       end
 
-      def PrintableRoutingTable(items)
+      # Creates a text printable routing table with the given routes
+      #
+      # @param routes [Array<Y2Network::Route>]
+      # @return [String]
+      def PrintableRoutingTable(routes)
         table_items =
-          items.map do |route|
+          routes.map do |route|
             route_hash = serializer.to_hash(route)
             %w(destination gateway netmask device extrapara).map { |attr| route_hash[attr] }
           end
@@ -119,6 +123,7 @@ module Y2Network
       end
 
       # Handler for action "list"
+      #
       # @param _options [Hash{String => String}] action options
       def ListHandler(_options)
         CommandLine.Print(PrintableRoutingTable(current_routes))
@@ -127,14 +132,14 @@ module Y2Network
         true
       end
 
+      # Handler for action "show"
+      #
+      # @param options [Hash{String => String}] action options
       def ShowHandler(options)
         destination = options["dest"]
-        routes = current_routes.select { |r| serializer.to_hash(r)["destination"] == destination }
+        routes = destination_routes(destination)
 
-        if routes != [] && !routes.nil?
-          CommandLine.Print(PrintableRoutingTable(routes))
-          CommandLine.Print("")
-        else
+        if routes.empty?
           CommandLine.Error(
             Builtins.sformat(
               _("No entry for destination '%1' in routing table"), destination
@@ -142,6 +147,9 @@ module Y2Network
           )
           return false
         end
+
+        CommandLine.Print(PrintableRoutingTable(routes))
+        CommandLine.Print("")
 
         true
       end
@@ -226,10 +234,18 @@ module Y2Network
         route.interface = edited_route.interface
       end
 
-      def find_route_by_destination(destination)
-        current_routes.find { |r| serializer.to_hash(r)["destination"] == destination }
+      # Convenience method to obtain all the routes which has the given
+      # destination
+      #
+      #
+      def destination_routes(destination)
+        current_routes.select { |r| serializer.to_hash(r)["destination"] == destination }
       end
 
+      # Handler for action "add"
+      #
+      # @param options [Hash{String => String}] action options
+      # @return [Boolean] true if added; false otherwise
       def AddHandler(options)
         destination = options["dest"]
 
@@ -249,6 +265,10 @@ module Y2Network
         true
       end
 
+      # Handler for action "edit"
+      #
+      # @param options [Hash{String => String}] action options
+      # @return [Boolean] true if edited; false otherwise
       def EditHandler(options)
         destination = options["dest"]
 
@@ -266,11 +286,10 @@ module Y2Network
           return false
         end
 
-        route = find_route_by_destination(destination)
-        current_routes.find { |r| serializer.to_hash(r)["destination"] == destination }
-        edited_route = route_from_options(options)
+        route = destination_routes(destination).first
 
         if route
+          edited_route = route_from_options(options)
           CommandLine.Print(
             Builtins.sformat(
               _("Updating '%1' destination in routing table ..."),
@@ -292,10 +311,13 @@ module Y2Network
         true
       end
 
+      # Handler for action "delete"
+      #
       # @param [Hash]
+      # @return [Boolean] true if deleted; false otherwise
       def DeleteHandler(options)
         destination = options["dest"]
-        route = find_route_by_destination(destination)
+        route = destination_routes(destination).first
 
         if route
           CommandLine.Print(
@@ -365,8 +387,10 @@ module Y2Network
 
       # Convenience method to obtain current :yast {Y2Network::Route}s
       #
-      # @return [Y2Network::RoutingTable]
+      # @return [Array<Y2Network::Route>]
       def current_routes
+        return [] unless yast_config && yast_config.routing
+
         yast_config.routing.routes
       end
 
