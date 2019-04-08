@@ -343,8 +343,9 @@ module Y2Network
       #
       # @return [Boolean]
       def read
-        Yast::Lan.add_config(:yast, Y2Network::Config.from(:sysconfig))
-        Yast::Lan.add_config(:system, Y2Network::Config.from(:sysconfig))
+        system_config = Y2Network::Config.from(:sysconfig)
+        Yast::Lan.add_config(:system, system_config)
+        Yast::Lan.add_config(:yast, system_config.copy)
 
         true
       end
@@ -353,7 +354,6 @@ module Y2Network
       #
       # @return [Boolean]
       def write
-        # TODO: Do not write if not modified
         if modified?
           Y2Network::ConfigWriter::Sysconfig.new.write(yast_config)
           log.info("Writing routing configuration: #{yast_config.routing.inspect}")
