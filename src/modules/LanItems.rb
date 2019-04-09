@@ -216,6 +216,10 @@ module Yast
       @request_firmware = YAML.load_file(Directory.find_data_file("network/firmwares.yml"))
     end
 
+    def Items
+      raise ArgumentError, "Use or create API, do not touch Items directly"
+    end
+
     # Returns configuration of item (see LanItems::Items) with given id.
     #
     # @param itemId [Integer] a key for {#Items}
