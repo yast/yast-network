@@ -21,6 +21,7 @@ require "yast"
 require "yast2/execute"
 require "y2network/interface"
 require "y2network/route"
+require "y2network/serializer/route_sysconfig"
 Yast.import "FileUtils"
 
 module Y2Network
@@ -58,7 +59,7 @@ module Y2Network
     def load
       entries = with_registered_ifroute_agent(file_path) { |a| Yast::SCR.Read(a) }
       entries = entries ? normalize_entries(entries.uniq) : []
-      @routes = entries.map { |r| build_route(r) }
+      @routes = entries.map { |r| serializer.from_hash(r) }
     end
 
     # Writes configured routes
@@ -73,7 +74,7 @@ module Y2Network
       with_registered_ifroute_agent(file_path) do |scr|
         # work around bnc#19476
         Yast::SCR.Write(Yast::Path.new(".target.string"), file_path, "")
-        Yast::SCR.Write(scr, routes.map { |r| route_to_hash(r) })
+        Yast::SCR.Write(scr, routes.map { |r| serializer.to_hash(r) })
       end
     end
 
@@ -85,10 +86,12 @@ module Y2Network
 
   private
 
-    MISSING_VALUE = "-".freeze
-    private_constant :MISSING_VALUE
-    DEFAULT_DEST = "default".freeze
-    private_constant :DEFAULT_DEST
+    # Convenience method to obtain a new route to hash serializer
+    #
+    # @return [Y2Network::Serializer::RouteSysconfig]
+    def serializer
+      @serializer ||= Y2Network::Serializer::RouteSysconfig.new
+    end
 
     # Converts routes config as read from system into well-defined format
     #
@@ -114,60 +117,6 @@ module Y2Network
 
         entry
       end
-    end
-
-    # Given an IP and a netmask, returns a valid IPAddr object
-    #
-    # @param ip_str      [String] IP address; {MISSING_VALUE} means that the IP is not defined
-    # @param netmask_str [String] Netmask; {MISSING_VALUE} means than no netmask was specified
-    # @return [IPAddr,nil] The IP address or `nil` if the IP is missing
-    def build_ip(ip_str, netmask_str = MISSING_VALUE)
-      return nil if ip_str == MISSING_VALUE
-
-      ip = IPAddr.new(ip_str)
-      netmask_str == MISSING_VALUE ? ip : ip.mask(netmask_str)
-    end
-
-    # Build a route given a hash from the SCR agent
-    #
-    # @param hash [Hash] Hash from the `.routes` SCR agent
-    # @return Route
-    def build_route(hash)
-      # TODO: check whether the iface is configured in the system
-      iface = Interface.new(hash["device"])
-      # normalized SCR output contains either subnet mask or /<prefix length> under
-      # "netmask" key
-      # TODO: this should be improved in normalize_routes
-      mask = hash["netmask"].delete("/")
-
-      Y2Network::Route.new(
-        to:        hash["destination"] != DEFAULT_DEST ? build_ip(hash["destination"], mask) : :default,
-        interface: iface,
-        gateway:   build_ip(hash["gateway"], MISSING_VALUE),
-        options:   hash["extrapara"] || ""
-      )
-    end
-
-    # Returns a hash containing the route information
-    #
-    # Hash is provided in format suitable for .etc.routes SCR agent
-    #
-    # @param route [Y2Network::Route]
-    # @return [Hash]
-    def route_to_hash(route)
-      hash = if route.default?
-        { "destination" => "default", "netmask" => "-" }
-      else
-        dest = route.to
-        # netmask column of routes file has been marked as deprecated -> using prefix
-        { "destination" => "#{dest}/#{dest.prefix}", "netmask" => "-" }
-      end
-
-      hash.merge("options" => route.options) unless route.options.to_s.empty?
-      hash.merge(
-        "gateway" => route.gateway ? route.gateway.to_s : "-",
-        "device"  => route.interface == :any ? "-" : route.interface.name
-      )
     end
 
     NON_EMPTY_STR_TERM = Yast.term(:String, "^ \t\n").freeze

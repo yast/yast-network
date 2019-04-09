@@ -29,12 +29,14 @@ describe Y2Network::SysconfigRoutesFile do
       "destination" => destination,
       "device"      => "eth0",
       "gateway"     => gateway,
-      "netmask"     => netmask
+      "netmask"     => netmask,
+      "extrapara"   => options
     }
   end
   let(:destination) { "192.168.122.1" }
   let(:gateway)     { "192.168.122.1" }
   let(:netmask)     { "255.255.255.0" }
+  let(:options)     { "table two" }
   let(:path) { "/etc/sysconfig/network/routes" }
 
   around do |example|
