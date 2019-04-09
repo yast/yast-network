@@ -70,7 +70,7 @@ describe Y2Network::Clients::Routing do
     context "when calling with 'show'" do
       let(:args) { ["show"] }
 
-      context "and do not specify a dest target" do
+      context "and a destination target is not specified" do
         it "prints and error" do
           expect(Yast::CommandLine).to receive(:Print).with(/No entry for/)
           subject.main
@@ -90,7 +90,7 @@ describe Y2Network::Clients::Routing do
     context "when calling with 'add'" do
       let(:args) { ["add"] }
 
-      context "and do not specify a dest target" do
+      context "and a destination target is not specified" do
         it "prints and error" do
           expect(Yast::CommandLine).to receive(:Print).with(/At least destination/)
           subject.main
@@ -101,16 +101,14 @@ describe Y2Network::Clients::Routing do
         let(:args) { ["add", "dest=192.168.1.0", "gateway=192.168.1.1", "netmask=255.255.255.0"] }
 
         it "adds the new route" do
-          expect(routing.routes.size).to eq(1)
-          subject.main
-          expect(routing.routes.size).to eq(2)
+          expect { subject.main }.to change { routing.routes.size }.from(1).to(2)
         end
       end
     end
     context "when calling with 'delete'" do
       let(:args) { ["delete"] }
 
-      context "and do not specify a dest target" do
+      context "and a destination target is not specified" do
         it "prints and error" do
           expect(Yast::CommandLine).to receive(:Print).with(/No entry for/)
           subject.main
@@ -121,9 +119,7 @@ describe Y2Network::Clients::Routing do
         let(:args) { ["delete", "dest=default"] }
 
         it "deletes the routes with the given destination" do
-          expect(routing.routes.size).to eq(1)
-          subject.main
-          expect(routing.routes.size).to eq(0)
+          expect { subject.main }.to change { routing.routes.size }.from(1).to(0)
         end
       end
     end
@@ -156,9 +152,7 @@ describe Y2Network::Clients::Routing do
         let(:args) { ["ipv4-forwarding", "off"] }
 
         it "disables IPv4 forwarding" do
-          expect(routing.forward_ipv4).to eq(true)
-          subject.main
-          expect(routing.forward_ipv4).to eq(false)
+          expect { subject.main }.to change { routing.forward_ipv4 }.from(true).to(false)
         end
       end
 
@@ -169,9 +163,7 @@ describe Y2Network::Clients::Routing do
         end
 
         it "enables IPv4 forwarding" do
-          expect(routing.forward_ipv4).to eql(false)
-          subject.main
-          expect(routing.forward_ipv4).to eql(true)
+          expect { subject.main }.to change { routing.forward_ipv4 }.from(false).to(true)
         end
       end
     end
@@ -194,9 +186,7 @@ describe Y2Network::Clients::Routing do
         end
 
         it "disables IPv6 forwarding" do
-          expect(routing.forward_ipv6).to eq(true)
-          subject.main
-          expect(routing.forward_ipv6).to eq(false)
+          expect { subject.main }.to change { routing.forward_ipv6 }.from(true).to(false)
         end
       end
 
@@ -204,9 +194,7 @@ describe Y2Network::Clients::Routing do
         let(:args) { ["ipv6-forwarding", "on"] }
 
         it "enables IPv6 forwarding" do
-          expect(routing.forward_ipv6).to eql(false)
-          subject.main
-          expect(routing.forward_ipv6).to eql(true)
+          expect { subject.main }.to change { routing.forward_ipv6 }.from(false).to(true)
         end
       end
     end
