@@ -36,12 +36,17 @@ module Y2Network
   class Config
     # @return [Array<Interface>]
     attr_accessor :interfaces
+    # FIXME: replacement for old LanItems::Items, should be merged with the above ASAP
+    attr_accessor :old_interfaces
     # @return [Routing]
     attr_accessor :routing
     # @return [Symbol] Information source (see {Y2Network::Reader} and {Y2Network::Writer})
     attr_accessor :source
 
     class << self
+      # TODO: move this configs stuff to a separate singleton
+      attr_accessor :configs
+
       # @param source [Symbol] Source to read the configuration from
       # @param opts   [Hash]   Reader options. Check readers documentation to find out
       #                        supported options.

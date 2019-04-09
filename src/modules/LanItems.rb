@@ -29,6 +29,8 @@ require "network/wicked"
 require "network/lan_items_summary"
 require "y2network/config"
 
+require "y2network/config"
+
 require "shellwords"
 
 module Yast
@@ -1180,6 +1182,7 @@ module Yast
         items[items.size] = { "ifcfg" => confname }
       end
 
+      yast_config.old_interfaces = @Items
       log.info "Read Configuration LanItems::Items #{@Items}"
 
       nil
@@ -1193,7 +1196,8 @@ module Yast
     # 3) variables which keeps (some of) attributes of the current item (= item
     # which is being pointed by the iterator)
     def reset_cache
-      LanItems.Items = {}
+# FIXME: what is suitable replacement with new config storage?
+#      LanItems.Items = {}
 
       @modified = false
     end
@@ -2712,6 +2716,10 @@ module Yast
     end
 
   private
+
+    def yast_config
+      Y2Network::Config.find_config(:yast)
+    end
 
     # Checks if given lladdr can be written into ifcfg
     #
