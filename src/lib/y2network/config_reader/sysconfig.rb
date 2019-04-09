@@ -67,7 +67,7 @@ module Y2Network
       # Merges routes from /etc/sysconfig/network/routes and /etc/sysconfig/network/ifroute-*
       # TODO: currently it implicitly loads main/default routing table
       #
-      # @param [Array<Interface>] Existing interfaces
+      # @param interfaces [Array<Interface>] Existing interfaces
       # @return [RoutingTable] an object with routes
       def find_routing_tables(interfaces)
         main_routes = load_routes_from
@@ -106,8 +106,8 @@ module Y2Network
       # instantiates a new object for each interface found. This method links the routes
       # with the interfaces found in #interfaces.
       #
-      # @param [Array<Route>] Routes to link
-      # @param [Array<Interface>] Interfaces
+      # @param routes     [Array<Route>] Routes to link
+      # @param interfaces [Array<Interface>] Interfaces
       def link_routes_to_interfaces(routes, interfaces)
         routes.each do |route|
           interface = interfaces.find { |i| route.interface.name == i.name }
