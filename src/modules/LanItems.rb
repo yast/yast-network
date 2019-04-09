@@ -2948,6 +2948,7 @@ module Yast
     publish function: :setDriver, type: "void (string)"
     publish function: :enableCurrentEditButton, type: "boolean ()"
     publish function: :createS390Device, type: "boolean ()"
+    publish function: :find_dhcp_ifaces, type: "list <string> ()"
   end
 
   LanItems = LanItemsClass.new
