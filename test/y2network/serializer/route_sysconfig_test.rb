@@ -47,6 +47,7 @@ describe Y2Network::Serializer::RouteSysconfig do
 
     context "when the route does not have a gateway" do
       let(:gateway) { nil }
+
       it "is exported as '-'" do
         expect(subject.to_hash(route)["gateway"]).to eq("-")
       end
@@ -65,7 +66,7 @@ describe Y2Network::Serializer::RouteSysconfig do
     end
 
     it "instantiates a Y2Network::Route from the given hash" do
-
+      expect(subject.from_hash(route_hash)).to eq(route)
     end
   end
 end

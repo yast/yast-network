@@ -20,12 +20,14 @@ require "y2network/route"
 
 module Y2Network
   module Serializer
+    # This class is responsible of serializing {Y2Network::Route}s from a hash
+    # and to a hash representation based on sysconfig routing configuration.
     class RouteSysconfig
       DEFAULT_DEST = "default".freeze
       MISSING_VALUE = "-".freeze
 
-      # Returns a hash representation of the Y2Network::Route object based on
-      # sysconfig route files syntax
+      # Returns a hash representation of the {Y2Network::Route} object based
+      # on sysconfig route files syntax
       #
       # @param route [Y2Network::Route]
       # @return [Hash] based on sysconfig route files syntax
