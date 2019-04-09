@@ -98,9 +98,6 @@ module Yast
       @initialized = false
 
       @backend = nil
-
-      # Y2Network::Config objects
-      @configs = {}
     end
 
     #------------------
@@ -263,10 +260,6 @@ module Yast
         Builtins.y2milestone("Using cached data")
         return true
       end
-
-      system_config = Y2Network::Config.from(:sysconfig)
-      add_config(:system, system_config)
-      add_config(:yast, system_config.copy)
 
       # Read dialog caption
       caption = _("Initializing Network Configuration")
@@ -987,7 +980,7 @@ module Yast
     #
     # @return [Y2Network::Config]
     def system_config
-      find_config(:system)
+      Y2Network::Config.find_config(:system)
     end
 
     # Returns YaST configuration
@@ -996,7 +989,7 @@ module Yast
     #
     # @return [Y2Network::Config]
     def yast_config
-      find_config(:yast)
+      Y2Network::Config.find_config(:yast)
     end
 
     publish variable: :ipv6, type: "boolean"

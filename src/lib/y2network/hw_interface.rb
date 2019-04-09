@@ -17,31 +17,27 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 module Y2Network
-  # Network interface.
-  class Interface
-    # @return [String] Device name (eth0, wlan0, etc.)
-    attr_reader :name # should not be changed after object creation. Used as an id.
-    attr_reader :configured
+  # An Interface corresponding to a physical device (ethernet card, ...)
+  #
+  # Main difference is that
+  # 1) it can have a configuration assigned or not and we need to track both cases
+  # 2) such devices can be renamed via udev
+  class HwInterface < Interface
+    attr_reader :hw_name
 
-    # Constructor
-    #
-    # @param name [String] Interface name (e.g., "eth0")
-    def initialize(name)
-      @name = name
-      @configured = true
+    def initialize(name, hw_name:)
+      if !name && !hw_name
+        raise ArgumentError, "Configuration name or Hardware name has to be defined"
+      end
+
+      super(name)
+
+      @hw_name = hw_name
+      @configured = !name.nil?
     end
 
-    # Determines whether two interfaces are equal
-    #
-    # @param other [Interface] Interface to compare with
-    # @return [Boolean]
-    def ==(other)
-      return false unless other.is_a?(Interface)
-      name == other.name
+    def name
+      name || hw_name
     end
-
-    # eql? (hash key equality) should alias ==, see also
-    # https://ruby-doc.org/core-2.3.3/Object.html#method-i-eql-3F
-    alias_method :eql?, :==
   end
 end

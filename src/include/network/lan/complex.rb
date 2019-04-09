@@ -149,10 +149,17 @@ module Yast
     def ReadDialog
       Wizard.RestoreHelp(Ops.get_string(@help, "read", ""))
       Lan.AbortFunction = -> { PollAbort() }
+
+      # Load sysconfig into new backend
+      # It is done here bcs this method is currently called during "yast2 lan"
+      # initialization, so it makes configuration available for all submodules
+      system_config = Y2Network::Config.from(:sysconfig)
+      Y2Network::Config.add(:system, system_config)
+      Y2Network::Config.add(:yast, system_config.copy)
+
+      log.info("Config storage initialized")
+
       ret = Lan.Read(:cache)
-      # Currently just a smoketest for new config storage - something what should replace Lan module in the bright future
-      # TODO: find a suitable place for this config storage
-      Y2Network::Config.from(:sysconfig)
 
       if Lan.HaveXenBridge
         if !Popup.ContinueCancel(
@@ -182,6 +189,14 @@ module Yast
 
       Wizard.RestoreHelp(Ops.get_string(@help, "write", ""))
       Lan.AbortFunction = -> { PollAbort() && ReallyAbort() }
+
+      # Store data from new backend
+      # It is done here bcs this method is currently called to do proper "yast2 lan"
+      # shutdown, so it saves configuration modified by all submodules
+      system_config = Y2Network::Config.from(:sysconfig)
+      Y2Network::Config.add(:system, system_config)
+      Y2Network::Config.add(:yast, system_config.copy)
+
       ret = Lan.Write
       ret ? :next : :abort
     end
