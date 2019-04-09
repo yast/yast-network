@@ -16,32 +16,28 @@
 #
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
+
 module Y2Network
-  # Network interface.
-  class Interface
-    # @return [String] Device name (eth0, wlan0, etc.)
-    attr_reader :name # should not be changed after object creation. Used as an id.
-    attr_reader :configured
-
-    # Constructor
-    #
-    # @param name [String] Interface name (e.g., "eth0")
-    def initialize(name)
-      @name = name
-      @configured = true
+  # A container for network devices
+  #
+  # FIXME: Replacement for old LanItems::Items, all usefull code was migrated here
+  # proper cleanup is must
+  class Interfaces
+    def initialize(old_items:)
+      # FIXME: should be replaced, separating backend from old API
+      @old_items = hash_to_interface(old_items)
     end
 
-    # Determines whether two interfaces are equal
-    #
-    # @param other [Interface] Interface to compare with
-    # @return [Boolean]
-    def ==(other)
-      return false unless other.is_a?(Interface)
-      name == other.name
-    end
+  private
 
-    # eql? (hash key equality) should alias ==, see also
-    # https://ruby-doc.org/core-2.3.3/Object.html#method-i-eql-3F
-    alias_method :eql?, :==
+    def hash_to_interface(hash)
+      hash.map do |iface|
+        if iface["hwinfo"]
+          HwInterface.new(iface["ifcfg"], iface["hwinfo"]["dev_name"])
+        else
+          Interface.new(iface["ifcfg"])
+        end
+      end
+    end
   end
 end
