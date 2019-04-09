@@ -25,7 +25,8 @@ require "y2network/interface"
 describe Y2Network::Serializer::RouteSysconfig do
   let(:interface) { Y2Network::Interface.new("em1") }
   let(:gateway) { IPAddr.new("192.168.1.1") }
-  let(:route) do
+  let(:destination) { IPAddr.new("192.168.1.0/24") }
+  let(:default_route) do
     Y2Network::Route.new(
       to:        :default,
       gateway:   gateway,
@@ -34,14 +35,33 @@ describe Y2Network::Serializer::RouteSysconfig do
     )
   end
 
+  let(:network_route) do
+    Y2Network::Route.new(
+      to:        destination,
+      gateway:   gateway,
+      interface: interface,
+      options:   "table one"
+    )
+  end
+
   describe "#to_hash" do
     it "exports the given route to a hash" do
-      expect(subject.to_hash(route)).to be_a(Hash)
+      expect(subject.to_hash(default_route)).to be_a(Hash)
     end
 
     context "when it is a default route" do
       it "exports 'destination' as 'default'" do
-        expect(subject.to_hash(route)["destination"]).to eq("default")
+        expect(subject.to_hash(default_route)["destination"]).to eq("default")
+      end
+    end
+
+    context "when the route is not a default one" do
+      it "exports 'destination' with the prefix" do
+        expect(subject.to_hash(network_route)["destination"]).to eq("192.168.1.0/24")
+      end
+
+      it "exports 'netmask' as '-'" do
+        expect(subject.to_hash(network_route)["netmask"]).to eq("-")
       end
     end
 
@@ -49,7 +69,7 @@ describe Y2Network::Serializer::RouteSysconfig do
       let(:gateway) { nil }
 
       it "is exported as '-'" do
-        expect(subject.to_hash(route)["gateway"]).to eq("-")
+        expect(subject.to_hash(default_route)["gateway"]).to eq("-")
       end
     end
   end
@@ -66,7 +86,7 @@ describe Y2Network::Serializer::RouteSysconfig do
     end
 
     it "instantiates a Y2Network::Route from the given hash" do
-      expect(subject.from_hash(route_hash)).to eq(route)
+      expect(subject.from_hash(route_hash)).to eq(default_route)
     end
   end
 end
