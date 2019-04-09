@@ -18,13 +18,14 @@
 # find current contact information at www.suse.com.
 
 require_relative "../test_helper"
+require "y2network/route"
 require "y2network/routing_table"
 require "y2network/routing"
 
 describe Y2Network::Routing do
   subject(:routing) { described_class.new(tables: [table1]) }
   let(:table1) { Y2Network::RoutingTable.new(routes) }
-  let(:route1) { double("Y2Network::Route", default?: true) }
+  let(:route1) { Y2Network::Route.new(to: :default) }
   let(:routes) { [route1] }
 
   describe "#==" do
@@ -68,13 +69,13 @@ describe Y2Network::Routing do
 
   describe "#default_route" do
     let(:routes) { [no_default, route1] }
-    let(:no_default) { double("Y2Network::Route", default?: false) }
+    let(:no_default) { Y2Network::Route.new }
 
     it "returns the default route" do
       expect(routing.default_route).to eq(route1)
     end
 
-    context "when there are not routes" do
+    context "when there are no routes" do
       let(:routes) { [] }
 
       it "returns nil" do

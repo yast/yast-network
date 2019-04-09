@@ -35,6 +35,7 @@ require "ui/text_helpers"
 require "y2firewall/firewalld"
 require "y2network/autoinst_profile/networking_section"
 require "y2network/config"
+require "y2network/presenters/routing_summary"
 
 require "shellwords"
 
@@ -1135,6 +1136,7 @@ module Yast
     # @return [String]
     def routing_summary
       config = find_config(:yast)
+      return "" unless config && config.routing
       presenter = Y2Network::Presenters::RoutingSummary.new(config.routing)
       presenter.text
     end

@@ -67,7 +67,7 @@ module Y2Network
       # Returns a text representation of the gateway
       #
       # @param routing [Y2Network::Routing] Routing configuration
-      # @return [String]
+      # @return [String,nil] Text representation of the gateway IP; nil if no gateway is found
       def gateway_string_from(routing)
         default_route = routing.default_route
         return nil if default_route.nil?

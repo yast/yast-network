@@ -463,7 +463,6 @@ module Yast
           end
 
           LanItems.DeleteItem
-          LanItems.remove_current_device_from_routing
           initOverview("")
         end
       end

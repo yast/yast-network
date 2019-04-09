@@ -580,7 +580,6 @@ describe "LanItems renaming methods" do
 
   before do
     allow(Yast::LanItems).to receive(:Items).and_return(0 => item_0)
-    # Yast::Routing.SetDevices(["eth0"])
   end
 
   describe "LanItems#current_name_for" do
@@ -712,36 +711,6 @@ describe "LanItems renaming methods" do
       it "returns true" do
         expect(Yast::LanItems.update_routing_devices?).to eql(true)
       end
-    end
-  end
-
-  xdescribe "LanItems.update_routes" do
-    let(:renamed_to) { "new1" }
-
-    let(:original_routes) do
-      [{
-        "destination" => "192.168.1.0",
-        "device"      => "eth0",
-        "gateway"     => "10.1.188.1",
-        "netmask"     => "255.255.255.0"
-      },
-       {
-         "destination" => "default",
-         "device"      => "eth0",
-         "gateway"     => "172.24.88.1",
-         "netmask"     => "-"
-       }]
-    end
-
-    before do
-      # Yast::Routing.Routes = original_routes
-    end
-
-    it "modifies all existent device routes with the current device name" do
-      Yast::LanItems.update_routes!("eth0")
-      # routes = Yast::Routing.Routes().select { |r| r["device"] == renamed_to }
-      expect(routes.size).to eql(2)
-      expect(routes.map { |r| r["destination"] }.sort).to eql(["default", "192.168.1.0"].sort)
     end
   end
 end

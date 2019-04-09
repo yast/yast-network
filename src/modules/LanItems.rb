@@ -2250,6 +2250,7 @@ module Yast
         @current = -1
       end
 
+      remove_current_device_from_routing
       SetModified()
 
       nil
@@ -2677,8 +2678,10 @@ module Yast
     #       the migration to network-ng.
     # @param name [String] Device name
     def add_current_device_to_routing
+      config = yast_config
+      return if config.nil?
       name = current_name
-      return if yast_config.interfaces.any? { |i| i.name == name }
+      return if config.interfaces.any? { |i| i.name == name }
       yast_config.interfaces << Y2Network::Interface.new(name)
     end
 
@@ -2689,7 +2692,9 @@ module Yast
 
     # @param old_name [String] Old device name
     def rename_current_device_in_routing(old_name)
-      interface = yast_config.interfaces.find { |i| i.name == old_name }
+      config = yast_config
+      return if config.nil?
+      interface = config.interfaces.find { |i| i.name == old_name }
       return unless interface
       interface.name = current_name
     end
@@ -2701,9 +2706,11 @@ module Yast
     # @fixme It does not check orphan routes.
     # @param name [String] Device name
     def remove_current_device_from_routing
+      config = yast_config
+      return if config.nil?
       name = current_name
       return if name.empty?
-      yast_config.interfaces.reject! { |i| i.name == name }
+      config.interfaces.reject! { |i| i.name == name }
     end
 
   private
