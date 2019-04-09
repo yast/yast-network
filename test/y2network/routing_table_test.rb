@@ -26,6 +26,16 @@ describe Y2Network::RoutingTable do
 
   let(:route) { Y2Network::Route.new(to: :any) }
 
+  describe "#remove_default_routes" do
+    subject(:table) { described_class.new([route, default_route]) }
+    let(:default_route) { Y2Network::Route.new(to: :default) }
+
+    it "removes the default routes" do
+      table.remove_default_routes
+      expect(table.routes).to eq([route])
+    end
+  end
+
   describe "#==" do
     let(:other) { Y2Network::RoutingTable.new([other_route]) }
 

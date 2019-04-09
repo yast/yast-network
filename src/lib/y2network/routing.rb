@@ -51,6 +51,11 @@ module Y2Network
       routes.find(&:default?)
     end
 
+    # Remove default routes from routing tables
+    def remove_default_routes
+      tables.each(&:remove_default_routes)
+    end
+
     # Determines whether two set of routing settings are equal
     #
     # @param other [Routing] Routing settings to compare with

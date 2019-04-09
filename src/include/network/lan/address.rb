@@ -1366,8 +1366,8 @@ module Yast
           #		 "No IP address" case, then default gw must stay (#460262)
           # and also: don't delete default GW for usb/pcmcia devices (#307102)
           if LanItems.isCurrentDHCP && !LanItems.isCurrentHotplug
-            # FIXME: network-ng
-            # Routing.RemoveDefaultGw
+            yast_config = Y2Network::Config.find(:yast)
+            yast_config.routing.remove_default_routes if yast_config
           end
         end
 

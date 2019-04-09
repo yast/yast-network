@@ -82,4 +82,11 @@ describe Y2Network::Routing do
       end
     end
   end
+
+  describe "#remove_default_routes" do
+    it "removes the default routes from all tables" do
+      expect(table1).to receive(:remove_default_routes)
+      routing.remove_default_routes
+    end
+  end
 end
