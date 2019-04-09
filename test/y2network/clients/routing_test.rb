@@ -105,6 +105,35 @@ describe Y2Network::Clients::Routing do
         end
       end
     end
+
+    context "when calling with 'edit'" do
+      context "and a destination target is not specified" do
+        let(:args) { ["edit"] }
+
+        it "prints and error" do
+          expect(Yast::CommandLine).to receive(:Print).with(/At least one of/)
+          subject.main
+        end
+      end
+      context "and the route with the destination target is not present" do
+        let(:args) { ["edit", "dest=192.168.1.0/24", "netmask=255.255.0.0"] }
+
+        it "prints and error" do
+          expect(Yast::CommandLine).to receive(:Print).with(/No entry for/)
+          subject.main
+        end
+      end
+
+      context "and the route with the destination target is present" do
+        let(:args) { ["edit", "dest=default", "gateway=192.168.1.10"] }
+
+        it "modifies the route" do
+          expect { subject.main }
+            .to change { route.gateway.to_s }.from("192.168.1.1").to("192.168.1.10")
+        end
+      end
+    end
+
     context "when calling with 'delete'" do
       let(:args) { ["delete"] }
 
