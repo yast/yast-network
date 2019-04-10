@@ -75,10 +75,12 @@ describe Y2Network::Presenters::RoutingSummary do
     end
 
     context "when there are no routes" do
-      let(:routing) { instance_double(Y2Network::Routing, routes: []) }
+      let(:table) do
+        Y2Network::RoutingTable.new([])
+      end
 
-      it "returns an empty string" do
-        expect(presenter.text).to eq("")
+      it "does not include the gateway" do
+        expect(presenter.text).to_not include("Gateways")
       end
     end
   end
