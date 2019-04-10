@@ -51,7 +51,8 @@ module Y2Network
       # @return [NetworkingSection]
       def self.new_from_network(config)
         result = new
-        result.routing = RoutingSection.new_from_network(config.routing)
+        return result unless config
+        result.routing = RoutingSection.new_from_network(config.routing) if config.routing
         result
       end
 
