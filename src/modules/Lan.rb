@@ -1138,9 +1138,7 @@ module Yast
       config = find_config(:yast)
       return "" unless config && config.routing
       presenter = Y2Network::Presenters::RoutingSummary.new(config.routing)
-      summary = "<ul><li><b>" + _("Routing:") + "</b></li><li>"
-      summary += presenter.text
-      summary += "</li></ul>"
+      presenter.text
     end
 
     def firewalld
