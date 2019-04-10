@@ -22,6 +22,7 @@
 require_relative "../../test_helper"
 require "y2network/autoinst_profile/routing_section"
 require "y2network/config_reader/autoinst_routing"
+require "y2network/interface"
 
 describe Y2Network::ConfigReader::AutoinstRouting do
   let(:subject) { described_class.new(routing_section) }
@@ -67,6 +68,8 @@ describe Y2Network::ConfigReader::AutoinstRouting do
       expect(subject.config.routes.size).to eq(3)
       default = subject.config.routes.find(&:default?)
       expect(default.default?).to eq(true)
+      em1 = subject.config.routes.find { |r| r.interface == Y2Network::Interface.new("em1") }
+      expect(em1.interface.name).to eq("em1")
     end
 
     context "when ip forwarding is not set" do
@@ -92,6 +95,5 @@ describe Y2Network::ConfigReader::AutoinstRouting do
         expect(subject.config.forward_ipv6).to eq(true)
       end
     end
-
   end
 end

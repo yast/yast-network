@@ -751,7 +751,7 @@ module Yast
       settings = {} if settings.nil?
 
       profile = Y2Network::AutoinstProfile::NetworkingSection.new_from_hashes(settings)
-      config = Y2Network::Config.from(:autoyast, profile)
+      config = Y2Network::Config.from(:autoinst, profile)
       add_config(:yast, config)
 
       LanItems.Import(settings)
@@ -1138,7 +1138,9 @@ module Yast
       config = find_config(:yast)
       return "" unless config && config.routing
       presenter = Y2Network::Presenters::RoutingSummary.new(config.routing)
-      presenter.text
+      summary = "<ul><li><b>" + _("Routing:") + "</b></li><li>"
+      summary += presenter.text
+      summary += "</li></ul>"
     end
 
     def firewalld
