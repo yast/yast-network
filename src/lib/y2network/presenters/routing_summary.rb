@@ -46,7 +46,7 @@ module Y2Network
       # @return [String]
       def text
         summary = ""
-        return summary if routing.nil? || routing.routes.empty?
+        return summary if routing.nil?
 
         gateways = gateways_string(routing)
         summary = Yast::Summary.AddListItem(summary, format(_("Gateways: %s"), gateways)) if gateways
