@@ -35,6 +35,7 @@ require "ui/text_helpers"
 require "y2firewall/firewalld"
 require "y2network/autoinst_profile/networking_section"
 require "y2network/config"
+require "y2network/presenters/routing_summary"
 
 require "shellwords"
 
@@ -811,9 +812,9 @@ module Yast
     def Summary(mode)
       case mode
       when "summary"
-        "#{LanItems.BuildLanOverview.first}#{DNS.Summary}#{routing_summary(mode)}"
+        "#{LanItems.BuildLanOverview.first}#{DNS.Summary}#{routing_summary}"
       when "proposal"
-        "#{LanItems.summary(:proposal)}#{DNS.Summary}#{routing_summary(mode)}"
+        "#{LanItems.summary(:proposal)}#{DNS.Summary}#{routing_summary}"
       else
         LanItems.BuildLanOverview.first
       end
@@ -974,7 +975,7 @@ module Yast
     # @param id [Symbol] Network configuration ID
     # @return [Y2Network::Config,nil] Network configuration with the given ID or nil if not found
     def find_config(id)
-      configs[id]
+      Y2Network::Config.find(id)
     end
 
     # Adds the configuration
@@ -982,12 +983,12 @@ module Yast
     # @param id     [Symbol] Configuration ID
     # @param config [Y2Network::Config] Network configuration
     def add_config(id, config)
-      configs[id] = config
+      Y2Network::Config.add(id, config)
     end
 
     # Clears the network configurations list
     def clear_configs
-      configs.clear
+      Y2Network::Config.reset
     end
 
     # Returns the system configuration
@@ -1132,12 +1133,12 @@ module Yast
 
     # Returns the routing summary
     #
-    # @param mode [String,Symbol] Summary mode
     # @return [String]
-    def routing_summary(mode)
+    def routing_summary
       config = find_config(:yast)
+      return "" unless config && config.routing
       presenter = Y2Network::Presenters::RoutingSummary.new(config.routing)
-      presenter.text(mode: mode.to_sym)
+      presenter.text
     end
 
     def firewalld

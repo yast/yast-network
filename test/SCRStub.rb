@@ -87,7 +87,6 @@ end
 module YaPINetworkStub
   def stub_network_reads
     allow(Yast::DNS).to receive(:Read)
-    allow(Yast::Routing).to receive(:Read)
     allow(Yast::NetworkInterfaces).to receive(:CleanCacheRead)
     allow(Yast::LanItems).to receive(:Read)
   end

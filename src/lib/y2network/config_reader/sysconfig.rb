@@ -36,7 +36,7 @@ module Y2Network
       # @return [Y2Network::Config] Network configuration
       def config
         interfaces = find_interfaces
-        routing_tables = find_routing_tables
+        routing_tables = find_routing_tables(interfaces)
         routing = Routing.new(
           tables: routing_tables, forward_ipv4: forward_ipv4?, forward_ipv6: forward_ipv6?
         )
@@ -67,13 +67,15 @@ module Y2Network
       # Merges routes from /etc/sysconfig/network/routes and /etc/sysconfig/network/ifroute-*
       # TODO: currently it implicitly loads main/default routing table
       #
-      # return [RoutingTable] an object with routes
-      def find_routing_tables
+      # @param interfaces [Array<Interface>] Existing interfaces
+      # @return [RoutingTable] an object with routes
+      def find_routing_tables(interfaces)
         main_routes = load_routes_from
         iface_routes = find_interfaces.flat_map do |iface|
           load_routes_from("/etc/sysconfig/network/ifroute-#{iface.name}")
         end
         all_routes = main_routes + iface_routes
+        link_routes_to_interfaces(all_routes, interfaces)
         [Y2Network::RoutingTable.new(all_routes.uniq)]
       end
 
@@ -96,6 +98,21 @@ module Y2Network
       # return [Boolean] true when IPv6 forwarding is allowed
       def forward_ipv6?
         Yast::SCR.Read(Yast::Path.new(SYSCTL_IPV6_PATH)) == "1"
+      end
+
+      # Links routes to interfaces objects
+      #
+      # {Y2Network::SysconfigRoutesFile} knows nothing about the already detected interfaces, so it
+      # instantiates a new object for each interface found. This method links the routes
+      # with the interfaces found in #interfaces.
+      #
+      # @param routes     [Array<Route>] Routes to link
+      # @param interfaces [Array<Interface>] Interfaces
+      def link_routes_to_interfaces(routes, interfaces)
+        routes.each do |route|
+          interface = interfaces.find { |i| route.interface.name == i.name }
+          route.interface = interface if interface
+        end
       end
     end
   end

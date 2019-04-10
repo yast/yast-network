@@ -24,6 +24,10 @@ require "y2network/config_reader/sysconfig"
 require "y2network/config_writer/sysconfig"
 
 describe Y2Network::Config do
+  before do
+    Y2Network::Config.reset
+  end
+
   subject(:config) do
     described_class.new(interfaces: [eth0], routing: routing, source: :sysconfig)
   end
@@ -50,6 +54,30 @@ describe Y2Network::Config do
 
     it "returns the configuration from the given reader" do
       expect(described_class.from(:sysconfig)).to eq(config)
+    end
+  end
+
+  describe ".add" do
+    it "adds the configuration to the register" do
+      expect { Y2Network::Config.add(:yast, config) }
+        .to change { Y2Network::Config.find(:yast) }
+        .from(nil).to(config)
+    end
+  end
+
+  describe ".find" do
+    before do
+      Y2Network::Config.add(:yast, config)
+    end
+
+    it "returns the registered config with the given ID" do
+      expect(Y2Network::Config.find(:yast)).to eq(config)
+    end
+
+    context "when a configuration with the given ID does not exist" do
+      it "returns nil" do
+        expect(Y2Network::Config.find(:test)).to be_nil
+      end
     end
   end
 

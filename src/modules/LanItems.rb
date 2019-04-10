@@ -27,6 +27,7 @@ require "y2storage"
 require "network/install_inf_convertor"
 require "network/wicked"
 require "network/lan_items_summary"
+require "y2network/config"
 
 require "shellwords"
 
@@ -58,7 +59,6 @@ module Yast
       Yast.import "UI"
       textdomain "network"
 
-      Yast.import "Routing"
       Yast.import "NetworkInterfaces"
       Yast.import "ProductFeatures"
       Yast.import "NetworkConfig"
@@ -277,7 +277,7 @@ module Yast
       items.map { |itemId| GetDeviceName(itemId) }.reject(&:empty?)
     end
 
-    # Return the actual name of the current {LanItem}
+    # Return the actual name of the current {LanItems}
     #
     # @return [String] the actual name for the current device
     def current_name
@@ -511,7 +511,7 @@ module Yast
     # It also contain a logic on tuple operators. When the new_key is "NAME"
     # then assignment operator (=) is used. Otherwise equality operator (==) is used.
     # Thats bcs this function is currently used for touching "NAME", "KERNELS" and
-    # "ATTR{address}" keys only
+    # `ATTR{address}` keys only
     #
     # @param replace_key [string] udev key which identifies tuple to be replaced
     # @param new_key     [string] new key to by used
@@ -2250,6 +2250,7 @@ module Yast
         @current = -1
       end
 
+      remove_current_device_from_routing
       SetModified()
 
       nil
@@ -2646,7 +2647,7 @@ module Yast
       false
     end
 
-    # Return the current name of the {LanItem} given
+    # Return the current name of the {LanItems} given
     #
     # @param item_id [Integer] a key for {#Items}
     def current_name_for(item_id)
@@ -2662,23 +2663,52 @@ module Yast
       item_id
     end
 
-    # Return wether the {Yast:Routing} devices list needs to be updated or not
-    # to include the current interface name
+    # Return wether the routing devices list needs to be updated or not to include
+    # the current interface name
     #
     # @return [Boolean] false if the current interface name is already present
     def update_routing_devices?
-      !Routing.devices.include?(current_name)
+      device_names = yast_config.interfaces.map(&:name)
+      !device_names.include?(current_name)
     end
 
-    # Convenience method to update the {Yast::Routing} devices list
-    def update_routing_devices!
-      Routing.SetDevices(current_device_names)
+    # Adds a new interface with the given name
+    #
+    # @todo This method exists just to keep some compatibility during
+    #       the migration to network-ng.
+    def add_current_device_to_routing
+      config = yast_config
+      return if config.nil?
+      name = current_name
+      return if config.interfaces.any? { |i| i.name == name }
+      yast_config.interfaces << Y2Network::Interface.new(name)
     end
 
-    # It modifies the interface name with the new one of all the routes
-    # that belongs to the current renamed {LanItem}
-    def update_routes!(previous_name)
-      Routing.device_routes(previous_name).each { |r| r["device"] = current_name }
+    # Renames an interface
+    #
+    # @todo This method exists just to keep some compatibility during
+    #       the migration to network-ng.
+
+    # @param old_name [String] Old device name
+    def rename_current_device_in_routing(old_name)
+      config = yast_config
+      return if config.nil?
+      interface = config.interfaces.find { |i| i.name == old_name }
+      return unless interface
+      interface.name = current_name
+    end
+
+    # Removes the interface with the given name
+    #
+    # @todo This method exists just to keep some compatibility during
+    #       the migration to network-ng.
+    # @todo It does not check orphan routes.
+    def remove_current_device_from_routing
+      config = yast_config
+      return if config.nil?
+      name = current_name
+      return if name.empty?
+      config.interfaces.reject! { |i| i.name == name }
     end
 
   private
@@ -2826,6 +2856,14 @@ module Yast
       end
 
       GetDeviceNames(items)
+    end
+
+    # Convenience method
+    #
+    # @todo It should not be called outside this module.
+    # @return [Y2Network::Config] YaST network configuration
+    def yast_config
+      Y2Network::Config.find(:yast)
     end
 
     # @attribute Items

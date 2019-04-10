@@ -44,6 +44,13 @@ describe Y2Network::ConfigReader::Sysconfig do
       expect(config.interfaces.map(&:name)).to eq(["lo", "eth0", "wlan0"])
     end
 
+    it "links routes with detected network devices" do
+      config = reader.config
+      route = config.routing.routes.first
+      iface = config.interfaces.find { |i| i.name == route.interface.name }
+      expect(route.interface).to be(iface)
+    end
+
     it "returns a configuration including routes" do
       config = reader.config
       expect(config.routing.routes.size).to eq(4)

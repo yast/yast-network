@@ -49,6 +49,11 @@ module Y2Network
       self
     end
 
+    # Returns the default route
+    def remove_default_routes
+      @routes.reject!(&:default?)
+    end
+
     # Determines whether two routing tables are equal
     #
     # @param other [RoutingTable] Routing table to compare with

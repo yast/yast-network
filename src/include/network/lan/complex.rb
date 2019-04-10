@@ -40,7 +40,6 @@ module Yast
       Yast.import "Mode"
       Yast.import "NetworkConfig"
       Yast.import "NetworkService"
-      Yast.import "Routing"
       Yast.import "Wizard"
       Yast.import "Popup"
       Yast.import "Label"
@@ -464,7 +463,6 @@ module Yast
           end
 
           LanItems.DeleteItem
-          LanItems.update_routing_devices!
           initOverview("")
         end
       end

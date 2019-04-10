@@ -18,13 +18,15 @@
 # find current contact information at www.suse.com.
 
 require_relative "../test_helper"
+require "y2network/route"
 require "y2network/routing_table"
 require "y2network/routing"
 
 describe Y2Network::Routing do
   subject(:routing) { described_class.new(tables: [table1]) }
-  let(:table1) { Y2Network::RoutingTable.new([route1]) }
-  let(:route1) { double("Y2Network::Route") }
+  let(:table1) { Y2Network::RoutingTable.new(routes) }
+  let(:route1) { Y2Network::Route.new(to: :default) }
+  let(:routes) { [route1] }
 
   describe "#==" do
     let(:other) { described_class.new(tables: [table1]) }
@@ -62,6 +64,30 @@ describe Y2Network::Routing do
       it "returns false" do
         expect(routing).to_not eq(other)
       end
+    end
+  end
+
+  describe "#default_route" do
+    let(:routes) { [no_default, route1] }
+    let(:no_default) { Y2Network::Route.new }
+
+    it "returns the default route" do
+      expect(routing.default_route).to eq(route1)
+    end
+
+    context "when there are no routes" do
+      let(:routes) { [] }
+
+      it "returns nil" do
+        expect(routing.default_route).to be_nil
+      end
+    end
+  end
+
+  describe "#remove_default_routes" do
+    it "removes the default routes from all tables" do
+      expect(table1).to receive(:remove_default_routes)
+      routing.remove_default_routes
     end
   end
 end
