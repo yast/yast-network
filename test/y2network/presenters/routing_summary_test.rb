@@ -21,19 +21,20 @@ require_relative "../../test_helper"
 require "y2network/presenters/routing_summary"
 require "y2network/config"
 require "y2network/routing"
+require "y2network/routing_table"
 require "y2network/route"
 
 describe Y2Network::Presenters::RoutingSummary do
   subject(:presenter) { described_class.new(routing) }
+
   let(:routing) do
-    instance_double(
-      Y2Network::Routing, default_routes: default_routes, forward_ipv4: true, forward_ipv6: false,
-      routes: [double("Y2Network::Route")]
-    )
+    Y2Network::Routing.new(tables: [table], forward_ipv4: true, forward_ipv6: false)
+  end
+  let(:table) do
+    Y2Network::RoutingTable.new([default_route])
   end
   let(:default_route) { Y2Network::Route.new(to: :default, gateway: IPAddr.new("10.0.0.1")) }
   let(:gw_hostname) { "gw.example.net" }
-  let(:default_routes) { [default_route] }
 
   before do
     allow(Yast::NetHwDetection).to receive(:ResolveIP).with("10.0.0.1")
@@ -49,8 +50,9 @@ describe Y2Network::Presenters::RoutingSummary do
     end
 
     context "when no default route is defined" do
-      let(:default_routes) { [] }
-
+      let(:table) do
+        Y2Network::RoutingTable.new([])
+      end
       it "does not include the gateway" do
         expect(presenter.text).to_not include("Gateways")
       end
