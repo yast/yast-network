@@ -42,13 +42,6 @@ module Y2Network
       @routes = routes
     end
 
-    # @param routing_table [RoutingTable] Routing table
-    # @return [RoutingTable]
-    def concat(routing_table)
-      @routes.concat(routing_table)
-      self
-    end
-
     # Returns the default route
     def remove_default_routes
       @routes.reject!(&:default?)
