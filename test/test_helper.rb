@@ -6,6 +6,26 @@ ENV["Y2DIR"] = y2dirs.unshift(srcdir).join(":")
 ENV["LC_ALL"] = "en_US.UTF-8"
 ENV["LANG"] = "en_US.UTF-8"
 
+# load it early, so other stuffs are not ignored
+if ENV["COVERAGE"]
+  require "simplecov"
+  SimpleCov.start do
+    add_filter "/test/"
+  end
+
+  # track all ruby files under src
+  SimpleCov.track_files("#{srcdir}/**/*.rb")
+
+  # use coveralls for on-line code coverage reporting at Travis CI
+  if ENV["TRAVIS"]
+    require "coveralls"
+    SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter[
+      SimpleCov::Formatter::HTMLFormatter,
+      Coveralls::SimpleCov::Formatter
+    ]
+  end
+end
+
 require "yast"
 require "yast/rspec"
 Yast.import "Lan"
@@ -55,24 +75,5 @@ class SectionKeyValue
   def set(section, key, value)
     section_hash = @sections[section] ||= {}
     section_hash[key] = value
-  end
-end
-
-if ENV["COVERAGE"]
-  require "simplecov"
-  SimpleCov.start do
-    add_filter "/test/"
-  end
-
-  # track all ruby files under src
-  SimpleCov.track_files("#{srcdir}/**/*.rb")
-
-  # use coveralls for on-line code coverage reporting at Travis CI
-  if ENV["TRAVIS"]
-    require "coveralls"
-    SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter[
-      SimpleCov::Formatter::HTMLFormatter,
-      Coveralls::SimpleCov::Formatter
-    ]
   end
 end
