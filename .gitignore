@@ -9,6 +9,7 @@ Makefile.in
 Makefile
 configure
 configure.ac
+config.*
 *.tar.*
 .dep
 autodocs*
