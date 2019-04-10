@@ -751,7 +751,7 @@ module Yast
       settings = {} if settings.nil?
 
       profile = Y2Network::AutoinstProfile::NetworkingSection.new_from_hashes(settings)
-      config = Y2Network::Config.from(:autoyast, profile)
+      config = Y2Network::Config.from(:autoinst, profile)
       add_config(:yast, config)
 
       LanItems.Import(settings)

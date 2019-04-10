@@ -43,7 +43,7 @@ module Y2Network
       def config
         interfaces = find_interfaces
         routing = section.routing ? AutoinstRouting.new(section.routing).config : nil
-        Y2Network::Config.new(interfaces: interfaces, routing: routing, source: :autoyast)
+        Y2Network::Config.new(interfaces: interfaces, routing: routing, source: :sysconfig)
       end
 
     private

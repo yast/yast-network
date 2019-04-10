@@ -54,7 +54,7 @@ module Y2Network
         section.routes.map do |route_section|
           Y2Network::Route.new(to:        destination_from(route_section),
                                gateway:   gateway_from(route_section),
-                               interface: route_section.device,
+                               interface: interface_from(route_section),
                                options:   route_section.extrapara)
         end
       end
@@ -62,6 +62,7 @@ module Y2Network
       # Return the IPAddr of de given host/network or :default in case of it
       # is defined as the "default" route.
       #
+      # @param route_section [AutoinstProfile::RouteSection]
       # @return [IPAddr, :default]
       def destination_from(route_section)
         destination = route_section.destination
@@ -74,10 +75,21 @@ module Y2Network
 
       # Return the IPAddr of de host defined as the gateway.
       #
+      # @param route_section [AutoinstProfile::RouteSection]
       # @return [IPAddr, :default]
       def gateway_from(route_section)
         return unless route_section.gateway
         IPAddr.new(route_section.gateway)
+      end
+
+      # Return the {Y2Network::Interface} defined in the route section
+      #
+      # @param route_section [AutoinstProfile::RouteSection]
+      # @return [Y2Network::Interface,nil]
+      def interface_from(route_section)
+        return unless route_section.device
+
+        Y2Network::Interface.new(route_section.device)
       end
     end
   end
