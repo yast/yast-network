@@ -69,10 +69,10 @@ describe Y2Network::Routing do
 
   describe "#default_route" do
     let(:routes) { [no_default, route1] }
-    let(:no_default) { Y2Network::Route.new }
+    let(:no_default) { Y2Network::Route.new(to: IPAddr.new("192.168.122.0/24")) }
 
     it "returns the default route" do
-      expect(routing.default_route).to eq(route1)
+      expect(routing.default_route).to be(route1)
     end
 
     context "when there are no routes" do
@@ -80,6 +80,25 @@ describe Y2Network::Routing do
 
       it "returns nil" do
         expect(routing.default_route).to be_nil
+      end
+    end
+  end
+
+  describe "#default_routes" do
+    let(:routes) { [default1, default2, no_default] }
+    let(:default1) { Y2Network::Route.new(to: :default) }
+    let(:default2) { Y2Network::Route.new(to: :default) }
+    let(:no_default) { Y2Network::Route.new(to: IPAddr.new("192.168.122.0/24")) }
+
+    it "returns the default routes" do
+      expect(routing.default_routes).to eq([default1, default2])
+    end
+
+    context "when there are no default routes" do
+      let(:routes) { [] }
+
+      it "returns an empty array" do
+        expect(routing.default_routes).to eq([])
       end
     end
   end

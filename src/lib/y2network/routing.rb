@@ -51,6 +51,13 @@ module Y2Network
       routes.find(&:default?)
     end
 
+    # Returns the default routes
+    #
+    # @return [Array<Route>] Default routes
+    def default_routes
+      routes.select(&:default?)
+    end
+
     # Remove default routes from routing tables
     def remove_default_routes
       tables.each(&:remove_default_routes)

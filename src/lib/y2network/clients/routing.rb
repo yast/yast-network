@@ -313,7 +313,7 @@ module Y2Network
 
       # Handler for action "delete"
       #
-      # @param [Hash]
+      # @param options [Hash]
       # @return [Boolean] true if deleted; false otherwise
       def DeleteHandler(options)
         destination = options["dest"]
