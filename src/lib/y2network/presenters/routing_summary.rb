@@ -48,10 +48,8 @@ module Y2Network
         summary = ""
         return summary if routing.nil? || routing.routes.empty?
 
-        gateway_string = gateway_string_from(routing)
-        if gateway_string
-          summary = Yast::Summary.AddListItem(summary, _("Gateway: %s") % gateway_string)
-        end
+        gateways = gateways_string(routing)
+        summary = Yast::Summary.AddListItem(summary, format(_("Gateways: %s"), gateways)) if gateways
         summary = Yast::Summary.AddListItem(
           summary, format(_("IP Forwarding for IPv4: %s"), boolean_to_human(routing.forward_ipv4))
         )
@@ -64,14 +62,25 @@ module Y2Network
 
     private
 
-      # Returns a text representation of the gateway
+      # Returns a text representation of the gateways
       #
       # @param routing [Y2Network::Routing] Routing configuration
       # @return [String,nil] Text representation of the gateway IP; nil if no gateway is found
-      def gateway_string_from(routing)
-        default_route = routing.default_route
-        return nil if default_route.nil?
-        gateway = default_route.gateway.to_s
+      def gateways_string(routing)
+        return nil if routing.default_routes.empty?
+        text = Yast::Summary.OpenList("")
+        routing.default_routes.each do |route|
+          text = Yast::Summary.AddListItem(text, gateway_string_for(route))
+        end
+        Yast::Summary.CloseList(text)
+      end
+
+      # Returns a text representation of the gateway for a given route
+      #
+      # @param route [Y2Network::Route] Route to get the gateway from
+      # @return [String] Text representation including the hostname if possible
+      def gateway_string_for(route)
+        gateway = route.gateway.to_s
         hostname = Yast::NetHwDetection.ResolveIP(gateway)
         return gateway if hostname.empty?
         "#{gateway} (#{hostname})"
