@@ -48,7 +48,7 @@ module Yast
 
       @widget_descr = {
         # obsoleted by BOOTPROTO_*
-        "BOOTPROTO"       => {
+        "BOOTPROTO" => {
           "widget" => :radio_buttons,
           # radio button group label,method of setup
           "label"  => _(
