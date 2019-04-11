@@ -788,6 +788,7 @@ module Yast
         "config"               => NetworkConfig.Export,
         "devices"              => devices,
         "ipv6"                 => @ipv6,
+        "routing"              => profile.routing ? profile.routing.to_hashes : {},
         "managed"              => NetworkService.is_network_manager,
         "start_immediately"    => Ops.get_boolean(
           LanItems.autoinstall_settings,
@@ -800,7 +801,6 @@ module Yast
           true
         )
       }
-      ay["routing"] = profile.routing.to_hashes if profile.routing
       Builtins.y2milestone("Exported map: %1", ay)
       deep_copy(ay)
     end
