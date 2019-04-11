@@ -47,21 +47,6 @@ module Yast
       Yast.include include_target, "network/complex.rb"
 
       @widget_descr = {
-        # #23315
-        "DIALPREFIXREGEX" => {
-          "widget" => :textentry,
-          # TextEntry label
-          "label"  => _("&Dial Prefix Regular Expression"),
-          "help"   =>
-                      # dial prefix regex help
-                      _(
-                        "<p>When <b>Dial Prefix Regular Expression</b> is set, users can\n" \
-                          "change the dial prefix in KInternet provided that it matches the expression.\n" \
-                          "A recommended value is <tt>[09]?</tt>, allowing <tt>0</tt>, <tt>9</tt>,\n" \
-                          "and the empty prefix. If the expression is empty, users are not allowed\n" \
-                          "to change the prefix.</p>\n"
-                      )
-        },
         # obsoleted by BOOTPROTO_*
         "BOOTPROTO"       => {
           "widget" => :radio_buttons,
