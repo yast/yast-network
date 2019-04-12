@@ -1475,10 +1475,10 @@ module Yast
           if LanItems.isCurrentDHCP && !LanItems.isCurrentHotplug
             remove_gw = Routing.default_gw? && Popup.YesNo(
               _(
-                "A static default gateway is defined.\n" \
-                "It is suggested to remove static gateway definition,\n" \
+                "A static default route is defined.\n" \
+                "It is suggested to remove the static default route definition\n" \
                 "if one can be obtained also via DHCP.\n" \
-                "Do you want to remove static default gateway?"
+                "Do you want to remove the static default route?"
               )
             )
             Routing.RemoveDefaultGw if remove_gw
