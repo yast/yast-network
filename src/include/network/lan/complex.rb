@@ -193,9 +193,14 @@ module Yast
       # Store data from new backend
       # It is done here bcs this method is currently called to do proper "yast2 lan"
       # shutdown, so it saves configuration modified by all submodules
-      system_config = Y2Network::Config.from(:sysconfig)
-      Y2Network::Config.add(:system, system_config)
-      Y2Network::Config.add(:yast, system_config.copy)
+      yast_config = Y2Network::Config.find(:yast)
+      system_config = Y2Network::Config.find(:system)
+      # TODO: in the future we need a finer way how to say which submodules to write
+      # (e.g. only routing was modified -> write only routing)
+      if yast_config != system_config
+        log.info("Writing configuration from new backend")
+        system_config = Y2Network::Config.write(:yast)
+      end
 
       ret = Lan.Write
       ret ? :next : :abort
