@@ -29,6 +29,7 @@
 require "ui/text_helpers"
 require "y2firewall/helpers/interfaces"
 require "y2network/widgets/firewall_zone"
+require "y2network/widgets/tunnel"
 
 module Yast
   module NetworkLanAddressInclude
@@ -75,7 +76,14 @@ module Yast
         "force_static_ip"
       )
 
-      @widget_descr_local = {
+    end
+
+    def tunnel_widget
+      @tunnel_widget ||= Y2Network::Widgets::Tunnel.new(@settings)
+    end
+
+    def widget_descr_local
+      res = {
         "AD_ADDRESSES" => {
           "widget"        => :custom,
           "custom_widget" => Frame(
@@ -167,18 +175,7 @@ module Yast
           "help"   => "",
           "init"   => fun_ref(method(:initIfcfgId), "void (string)")
         },
-        "TUNNEL"       => {
-          "widget"        => :custom,
-          "custom_widget" => VBox(
-            HBox(
-              InputField(Id(:owner), _("Tunnel owner")),
-              InputField(Id(:group), _("Tunnel group"))
-            )
-          ),
-          "help"          => Ops.get_string(@help, "tunnel", ""),
-          "init"          => fun_ref(method(:initTunnel), "void (string)"),
-          "store"         => fun_ref(method(:storeTunnel), "void (string, map)")
-        },
+        tunnel_widget.widget_id => tunnel_widget.cwm_definition,
         "BRIDGE_PORTS" => {
           "widget"            => :multi_selection_box,
           "label"             => _("Bridged Devices"),
@@ -382,10 +379,12 @@ module Yast
       }
 
       Ops.set(
-        @widget_descr_local,
+        res,
         "HWDIALOG",
         Ops.get(widget_descr_hardware, "HWDIALOG", {})
       )
+
+      res
     end
 
     # `RadioButtonGroup uses CurrentButton instead of Value, grrr
@@ -695,37 +694,6 @@ module Yast
       physical_ports = repeated_physical_port_ids(selected_slaves)
 
       physical_ports.empty? ? true : continue_with_duplicates?(physical_ports)
-    end
-
-    def initTunnel(_key)
-      Builtins.y2internal("initTunnel %1", @settings)
-      UI.ChangeWidget(
-        :owner,
-        :Value,
-        Ops.get_string(@settings, "TUNNEL_SET_OWNER", "")
-      )
-      UI.ChangeWidget(
-        :group,
-        :Value,
-        Ops.get_string(@settings, "TUNNEL_SET_GROUP", "")
-      )
-
-      nil
-    end
-
-    def storeTunnel(_key, _event)
-      Ops.set(
-        @settings,
-        "TUNNEL_SET_OWNER",
-        Convert.to_string(UI.QueryWidget(:owner, :Value))
-      )
-      Ops.set(
-        @settings,
-        "TUNNEL_SET_GROUP",
-        Convert.to_string(UI.QueryWidget(:group, :Value))
-      )
-
-      nil
     end
 
     def enableDisableBootProto(current)
@@ -1157,7 +1125,7 @@ module Yast
       )
 
       address_contents = if ["tun", "tap"].include?(LanItems.type)
-        VBox(Left(label), "TUNNEL")
+        VBox(Left(label), tunnel_widget.widget_id)
       else
         VBox(
           Left(label),
@@ -1211,7 +1179,7 @@ module Yast
       initialize_address_settings
 
       wd = Convert.convert(
-        Builtins.union(@widget_descr, @widget_descr_local),
+        Builtins.union(@widget_descr, widget_descr_local),
         from: "map",
         to:   "map <string, map <string, any>>"
       )
@@ -1404,7 +1372,7 @@ module Yast
 
     # Initializes the Address Dialog @settings with the corresponding LanItems values
     def initialize_address_settings
-      @settings = {
+      @settings.replace({
         # general tab:
         "STARTMODE"        => LanItems.startmode,
         "IFPLUGD_PRIORITY" => LanItems.ifplugd_priority,
@@ -1420,7 +1388,7 @@ module Yast
         "HOSTNAME"         => initial_hostname(LanItems.ipaddr),
         "IFCFGTYPE"        => LanItems.type,
         "IFCFGID"          => LanItems.device
-      }
+      })
 
       if LanItems.type == "vlan"
         @settings["ETHERDEVICE"] = LanItems.vlan_etherdevice
@@ -1428,13 +1396,13 @@ module Yast
       end
 
       if ["tun", "tap"].include?(LanItems.type)
-        @settings = {
+        @settings.replace({
           "BOOTPROTO"        => "static",
           "STARTMODE"        => "auto",
           "TUNNEL"           => LanItems.type,
           "TUNNEL_SET_OWNER" => LanItems.tunnel_set_owner,
           "TUNNEL_SET_GROUP" => LanItems.tunnel_set_group
-        }
+        })
       end
 
       # #65524
