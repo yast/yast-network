@@ -17,27 +17,35 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 module Y2Network
-  # An Interface corresponding to a physical device (ethernet card, ...)
-  #
-  # Main difference is that
-  # 1) it can have a configuration assigned or not and we need to track both cases
-  # 2) such devices can be renamed via udev
-  class HwInterface < Interface
-    attr_reader :hw_name
+  # FIXME: should read hwinfo for a network device and store only necessary info
+  class Hwinfo
+    def initialize(hwinfo: nil)
+      # FIXME: store only what's needed.
+      @hwinfo = hwinfo
+    end
 
-    def initialize(name, hw_name:)
-      if !name && !hw_name
-        raise ArgumentError, "Configuration name or Hardware name has to be defined"
-      end
+    def exists?
+      !@hwinfo.nil?
+    end
 
-      super(name)
-
-      @hw_name = hw_name
-      @configured = !name.nil?
+    def link?
+      @hwinfo ? @hwinfo.fetch("link", false) : false
     end
 
     def name
-      name || hw_name
+      @hwinfo ? @hwinfo.fetch("dev_name", "") : ""
+    end
+
+    def mac
+      @hwinfo ? @hwinfo.fetch("mac", "") : ""
+    end
+
+    def busid
+      @hwinfo ? @hwinfo.fetch("busid", "") : ""
+    end
+
+    def name
+      @hwinfo ? @hwinfo.fetch("dev_name", "") : ""
     end
   end
 end
