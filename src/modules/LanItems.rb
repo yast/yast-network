@@ -30,6 +30,7 @@ require "network/lan_items_summary"
 require "y2network/config"
 
 require "y2network/config"
+require "y2network/interfaces"
 
 require "shellwords"
 
@@ -1182,7 +1183,7 @@ module Yast
         items[items.size] = { "ifcfg" => confname }
       end
 
-      yast_config.old_interfaces = @Items
+      yast_config.old_interfaces = Y2Network::Interfaces.new(old_items: @Items)
       log.info "Read Configuration LanItems::Items #{@Items}"
 
       nil
@@ -1236,37 +1237,17 @@ module Yast
       true
     end
 
-    def GetDescr
+    def GetDescr(overviews)
       descr = []
-      Builtins.foreach(
-        Convert.convert(
-          @Items,
-          from: "map <integer, any>",
-          to:   "map <integer, map <string, any>>"
+      overviews.each_pair do |key, value|
+        descr = Builtins.add(
+          descr,
+          "id"          => key,
+          "rich_descr"  => value["table_descr"]["rich_descr"] || "",
+          "table_descr" => value["table_descr"]["table_descr"] || []
         )
-      ) do |key, value|
-        if Builtins.haskey(value, "table_descr") &&
-            Ops.greater_than(
-              Builtins.size(Ops.get_map(@Items, [key, "table_descr"], {})),
-              1
-            )
-          descr = Builtins.add(
-            descr,
-            "id"          => key,
-            "rich_descr"  => Ops.get_string(
-              @Items,
-              [key, "table_descr", "rich_descr"],
-              ""
-            ),
-            "table_descr" => Ops.get_list(
-              @Items,
-              [key, "table_descr", "table_descr"],
-              []
-            )
-          )
-        end
       end
-      deep_copy(descr)
+      descr
     end
 
     def needFirmwareCurrentItem
@@ -1391,7 +1372,7 @@ module Yast
     # Creates item's startmode human description
     #
     # @param item_id [Integer] a key for {#Items}
-    def startmode_overview(item_id)
+    def startmode_overview(ifcfg)
       startmode_descrs = {
         # summary description of STARTMODE=auto
         "auto"    => _(
@@ -1423,7 +1404,6 @@ module Yast
         )
       }
 
-      ifcfg = GetDeviceMap(item_id) || {}
       startmode_descr = startmode_descrs[ifcfg["STARTMODE"].to_s] || _("Started manually")
 
       [startmode_descr]
@@ -1479,42 +1459,37 @@ module Yast
 
     # FIXME: side effect: sets @type. No reason for that. It should only build item
     #   overview. Check and remove.
-    def BuildLanOverview
+    def FormatOverview
+      overviews = {}
       overview = []
       links = []
 
       bond_index = BuildBondIndex()
 
-      LanItems.Items.each_key do |key|
+      yast_config.old_interfaces.each do |iface|
+        overviews[iface.name] = {}
         rich = ""
 
-        item_hwinfo = LanItems.Items[key]["hwinfo"] || {}
-        descr = item_hwinfo["name"] || ""
+        descr = iface.name
 
         note = ""
         bullets = []
-        ifcfg_name = LanItems.Items[key]["ifcfg"] || ""
-        ifcfg_type = NetworkInterfaces.GetType(ifcfg_name)
 
-        if !ifcfg_name.empty?
-          ifcfg_conf = GetDeviceMap(key)
-          log.error("BuildLanOverview: devmap for #{key}/#{ifcfg_name} is nil") if ifcfg_conf.nil?
-
-          ifcfg_desc = ifcfg_conf["NAME"]
+        if iface.configured
+          ifcfg_desc = iface.config["NAME"]
           descr = ifcfg_desc if !ifcfg_desc.nil? && !ifcfg_desc.empty?
-          descr = CheckEmptyName(ifcfg_type, descr)
-          status = DeviceStatus(ifcfg_type, ifcfg_name, ifcfg_conf)
+          descr = CheckEmptyName(iface.type, descr)
+          status = DeviceStatus(iface.type, iface.name, iface.config)
 
-          bullets << _("Device Name: %s") % ifcfg_name
-          bullets += startmode_overview(key)
-          bullets += ip_overview(ifcfg_conf) if ifcfg_conf["STARTMODE"] != "managed"
+          bullets << _("Device Name: %s") % iface.name
+          bullets += startmode_overview(iface.config || {})
+          bullets += ip_overview(iface.config) if iface.config["STARTMODE"] != "managed"
 
-          if ifcfg_type == "wlan" &&
-              ifcfg_conf["WIRELESS_AUTH_MODE"] == "open" &&
-              IsEmpty(ifcfg_conf["WIRELESS_KEY_0"])
+          if iface.type == "wlan" &&
+            iface.config["WIRELESS_AUTH_MODE"] == "open" && iface.config.fetch("WIRELESS_KEY_0", {}).empty
 
             # avoid colons
-            ifcfg_name = ifcfg_name.tr(":", "/")
+            ifcfg_name = iface.name.tr(":", "/")
             href = "lan--wifi-encryption-" + ifcfg_name
             # interface summary: WiFi without encryption
             warning = HTML.Colorize(_("Warning: no encryption is used."), "red")
@@ -1523,59 +1498,61 @@ module Yast
             links << href
           end
 
-          if ifcfg_type == "bond" || ifcfg_type == "br"
-            bullets << slaves_desc(ifcfg_type, ifcfg_name)
+          if iface.type == "bond" || iface.type == "br"
+            bullets << slaves_desc(iface.type, iface.name)
           end
 
-          if enslaved?(ifcfg_name)
-            if bond_index[ifcfg_name]
-              master = bond_index[ifcfg_name]
+          if enslaved?(iface.name)
+            if bond_index[iface.name]
+              master = bond_index[iface.name]
               master_desc = _("Bonding master")
             else
-              master = bridge_index[ifcfg_name]
+              master = bridge_index[iface.name]
               master_desc = _("Bridge")
             end
             note = format(_("enslaved in %s"), master)
             bullets << format("%s: %s", master_desc, master)
           end
 
-          if renamed?(key)
-            note = format("%s -> %s", GetDeviceName(key), renamed_to(key))
-          end
+          # FIXME: renaming currently not supported in new object hierarchy
+#          if renamed?(key)
+#            note = format("%s -> %s", GetDeviceName(key), renamed_to(key))
+#          end
 
           overview << Summary.Device(descr, status)
         else
-          descr = CheckEmptyName(ifcfg_type, descr)
+          descr = CheckEmptyName(iface.type, descr)
           overview << Summary.Device(descr, Summary.NotConfigured)
         end
         conn = ""
-        conn = HTML.Bold(format("(%s)", _("Not connected"))) if !item_hwinfo["link"]
-        conn = HTML.Bold(format("(%s)", _("No hwinfo"))) if item_hwinfo.empty?
+        conn = HTML.Bold(format("(%s)", _("Not connected"))) if !iface.hardware.link?
+        conn = HTML.Bold(format("(%s)", _("No hwinfo"))) if iface.hardware?
 
-        mac_dev = HTML.Bold("MAC : ") + item_hwinfo["mac"].to_s + "<br>"
-        bus_id  = HTML.Bold("BusID : ") + item_hwinfo["busid"].to_s + "<br>"
-        physical_port_id = HTML.Bold("PhysicalPortID : ") + physical_port_id(ifcfg_name) + "<br>"
+        mac_dev = HTML.Bold("MAC : ") + iface.hardware.mac + "<br>"
+        bus_id  = HTML.Bold("BusID : ") + iface.hardware.busid + "<br>"
+        physical_port_id = HTML.Bold("PhysicalPortID : ") + physical_port_id(iface.name) + "<br>"
 
-        rich << " " << conn << "<br>" << mac_dev if IsNotEmpty(item_hwinfo["mac"])
-        rich << bus_id if IsNotEmpty(item_hwinfo["busid"])
-        rich << physical_port_id if physical_port_id?(ifcfg_name)
+        rich << " " << conn << "<br>" << mac_dev if !iface.hardware.mac.empty?
+        rich << bus_id if !iface.hardware.busid.empty?
+        rich << physical_port_id if physical_port_id?(iface.name)
         # display it only if we need it, don't duplicate "ifcfg_name" above
-        if IsNotEmpty(item_hwinfo["dev_name"]) && ifcfg_name.empty?
-          dev_name = _("Device Name: %s") % item_hwinfo["dev_name"]
+        if !iface.configured
+          dev_name = _("Device Name: %s") % iface.hardware.name
           rich << HTML.Bold(dev_name) << "<br>"
         end
         rich = HTML.Bold(descr) + rich
-        if IsEmpty(item_hwinfo["dev_name"]) && !item_hwinfo.empty? && !Arch.s390
+        if iface.hardware.name.empty? && iface.hardware.exists? && !Arch.s390
           rich << "<p>"
           rich << _("Unable to configure the network card because the kernel device (eth0, wlan0) is not present. This is mostly caused by missing firmware (for wlan devices). See dmesg output for details.")
           rich << "</p>"
-        elsif !ifcfg_name.empty?
+        elsif !iface.name.empty?
           rich << HTML.List(bullets)
         else
           rich << "<p>"
           rich << _("The device is not configured. Press <b>Edit</b>\nto configure.\n")
           rich << "</p>"
 
+        # FIXME: there is no current anymore
           curr = @current
           @current = key
           if needFirmwareCurrentItem
@@ -1584,19 +1561,37 @@ module Yast
           end
           @current = curr
         end
-        LanItems.Items[key]["table_descr"] = {
+        # FIXME: - find how to enable bellow code
+#        LanItems.Items[key]["table_descr"] = {
+#          "rich_descr"  => rich,
+#          "table_descr" => [descr, DeviceProtocol(ifcfg_conf), ifcfg_name, note]
+#        }
+        overviews[iface.name]["table_descr"] = {
           "rich_descr"  => rich,
-          "table_descr" => [descr, DeviceProtocol(ifcfg_conf), ifcfg_name, note]
+          "table_descr" => [descr, DeviceProtocol(iface.config), iface.name, note]
         }
       end
-      [Summary.DevicesList(overview), links]
+
+      {
+        overview: overview,
+        overviews: overviews,
+        links: links
+      }
+    end
+
+    def BuildLanOverview(formated_overview: nil)
+      formated_overview = FormatOverview() if formated_overview.nil?
+      overview = formated_overview[:overview]
+      [Summary.DevicesList(overview), formated_overview[:links]]
     end
 
     # Create an overview table with all configured devices
     # @return table items
     def Overview
-      BuildLanOverview()
-      GetDescr()
+      res = FormatOverview()
+      BuildLanOverview(formated_overview: res)
+      # only usage of GetDescr
+      GetDescr(res[:overviews])
     end
 
     # Is current device hotplug or not? I.e. is connected via usb/pcmci?

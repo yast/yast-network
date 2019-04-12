@@ -16,19 +16,33 @@
 #
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
+require "yast"
+
+require "forwardable"
+require "y2network/hwinfo"
+
+Yast.import "NetworkInterfaces"
+
 module Y2Network
   # Network interface.
   class Interface
     # @return [String] Device name (eth0, wlan0, etc.)
     attr_reader :name # should not be changed after object creation. Used as an id.
     attr_reader :configured
+    attr_reader :hardware
+
+    extend Forwardable
+
+    def_delegator :@hardware, :exists?, :hardware?
 
     # Constructor
     #
     # @param name [String] Interface name (e.g., "eth0")
-    def initialize(name)
+    def initialize(name, hwinfo: nil)
+      @hardware = Hwinfo.new(hwinfo: hwinfo)
       @name = name
-      @configured = true
+      # FIXME: definitely has to be fixed for not configured devices
+      @configured = !(name.nil? || name.empty?)
     end
 
     # Determines whether two interfaces are equal
@@ -38,6 +52,14 @@ module Y2Network
     def ==(other)
       return false unless other.is_a?(Interface)
       name == other.name
+    end
+
+    def type
+      Yast::NetworkInterfaces.GetType(name)
+    end
+
+    def config
+      Yast::NetworkInterfaces.devmap(name)
     end
 
     # eql? (hash key equality) should alias ==, see also

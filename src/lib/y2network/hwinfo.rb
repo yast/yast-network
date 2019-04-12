@@ -16,15 +16,36 @@
 #
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
-
 module Y2Network
-  # Physical interface hardware information
+  # FIXME: should read hwinfo for a network device and store only necessary info
   class Hwinfo
-    # @return [Hash] hwinfo
-    attr_accessor :data
+    def initialize(hwinfo: nil)
+      # FIXME: store only what's needed.
+      @hwinfo = hwinfo
+    end
 
-    def initialize(data)
-      @data = data
+    def exists?
+      !@hwinfo.nil?
+    end
+
+    def link?
+      @hwinfo ? @hwinfo.fetch("link", false) : false
+    end
+
+    def name
+      @hwinfo ? @hwinfo.fetch("dev_name", "") : ""
+    end
+
+    def mac
+      @hwinfo ? @hwinfo.fetch("mac", "") : ""
+    end
+
+    def busid
+      @hwinfo ? @hwinfo.fetch("busid", "") : ""
+    end
+
+    def name
+      @hwinfo ? @hwinfo.fetch("dev_name", "") : ""
     end
   end
 end

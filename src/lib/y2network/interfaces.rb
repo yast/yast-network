@@ -20,13 +20,21 @@
 require "y2network/interface"
 require "y2network/interfaces/physical"
 require "y2network/interfaces/virtual"
+require "forwardable"
 
 module Y2Network
-  # A container for network devices
+  # A container for network devices. In the end should carry methods for mass operations
+  # over network interfaces like old LanItems::find_dhcp_ifaces or so.
   #
-  # FIXME: Replacement for old LanItems::Items, all usefull code was migrated here
+  # FIXME: Intended for LanItems::Items separation
   # proper cleanup is must
   class Interfaces
+    attr_reader :old_items
+
+    extend Forwardable
+
+    def_delegator :@old_items, :each
+
     def initialize(old_items:)
       # FIXME: should be replaced, separating backend from old API
       @old_items = hash_to_interface(old_items)
@@ -34,13 +42,10 @@ module Y2Network
 
   private
 
+    # Converts old LanItems::Items into new format
     def hash_to_interface(hash)
-      hash.map do |iface|
-        if iface["hwinfo"]
-          HwInterface.new(iface["ifcfg"], iface["hwinfo"]["dev_name"])
-        else
-          Interface.new(iface["ifcfg"])
-        end
+      hash.map do |_, iface|
+        Interface.new(iface["ifcfg"], hwinfo: iface["hwinfo"])
       end
     end
   end
