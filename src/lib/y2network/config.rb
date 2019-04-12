@@ -44,9 +44,6 @@ module Y2Network
     attr_accessor :source
 
     class << self
-      # TODO: move this configs stuff to a separate singleton
-      attr_accessor :configs
-
       # @param source [Symbol] Source to read the configuration from
       # @param opts   [Hash]   Reader options. Check readers documentation to find out
       #                        supported options.
