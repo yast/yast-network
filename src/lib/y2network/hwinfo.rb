@@ -17,7 +17,9 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 module Y2Network
-  # FIXME: should read hwinfo for a network device and store only necessary info
+  # Stores useful (from networking POV) items of hwinfo for an interface
+  # FIXME: decide whether it should read hwinfo (on demand or at once) for a network
+  # device and store only necessary info or just parse provided hash
   class Hwinfo
     def initialize(hwinfo: nil)
       # FIXME: store only what's needed.
