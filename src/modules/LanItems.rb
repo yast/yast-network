@@ -2234,6 +2234,9 @@ module Yast
 
       devmap = GetCurrentMap()
       drop_hosts(devmap["IPADDR"]) if devmap
+      remove_current_device_from_routing
+
+      # also deletes configuration from NetworkInterfaces
       SetCurrentName("")
 
       current_item = @Items[@current]

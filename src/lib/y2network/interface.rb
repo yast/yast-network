@@ -27,7 +27,7 @@ module Y2Network
   # Network interface.
   class Interface
     # @return [String] Device name (eth0, wlan0, etc.)
-    attr_reader :name # should not be changed after object creation. Used as an id.
+    attr_accessor :name # TODO: when implementing renaming over new backend modifying name has to be checked
     attr_reader :configured
     attr_reader :hardware
 
