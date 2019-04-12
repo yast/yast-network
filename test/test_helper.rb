@@ -18,6 +18,14 @@ RSpec.configure do |c|
 
   c.before do
     Yast::Lan.clear_configs
+
+    # as long as Config::old_interfaces is existing, interfaces has not to be set
+    system_config = Y2Network::Config.new(
+      interfaces: [],
+      routing:    Y2Network::Routing.new(tables: []),
+      source:     :sysconfig
+    )
+    Y2Network::Config.add(:yast, system_config)
   end
 end
 

@@ -990,7 +990,7 @@ module Yast
     #
     # @return [Y2Network::Config]
     def system_config
-      Y2Network::Config.find_config(:system)
+      Y2Network::Config.find(:system)
     end
 
     # Returns YaST configuration
@@ -999,7 +999,7 @@ module Yast
     #
     # @return [Y2Network::Config]
     def yast_config
-      Y2Network::Config.find_config(:yast)
+      Y2Network::Config.find(:yast)
     end
 
     publish variable: :ipv6, type: "boolean"

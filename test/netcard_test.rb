@@ -137,7 +137,9 @@ describe "NetworkComplexInclude#HardwareName" do
   end
 end
 
-describe "LanItemsClass#BuildLanOverview" do
+xdescribe "LanItemsClass#BuildLanOverview" do
+  let(:lan_items) { double(Yast::LanItems) }
+
   before(:each) do
     @lan_items = Yast::LanItems
     @lan_items.main

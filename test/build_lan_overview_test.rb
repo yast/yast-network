@@ -69,7 +69,7 @@ describe "LanItemsClass#BuildLanOverview" do
   end
 
   # targeted mainly against bnc#906694
-  context "with an wlan interface" do
+  xcontext "with an wlan interface" do
     before do
       allow(Yast::LanItems)
         .to receive(:Items)
@@ -108,7 +108,7 @@ describe "LanItemsClass#BuildLanOverview" do
     end
   end
 
-  context "with an lan interface" do
+  xcontext "with an lan interface" do
     before do
       allow(Yast::LanItems).to receive(:Items)
         .and_return(lan_items)
