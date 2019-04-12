@@ -1183,7 +1183,7 @@ module Yast
         items[items.size] = { "ifcfg" => confname }
       end
 
-      yast_config.old_interfaces = Y2Network::Interfaces.new(old_items: @Items)
+      config.old_interfaces = Y2Network::Interfaces.new.from_lan_items(@Items)
       log.info "Read Configuration LanItems::Items #{@Items}"
 
       nil
@@ -1238,16 +1238,13 @@ module Yast
     end
 
     def GetDescr(overviews)
-      descr = []
-      overviews.each_pair do |key, value|
-        descr = Builtins.add(
-          descr,
+      overviews.map do |key, value|
+        {
           "id"          => key,
           "rich_descr"  => value["table_descr"]["rich_descr"] || "",
           "table_descr" => value["table_descr"]["table_descr"] || []
-        )
+        }
       end
-      descr
     end
 
     def needFirmwareCurrentItem
@@ -1466,7 +1463,7 @@ module Yast
 
       bond_index = BuildBondIndex()
 
-      yast_config.old_interfaces.each do |iface|
+      config.old_interfaces.each do |iface|
         overviews[iface.name] = {}
         rich = ""
 
@@ -2671,7 +2668,7 @@ module Yast
     #
     # @return [Boolean] false if the current interface name is already present
     def update_routing_devices?
-      device_names = yast_config.interfaces.map(&:name)
+      device_names = config.interfaces.map(&:name)
       !device_names.include?(current_name)
     end
 
@@ -2680,11 +2677,10 @@ module Yast
     # @todo This method exists just to keep some compatibility during
     #       the migration to network-ng.
     def add_current_device_to_routing
-      config = yast_config
       return if config.nil?
       name = current_name
       return if config.interfaces.any? { |i| i.name == name }
-      yast_config.interfaces << Y2Network::Interface.new(name)
+      config.interfaces << Y2Network::Interface.new(name)
     end
 
     # Renames an interface
@@ -2694,7 +2690,6 @@ module Yast
 
     # @param old_name [String] Old device name
     def rename_current_device_in_routing(old_name)
-      config = yast_config
       return if config.nil?
       interface = config.interfaces.find { |i| i.name == old_name }
       return unless interface
@@ -2707,7 +2702,6 @@ module Yast
     #       the migration to network-ng.
     # @todo It does not check orphan routes.
     def remove_current_device_from_routing
-      config = yast_config
       return if config.nil?
       name = current_name
       return if name.empty?
@@ -2715,10 +2709,6 @@ module Yast
     end
 
   private
-
-    def yast_config
-      Y2Network::Config.find_config(:yast)
-    end
 
     # Checks if given lladdr can be written into ifcfg
     #
@@ -2869,7 +2859,7 @@ module Yast
     #
     # @todo It should not be called outside this module.
     # @return [Y2Network::Config] YaST network configuration
-    def yast_config
+    def config
       Y2Network::Config.find(:yast)
     end
 
