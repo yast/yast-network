@@ -343,9 +343,12 @@ module Y2Network
       #
       # @return [Boolean]
       def read
+        # Collisions not expected, but who knows what happens during new backend development
+        raise "The configuration is already loaded" if Y2Network::Config.find(:system)
+
         system_config = Y2Network::Config.from(:sysconfig)
-        Yast::Lan.add_config(:system, system_config)
-        Yast::Lan.add_config(:yast, system_config.copy)
+        Yast::Config.add(:system, system_config)
+        Yast::Config.add(:yast, system_config.copy)
 
         true
       end
@@ -367,14 +370,21 @@ module Y2Network
       #
       # @return [Boolean]
       def modified?
-        yast_config.routing != Yast::Lan.system_config.routing
+        yast_config.routing != system_config.routing
       end
 
       # Convenience method to obtain the current :yast {Y2Network::Config}
       #
       # @return [Y2Network::Config]
       def yast_config
-        Yast::Lan.yast_config
+        Y2Network::Config.find(:yast)
+      end
+
+      # Convenience method to obtain the current :yast {Y2Network::Config}
+      #
+      # @return [Y2Network::Config]
+      def system_config
+        Y2Network::Config.find(:system)
       end
 
       # Convenience method to obtain the current :yast {Y2Network::Config}
