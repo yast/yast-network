@@ -1476,7 +1476,7 @@ module Yast
             remove_gw = Routing.default_gw? && Popup.YesNo(
               _(
                 "A static default route is defined.\n" \
-                "It is suggested to remove the static default route definition\n" \
+                "It is suggested to remove the static default route definition \n" \
                 "if one can be obtained also via DHCP.\n" \
                 "Do you want to remove the static default route?"
               )
