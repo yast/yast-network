@@ -185,15 +185,6 @@ module Yast
       !IsEmpty(value)
     end
 
-    # Create a list of items for UI from the given list
-    # @param descriptions [Array] given list for conversion
-    # @param selected_index [Fixnum] selected item (0 for the first)
-    # @return a list of items
-    # @example [ "x", "y" ] -&gt; [ `item(`id(0), "x"), `item(`id(1), "y") ]
-    def list2items(descriptions, selected_index)
-      descriptions.map.with_index { |d, i| Item(Id(i), d, i == selected_index) }
-    end
-
     # Create a list of items for UI from the given hardware list.
     #
     # This list is used when selecting <ol>
@@ -232,15 +223,6 @@ module Yast
         drvtype = "ctc"
       end
       drvtype
-    end
-
-    def dev_name_to_sysfs_id(dev_name, hardware)
-      hardware = deep_copy(hardware)
-      # hardware is cached list of netcards
-      hw_item = Builtins.find(hardware) do |i|
-        Ops.get_string(i, "dev_name", "") == dev_name
-      end
-      Ops.get_string(hw_item, "sysfs_id", "")
     end
 
     def sysfs_card_type(sysfs_id, _hardware)
@@ -760,33 +742,12 @@ module Yast
       Run("/sbin/ip link set #{dev_name.shellescape} up")
     end
 
-    # Wrapper to call 'ip link set down' with the given interface
-    #
-    # @param dev_name [String] name of interface to 'set link down'
-    def SetLinkDown(dev_name)
-      log.info("Setting link down for interface #{dev_name}")
-      Run("/sbin/ip link set #{dev_name.shellescape} down")
-    end
-
-    # Calls wicked ifup with the given interface
-    #
-    # @param dev_name [String] name of interface to put down
-    def SetIfaceUp(dev_name)
-      log.info("Setting interface #{dev_name} up")
-      Run("/sbin/ifup #{dev_name.shellescape}")
-    end
-
     # Calls wicked ifdown with the given interface
     #
     # @param dev_name [String] name of interface to put down
     def SetIfaceDown(dev_name)
       log.info("Setting interface #{dev_name} down")
       Run("/sbin/ifdown #{dev_name.shellescape}")
-    end
-
-    # Tries to set the link up of all available interfaces
-    def SetAllLinksUp
-      GetAllInterfaces().each { |i| SetLinkUp(i) }
     end
 
     # Checks if given device has carrier
