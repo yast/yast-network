@@ -91,19 +91,19 @@ module Yast
 
     def config
       # TODO: get it from some config holder
-      @routing_config = Yast::Lan.yast_config
+      @routing_config ||= Yast::Lan.yast_config
     end
 
     def routing_table
-      @routing_table_widget = Y2Network::Widgets::RoutingTable.new(config.routing.tables.first)
+      @routing_table_widget ||= Y2Network::Widgets::RoutingTable.new(config.routing.tables.first)
     end
 
     def ip4_forwarding
-      @ip4_forwarding_widget = Y2Network::Widgets::IP4Forwarding.new(config)
+      @ip4_forwarding_widget ||= Y2Network::Widgets::IP4Forwarding.new(config)
     end
 
     def ip6_forwarding
-      @ip6_forwarding_widget = Y2Network::Widgets::IP6Forwarding.new(config)
+      @ip6_forwarding_widget ||= Y2Network::Widgets::IP6Forwarding.new(config)
     end
 
     def add_button
