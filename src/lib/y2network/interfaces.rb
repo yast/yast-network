@@ -26,15 +26,20 @@ module Y2Network
   # FIXME: Intended for LanItems::Items separation
   # proper cleanup is must
   class Interfaces
+    # FIXME: Direct access to be replaced to make possible
+    # Y2Network::Config.interfaces.eth0
+    # Y2Network::Config.interfaces.of_type(:eth)
+    # ...
     attr_reader :old_items
 
     extend Forwardable
 
     def_delegator :@old_items, :each
 
-    def initialize(old_items:)
+    # Converts old LanItems::Items into internal data format
+    def from_lan_items(lan_items)
       # FIXME: should be replaced, separating backend from old API
-      @old_items = hash_to_interface(old_items)
+      @old_items = hash_to_interface(lan_items)
     end
 
   private

@@ -43,9 +43,5 @@ module Y2Network
     def busid
       @hwinfo ? @hwinfo.fetch("busid", "") : ""
     end
-
-    def name
-      @hwinfo ? @hwinfo.fetch("dev_name", "") : ""
-    end
   end
 end
