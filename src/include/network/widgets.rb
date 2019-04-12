@@ -220,7 +220,7 @@ module Yast
           ["default", _("default")],
           ["connected", _("connected")],
           ["datagram"  => _("datagram")]
-        ]
+        ],
         "label"  => _("IPoIB Device Mode"),
         "opt"    => [:hstretch],
         "init"   => fun_ref(method(:init_ipoib_mode_widget), "void (string)"),
