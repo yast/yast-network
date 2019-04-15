@@ -30,6 +30,7 @@ require "ui/text_helpers"
 require "y2firewall/helpers/interfaces"
 require "y2network/widgets/firewall_zone"
 require "y2network/widgets/tunnel"
+require "y2network/widgets/bond_slave"
 
 module Yast
   module NetworkLanAddressInclude
@@ -79,6 +80,10 @@ module Yast
 
     def tunnel_widget
       @tunnel_widget ||= Y2Network::Widgets::Tunnel.new(@settings)
+    end
+
+    def bond_slave_widget
+      @bond_slave_widget ||= Y2Network::Widgets::BondSlave.new(@settings)
     end
 
     def widget_descr_local
@@ -214,36 +219,7 @@ module Yast
           ),
           "help"          => Ops.get_string(@help, "etherdevice", "")
         },
-        "BONDSLAVE"             => {
-          "widget"            => :custom,
-          "custom_widget"     => Frame(
-            _("Bond Slaves and Order"),
-            VBox(
-              MultiSelectionBox(Id(:msbox_items), Opt(:notify), "", []),
-              HBox(
-                PushButton(Id(:up), Opt(:disabled), _("Up")),
-                PushButton(Id(:down), Opt(:disabled), _("Down"))
-              )
-            )
-          ),
-          "label"             => _("Bond &Slaves"),
-          #        "opt": [`shrinkable],
-          "init"              => fun_ref(
-            method(:InitSlave),
-            "void (string)"
-          ),
-          "handle"            => fun_ref(
-            method(:HandleSlave),
-            "symbol (string, map)"
-          ),
-          "validate_type"     => :function,
-          "validate_function" => fun_ref(
-            method(:validate_bond),
-            "boolean (string, map)"
-          ),
-          "store"             => fun_ref(method(:StoreSlave), "void (string, map)"),
-          "help"              => @help["bondslave"].to_s
-        },
+        bond_slave_widget.widget_id => bond_slave_widget.cwm_definition, # TODO: store for BONDOPTION
         "BONDOPTION"            => {
           "widget" => :combobox,
           # ComboBox label
@@ -550,149 +526,6 @@ module Yast
       Ops.set(@settings, "VLAN_ID", UI.QueryWidget(Id(:vlan_id), :Value))
 
       nil
-    end
-
-    # Given a device name returns the position in the bond slaves table
-    # or -1 if not present
-    #
-    # @param [String] slave name
-    # @return [Integer] index of the given slave in msbox_items table
-    def getISlaveIndex(slave)
-      items = UI.QueryWidget(:msbox_items, :Items)
-      items.index { |i| i[0][0] == slave } || -1
-    end
-
-    def enableSlaveButtons
-      items = Convert.convert(
-        UI.QueryWidget(:msbox_items, :Items),
-        from: "any",
-        to:   "list <term>"
-      )
-      current = Builtins.tostring(UI.QueryWidget(:msbox_items, :CurrentItem))
-      index = getISlaveIndex(current)
-      UI.ChangeWidget(:up, :Enabled, Ops.greater_than(index, 0))
-      UI.ChangeWidget(
-        :down,
-        :Enabled,
-        Ops.less_than(index, Ops.subtract(Builtins.size(items), 1))
-      )
-
-      nil
-    end
-
-    # Default function to init the value of slave devices box for bonding.
-    # @param _key [String] id of the widget
-    def InitSlave(_key)
-      @settings["SLAVES"] = LanItems.bond_slaves || []
-
-      UI.ChangeWidget(
-        :msbox_items,
-        :SelectedItems,
-        @settings["SLAVES"]
-      )
-
-      @settings["BONDOPTION"] = LanItems.bond_option
-
-      items = CreateSlaveItems(
-        LanItems.GetBondableInterfaces(LanItems.GetCurrentName),
-        LanItems.bond_slaves
-      )
-
-      # reorder the items
-      l1, l2 = items.partition { |t| @settings["SLAVES"].include? t[0][0] }
-
-      items = l1 + l2.sort_by { |t| justify_dev_name(t[0][0]) }
-
-      UI.ChangeWidget(:msbox_items, :Items, items)
-      enableSlaveButtons
-
-      nil
-    end
-
-    # A helper for sort devices by name. It justify at right with 0's numeric parts of given
-    # device name until 5 digits.
-    #
-    # ==== Examples
-    #
-    #   justify_dev_name("eth0") # => "eth00000"
-    #   justify_dev_name("eth111") # => "eth00111"
-    #   justify_dev_name("enp0s25") # => "enp00000s00025"
-    #
-    # @param name [String] device name
-    # @return [String] given name with numbers justified at right
-    def justify_dev_name(name)
-      splited_dev_name = name.scan(/\p{Alpha}+|\p{Digit}+/)
-      splited_dev_name.map! do |d|
-        if d =~ /\p{Digit}+/
-          d.rjust(5, "0")
-        else
-          d
-        end
-      end.join
-    end
-
-    def HandleSlave(_key, event)
-      if event["EventReason"] == "SelectionChanged"
-        enableSlaveButtons
-      elsif event["EventReason"] == "Activated" && event["WidgetClass"] == :PushButton
-        items = UI.QueryWidget(:msbox_items, :Items) || []
-        current = UI.QueryWidget(:msbox_items, :CurrentItem).to_s
-        index = getISlaveIndex(current)
-        case event["ID"]
-        when :up
-          items[index], items[index - 1] = items[index - 1], items[index]
-        when :down
-          items[index], items[index + 1] = items[index + 1], items[index]
-        else
-          log.warn("unknown action")
-          return nil
-        end
-        UI.ChangeWidget(:msbox_items, :Items, items)
-        UI.ChangeWidget(:msbox_items, :CurrentItem, current)
-        enableSlaveButtons
-      else
-        log.debug("event:#{event}")
-      end
-
-      nil
-    end
-
-    # Default function to store the value of slave devices box.
-    # @param _key [String] id of the widget
-    def StoreSlave(_key, _event)
-      configured_slaves = @settings["SLAVES"] || []
-
-      selected_slaves = UI.QueryWidget(:msbox_items, :SelectedItems) || []
-
-      @settings["SLAVES"] = selected_slaves
-
-      @settings["BONDOPTION"] = UI.QueryWidget(Id("BONDOPTION"), :Value).to_s
-
-      LanItems.bond_slaves = @settings["SLAVES"]
-      LanItems.bond_option = @settings["BONDOPTION"]
-
-      # create list of "unconfigured" slaves
-      new_slaves = @settings["SLAVES"].select do |slave|
-        !configured_slaves.include? slave
-      end
-
-      Lan.autoconf_slaves = (Lan.autoconf_slaves + new_slaves).uniq.sort
-
-      nil
-    end
-
-    # Validates created bonding. Currently just prevent the user to create a
-    # bond with more than one interface sharing the same physical port id
-    #
-    # @param _key [String] the widget being validated
-    # @param _event [Hash] the event being handled
-    # @return true if valid or user decision if not
-    def validate_bond(_key, _event)
-      selected_slaves = UI.QueryWidget(:msbox_items, :SelectedItems) || []
-
-      physical_ports = repeated_physical_port_ids(selected_slaves)
-
-      physical_ports.empty? ? true : continue_with_duplicates?(physical_ports)
     end
 
     def enableDisableBootProto(current)
@@ -1153,7 +986,7 @@ module Yast
     def bond_slaves_tab
       {
         "header"   => _("&Bond Slaves"),
-        "contents" => VBox("BONDSLAVE", "BONDOPTION")
+        "contents" => VBox(bond_slave_widget.widget_id, "BONDOPTION")
       }
     end
 
