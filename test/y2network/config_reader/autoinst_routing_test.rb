@@ -66,10 +66,30 @@ describe Y2Network::ConfigReader::AutoinstRouting do
       expect(subject.config.forward_ipv4).to eq(true)
       expect(subject.config.forward_ipv6).to eq(false)
       expect(subject.config.routes.size).to eq(3)
-      default = subject.config.routes.find(&:default?)
-      expect(default.default?).to eq(true)
-      em1 = subject.config.routes.find { |r| r.interface == Y2Network::Interface.new("em1") }
-      expect(em1.interface.name).to eq("em1")
+    end
+
+    context "when building routes defined in the profile" do
+      context "and a route uses a 'default' destination" do
+        it "creates a new default route" do
+          default = subject.config.routes.find(&:default?)
+          expect(default.default?).to eq(true)
+        end
+      end
+
+      context "and a route does not define a device" do
+        it "initializes the route with :any as the interface" do
+          default = subject.config.routes.find(&:default?)
+          expect(default.interface).to eql(:any)
+        end
+      end
+
+      context "and the route defines a device" do
+        it "initializes the route Y2Network::Interface correctly" do
+          em1 = subject.config.routes.find { |r| r.interface == Y2Network::Interface.new("em1") }
+          expect(em1.interface).to be_a(Y2Network::Interface)
+          expect(em1.interface.name).to eq("em1")
+        end
+      end
     end
 
     context "when ip forwarding is not set" do
