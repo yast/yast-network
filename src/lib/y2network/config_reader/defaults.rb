@@ -29,7 +29,7 @@ module Y2Network
   module ConfigReader
     # This class is responsible of initializing the default configuration
     class Defaults
-      def initialize(_options)
+      def initialize(_options = {})
       end
 
       def config
