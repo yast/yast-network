@@ -53,9 +53,49 @@ describe Y2Network::Clients::Routing do
     end
 
     context "when calling with no ARGS" do
-      it "runs the GUI dialog" do
-        expect(subject).to receive(:RoutingGUI)
+      before do
+        allow(subject).to receive(:read)
+        allow(subject).to receive(:write)
+        allow(subject).to receive(:RoutingMainDialog)
+        allow(Yast::Wizard).to receive(:anything)
+      end
+
+      it "reads the current config" do
+        expect(subject).to receive(:read)
         subject.main
+      end
+
+      it "runs the GUI dialog" do
+        expect(subject).to receive(:RoutingMainDialog)
+        subject.main
+      end
+
+      context "and returned from the routing dialog without changes" do
+        it "does not write anything" do
+          allow(subject).to receive(:RoutingMainDialog).and_return(:next)
+          allow(subject).to receive(:modified?).and_return(false)
+
+          expect(subject).to_not receive(:write)
+          subject.main
+        end
+      end
+
+      context "and applied some modification in the routing dialog" do
+        before do
+          allow(subject).to receive(:modified?).and_return(:true)
+          allow(subject).to receive(:RoutingMainDialog).and_return(:next)
+          allow(Yast::NetworkService).to receive(:StartStop)
+        end
+
+        it "writes the changes" do
+          expect(subject).to receive(:write)
+          subject.main
+        end
+
+        it "restarts the network service" do
+          expect(Yast::NetworkService).to receive(:StartStop)
+          subject.main
+        end
       end
     end
 

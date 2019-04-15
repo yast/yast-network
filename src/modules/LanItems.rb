@@ -2238,6 +2238,8 @@ module Yast
       SetCurrentName("")
 
       current_item = @Items[@current]
+      # We have to remove it from routing before deleting the item
+      remove_current_device_from_routing
 
       if current_item["hwinfo"].nil? || current_item["hwinfo"].empty?
         # size is always > 0 here and items are numbered 0, 1, ..., size -1
@@ -2250,7 +2252,6 @@ module Yast
         @current = -1
       end
 
-      remove_current_device_from_routing
       SetModified()
 
       nil

@@ -85,9 +85,9 @@ module Y2Network
       # Return the {Y2Network::Interface} defined in the route section
       #
       # @param route_section [AutoinstProfile::RouteSection]
-      # @return [Y2Network::Interface,nil]
+      # @return [Y2Network::Interface, :any]
       def interface_from(route_section)
-        return unless route_section.device
+        return :any unless route_section.device
 
         Y2Network::Interface.new(route_section.device)
       end
