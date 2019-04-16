@@ -1467,7 +1467,7 @@ module Yast
         overviews[iface.name] = {}
         rich = ""
 
-        descr = iface.name
+        descr = iface.hardware.description
 
         note = ""
         bullets = []

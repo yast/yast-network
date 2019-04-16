@@ -38,6 +38,11 @@ module Y2Network
       @hwinfo ? @hwinfo.fetch("dev_name", "") : ""
     end
 
+    # Device type description
+    def description
+      @hwinfo ? @hwinfo.fetch("name", "") : ""
+    end
+
     def mac
       @hwinfo ? @hwinfo.fetch("mac", "") : ""
     end
