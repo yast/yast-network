@@ -396,9 +396,14 @@ module Yast
 
     def handleOverview(_key, event)
       if !disable_unconfigureable_items([:_hw_items, :_hw_sum] + overview_buttons.keys, false)
+        # nasty side effect: this method also sets LanItems::current
         enableDisableButtons
       end
       UI.ChangeWidget(:_hw_sum, :Value, LanItems.GetItemDescription)
+
+      # name is currently used as item id
+      iface_name = UI.QueryWidget(Id(:_hw_items), :CurrentItem)
+      config = Y2Network::Config.find(:yast)
 
       if Ops.get_string(event, "EventReason", "") == "Activated"
         case Ops.get_symbol(event, "ID")
@@ -417,10 +422,11 @@ module Yast
 
           return :add
         when :edit
-          if LanItems.IsCurrentConfigured
-            LanItems.SetItem
+          iface = config.old_interfaces.find(iface_name)
+          if iface.configured
+            LanItems.SetItem(iface: iface)
 
-            if LanItems.startmode == "managed"
+            if iface.startmode == "managed"
               # Continue-Cancel popup
               if !Popup.ContinueCancel(
                 _(
@@ -435,8 +441,6 @@ module Yast
                 # but in this function return will do
                 return nil # means cancel
               end
-
-              LanItems.startmode = "ifplugd"
             end
           else
             if !AddInterface()

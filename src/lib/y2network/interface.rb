@@ -35,6 +35,17 @@ module Y2Network
 
     def_delegator :@hardware, :exists?, :hardware?
 
+    ["STARTMODE"].each do |ifcfg_option|
+      define_method ifcfg_option.downcase do
+        # when switching to new backend we need as much guards as possible
+        if !configured || self.config.nil? || self.config.empty?
+          raise "Trying to read configuration of unconfigured interface"
+        end
+
+        self.config[ifcfg_option]
+      end
+    end
+
     # Constructor
     #
     # @param name [String] Interface name (e.g., "eth0")

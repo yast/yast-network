@@ -2258,32 +2258,20 @@ module Yast
       nil
     end
 
-    def SetItem
+    def SetItem(iface: nil)
       @operation = :edit
-      @device = Ops.get_string(getCurrentItem, "ifcfg", "")
 
-      NetworkInterfaces.Edit(@device)
-      @type = Ops.get_string(getCurrentItem, ["hwinfo", "type"], "")
+      NetworkInterfaces.Edit(iface.name)
 
-      @type = NetworkInterfaces.GetType(@device) if @type.empty?
+      devmap = iface.config
+      s390_devmap = s390_ReadQethConfig(iface.hardware.name) if iface.hardware
 
-      # general stuff
-      devmap = deep_copy(NetworkInterfaces.Current)
-      s390_devmap = s390_ReadQethConfig(
-        Ops.get_string(getCurrentItem, ["hwinfo", "dev_name"], "")
-      )
+      # FIXME: another candidate for removal / replacement
+      @description = BuildDescription(iface.type, iface.name, iface.config, iface.hardware)
 
-      @description = BuildDescription(@type, @device, devmap, @Hardware)
-
+      # FIXME: implement proper defaults setup
       SetDeviceVars(devmap, @SysconfigDefaults)
       SetS390Vars(s390_devmap, @s390_defaults)
-
-      @hotplug = ""
-      Builtins.y2debug("type=%1", @type)
-      if Builtins.issubstring(@type, "-")
-        @type = Builtins.regexpsub(@type, "([^-]+)-.*$", "\\1")
-      end
-      Builtins.y2debug("type=%1", @type)
 
       nil
     end
