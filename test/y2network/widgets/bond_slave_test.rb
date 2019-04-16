@@ -26,4 +26,44 @@ describe Y2Network::Widgets::BondSlave do
   subject { described_class.new({}) }
 
   include_examples "CWM::CustomWidget"
+
+  describe "#validate" do
+    before do
+      allow(subject).to receive(:selected_items)
+        .and_return(items)
+    end
+
+    context "when there is not more than one physical port id per interface" do
+      let(:items) { ["eth0", "eth1", "eth2", "eth3"] }
+
+      it "returns true" do
+        allow(subject).to receive(:physical_port_id?).with("eth0").and_return(false)
+        allow(subject).to receive(:physical_port_id?).with("eth1").and_return(false)
+        allow(subject).to receive(:physical_port_id?).with("eth2").and_return(true)
+        allow(subject).to receive(:physical_port_id?).with("eth3").and_return(true)
+        allow(subject).to receive(:physical_port_id).with("eth2").and_return("00010486fd348")
+        allow(subject).to receive(:physical_port_id).with("eth3").and_return("00010486fd34a")
+
+        expect(subject.validate).to eql(true)
+      end
+    end
+
+    context "when there is more than one physical port id per interface" do
+      let(:items) do
+        ["eth0", "eth1", "eth2", "eth3", "eth4", "eth5", "eth6", "eth7",
+         "enp0sp25", "enp0sp26", "enp0sp27", "enp0sp28", "enp0sp29"]
+      end
+
+      it "warns the user and request confirmation to continue" do
+        items.map do |i|
+          allow(subject).to receive(:physical_port_id?).with(i).and_return(true)
+          allow(subject).to receive(:physical_port_id).with(i).and_return("00010486fd348")
+        end
+
+        expect(Yast::Popup).to receive(:YesNoHeadline).and_return(:request_answer)
+
+        expect(subject.validate).to eql(:request_answer)
+      end
+    end
+  end
 end

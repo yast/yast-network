@@ -26,7 +26,6 @@
 # Summary:	Network card adresss configuration dialogs
 # Authors:	Michal Svec <msvec@suse.cz>
 #
-require "ui/text_helpers"
 require "y2firewall/helpers/interfaces"
 require "y2network/widgets/firewall_zone"
 require "y2network/widgets/tunnel"
@@ -37,7 +36,6 @@ module Yast
     include Y2Firewall::Helpers::Interfaces
     include Yast::Logger
     include Yast::I18n
-    include ::UI::TextHelpers
 
     def initialize_network_lan_address(include_target)
       Yast.import "UI"
@@ -1236,47 +1234,6 @@ module Yast
 
       # #65524
       @settings["BOOTPROTO"] = "static" if LanItems.operation == :add && @force_static_ip
-    end
-
-    # Given a map of duplicated port ids with device names, aks the user if he
-    # would like to continue or not.
-    #
-    # @param physical_ports [Hash{String => Array<String>}] hash of duplicated physical port ids
-    # mapping to an array of device names
-    # @return [Boolean] true if continue with duplicates, otherwise false
-    def continue_with_duplicates?(physical_ports)
-      message = physical_ports.map do |port, slave|
-        label = "PhysicalPortID (#{port}): "
-        wrap_text(slave.join(", "), 76, prepend_text: label)
-      end.join("\n")
-
-      Popup.YesNoHeadline(
-        Label.WarningMsg,
-        # Translators: Warn the user about not desired effect
-        _("The interfaces selected share the same physical port and bonding " \
-          "them \nmay not have the desired effect of redundancy.\n\n%s\n\n" \
-          "Really continue?\n") % message
-      )
-    end
-
-    # Given a list of device names returns a hash of physical port ids mapping
-    # device names if at least two devices shared the same physical port id
-    #
-    # @param slaves [Array<String>] bonding slaves
-    # @return [Hash{String => Array<String>}] of duplicated physical port ids
-    def repeated_physical_port_ids(slaves)
-      physical_port_ids = {}
-
-      slaves.each do |slave|
-        if physical_port_id?(slave)
-          p = physical_port_ids[physical_port_id(slave)] ||= []
-          p << slave
-        end
-      end
-
-      physical_port_ids.select! { |_k, v| v.size > 1 }
-
-      physical_port_ids
     end
 
     # Performs hostname update

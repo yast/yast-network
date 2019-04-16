@@ -1,14 +1,18 @@
+require "ui/text_helpers"
 require "yast"
 require "cwm/custom_widget"
 require "y2network/widgets/slave_items"
 
-Yast.import "UI"
+Yast.import "Label"
 Yast.import "LanItems"
+Yast.import "Popup"
+Yast.import "UI"
 
 module Y2Network
   module Widgets
     class BondSlave < CWM::CustomWidget
       include SlaveItems
+      include ::UI::TextHelpers
 
       def initialize(settings)
         textdomain "network"
@@ -93,7 +97,7 @@ module Y2Network
       def store
         configured_slaves = @settings["SLAVES"] || []
 
-        selected_slaves = Yast::UI.QueryWidget(:bond_slaves_items, :SelectedItems) || []
+        selected_slaves = selected_items
 
         @settings["SLAVES"] = selected_slaves
 
@@ -119,9 +123,7 @@ module Y2Network
       #
       # @return true if valid or user decision if not
       def validate
-        selected_slaves = Yast::UI.QueryWidget(:bond_slaves_items, :SelectedItems) || []
-
-        physical_ports = repeated_physical_port_ids(selected_slaves)
+        physical_ports = repeated_physical_port_ids(selected_items)
 
         physical_ports.empty? ? true : continue_with_duplicates?(physical_ports)
       end
@@ -129,6 +131,10 @@ module Y2Network
       def value
         # TODO: it is multiselection, so does it make sense?
         Yast::UI.QueryWidget(:slave_bonds_items, :CurrentItem)
+      end
+
+      def selected_items
+        Yast::UI.QueryWidget(:bond_slaves_items, :SelectedItems) || []
       end
 
       def ui_items
@@ -211,6 +217,27 @@ module Y2Network
       # @see #physical_port_id
       def physical_port_id?(dev_name)
         !physical_port_id(dev_name).empty?
+      end
+
+      # Given a map of duplicated port ids with device names, aks the user if he
+      # would like to continue or not.
+      #
+      # @param physical_ports [Hash{String => Array<String>}] hash of duplicated physical port ids
+      # mapping to an array of device names
+      # @return [Boolean] true if continue with duplicates, otherwise false
+      def continue_with_duplicates?(physical_ports)
+        message = physical_ports.map do |port, slave|
+          label = "PhysicalPortID (#{port}): "
+          wrap_text(slave.join(", "), 76, prepend_text: label)
+        end.join("\n")
+
+        Yast::Popup.YesNoHeadline(
+          Yast::Label.WarningMsg,
+          # Translators: Warn the user about not desired effect
+          _("The interfaces selected share the same physical port and bonding " \
+            "them \nmay not have the desired effect of redundancy.\n\n%s\n\n" \
+            "Really continue?\n") % message
+        )
       end
     end
   end
