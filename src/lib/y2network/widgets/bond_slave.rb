@@ -48,8 +48,8 @@ module Y2Network
             log.warn("unknown action #{event["ID"]}")
             return nil
           end
-          UI.ChangeWidget(:bond_slaves_items, :Items, items)
-          UI.ChangeWidget(:bond_slaves_items, :CurrentItem, current)
+          Yast::UI.ChangeWidget(:bond_slaves_items, :Items, items)
+          Yast::UI.ChangeWidget(:bond_slaves_items, :CurrentItem, current)
           enable_slave_buttons
         else
           log.debug("event:#{event}")
@@ -67,8 +67,6 @@ module Y2Network
       def init
         # TODO: why? it should respect previous @settings, not?
         @settings["SLAVES"] = Yast::LanItems.bond_slaves || []
-
-        @settings["BONDOPTION"] = Yast::LanItems.bond_option
 
         items = slave_items_from(
           Yast::LanItems.GetBondableInterfaces(Yast::LanItems.GetCurrentName),
@@ -101,12 +99,7 @@ module Y2Network
 
         @settings["SLAVES"] = selected_slaves
 
-        # XXX: Hmm, it stores different widget? This is dark cwm hack and hidden dependency
-        # that both widget have to be used together
-        #        @settings["BONDOPTION"] = Yast::UI.QueryWidget(Id("BONDOPTION"), :Value).to_s
-
         Yast::LanItems.bond_slaves = @settings["SLAVES"]
-        #        LanItems.bond_option = @settings["BONDOPTION"]
 
         # create list of "unconfigured" slaves
         new_slaves = @settings["SLAVES"].select do |slave|
