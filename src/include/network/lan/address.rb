@@ -88,7 +88,7 @@ module Yast
 
     def widget_descr_local
       res = {
-        "AD_ADDRESSES"          => {
+        "AD_ADDRESSES"              => {
           "widget"        => :custom,
           "custom_widget" => Frame(
             Id(:f_additional),
@@ -139,21 +139,21 @@ module Yast
             "void (string, map)"
           )
         },
-        "IFNAME"                => {
+        "IFNAME"                    => {
           "widget" => :textentry,
           "label"  => _("&Name of Interface"),
           "opt"    => [:hstretch],
           "help"   => _("<p>TODO kind of vague!</p>")
         },
-        "MANDATORY"             => {
+        "MANDATORY"                 => {
           "widget" => :checkbox,
           # check box label
           "label"  => _("&Mandatory Interface"),
           "opt"    => [],
           "help"   => Ops.get_string(@help, "mandatory", "")
         },
-        "MTU"                   => mtu_widget,
-        "IFCFGTYPE"             => {
+        "MTU"                       => mtu_widget,
+        "IFCFGTYPE"                 => {
           "widget"            => :combobox,
           # ComboBox label
           "label"             => _("&Device Type"),
@@ -171,7 +171,7 @@ module Yast
             "boolean (string, map)"
           )
         },
-        "IFCFGID"               => {
+        "IFCFGID"                   => {
           "widget" => :textentry,
           # ComboBox label
           "label"  => _("&Configuration Name"),
@@ -179,8 +179,8 @@ module Yast
           "help"   => "",
           "init"   => fun_ref(method(:initIfcfgId), "void (string)")
         },
-        tunnel_widget.widget_id => tunnel_widget.cwm_definition,
-        "BRIDGE_PORTS"          => {
+        tunnel_widget.widget_id     => tunnel_widget.cwm_definition,
+        "BRIDGE_PORTS"              => {
           "widget"            => :multi_selection_box,
           "label"             => _("Bridged Devices"),
           "items"             => [],
@@ -196,7 +196,7 @@ module Yast
           ),
           "help"              => Ops.get_string(@help, "bridge_ports", "")
         },
-        "ETHERDEVICE"           => {
+        "ETHERDEVICE"               => {
           "widget"        => :custom,
           "custom_widget" => HBox(
             ComboBox(
@@ -220,7 +220,7 @@ module Yast
           "help"          => Ops.get_string(@help, "etherdevice", "")
         },
         bond_slave_widget.widget_id => bond_slave_widget.cwm_definition, # TODO: store for BONDOPTION
-        "BONDOPTION"            => {
+        "BONDOPTION"                => {
           "widget" => :combobox,
           # ComboBox label
           "label"  => _("&Bond Driver Options"),
@@ -238,7 +238,7 @@ module Yast
             ["mode=balance-alb miimon=100"]
           ]
         },
-        "BOOTPROTO"             => {
+        "BOOTPROTO"                 => {
           "widget"            => :custom,
           "custom_widget"     => RadioButtonGroup(
             Id(:bootproto),
@@ -324,7 +324,7 @@ module Yast
             "boolean (string, map)"
           )
         },
-        "REMOTEIP"              => {
+        "REMOTEIP"                  => {
           "widget"            => :textentry,
           # Text entry label
           "label"             => _("R&emote IP Address"),
@@ -341,7 +341,7 @@ module Yast
           )
         },
         # leftovers
-        "S390"                  => {
+        "S390"                      => {
           "widget" => :push_button,
           # push button label
           "label"  => _("&S/390"),

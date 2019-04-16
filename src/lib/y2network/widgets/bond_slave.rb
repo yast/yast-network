@@ -99,10 +99,10 @@ module Y2Network
 
         # XXX: Hmm, it stores different widget? This is dark cwm hack and hidden dependency
         # that both widget have to be used together
-#        @settings["BONDOPTION"] = Yast::UI.QueryWidget(Id("BONDOPTION"), :Value).to_s
+        #        @settings["BONDOPTION"] = Yast::UI.QueryWidget(Id("BONDOPTION"), :Value).to_s
 
         Yast::LanItems.bond_slaves = @settings["SLAVES"]
-#        LanItems.bond_option = @settings["BONDOPTION"]
+        #        LanItems.bond_option = @settings["BONDOPTION"]
 
         # create list of "unconfigured" slaves
         new_slaves = @settings["SLAVES"].select do |slave|

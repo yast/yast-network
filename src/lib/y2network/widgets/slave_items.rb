@@ -55,8 +55,7 @@ module Y2Network
           items << Yast::Term.new(:item,
             Yast::Term.new(:id, dev_name),
             "#{dev_name} - #{description}",
-            selected
-          )
+            selected)
         end
       end
 
