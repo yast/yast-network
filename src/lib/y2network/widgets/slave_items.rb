@@ -8,6 +8,7 @@ module Y2Network
     # Mixin to help create slave (of any kind) list
     module SlaveItems
       include Yast::Logger
+      include Yast::I18n
 
       # Builds content for slave configuration dialog (used e.g. when configuring
       # bond slaves) according the given list of item_ids (see LanItems::Items)
@@ -16,6 +17,8 @@ module Y2Network
       # @param [Array<String>] enslaved_ifaces    list of device names of already enslaved devices
       def slave_items_from(item_ids, enslaved_ifaces)
         raise ArgumentError, "no slave device defined" if item_ids.nil?
+
+        textdomain "network"
 
         item_ids.each_with_object([]) do |item_id, items|
           dev_name = Yast::LanItems.GetDeviceName(item_id)
