@@ -43,6 +43,11 @@ module Y2Network
     def from_lan_items(lan_items)
       # FIXME: should be replaced, separating backend from old API
       @old_items = hash_to_interface(lan_items)
+      self
+    end
+
+    def find(name)
+      @old_items.find { |i| i.name == name }
     end
 
   private
