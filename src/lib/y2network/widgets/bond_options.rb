@@ -36,13 +36,11 @@ module Y2Network
       end
 
       def init
-        @settings["BONDOPTION"] = Yast::LanItems.bond_option # TODO: not here
         self.value = @settings["BONDOPTION"]
       end
 
       def store
         @settings["BONDOPTION"] = value
-        Yast::LanItems.bond_option = @settings["BONDOPTION"] # TODO: not here
       end
     end
   end

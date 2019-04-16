@@ -65,9 +65,6 @@ module Y2Network
 
       # Default function to init the value of slave devices box for bonding.
       def init
-        # TODO: why? it should respect previous @settings, not?
-        @settings["SLAVES"] = Yast::LanItems.bond_slaves || []
-
         items = slave_items_from(
           Yast::LanItems.GetBondableInterfaces(Yast::LanItems.GetCurrentName),
           Yast::LanItems.bond_slaves
@@ -99,13 +96,12 @@ module Y2Network
 
         @settings["SLAVES"] = selected_slaves
 
-        Yast::LanItems.bond_slaves = @settings["SLAVES"]
-
         # create list of "unconfigured" slaves
         new_slaves = @settings["SLAVES"].select do |slave|
           !configured_slaves.include? slave
         end
 
+        # TODO: should not be here?
         Yast::Lan.autoconf_slaves = (Yast::Lan.autoconf_slaves + new_slaves).uniq.sort
 
         nil

@@ -1157,6 +1157,9 @@ module Yast
           end
         end
 
+        Yast::LanItems.bond_option = @settings["BONDOPTION"]
+        Yast::LanItems.bond_slaves = @settings["SLAVES"]
+
         # When virtual interfaces are added the list of routing devices needs
         # to be updated to offer them
         LanItems.add_current_device_to_routing if LanItems.update_routing_devices?
@@ -1211,6 +1214,9 @@ module Yast
         @settings["ETHERDEVICE"] = LanItems.vlan_etherdevice
         @settings["VLAN_ID"]     = LanItems.vlan_id.to_i
       end
+
+      @settings["BONDOPTION"] = Yast::LanItems.bond_option
+      @settings["SLAVES"] = Yast::LanItems.bond_slaves || []
 
       if ["tun", "tap"].include?(LanItems.type)
         @settings.replace("BOOTPROTO"        => "static",
