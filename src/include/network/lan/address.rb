@@ -585,23 +585,21 @@ module Yast
     # Default function to init the value of slave devices box for bonding.
     # @param _key [String] id of the widget
     def InitSlave(_key)
-      @settings["SLAVES"] = LanItems.bond_slaves || []
+      selected_items = @settings["SLAVES"]
 
       UI.ChangeWidget(
         :msbox_items,
         :SelectedItems,
-        @settings["SLAVES"]
+        selected_items
       )
-
-      @settings["BONDOPTION"] = LanItems.bond_option
 
       items = CreateSlaveItems(
         LanItems.GetBondableInterfaces(LanItems.GetCurrentName),
-        LanItems.bond_slaves
+        selected_items
       )
 
       # reorder the items
-      l1, l2 = items.partition { |t| @settings["SLAVES"].include? t[0][0] }
+      l1, l2 = items.partition { |t| selected_items.include? t[0][0] }
 
       items = l1 + l2.sort_by { |t| justify_dev_name(t[0][0]) }
 
@@ -667,18 +665,7 @@ module Yast
       selected_slaves = UI.QueryWidget(:msbox_items, :SelectedItems) || []
 
       @settings["SLAVES"] = selected_slaves
-
       @settings["BONDOPTION"] = UI.QueryWidget(Id("BONDOPTION"), :Value).to_s
-
-      LanItems.bond_slaves = @settings["SLAVES"]
-      LanItems.bond_option = @settings["BONDOPTION"]
-
-      # create list of "unconfigured" slaves
-      new_slaves = @settings["SLAVES"].select do |slave|
-        !configured_slaves.include? slave
-      end
-
-      Lan.autoconf_slaves = (Lan.autoconf_slaves + new_slaves).uniq.sort
 
       nil
     end
@@ -1381,6 +1368,11 @@ module Yast
         LanItems.vlan_id = Builtins.tostring(
           Ops.get_integer(@settings, "VLAN_ID", 0)
         )
+      elsif LanItems.type == "bond"
+        new_slaves = @settings.fetch("SLAVES", []).select {|s| !LanItems.bond_slaves.include? s }
+        LanItems.bond_slaves = @settings["SLAVES"]
+        LanItems.bond_option = @settings["BONDOPTION"]
+        Lan.autoconf_slaves = (Lan.autoconf_slaves + new_slaves).uniq.sort
       elsif Builtins.contains(["tun", "tap"], LanItems.type)
         LanItems.tunnel_set_owner = Ops.get_string(
           @settings,
@@ -1425,6 +1417,11 @@ module Yast
       if LanItems.type == "vlan"
         @settings["ETHERDEVICE"] = LanItems.vlan_etherdevice
         @settings["VLAN_ID"]     = LanItems.vlan_id.to_i
+      end
+
+      if LanItems.type == "bond"
+        @settings["SLAVES"] = LanItems.bond_slaves || []
+        @settings["BONDOPTION"] = LanItems.bond_option
       end
 
       if ["tun", "tap"].include?(LanItems.type)
