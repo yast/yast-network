@@ -2,10 +2,13 @@
 Wed Apr 17 10:55:18 UTC 2019 - knut.anderssen@suse.com
 
 - Started with yast2-network refactorization:
-    - Added the y2network namespace.
-    - Reimplemented completely routing configuration droping the
-      old Yast::Routing module.
-    - Dropped not used routing_auto client.
+  - Added the y2network namespace.
+  - Dropped not used routing_auto client.
+  - Reimplemented completely routing configuration droping the old
+    Yast::Routing module.
+  - The Y2Network::Routing configuration permits to have multiple
+    default routes and does not drop extra options for them. That
+    is, different routing tables can be used. (fate#326796)
 - 4.2.1
 
 -------------------------------------------------------------------
