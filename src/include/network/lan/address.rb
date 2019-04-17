@@ -1157,8 +1157,6 @@ module Yast
           end
         end
 
-        Yast::LanItems.bond_option = @settings["BONDOPTION"]
-        Yast::LanItems.bond_slaves = @settings["SLAVES"]
 
         # When virtual interfaces are added the list of routing devices needs
         # to be updated to offer them
@@ -1170,6 +1168,12 @@ module Yast
         LanItems.vlan_id = Builtins.tostring(
           Ops.get_integer(@settings, "VLAN_ID", 0)
         )
+      elsif LanItems.type == "bond"
+        new_slaves = @settings.fetch("SLAVES", []).select {|s| !LanItems.bond_slaves.include? s }
+        LanItems.bond_slaves = @settings["SLAVES"]
+        LanItems.bond_option = @settings["BONDOPTION"]
+        Lan.autoconf_slaves = (Lan.autoconf_slaves + new_slaves).uniq.sort
+        log.info "bond settings #{LanItems.bond_slaves}"
       elsif Builtins.contains(["tun", "tap"], LanItems.type)
         LanItems.tunnel_set_owner = Ops.get_string(
           @settings,
@@ -1228,6 +1232,8 @@ module Yast
 
       # #65524
       @settings["BOOTPROTO"] = "static" if LanItems.operation == :add && @force_static_ip
+
+      log.info "settings after init #{@settings.inspect}"
     end
 
     # Performs hostname update

@@ -90,21 +90,7 @@ module Y2Network
 
       # Default function to store the value of slave devices box.
       def store
-        configured_slaves = @settings["SLAVES"] || []
-
-        selected_slaves = selected_items
-
-        @settings["SLAVES"] = selected_slaves
-
-        # create list of "unconfigured" slaves
-        new_slaves = @settings["SLAVES"].select do |slave|
-          !configured_slaves.include? slave
-        end
-
-        # TODO: should not be here?
-        Yast::Lan.autoconf_slaves = (Yast::Lan.autoconf_slaves + new_slaves).uniq.sort
-
-        nil
+        @settings["SLAVES"] = selected_items
       end
 
       # Validates created bonding. Currently just prevent the user to create a
@@ -119,7 +105,7 @@ module Y2Network
 
       def value
         # TODO: it is multiselection, so does it make sense?
-        Yast::UI.QueryWidget(:slave_bonds_items, :CurrentItem)
+        Yast::UI.QueryWidget(:bond_slaves_items, :CurrentItem)
       end
 
       def selected_items
@@ -127,7 +113,7 @@ module Y2Network
       end
 
       def ui_items
-        Yast::UI.QueryWidget(:slave_bonds_items, :Items) || []
+        Yast::UI.QueryWidget(:bond_slaves_items, :Items) || []
       end
 
       def value_index
@@ -136,11 +122,11 @@ module Y2Network
 
       def enable_slave_buttons
         if value_index
-          Yast::UI.ChangeWidget(:slave_bonds_up, :Enabled, value_index > 0)
-          Yast::UI.ChangeWidget(:slave_bonds_down, :Enabled, value_index < ui_items.size - 1)
+          Yast::UI.ChangeWidget(:bond_slaves_up, :Enabled, value_index > 0)
+          Yast::UI.ChangeWidget(:bond_slaves_down, :Enabled, value_index < ui_items.size - 1)
         else
-          Yast::UI.ChangeWidget(:slave_bonds_up, :Enabled, false)
-          Yast::UI.ChangeWidget(:slave_bonds_down, :Enabled, false)
+          Yast::UI.ChangeWidget(:bond_slaves_up, :Enabled, false)
+          Yast::UI.ChangeWidget(:bond_slaves_down, :Enabled, false)
         end
       end
 
