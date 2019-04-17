@@ -67,7 +67,7 @@ module Y2Network
       def init
         items = slave_items_from(
           Yast::LanItems.GetBondableInterfaces(Yast::LanItems.GetCurrentName),
-          Yast::LanItems.bond_slaves
+          @settings["SLAVES"]
         )
 
         # reorder the items
