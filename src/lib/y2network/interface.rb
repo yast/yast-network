@@ -35,6 +35,7 @@ module Y2Network
 
     def_delegator :@hardware, :exists?, :hardware?
 
+    # Shortcuts for accessing interfaces' ifcfg options
     ["STARTMODE"].each do |ifcfg_option|
       define_method ifcfg_option.downcase do
         # when switching to new backend we need as much guards as possible
