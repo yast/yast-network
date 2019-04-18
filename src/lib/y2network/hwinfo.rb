@@ -21,34 +21,42 @@ module Y2Network
   # FIXME: decide whether it should read hwinfo (on demand or at once) for a network
   # device and store only necessary info or just parse provided hash
   class Hwinfo
+    attr_reader :hwinfo
+
     def initialize(hwinfo: nil)
       # FIXME: store only what's needed.
       @hwinfo = hwinfo
     end
 
+    # Shortcuts for accessing hwinfo items
+    [
+      { name: "dev_name", default: "" },
+      { name: "mac", default: "" },
+      { name: "busid", default: "" },
+      { name: "link", default: false },
+      { name: "driver", default: "" },
+      { name: "drivers", default: [] },
+      { name: "requires", default: [] },
+      { name: "hotplug", default: false },
+      { name: "wl_auth_modes", default: "" },
+      { name: "wl_enc_modes", default: nil },
+      { name: "wl_channels", default: nil },
+      { name: "wl_bitrates", default: nil }
+    ].each do |hwinfo_item|
+      define_method hwinfo_item[:name].downcase do
+        self.hwinfo ? self.hwinfo.fetch(hwinfo_item[:name], hwinfo_item[:default]) : hwinfo_item[:default]
+      end
+    end
+    alias_method :name, :dev_name
+
     def exists?
       !@hwinfo.nil?
     end
 
-    def link?
-      @hwinfo ? @hwinfo.fetch("link", false) : false
-    end
-
-    def name
-      @hwinfo ? @hwinfo.fetch("dev_name", "") : ""
-    end
-
     # Device type description
+    # FIXME: collision with alias for dev_name
     def description
       @hwinfo ? @hwinfo.fetch("name", "") : ""
-    end
-
-    def mac
-      @hwinfo ? @hwinfo.fetch("mac", "") : ""
-    end
-
-    def busid
-      @hwinfo ? @hwinfo.fetch("busid", "") : ""
     end
   end
 end
