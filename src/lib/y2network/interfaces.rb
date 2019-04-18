@@ -37,6 +37,8 @@ module Y2Network
     def_delegator :@old_items, :each
 
     # Converts old LanItems::Items into internal data format
+    #
+    # @return [Interfaces] a container with available interfaces
     def from_lan_items(lan_items)
       # FIXME: should be replaced, separating backend from old API
       @old_items = hash_to_interface(lan_items)
@@ -50,6 +52,9 @@ module Y2Network
   private
 
     # Converts old LanItems::Items into new format
+    #
+    # @param hash [Hash] a set of interfaces in LanItems::Items format
+    # @return [Array<Interface>] a list of interfaces obtained from the hash
     def hash_to_interface(hash)
       hash.map do |_, iface|
         Interface.new(iface["ifcfg"], hwinfo: iface["hwinfo"])
