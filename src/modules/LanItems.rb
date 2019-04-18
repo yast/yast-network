@@ -1247,62 +1247,25 @@ module Yast
       end
     end
 
-    def needFirmwareCurrentItem
-      need = false
-      if IsNotEmpty(Ops.get_string(@Items, [@current, "hwinfo", "driver"], ""))
-        if Builtins.haskey(
-          @request_firmware,
-          Ops.get_string(@Items, [@current, "hwinfo", "driver"], "")
-        )
-          need = true
-        end
+    # Checks whether device need (known) firmware to be loaded
+    def needFirmwareCurrentItem(iface)
+      need = if iface.hardware.driver
+        @request_firmware.has_key?(iface.hardware.driver) ? iface.hardware.driver : nil
       else
-        Builtins.foreach(
-          Ops.get_list(@Items, [@current, "hwinfo", "drivers"], [])
-        ) do |driver|
-          if Builtins.haskey(
-            @request_firmware,
-            Ops.get_string(driver, ["modules", 0, 0], "")
-          )
-            Builtins.y2milestone(
-              "driver %1 needs firmware",
-              Ops.get_string(driver, ["modules", 0, 0], "")
-            )
-            need = true
-          end
+        iface.hardware.drivers.find do |driver|
+          driver if @request_firmware.has_key?(driver)
         end
       end
-      Builtins.y2milestone("item %1 needs firmware:%2", @current, need)
+      log.info("Device #{iface.hardware.name} need driver: #{need}")
+
       need
     end
 
-    def GetFirmwareForCurrentItem
-      kernel_module = ""
-      if IsNotEmpty(Ops.get_string(@Items, [@current, "hwinfo", "driver"], ""))
-        if Builtins.haskey(
-          @request_firmware,
-          Ops.get_string(@Items, [@current, "hwinfo", "driver"], "")
-        )
-          kernel_module = Ops.get_string(
-            @Items,
-            [@current, "hwinfo", "driver"],
-            ""
-          )
-        end
-      else
-        Builtins.foreach(
-          Ops.get_list(@Items, [@current, "hwinfo", "drivers"], [])
-        ) do |driver|
-          if Builtins.haskey(
-            @request_firmware,
-            Ops.get_string(driver, ["modules", 0, 0], "")
-          )
-            kernel_module = Ops.get_string(driver, ["modules", 0, 0], "")
-            raise Break
-          end
-        end
-      end
-      firmware = Ops.get(@request_firmware, kernel_module, "")
+    def GetFirmwareForCurrentItem(iface)
+      kernel_module = needFirmwareCurrentItem(iface)
+      return nil if kernel_module.nil?
+
+      firmware = @request_firmware.fetch(kernel_module, "")
       Builtins.y2milestone(
         "driver %1 needs firmware %2",
         kernel_module,
@@ -1464,7 +1427,9 @@ module Yast
       bond_index = BuildBondIndex()
 
       config.old_interfaces.each do |iface|
-        overviews[iface.name] = {}
+        # FIXME: fix interface name access for configured vs unconfigured ifaces ASAP
+        iface_id = !iface.name.nil? ? iface.name : iface.hardware.name
+        overviews[iface_id] = {}
         rich = ""
 
         descr = iface.hardware.description
@@ -1522,7 +1487,7 @@ module Yast
           overview << Summary.Device(descr, Summary.NotConfigured)
         end
         conn = ""
-        conn = HTML.Bold(format("(%s)", _("Not connected"))) if !iface.hardware.link?
+        conn = HTML.Bold(format("(%s)", _("Not connected"))) if !iface.hardware.link
         conn = HTML.Bold(format("(%s)", _("No hwinfo"))) if iface.hardware?
 
         mac_dev = HTML.Bold("MAC : ") + iface.hardware.mac + "<br>"
@@ -1542,28 +1507,18 @@ module Yast
           rich << "<p>"
           rich << _("Unable to configure the network card because the kernel device (eth0, wlan0) is not present. This is mostly caused by missing firmware (for wlan devices). See dmesg output for details.")
           rich << "</p>"
-        elsif !iface.name.empty?
+        elsif iface.configured
           rich << HTML.List(bullets)
         else
           rich << "<p>"
           rich << _("The device is not configured. Press <b>Edit</b>\nto configure.\n")
           rich << "</p>"
 
-        # FIXME: there is no current anymore
-          curr = @current
-          @current = key
-          if needFirmwareCurrentItem
-            fw = GetFirmwareForCurrentItem()
-            rich << format("%s : %s", _("Needed firmware"), !fw.empty? ? fw : _("unknown"))
-          end
-          @current = curr
+
+          fw = GetFirmwareForCurrentItem(iface)
+          rich << format("%s : %s", _("Needed firmware"), !fw.empty? ? fw : _("unknown")) if fw
         end
-        # FIXME: - find how to enable bellow code
-#        LanItems.Items[key]["table_descr"] = {
-#          "rich_descr"  => rich,
-#          "table_descr" => [descr, DeviceProtocol(ifcfg_conf), ifcfg_name, note]
-#        }
-        overviews[iface.name]["table_descr"] = {
+        overviews[iface_id]["table_descr"] = {
           "rich_descr"  => rich,
           "table_descr" => [descr, DeviceProtocol(iface.config), iface.name, note]
         }
@@ -1610,16 +1565,19 @@ module Yast
 
     # Select the hardware component
     # @param hardware the component
-    def SelectHWMap(hardware)
-      hardware = deep_copy(hardware)
-      sel = SelectHardwareMap(hardware)
+    def SelectHWMap(iface)
+      # FIXME: check in depth whether it is needed
+      # - currently it seems to be useless (an attempt for virtual method which
+      # sets obect's internal variables according to well known names. However,
+      # in this case all these variables are set one more time on bellow lines)
+      # sel = SelectHardwareMap(hardware)
 
       # common stuff
-      @description = Ops.get_string(sel, "name", "")
-      @type = Ops.get_string(sel, "type", "eth")
-      @hotplug = Ops.get_string(sel, "hotplug", "")
+      @description = iface.hardware.description
+      @type = iface.type
+      @hotplug = iface.hardware.hotplug
 
-      @Requires = Ops.get_list(sel, "requires", [])
+      @Requires = iface.hardware.requires
       # #44977: Requires now contain the appropriate kernel packages
       # but they are handled differently due to multiple kernel flavors
       # (see Package::InstallKernel)
@@ -1633,35 +1591,34 @@ module Yast
       @hotplug = ""
 
       # Wireless Card Features
+      # FIXME: in the end this should be useless once a descendant of Interface for
+      # wireless device is defined
       @wl_auth_modes = Builtins.prepend(
-        hardware["wl_auth_modes"],
+        iface.hardware.wl_auth_modes,
         "no-encryption"
       )
-      @wl_enc_modes = hardware["wl_enc_modes"]
-      @wl_channels = hardware["wl_channels"]
-      @wl_bitrates = hardware["wl_bitrates"]
+      @wl_enc_modes = iface.hardware.wl_enc_modes
+      @wl_channels = iface.hardware.wl_channels
+      @wl_bitrates = iface.hardware.wl_bitrates
 
-      Builtins.y2milestone("hw=%1", hardware)
-
-      @hw = deep_copy(hardware)
       if Arch.s390 && @operation == :add
         Builtins.y2internal("Propose chan_ids values for %1", @hw)
         devid = 0
         devstr = ""
         s390chanid = "[0-9]+\\.[0-9]+\\."
-        if Builtins.regexpmatch(Ops.get_string(@hw, "busid", ""), s390chanid)
+        if Builtins.regexpmatch(iface.hardware.busid, s390chanid)
           devid = Builtins.tointeger(
             Ops.add(
               "0x",
               Builtins.regexpsub(
-                Ops.get_string(@hw, "busid", ""),
+                iface.hardware.busid,
                 Ops.add(s390chanid, "(.*)"),
                 "\\1"
               )
             )
           )
           devstr = Builtins.regexpsub(
-            Ops.get_string(@hw, "busid", ""),
+            iface.hardware.busid,
             Ops.add(Ops.add("(", s390chanid), ").*"),
             "\\1"
           )
@@ -1689,7 +1646,7 @@ module Yast
           ),
           4
         )
-        @qeth_chanids = if DriverType(@type) == "ctc" || DriverType(@type) == "lcs"
+        @qeth_chanids = if DriverType(iface.type) == "ctc" || DriverType(iface.type) == "lcs"
           Builtins.sformat("%1%2 %1%3", devstr, devid0, devid1)
         else
           Builtins.sformat(
@@ -2317,7 +2274,8 @@ module Yast
     end
 
     def enableCurrentEditButton
-      return true if needFirmwareCurrentItem
+      # FIXME: needFirmwareCurrentItem has changed signature -> check and fix this call if needed
+      #return true if needFirmwareCurrentItem
       return true if Arch.s390
       if IsEmpty(Ops.get_string(getCurrentItem, ["hwinfo", "dev_name"], "")) &&
           Ops.greater_than(

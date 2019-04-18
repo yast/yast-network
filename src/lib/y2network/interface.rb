@@ -52,8 +52,15 @@ module Y2Network
     # @param name [String] Interface name (e.g., "eth0")
     def initialize(name, hwinfo: nil)
       @hardware = Hwinfo.new(hwinfo: hwinfo)
-      @name = name
-      # FIXME: definitely has to be fixed for not configured devices
+
+      if !(name.nil? || name.empty?)
+        @name = name
+      else
+        # the interface has to be either configured (ifcfg) or known to hwinfo
+        raise "Attempting to create representation of nonexistent interface" if hwinfo.nil?
+      end
+
+      # FIXME: name param is currently mandatory but configuration need not exist
       @configured = !(name.nil? || name.empty?)
     end
 
