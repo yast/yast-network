@@ -2264,9 +2264,6 @@ module Yast
       devmap = iface.config
       s390_devmap = s390_ReadQethConfig(iface.hardware.name) if iface.hardware
 
-      # FIXME: another candidate for removal / replacement
-      @description = BuildDescription(iface.type, iface.name, iface.config, iface.hardware)
-
       # FIXME: implement proper defaults setup
       SetDeviceVars(devmap, @SysconfigDefaults)
       SetS390Vars(s390_devmap, @s390_defaults)
