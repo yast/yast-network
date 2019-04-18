@@ -206,10 +206,11 @@ module Yast
       ret ? :next : :abort
     end
 
-    def AddInterface
+    def AddInterface(iface)
       Lan.Add
       LanItems.operation = :add
-      LanItems.SelectHWMap(Ops.get_map(LanItems.getCurrentItem, "hwinfo", {}))
+      LanItems.SelectHWMap(iface)
+      # FIXME: setting new configuration name currently not working in new backend
       Ops.set(
         LanItems.Items,
         [LanItems.current, "ifcfg"],
@@ -217,8 +218,8 @@ module Yast
       )
       LanItems.operation = :edit
       fw = ""
-      if LanItems.needFirmwareCurrentItem
-        fw = LanItems.GetFirmwareForCurrentItem
+      if LanItems.needFirmwareCurrentItem(iface)
+        fw = LanItems.GetFirmwareForCurrentItem(iface)
         if fw != ""
           if !Package.Installed(fw) && !Package.Available(fw)
             Popup.Message(
@@ -443,7 +444,7 @@ module Yast
               end
             end
           else
-            if !AddInterface()
+            if !AddInterface(iface)
               Builtins.y2error("handleOverview: AddInterface failed.")
               # y2r: cannot break from middle of switch
               # but in this function return will do

@@ -49,7 +49,7 @@ module Y2Network
     end
 
     def find(name)
-      @old_items.find { |i| i.name == name }
+      @old_items.find { |i| !i.name.nil? ? i.name == name : i.hardware.name }
     end
 
   private
