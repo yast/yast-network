@@ -38,6 +38,8 @@ module Y2Network
       name == other.name
     end
 
+    # eql? (hash key equality) should alias ==, see also
+    # https://ruby-doc.org/core-2.3.3/Object.html#method-i-eql-3F
     alias_method :eql?, :==
   end
 end

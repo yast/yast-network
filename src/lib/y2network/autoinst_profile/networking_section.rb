@@ -21,7 +21,7 @@ require "y2network/autoinst_profile/routing_section"
 
 module Y2Network
   module AutoinstProfile
-    # This class represents an AutoYaST <networking> section
+    # This class represents an AutoYaST \<networking> section
     #
     #  <networking>
     #    <routing>

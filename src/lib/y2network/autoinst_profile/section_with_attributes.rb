@@ -34,7 +34,7 @@ module Y2Network
         # Description of the attributes in the section.
         #
         # To be defined by each subclass. Each entry contains a hash with the
-        # mandatory key :name and an optional key :xml_name.
+        # mandatory key :name and an optional key :xml_name; the values are symbols.
         #
         # @return [Array<Hash>]
         def attributes

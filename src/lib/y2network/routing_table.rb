@@ -20,7 +20,7 @@
 require "forwardable"
 
 module Y2Network
-  # Represents a routing table
+  # Represents a {https://en.wikipedia.org/wiki/Routing_table routing table}
   #
   # @example Adding routes
   #   table = Y2Network::RoutingTable.new
