@@ -3,6 +3,8 @@
 require_relative "test_helper"
 
 require "network/network_autoyast"
+Yast.import "Profile"
+Yast.import "Lan"
 
 describe "NetworkAutoYast" do
   subject(:network_autoyast) { Yast::NetworkAutoYast.instance }
@@ -507,6 +509,44 @@ describe "NetworkAutoYast" do
 
         # check if device names are unique
         expect(names.sort).to eql ["eth0", "eth1", "eth2", "eth3"]
+      end
+    end
+  end
+
+  describe "#configure_lan" do
+    before do
+      allow(Yast::Profile).to receive(:current).and_return("general" => general_section)
+      allow(Yast::AutoInstall).to receive(:valid_imported_values).and_return(true)
+    end
+
+    context "when second stage is disabled" do
+      let(:general_section) do
+        { "mode" => { "second_stage" => false } }
+      end
+
+      it "writes the Lan module configuration" do
+        expect(Yast::Lan).to receive(:Write)
+        subject.configure_lan
+      end
+    end
+
+    context "when second stage is enabled" do
+      let(:general_section) do
+        { "mode" => { "second_stage" => true } }
+      end
+
+      it "does not write the Lan module configuration" do
+        expect(Yast::Lan).to_not receive(:Write)
+        subject.configure_lan
+      end
+    end
+
+    context "when second stage is not explicitly enabled" do
+      let(:general_section) { nil }
+
+      it "does not write the Lan module configuration" do
+        expect(Yast::Lan).to_not receive(:write)
+        subject.configure_lan
       end
     end
   end
