@@ -110,7 +110,7 @@ module Y2Network
       # @param interfaces [Array<Interface>] Interfaces
       def link_routes_to_interfaces(routes, interfaces)
         routes.each do |route|
-          next if route.interface == :any
+          next unless route.interface
           interface = interfaces.find { |i| route.interface.name == i.name }
           route.interface = interface if interface
         end

@@ -76,13 +76,6 @@ describe Y2Network::ConfigReader::AutoinstRouting do
         end
       end
 
-      context "and a route does not define a device" do
-        it "initializes the route with :any as the interface" do
-          default = subject.config.routes.find(&:default?)
-          expect(default.interface).to eql(:any)
-        end
-      end
-
       context "and the route defines a device" do
         it "initializes the route Y2Network::Interface correctly" do
           em1 = subject.config.routes.find { |r| r.interface == Y2Network::Interface.new("em1") }

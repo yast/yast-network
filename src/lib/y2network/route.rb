@@ -21,7 +21,7 @@ module Y2Network
   class Route
     # @return [IPAddr,:default] Destination; :default if it is the default route
     attr_accessor :to
-    # @return [Interface,:any] Interface to associate the route to; :any if no interface is given
+    # @return [Interface,nil] Interface to associate the route to
     attr_accessor :interface
     # @return [IPAddr,nil] Gateway IP address ('via' in ip route)
     attr_accessor :gateway
@@ -29,10 +29,10 @@ module Y2Network
     attr_accessor :options
 
     # @param to        [IPAddr,:default] Destination
-    # @param interface [Interface,:any] Interface to associate the root to
+    # @param interface [Interface, nil] Interface to associate the root to
     # @param gateway   [IPAddr,nil] Gateway IP
     # @param options   [String] Additional options
-    def initialize(to: :default, interface: :any, gateway: nil, options: "")
+    def initialize(to: :default, interface: nil, gateway: nil, options: "")
       @to = to
       @interface = interface
       @gateway = gateway

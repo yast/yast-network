@@ -25,7 +25,7 @@ require "y2network/widgets/devices"
 require "cwm/rspec"
 
 describe Y2Network::Widgets::Devices do
-  let(:route) { Y2Network::Route.new(interface: :any) }
+  let(:route) { Y2Network::Route.new }
   subject { described_class.new(route, ["eth0", "lo"]) }
 
   include_examples "CWM::ComboBox"

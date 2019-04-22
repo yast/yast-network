@@ -54,8 +54,8 @@ describe Y2Network::AutoinstProfile::RouteSection do
       expect(section.device).to eq("eth0")
     end
 
-    context "when the interface is any" do
-      let(:interface) { :any }
+    context "when the interface is missing" do
+      let(:interface) { nil }
 
       it "initializes the device to '-'" do
         section = described_class.new_from_network(route)

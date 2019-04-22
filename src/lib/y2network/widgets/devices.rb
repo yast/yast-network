@@ -34,12 +34,12 @@ module Y2Network
 
       def init
         interface = @route.interface
-        self.value = interface == :any ? "" : interface.name
+        self.value = interface ? interface.name : ""
       end
 
       def store
         interface = value
-        @route.interface = interface.empty? ? :any : Interface.new(interface)
+        @route.interface = interface.empty? ? nil : Interface.new(interface)
       end
     end
   end
