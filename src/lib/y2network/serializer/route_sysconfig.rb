@@ -42,7 +42,7 @@ module Y2Network
 
         hash["extrapara"] = route.options unless route.options.to_s.empty?
         hash["gateway"] = route.gateway ? route.gateway.to_s : "-"
-        hash["device"] = route.interface == :any ? "-" : route.interface.name
+        hash["device"] = route.interface.nil? ? "-" : route.interface.name
         hash
       end
 
@@ -73,9 +73,9 @@ module Y2Network
         netmask_str == MISSING_VALUE ? ip : ip.mask(netmask_str)
       end
 
-      # @return [Y2Network::Interface, :any]
+      # @return [Y2Network::Interface, nil]
       def interface_from(hash)
-        return :any if hash.fetch("device", "-") == MISSING_VALUE
+        return nil if hash.fetch("device", "-") == MISSING_VALUE
 
         Y2Network::Interface.new(hash["device"])
       end

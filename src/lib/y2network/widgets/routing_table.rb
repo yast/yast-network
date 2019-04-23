@@ -32,7 +32,7 @@ module Y2Network
               to == :default ? "default" : (to.to_s + "/" + to.prefix.to_s)
             end,
             route.gateway.nil? ? "-" : route.gateway.to_s,
-            route.interface == :any ? "-" : route.interface.name,
+            route.interface.nil? ? "-" : route.interface.name,
             route.options.to_s
           ]
         end

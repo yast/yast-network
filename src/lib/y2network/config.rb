@@ -30,7 +30,7 @@ module Y2Network
   #
   # @example Adding a default route to the first routing table
   #   config = Y2Network::Config.from(:sysconfig)
-  #   route = Y2Network::Route.new(to: :default, interface: :any)
+  #   route = Y2Network::Route.new(to: :default)
   #   config.routing.tables.first << route
   #   config.write
   class Config

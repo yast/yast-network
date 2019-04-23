@@ -58,6 +58,12 @@ describe Y2Network::Route do
       )
     end
 
+    let(:other_no_interface) do
+      described_class.new(
+        to: other_to, gateway: other_gateway, options: other_options
+      )
+    end
+
     context "given two routes with the same data" do
       it "returns true" do
         expect(route).to eq(other)
@@ -77,6 +83,7 @@ describe Y2Network::Route do
 
       it "returns false" do
         expect(route).to_not eq(other)
+        expect(route).to_not eq(other_no_interface)
       end
     end
 

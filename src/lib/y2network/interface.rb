@@ -31,10 +31,10 @@ module Y2Network
 
     # Determines whether two interfaces are equal
     #
-    # @param other [Interface,:any] Interface to compare with
+    # @param other [Interface] Interface to compare with
     # @return [Boolean]
     def ==(other)
-      return false if other == :any
+      return false unless other.is_a?(Interface)
       name == other.name
     end
 

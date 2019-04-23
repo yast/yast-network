@@ -47,7 +47,6 @@ describe Y2Network::ConfigWriter::Sysconfig do
     end
     let(:default_route) do
       Y2Network::Route.new(
-        interface: :any,
         gateway:   IPAddr.new("192.168.122.2")
       )
     end
