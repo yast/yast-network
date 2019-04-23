@@ -26,6 +26,7 @@ end
 
 # stub classes from other modules to speed up a build
 stub_module("AutoInstall")
+stub_module("Profile")
 
 # A two level section/key => value store
 # to remember values of /etc/sysconfig/network/ifcfg-*

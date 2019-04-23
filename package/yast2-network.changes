@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Apr 22 16:41:51 UTC 2019 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
+
+- Fix mode/second_stage value initialization (bsc#1132057)
+- 4.1.45
+
+-------------------------------------------------------------------
 Thu Mar 21 10:09:32 UTC 2019 - knut.anderssen@suse.com
 
 - bnc#1094934

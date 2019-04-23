@@ -3,6 +3,8 @@
 require_relative "test_helper"
 
 require "network/network_autoyast"
+Yast.import "Profile"
+Yast.import "Lan"
 
 describe "NetworkAutoYast" do
   subject(:network_autoyast) { Yast::NetworkAutoYast.instance }
@@ -507,6 +509,78 @@ describe "NetworkAutoYast" do
 
         # check if device names are unique
         expect(names.sort).to eql ["eth0", "eth1", "eth2", "eth3"]
+      end
+    end
+  end
+
+  describe "#configure_lan" do
+    before do
+      allow(Yast::Profile).to receive(:current)
+        .and_return("general" => general_section, "networking" => networking_section)
+      allow(Yast::AutoInstall).to receive(:valid_imported_values).and_return(true)
+    end
+
+    let(:networking_section) { nil }
+    let(:general_section) { nil }
+
+    context "when second stage is disabled" do
+      let(:general_section) do
+        { "mode" => { "second_stage" => false } }
+      end
+
+      it "writes the Lan module configuration" do
+        expect(Yast::Lan).to receive(:Write)
+        subject.configure_lan
+      end
+    end
+
+    context "when writing the configuration is disabled" do
+      it "writes the Lan module configuration" do
+        expect(Yast::Lan).to_not receive(:Write)
+        subject.configure_lan(write: false)
+      end
+    end
+
+    context "when second stage is enabled" do
+      let(:general_section) do
+        { "mode" => { "second_stage" => true } }
+      end
+
+      it "does not write the Lan module configuration" do
+        expect(Yast::Lan).to_not receive(:Write)
+        subject.configure_lan
+      end
+    end
+
+    context "when second stage is not explicitly enabled" do
+      let(:general_section) { nil }
+
+      it "does not write the Lan module configuration" do
+        expect(Yast::Lan).to_not receive(:write)
+        subject.configure_lan
+      end
+    end
+
+    it "merges the installation configuration" do
+      expect(Yast::NetworkAutoYast.instance).to receive(:merge_configs)
+      subject.configure_lan
+    end
+
+    context "when the user wants to keep the installation network" do
+      let(:networking_section) { { "keep_install_network" => true } }
+
+      it "merges the installation configuration" do
+        expect(Yast::NetworkAutoYast.instance).to receive(:merge_configs)
+        subject.configure_lan
+      end
+    end
+
+    context "when the user does not want to keep the installation network" do
+      let(:networking_section) { { "keep_install_network" => false } }
+
+      it "does not merge the installation configuration" do
+        expect(Yast::NetworkAutoYast.instance).to_not receive(:merge_configs)
+        subject.configure_lan
       end
     end
   end
