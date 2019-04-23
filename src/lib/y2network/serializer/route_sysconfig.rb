@@ -75,7 +75,7 @@ module Y2Network
 
       # @return [Y2Network::Interface, nil]
       def interface_from(hash)
-        return if hash.fetch("device", "-") == MISSING_VALUE
+        return nil if hash.fetch("device", "-") == MISSING_VALUE
 
         Y2Network::Interface.new(hash["device"])
       end

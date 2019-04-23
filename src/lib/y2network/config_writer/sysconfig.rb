@@ -99,9 +99,11 @@ module Y2Network
         Yast::SCR.Execute(Yast::Path.new(".target.bash"), "/usr/sbin/sysctl -w #{IPV6_SYSCTL}=#{sysctl_val.shellescape}") == 0
       end
 
-      # Finds routes for a given interface
+      # Finds routes for a given interface or the routes not tied to any
+      # interface in case of nil
       #
-      # @param iface  [Interface] Interface to search routes for
+      # @param iface  [Interface,nil] Interface to search routes for; nil will
+      #   return the routes not tied to any interface
       # @param routes [Array<Route>] List of routes to search in
       # @return [Array<Route>] List of routes for the given interface
       #
@@ -123,7 +125,8 @@ module Y2Network
 
       # Returns the routes file for a given interace
       #
-      # @param iface  [Interface,nil] Interface to search routes for
+      # @param iface  [Interface,nil] Interface to search routes for; nil will
+      #   return the global routes file
       # @return [Y2Network::SysconfigRoutesFile]
       def routes_file_for(iface)
         return Y2Network::SysconfigRoutesFile.new unless iface
