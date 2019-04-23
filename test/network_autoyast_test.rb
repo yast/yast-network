@@ -515,9 +515,13 @@ describe "NetworkAutoYast" do
 
   describe "#configure_lan" do
     before do
-      allow(Yast::Profile).to receive(:current).and_return("general" => general_section)
+      allow(Yast::Profile).to receive(:current)
+        .and_return("general" => general_section, "networking" => networking_section)
       allow(Yast::AutoInstall).to receive(:valid_imported_values).and_return(true)
     end
+
+    let(:networking_section) { nil }
+    let(:general_section) { nil }
 
     context "when second stage is disabled" do
       let(:general_section) do
@@ -527,6 +531,13 @@ describe "NetworkAutoYast" do
       it "writes the Lan module configuration" do
         expect(Yast::Lan).to receive(:Write)
         subject.configure_lan
+      end
+    end
+
+    context "when writing the configuration is disabled" do
+      it "writes the Lan module configuration" do
+        expect(Yast::Lan).to_not receive(:Write)
+        subject.configure_lan(write: false)
       end
     end
 
@@ -546,6 +557,29 @@ describe "NetworkAutoYast" do
 
       it "does not write the Lan module configuration" do
         expect(Yast::Lan).to_not receive(:write)
+        subject.configure_lan
+      end
+    end
+
+    it "merges the installation configuration" do
+      expect(Yast::NetworkAutoYast.instance).to receive(:merge_configs)
+      subject.configure_lan
+    end
+
+    context "when the user wants to keep the installation network" do
+      let(:networking_section) { { "keep_install_network" => true } }
+
+      it "merges the installation configuration" do
+        expect(Yast::NetworkAutoYast.instance).to receive(:merge_configs)
+        subject.configure_lan
+      end
+    end
+
+    context "when the user does not want to keep the installation network" do
+      let(:networking_section) { { "keep_install_network" => false } }
+
+      it "does not merge the installation configuration" do
+        expect(Yast::NetworkAutoYast.instance).to_not receive(:merge_configs)
         subject.configure_lan
       end
     end
