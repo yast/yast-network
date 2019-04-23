@@ -34,7 +34,7 @@ module Y2Network
     # @param other [Interface] Interface to compare with
     # @return [Boolean]
     def ==(other)
-      return false if self.class != other.class
+      return false unless other.is_a?(Interface)
       name == other.name
     end
 
