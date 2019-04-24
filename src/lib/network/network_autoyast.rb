@@ -22,7 +22,6 @@ module Yast
       Yast.import "LanItems"
       Yast.import "Linuxrc"
       Yast.import "Host"
-      Yast.import "Routing"
       Yast.import "AutoInstall"
     end
 

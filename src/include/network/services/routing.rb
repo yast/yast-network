@@ -28,443 +28,42 @@
 #
 #
 # Routing configuration dialogs
+
+require "y2network/dialogs/route"
+require "y2network/routing_table"
+require "y2network/widgets/routing_table"
+require "y2network/widgets/routing_buttons"
+require "y2network/widgets/ip4_forwarding"
+require "y2network/widgets/ip6_forwarding"
+
 module Yast
   module NetworkServicesRoutingInclude
     include Yast::I18n
     include Yast::UIShortcuts
+    include Yast::Logger
 
-    def initialize_network_services_routing(include_target)
-      Yast.import "UI"
-
+    def initialize_network_services_routing(_include_target)
       textdomain "network"
 
-      Yast.import "IP"
       Yast.import "Label"
-      Yast.import "Netmask"
-      Yast.import "Popup"
-      Yast.import "Routing"
       Yast.import "Wizard"
-      Yast.import "Lan"
       Yast.import "CWM"
-      Yast.import "CWMTab"
-      Yast.import "NetworkService"
+      Yast.import "Lan"
+    end
 
-      Yast.include include_target, "network/lan/help.rb"
-      Yast.include include_target, "network/routines.rb"
-
-      @r_items = []
-      @defgw = ""
-      @defgwdev = ""
-
-      @defgw6 = ""
-      @defgwdev6 = ""
-      @wd_routing = {
-        "ROUTING" => {
-          "widget"            => :custom,
-          "custom_widget"     => HBox(
-            HSpacing(5),
-            routing_box_widget,
-            HSpacing(5)
-          ),
-          "init"              => fun_ref(method(:initRouting), "void (string)"),
-          "handle"            => fun_ref(
-            method(:handleRouting),
-            "symbol (string, map)"
-          ),
-          "validate_type"     => :function,
-          "validate_function" => fun_ref(
-            method(:validateRouting),
-            "boolean (string, map)"
-          ),
-          "store"             => fun_ref(
-            method(:storeRouting),
-            "void (string, map)"
-          ),
-          "help"              => Ops.get_string(@help, "routing", "")
-        }
-      }
-
-      @route_td = {
+    def route_td
+      {
         "route" => {
           "header"       => _("Routing"),
-          "contents"     => VBox("ROUTING"),
-          "widget_names" => ["ROUTING"]
+          "contents"     => content,
+          "widget_names" => widgets.keys
         }
       }
     end
 
-    # Validates user's input obtained from Netmask field
-    #
-    # It currently allows to use netmask for IPv4 (e.g. 255.0.0.0) or
-    # prefix length. If prefix length is used it has to start with '/'.
-    # For IPv6 network, only prefix length is allowed.
-    #
-    # @param [String] netmask or /<prefix length>
-    def valid_netmask?(netmask)
-      return false if netmask.nil? || netmask.empty?
-      return true if Netmask.Check4(netmask)
-
-      if netmask.start_with?("/")
-        return true if netmask[1..-1].to_i.between?(1, 128)
-      end
-
-      false
-    end
-
-    # Route edit dialog
-    # @param [Fixnum] id id of the edited route
-    # @param [Yast::Term] entry edited entry
-    # @param [Array] devs available devices
-    # @return route or nil, if canceled
-    def RoutingEditDialog(id, entry, devs)
-      entry = deep_copy(entry)
-      devs = deep_copy(devs)
-
-      UI.OpenDialog(
-        Opt(:decorated),
-        MinWidth(60,
-          VBox(
-            HSpacing(1),
-            VBox(
-              HBox(
-                HWeight(70,
-                  InputField(
-                    Id(:destination),
-                    Opt(:hstretch),
-                    _("&Destination"),
-                    Ops.get_string(entry, 1, "")
-                  )),
-                HSpacing(1),
-                HWeight(30,
-                  InputField(
-                    Id(:genmask),
-                    Opt(:hstretch),
-                    _("&Netmask"),
-                    Ops.get_string(entry, 3, "-")
-                  ))
-              ),
-              HBox(
-                HWeight(70,
-                  InputField(
-                    Id(:gateway),
-                    Opt(:hstretch),
-                    _("&Gateway"),
-                    Ops.get_string(entry, 2, "-")
-                  )),
-                HSpacing(1),
-                HWeight(30,
-                  ComboBox(
-                    Id(:device),
-                    Opt(:editable, :hstretch),
-                    _("De&vice"),
-                    devs
-                  ))
-              ),
-              # ComboBox label
-              InputField(
-                Id(:options),
-                Opt(:hstretch),
-                Label.Options,
-                Ops.get_string(entry, 5, "")
-              )
-            ),
-            HSpacing(1),
-            HBox(
-              PushButton(Id(:ok), Opt(:default), Label.OKButton),
-              PushButton(Id(:cancel), Label.CancelButton)
-            )
-          ))
-      )
-
-      # Allow declaring route without iface (for gateway) #93996
-      # if empty, use '-' which stands for any
-      if Ops.get_string(entry, 4, "") != ""
-        UI.ChangeWidget(Id(:device), :Value, Ops.get_string(entry, 4, ""))
-      else
-        UI.ChangeWidget(Id(:device), :Items, devs)
-      end
-      UI.ChangeWidget(
-        Id(:destination),
-        :ValidChars,
-        Ops.add(Ops.add(IP.ValidChars, "default"), "/-")
-      )
-      UI.ChangeWidget(Id(:gateway), :ValidChars, Ops.add(IP.ValidChars, "-"))
-      # user can enter IPv4 netmask or prefix length (has to start with '/')
-      UI.ChangeWidget(Id(:genmask), :ValidChars, Netmask.ValidChars + "-/")
-
-      if entry == term(:empty)
-        UI.SetFocus(Id(:destination))
-      else
-        UI.SetFocus(Id(:gateway))
-      end
-
-      ret = nil
-      route = nil
-
-      loop do
-        ret = UI.UserInput
-        break if ret != :ok
-
-        route = Item(Id(id))
-        val = Convert.to_string(UI.QueryWidget(Id(:destination), :Value))
-        slash = Builtins.search(val, "/")
-        noprefix = slash.nil? ? val : Builtins.substring(val, 0, slash)
-        if val != "default" && !IP.Check(noprefix)
-          # Popup::Error text
-          Popup.Error(_("Destination is invalid."))
-          UI.SetFocus(Id(:destination))
-          next
-        end
-        route = Builtins.add(route, val)
-        val = Convert.to_string(UI.QueryWidget(Id(:gateway), :Value))
-        if val != "-" && !IP.Check(val)
-          # Popup::Error text
-          Popup.Error(_("Gateway IP address is invalid."))
-          UI.SetFocus(Id(:gateway))
-          next
-        end
-        route = Builtins.add(route, val)
-        val = Convert.to_string(UI.QueryWidget(Id(:genmask), :Value))
-        if val != "-" && !valid_netmask?(val)
-          # Popup::Error text
-          Popup.Error(_("Subnetmask is invalid."))
-          UI.SetFocus(Id(:genmask))
-          next
-        end
-        route = Builtins.add(route, val)
-        val = Convert.to_string(UI.QueryWidget(Id(:device), :Value))
-        route = Builtins.add(route, val)
-        val = Convert.to_string(UI.QueryWidget(Id(:options), :Value))
-        route = Builtins.add(route, val)
-        break
-      end
-
-      UI.CloseDialog
-      return nil if ret != :ok
-      Builtins.y2debug("route=%1", route)
-      deep_copy(route)
-    end
-
-    def initRouting(_key)
-      route_conf = deep_copy(Routing.Routes)
-
-      # reset, so that UI really reflect current state
-      # maplist below will supply correct data, if there are some
-      @defgw = ""
-      @defgwdev = "-"
-      @defgw6 = ""
-      @defgwdev6 = "-"
-      @r_items = []
-
-      # make ui items from the routes list
-      item = nil
-
-      Builtins.maplist(route_conf) do |r|
-        if Ops.get_string(r, "destination", "") == "default" &&
-            !Builtins.issubstring(Ops.get_string(r, "extrapara", ""), "metric")
-          if IP.Check4(Ops.get_string(r, "gateway", ""))
-            @defgw = Ops.get_string(r, "gateway", "")
-            @defgwdev = Ops.get_string(r, "device", "")
-          else
-            @defgw6 = Ops.get_string(r, "gateway", "")
-            @defgwdev6 = Ops.get_string(r, "device", "")
-          end
-        else
-          item = Item(
-            Id(Builtins.size(@r_items)),
-            Ops.get_string(r, "destination", ""),
-            Ops.get_string(r, "gateway", ""),
-            Ops.get_string(r, "netmask", ""),
-            Ops.get_string(r, "device", ""),
-            Ops.get_string(r, "extrapara", "")
-          )
-          @r_items = Builtins.add(@r_items, item)
-        end
-      end
-
-      Builtins.y2debug("table_items=%1", @r_items)
-
-      UI.ChangeWidget(:gw, :Value, @defgw)
-      UI.ChangeWidget(:gw6, :Value, @defgw6)
-      UI.ChangeWidget(Id(:gw), :ValidChars, IP.ValidChars)
-      UI.ChangeWidget(Id(:table), :Items, @r_items)
-      UI.ChangeWidget(Id(:forward_v4), :Value, Routing.Forward_v4)
-      UI.ChangeWidget(Id(:forward_v6), :Value, Routing.Forward_v6)
-      UI.SetFocus(Id(:gw))
-
-      # #178538 - disable routing dialog when NetworkManager is used
-      # but instead of default route (#299448) - NM reads it
-      enabled = !NetworkService.is_network_manager
-
-      UI.ChangeWidget(Id(:table), :Enabled, enabled)
-      UI.ChangeWidget(Id(:forward_v4), :Enabled, enabled)
-      UI.ChangeWidget(Id(:forward_v6), :Enabled, enabled)
-      disable_unconfigureable_items(
-        [:gw, :gw6, :gw6dev, :table, :add, :edit, :delete],
-        false
-      )
-      if !Lan.ipv6
-        UI.ChangeWidget(Id(:gw6), :Enabled, false)
-        UI.ChangeWidget(Id(:gw6dev), :Enabled, false)
-      end
-
-      devs = Routing.GetDevices
-      devs = Builtins.add(devs, "-")
-      UI.ChangeWidget(:gw4dev, :Items, devs)
-      UI.ChangeWidget(:gw4dev, :Value, @defgwdev)
-      UI.ChangeWidget(:gw6dev, :Items, devs)
-      UI.ChangeWidget(:gw6dev, :Value, @defgwdev6)
-
-      nil
-    end
-
-    def handleRouting(_key, event)
-      event = deep_copy(event)
-      enabled = !NetworkService.is_network_manager
-      devs = Routing.GetDevices
-      devs = Builtins.add(devs, "-")
-      cur = Convert.to_integer(UI.QueryWidget(Id(:table), :CurrentItem))
-      item = nil
-
-      if Ops.get_string(event, "EventReason", "") == "Activated" ||
-          Ops.get_string(event, "EventReason", "") == "ValueChanged"
-        case Ops.get_symbol(event, "ID", :nil)
-        when :add
-          item = RoutingEditDialog(
-            Builtins.size(@r_items),
-            term(:empty),
-            devs
-          )
-
-          if !item.nil?
-            @r_items = Builtins.add(@r_items, item)
-            UI.ChangeWidget(Id(:table), :Items, @r_items)
-          end
-        when :delete
-          @r_items = Builtins.filter(@r_items) do |e|
-            cur != Ops.get(e, [0, 0])
-          end
-          UI.ChangeWidget(Id(:table), :Items, @r_items)
-        when :edit
-          @cur_item = Builtins.filter(@r_items) do |e|
-            cur == Ops.get(e, [0, 0])
-          end
-
-          item = Ops.get(@cur_item, 0)
-          @dev = Ops.get_string(item, 4, "")
-          if @dev != "" && !Builtins.contains(devs, @dev)
-            devs = Builtins.add(devs, @dev)
-          end
-          devs = Builtins.sort(devs)
-
-          item = RoutingEditDialog(cur, item, devs)
-          if !item.nil?
-            @r_items = Builtins.maplist(@r_items) do |e|
-              next deep_copy(item) if cur == Ops.get_integer(e, [0, 0], -1)
-              deep_copy(e)
-            end
-            UI.ChangeWidget(Id(:table), :Items, @r_items)
-            UI.ChangeWidget(Id(:table), :CurrentItem, cur)
-          end
-        end
-      end
-      UI.ChangeWidget(Id(:add), :Enabled, enabled)
-      UI.ChangeWidget(
-        Id(:edit),
-        :Enabled,
-        enabled && Ops.greater_than(Builtins.size(@r_items), 0)
-      )
-      UI.ChangeWidget(
-        Id(:delete),
-        :Enabled,
-        enabled && Ops.greater_than(Builtins.size(@r_items), 0)
-      )
-      nil
-    end
-
-    # Checks if the param is valid IPv4 / IPv6
-    #
-    # @param gw [String] IPv4 or IPv6 address
-    # @return [Bolean] true if given param is valid
-    def valid_gateway?(gw)
-      !gw.nil? && (gw.empty? || IP.Check(gw))
-    end
-
-    # An input validator for the Routing dialog
-    def validateRouting(_key, _event)
-      gw = UI.QueryWidget(Id(:gw), :Value)
-
-      return true if valid_gateway?(gw)
-
-      Popup.Error(_("The default gateway is invalid."))
-      UI.SetFocus(Id(:gw))
-      false
-    end
-
-    # Converts route definition for storing in routes file
-    #
-    # Basically netmask field is obsolete, so it converts
-    # the record to use CIDR notation if netmask is defined.
-    #
-    # @param route [Hash] see {RoutingClass#Routes}
-    # @return [Hash] where netmask is "-" (CIDR flavor)
-    def convert_route_conf(route)
-      return route if route["netmask"] == "-"
-
-      dest = route["destination"]
-      netmask = route["netmask"]
-
-      if Netmask.Check4(netmask)
-        cidr = Netmask.ToBits(netmask)
-      elsif netmask.start_with?("/")
-        cidr = netmask[1..-1]
-      else
-        # if it is netmask then long netmask is not supported for IPv6
-        # if it is prefix length (CIDR), then prefix it has to be prefixed by '/'
-        raise ArgumentError, "Invalid netmask or prefix length: #{netmask}"
-      end
-
-      route["destination"] = "#{dest}/#{cidr}"
-      route["netmask"] = "-"
-
-      route
-    end
-
-    def storeRouting(_key, _event)
-      route_conf = @r_items.map do |route|
-        convert_route_conf(
-          "destination" => route[1].to_s,
-          "gateway"     => route[2].to_s,
-          "netmask"     => route[3].to_s,
-          "device"      => route[4].to_s,
-          "extrapara"   => route[5].to_s
-        )
-      end
-
-      @defgw = UI.QueryWidget(Id(:gw), :Value)
-      @defgwdev = UI.QueryWidget(Id(:gw4dev), :Value)
-      @defgw6 = UI.QueryWidget(Id(:gw6), :Value)
-      @defgwdev6 = UI.QueryWidget(Id(:gw6dev), :Value)
-
-      route_conf << {
-        "destination" => "default",
-        "gateway"     => @defgw,
-        "netmask"     => "-",
-        "device"      => @defgwdev
-      } if !@defgw.empty?
-
-      route_conf << {
-        "destination" => "default",
-        "gateway"     => @defgw6,
-        "netmask"     => "-",
-        "device"      => @defgwdev6
-      } if !@defgw6.empty?
-
-      Routing.Routes = route_conf
-      Routing.Forward_v4 = UI.QueryWidget(Id(:forward_v4), :Value)
-      Routing.Forward_v6 = UI.QueryWidget(Id(:forward_v6), :Value)
-
-      nil
+    # TODO: just for CWM fallback function
+    def ReallyAbort
+      Popup.ReallyAbort(true)
     end
 
     # Main routing dialog
@@ -473,18 +72,14 @@ module Yast
       caption = _("Routing Configuration")
 
       functions = {
-        "init"  => fun_ref(method(:initRouting), "void (string)"),
-        "store" => fun_ref(method(:storeRouting), "void (string, map)"),
-        :abort  => fun_ref(method(:ReallyAbort), "boolean ()")
+        abort: Yast::FunRef.new(method(:ReallyAbort), "boolean ()")
       }
-
-      contents = VBox("ROUTING")
 
       Wizard.HideBackButton
 
       CWM.ShowAndRun(
-        "widget_descr"       => @wd_routing,
-        "contents"           => contents,
+        "widget_descr"       => widgets,
+        "contents"           => content,
         "caption"            => caption,
         "back_button"        => Label.BackButton,
         "next_button"        => Label.NextButton,
@@ -494,66 +89,64 @@ module Yast
 
   private
 
-    def default_static_ipv4_gw_widget
-      HBox(
-        InputField(Id(:gw), Opt(:hstretch), _("Default IPv4 &Gateway")),
-        ComboBox(Id(:gw4dev), Opt(:editable), _("Device"), [])
-      )
+    def config
+      # TODO: get it from some config holder
+      @routing_config ||= Yast::Lan.yast_config
     end
 
-    def default_static_ipv6_gw_widget
-      HBox(
-        InputField(Id(:gw6), Opt(:hstretch), _("Default IPv6 &Gateway")),
-        ComboBox(Id(:gw6dev), Opt(:editable), _("Device"), [])
-      )
+    def routing_table
+      @routing_table_widget ||= Y2Network::Widgets::RoutingTable.new(config.routing.tables.first)
     end
 
-    def routing_box_widget
+    def ip4_forwarding
+      @ip4_forwarding_widget ||= Y2Network::Widgets::IP4Forwarding.new(config)
+    end
+
+    def ip6_forwarding
+      @ip6_forwarding_widget ||= Y2Network::Widgets::IP6Forwarding.new(config)
+    end
+
+    def add_button
+      @add_button ||= Y2Network::Widgets::AddRoute.new(routing_table, config)
+    end
+
+    def edit_button
+      @edit_button ||= Y2Network::Widgets::EditRoute.new(routing_table, config)
+    end
+
+    def delete_button
+      @delete_button ||= Y2Network::Widgets::DeleteRoute.new(routing_table)
+    end
+
+    def content
       VBox(
-        VStretch(),
-        # ComboBox label
-        default_static_ipv4_gw_widget,
-        default_static_ipv6_gw_widget,
-        VSpacing(1),
+        Left(ip4_forwarding.widget_id),
+        Left(ip6_forwarding.widget_id),
+        VSpacing(),
         # Frame label
         Frame(
           _("Routing Table"),
           VBox(
-            # CheckBox label
-            Table(
-              Id(:table),
-              Opt(:notify),
-              Header(
-                # Table header 1/4
-                _("Destination"),
-                # Table header 2/4
-                _("Gateway"),
-                # Table header 3/4
-                _("Netmask"),
-                # Table header 4/4
-                _("Device"),
-                # Table header 5/4
-                # FIXME
-                Builtins.deletechars(Label.Options, "&")
-              ),
-              []
-            ),
-            # PushButton label
+            routing_table.widget_id,
             HBox(
-              PushButton(Id(:add), _("Ad&d")),
-              # PushButton label
-              PushButton(Id(:edit), _("&Edit")),
-              # PushButton label
-              PushButton(Id(:delete), _("De&lete"))
+              add_button.widget_id,
+              edit_button.widget_id,
+              delete_button.widget_id
             )
           )
-        ),
-        VSpacing(1),
-        # CheckBox label
-        Left(CheckBox(Id(:forward_v4), _("Enable &IPv4 Forwarding"))),
-        Left(CheckBox(Id(:forward_v6), _("Enable I&Pv6 Forwarding"))),
-        VStretch()
+        )
       )
+    end
+
+    def widgets
+      {
+        routing_table.widget_id  => routing_table.cwm_definition,
+        ip4_forwarding.widget_id => ip4_forwarding.cwm_definition,
+        ip6_forwarding.widget_id => ip6_forwarding.cwm_definition,
+        add_button.widget_id     => add_button.cwm_definition,
+        edit_button.widget_id    => edit_button.cwm_definition,
+        delete_button.widget_id  => delete_button.cwm_definition
+      }
     end
   end
 end

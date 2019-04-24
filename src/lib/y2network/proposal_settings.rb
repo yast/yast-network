@@ -51,7 +51,7 @@ module Y2Network
       default
     end
 
-    # Adds the NetworkManager package to the {Yast::PackagesProposal} and sets
+    # Adds the NetworkManager package to the Yast::PackagesProposal and sets
     # NetworkManager as the backend to be used
     def enable_network_manager!
       log.info "Enabling NetworkManager"
@@ -61,7 +61,7 @@ module Y2Network
       selected_backend
     end
 
-    # Add the wicked package to the {Yast::PackagesProposal} and sets wicked
+    # Add the wicked package to the Yast::PackagesProposal and sets wicked
     # as the backend to be used
     def enable_wicked!
       log.info "Enabling Wicked"

@@ -62,8 +62,12 @@ module Yast
         @ret = Lan.Summary("summary")
       elsif @func == "Reset"
         Lan.Import({})
+        Yast::Lan.clear_configs
         @ret = {}
       elsif @func == "Change"
+        unless Yast::Lan.yast_config
+          Yast::Lan.add_config(:yast, Y2Network::Config.from(:defaults))
+        end
         @ret = LanAutoSequence("")
       elsif @func == "Import"
         @new = Lan.FromAY(@param)

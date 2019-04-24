@@ -40,7 +40,6 @@ module Yast
       Yast.import "Mode"
       Yast.import "NetworkConfig"
       Yast.import "NetworkService"
-      Yast.import "Routing"
       Yast.import "Wizard"
       Yast.import "Popup"
       Yast.import "Label"
@@ -60,7 +59,10 @@ module Yast
       Yast.include include_target, "network/widgets.rb"
 
       @shown = false
+    end
 
+    def wd
+      return @wd if @wd
       @wd = {
         "MANAGED"  => managed_widget,
         "IPV6"     => ipv6_widget,
@@ -100,7 +102,7 @@ module Yast
         to:   "map <string, map <string, any>>"
       )
       @wd = Convert.convert(
-        Builtins.union(@wd, @wd_routing),
+        Builtins.union(@wd, widgets), # routing widgets
         from: "map",
         to:   "map <string, map <string, any>>"
       )
@@ -109,6 +111,10 @@ module Yast
         from: "map",
         to:   "map <string, map <string, any>>"
       )
+    end
+
+    def tabs_descr
+      return @tabs_descr if @tabs_descr
 
       @tabs_descr = {
         "global"   => {
@@ -127,7 +133,7 @@ module Yast
           "widget_names" => ["OVERVIEW"]
         }
       }
-      @tabs_descr = Builtins.union(@tabs_descr, @route_td)
+      @tabs_descr = Builtins.union(@tabs_descr, route_td)
       @tabs_descr = Builtins.union(@tabs_descr, @dns_td)
     end
 
@@ -144,6 +150,9 @@ module Yast
       Wizard.RestoreHelp(Ops.get_string(@help, "read", ""))
       Lan.AbortFunction = -> { PollAbort() }
       ret = Lan.Read(:cache)
+      # Currently just a smoketest for new config storage - something what should replace Lan module in the bright future
+      # TODO: find a suitable place for this config storage
+      Y2Network::Config.from(:sysconfig)
 
       if Lan.HaveXenBridge
         if !Popup.ContinueCancel(
@@ -454,7 +463,6 @@ module Yast
           end
 
           LanItems.DeleteItem
-          LanItems.update_routing_devices!
           initOverview("")
         end
       end
@@ -474,7 +482,7 @@ module Yast
       functions = { abort: fun_ref(method(:ReallyAbort), "boolean ()") }
 
       ret = CWM.ShowAndRun(
-        "widget_descr"       => @wd,
+        "widget_descr"       => wd,
         "contents"           => contents,
         # Network setup method dialog caption
         "caption"            => _(
@@ -516,8 +524,8 @@ module Yast
                             else
                               ["overview", "resolv", "route"]
                             end,
-          "tabs"         => @tabs_descr,
-          "widget_descr" => @wd,
+          "tabs"         => tabs_descr,
+          "widget_descr" => wd,
           "initial_tab"  => Stage.normal ? init_tab : "overview",
           "tab_help"     => ""
         )
