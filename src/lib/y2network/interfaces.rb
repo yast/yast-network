@@ -57,7 +57,9 @@ module Y2Network
     # @return [Array<Interface>] a list of interfaces obtained from the hash
     def hash_to_interface(hash)
       hash.map do |_, iface|
-        Interface.new(iface["ifcfg"], hwinfo: iface["hwinfo"])
+        # one of those has to exist in LanItems::Items
+        name = iface["ifcfg"] || iface["hwinfo"]["dev_name"]
+        Interface.new(name, hwinfo: iface["hwinfo"])
       end
     end
   end
