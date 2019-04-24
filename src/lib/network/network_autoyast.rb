@@ -372,7 +372,8 @@ module Yast
       # Return true in order to not call the NetworkAutoconfiguration.configure_hosts
       return true unless AutoInstall.valid_imported_values
 
-      write ||= !ay_general_section.fetch("mode", "second_stage" => true)["second_stage"]
+      mode_section = ay_general_section.fetch("mode", {})
+      write ||= !mode_section.fetch("second_stage", true)
       log.info("Write configuration instantly: #{write}")
 
       yast_module.Write(gui: false) if write

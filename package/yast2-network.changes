@@ -9,6 +9,12 @@ Wed Apr 17 10:55:18 UTC 2019 - knut.anderssen@suse.com
   - The Y2Network::Routing configuration permits to have multiple
     default routes and does not drop extra options for them. That
     is, different routing tables can be used. (fate#326796)
+- 4.2.2
+
+-------------------------------------------------------------------
+Mon Apr 22 16:41:51 UTC 2019 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
+
+- Fix mode/second_stage value initialization (bsc#1132057)
 - 4.2.1
 
 -------------------------------------------------------------------
