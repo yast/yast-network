@@ -27,7 +27,7 @@ module Y2Network
   # Network interface.
   class Interface
     # @return [String] Device name (eth0, wlan0, etc.)
-    attr_accessor :name # TODO: when implementing renaming over new backend modifying name has to be checked
+    attr_reader :name # TODO: when implementing renaming over new backend modifying name has to be checked
     attr_reader :configured
     attr_reader :hardware
 
@@ -51,17 +51,16 @@ module Y2Network
     #
     # @param name [String] Interface name (e.g., "eth0")
     def initialize(name, hwinfo: nil)
+      # TODO: move reading hwinfo into Hwinfo class
       @hardware = Hwinfo.new(hwinfo: hwinfo)
 
       if !(name.nil? || name.empty?)
         @name = name
+        @configured = !system_config(name).nil?
       else
         # the interface has to be either configured (ifcfg) or known to hwinfo
         raise "Attempting to create representation of nonexistent interface" if hwinfo.nil?
       end
-
-      # FIXME: name param is currently mandatory but configuration need not exist
-      @configured = !(name.nil? || name.empty?)
     end
 
     # Determines whether two interfaces are equal
@@ -78,11 +77,17 @@ module Y2Network
     end
 
     def config
-      Yast::NetworkInterfaces.devmap(name)
+      system_config(name)
     end
 
     # eql? (hash key equality) should alias ==, see also
     # https://ruby-doc.org/core-2.3.3/Object.html#method-i-eql-3F
     alias_method :eql?, :==
+
+  private
+
+    def system_config(name)
+      Yast::NetworkInterfaces.devmap(name)
+    end
   end
 end
