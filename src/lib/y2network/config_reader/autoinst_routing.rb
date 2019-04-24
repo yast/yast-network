@@ -76,7 +76,7 @@ module Y2Network
       # Return the IPAddr of de host defined as the gateway.
       #
       # @param route_section [AutoinstProfile::RouteSection]
-      # @return [IPAddr, :default]
+      # @return [IPAddr, nil]
       def gateway_from(route_section)
         return unless route_section.gateway
         IPAddr.new(route_section.gateway)
