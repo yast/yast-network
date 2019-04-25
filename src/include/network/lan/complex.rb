@@ -26,6 +26,8 @@
 # Summary:	Summary, overview and IO dialogs for network cards config
 # Authors:	Michal Svec <msvec@suse.cz>
 #
+require "y2network/config"
+
 module Yast
   module NetworkLanComplexInclude
     def initialize_network_lan_complex(include_target)
@@ -139,8 +141,29 @@ module Yast
 
     # Commit changes to internal structures
     # @return always `next
-    def Commit
-      LanItems.Commit
+    def Commit(builder: builder)
+      # 1) update NetworkInterfaces with corresponding devmap
+      # FIXME: new item in NetworkInterfaces was created from handleOverview by
+      # calling Lan.Add and named in HardwareDialog via NetworkInterfaces.Name=
+      #  - all that stuff can (should) be moved here to have it isolated at one place
+      #  and later moved to Interface object
+      LanItems.Commit(builder)
+
+      # 2) update network-ng's list of interfaces
+      config = Y2Network::Config.find(:yast)
+      iface = config.old_interfaces.find(builder.name)
+      if iface.nil?
+        # add completely new interface
+        config.old_interfaces.add(builder.name)
+      elsif !iface.configured
+        # the hw device is now configured - reload it to refresh internal state
+        iface.reload
+      else
+        # the device was already configured - reload should not be needed (in current
+        # situation when using NetworkInterfaces for reading config, but it can change in
+        # the future)
+      end
+
       :next
     end
 

@@ -16,8 +16,6 @@
 #
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
-require "yast"
-
 module Y2Network
   # Stores what's needed when creating a new configuratoon for an interface
   class InterfaceConfigBuilder
@@ -27,16 +25,30 @@ module Y2Network
     attr_accessor :type
 
     # Constructor
-    def initialize
-      # FIXME: load with reasonable defaults;
-      # see LanItems::new_item_default_options, LanItems::@SysconfigDefaults and
-      # others as in LanItems::Select
-      @config = {}
+    #
+    # Load with reasonable defaults;
+    # see LanItems::new_item_default_options, LanItems::@SysconfigDefaults and
+    # others as in LanItems::Select
+    #
+    # FIXME: move reasonable methods from LanItems here?
+    def initialize(default)
+      @config = default.nil? ? {} : default
     end
 
-    def push(option: option, value: value)
+    def set(option: nil, value: nil)
+      # TODO: guards on option / value
       # TODO: we can validate if the option is reasonable for given type
       # TODO: may be that pushing should be rejected until the type is known
-      @config.store(option, value)
+      @config[option] = value
     end
+
+    def option(option)
+      @config.fetch(option, "")
+    end
+
+    # Provides stored configuration in sysconfig format
+    def device_sysconfig
+      @config
+    end
+  end
 end
