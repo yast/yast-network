@@ -441,7 +441,10 @@ module Yast
         hw_type != "dummy"
       )
 
-      device_name = LanItems.current_udev_name
+      # FIXME: find a way how to replace this (reading udev name) in network-ng
+      # it should be needed in "Edit interface" workflow only
+      device_name = ""
+      #device_name = LanItems.current_udev_name
 
       ChangeWidgetIfExists(Id(:device_name), :Enabled, false)
       ChangeWidgetIfExists(Id(:device_name), :Value, device_name)
@@ -564,6 +567,7 @@ module Yast
 
     def handleHW(_key, event)
       event = deep_copy(event)
+      # FIXME: should not be needed in network-ng - just throw away / erease the @builder
       LanItems.Rollback if Ops.get(event, "ID") == :cancel
       ret = nil
       if Ops.get_string(event, "EventReason", "") == "ValueChanged" ||
@@ -812,26 +816,29 @@ module Yast
     def storeHW(_key, _event)
       if isNewDevice
         nm = devname_from_hw_dialog
-        LanItems.type = UI.QueryWidget(Id(:type), :Value)
-        LanItems.device = nm
+        @builder.type = UI.QueryWidget(Id(:type), :Value)
+        @builder.name = nm
 
         NetworkInterfaces.Name = nm
-        Ops.set(LanItems.Items, [LanItems.current, "ifcfg"], nm)
+        # FIXME: udevs currently not handled in network-ng
         # Initialize udev map, so that setDriver (see below) sets correct module
-        Ops.set(LanItems.Items, [LanItems.current, "udev"], {})
+        #Ops.set(LanItems.Items, [LanItems.current, "udev"], {})
         # FIXME: for interfaces with no hwinfo don't propose ifplugd
+        # FIXME: not handled correctly in network-ng
         if Builtins.size(Ops.get_map(LanItems.getCurrentItem, "hwinfo", {})) == 0
           Builtins.y2milestone(
             "interface without hwinfo, proposing STARTMODE=auto"
           )
-          LanItems.startmode = "auto"
+          @builder.set(option: "STARTMODE", value: "auto")
         end
-        if LanItems.type == "vlan"
+        if @builder.type == "vlan"
+          # FIXME: in network-ng
           # for vlan devices named vlanN pre-set vlan_id to N, otherwise default to 0
           LanItems.vlan_id = nm[VLAN_SIZE..-1]
         end
       end
 
+      # FIXME: ethtool options & udev not handled in network-ng
       driver = Convert.to_string(UI.QueryWidget(:modul, :Value))
       LanItems.setDriver(driver)
       Ops.set(
@@ -1229,7 +1236,8 @@ module Yast
 
     # Manual network card configuration dialog
     # @return dialog result
-    def HardwareDialog
+    def HardwareDialog(builder: nil)
+      @builder = builder
       caption = _("Hardware Dialog")
 
       w = CWM.CreateWidgets(["HWDIALOG"], widget_descr_hardware)
@@ -1252,6 +1260,9 @@ module Yast
       Wizard.SetAbortButton(:cancel, Label.CancelButton)
       ret = CWM.Run(w, {})
       Wizard.CloseDialog
+
+      @builder = nil
+
       ret
     end
   end

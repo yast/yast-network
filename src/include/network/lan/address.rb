@@ -947,8 +947,8 @@ module Yast
 
     # Dialog for setting up IP address
     # @return dialog result
-    def AddressDialog
-      initialize_address_settings
+    def AddressDialog(builder: builder)
+      initialize_address_settings(builder)
 
       wd = Convert.convert(
         Builtins.union(@widget_descr, widget_descr_local),
@@ -971,9 +971,9 @@ module Yast
         ]
       )
 
-      wd["IPOIB_MODE"] = ipoib_mode_widget if LanItems.GetCurrentType == "ib"
+      wd["IPOIB_MODE"] = ipoib_mode_widget if builder.type == "ib"
 
-      @settings["IFCFG"] = LanItems.device if LanItems.operation != :add
+      @settings["IFCFG"] = builder.name if LanItems.operation != :add
 
       # Firewall config
       firewall_zone = Y2Network::Widgets::FirewallZone.new(LanItems.device)
@@ -986,7 +986,7 @@ module Yast
         :abort  => fun_ref(LanItems.method(:Rollback), "boolean ()")
       }
 
-      if ["tun", "tap"].include?(LanItems.type)
+      if ["tun", "tap"].include?(builder.type)
         functions = {
           abort: fun_ref(LanItems.method(:Rollback), "boolean ()")
         }
@@ -1007,7 +1007,7 @@ module Yast
         "tab_help"           => "",
         "fallback_functions" => functions
       }
-      case LanItems.type
+      case builder.type
       when "vlan"
         wd_content["tab_order"] = ["t_general", "t_addr"]
       when "tun", "tap"
@@ -1046,10 +1046,10 @@ module Yast
 
       if ret != :back && ret != :abort
         # general tab
-        LanItems.startmode = Ops.get_string(@settings, "STARTMODE", "")
-        LanItems.mtu = Ops.get_string(@settings, "MTU", "")
-        LanItems.firewall_zone = firewall_zone.store_permanent if firewalld.installed?
-        LanItems.ifplugd_priority = @settings["IFPLUGD_PRIORITY"]
+        builder.set(option: "STARTMODE", value: Ops.get_string(@settings, "STARTMODE", ""))
+        builder.set(option: "MTU", value: Ops.get_string(@settings, "MTU", ""))
+        builder.set(option: "ZONE", value: firewall_zone.store_permanent) if firewalld.installed?
+        builder.set(option: "IFPLUGD_PRIORITY", value: @settings["IFPLUGD_PRIORITY"])
 
         # address tab
         bootproto = @settings.fetch("BOOTPROTO", "")
@@ -1059,23 +1059,24 @@ module Yast
         # configuration without that.
         return ret if bootproto == "static" && ipaddr.empty?
 
-        LanItems.bootproto = bootproto
+        builder.set(option: "BOOTPROTO", value: bootproto)
 
         if bootproto == "static"
           update_hostname(ipaddr, @settings.fetch("HOSTNAME", ""))
 
-          LanItems.ipaddr = ipaddr
-          LanItems.netmask = Ops.get_string(@settings, "NETMASK", "")
-          LanItems.prefix = Ops.get_string(@settings, "PREFIXLEN", "")
-          LanItems.remoteip = Ops.get_string(@settings, "REMOTEIP", "")
+          builder.set(option: "IPADDR", value: ipaddr)
+          builder.set(option: "NETMASK", value: Ops.get_string(@settings, "NETMASK", ""))
+          builder.set(option: "PREFIXLEN", value: Ops.get_string(@settings, "PREFIXLEN", ""))
+          builder.set(option: "REMOTEIP", value: Ops.get_string(@settings, "REMOTEIP", ""))
         else
-          LanItems.ipaddr = ""
-          LanItems.netmask = ""
-          LanItems.remoteip = ""
+          builder.set(option: "IPADDR", value: ipaddr)
+          builder.set(option: "NETMASK", value: "")
+          builder.set(option: "REMOTEIP", value: "")
           # fixed bug #73739 - if dhcp is used, dont set default gw statically
           # but also: reset default gw only if DHCP* is used, this branch covers
           #		 "No IP address" case, then default gw must stay (#460262)
           # and also: don't delete default GW for usb/pcmcia devices (#307102)
+          # FIXME: not working in network-ng
           if LanItems.isCurrentDHCP && !LanItems.isCurrentHotplug
             yast_config = Y2Network::Config.find(:yast)
             yast_config.routing.remove_default_routes if yast_config
@@ -1084,33 +1085,37 @@ module Yast
 
         # When virtual interfaces are added the list of routing devices needs
         # to be updated to offer them
-        LanItems.add_current_device_to_routing if LanItems.update_routing_devices?
+        # FIXME: not working in network-ng - but should not be needed at all
+        # it updates list of available interfaces which is done elsewhere already
+        #LanItems.add_current_device_to_routing if LanItems.update_routing_devices?
       end
 
-      if LanItems.type == "vlan"
-        LanItems.vlan_etherdevice = Ops.get_string(@settings, "ETHERDEVICE", "")
-        LanItems.vlan_id = Builtins.tostring(
-          Ops.get_integer(@settings, "VLAN_ID", 0)
+      if builder.type == "vlan"
+        builder.set(option: "ETHERDEVICE", value: Ops.get_string(@settings, "ETHERDEVICE", ""))
+        builder.set(
+          options: "VLANID",
+          value: Builtins.tostring(Ops.get_integer(@settings, "VLAN_ID", 0))
         )
-      elsif LanItems.type == "br"
-        LanItems.bridge_ports = @settings["BRIDGE_PORTS"].join(" ")
-        log.info "bridge ports stored as #{LanItems.bridge_ports.inspect}"
-      elsif LanItems.type == "bond"
-        new_slaves = @settings.fetch("SLAVES", []).select { |s| !LanItems.bond_slaves.include? s }
-        LanItems.bond_slaves = @settings["SLAVES"]
-        LanItems.bond_option = @settings["BONDOPTION"]
+      elsif builder.type == "br"
+        builder.set(option: "BRIDGE_PORTS", value: @settings["BRIDGE_PORTS"].join(" "))
+        log.info "bridge ports stored as #{builder.option("BRIDGE_PORTS")}"
+      elsif builder.type == "bond"
+        new_slaves = @settings.fetch("SLAVES", []).select do |s|
+          # TODO: check initialization of "SLAVES"
+          !builder.option("SLAVES").include? s
+        end
+        builder.set(option: "SLAVES", value: @settings["SLAVES"])
+        builder.set(option: "BONDOPTION", value: @settings["BONDOPTION"])
         Lan.autoconf_slaves = (Lan.autoconf_slaves + new_slaves).uniq.sort
-        log.info "bond settings #{LanItems.bond_slaves}"
-      elsif Builtins.contains(["tun", "tap"], LanItems.type)
-        LanItems.tunnel_set_owner = Ops.get_string(
-          @settings,
-          "TUNNEL_SET_OWNER",
-          ""
+        log.info "bond settings #{builder.option("BONDOPTION")}"
+      elsif Builtins.contains(["tun", "tap"], builder.type)
+        builder.set(
+          option: "TUNNEL_SET_OWNER",
+          value: Ops.get_string(@settings, "TUNNEL_SET_OWNER", "")
         )
-        LanItems.tunnel_set_group = Ops.get_string(
-          @settings,
-          "TUNNEL_SET_GROUP",
-          ""
+        builder.set(
+          option: "TUNNEL_SET_GROUP",
+          value: Ops.get_string(@settings, "TUNNEL_SET_GROUP", "")
         )
       end
 
@@ -1123,43 +1128,44 @@ module Yast
   private
 
     # Initializes the Address Dialog @settings with the corresponding LanItems values
-    def initialize_address_settings
-      @settings.replace( # general tab:
-        "STARTMODE"        => LanItems.startmode,
-        "IFPLUGD_PRIORITY" => LanItems.ifplugd_priority,
+    def initialize_address_settings(builder)
+      @settings.replace(
+        # general tab:
+        "STARTMODE"        => builder.option("STARTMODE"),
+        "IFPLUGD_PRIORITY" => builder.option("IFPLUGD_PRIORITY"),
         # problems when renaming the interface?
-        "MTU"              => LanItems.mtu,
-        "FWZONE"           => LanItems.firewall_zone,
+        "MTU"              => builder.option("MTU"),
+        "FWZONE"           => builder.option("FWZONE"),
         # address tab:
-        "BOOTPROTO"        => LanItems.bootproto,
-        "IPADDR"           => LanItems.ipaddr,
-        "NETMASK"          => LanItems.netmask,
-        "PREFIXLEN"        => LanItems.prefix,
-        "REMOTEIP"         => LanItems.remoteip,
-        "HOSTNAME"         => initial_hostname(LanItems.ipaddr),
-        "IFCFGTYPE"        => LanItems.type,
-        "IFCFGID"          => LanItems.device
+        "BOOTPROTO"        => builder.option("BOOTPROTO"),
+        "IPADDR"           => builder.option("IPADDR"),
+        "NETMASK"          => builder.option("NETMASK"),
+        "PREFIXLEN"        => builder.option("PREFIXLEN"),
+        "REMOTEIP"         => builder.option("REMOTEIP"),
+        "HOSTNAME"         => initial_hostname(builder.option("IPADDR")),
+        "IFCFGTYPE"        => builder.type,
+        "IFCFGID"          => builder.name
       )
 
-      if LanItems.type == "vlan"
-        @settings["ETHERDEVICE"] = LanItems.vlan_etherdevice
-        @settings["VLAN_ID"]     = LanItems.vlan_id.to_i
-      elsif LanItems.type == "br"
-        ports = LanItems.bridge_ports
-        ports = Yast::NetworkInterfaces.Current["BRIDGE_PORTS"] || "" if ports.empty?
+      if builder.type == "vlan"
+        @settings["ETHERDEVICE"] = builder.option("ETHERDEVICE")
+        @settings["VLAN_ID"]     = builder.option("VLAN_ID")
+      elsif builder.type == "br"
+        # FIXME: check / do proper initialization mainly for the edit workflow
+        ports = builder.option("BRIDGE_PORTS")
         log.info "ports #{ports.inspect}"
         @settings["BRIDGE_PORTS"] = ports.split
-      elsif LanItems.type == "bond"
-        @settings["BONDOPTION"] = Yast::LanItems.bond_option
-        @settings["SLAVES"] = Yast::LanItems.bond_slaves || []
-      end
-
-      if ["tun", "tap"].include?(LanItems.type)
-        @settings.replace("BOOTPROTO"        => "static",
-                          "STARTMODE"        => "auto",
-                          "TUNNEL"           => LanItems.type,
-                          "TUNNEL_SET_OWNER" => LanItems.tunnel_set_owner,
-                          "TUNNEL_SET_GROUP" => LanItems.tunnel_set_group)
+      elsif builder.type == "bond"
+        @settings["BONDOPTION"] = builder.option("BONDOPTION")
+        @settings["SLAVES"] = builder.option("SLAVES")
+      elsif ["tun", "tap"].include?(builder.type)
+        @settings.replace(
+          "BOOTPROTO"        => "static",
+          "STARTMODE"        => "auto",
+          "TUNNEL"           => builder.type,
+          "TUNNEL_SET_OWNER" => builder.option("TUNNEL_SET_OWNER"),
+          "TUNNEL_SET_GROUP" => builder.option("TUNNEL_SET_GROUP")
+        )
       end
 
       # #65524
