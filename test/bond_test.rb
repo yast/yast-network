@@ -54,6 +54,11 @@ describe Yast::LanItems do
       end
     end
 
+    # mock for network-ng
+    hwinfo_items.each do |i|
+      allow(Yast::NetworkInterfaces).to receive(:devmap).with(i["dev_name"]).and_return(nil)
+    end
+
     Yast::LanItems.Read
   end
 
