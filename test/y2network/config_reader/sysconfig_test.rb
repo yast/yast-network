@@ -26,7 +26,8 @@ describe Y2Network::ConfigReader::Sysconfig do
     instance_double(
       Yast::NetworkInterfacesClass,
       Read: nil,
-      List: ["lo", "eth0", "wlan0"]
+      List: ["lo", "eth0", "wlan0"],
+      devmap: {}
     )
   end
 
