@@ -73,7 +73,6 @@ module Yast
         # FIXME: it changes udev key used for device identification
         #  and / or its value only, name is changed elsewhere
         LanItems.update_item_udev_rule!(udev_type)
-        LanItems.rename_current_device_in_routing(old_name) if new_name != old_name
       end
 
       close
