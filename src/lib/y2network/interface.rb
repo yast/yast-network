@@ -28,6 +28,7 @@ module Y2Network
   class Interface
     # @return [String] Device name (eth0, wlan0, etc.)
     attr_reader :name # TODO: when implementing renaming over new backend modifying name has to be checked
+    attr_accessor :renamed_to # TODO: use in renaming workflow
     attr_reader :configured
     attr_reader :hardware
 
@@ -61,6 +62,19 @@ module Y2Network
         # the interface has to be either configured (ifcfg) or known to hwinfo
         raise "Attempting to create representation of nonexistent interface" if hwinfo.nil?
       end
+    end
+
+    # Returns interface's current name
+    #
+    # It means a name which the interface has when all user's changes has been applied
+    # (e.g. renaming the interface from eth0 -> enp0s3). This name can differ from the
+    # name which the interface had when loaded from system.
+    #
+    # @see LanItems::current_name_for
+    #
+    # @return [String] interface name in configuration which is going to be applied to the system
+    def current_name
+      renamed_to.nil? ? name : renamed_to
     end
 
     # Determines whether two interfaces are equal

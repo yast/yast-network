@@ -98,12 +98,6 @@ describe Yast::EditNicName do
           subject.run
         end
 
-        it "updates the Routing devices list with the new name" do
-          expect(Yast::LanItems).to receive(:rename_current_device_in_routing)
-            .with("spec0")
-          subject.run
-        end
-
         xcontext "and there are some routes referencing the previous name" do
           before do
             allow(Yast::Routing).to receive(:device_routes?).with(current_name).and_return(true)
