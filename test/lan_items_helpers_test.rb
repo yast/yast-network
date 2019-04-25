@@ -647,25 +647,6 @@ describe "LanItems renaming methods" do
     end
   end
 
-  describe "LanItems.rename_current_device_in_routing" do
-    let(:eth0) { Y2Network::Interface.new("eth0") }
-    let(:wlan0) { Y2Network::Interface.new("wlan0") }
-    let(:yast_config) do
-      instance_double(Y2Network::Config, interfaces: [eth0, wlan0], routing: double("routing"))
-    end
-
-    before do
-      allow(Y2Network::Config).to receive(:find).with(:yast).and_return(yast_config)
-      allow(Yast::LanItems).to receive(:current_name).and_return("wlan1")
-    end
-
-    it "updates the list of Routing devices with current device names" do
-      Yast::LanItems.rename_current_device_in_routing("wlan0")
-      new_names = yast_config.interfaces.map(&:name)
-      expect(new_names).to eq(["eth0", "wlan1"])
-    end
-  end
-
   describe "LanItems.remove_current_device_from_routing" do
     let(:eth0) { Y2Network::Interface.new("eth0") }
     let(:wlan0) { Y2Network::Interface.new("wlan0") }
