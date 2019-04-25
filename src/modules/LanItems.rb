@@ -2628,19 +2628,6 @@ module Yast
       config.interfaces << Y2Network::Interface.new(name)
     end
 
-    # Renames an interface
-    #
-    # @todo This method exists just to keep some compatibility during
-    #       the migration to network-ng.
-
-    # @param old_name [String] Old device name
-    def rename_current_device_in_routing(old_name)
-      return if config.nil?
-      interface = config.interfaces.find { |i| i.name == old_name }
-      return unless interface
-      interface.name = current_name
-    end
-
     # Removes the interface with the given name
     #
     # @todo This method exists just to keep some compatibility during
