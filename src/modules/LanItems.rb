@@ -1947,29 +1947,32 @@ module Yast
     # elsewhere
     #
     # @return true if success
-    def Commit
+    def Commit(builder)
       if @operation != :add && @operation != :edit
         log.error("Unknown operation: #{@operation}")
         raise ArgumentError, "Unknown operation: #{@operation}"
       end
 
-      newdev = {}
+      # FIXME: most of the following stuff should be moved into InterfaceConfigBuilder
+      # when generating sysconfig configuration
+      newdev = builder.device_sysconfig
 
       # #104494 - always write IPADDR+NETMASK, even empty
-      newdev["IPADDR"] = @ipaddr
+#      newdev["IPADDR"] = @ipaddr
       if !@prefix.empty?
-        newdev["PREFIXLEN"] = @prefix
+#        newdev["PREFIXLEN"] = @prefix
       else
-        newdev["NETMASK"] = @netmask
+#        newdev["NETMASK"] = @netmask
       end
       # #50955 omit computable fields
       newdev["BROADCAST"] = ""
       newdev["NETWORK"] = ""
 
-      newdev["REMOTE_IPADDR"] = @remoteip
+#      newdev["REMOTE_IPADDR"] = @remoteip
 
       # set LLADDR to sysconfig only for device on layer2 and only these which needs it
       # do not write incorrect LLADDR.
+      # FIXME: s390 - broken in network-ng
       if @qeth_layer2 && s390_correct_lladdr(@qeth_macaddress)
         busid = Ops.get_string(@Items, [@current, "hwinfo", "busid"], "")
         # sysfs id has changed from css0...
@@ -1980,13 +1983,14 @@ module Yast
         end
       end
 
-      newdev["ZONE"] = @firewall_zone
-      newdev["NAME"] = @description
+#      newdev["ZONE"] = @firewall_zone
+#      newdev["NAME"] = @description
 
-      newdev = setup_basic_device_options(newdev)
+#      newdev = setup_basic_device_options(newdev)
       newdev = setup_dhclient_options(newdev)
 
-      case @type
+      # FIXME: network-ng currently works for eth only
+      case builder.type
       when "bond"
         # we need current slaves - when some of them is not used anymore we need to
         # configure it for deletion from ifcfg (SCR expects special value nil)
@@ -2111,14 +2115,15 @@ module Yast
 
       # ZONE uses an empty string as the default ZONE which means that is not
       # the same than not defining the attribute
-      current_map = (GetCurrentMap() || {}).select { |k, v| !v.nil? && (k == "ZONE" || !v.empty?) }
+      iface = config.old_interfaces.find(builder.name)
+      current_map = (!iface.nil? && iface.configured ? iface.config : {}).select { |k, v| !v.nil? && (k == "ZONE" || !v.empty?) }
       new_map = newdev.select { |k, v| !v.nil? && (k == "ZONE" || !v.empty?) }
 
       # CanonicalizeIP is called to get new device map into the same shape as
       # NetworkInterfaces provides the current one.
       if current_map != NetworkInterfaces.CanonicalizeIP(new_map)
         keep_existing = false
-        ifcfg_name = Items()[@current]["ifcfg"]
+        ifcfg_name = builder.name
         ifcfg_name.replace("") if !NetworkInterfaces.Change2(ifcfg_name, newdev, keep_existing)
 
         # bnc#752464 - can leak wireless passwords

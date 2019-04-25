@@ -49,6 +49,10 @@ module Y2Network
       @old_items.find { |i| !i.name.nil? ? i.name == name : i.hardware.name }
     end
 
+    def add(name)
+      @old_items.push Interface.new(name, hwinfo: nil)
+    end
+
   private
 
     # Converts old LanItems::Items into new format

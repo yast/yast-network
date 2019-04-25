@@ -1207,8 +1207,8 @@ module Yast
 
     # Dialog for setting up IP address
     # @return dialog result
-    def AddressDialog
-      initialize_address_settings
+    def AddressDialog(builder: builder)
+      initialize_address_settings(builder)
 
       wd = Convert.convert(
         Builtins.union(@widget_descr, @widget_descr_local),
@@ -1256,14 +1256,14 @@ module Yast
         ]
       )
 
-      if LanItems.GetCurrentType == "ib"
+      if builder.type == "ib"
         wd["IPOIB_MODE"] = ipoib_mode_widget
         wd["MTU"]["items"] = ipoib_mtu_items
       else
         wd["MTU"]["items"] = common_mtu_items
       end
 
-      @settings["IFCFG"] = LanItems.device if LanItems.operation != :add
+      @settings["IFCFG"] = builder.name if LanItems.operation != :add
 
       # Firewall config
       firewall_zone = Y2Network::Widgets::FirewallZone.new(LanItems.device)
@@ -1276,7 +1276,7 @@ module Yast
         :abort  => fun_ref(LanItems.method(:Rollback), "boolean ()")
       }
 
-      if ["tun", "tap"].include?(LanItems.type)
+      if ["tun", "tap"].include?(builder.type)
         functions = {
           abort: fun_ref(LanItems.method(:Rollback), "boolean ()")
         }
@@ -1297,7 +1297,7 @@ module Yast
         "tab_help"           => "",
         "fallback_functions" => functions
       }
-      case LanItems.type
+      case builder.type
       when "vlan"
         wd_content["tab_order"] = ["t_general", "t_addr"]
       when "tun", "tap"
@@ -1336,9 +1336,9 @@ module Yast
 
       if ret != :back && ret != :abort
         # general tab
-        LanItems.startmode = Ops.get_string(@settings, "STARTMODE", "")
-        LanItems.mtu = Ops.get_string(@settings, "MTU", "")
-        LanItems.firewall_zone = firewall_zone.store_permanent if firewalld.installed?
+        builder.set(option: "STARTMODE", value: Ops.get_string(@settings, "STARTMODE", ""))
+        builder.set(option: "MTU", value: Ops.get_string(@settings, "MTU", ""))
+        builder.set(option: "ZONE", value: firewall_zone.store_permanent) if firewalld.installed?
 
         # address tab
         bootproto = @settings.fetch("BOOTPROTO", "")
@@ -1348,23 +1348,24 @@ module Yast
         # configuration without that.
         return ret if bootproto == "static" && ipaddr.empty?
 
-        LanItems.bootproto = bootproto
+        builder.set(option: "BOOTPROTO", value: bootproto)
 
         if bootproto == "static"
           update_hostname(ipaddr, @settings.fetch("HOSTNAME", ""))
 
-          LanItems.ipaddr = ipaddr
-          LanItems.netmask = Ops.get_string(@settings, "NETMASK", "")
-          LanItems.prefix = Ops.get_string(@settings, "PREFIXLEN", "")
-          LanItems.remoteip = Ops.get_string(@settings, "REMOTEIP", "")
+          builder.set(option: "IPADDR", value: ipaddr)
+          builder.set(option: "NETMASK", value: Ops.get_string(@settings, "NETMASK", ""))
+          builder.set(option: "PREFIXLEN", value: Ops.get_string(@settings, "PREFIXLEN", ""))
+          builder.set(option: "REMOTEIP", value: Ops.get_string(@settings, "REMOTEIP", ""))
         else
-          LanItems.ipaddr = ""
-          LanItems.netmask = ""
-          LanItems.remoteip = ""
+          builder.set(option: "IPADDR", value: ipaddr)
+          builder.set(option: "NETMASK", value: "")
+          builder.set(option: "REMOTEIP", value: "")
           # fixed bug #73739 - if dhcp is used, dont set default gw statically
           # but also: reset default gw only if DHCP* is used, this branch covers
           #		 "No IP address" case, then default gw must stay (#460262)
           # and also: don't delete default GW for usb/pcmcia devices (#307102)
+          # FIXME: not working in network-ng
           if LanItems.isCurrentDHCP && !LanItems.isCurrentHotplug
             yast_config = Y2Network::Config.find(:yast)
             yast_config.routing.remove_default_routes if yast_config
@@ -1373,24 +1374,25 @@ module Yast
 
         # When virtual interfaces are added the list of routing devices needs
         # to be updated to offer them
-        LanItems.add_current_device_to_routing if LanItems.update_routing_devices?
+        # FIXME: not working in network-ng - but should not be needed at all
+        # it updates list of available interfaces which is done elsewhere already
+        #LanItems.add_current_device_to_routing if LanItems.update_routing_devices?
       end
 
-      if LanItems.type == "vlan"
-        LanItems.vlan_etherdevice = Ops.get_string(@settings, "ETHERDEVICE", "")
-        LanItems.vlan_id = Builtins.tostring(
-          Ops.get_integer(@settings, "VLAN_ID", 0)
+      if builder.type == "vlan"
+        builder.set(option: "ETHERDEVICE", value: Ops.get_string(@settings, "ETHERDEVICE", ""))
+        builder.set(
+          options: "VLANID",
+          value: Builtins.tostring(Ops.get_integer(@settings, "VLAN_ID", 0))
         )
-      elsif Builtins.contains(["tun", "tap"], LanItems.type)
-        LanItems.tunnel_set_owner = Ops.get_string(
-          @settings,
-          "TUNNEL_SET_OWNER",
-          ""
+      elsif Builtins.contains(["tun", "tap"], builder.type)
+        builder.set(
+          option: "TUNNEL_SET_OWNER",
+          value: Ops.get_string(@settings, "TUNNEL_SET_OWNER", "")
         )
-        LanItems.tunnel_set_group = Ops.get_string(
-          @settings,
-          "TUNNEL_SET_GROUP",
-          ""
+        builder.set(
+          option: "TUNNEL_SET_GROUP",
+          value: Ops.get_string(@settings, "TUNNEL_SET_GROUP", "")
         )
       end
 
@@ -1403,37 +1405,37 @@ module Yast
   private
 
     # Initializes the Address Dialog @settings with the corresponding LanItems values
-    def initialize_address_settings
+    def initialize_address_settings(builder)
       @settings = {
         # general tab:
-        "STARTMODE"        => LanItems.startmode,
-        "IFPLUGD_PRIORITY" => LanItems.ifplugd_priority,
+        "STARTMODE"        => builder.option("STARTMODE"),
+        "IFPLUGD_PRIORITY" => builder.option("IFPLUGD_PRIORITY"),
         # problems when renaming the interface?
-        "MTU"              => LanItems.mtu,
-        "FWZONE"           => LanItems.firewall_zone,
+        "MTU"              => builder.option("MTU"),
+        "FWZONE"           => builder.option("FWZONE"),
         # address tab:
-        "BOOTPROTO"        => LanItems.bootproto,
-        "IPADDR"           => LanItems.ipaddr,
-        "NETMASK"          => LanItems.netmask,
-        "PREFIXLEN"        => LanItems.prefix,
-        "REMOTEIP"         => LanItems.remoteip,
-        "HOSTNAME"         => initial_hostname(LanItems.ipaddr),
-        "IFCFGTYPE"        => LanItems.type,
-        "IFCFGID"          => LanItems.device
+        "BOOTPROTO"        => builder.option("BOOTPROTO"),
+        "IPADDR"           => builder.option("IPADDR"),
+        "NETMASK"          => builder.option("NETMASK"),
+        "PREFIXLEN"        => builder.option("PREFIXLEN"),
+        "REMOTEIP"         => builder.option("REMOTEIP"),
+        "HOSTNAME"         => initial_hostname(builder.option("IPADDR")),
+        "IFCFGTYPE"        => builder.type,
+        "IFCFGID"          => builder.name,
       }
 
       if LanItems.type == "vlan"
-        @settings["ETHERDEVICE"] = LanItems.vlan_etherdevice
-        @settings["VLAN_ID"]     = LanItems.vlan_id.to_i
+        @settings["ETHERDEVICE"] = builder.option("ETHERDEVICE")
+        @settings["VLAN_ID"]     = builder.option("VLAN_ID")
       end
 
-      if ["tun", "tap"].include?(LanItems.type)
+      if ["tun", "tap"].include?(builder.type)
         @settings = {
           "BOOTPROTO"        => "static",
           "STARTMODE"        => "auto",
-          "TUNNEL"           => LanItems.type,
-          "TUNNEL_SET_OWNER" => LanItems.tunnel_set_owner,
-          "TUNNEL_SET_GROUP" => LanItems.tunnel_set_group
+          "TUNNEL"           => builder.type,
+          "TUNNEL_SET_OWNER" => builder.option("TUNNEL_SET_OWNER"),
+          "TUNNEL_SET_GROUP" => builder.option("TUNNEL_SET_GROUP")
         }
       end
 

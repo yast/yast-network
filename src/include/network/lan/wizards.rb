@@ -25,7 +25,9 @@
 # Package:	Network configuration
 # Summary:	Network cards configuration wizards
 # Authors:	Michal Svec <msvec@suse.cz>
-#
+
+require "y2network/interface_config_builder"
+
 module Yast
   module NetworkLanWizardsInclude
     def initialize_network_lan_wizards(include_target)
@@ -152,14 +154,11 @@ module Yast
     end
 
     def NetworkCardSequence(action)
-      aliases = {
-        "hardware" => -> { HardwareDialog() },
-        "address"  => -> { AddressSequence("") },
-        "s390"     => -> { S390Dialog() }
-      }
+      iface_builder = nil
 
       ws_start = case action
       when "add"
+        iface_builder = Y2Network::InterfaceConfigBuilder.new(LanItems::new_item_default_options)
         "hardware"
       when "init_s390"
         # s390 may require configuring additional modules. Which
@@ -169,6 +168,13 @@ module Yast
       else
         "address"
       end
+
+      aliases = {
+        "hardware" => -> { HardwareDialog(builder: iface_builder) },
+        # TODO: first param in AddressSequence seems to be never used
+        "address"  => -> { AddressSequence("", builder: iface_builder) },
+        "s390"     => -> { S390Dialog() }
+      }
 
       Builtins.y2milestone("ws_start %1", ws_start)
 
@@ -182,9 +188,10 @@ module Yast
       Sequencer.Run(aliases, sequence)
     end
 
-    def AddressSequence(which)
+    def AddressSequence(which, builder: builder)
+      # TODO: add builder wherever needed
       aliases = {
-        "address"     => -> { AddressDialog() },
+        "address"     => -> { AddressDialog(builder: builder) },
         "hosts"       => -> { HostsMainDialog(false) },
         "s390"        => -> { S390Dialog() },
         "wire"        => -> { WirelessDialog() },
@@ -192,7 +199,7 @@ module Yast
         "keys"        => -> { WirelessKeysDialog() },
         "eap"         => -> { WirelessWpaEapDialog() },
         "eap-details" => -> { WirelessWpaEapDetailsDialog() },
-        "commit"      => [-> { Commit() }, true]
+        "commit"      => [-> { Commit(builder: builder) }, true]
       }
 
       ws_start = which == "wire" ? "wire" : "address" # "changedefaults";

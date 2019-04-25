@@ -53,15 +53,18 @@ module Y2Network
     # @param name [String] Interface name (e.g., "eth0")
     def initialize(name, hwinfo: nil)
       # TODO: move reading hwinfo into Hwinfo class
+
+      # @hardware and @name should not change during life of the object
       @hardware = Hwinfo.new(hwinfo: hwinfo)
 
       if !(name.nil? || name.empty?)
         @name = name
-        @configured = !system_config(name).nil?
       else
         # the interface has to be either configured (ifcfg) or known to hwinfo
         raise "Attempting to create representation of nonexistent interface" if hwinfo.nil?
       end
+
+      init(name)
     end
 
     # Returns interface's current name
@@ -94,12 +97,22 @@ module Y2Network
       system_config(name)
     end
 
+    # Updates object status according to current system state
+    def reload
+      init(@name)
+    end
+
     alias_method :eql?, :==
 
   private
 
     def system_config(name)
       Yast::NetworkInterfaces.devmap(name)
+    end
+
+    # Initializates depending variables
+    def init(name)
+      @configured = !system_config(name).nil? if !(name.nil? || name.empty?)
     end
   end
 end
