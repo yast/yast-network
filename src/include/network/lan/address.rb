@@ -1399,7 +1399,9 @@ module Yast
       # proceed with WLAN settings if appropriate, #42420
       ret = :wire if ret == :next && LanItems.type == "wlan"
 
-      deep_copy(ret)
+      @builder = nil
+
+      ret
     end
 
   private

@@ -432,7 +432,9 @@ module Yast
       if Ops.get_string(event, "EventReason", "") == "Activated"
         case Ops.get_symbol(event, "ID")
         when :add
+          # FIXME: can be mostly deleted
           LanItems.AddNew
+          # FIXME: can be partly deleted and partly moved
           Lan.Add
 
           # FIXME: This is for backward compatibility only
@@ -448,6 +450,7 @@ module Yast
         when :edit
           iface = config.old_interfaces.find(iface_name)
           if iface.configured
+            @builder.load_sysconfig(iface.config)
             LanItems.SetItem(iface: iface)
 
             if iface.startmode == "managed"
@@ -563,7 +566,9 @@ module Yast
       true
     end
 
-    def MainDialog(init_tab)
+    def MainDialog(init_tab, builder: nil)
+      @builder = builder
+
       caption = _("Network Settings")
       widget_descr = {
         "tab" => CWMTab.CreateWidget(
@@ -613,6 +618,8 @@ module Yast
         ret = CWM.Run(w, {})
         break if input_done?(ret)
       end
+
+      @builder = nil
 
       ret
     end
