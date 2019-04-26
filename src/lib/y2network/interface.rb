@@ -25,6 +25,13 @@ Yast.import "NetworkInterfaces"
 
 module Y2Network
   # Network interface.
+  #
+  # name and hardware attributes should be imutable for the whole life of the object.
+  # In other words - we have two configurations 1) system configuration - the one
+  # which is currently used by running system and 2) yast configuration - the one which
+  # is being modified an will be applied to the system on user's request. name and
+  # hardware should always reflect the first configuration bcs it is the only connection /
+  # identifier we can use when touching the system (e.g. when setting interfaces down, etc.)
   class Interface
     # @return [String] Device name (eth0, wlan0, etc.)
     attr_reader :name # TODO: when implementing renaming over new backend modifying name has to be checked
