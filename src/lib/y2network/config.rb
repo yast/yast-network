@@ -36,6 +36,8 @@ module Y2Network
   class Config
     # @return [Array<Interface>]
     attr_accessor :interfaces
+    # FIXME: replacement for old LanItems::Items, should be merged with the above ASAP
+    attr_accessor :old_interfaces
     # @return [Routing]
     attr_accessor :routing
     # @return [Symbol] Information source (see {Y2Network::Reader} and {Y2Network::Writer})

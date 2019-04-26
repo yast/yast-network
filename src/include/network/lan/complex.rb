@@ -26,6 +26,8 @@
 # Summary:	Summary, overview and IO dialogs for network cards config
 # Authors:	Michal Svec <msvec@suse.cz>
 #
+require "y2network/config"
+
 module Yast
   module NetworkLanComplexInclude
     def initialize_network_lan_complex(include_target)
@@ -139,8 +141,29 @@ module Yast
 
     # Commit changes to internal structures
     # @return always `next
-    def Commit
-      LanItems.Commit
+    def Commit(builder: builder)
+      # 1) update NetworkInterfaces with corresponding devmap
+      # FIXME: new item in NetworkInterfaces was created from handleOverview by
+      # calling Lan.Add and named in HardwareDialog via NetworkInterfaces.Name=
+      #  - all that stuff can (should) be moved here to have it isolated at one place
+      #  and later moved to Interface object
+      LanItems.Commit(builder)
+
+      # 2) update network-ng's list of interfaces
+      config = Y2Network::Config.find(:yast)
+      iface = config.old_interfaces.find(builder.name)
+      if iface.nil?
+        # add completely new interface
+        config.old_interfaces.add(builder.name)
+      elsif !iface.configured
+        # the hw device is now configured - reload it to refresh internal state
+        iface.reload
+      else
+        # the device was already configured - reload should not be needed (in current
+        # situation when using NetworkInterfaces for reading config, but it can change in
+        # the future)
+      end
+
       :next
     end
 
@@ -149,10 +172,17 @@ module Yast
     def ReadDialog
       Wizard.RestoreHelp(Ops.get_string(@help, "read", ""))
       Lan.AbortFunction = -> { PollAbort() }
+
+      # Load sysconfig into new backend
+      # It is done here bcs this method is currently called during "yast2 lan"
+      # initialization, so it makes configuration available for all submodules
+      system_config = Y2Network::Config.from(:sysconfig)
+      Y2Network::Config.add(:system, system_config)
+      Y2Network::Config.add(:yast, system_config.copy)
+
+      log.info("Config storage initialized")
+
       ret = Lan.Read(:cache)
-      # Currently just a smoketest for new config storage - something what should replace Lan module in the bright future
-      # TODO: find a suitable place for this config storage
-      Y2Network::Config.from(:sysconfig)
 
       if Lan.HaveXenBridge
         if !Popup.ContinueCancel(
@@ -182,14 +212,28 @@ module Yast
 
       Wizard.RestoreHelp(Ops.get_string(@help, "write", ""))
       Lan.AbortFunction = -> { PollAbort() && ReallyAbort() }
+
+      # Store data from new backend
+      # It is done here bcs this method is currently called to do proper "yast2 lan"
+      # shutdown, so it saves configuration modified by all submodules
+      yast_config = Y2Network::Config.find(:yast)
+      system_config = Y2Network::Config.find(:system)
+      # TODO: in the future we need a finer way how to say which submodules to write
+      # (e.g. only routing was modified -> write only routing)
+      if yast_config != system_config
+        log.info("Writing configuration from new backend")
+        Y2Network::Config.write(:yast)
+      end
+
       ret = Lan.Write
       ret ? :next : :abort
     end
 
-    def AddInterface
+    def AddInterface(iface)
       Lan.Add
       LanItems.operation = :add
-      LanItems.SelectHWMap(Ops.get_map(LanItems.getCurrentItem, "hwinfo", {}))
+      LanItems.SelectHWMap(iface)
+      # FIXME: setting new configuration name currently not working in new backend
       Ops.set(
         LanItems.Items,
         [LanItems.current, "ifcfg"],
@@ -197,8 +241,8 @@ module Yast
       )
       LanItems.operation = :edit
       fw = ""
-      if LanItems.needFirmwareCurrentItem
-        fw = LanItems.GetFirmwareForCurrentItem
+      if LanItems.needFirmwareCurrentItem(iface)
+        fw = LanItems.GetFirmwareForCurrentItem(iface)
         if fw != ""
           if !Package.Installed(fw) && !Package.Available(fw)
             Popup.Message(
@@ -376,14 +420,21 @@ module Yast
 
     def handleOverview(_key, event)
       if !disable_unconfigureable_items([:_hw_items, :_hw_sum] + overview_buttons.keys, false)
+        # nasty side effect: this method also sets LanItems::current
         enableDisableButtons
       end
       UI.ChangeWidget(:_hw_sum, :Value, LanItems.GetItemDescription)
 
+      # name is currently used as item id
+      iface_name = UI.QueryWidget(Id(:_hw_items), :CurrentItem)
+      config = Y2Network::Config.find(:yast)
+
       if Ops.get_string(event, "EventReason", "") == "Activated"
         case Ops.get_symbol(event, "ID")
         when :add
+          # FIXME: can be mostly deleted
           LanItems.AddNew
+          # FIXME: can be partly deleted and partly moved
           Lan.Add
 
           # FIXME: This is for backward compatibility only
@@ -397,10 +448,12 @@ module Yast
 
           return :add
         when :edit
-          if LanItems.IsCurrentConfigured
-            LanItems.SetItem
+          iface = config.old_interfaces.find(iface_name)
+          if iface.configured
+            @builder.load_sysconfig(iface.config)
+            LanItems.SetItem(iface: iface)
 
-            if LanItems.startmode == "managed"
+            if iface.startmode == "managed"
               # Continue-Cancel popup
               if !Popup.ContinueCancel(
                 _(
@@ -415,11 +468,9 @@ module Yast
                 # but in this function return will do
                 return nil # means cancel
               end
-
-              LanItems.startmode = "ifplugd"
             end
           else
-            if !AddInterface()
+            if !AddInterface(iface)
               Builtins.y2error("handleOverview: AddInterface failed.")
               # y2r: cannot break from middle of switch
               # but in this function return will do
@@ -515,7 +566,9 @@ module Yast
       true
     end
 
-    def MainDialog(init_tab)
+    def MainDialog(init_tab, builder: nil)
+      @builder = builder
+
       caption = _("Network Settings")
       widget_descr = {
         "tab" => CWMTab.CreateWidget(
@@ -565,6 +618,8 @@ module Yast
         ret = CWM.Run(w, {})
         break if input_done?(ret)
       end
+
+      @builder = nil
 
       ret
     end

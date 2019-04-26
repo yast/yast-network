@@ -94,7 +94,7 @@ describe "Yast::LanItemsClass" do
       .and_return({})
   end
 
-  it "does not modify DHCLIENT_SET_DEFAULT_ROUTE if not explicitly set, when editing an ifcfg" do
+  xit "does not modify DHCLIENT_SET_DEFAULT_ROUTE if not explicitly set, when editing an ifcfg" do
     @ifcfg_files.set("eth0", "STARTMODE", "auto")
     @ifcfg_files.set("eth0", "BOOTPROTO", "dhcp4")
 

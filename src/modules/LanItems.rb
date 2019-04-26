@@ -29,6 +29,9 @@ require "network/wicked"
 require "network/lan_items_summary"
 require "y2network/config"
 
+require "y2network/config"
+require "y2network/interfaces"
+
 require "shellwords"
 
 module Yast
@@ -212,6 +215,10 @@ module Yast
       # this is the map of kernel modules vs. requested firmware
       # non-empty keys are firmware packages shipped by SUSE
       @request_firmware = YAML.load_file(Directory.find_data_file("network/firmwares.yml"))
+    end
+
+    def Items
+      raise ArgumentError, "Use or create API, do not touch Items directly"
     end
 
     # Returns configuration of item (see LanItems::Items) with given id.
@@ -1180,6 +1187,7 @@ module Yast
         items[items.size] = { "ifcfg" => confname }
       end
 
+      config.old_interfaces = Y2Network::Interfaces.new.from_lan_items(@Items)
       log.info "Read Configuration LanItems::Items #{@Items}"
 
       nil
@@ -1193,7 +1201,8 @@ module Yast
     # 3) variables which keeps (some of) attributes of the current item (= item
     # which is being pointed by the iterator)
     def reset_cache
-      LanItems.Items = {}
+# FIXME: what is suitable replacement with new config storage?
+#      LanItems.Items = {}
 
       @modified = false
     end
@@ -1232,95 +1241,35 @@ module Yast
       true
     end
 
-    def GetDescr
-      descr = []
-      Builtins.foreach(
-        Convert.convert(
-          @Items,
-          from: "map <integer, any>",
-          to:   "map <integer, map <string, any>>"
-        )
-      ) do |key, value|
-        if Builtins.haskey(value, "table_descr") &&
-            Ops.greater_than(
-              Builtins.size(Ops.get_map(@Items, [key, "table_descr"], {})),
-              1
-            )
-          descr = Builtins.add(
-            descr,
-            "id"          => key,
-            "rich_descr"  => Ops.get_string(
-              @Items,
-              [key, "table_descr", "rich_descr"],
-              ""
-            ),
-            "table_descr" => Ops.get_list(
-              @Items,
-              [key, "table_descr", "table_descr"],
-              []
-            )
-          )
-        end
+    def GetDescr(overviews)
+      overviews.map do |key, value|
+        {
+          "id"          => key,
+          "rich_descr"  => value["table_descr"]["rich_descr"] || "",
+          "table_descr" => value["table_descr"]["table_descr"] || []
+        }
       end
-      deep_copy(descr)
     end
 
-    def needFirmwareCurrentItem
-      need = false
-      if IsNotEmpty(Ops.get_string(@Items, [@current, "hwinfo", "driver"], ""))
-        if Builtins.haskey(
-          @request_firmware,
-          Ops.get_string(@Items, [@current, "hwinfo", "driver"], "")
-        )
-          need = true
-        end
+    # Checks whether device need (known) firmware to be loaded
+    def needFirmwareCurrentItem(iface)
+      need = if iface.hardware.driver
+        @request_firmware.has_key?(iface.hardware.driver) ? iface.hardware.driver : nil
       else
-        Builtins.foreach(
-          Ops.get_list(@Items, [@current, "hwinfo", "drivers"], [])
-        ) do |driver|
-          if Builtins.haskey(
-            @request_firmware,
-            Ops.get_string(driver, ["modules", 0, 0], "")
-          )
-            Builtins.y2milestone(
-              "driver %1 needs firmware",
-              Ops.get_string(driver, ["modules", 0, 0], "")
-            )
-            need = true
-          end
+        iface.hardware.drivers.find do |driver|
+          driver if @request_firmware.has_key?(driver)
         end
       end
-      Builtins.y2milestone("item %1 needs firmware:%2", @current, need)
+      log.info("Device #{iface.hardware.name} need driver: #{need}")
+
       need
     end
 
-    def GetFirmwareForCurrentItem
-      kernel_module = ""
-      if IsNotEmpty(Ops.get_string(@Items, [@current, "hwinfo", "driver"], ""))
-        if Builtins.haskey(
-          @request_firmware,
-          Ops.get_string(@Items, [@current, "hwinfo", "driver"], "")
-        )
-          kernel_module = Ops.get_string(
-            @Items,
-            [@current, "hwinfo", "driver"],
-            ""
-          )
-        end
-      else
-        Builtins.foreach(
-          Ops.get_list(@Items, [@current, "hwinfo", "drivers"], [])
-        ) do |driver|
-          if Builtins.haskey(
-            @request_firmware,
-            Ops.get_string(driver, ["modules", 0, 0], "")
-          )
-            kernel_module = Ops.get_string(driver, ["modules", 0, 0], "")
-            raise Break
-          end
-        end
-      end
-      firmware = Ops.get(@request_firmware, kernel_module, "")
+    def GetFirmwareForCurrentItem(iface)
+      kernel_module = needFirmwareCurrentItem(iface)
+      return nil if kernel_module.nil?
+
+      firmware = @request_firmware.fetch(kernel_module, "")
       Builtins.y2milestone(
         "driver %1 needs firmware %2",
         kernel_module,
@@ -1387,7 +1336,7 @@ module Yast
     # Creates item's startmode human description
     #
     # @param item_id [Integer] a key for {#Items}
-    def startmode_overview(item_id)
+    def startmode_overview(ifcfg)
       startmode_descrs = {
         # summary description of STARTMODE=auto
         "auto"    => _(
@@ -1419,7 +1368,6 @@ module Yast
         )
       }
 
-      ifcfg = GetDeviceMap(item_id) || {}
       startmode_descr = startmode_descrs[ifcfg["STARTMODE"].to_s] || _("Started manually")
 
       [startmode_descr]
@@ -1475,42 +1423,39 @@ module Yast
 
     # FIXME: side effect: sets @type. No reason for that. It should only build item
     #   overview. Check and remove.
-    def BuildLanOverview
+    def FormatOverview
+      overviews = {}
       overview = []
       links = []
 
       bond_index = BuildBondIndex()
 
-      LanItems.Items.each_key do |key|
+      config.old_interfaces.each do |iface|
+        # FIXME: fix interface name access for configured vs unconfigured ifaces ASAP
+        iface_id = !iface.name.nil? ? iface.name : iface.hardware.name
+        overviews[iface_id] = {}
         rich = ""
 
-        item_hwinfo = LanItems.Items[key]["hwinfo"] || {}
-        descr = item_hwinfo["name"] || ""
+        descr = iface.hardware.description
 
         note = ""
         bullets = []
-        ifcfg_name = LanItems.Items[key]["ifcfg"] || ""
-        ifcfg_type = NetworkInterfaces.GetType(ifcfg_name)
 
-        if !ifcfg_name.empty?
-          ifcfg_conf = GetDeviceMap(key)
-          log.error("BuildLanOverview: devmap for #{key}/#{ifcfg_name} is nil") if ifcfg_conf.nil?
-
-          ifcfg_desc = ifcfg_conf["NAME"]
+        if iface.configured
+          ifcfg_desc = iface.config["NAME"]
           descr = ifcfg_desc if !ifcfg_desc.nil? && !ifcfg_desc.empty?
-          descr = CheckEmptyName(ifcfg_type, descr)
-          status = DeviceStatus(ifcfg_type, ifcfg_name, ifcfg_conf)
+          descr = CheckEmptyName(iface.type, descr)
+          status = DeviceStatus(iface.type, iface.name, iface.config)
 
-          bullets << _("Device Name: %s") % ifcfg_name
-          bullets += startmode_overview(key)
-          bullets += ip_overview(ifcfg_conf) if ifcfg_conf["STARTMODE"] != "managed"
+          bullets << _("Device Name: %s") % iface.name
+          bullets += startmode_overview(iface.config || {})
+          bullets += ip_overview(iface.config) if iface.config["STARTMODE"] != "managed"
 
-          if ifcfg_type == "wlan" &&
-              ifcfg_conf["WIRELESS_AUTH_MODE"] == "open" &&
-              IsEmpty(ifcfg_conf["WIRELESS_KEY_0"])
+          if iface.type == "wlan" &&
+            iface.config["WIRELESS_AUTH_MODE"] == "open" && iface.config.fetch("WIRELESS_KEY_0", {}).empty
 
             # avoid colons
-            ifcfg_name = ifcfg_name.tr(":", "/")
+            ifcfg_name = iface.name.tr(":", "/")
             href = "lan--wifi-encryption-" + ifcfg_name
             # interface summary: WiFi without encryption
             warning = HTML.Colorize(_("Warning: no encryption is used."), "red")
@@ -1519,80 +1464,90 @@ module Yast
             links << href
           end
 
-          if ifcfg_type == "bond" || ifcfg_type == "br"
-            bullets << slaves_desc(ifcfg_type, ifcfg_name)
+          if iface.type == "bond" || iface.type == "br"
+            bullets << slaves_desc(iface.type, iface.name)
           end
 
-          if enslaved?(ifcfg_name)
-            if bond_index[ifcfg_name]
-              master = bond_index[ifcfg_name]
+          if enslaved?(iface.name)
+            if bond_index[iface.name]
+              master = bond_index[iface.name]
               master_desc = _("Bonding master")
             else
-              master = bridge_index[ifcfg_name]
+              master = bridge_index[iface.name]
               master_desc = _("Bridge")
             end
             note = format(_("enslaved in %s"), master)
             bullets << format("%s: %s", master_desc, master)
           end
 
-          if renamed?(key)
-            note = format("%s -> %s", GetDeviceName(key), renamed_to(key))
-          end
+          # FIXME: renaming currently not supported in new object hierarchy
+#          if renamed?(key)
+#            note = format("%s -> %s", GetDeviceName(key), renamed_to(key))
+#          end
 
           overview << Summary.Device(descr, status)
         else
-          descr = CheckEmptyName(ifcfg_type, descr)
+          descr = CheckEmptyName(iface.type, descr)
           overview << Summary.Device(descr, Summary.NotConfigured)
         end
         conn = ""
-        conn = HTML.Bold(format("(%s)", _("Not connected"))) if !item_hwinfo["link"]
-        conn = HTML.Bold(format("(%s)", _("No hwinfo"))) if item_hwinfo.empty?
+        conn = HTML.Bold(format("(%s)", _("Not connected"))) if !iface.hardware.link
+        conn = HTML.Bold(format("(%s)", _("No hwinfo"))) if iface.hardware?
 
-        mac_dev = HTML.Bold("MAC : ") + item_hwinfo["mac"].to_s + "<br>"
-        bus_id  = HTML.Bold("BusID : ") + item_hwinfo["busid"].to_s + "<br>"
-        physical_port_id = HTML.Bold("PhysicalPortID : ") + physical_port_id(ifcfg_name) + "<br>"
+        mac_dev = HTML.Bold("MAC : ") + iface.hardware.mac + "<br>"
+        bus_id  = HTML.Bold("BusID : ") + iface.hardware.busid + "<br>"
+        physical_port_id = HTML.Bold("PhysicalPortID : ") + physical_port_id(iface.name) + "<br>"
 
-        rich << " " << conn << "<br>" << mac_dev if IsNotEmpty(item_hwinfo["mac"])
-        rich << bus_id if IsNotEmpty(item_hwinfo["busid"])
-        rich << physical_port_id if physical_port_id?(ifcfg_name)
+        rich << " " << conn << "<br>" << mac_dev if !iface.hardware.mac.empty?
+        rich << bus_id if !iface.hardware.busid.empty?
+        rich << physical_port_id if physical_port_id?(iface.name)
         # display it only if we need it, don't duplicate "ifcfg_name" above
-        if IsNotEmpty(item_hwinfo["dev_name"]) && ifcfg_name.empty?
-          dev_name = _("Device Name: %s") % item_hwinfo["dev_name"]
+        if !iface.configured
+          dev_name = _("Device Name: %s") % iface.hardware.name
           rich << HTML.Bold(dev_name) << "<br>"
         end
         rich = HTML.Bold(descr) + rich
-        if IsEmpty(item_hwinfo["dev_name"]) && !item_hwinfo.empty? && !Arch.s390
+        if iface.hardware.name.empty? && iface.hardware.exists? && !Arch.s390
           rich << "<p>"
           rich << _("Unable to configure the network card because the kernel device (eth0, wlan0) is not present. This is mostly caused by missing firmware (for wlan devices). See dmesg output for details.")
           rich << "</p>"
-        elsif !ifcfg_name.empty?
+        elsif iface.configured
           rich << HTML.List(bullets)
         else
           rich << "<p>"
           rich << _("The device is not configured. Press <b>Edit</b>\nto configure.\n")
           rich << "</p>"
 
-          curr = @current
-          @current = key
-          if needFirmwareCurrentItem
-            fw = GetFirmwareForCurrentItem()
-            rich << format("%s : %s", _("Needed firmware"), !fw.empty? ? fw : _("unknown"))
-          end
-          @current = curr
+
+          fw = GetFirmwareForCurrentItem(iface)
+          rich << format("%s : %s", _("Needed firmware"), !fw.empty? ? fw : _("unknown")) if fw
         end
-        LanItems.Items[key]["table_descr"] = {
+        overviews[iface_id]["table_descr"] = {
           "rich_descr"  => rich,
-          "table_descr" => [descr, DeviceProtocol(ifcfg_conf), ifcfg_name, note]
+          "table_descr" => [descr, DeviceProtocol(iface.config), iface.name, note]
         }
       end
-      [Summary.DevicesList(overview), links]
+
+      {
+        overview: overview,
+        overviews: overviews,
+        links: links
+      }
+    end
+
+    def BuildLanOverview(formated_overview: nil)
+      formated_overview = FormatOverview() if formated_overview.nil?
+      overview = formated_overview[:overview]
+      [Summary.DevicesList(overview), formated_overview[:links]]
     end
 
     # Create an overview table with all configured devices
     # @return table items
     def Overview
-      BuildLanOverview()
-      GetDescr()
+      res = FormatOverview()
+      BuildLanOverview(formated_overview: res)
+      # only usage of GetDescr
+      GetDescr(res[:overviews])
     end
 
     # Is current device hotplug or not? I.e. is connected via usb/pcmci?
@@ -1614,16 +1569,19 @@ module Yast
 
     # Select the hardware component
     # @param hardware the component
-    def SelectHWMap(hardware)
-      hardware = deep_copy(hardware)
-      sel = SelectHardwareMap(hardware)
+    def SelectHWMap(iface)
+      # FIXME: check in depth whether it is needed
+      # - currently it seems to be useless (an attempt for virtual method which
+      # sets obect's internal variables according to well known names. However,
+      # in this case all these variables are set one more time on bellow lines)
+      # sel = SelectHardwareMap(hardware)
 
       # common stuff
-      @description = Ops.get_string(sel, "name", "")
-      @type = Ops.get_string(sel, "type", "eth")
-      @hotplug = Ops.get_string(sel, "hotplug", "")
+      @description = iface.hardware.description
+      @type = iface.type
+      @hotplug = iface.hardware.hotplug
 
-      @Requires = Ops.get_list(sel, "requires", [])
+      @Requires = iface.hardware.requires
       # #44977: Requires now contain the appropriate kernel packages
       # but they are handled differently due to multiple kernel flavors
       # (see Package::InstallKernel)
@@ -1637,35 +1595,34 @@ module Yast
       @hotplug = ""
 
       # Wireless Card Features
+      # FIXME: in the end this should be useless once a descendant of Interface for
+      # wireless device is defined
       @wl_auth_modes = Builtins.prepend(
-        hardware["wl_auth_modes"],
+        iface.hardware.wl_auth_modes,
         "no-encryption"
       )
-      @wl_enc_modes = hardware["wl_enc_modes"]
-      @wl_channels = hardware["wl_channels"]
-      @wl_bitrates = hardware["wl_bitrates"]
+      @wl_enc_modes = iface.hardware.wl_enc_modes
+      @wl_channels = iface.hardware.wl_channels
+      @wl_bitrates = iface.hardware.wl_bitrates
 
-      Builtins.y2milestone("hw=%1", hardware)
-
-      @hw = deep_copy(hardware)
       if Arch.s390 && @operation == :add
         Builtins.y2internal("Propose chan_ids values for %1", @hw)
         devid = 0
         devstr = ""
         s390chanid = "[0-9]+\\.[0-9]+\\."
-        if Builtins.regexpmatch(Ops.get_string(@hw, "busid", ""), s390chanid)
+        if Builtins.regexpmatch(iface.hardware.busid, s390chanid)
           devid = Builtins.tointeger(
             Ops.add(
               "0x",
               Builtins.regexpsub(
-                Ops.get_string(@hw, "busid", ""),
+                iface.hardware.busid,
                 Ops.add(s390chanid, "(.*)"),
                 "\\1"
               )
             )
           )
           devstr = Builtins.regexpsub(
-            Ops.get_string(@hw, "busid", ""),
+            iface.hardware.busid,
             Ops.add(Ops.add("(", s390chanid), ").*"),
             "\\1"
           )
@@ -1693,7 +1650,7 @@ module Yast
           ),
           4
         )
-        @qeth_chanids = if DriverType(@type) == "ctc" || DriverType(@type) == "lcs"
+        @qeth_chanids = if DriverType(iface.type) == "ctc" || DriverType(iface.type) == "lcs"
           Builtins.sformat("%1%2 %1%3", devstr, devid0, devid1)
         else
           Builtins.sformat(
@@ -1990,29 +1947,32 @@ module Yast
     # elsewhere
     #
     # @return true if success
-    def Commit
+    def Commit(builder)
       if @operation != :add && @operation != :edit
         log.error("Unknown operation: #{@operation}")
         raise ArgumentError, "Unknown operation: #{@operation}"
       end
 
-      newdev = {}
+      # FIXME: most of the following stuff should be moved into InterfaceConfigBuilder
+      # when generating sysconfig configuration
+      newdev = builder.device_sysconfig
 
       # #104494 - always write IPADDR+NETMASK, even empty
-      newdev["IPADDR"] = @ipaddr
+#      newdev["IPADDR"] = @ipaddr
       if !@prefix.empty?
-        newdev["PREFIXLEN"] = @prefix
+#        newdev["PREFIXLEN"] = @prefix
       else
-        newdev["NETMASK"] = @netmask
+#        newdev["NETMASK"] = @netmask
       end
       # #50955 omit computable fields
       newdev["BROADCAST"] = ""
       newdev["NETWORK"] = ""
 
-      newdev["REMOTE_IPADDR"] = @remoteip
+#      newdev["REMOTE_IPADDR"] = @remoteip
 
       # set LLADDR to sysconfig only for device on layer2 and only these which needs it
       # do not write incorrect LLADDR.
+      # FIXME: s390 - broken in network-ng
       if @qeth_layer2 && s390_correct_lladdr(@qeth_macaddress)
         busid = Ops.get_string(@Items, [@current, "hwinfo", "busid"], "")
         # sysfs id has changed from css0...
@@ -2023,13 +1983,14 @@ module Yast
         end
       end
 
-      newdev["ZONE"] = @firewall_zone
-      newdev["NAME"] = @description
+#      newdev["ZONE"] = @firewall_zone
+#      newdev["NAME"] = @description
 
-      newdev = setup_basic_device_options(newdev)
+#      newdev = setup_basic_device_options(newdev)
       newdev = setup_dhclient_options(newdev)
 
-      case @type
+      # FIXME: network-ng currently works for eth only
+      case builder.type
       when "bond"
         # we need current slaves - when some of them is not used anymore we need to
         # configure it for deletion from ifcfg (SCR expects special value nil)
@@ -2154,14 +2115,15 @@ module Yast
 
       # ZONE uses an empty string as the default ZONE which means that is not
       # the same than not defining the attribute
-      current_map = (GetCurrentMap() || {}).select { |k, v| !v.nil? && (k == "ZONE" || !v.empty?) }
+      iface = config.old_interfaces.find(builder.name)
+      current_map = (!iface.nil? && iface.configured ? iface.config : {}).select { |k, v| !v.nil? && (k == "ZONE" || !v.empty?) }
       new_map = newdev.select { |k, v| !v.nil? && (k == "ZONE" || !v.empty?) }
 
       # CanonicalizeIP is called to get new device map into the same shape as
       # NetworkInterfaces provides the current one.
       if current_map != NetworkInterfaces.CanonicalizeIP(new_map)
         keep_existing = false
-        ifcfg_name = Items()[@current]["ifcfg"]
+        ifcfg_name = builder.name
         ifcfg_name.replace("") if !NetworkInterfaces.Change2(ifcfg_name, newdev, keep_existing)
 
         # bnc#752464 - can leak wireless passwords
@@ -2235,6 +2197,9 @@ module Yast
 
       devmap = GetCurrentMap()
       drop_hosts(devmap["IPADDR"]) if devmap
+      remove_current_device_from_routing
+
+      # also deletes configuration from NetworkInterfaces
       SetCurrentName("")
 
       current_item = @Items[@current]
@@ -2257,32 +2222,17 @@ module Yast
       nil
     end
 
-    def SetItem
+    def SetItem(iface: nil)
       @operation = :edit
-      @device = Ops.get_string(getCurrentItem, "ifcfg", "")
 
-      NetworkInterfaces.Edit(@device)
-      @type = Ops.get_string(getCurrentItem, ["hwinfo", "type"], "")
+      NetworkInterfaces.Edit(iface.name)
 
-      @type = NetworkInterfaces.GetType(@device) if @type.empty?
+      devmap = iface.config
+      s390_devmap = s390_ReadQethConfig(iface.hardware.name) if iface.hardware
 
-      # general stuff
-      devmap = deep_copy(NetworkInterfaces.Current)
-      s390_devmap = s390_ReadQethConfig(
-        Ops.get_string(getCurrentItem, ["hwinfo", "dev_name"], "")
-      )
-
-      @description = BuildDescription(@type, @device, devmap, @Hardware)
-
+      # FIXME: implement proper defaults setup
       SetDeviceVars(devmap, @SysconfigDefaults)
       SetS390Vars(s390_devmap, @s390_defaults)
-
-      @hotplug = ""
-      Builtins.y2debug("type=%1", @type)
-      if Builtins.issubstring(@type, "-")
-        @type = Builtins.regexpsub(@type, "([^-]+)-.*$", "\\1")
-      end
-      Builtins.y2debug("type=%1", @type)
 
       nil
     end
@@ -2333,7 +2283,8 @@ module Yast
     end
 
     def enableCurrentEditButton
-      return true if needFirmwareCurrentItem
+      # FIXME: needFirmwareCurrentItem has changed signature -> check and fix this call if needed
+      #return true if needFirmwareCurrentItem
       return true if Arch.s390
       if IsEmpty(Ops.get_string(getCurrentItem, ["hwinfo", "dev_name"], "")) &&
           Ops.greater_than(
@@ -2669,7 +2620,7 @@ module Yast
     #
     # @return [Boolean] false if the current interface name is already present
     def update_routing_devices?
-      device_names = yast_config.interfaces.map(&:name)
+      device_names = config.interfaces.map(&:name)
       !device_names.include?(current_name)
     end
 
@@ -2678,25 +2629,10 @@ module Yast
     # @todo This method exists just to keep some compatibility during
     #       the migration to network-ng.
     def add_current_device_to_routing
-      config = yast_config
       return if config.nil?
       name = current_name
       return if config.interfaces.any? { |i| i.name == name }
-      yast_config.interfaces << Y2Network::Interface.new(name)
-    end
-
-    # Renames an interface
-    #
-    # @todo This method exists just to keep some compatibility during
-    #       the migration to network-ng.
-
-    # @param old_name [String] Old device name
-    def rename_current_device_in_routing(old_name)
-      config = yast_config
-      return if config.nil?
-      interface = config.interfaces.find { |i| i.name == old_name }
-      return unless interface
-      interface.name = current_name
+      config.interfaces << Y2Network::Interface.new(name)
     end
 
     # Removes the interface with the given name
@@ -2705,7 +2641,6 @@ module Yast
     #       the migration to network-ng.
     # @todo It does not check orphan routes.
     def remove_current_device_from_routing
-      config = yast_config
       return if config.nil?
       name = current_name
       return if name.empty?
@@ -2863,7 +2798,7 @@ module Yast
     #
     # @todo It should not be called outside this module.
     # @return [Y2Network::Config] YaST network configuration
-    def yast_config
+    def config
       Y2Network::Config.find(:yast)
     end
 
