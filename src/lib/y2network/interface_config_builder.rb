@@ -32,7 +32,7 @@ module Y2Network
     #
     # FIXME: move reasonable methods from LanItems here?
     def initialize(default)
-      @config = default.nil? ? {} : default
+      @config = load_sysconfig(default)
     end
 
     def set(option: nil, value: nil)
@@ -49,6 +49,14 @@ module Y2Network
     # Provides stored configuration in sysconfig format
     def device_sysconfig
       @config
+    end
+
+    # Updates itself according to the given sysconfig configuration
+    #
+    # @param [Hash<String, String>] a key, value map where key is sysconfig option
+    #                               and corresponding value is the option value
+    def load_sysconfig(devmap)
+      @config = devmap.nil? ? {} : devmap
     end
   end
 end

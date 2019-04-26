@@ -118,12 +118,13 @@ module Yast
     end
 
     def MainSequence(mode)
+      iface_builder = Y2Network::InterfaceConfigBuilder.new(LanItems::new_item_default_options)
       aliases = {
-        "global"    => -> { MainDialog("global") },
-        "overview"  => -> { MainDialog("overview") },
-        "add"       => [-> { NetworkCardSequence("add") }, true],
-        "edit"      => [-> { NetworkCardSequence("edit") }, true],
-        "init_s390" => [-> { NetworkCardSequence("init_s390") }, true]
+        "global"    => -> { MainDialog("global", builder: iface_builder) },
+        "overview"  => -> { MainDialog("overview", builder: iface_builder) },
+        "add"       => [-> { NetworkCardSequence("add", builder: iface_builder) }, true],
+        "edit"      => [-> { NetworkCardSequence("edit", builder: iface_builder) }, true],
+        "init_s390" => [-> { NetworkCardSequence("init_s390", builder: iface_builder) }, true]
       }
 
       start = "overview"
@@ -153,12 +154,9 @@ module Yast
       Sequencer.Run(aliases, sequence)
     end
 
-    def NetworkCardSequence(action)
-      iface_builder = nil
-
+    def NetworkCardSequence(action, builder: nil)
       ws_start = case action
       when "add"
-        iface_builder = Y2Network::InterfaceConfigBuilder.new(LanItems::new_item_default_options)
         "hardware"
       when "init_s390"
         # s390 may require configuring additional modules. Which
@@ -170,9 +168,9 @@ module Yast
       end
 
       aliases = {
-        "hardware" => -> { HardwareDialog(builder: iface_builder) },
+        "hardware" => -> { HardwareDialog(builder: builder) },
         # TODO: first param in AddressSequence seems to be never used
-        "address"  => -> { AddressSequence("", builder: iface_builder) },
+        "address"  => -> { AddressSequence("", builder: builder) },
         "s390"     => -> { S390Dialog() }
       }
 
