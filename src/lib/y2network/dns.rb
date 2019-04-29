@@ -19,7 +19,7 @@
 
 module Y2Network
   # DNS configuration (hostname, name servers, etc.).
-  class DNSConfig
+  class DNS
     # @return [String] Hostname (local part)
     attr_reader :hostname
 

@@ -56,7 +56,7 @@ describe Y2Network::ConfigReader::SysconfigDNS do
 
     it "returns the DNS configuration" do
       config = reader.config
-      expect(config).to be_a(Y2Network::DNSConfig)
+      expect(config).to be_a(Y2Network::DNS)
     end
 
     it "includes the hostname" do

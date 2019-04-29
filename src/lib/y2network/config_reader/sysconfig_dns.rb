@@ -17,7 +17,7 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 require "yast"
-require "y2network/dns_config"
+require "y2network/dns"
 
 module Y2Network
   module ConfigReader
@@ -29,8 +29,8 @@ module Y2Network
       #
       # @return [Y2Network::DnsConfig] DNS configuration
       def config
-        Y2Network::DNSConfig.new(
-          name_servers:        name_servers,
+        Y2Network::DNS.new(
+          name_servers:       name_servers,
           hostname:           hostname,
           search_domains:     search_domains,
           resolv_conf_policy: resolv_conf_policy,
