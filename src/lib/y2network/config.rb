@@ -19,6 +19,7 @@
 require "y2network/interface"
 require "y2network/config_writer"
 require "y2network/config_reader"
+require "y2network/dns"
 
 module Y2Network
   # This class represents the current network configuration including interfaces,
@@ -36,8 +37,10 @@ module Y2Network
   class Config
     # @return [Array<Interface>]
     attr_accessor :interfaces
-    # @return [Routing]
+    # @return [Routing] Routing configuration
     attr_accessor :routing
+    # @return [DNS] DNS configuration
+    attr_accessor :dns
     # @return [Symbol] Information source (see {Y2Network::Reader} and {Y2Network::Writer})
     attr_accessor :source
 
@@ -83,10 +86,12 @@ module Y2Network
     #
     # @param interfaces [Array<Interface>] List of interfaces
     # @param routing    [Routing] Object with routing configuration
+    # @param dns        [DNS] Object with DNS configuration
     # @param source     [Symbol] Configuration source
-    def initialize(interfaces:, routing:, source:)
+    def initialize(interfaces:, routing:, dns: nil, source:)
       @interfaces = interfaces
       @routing = routing
+      @dns = dns || Y2Network::DNS.new
       @source = source
     end
 
