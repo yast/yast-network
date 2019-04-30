@@ -165,7 +165,7 @@ module Yast
           "opt"    => [],
           "help"   => Ops.get_string(@help, "mandatory", "")
         },
-        mtu_widget.widget_id => mtu_widget.cwm_definition,
+        mtu_widget.widget_id          => mtu_widget.cwm_definition,
         "IFCFGTYPE"                   => {
           "widget"            => :combobox,
           # ComboBox label
@@ -1005,9 +1005,7 @@ module Yast
         ]
       )
 
-      if LanItems.GetCurrentType == "ib"
-        wd["IPOIB_MODE"] = ipoib_mode_widget
-      end
+      wd["IPOIB_MODE"] = ipoib_mode_widget if LanItems.GetCurrentType == "ib"
 
       @settings["IFCFG"] = LanItems.device if LanItems.operation != :add
 

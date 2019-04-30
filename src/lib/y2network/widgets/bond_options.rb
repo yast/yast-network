@@ -9,16 +9,18 @@ module Y2Network
         @settings = settings
       end
 
+      PRESET_ITEMS = [
+        ["mode=balance-rr miimon=100", "mode=balance-rr miimon=100"],
+        ["mode=active-backup miimon=100", "mode=active-backup miimon=100"],
+        ["mode=balance-xor miimon=100", "mode=balance-xor miimon=100"],
+        ["mode=broadcast miimon=100", "mode=broadcast miimon=100"],
+        ["mode=802.3ad miimon=100", "mode=802.3ad miimon=100"],
+        ["mode=balance-tlb miimon=100", "mode=balance-tlb miimon=100"],
+        ["mode=balance-alb miimon=100", "mode=balance-alb miimon=100"]
+      ].freeze
+
       def items
-        [
-          ["mode=balance-rr miimon=100", "mode=balance-rr miimon=100"],
-          ["mode=active-backup miimon=100", "mode=active-backup miimon=100"],
-          ["mode=balance-xor miimon=100", "mode=balance-xor miimon=100"],
-          ["mode=broadcast miimon=100", "mode=broadcast miimon=100"],
-          ["mode=802.3ad miimon=100", "mode=802.3ad miimon=100"],
-          ["mode=balance-tlb miimon=100", "mode=balance-tlb miimon=100"],
-          ["mode=balance-alb miimon=100", "mode=balance-alb miimon=100"]
-        ]
+        PRESET_ITEMS
       end
 
       def help

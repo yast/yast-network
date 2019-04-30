@@ -216,10 +216,11 @@ module Yast
         "widget" => :radio_buttons,
         # ipoib_modes contains known IPoIB modes, "default" is place holder for
         # "do not set anything explicitly -> driver will choose"
+        # translators: a possible value for: IPoIB device mode
         "items"  => [
           ["default", _("default")],
           ["connected", _("connected")],
-          ["datagram"  => _("datagram")]
+          ["datagram", _("datagram")]
         ],
         "label"  => _("IPoIB Device Mode"),
         "opt"    => [:hstretch],
