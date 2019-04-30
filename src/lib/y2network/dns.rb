@@ -56,6 +56,14 @@ module Y2Network
       @dhcp_hostname = opts[:dhcp_hostname]
     end
 
+    # Sets a hostname is none is present
+    def ensure_hostname!
+      return unless @hostname.nil? || @hostname.empty?
+      suffix = ("a".."z").to_a.sample(4).join
+      @hostname = "linux-#{suffix}"
+      nil
+    end
+
     # Determines whether two set of DNS settings are equal
     #
     # @param other [DNS] DNS settings to compare with
