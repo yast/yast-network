@@ -40,7 +40,6 @@ module Y2Network
           hostname:           hostname,
           search_domains:     search_domains,
           resolv_conf_policy: resolv_conf_policy,
-          hostname_to_hosts:  hostname_to_hosts,
           dhcp_hostname:      dhcp_hostname
         )
       end
@@ -123,14 +122,6 @@ module Y2Network
         Yast::SCR.Read(
           Yast::Path.new(".sysconfig.network.config.NETCONFIG_DNS_STATIC_SEARCHLIST")
         ).to_s.split
-      end
-
-      # Returns whether the hostname should be added to /etc/hosts
-      #
-      # @return [Boolean]
-      def hostname_to_hosts
-        value = Yast::SCR.Read(Yast::Path.new(".sysconfig.network.dhcp.WRITE_HOSTNAME_TO_HOSTS"))
-        value == "yes"
       end
 
       # Returns whether the hostname should be taken from DHCP

@@ -35,7 +35,6 @@ module Y2Network
     #      <search>example.net</search>
     #      <search>example.org</search>
     #    </searchlist>
-    #    <write_hostname config:type="boolean">false</write_hostname>
     #  </dns>
     class DNSSection < Y2Network::AutoinstProfile::SectionWithAttributes
       def self.attributes
@@ -44,8 +43,7 @@ module Y2Network
           { name: :hostname },
           { name: :nameservers },
           { name: :resolv_conf_policy },
-          { name: :searchlist },
-          { name: :write_hostname }
+          { name: :searchlist }
         ]
       end
 
@@ -74,7 +72,6 @@ module Y2Network
         @nameservers = dns.name_servers.map(&:to_s)
         @resolv_conf_policy = dns.resolv_conf_policy
         @searchlist = dns.search_domains
-        @write_hostname = dns.hostname_to_hosts
         true
       end
     end

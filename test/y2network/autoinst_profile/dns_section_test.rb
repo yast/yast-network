@@ -28,7 +28,7 @@ describe Y2Network::AutoinstProfile::DNSSection do
     let(:dns) do
       instance_double(
         Y2Network::DNS, hostname: "linux", dhcp_hostname: true, resolv_conf_policy: "auto",
-        hostname_to_hosts: true, name_servers: name_servers, search_domains: search_domains
+        name_servers: name_servers, search_domains: search_domains
       )
     end
 
@@ -48,11 +48,6 @@ describe Y2Network::AutoinstProfile::DNSSection do
     it "sets the resolv_conf_policy attribute" do
       section = described_class.new_from_network(dns)
       expect(section.resolv_conf_policy).to eq("auto")
-    end
-
-    it "sets the write_hostname attribute" do
-      section = described_class.new_from_network(dns)
-      expect(section.write_hostname).to eq(true)
     end
 
     it "sets the nameservers attribute" do

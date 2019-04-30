@@ -32,10 +32,7 @@ describe Y2Network::ConfigReader::SysconfigDNS do
     end
 
     let(:netconfig_dhcp) do
-      {
-        "DHCLIENT_SET_HOSTNAME"   => "yes",
-        "WRITE_HOSTNAME_TO_HOSTS" => "yes"
-      }
+      { "DHCLIENT_SET_HOSTNAME"   => "yes" }
     end
 
     let(:netconfig) do
@@ -163,25 +160,9 @@ describe Y2Network::ConfigReader::SysconfigDNS do
       end
     end
 
-    it "sets the hostname_to_hosts parameter" do
-      config = reader.config
-      expect(config.hostname_to_hosts).to eq(true)
-    end
-
-    context "when WRITE_HOSTNAME_TO_HOSTS is not set to 'yes'" do
-      let(:netconfig_dhcp) do
-        { "WRITE_HOSTNAME_TO_HOSTS" => "no" }
-      end
-
-      it "sets hostname_to_hosts to false" do
-        config = reader.config
-        expect(config.hostname_to_hosts).to eq(false)
-      end
-    end
-
     it "sets the dhcp_hostname parameter" do
       config = reader.config
-      expect(config.hostname_to_hosts).to eq(true)
+      expect(config.dhcp_hostname).to eq(true)
     end
 
     context "when DHCLIENT_SET_HOSTNAME is not set to 'yes'" do
@@ -191,7 +172,7 @@ describe Y2Network::ConfigReader::SysconfigDNS do
 
       it "sets dhcp_hostname to false" do
         config = reader.config
-        expect(config.hostname_to_hosts).to eq(false)
+        expect(config.dhcp_hostname).to eq(false)
       end
     end
   end

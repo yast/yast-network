@@ -32,9 +32,6 @@ module Y2Network
     # @return [String] resolv.conf update policy
     attr_reader :resolv_conf_policy
 
-    # @return [Boolean] Whether to write the hostname to /etc/hosts
-    attr_reader :hostname_to_hosts
-
     # @return [Boolean] Whether to take the hostname from DHCP
     attr_reader :dhcp_hostname
 
@@ -45,14 +42,12 @@ module Y2Network
     # @option opts [Array<String>] :name_servers
     # @option opts [Array<String>] :search_domains
     # @option opts [ResolvConfPolicy] :resolv_conf_policy
-    # @option opts [Boolean] :hostname_to_hosts
     # @option opts [Boolean] :dhcp_hostname
     def initialize(opts = {})
       @hostname = opts[:hostname]
       @name_servers = opts[:name_servers] || []
       @search_domains = opts[:search_domains] || []
       @resolv_conf_policy = opts[:resolv_conf_policy]
-      @hostname_to_hosts = opts[:hostname_to_hosts]
       @dhcp_hostname = opts[:dhcp_hostname]
     end
 
@@ -64,16 +59,16 @@ module Y2Network
       nil
     end
 
+    ATTRS = [
+      :hostname, :name_servers, :search_domains, :resolv_conf_policy, :dhcp_hostname
+    ].freeze
+
     # Determines whether two set of DNS settings are equal
     #
     # @param other [DNS] DNS settings to compare with
     # @return [Boolean]
     def ==(other)
-      attrs = [
-        :hostname, :name_servers, :search_domains, :resolv_conf_policy,
-        :hostname_to_hosts, :dhcp_hostname
-      ]
-      attrs.all? { |a| public_send(a) == other.public_send(a) }
+      ATTRS.all? { |a| public_send(a) == other.public_send(a) }
     end
   end
 end
