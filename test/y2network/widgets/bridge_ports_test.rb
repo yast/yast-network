@@ -26,4 +26,26 @@ describe Y2Network::Widgets::BridgePorts do
   subject { described_class.new({}) }
 
   include_examples "CWM::MultiSelectionBox"
+
+  describe "#validate" do
+    context "when all devices are not yet configured" do
+      it "returns true" do
+
+        expect(subject.validate).to eql(true)
+      end
+    end
+
+    context "when there is more than one physical port id per interface" do
+      it "warns the user and request confirmation to continue" do
+        # yeah, tricky mock, not sure if there is easier way
+        allow(Yast::NetworkInterfaces).to receive(:FilterDevices)
+          .and_return(double( :[] => { "eth0" => { "BOOTPROTO"  => "dhcp" }}))
+        allow(subject).to receive(:value).and_return(["eth0"])
+
+        expect(Yast::Popup).to receive(:ContinueCancel).and_return(true)
+
+        expect(subject.validate).to eql(true)
+      end
+    end
+  end
 end
