@@ -444,7 +444,7 @@ module Yast
       # FIXME: find a way how to replace this (reading udev name) in network-ng
       # it should be needed in "Edit interface" workflow only
       device_name = ""
-      #device_name = LanItems.current_udev_name
+      # device_name = LanItems.current_udev_name
 
       ChangeWidgetIfExists(Id(:device_name), :Enabled, false)
       ChangeWidgetIfExists(Id(:device_name), :Value, device_name)
@@ -822,7 +822,7 @@ module Yast
         NetworkInterfaces.Name = nm
         # FIXME: udevs currently not handled in network-ng
         # Initialize udev map, so that setDriver (see below) sets correct module
-        #Ops.set(LanItems.Items, [LanItems.current, "udev"], {})
+        # Ops.set(LanItems.Items, [LanItems.current, "udev"], {})
         # FIXME: for interfaces with no hwinfo don't propose ifplugd
         # FIXME: not handled correctly in network-ng
         if Builtins.size(Ops.get_map(LanItems.getCurrentItem, "hwinfo", {})) == 0
