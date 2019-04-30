@@ -25,7 +25,7 @@ module Y2Network
     #
     #  <dns>
     #    <dhcp_hostname config:type="boolean">true</dhcp_hostname>
-    #    <hostname>linux</hostname>
+    #    <hostname>linux.example.org</hostname>
     #    <nameservers config:type="list">
     #      <nameserver>192.168.122.1</nameserver>
     #      <nameserver>10.0.0.2</nameserver>
@@ -49,6 +49,28 @@ module Y2Network
 
       define_attr_accessors
 
+      # @!attribute dhcp_hostname
+      #   @return [Boolean]
+
+      # @!attribute domain
+      #   @return [String]
+
+      # @!attribute hostname
+      #   @return [String]
+
+      # @!attribute nameservers
+      #   @return [Array<String>]
+
+      # @!attribute resolv_conf_policy
+      #   @return [Array<String>]
+
+      # @!attribute searchlist
+      #   @return [Array<String>]
+
+      # Clones network dns settings into an AutoYaST dns section
+      #
+      # @param dns [Y2Network::DNS] DNS settings
+      # @return [DNSSection]
       def self.new_from_network(dns)
         result = new
         initialized = result.init_from_network(dns)
@@ -69,7 +91,7 @@ module Y2Network
       def init_from_network(dns)
         @dhcp_hostname = dns.dhcp_hostname
         @hostname = dns.hostname
-        @nameservers = dns.name_servers.map(&:to_s)
+        @nameservers = dns.nameservers.map(&:to_s)
         @resolv_conf_policy = dns.resolv_conf_policy
         @searchlist = dns.search_domains
         true

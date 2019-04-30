@@ -36,7 +36,7 @@ module Y2Network
       # @return [Y2Network::DnsConfig] DNS configuration
       def config
         Y2Network::DNS.new(
-          name_servers:       name_servers,
+          nameservers:        nameservers,
           hostname:           hostname,
           search_domains:     search_domains,
           resolv_conf_policy: resolv_conf_policy,
@@ -46,12 +46,12 @@ module Y2Network
 
     private
 
-      # Name servers from sysconfig
+      # Nameservers from sysconfig
       #
       # Does not include invalid addresses
       #
       # @return [Array<IPAddr>]
-      def name_servers
+      def nameservers
         servers = Yast::SCR.Read(
           Yast::Path.new(".sysconfig.network.config.NETCONFIG_DNS_STATIC_SERVERS")
         ).to_s.split
