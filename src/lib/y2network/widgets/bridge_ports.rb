@@ -27,7 +27,7 @@ module Y2Network
         ""
       end
 
-      # Default function to init the value of slave devices box for bonding.
+      # Default function to init the value of slave devices box for bridging.
       def init
         br_ports = @settings["BRIDGE_PORTS"]
         items = slave_items_from(
@@ -44,8 +44,8 @@ module Y2Network
         @settings["BRIDGE_PORTS"] = value
       end
 
-      # Validates created bonding. Currently just prevent the user to create a
-      # bond with more than one interface sharing the same physical port id
+      # Validates created bridge. Currently just prevent the user to create a
+      # bridge with already configured interfaces
       #
       # @return true if valid or user decision if not
       def validate
