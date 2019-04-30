@@ -50,7 +50,7 @@ module Y2Network
     end
 
     def add(name)
-      @old_items.push Interface.new(name, hwinfo: nil)
+      @old_items.push Interface.new(name)
     end
 
   private
@@ -63,7 +63,7 @@ module Y2Network
       hash.map do |_, iface|
         # one of those has to exist in LanItems::Items
         name = iface["ifcfg"] || iface["hwinfo"]["dev_name"]
-        Interface.new(name, hwinfo: iface["hwinfo"])
+        Interface.new(name)
       end
     end
   end
