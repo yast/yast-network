@@ -151,11 +151,11 @@ module Yast
 
       # 2) update network-ng's list of interfaces
       config = Y2Network::Config.find(:yast)
-      iface = config.old_interfaces.find(builder.name)
+      iface = config.interfaces.find(builder.name)
 
       if iface.nil?
         # add completely new interface
-        config.old_interfaces.add(builder.name)
+        config.interfaces.add(builder.name)
       elsif !iface.configured
         # the hw device is now configured - reload it to refresh internal state
         iface.reload
@@ -173,6 +173,10 @@ module Yast
       Wizard.RestoreHelp(Ops.get_string(@help, "read", ""))
       Lan.AbortFunction = -> { PollAbort() }
 
+      # FIXME: network-ng currently depends on this - do not read interfaces configuration
+      # itself yet
+     ret = Lan.Read(:cache)
+
       # Load sysconfig into new backend
       # It is done here bcs this method is currently called during "yast2 lan"
       # initialization, so it makes configuration available for all submodules
@@ -181,8 +185,6 @@ module Yast
       Y2Network::Config.add(:yast, system_config.copy)
 
       log.info("Config storage initialized")
-
-      ret = Lan.Read(:cache)
 
       if Lan.HaveXenBridge
         if !Popup.ContinueCancel(
@@ -448,7 +450,7 @@ module Yast
 
           return :add
         when :edit
-          iface = config.old_interfaces.find(iface_name)
+          iface = config.interfaces.find(iface_name)
           if iface.configured
             @builder.load_sysconfig(iface.config)
             LanItems.SetItem(iface: iface)
