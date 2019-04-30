@@ -12,9 +12,9 @@ describe "NetworkAutoYast" do
   let(:config) do
     Y2Network::Config.new(
       interfaces: [],
-      routing: Y2Network::Routing.new(tables: []),
-      dns: Y2Network::DNS.new,
-      source: :sysconfig
+      routing:    Y2Network::Routing.new(tables: []),
+      dns:        Y2Network::DNS.new,
+      source:     :sysconfig
     )
   end
 
