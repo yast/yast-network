@@ -38,7 +38,6 @@ module Yast
       # This is just a start.
 
       Yast.import "IP"
-      Yast.import "NetworkPopup"
       Yast.import "NetworkInterfaces"
       Yast.import "NetworkService"
       Yast.import "Lan"
@@ -47,23 +46,8 @@ module Yast
       Yast.include include_target, "network/complex.rb"
 
       @widget_descr = {
-        # #23315
-        "DIALPREFIXREGEX" => {
-          "widget" => :textentry,
-          # TextEntry label
-          "label"  => _("&Dial Prefix Regular Expression"),
-          "help"   =>
-                      # dial prefix regex help
-                      _(
-                        "<p>When <b>Dial Prefix Regular Expression</b> is set, users can\n" \
-                          "change the dial prefix in KInternet provided that it matches the expression.\n" \
-                          "A recommended value is <tt>[09]?</tt>, allowing <tt>0</tt>, <tt>9</tt>,\n" \
-                          "and the empty prefix. If the expression is empty, users are not allowed\n" \
-                          "to change the prefix.</p>\n"
-                      )
-        },
         # obsoleted by BOOTPROTO_*
-        "BOOTPROTO"       => {
+        "BOOTPROTO" => {
           "widget" => :radio_buttons,
           # radio button group label,method of setup
           "label"  => _(
@@ -212,14 +196,6 @@ module Yast
       deep_copy(ret)
     end
 
-    def ipoib_modes
-      {
-        # translators: a possible value for: IPoIB device mode
-        "connected" => _("connected"),
-        "datagram"  => _("datagram")
-      }
-    end
-
     def init_ipoib_mode_widget(key)
       ipoib_mode = LanItems.ipoib_mode || "default"
 
@@ -240,39 +216,15 @@ module Yast
         "widget" => :radio_buttons,
         # ipoib_modes contains known IPoIB modes, "default" is place holder for
         # "do not set anything explicitly -> driver will choose"
-        "items"  => [["default", _("default")]] + ipoib_modes.to_a,
+        "items"  => [
+          ["default", _("default")],
+          ["connected", _("connected")],
+          ["datagram"  => _("datagram")]
+        ],
         "label"  => _("IPoIB Device Mode"),
         "opt"    => [:hstretch],
         "init"   => fun_ref(method(:init_ipoib_mode_widget), "void (string)"),
         "store"  => fun_ref(method(:store_ipoib_mode_widget), "void (string, map)")
-      }
-    end
-
-    def common_mtu_items
-      [
-        # translators: MTU value description (size in bytes, desc)
-        ["1500", _("1500 (Ethernet, DSL broadband)")],
-        ["1492", _("1492 (PPPoE broadband)")],
-        ["576", _("576 (dial-up)")]
-      ]
-    end
-
-    def ipoib_mtu_items
-      [
-        # translators: MTU value description (size in bytes, desc)
-        ["65520", _("65520 (IPoIB in connected mode)")],
-        ["2044", _("2044 (IPoIB in datagram mode)")]
-      ]
-    end
-
-    def mtu_widget
-      {
-        "widget" => :combobox,
-        # textentry label, Maximum Transfer Unit
-        "label"  => _("Set &MTU"),
-        "opt"    => [:hstretch, :editable],
-        "items"  => [],
-        "help"   => @help["mtu"] || ""
       }
     end
 
@@ -458,148 +410,6 @@ module Yast
         ip_addr
       )
       output
-    end
-
-    def getInternetItems
-      NetworkInterfaces.Read
-      items = NetworkInterfaces.List("")
-      items = Builtins.filter(items) { |i| i != "lo" }
-      deep_copy(items)
-    end
-
-    def getNetDeviceItems
-      NetworkInterfaces.Read
-      ifaces = NetworkInterfaces.List("eth")
-      Builtins.y2debug("ifaces=%1", ifaces)
-      ifaces = Convert.convert(
-        Builtins.union(ifaces, NetworkInterfaces.List("eth-pcmcia")),
-        from: "list",
-        to:   "list <string>"
-      )
-      Builtins.y2debug("ifaces=%1", ifaces)
-      ifaces = Convert.convert(
-        Builtins.union(ifaces, NetworkInterfaces.List("eth-usb")),
-        from: "list",
-        to:   "list <string>"
-      )
-      ifaces = Convert.convert(
-        Builtins.union(ifaces, NetworkInterfaces.List("wlan")),
-        from: "list",
-        to:   "list <string>"
-      ) # #186102
-      Builtins.y2debug("ifaces=%1", ifaces)
-      deep_copy(ifaces)
-    end
-
-    def getDeviceContens(selected)
-      VBox(
-        VSpacing(0.5),
-        HBox(
-          HSpacing(3),
-          MinWidth(
-            30,
-            Label(
-              Id(:net_device),
-              Opt(:hstretch),
-              GetDeviceDescription(selected)
-            )
-          ),
-          HSpacing(1),
-          PushButton(Id(:net_expert), _("&Change Device"))
-        ),
-        VSpacing(0.5)
-      )
-    end
-
-    def initDevice(items)
-      items = deep_copy(items)
-      # If only one device is present, disable "Change device" button
-      if Ops.less_or_equal(Builtins.size(items), 1)
-        UI.ChangeWidget(Id(:net_expert), :Enabled, false)
-      end
-
-      nil
-    end
-
-    def enableDevices(enable)
-      UI.ChangeWidget(:net_device, :Enabled, enable)
-      UI.ChangeWidget(:net_expert, :Enabled, enable)
-
-      nil
-    end
-
-    def refreshDevice(via_device)
-      UI.ChangeWidget(:net_device, :Value, GetDeviceDescription(via_device))
-
-      nil
-    end
-
-    def handleDevice(items, selected)
-      items = deep_copy(items)
-      # popup dialog title
-      via_device = NetworkPopup.ChooseItem(
-        _("Network Device Select"),
-        items,
-        selected
-      )
-      if !via_device.nil?
-        UI.ChangeWidget(:net_device, :Value, GetDeviceDescription(via_device))
-        Builtins.y2milestone("selected network device :%1", via_device)
-        selected = via_device
-      end
-      selected
-    end
-
-    # Builds content for slave configuration dialog (used e.g. when configuring
-    # bond slaves) according the given list of itemIds (see LanItems::Items)
-    #
-    # @param [Array<Fixnum>] itemIds           list of indexes into LanItems::Items
-    # @param [Array<String>] enslavedIfaces    list of device names of already enslaved devices
-    def CreateSlaveItems(itemIds, enslavedIfaces)
-      raise ArgumentError, "no slave device defined" if itemIds.nil?
-
-      items = []
-
-      itemIds.each do |itemId|
-        dev_name = LanItems.GetDeviceName(itemId)
-
-        next if dev_name.nil? || dev_name.empty?
-
-        dev_type = LanItems.GetDeviceType(itemId)
-
-        if ["tun", "tap"].include? dev_type
-          description = NetworkInterfaces.GetDevTypeDescription(dev_type, true)
-        else
-          ifcfg = LanItems.GetDeviceMap(itemId) || {}
-
-          description = BuildDescription(
-            dev_type,
-            dev_name,
-            ifcfg,
-            [LanItems.GetLanItem(itemId)["hwinfo"] || {}]
-          )
-
-          # this conditions origin from bridge configuration
-          # if enslaving a configured device then its configuration is rewritten
-          # to "0.0.0.0/32"
-          #
-          # translators: a note that listed device is already configured
-          description += " " + _("configured") if ifcfg["IPADDR"] != "0.0.0.0"
-        end
-
-        selected = false
-        selected = enslavedIfaces.include?(dev_name) if enslavedIfaces
-
-        description << " (Port ID: #{physical_port_id(dev_name)})" if physical_port_id?(dev_name)
-
-        items << Item(
-          Id(dev_name),
-          "#{dev_name} - #{description}",
-          selected
-        )
-      end
-
-      items
     end
   end
 end

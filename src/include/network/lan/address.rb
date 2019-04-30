@@ -26,16 +26,19 @@
 # Summary:	Network card adresss configuration dialogs
 # Authors:	Michal Svec <msvec@suse.cz>
 #
-require "ui/text_helpers"
 require "y2firewall/helpers/interfaces"
 require "y2network/widgets/firewall_zone"
+require "y2network/widgets/tunnel"
+require "y2network/widgets/bond_options"
+require "y2network/widgets/bond_slave"
+require "y2network/widgets/bridge_ports"
+require "y2network/widgets/mtu"
 
 module Yast
   module NetworkLanAddressInclude
     include Y2Firewall::Helpers::Interfaces
     include Yast::Logger
     include Yast::I18n
-    include ::UI::TextHelpers
 
     def initialize_network_lan_address(include_target)
       Yast.import "UI"
@@ -74,9 +77,31 @@ module Yast
         "network",
         "force_static_ip"
       )
+    end
 
-      @widget_descr_local = {
-        "AD_ADDRESSES" => {
+    def tunnel_widget
+      @tunnel_widget ||= Y2Network::Widgets::Tunnel.new(@settings)
+    end
+
+    def bond_slave_widget
+      @bond_slave_widget ||= Y2Network::Widgets::BondSlave.new(@settings)
+    end
+
+    def bond_options_widget
+      @bond_options_widget ||= Y2Network::Widgets::BondOptions.new(@settings)
+    end
+
+    def bridge_ports_widget
+      @bridge_ports_widget ||= Y2Network::Widgets::BridgePorts.new(@settings)
+    end
+
+    def mtu_widget
+      @mtu_widget ||= Y2Network::Widgets::MTU.new(@settings)
+    end
+
+    def widget_descr_local
+      res = {
+        "AD_ADDRESSES"                => {
           "widget"        => :custom,
           "custom_widget" => Frame(
             Id(:f_additional),
@@ -127,21 +152,21 @@ module Yast
             "void (string, map)"
           )
         },
-        "IFNAME"       => {
+        "IFNAME"                      => {
           "widget" => :textentry,
           "label"  => _("&Name of Interface"),
           "opt"    => [:hstretch],
           "help"   => _("<p>TODO kind of vague!</p>")
         },
-        "MANDATORY"    => {
+        "MANDATORY"                   => {
           "widget" => :checkbox,
           # check box label
           "label"  => _("&Mandatory Interface"),
           "opt"    => [],
           "help"   => Ops.get_string(@help, "mandatory", "")
         },
-        "MTU"          => mtu_widget,
-        "IFCFGTYPE"    => {
+        mtu_widget.widget_id => mtu_widget.cwm_definition,
+        "IFCFGTYPE"                   => {
           "widget"            => :combobox,
           # ComboBox label
           "label"             => _("&Device Type"),
@@ -159,7 +184,7 @@ module Yast
             "boolean (string, map)"
           )
         },
-        "IFCFGID"      => {
+        "IFCFGID"                     => {
           "widget" => :textentry,
           # ComboBox label
           "label"  => _("&Configuration Name"),
@@ -167,35 +192,9 @@ module Yast
           "help"   => "",
           "init"   => fun_ref(method(:initIfcfgId), "void (string)")
         },
-        "TUNNEL"       => {
-          "widget"        => :custom,
-          "custom_widget" => VBox(
-            HBox(
-              InputField(Id(:owner), _("Tunnel owner")),
-              InputField(Id(:group), _("Tunnel group"))
-            )
-          ),
-          "help"          => Ops.get_string(@help, "tunnel", ""),
-          "init"          => fun_ref(method(:initTunnel), "void (string)"),
-          "store"         => fun_ref(method(:storeTunnel), "void (string, map)")
-        },
-        "BRIDGE_PORTS" => {
-          "widget"            => :multi_selection_box,
-          "label"             => _("Bridged Devices"),
-          "items"             => [],
-          "init"              => fun_ref(method(:InitBridge), "void (string)"),
-          "store"             => fun_ref(
-            method(:StoreBridge),
-            "void (string, map)"
-          ),
-          "validate_type"     => :function,
-          "validate_function" => fun_ref(
-            method(:ValidateBridge),
-            "boolean (string, map)"
-          ),
-          "help"              => Ops.get_string(@help, "bridge_ports", "")
-        },
-        "ETHERDEVICE"  => {
+        tunnel_widget.widget_id       => tunnel_widget.cwm_definition,
+        bridge_ports_widget.widget_id => bridge_ports_widget.cwm_definition,
+        "ETHERDEVICE"                 => {
           "widget"        => :custom,
           "custom_widget" => HBox(
             ComboBox(
@@ -218,55 +217,9 @@ module Yast
           ),
           "help"          => Ops.get_string(@help, "etherdevice", "")
         },
-        "BONDSLAVE"    => {
-          "widget"            => :custom,
-          "custom_widget"     => Frame(
-            _("Bond Slaves and Order"),
-            VBox(
-              MultiSelectionBox(Id(:msbox_items), Opt(:notify), "", []),
-              HBox(
-                PushButton(Id(:up), Opt(:disabled), _("Up")),
-                PushButton(Id(:down), Opt(:disabled), _("Down"))
-              )
-            )
-          ),
-          "label"             => _("Bond &Slaves"),
-          #        "opt": [`shrinkable],
-          "init"              => fun_ref(
-            method(:InitSlave),
-            "void (string)"
-          ),
-          "handle"            => fun_ref(
-            method(:HandleSlave),
-            "symbol (string, map)"
-          ),
-          "validate_type"     => :function,
-          "validate_function" => fun_ref(
-            method(:validate_bond),
-            "boolean (string, map)"
-          ),
-          "store"             => fun_ref(method(:StoreSlave), "void (string, map)"),
-          "help"              => @help["bondslave"].to_s
-        },
-        "BONDOPTION"   => {
-          "widget" => :combobox,
-          # ComboBox label
-          "label"  => _("&Bond Driver Options"),
-          "opt"    => [:hstretch, :editable],
-          "help"   => _(
-            "<p>Select the bond driver options and edit them if necessary. </p>"
-          ),
-          "items"  => [
-            ["mode=balance-rr miimon=100"],
-            ["mode=active-backup miimon=100"],
-            ["mode=balance-xor miimon=100"],
-            ["mode=broadcast miimon=100"],
-            ["mode=802.3ad miimon=100"],
-            ["mode=balance-tlb miimon=100"],
-            ["mode=balance-alb miimon=100"]
-          ]
-        },
-        "BOOTPROTO"    => {
+        bond_slave_widget.widget_id   => bond_slave_widget.cwm_definition,
+        bond_options_widget.widget_id => bond_options_widget.cwm_definition,
+        "BOOTPROTO"                   => {
           "widget"            => :custom,
           "custom_widget"     => RadioButtonGroup(
             Id(:bootproto),
@@ -352,7 +305,7 @@ module Yast
             "boolean (string, map)"
           )
         },
-        "REMOTEIP"     => {
+        "REMOTEIP"                    => {
           "widget"            => :textentry,
           # Text entry label
           "label"             => _("R&emote IP Address"),
@@ -369,7 +322,7 @@ module Yast
           )
         },
         # leftovers
-        "S390"         => {
+        "S390"                        => {
           "widget" => :push_button,
           # push button label
           "label"  => _("&S/390"),
@@ -382,10 +335,12 @@ module Yast
       }
 
       Ops.set(
-        @widget_descr_local,
+        res,
         "HWDIALOG",
         Ops.get(widget_descr_hardware, "HWDIALOG", {})
       )
+
+      res
     end
 
     # `RadioButtonGroup uses CurrentButton instead of Value, grrr
@@ -434,38 +389,6 @@ module Yast
         Builtins.sformat("store k: %1, v: %2, e: %3", key, value, event)
       )
       Ops.set(@settings, key, value)
-
-      nil
-    end
-
-    # Initializes widget (BRIDGE_PORTS) which contains list of devices available
-    # for enslaving in a brige.
-    #
-    # @param [String] key	id of the widget
-    def InitBridge(key)
-      br_ports = @settings["BRIDGE_PORTS"] || ""
-      br_ports = NetworkInterfaces.Current["BRIDGE_PORTS"] || "" if br_ports.empty?
-
-      items = CreateSlaveItems(
-        LanItems.GetBridgeableInterfaces(LanItems.GetCurrentName),
-        br_ports.split
-      )
-
-      UI.ChangeWidget(Id(key), :Items, items)
-
-      nil
-    end
-
-    # Default function to store the value of devices attached to bridge (BRIDGE_PORTS).
-    # @param key [String] id of the widget
-    def StoreBridge(key, _event)
-      selected_bridge_ports = UI.QueryWidget(Id("BRIDGE_PORTS"), :SelectedItems) || []
-
-      @settings["BRIDGE_PORTS"] = selected_bridge_ports.join(" ")
-
-      LanItems.bridge_ports = @settings["BRIDGE_PORTS"]
-
-      log.info("store bridge #{key} with ports: #{@settings["BRIDGE_PORTS"]}")
 
       nil
     end
@@ -550,180 +473,6 @@ module Yast
         Convert.to_string(UI.QueryWidget(Id(:vlan_eth), :Value))
       )
       Ops.set(@settings, "VLAN_ID", UI.QueryWidget(Id(:vlan_id), :Value))
-
-      nil
-    end
-
-    # Given a device name returns the position in the bond slaves table
-    # or -1 if not present
-    #
-    # @param [String] slave name
-    # @return [Integer] index of the given slave in msbox_items table
-    def getISlaveIndex(slave)
-      items = UI.QueryWidget(:msbox_items, :Items)
-      items.index { |i| i[0][0] == slave } || -1
-    end
-
-    def enableSlaveButtons
-      items = Convert.convert(
-        UI.QueryWidget(:msbox_items, :Items),
-        from: "any",
-        to:   "list <term>"
-      )
-      current = Builtins.tostring(UI.QueryWidget(:msbox_items, :CurrentItem))
-      index = getISlaveIndex(current)
-      UI.ChangeWidget(:up, :Enabled, Ops.greater_than(index, 0))
-      UI.ChangeWidget(
-        :down,
-        :Enabled,
-        Ops.less_than(index, Ops.subtract(Builtins.size(items), 1))
-      )
-
-      nil
-    end
-
-    # Default function to init the value of slave devices box for bonding.
-    # @param _key [String] id of the widget
-    def InitSlave(_key)
-      @settings["SLAVES"] = LanItems.bond_slaves || []
-
-      UI.ChangeWidget(
-        :msbox_items,
-        :SelectedItems,
-        @settings["SLAVES"]
-      )
-
-      @settings["BONDOPTION"] = LanItems.bond_option
-
-      items = CreateSlaveItems(
-        LanItems.GetBondableInterfaces(LanItems.GetCurrentName),
-        LanItems.bond_slaves
-      )
-
-      # reorder the items
-      l1, l2 = items.partition { |t| @settings["SLAVES"].include? t[0][0] }
-
-      items = l1 + l2.sort_by { |t| justify_dev_name(t[0][0]) }
-
-      UI.ChangeWidget(:msbox_items, :Items, items)
-      enableSlaveButtons
-
-      nil
-    end
-
-    # A helper for sort devices by name. It justify at right with 0's numeric parts of given
-    # device name until 5 digits.
-    #
-    # ==== Examples
-    #
-    #   justify_dev_name("eth0") # => "eth00000"
-    #   justify_dev_name("eth111") # => "eth00111"
-    #   justify_dev_name("enp0s25") # => "enp00000s00025"
-    #
-    # @param name [String] device name
-    # @return [String] given name with numbers justified at right
-    def justify_dev_name(name)
-      splited_dev_name = name.scan(/\p{Alpha}+|\p{Digit}+/)
-      splited_dev_name.map! do |d|
-        if d =~ /\p{Digit}+/
-          d.rjust(5, "0")
-        else
-          d
-        end
-      end.join
-    end
-
-    def HandleSlave(_key, event)
-      if event["EventReason"] == "SelectionChanged"
-        enableSlaveButtons
-      elsif event["EventReason"] == "Activated" && event["WidgetClass"] == :PushButton
-        items = UI.QueryWidget(:msbox_items, :Items) || []
-        current = UI.QueryWidget(:msbox_items, :CurrentItem).to_s
-        index = getISlaveIndex(current)
-        case event["ID"]
-        when :up
-          items[index], items[index - 1] = items[index - 1], items[index]
-        when :down
-          items[index], items[index + 1] = items[index + 1], items[index]
-        else
-          log.warn("unknown action")
-          return nil
-        end
-        UI.ChangeWidget(:msbox_items, :Items, items)
-        UI.ChangeWidget(:msbox_items, :CurrentItem, current)
-        enableSlaveButtons
-      else
-        log.debug("event:#{event}")
-      end
-
-      nil
-    end
-
-    # Default function to store the value of slave devices box.
-    # @param _key [String] id of the widget
-    def StoreSlave(_key, _event)
-      configured_slaves = @settings["SLAVES"] || []
-
-      selected_slaves = UI.QueryWidget(:msbox_items, :SelectedItems) || []
-
-      @settings["SLAVES"] = selected_slaves
-
-      @settings["BONDOPTION"] = UI.QueryWidget(Id("BONDOPTION"), :Value).to_s
-
-      LanItems.bond_slaves = @settings["SLAVES"]
-      LanItems.bond_option = @settings["BONDOPTION"]
-
-      # create list of "unconfigured" slaves
-      new_slaves = @settings["SLAVES"].select do |slave|
-        !configured_slaves.include? slave
-      end
-
-      Lan.autoconf_slaves = (Lan.autoconf_slaves + new_slaves).uniq.sort
-
-      nil
-    end
-
-    # Validates created bonding. Currently just prevent the user to create a
-    # bond with more than one interface sharing the same physical port id
-    #
-    # @param _key [String] the widget being validated
-    # @param _event [Hash] the event being handled
-    # @return true if valid or user decision if not
-    def validate_bond(_key, _event)
-      selected_slaves = UI.QueryWidget(:msbox_items, :SelectedItems) || []
-
-      physical_ports = repeated_physical_port_ids(selected_slaves)
-
-      physical_ports.empty? ? true : continue_with_duplicates?(physical_ports)
-    end
-
-    def initTunnel(_key)
-      Builtins.y2internal("initTunnel %1", @settings)
-      UI.ChangeWidget(
-        :owner,
-        :Value,
-        Ops.get_string(@settings, "TUNNEL_SET_OWNER", "")
-      )
-      UI.ChangeWidget(
-        :group,
-        :Value,
-        Ops.get_string(@settings, "TUNNEL_SET_GROUP", "")
-      )
-
-      nil
-    end
-
-    def storeTunnel(_key, _event)
-      Ops.set(
-        @settings,
-        "TUNNEL_SET_OWNER",
-        Convert.to_string(UI.QueryWidget(:owner, :Value))
-      )
-      Ops.set(
-        @settings,
-        "TUNNEL_SET_GROUP",
-        Convert.to_string(UI.QueryWidget(:group, :Value))
-      )
 
       nil
     end
@@ -1089,7 +838,7 @@ module Yast
                 type == "ib" ? VSpacing(0.4) : Empty(),
                 Frame(
                   _("Maximum Transfer Unit (MTU)"),
-                  HBox("MTU", HStretch())
+                  HBox(mtu_widget.widget_id, HStretch())
                 ),
                 VStretch()
               )
@@ -1157,7 +906,7 @@ module Yast
       )
 
       address_contents = if ["tun", "tap"].include?(LanItems.type)
-        VBox(Left(label), "TUNNEL")
+        VBox(Left(label), tunnel_widget.widget_id)
       else
         VBox(
           Left(label),
@@ -1186,14 +935,14 @@ module Yast
     def bond_slaves_tab
       {
         "header"   => _("&Bond Slaves"),
-        "contents" => VBox("BONDSLAVE", "BONDOPTION")
+        "contents" => VBox(bond_slave_widget.widget_id, bond_options_widget.widget_id)
       }
     end
 
     def bridge_slaves_tab
       {
         "header"   => _("Bridged Devices"),
-        "contents" => VBox("BRIDGE_PORTS")
+        "contents" => VBox(bridge_ports_widget.widget_id)
       }
     end
 
@@ -1211,7 +960,7 @@ module Yast
       initialize_address_settings
 
       wd = Convert.convert(
-        Builtins.union(@widget_descr, @widget_descr_local),
+        Builtins.union(@widget_descr, widget_descr_local),
         from: "map",
         to:   "map <string, map <string, any>>"
       )
@@ -1258,9 +1007,6 @@ module Yast
 
       if LanItems.GetCurrentType == "ib"
         wd["IPOIB_MODE"] = ipoib_mode_widget
-        wd["MTU"]["items"] = ipoib_mtu_items
-      else
-        wd["MTU"]["items"] = common_mtu_items
       end
 
       @settings["IFCFG"] = LanItems.device if LanItems.operation != :add
@@ -1381,6 +1127,15 @@ module Yast
         LanItems.vlan_id = Builtins.tostring(
           Ops.get_integer(@settings, "VLAN_ID", 0)
         )
+      elsif LanItems.type == "br"
+        LanItems.bridge_ports = @settings["BRIDGE_PORTS"].join(" ")
+        log.info "bridge ports stored as #{LanItems.bridge_ports.inspect}"
+      elsif LanItems.type == "bond"
+        new_slaves = @settings.fetch("SLAVES", []).select { |s| !LanItems.bond_slaves.include? s }
+        LanItems.bond_slaves = @settings["SLAVES"]
+        LanItems.bond_option = @settings["BONDOPTION"]
+        Lan.autoconf_slaves = (Lan.autoconf_slaves + new_slaves).uniq.sort
+        log.info "bond settings #{LanItems.bond_slaves}"
       elsif Builtins.contains(["tun", "tap"], LanItems.type)
         LanItems.tunnel_set_owner = Ops.get_string(
           @settings,
@@ -1404,8 +1159,7 @@ module Yast
 
     # Initializes the Address Dialog @settings with the corresponding LanItems values
     def initialize_address_settings
-      @settings = {
-        # general tab:
+      @settings.replace( # general tab:
         "STARTMODE"        => LanItems.startmode,
         "IFPLUGD_PRIORITY" => LanItems.ifplugd_priority,
         # problems when renaming the interface?
@@ -1420,66 +1174,33 @@ module Yast
         "HOSTNAME"         => initial_hostname(LanItems.ipaddr),
         "IFCFGTYPE"        => LanItems.type,
         "IFCFGID"          => LanItems.device
-      }
+      )
 
       if LanItems.type == "vlan"
         @settings["ETHERDEVICE"] = LanItems.vlan_etherdevice
         @settings["VLAN_ID"]     = LanItems.vlan_id.to_i
+      elsif LanItems.type == "br"
+        ports = LanItems.bridge_ports
+        ports = Yast::NetworkInterfaces.Current["BRIDGE_PORTS"] || "" if ports.empty?
+        log.info "ports #{ports.inspect}"
+        @settings["BRIDGE_PORTS"] = ports.split
+      elsif LanItems.type == "bond"
+        @settings["BONDOPTION"] = Yast::LanItems.bond_option
+        @settings["SLAVES"] = Yast::LanItems.bond_slaves || []
       end
 
       if ["tun", "tap"].include?(LanItems.type)
-        @settings = {
-          "BOOTPROTO"        => "static",
-          "STARTMODE"        => "auto",
-          "TUNNEL"           => LanItems.type,
-          "TUNNEL_SET_OWNER" => LanItems.tunnel_set_owner,
-          "TUNNEL_SET_GROUP" => LanItems.tunnel_set_group
-        }
+        @settings.replace("BOOTPROTO"        => "static",
+                          "STARTMODE"        => "auto",
+                          "TUNNEL"           => LanItems.type,
+                          "TUNNEL_SET_OWNER" => LanItems.tunnel_set_owner,
+                          "TUNNEL_SET_GROUP" => LanItems.tunnel_set_group)
       end
 
       # #65524
       @settings["BOOTPROTO"] = "static" if LanItems.operation == :add && @force_static_ip
-    end
 
-    # Given a map of duplicated port ids with device names, aks the user if he
-    # would like to continue or not.
-    #
-    # @param physical_ports [Hash{String => Array<String>}] hash of duplicated physical port ids
-    # mapping to an array of device names
-    # @return [Boolean] true if continue with duplicates, otherwise false
-    def continue_with_duplicates?(physical_ports)
-      message = physical_ports.map do |port, slave|
-        label = "PhysicalPortID (#{port}): "
-        wrap_text(slave.join(", "), 76, prepend_text: label)
-      end.join("\n")
-
-      Popup.YesNoHeadline(
-        Label.WarningMsg,
-        # Translators: Warn the user about not desired effect
-        _("The interfaces selected share the same physical port and bonding " \
-          "them \nmay not have the desired effect of redundancy.\n\n%s\n\n" \
-          "Really continue?\n") % message
-      )
-    end
-
-    # Given a list of device names returns a hash of physical port ids mapping
-    # device names if at least two devices shared the same physical port id
-    #
-    # @param slaves [Array<String>] bonding slaves
-    # @return [Hash{String => Array<String>}] of duplicated physical port ids
-    def repeated_physical_port_ids(slaves)
-      physical_port_ids = {}
-
-      slaves.each do |slave|
-        if physical_port_id?(slave)
-          p = physical_port_ids[physical_port_id(slave)] ||= []
-          p << slave
-        end
-      end
-
-      physical_port_ids.select! { |_k, v| v.size > 1 }
-
-      physical_port_ids
+      log.info "settings after init #{@settings.inspect}"
     end
 
     # Performs hostname update
