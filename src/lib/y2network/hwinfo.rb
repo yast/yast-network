@@ -16,6 +16,9 @@
 #
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
+
+require "yast"
+
 module Y2Network
   # Stores useful (from networking POV) items of hwinfo for an interface
   # FIXME: decide whether it should read hwinfo (on demand or at once) for a network
@@ -23,9 +26,9 @@ module Y2Network
   class Hwinfo
     attr_reader :hwinfo
 
-    def initialize(hwinfo: nil)
+    def initialize(name:)
       # FIXME: store only what's needed.
-      @hwinfo = hwinfo
+      @hwinfo = load_hwinfo(name)
     end
 
     # Shortcuts for accessing hwinfo items
@@ -57,6 +60,16 @@ module Y2Network
     # FIXME: collision with alias for dev_name
     def description
       @hwinfo ? @hwinfo.fetch("name", "") : ""
+    end
+
+  private
+
+    # for textdomain in network/hardware.rb
+    include Yast::I18n
+
+    def load_hwinfo(name)
+      Yast.include self, "network/hardware.rb"
+      ReadHardware("netcard").find { |h| h["dev_name"] == name }
     end
   end
 end

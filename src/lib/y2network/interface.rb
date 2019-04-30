@@ -58,11 +58,11 @@ module Y2Network
     # Constructor
     #
     # @param name [String] Interface name (e.g., "eth0")
-    def initialize(name, hwinfo: nil)
+    def initialize(name)
       # TODO: move reading hwinfo into Hwinfo class
 
       # @hardware and @name should not change during life of the object
-      @hardware = Hwinfo.new(hwinfo: hwinfo)
+      @hardware = Hwinfo.new(name: name)
 
       if !(name.nil? || name.empty?)
         @name = name
