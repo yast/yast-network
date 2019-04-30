@@ -55,5 +55,17 @@ module Y2Network
       @hostname_to_hosts = opts[:hostname_to_hosts]
       @dhcp_hostname = opts[:dhcp_hostname]
     end
+
+    # Determines whether two set of DNS settings are equal
+    #
+    # @param other [DNS] DNS settings to compare with
+    # @return [Boolean]
+    def ==(other)
+      attrs = [
+        :hostname, :name_servers, :search_domains, :resolv_conf_policy,
+        :hostname_to_hosts, :dhcp_hostname
+      ]
+      attrs.all? { |a| public_send(a) == other.public_send(a) }
+    end
   end
 end
