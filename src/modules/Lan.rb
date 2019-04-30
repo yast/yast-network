@@ -48,7 +48,6 @@ module Yast
       textdomain "network"
 
       Yast.import "Arch"
-      Yast.import "DNS"
       Yast.import "NetHwDetection"
       Yast.import "Host"
       Yast.import "IP"
@@ -111,7 +110,6 @@ module Yast
     # @return true if data was modified
     def Modified
       return true if LanItems.GetModified
-      return true if DNS.modified
       return true unless system_config == yast_config
       return true if NetworkConfig.Modified
       return true if NetworkService.Modified
@@ -236,21 +234,19 @@ module Yast
 
     def read_step_labels
       steps = [
-        # Progress stage 1/8
+        # Progress stage 1/7
         _("Detect network devices"),
-        # Progress stage 2/8
+        # Progress stage 2/7
         _("Read driver information"),
-        # Progress stage 3/8 - multiple devices may be present, really plural
+        # Progress stage 3/7 - multiple devices may be present, really plural
         _("Read device configuration"),
-        # Progress stage 4/8
+        # Progress stage 4/7
         _("Read network configuration"),
-        # Progress stage 5/8
-        _("Read hostname and DNS configuration"),
-        # Progress stage 6/8
+        # Progress stage 5/7
         _("Read installation information"),
-        # Progress stage 7/8
+        # Progress stage 6/7
         _("Read routing configuration"),
-        # Progress stage 8/8
+        # Progress stage 7/7
         _("Detect current status")
       ]
 
@@ -348,10 +344,6 @@ module Yast
         @ipv6 = readIPv6
 
         Builtins.sleep(sl)
-
-        return false if Abort()
-        ProgressNextStage(_("Reading hostname and DNS configuration...")) if @gui
-        DNS.Read
 
         Host.Read
         Builtins.sleep(sl)
@@ -540,7 +532,6 @@ module Yast
       # write resolv.conf after change from dhcp to static (#327074)
       # reload/restart network before this to put correct resolv.conf from dhcp-backup
       orig = Progress.set(false)
-      DNS.Write(gui: gui)
       Host.EnsureHostnameResolvable
       Host.Write(gui: gui)
       Progress.set(orig)
@@ -756,8 +747,6 @@ module Yast
 
       LanItems.Import(settings)
       NetworkConfig.Import(settings["config"] || {})
-      DNS.Import(settings["dns"] || {})
-
       # Ensure that the /etc/hosts has been read to no blank out it in case of
       # not defined <host> section (bsc#1058396)
       Host.Read
@@ -778,7 +767,7 @@ module Yast
       devices = NetworkInterfaces.Export("")
       udev_rules = LanItems.export(devices)
       ay = {
-        "dns"                  => DNS.Export,
+        "dns"                  => profile.dns.to_hashes,
         "s390-devices"         => Ops.get_map(
           udev_rules,
           "s390-devices",
@@ -812,9 +801,9 @@ module Yast
     def Summary(mode)
       case mode
       when "summary"
-        "#{LanItems.BuildLanOverview.first}#{DNS.Summary}#{routing_summary}"
+        "#{LanItems.BuildLanOverview.first}#{dns_summary}#{routing_summary}"
       when "proposal"
-        "#{LanItems.summary(:proposal)}#{DNS.Summary}#{routing_summary}"
+        "#{LanItems.summary(:proposal)}#{dns_summary}#{routing_summary}"
       else
         LanItems.BuildLanOverview.first
       end
@@ -1138,6 +1127,16 @@ module Yast
       config = find_config(:yast)
       return "" unless config && config.routing
       presenter = Y2Network::Presenters::RoutingSummary.new(config.routing)
+      presenter.text
+    end
+
+    # Returns the DNS configuration summary
+    #
+    # @return [String]
+    def dns_summary
+      config = find_config(:yast)
+      return "" unless config && config.dns
+      presenter = Y2Network::Presenters::DnsSummary.new(config.dns)
       presenter.text
     end
 
