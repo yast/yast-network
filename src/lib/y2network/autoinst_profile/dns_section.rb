@@ -84,6 +84,15 @@ module Y2Network
         @searchlist = []
       end
 
+      # Method used by {.new_from_hashes} to populate the attributes when importing a profile
+      #
+      # @param hash [Hash] see {.new_from_hashes}
+      def init_from_hashes(hash)
+        super
+        @nameservers = hash["nameservers"] || []
+        @searchlist = hash["search_domains"] || []
+      end
+
       # Method used by {.new_from_network} to populate the attributes when cloning DNS options
       #
       # @param dns [Y2Network::DNS] DNS settings
