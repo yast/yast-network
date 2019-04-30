@@ -1183,7 +1183,6 @@ module Yast
         items[items.size] = { "ifcfg" => confname }
       end
 
-      config.old_interfaces = Y2Network::Interfaces.new.from_lan_items(@Items)
       log.info "Read Configuration LanItems::Items #{@Items}"
 
       nil
@@ -1426,7 +1425,7 @@ module Yast
 
       bond_index = BuildBondIndex()
 
-      config.old_interfaces.each do |iface|
+      config.interfaces.each do |iface|
         # FIXME: fix interface name access for configured vs unconfigured ifaces ASAP
         iface_id = !iface.name.nil? ? iface.name : iface.hardware.name
         overviews[iface_id] = {}
@@ -2111,7 +2110,7 @@ module Yast
 
       # ZONE uses an empty string as the default ZONE which means that is not
       # the same than not defining the attribute
-      iface = config.old_interfaces.find(builder.name)
+      iface = config.interfaces.find(builder.name)
       current_map = (!iface.nil? && iface.configured ? iface.config : {}).select { |k, v| !v.nil? && (k == "ZONE" || !v.empty?) }
       new_map = newdev.select { |k, v| !v.nil? && (k == "ZONE" || !v.empty?) }
 

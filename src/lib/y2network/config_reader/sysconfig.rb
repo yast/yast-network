@@ -25,7 +25,7 @@ require "y2network/routing_table"
 require "y2network/sysconfig_routes_file"
 require "y2network/config_reader/sysconfig_dns"
 
-Yast.import "NetworkInterfaces"
+Yast.import "LanItems"
 
 module Y2Network
   module ConfigReader
@@ -36,7 +36,8 @@ module Y2Network
 
       # @return [Y2Network::Config] Network configuration
       def config
-        interfaces = find_interfaces
+        # LanItems has to be already initialized
+        interfaces = Y2Network::Interfaces.new.from_lan_items(Yast::LanItems.Items)
         routing_tables = find_routing_tables(interfaces)
         routing = Routing.new(
           tables: routing_tables, forward_ipv4: forward_ipv4?, forward_ipv6: forward_ipv6?
@@ -48,20 +49,6 @@ module Y2Network
     private
 
       include SysconfigPaths
-
-      # Find configured network interfaces
-      #
-      # Configured interfaces have a configuration (ifcfg file) assigned.
-      #
-      # @return [Array<Interface>] Detected interfaces
-      # @see Yast::NetworkInterfaces.Read
-      def find_interfaces
-        Yast::NetworkInterfaces.Read
-        # TODO: for the time being, we are just relying in the underlying stuff.
-        Yast::NetworkInterfaces.List("").map do |name|
-          Y2Network::Interface.new(name)
-        end
-      end
 
       # Reads routes
       #

@@ -38,8 +38,6 @@ module Y2Network
   class Config
     # @return [Array<Interface>]
     attr_accessor :interfaces
-    # FIXME: replacement for old LanItems::Items, should be merged with the above ASAP
-    attr_accessor :old_interfaces
     # @return [Routing] Routing configuration
     attr_accessor :routing
     # @return [DNS] DNS configuration
