@@ -38,7 +38,7 @@ module Y2Network
       def config
         # LanItems has to be already initialized
         interfaces = Y2Network::Interfaces.new.from_lan_items(Yast::LanItems.Items)
-        routing_tables = find_routing_tables(interfaces)
+        routing_tables = find_routing_tables(interfaces.select(&:configured))
         routing = Routing.new(
           tables: routing_tables, forward_ipv4: forward_ipv4?, forward_ipv6: forward_ipv6?
         )
@@ -59,7 +59,7 @@ module Y2Network
       # @return [RoutingTable] an object with routes
       def find_routing_tables(interfaces)
         main_routes = load_routes_from
-        iface_routes = find_interfaces.flat_map do |iface|
+        iface_routes = interfaces.select(&:configured).flat_map do |iface|
           load_routes_from("/etc/sysconfig/network/ifroute-#{iface.name}")
         end
         all_routes = main_routes + iface_routes

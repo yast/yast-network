@@ -38,6 +38,8 @@ module Y2Network
     extend Forwardable
 
     def_delegator :@old_items, :each
+    def_delegator :@old_items, :map
+    def_delegator :@old_items, :select
 
     # Converts old LanItems::Items into internal data format
     #
