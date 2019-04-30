@@ -47,7 +47,7 @@ module Y2Network
       { name: "wl_bitrates", default: nil }
     ].each do |hwinfo_item|
       define_method hwinfo_item[:name].downcase do
-        self.hwinfo ? self.hwinfo.fetch(hwinfo_item[:name], hwinfo_item[:default]) : hwinfo_item[:default]
+        @hwinfo ? @hwinfo.fetch(hwinfo_item[:name], hwinfo_item[:default]) : hwinfo_item[:default]
       end
     end
     alias_method :name, :dev_name

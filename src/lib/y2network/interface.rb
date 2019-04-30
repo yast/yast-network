@@ -47,11 +47,11 @@ module Y2Network
     ["STARTMODE"].each do |ifcfg_option|
       define_method ifcfg_option.downcase do
         # when switching to new backend we need as much guards as possible
-        if !configured || self.config.nil? || self.config.empty?
+        if !configured || @config.nil? || @config.empty?
           raise "Trying to read configuration of unconfigured interface"
         end
 
-        self.config[ifcfg_option]
+        @config[ifcfg_option]
       end
     end
 
@@ -66,9 +66,9 @@ module Y2Network
 
       if !(name.nil? || name.empty?)
         @name = name
-      else
+      elsif hwinfo.nil?
         # the interface has to be either configured (ifcfg) or known to hwinfo
-        raise "Attempting to create representation of nonexistent interface" if hwinfo.nil?
+        raise "Attempting to create representation of nonexistent interface"
       end
 
       init(name)
