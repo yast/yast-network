@@ -766,18 +766,8 @@ module Yast
       nil
     end
 
-    def AddNew
-      @current = @Items.to_h.size
-      # Items[@current] is expected to always exist
-      @Items[@current] = {}
-      @operation = :add
-
-      nil
-    end
-
     # return list of available modules for current device
     # with default default_module (on first possition)
-
     def GetItemModules(default_module)
       mods = []
       mods = Builtins.add(mods, default_module) if IsNotEmpty(default_module)

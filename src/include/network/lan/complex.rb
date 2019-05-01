@@ -434,8 +434,8 @@ module Yast
       if Ops.get_string(event, "EventReason", "") == "Activated"
         case Ops.get_symbol(event, "ID")
         when :add
-          # FIXME: can be mostly deleted
-          LanItems.AddNew
+          # FIXME: replace
+          LanItems.operation = :add
           # FIXME: can be partly deleted and partly moved
           Lan.Add
 
@@ -453,6 +453,8 @@ module Yast
           iface = config.interfaces.find(iface_name)
           if iface.configured
             @builder.load_sysconfig(iface.config)
+            # FIXME: replace with proper initialization of the builder above and move other
+            # necessary stuff at more appropriate place
             LanItems.SetItem(iface: iface)
 
             if iface.startmode == "managed"
