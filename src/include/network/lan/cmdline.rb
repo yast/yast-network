@@ -183,7 +183,8 @@ module Yast
     # @param [Hash{String => String}] options action options
     def AddHandler(options)
       options = deep_copy(options)
-      LanItems.AddNew
+      # FIXME: AddHandler will not work with new network-ng backend
+      # LanItems.AddNew
       Lan.Add
       Ops.set(
         LanItems.Items,
