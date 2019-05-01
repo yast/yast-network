@@ -16,22 +16,19 @@
 #
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
-module Y2Network
-  # This module contains a set of classes to read the network configuration from the system
-  #
-  # For the time being, only the wicked via its backward compatibility with sysconfig
-  # is available in ({Y2Network::ConfigReader::Sysconfig}) reader
-  module ConfigReader
-    # Config reader for a given source
-    #
-    # @param source [Symbol] Source name (e.g., :sysconfig)
-    # @param opts   [Hash] Reader options
-    # @return [#config] Configuration reader from {Y2Network::ConfigReader}
-    def self.for(source, opts = {})
-      require "y2network/config_reader/#{source}"
-      name = source.to_s.split("_").map(&:capitalize).join
-      klass = const_get(name)
-      klass.new(opts)
+
+require_relative "../../test_helper"
+require "y2network/config_builder/defaults"
+
+describe Y2Network::ConfigBuilder::Defaults do
+  subject(:subject) { described_class.new }
+
+  describe "#config" do
+    it "builds a new Y2Network::Routing config with default values" do
+      routing_config = subject.config.routing
+      expect(routing_config.forward_ipv4).to eq(false)
+      expect(routing_config.forward_ipv6).to eq(false)
+      expect(routing_config.routes).to be_empty
     end
   end
 end

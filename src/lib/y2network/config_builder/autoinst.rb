@@ -20,21 +20,29 @@
 require "yast"
 require "y2network/interface"
 require "y2network/config"
-require "y2network/routing"
-require "y2network/routing_table"
+require "y2network/config_builder/autoinst_routing"
+require "y2network/autoinst_profile/networking_section"
 
 Yast.import "Lan"
 
 module Y2Network
-  module ConfigReader
-    # This class is responsible of initializing the default configuration
-    class Defaults
-      def initialize(_options = {})
+  module ConfigBuilder
+    # This class is responsible of importing Autoyast configuration
+    class Autoinst
+      # @return [AutoinstProfile::NetworkingSection]
+      attr_reader :section
+
+      # Constructor
+      #
+      # @param section [AutoinstProfile::NetworkingSection]
+      def initialize(section)
+        @section = section
       end
 
+      # @return [Y2Network::Config] Network configuration
       def config
         interfaces = find_interfaces
-        routing = Y2Network::Routing.new(tables: [Y2Network::RoutingTable.new])
+        routing = section.routing ? AutoinstRouting.new(section.routing).config : nil
         Y2Network::Config.new(interfaces: interfaces, routing: routing, source: :sysconfig)
       end
 

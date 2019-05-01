@@ -17,10 +17,10 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 require_relative "../../test_helper"
-require "y2network/config_reader/sysconfig"
+require "y2network/config_builder/sysconfig"
 
-describe Y2Network::ConfigReader::Sysconfig do
-  subject(:reader) { described_class.new }
+describe Y2Network::ConfigBuilder::Sysconfig do
+  subject(:builder) { described_class.new }
 
   let(:network_interfaces) do
     instance_double(
@@ -40,12 +40,12 @@ describe Y2Network::ConfigReader::Sysconfig do
     end
 
     it "returns a configuration including network devices" do
-      config = reader.config
+      config = builder.config
       expect(config.interfaces.map(&:name)).to eq(["lo", "eth0", "wlan0"])
     end
 
     it "links routes with detected network devices" do
-      config = reader.config
+      config = builder.config
       route = config.routing.routes.find { |r| !!r.interface }
 
       iface = config.interfaces.find { |i| i.name == route.interface.name }
@@ -53,12 +53,12 @@ describe Y2Network::ConfigReader::Sysconfig do
     end
 
     it "returns a configuration including routes" do
-      config = reader.config
+      config = builder.config
       expect(config.routing.routes.size).to eq(4)
     end
 
     it "sets the config source to :sysconfig" do
-      config = reader.config
+      config = builder.config
       expect(config.source).to eq(:sysconfig)
     end
   end
@@ -69,13 +69,13 @@ describe Y2Network::ConfigReader::Sysconfig do
     end
 
     it "returns true when IPv4 forwarding is allowed" do
-      expect(reader.config.routing.forward_ipv4).to be true
+      expect(builder.config.routing.forward_ipv4).to be true
     end
 
     it "returns false when IPv4 forwarding is disabled" do
       allow(Yast::SCR).to receive(:Read).and_return("0")
 
-      expect(reader.config.routing.forward_ipv4).to be false
+      expect(builder.config.routing.forward_ipv4).to be false
     end
   end
 
@@ -87,11 +87,11 @@ describe Y2Network::ConfigReader::Sysconfig do
     it "returns false when IPv6 forwarding is disabled" do
       allow(Yast::SCR).to receive(:Read).and_return("1")
 
-      expect(reader.config.routing.forward_ipv6).to be true
+      expect(builder.config.routing.forward_ipv6).to be true
     end
 
     it "returns false when IPv6 forwarding is disabled" do
-      expect(reader.config.routing.forward_ipv6).to be false
+      expect(builder.config.routing.forward_ipv6).to be false
     end
   end
 end

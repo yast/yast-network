@@ -22,8 +22,8 @@ require "y2network/config_writer"
 describe Y2Network::ConfigWriter do
   describe ".for" do
     it "returns the writer for the given source" do
-      reader = Y2Network::ConfigWriter.for(:sysconfig)
-      expect(reader).to be_a(Y2Network::ConfigWriter::Sysconfig)
+      writer = Y2Network::ConfigWriter.for(:sysconfig)
+      expect(writer).to be_a(Y2Network::ConfigWriter::Sysconfig)
     end
   end
 end

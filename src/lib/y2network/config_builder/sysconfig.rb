@@ -27,7 +27,7 @@ require "y2network/sysconfig_routes_file"
 Yast.import "NetworkInterfaces"
 
 module Y2Network
-  module ConfigReader
+  module ConfigBuilder
     # This class reads the current configuration from `/etc/sysconfig` files
     class Sysconfig
       def initialize(_opts = {})

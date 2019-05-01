@@ -18,7 +18,7 @@
 # find current contact information at www.suse.com.
 require "y2network/interface"
 require "y2network/config_writer"
-require "y2network/config_reader"
+require "y2network/config_builder"
 
 module Y2Network
   # This class represents the current network configuration including interfaces,
@@ -38,16 +38,16 @@ module Y2Network
     attr_accessor :interfaces
     # @return [Routing]
     attr_accessor :routing
-    # @return [Symbol] Information source (see {Y2Network::Reader} and {Y2Network::Writer})
+    # @return [Symbol] Information source (see {Y2Network::ConfigBuilder} and {Y2Network::ConfigWriter})
     attr_accessor :source
 
     class << self
       # @param source [Symbol] Source to read the configuration from
-      # @param opts   [Hash]   Reader options. Check readers documentation to find out
+      # @param opts   [Hash]   Builder options. Check builders documentation to find out
       #                        supported options.
       def from(source, opts = {})
-        reader = ConfigReader.for(source, opts)
-        reader.config
+        builder = ConfigBuilder.for(source, opts)
+        builder.config
       end
 
       # Adds the configuration to the register

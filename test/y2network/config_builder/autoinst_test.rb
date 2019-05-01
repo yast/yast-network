@@ -21,9 +21,9 @@
 
 require_relative "../../test_helper"
 require "y2network/autoinst_profile/networking_section"
-require "y2network/config_reader/autoinst"
+require "y2network/config_builder/autoinst"
 
-describe Y2Network::ConfigReader::Autoinst do
+describe Y2Network::ConfigBuilder::Autoinst do
   let(:subject) { described_class.new(networking_section) }
   let(:networking_section) do
     Y2Network::AutoinstProfile::NetworkingSection.new_from_hashes(profile)

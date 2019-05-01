@@ -20,7 +20,7 @@ require_relative "../test_helper"
 require "y2network/config"
 require "y2network/routing_table"
 require "y2network/interface"
-require "y2network/config_reader/sysconfig"
+require "y2network/config_builder/sysconfig"
 require "y2network/config_writer/sysconfig"
 
 describe Y2Network::Config do
@@ -43,16 +43,16 @@ describe Y2Network::Config do
   let(:routing) { Y2Network::Routing.new(tables: [table1, table2]) }
 
   describe ".from" do
-    let(:reader) do
-      instance_double(Y2Network::ConfigReader::Sysconfig, config: config)
+    let(:builder) do
+      instance_double(Y2Network::ConfigBuilder::Sysconfig, config: config)
     end
 
     before do
-      allow(Y2Network::ConfigReader).to receive(:for).with(:sysconfig, {})
-        .and_return(reader)
+      allow(Y2Network::ConfigBuilder).to receive(:for).with(:sysconfig, {})
+        .and_return(builder)
     end
 
-    it "returns the configuration from the given reader" do
+    it "returns the configuration from the given builder" do
       expect(described_class.from(:sysconfig)).to eq(config)
     end
   end

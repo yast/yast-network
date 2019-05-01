@@ -16,14 +16,22 @@
 #
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
-require_relative "../test_helper"
-require "y2network/config_reader"
-
-describe Y2Network::ConfigReader do
-  describe ".for" do
-    it "returns the reader for the given source" do
-      reader = Y2Network::ConfigReader.for(:sysconfig)
-      expect(reader).to be_a(Y2Network::ConfigReader::Sysconfig)
+module Y2Network
+  # This module contains a set of classes to read the network configuration from the system
+  #
+  # For the time being, only the wicked via its backward compatibility with sysconfig
+  # is available in ({Y2Network::ConfigBuilder::Sysconfig}) builder
+  module ConfigBuilder
+    # Config builder for a given source
+    #
+    # @param source [Symbol] Source name (e.g., :sysconfig)
+    # @param opts   [Hash] Builder options
+    # @return [#config] Configuration builder from {Y2Network::ConfigBuilder}
+    def self.for(source, opts = {})
+      require "y2network/config_builder/#{source}"
+      name = source.to_s.split("_").map(&:capitalize).join
+      klass = const_get(name)
+      klass.new(opts)
     end
   end
 end

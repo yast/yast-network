@@ -16,19 +16,14 @@
 #
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
+require_relative "../test_helper"
+require "y2network/config_builder"
 
-require_relative "../../test_helper"
-require "y2network/config_reader/defaults"
-
-describe Y2Network::ConfigReader::Defaults do
-  subject(:subject) { described_class.new }
-
-  describe "#config" do
-    it "builds a new Y2Network::Routing config with default values" do
-      routing_config = subject.config.routing
-      expect(routing_config.forward_ipv4).to eq(false)
-      expect(routing_config.forward_ipv6).to eq(false)
-      expect(routing_config.routes).to be_empty
+describe Y2Network::ConfigBuilder do
+  describe ".for" do
+    it "returns the builder for the given source" do
+      builder = Y2Network::ConfigBuilder.for(:sysconfig)
+      expect(builder).to be_a(Y2Network::ConfigBuilder::Sysconfig)
     end
   end
 end
