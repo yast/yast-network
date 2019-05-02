@@ -16,6 +16,8 @@
 #
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
+require "y2network/interface_defaults"
+
 module Y2Network
   # Stores what's needed when creating a new configuration for an interface
   #
@@ -27,6 +29,8 @@ module Y2Network
     # @return [String] type which is intended to be build
     attr_accessor :type
 
+    include Y2Network::InterfaceDefaults
+
     # Constructor
     #
     # Load with reasonable defaults;
@@ -34,7 +38,8 @@ module Y2Network
     # others as in LanItems::Select
     #
     # FIXME: move reasonable methods from LanItems here?
-    def initialize(default)
+    def initialize
+      default = init_device_config(new_item_default_options)
       @config = load_sysconfig(default)
     end
 

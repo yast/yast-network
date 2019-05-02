@@ -446,6 +446,7 @@ module Yast
           # As it could easily happen that all interfaces are set to "no" (and
           # default route is unrecheable in such case) this explicite setup was
           # added.
+          # FIXME: not implemented in network-ng
           LanItems.set_default_route = true
 
           return :add

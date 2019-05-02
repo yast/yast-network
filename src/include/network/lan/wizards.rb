@@ -118,7 +118,7 @@ module Yast
     end
 
     def MainSequence(mode)
-      iface_builder = Y2Network::InterfaceConfigBuilder.new(LanItems.new_item_default_options)
+      iface_builder = Y2Network::InterfaceConfigBuilder.new
       aliases = {
         "global"    => -> { MainDialog("global", builder: iface_builder) },
         "overview"  => -> { MainDialog("overview", builder: iface_builder) },
