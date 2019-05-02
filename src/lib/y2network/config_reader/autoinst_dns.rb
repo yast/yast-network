@@ -36,10 +36,9 @@ module Y2Network
       #
       # @return [DNS] the imported {DNS} config
       def config
-        options = {}
-        section.class.attributes.each do |attr_entry|
+        options = section.class.attributes.each_with_object({}) do |attr_entry, result|
           value = section.public_send(attr_entry[:name])
-          options[attr_entry[:name]] = value unless value.nil?
+          result[attr_entry[:name]] = value unless value.nil?
         end
 
         Y2Network::DNS.new(options)
