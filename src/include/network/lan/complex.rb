@@ -452,11 +452,15 @@ module Yast
           return :add
         when :edit
           iface = config.interfaces.find(iface_name)
+          # FIXME: turn following lines into something like builder.load(iface) ?
+          @builder.name = iface.name
+          @builder.type = iface.type
           if iface.configured
             @builder.load_sysconfig(iface.config)
-            # FIXME: replace with proper initialization of the builder above and move other
-            # necessary stuff at more appropriate place
-            LanItems.SetItem(iface: iface)
+            @builder.load_s390_config(LanItems.s390_ReadQethConfig(iface.hardware.name)) if iface.hardware
+            # FIXME: move to more appropriate place
+            LanItems.operation = :edit
+            NetworkInterfaces.Edit(iface.name)
 
             if iface.startmode == "managed"
               # Continue-Cancel popup

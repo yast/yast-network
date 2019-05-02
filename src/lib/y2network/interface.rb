@@ -47,11 +47,11 @@ module Y2Network
     ["STARTMODE"].each do |ifcfg_option|
       define_method ifcfg_option.downcase do
         # when switching to new backend we need as much guards as possible
-        if !configured || @config.nil? || @config.empty?
+        if !configured || config.nil? || config.empty?
           raise "Trying to read configuration of unconfigured interface"
         end
 
-        @config[ifcfg_option]
+        config[ifcfg_option]
       end
     end
 
