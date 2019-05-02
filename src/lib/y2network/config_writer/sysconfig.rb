@@ -20,6 +20,7 @@
 require "yast"
 require "y2network/sysconfig_paths"
 require "y2network/sysconfig_routes_file"
+require "y2network/config_writer/sysconfig_dns"
 
 module Y2Network
   module ConfigWriter
@@ -30,8 +31,9 @@ module Y2Network
     class Sysconfig
       # Writes the configuration into YaST network related modules
       #
-      # @param config [Y2Network::Config] Configuration to write
-      def write(config)
+      # @param config     [Y2Network::Config] Configuration to write
+      # @param old_config [Y2Network::Config] Old configuration
+      def write(config, old_config = nil)
         return unless config.routing
 
         write_ip_forwarding(config.routing)
@@ -51,6 +53,8 @@ module Y2Network
             file.save
           end
         end
+
+        write_dns_settings(config, old_config)
       end
 
     private
@@ -131,6 +135,15 @@ module Y2Network
       def routes_file_for(iface)
         return Y2Network::SysconfigRoutesFile.new unless iface
         Y2Network::SysconfigRoutesFile.new("/etc/sysconfig/network/ifroute-#{iface.name}")
+      end
+
+      # Updates the DNS configuration
+      #
+      # @param dns     [Y2Network::DNS] Current DNS configuration
+      # @param old_dns [Y2Network::DNS] Old DNS configuration; nil if it is unknown
+      def write_dns_settings(dns, old_dns)
+        writer = Y2Network::ConfigWriter::SysconfigDNS.new
+        writer.write(dns, old_dns)
       end
     end
   end

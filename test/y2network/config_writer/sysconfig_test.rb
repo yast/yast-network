@@ -36,7 +36,7 @@ describe Y2Network::ConfigWriter::Sysconfig do
         source:     :sysconfig
       )
     end
-
+    let(:old_config) { instance_double(Y2Network::Config) }
     let(:eth0) { Y2Network::Interface.new("eth0") }
     let(:route) do
       Y2Network::Route.new(
@@ -70,6 +70,8 @@ describe Y2Network::ConfigWriter::Sysconfig do
 
     let(:routes) { [route, default_route] }
 
+    let(:dns_writer) { instance_double(Y2Network::ConfigWriter::SysconfigDNS, write: nil) }
+
     before do
       allow(Y2Network::SysconfigRoutesFile).to receive(:new)
         .with("/etc/sysconfig/network/ifroute-eth0")
@@ -77,6 +79,8 @@ describe Y2Network::ConfigWriter::Sysconfig do
       allow(Y2Network::SysconfigRoutesFile).to receive(:new)
         .with(no_args)
         .and_return(routes_file)
+      allow(Y2Network::ConfigWriter::SysconfigDNS).to receive(:new)
+        .and_return(dns_writer)
     end
 
     it "saves general routes to main routes file" do
@@ -142,6 +146,11 @@ describe Y2Network::ConfigWriter::Sysconfig do
 
         writer.write(config)
       end
+    end
+
+    it "writes DNS configuration" do
+      expect(dns_writer).to receive(:write).with(config, old_config)
+      writer.write(config, old_config)
     end
   end
 end
