@@ -31,6 +31,7 @@
 # respecting DHCP.
 require "yast"
 require "shellwords"
+require "y2network/config_writer/sysconfig_dns"
 
 module Yast
   class DNSClass < Module
@@ -208,51 +209,20 @@ module Yast
       nil
     end
 
+    # Reads DNS settings
+    #
+    # @note It reads all network settings, including DNS ones.
+    def Read
+      Yast::Lan.Read(:cache)
+    end
+
     # Write new DNS and hostname settings
     # Includes Host,NetworkConfig::Write
+    # @todo Update GUI
     # @return true if success
-    def Write(gui: true)
-      # Write process description labels
-      steps = [
-        # Progress stage 1
-        _("Write hostname"),
-        # Progress stage 2
-        _("Update configuration"),
-        # Progress stage 3
-        _("Update /etc/resolv.conf")
-      ]
-
-      # ensure that nothing is saved in case old values are the same, as it makes
-      # rcnetwork reload restart all interfaces (even 'touch /etc/sysconfig/network/dhcp'
-      # is sufficient)
-      update_sysconfig_dhcp
-
-      log.info("DNS: Writing configuration")
-      if !@modified
-        log.info("No changes to DNS -> nothing to write")
-        return true
-      end
-
-      # Write dialog caption
-      caption = _("Saving Hostname and DNS Configuration")
-
-      Progress.New(caption, " ", Builtins.size(steps), steps, [], "") if gui
-
-      # Progress step 1/3
-      ProgressNextStage(_("Writing hostname...")) if gui
-      update_hostname
-
-      # Progress step 2/3
-      ProgressNextStage(_("Updating configuration...")) if gui
-      update_mta_config
-
-      # Progress step 3/3
-      ProgressNextStage(_("Updating /etc/resolv.conf ...")) if gui
-      update_sysconfig_config
-
-      Progress.NextStage if gui
-      @modified = false
-
+    def Write(_gui: true)
+      writer = Y2Network::ConfigWriter::SysconfigDNS.new
+      writer.write(Yast::Lan.yast_config, Yast::Lan.system_config)
       true
     end
 
@@ -432,69 +402,6 @@ module Yast
       @modified = true if !fqhostname.empty?
 
       fqhostname
-    end
-
-    # Updates /etc/sysconfig/network/dhcp
-    def update_sysconfig_dhcp
-      if dhclient_set_hostname != @dhcp_hostname || get_write_hostname_to_hosts != @write_hostname
-        log.info("dhcp_hostname=#{@dhcp_hostname}")
-        log.info("write_hostname=#{@write_hostname}")
-
-        # @dhcp_hostname and @wrote_hostname can currently be nil only when
-        # not present in original file. So, do not add it in such case.
-        SCR.Write(
-          path(".sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME"),
-          @dhcp_hostname ? "yes" : "no"
-        ) if !@dhcp_hostname.nil?
-        SCR.Write(
-          path(".sysconfig.network.dhcp.WRITE_HOSTNAME_TO_HOSTS"),
-          @write_hostname ? "yes" : "no"
-        ) if !@write_hostname.nil?
-        SCR.Write(path(".sysconfig.network.dhcp"), nil)
-      else
-        log.info("No update for /etc/sysconfig/network/dhcp")
-      end
-    end
-
-    # Updates system with new hostname
-    def update_hostname
-      log.info("hostname=#{@hostname}")
-      log.info("domain=#{@domain}")
-
-      # change the hostname
-      SCR.Execute(path(".target.bash"), "/bin/hostname #{@hostname.shellescape}")
-
-      # build and write FQDN hostname
-      fqhostname = Hostname.MergeFQ(@hostname, @domain)
-      @oldhostname = fqhostname # #49634
-
-      SCR.Write(
-        path(".target.string"),
-        HOSTNAME_PATH,
-        Ops.add(fqhostname, "\n")
-      )
-    end
-
-    # Updates /etc/sysconfig/network/config
-    def update_sysconfig_config
-      log.info("nameservers=#{@nameservers}")
-      log.info("searchlist=#{@searchlist}")
-
-      SCR.Write(
-        path(".sysconfig.network.config.NETCONFIG_DNS_POLICY"),
-        @resolv_conf_policy
-      )
-      SCR.Write(
-        path(".sysconfig.network.config.NETCONFIG_DNS_STATIC_SEARCHLIST"),
-        Builtins.mergestring(@searchlist, " ")
-      )
-      SCR.Write(
-        path(".sysconfig.network.config.NETCONFIG_DNS_STATIC_SERVERS"),
-        Builtins.mergestring(@nameservers, " ")
-      )
-      SCR.Write(path(".sysconfig.network.config"), nil)
-
-      SCR.Execute(path(".target.bash"), "/sbin/netconfig update")
     end
 
     # A constant for translating sysconfig's yes/no values into boolean

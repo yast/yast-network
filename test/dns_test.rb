@@ -154,5 +154,29 @@ module Yast
         end
       end
     end
+
+    describe ".Read" do
+      it "delegates DNS settings reading to Yast::Lan module" do
+        expect(Yast::Lan).to receive(:Read).with(:cache)
+        Yast::DNS.Read
+      end
+    end
+
+    describe ".Write" do
+      let(:dns_writer) { instance_double(Y2Network::ConfigWriter::SysconfigDNS) }
+      let(:yast_config) { double("Y2Network::Config") }
+      let(:system_config) { double("Y2Network::Config") }
+
+      before do
+        allow(Y2Network::ConfigWriter::SysconfigDNS).to receive(:new).and_return(dns_writer)
+        allow(Yast::Lan).to receive(:yast_config).and_return(yast_config)
+        allow(Yast::Lan).to receive(:system_config).and_return(system_config)
+      end
+
+      it "writes DNS settings" do
+        expect(dns_writer).to receive(:write).with(yast_config, system_config)
+        DNS.Write
+      end
+    end
   end
 end
