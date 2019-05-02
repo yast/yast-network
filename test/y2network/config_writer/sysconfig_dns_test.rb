@@ -28,7 +28,7 @@ describe Y2Network::ConfigWriter::SysconfigDNS do
     let(:dhcp_hostname) { true }
     let(:dns) do
       Y2Network::DNS.new(
-        name_servers:       [IPAddr.new("10.0.0.1"), IPAddr.new("10.0.0.2")],
+        nameservers:        [IPAddr.new("10.0.0.1"), IPAddr.new("10.0.0.2")],
         hostname:           "myhost.example.net",
         search_domains:     ["example.net", "example.org"],
         resolv_conf_policy: "auto",
@@ -39,7 +39,7 @@ describe Y2Network::ConfigWriter::SysconfigDNS do
     let(:old_dhcp_hostname) { !dhcp_hostname }
     let(:old_dns) do
       Y2Network::DNS.new(
-        name_servers:       [IPAddr.new("10.0.0.1")],
+        nameservers:        [IPAddr.new("10.0.0.1")],
         hostname:           "linux-abcd.example.org",
         search_domains:     ["example.org"],
         resolv_conf_policy: "auto",

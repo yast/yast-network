@@ -90,7 +90,7 @@ module Y2Network
         )
         Yast::SCR.Write(
           Yast::Path.new(".sysconfig.network.config.NETCONFIG_DNS_STATIC_SERVERS"),
-          dns.name_servers.join(" ")
+          dns.nameservers.join(" ")
         )
         Yast::SCR.Write(Yast::Path.new(".sysconfig.network.config"), nil)
 
