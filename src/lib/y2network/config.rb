@@ -88,10 +88,10 @@ module Y2Network
     # @param routing    [Routing] Object with routing configuration
     # @param dns        [DNS] Object with DNS configuration
     # @param source     [Symbol] Configuration source
-    def initialize(interfaces:, routing:, dns: nil, source:)
+    def initialize(interfaces: [], routing: Y2Network::Routing.new, dns: Y2Network::DNS.new, source:)
       @interfaces = interfaces
       @routing = routing
-      @dns = dns || Y2Network::DNS.new
+      @dns = dns
       @source = source
     end
 
