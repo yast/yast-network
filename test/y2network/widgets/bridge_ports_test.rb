@@ -39,7 +39,7 @@ describe Y2Network::Widgets::BridgePorts do
       it "warns the user and request confirmation to continue" do
         # yeah, tricky mock, not sure if there is easier way
         allow(Yast::NetworkInterfaces).to receive(:FilterDevices)
-          .and_return(double( :[] => { "eth0" => { "BOOTPROTO"  => "dhcp" }}))
+          .and_return(double(:[] => { "eth0" => { "BOOTPROTO"  => "dhcp" } }))
         allow(subject).to receive(:value).and_return(["eth0"])
 
         expect(Yast::Popup).to receive(:ContinueCancel).and_return(true)
