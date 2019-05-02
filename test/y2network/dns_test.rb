@@ -63,7 +63,7 @@ describe Y2Network::DNS do
     end
 
     context "when the list of name servers are different" do
-      let(:other) { described_class.new(attrs.merge(name_servers: ["1.1.1.1"])) }
+      let(:other) { described_class.new(attrs.merge(nameservers: ["1.1.1.1"])) }
 
       it "returns false" do
         expect(dns).to_not eq(other)

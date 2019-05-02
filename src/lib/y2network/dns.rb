@@ -18,13 +18,13 @@
 # find current contact information at www.suse.com.
 
 module Y2Network
-  # DNS configuration (hostname, name servers, etc.).
+  # DNS configuration (hostname, nameservers, etc.).
   class DNS
     # @return [String] Hostname (local part)
     attr_reader :hostname
 
-    # @return [Array<IPAddr>] List of name servers
-    attr_reader :name_servers
+    # @return [Array<IPAddr>] List of nameservers
+    attr_reader :nameservers
 
     # @return [Array<String>] List of search domains
     attr_reader :search_domains
@@ -39,13 +39,13 @@ module Y2Network
     #
     # @param opts [Hash] DNS configuration options
     # @option opts [String] :hostname
-    # @option opts [Array<String>] :name_servers
+    # @option opts [Array<String>] :nameservers
     # @option opts [Array<String>] :search_domains
     # @option opts [ResolvConfPolicy] :resolv_conf_policy
     # @option opts [Boolean] :dhcp_hostname
     def initialize(opts = {})
       @hostname = opts[:hostname]
-      @name_servers = opts[:name_servers] || []
+      @nameservers = opts[:nameservers] || []
       @search_domains = opts[:search_domains] || []
       @resolv_conf_policy = opts[:resolv_conf_policy]
       @dhcp_hostname = opts[:dhcp_hostname]
@@ -60,7 +60,7 @@ module Y2Network
     end
 
     ATTRS = [
-      :hostname, :name_servers, :search_domains, :resolv_conf_policy, :dhcp_hostname
+      :hostname, :nameservers, :search_domains, :resolv_conf_policy, :dhcp_hostname
     ].freeze
 
     # Determines whether two set of DNS settings are equal

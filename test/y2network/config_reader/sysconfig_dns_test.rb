@@ -114,7 +114,7 @@ describe Y2Network::ConfigReader::SysconfigDNS do
 
     it "includes the list of name servers" do
       config = reader.config
-      expect(config.name_servers).to eq([IPAddr.new("1.1.1.1"), IPAddr.new("2.2.2.2")])
+      expect(config.nameservers).to eq([IPAddr.new("1.1.1.1"), IPAddr.new("2.2.2.2")])
     end
 
     context "when no name servers are defined" do
@@ -124,7 +124,7 @@ describe Y2Network::ConfigReader::SysconfigDNS do
 
       it "includes an empty list of name servers" do
         config = reader.config
-        expect(config.name_servers).to eq([])
+        expect(config.nameservers).to eq([])
       end
     end
 

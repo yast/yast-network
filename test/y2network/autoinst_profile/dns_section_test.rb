@@ -28,11 +28,11 @@ describe Y2Network::AutoinstProfile::DNSSection do
     let(:dns) do
       instance_double(
         Y2Network::DNS, hostname: "linux", dhcp_hostname: true, resolv_conf_policy: "auto",
-        name_servers: name_servers, search_domains: search_domains
+        nameservers: nameservers, search_domains: search_domains
       )
     end
 
-    let(:name_servers) { [IPAddr.new("1.1.1.1")] }
+    let(:nameservers) { [IPAddr.new("1.1.1.1")] }
     let(:search_domains) { ["example.net"] }
 
     it "sets the hostname attribute" do
@@ -58,6 +58,66 @@ describe Y2Network::AutoinstProfile::DNSSection do
     it "sets the searchlist attribute" do
       section = described_class.new_from_network(dns)
       expect(section.searchlist).to eq(["example.net"])
+    end
+  end
+
+  describe "#.new_from_hashes" do
+    let(:hash) do
+      {
+        "hostname"           => "linux.example.org",
+        "dhcp_hostname"      => true,
+        "resolv_conf_policy" => "auto",
+        "nameservers"        => ["192.168.122.1", "10.0.0.1"],
+        "search_domains"     => ["suse.com"]
+      }
+    end
+
+    let(:minimal_hash) do
+      {
+        "dhcp_hostname"      => true,
+        "resolv_conf_policy" => "auto"
+      }
+    end
+
+    it "initializes the hostname" do
+      section = described_class.new_from_hashes(hash)
+      expect(section.hostname).to eq("linux.example.org")
+    end
+
+    it "initializes dhcp_hostname" do
+      section = described_class.new_from_hashes(hash)
+      expect(section.dhcp_hostname).to eq(true)
+    end
+
+    it "initializes resolv_conf_policy" do
+      section = described_class.new_from_hashes(hash)
+      expect(section.resolv_conf_policy).to eq("auto")
+    end
+
+    it "initializes the list of nameservers" do
+      section = described_class.new_from_hashes(hash)
+      expect(section.nameservers.size).to eql(2)
+      expect(section.nameservers).to include("10.0.0.1")
+    end
+
+    it "initializes searchlist" do
+      section = described_class.new_from_hashes(hash)
+      expect(section.searchlist).to eql(["suse.com"])
+    end
+
+    context "when scalar attributes are not defined" do
+      it "does not set the attribute" do
+        section = described_class.new_from_hashes(minimal_hash)
+        expect(section.hostname).to be_nil
+      end
+    end
+
+    context "when an array attribute is not defined" do
+      it "is initialized as empty" do
+        section = described_class.new_from_hashes(minimal_hash)
+        expect(section.nameservers).to be_empty
+        expect(section.nameservers).to be_a(Array)
+      end
     end
   end
 end

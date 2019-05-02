@@ -26,11 +26,11 @@ describe Y2Network::Presenters::DNSSummary do
 
   let(:dns) do
     Y2Network::DNS.new(
-      hostname: hostname, name_servers: name_servers, search_domains: search_domains
+      hostname: hostname, nameservers: nameservers, search_domains: search_domains
     )
   end
   let(:hostname) { "test" }
-  let(:name_servers) { [IPAddr.new("1.1.1.1"), IPAddr.new("8.8.8.8")] }
+  let(:nameservers) { [IPAddr.new("1.1.1.1"), IPAddr.new("8.8.8.8")] }
   let(:search_domains) { ["example.net", "example.org"] }
 
   describe "#text" do
@@ -51,7 +51,7 @@ describe Y2Network::Presenters::DNSSummary do
     end
 
     context "when name servers are given" do
-      let(:name_servers) { [] }
+      let(:nameservers) { [] }
 
       it "does not show the name servers" do
         text = presenter.text
