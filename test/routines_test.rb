@@ -102,16 +102,6 @@ describe "#DeviceName" do
   end
 end
 
-describe "list2items" do
-  subject(:routines) { RoutinesTestClass.new }
-  let(:list) { ["x", "y"] }
-
-  it "creates a list of Items from given array" do
-    expect(routines.list2items(list, 1))
-      .to match_array([Item(Id(0), "x", false), Item(Id(1), "y", true)])
-  end
-end
-
 describe "hwlist2items" do
   subject(:routines) { RoutinesTestClass.new }
   let(:list) { [{ "name" => "x" }, { "name" => "y" }] }

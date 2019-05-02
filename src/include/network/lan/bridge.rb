@@ -68,35 +68,5 @@ module Yast
 
       true
     end
-
-    def ValidateBridge(_key, _event)
-      sel = UI.QueryWidget(Id("BRIDGE_PORTS"), :SelectedItems)
-
-      configurations = NetworkInterfaces.FilterDevices("netcard")
-      netcard_types = (NetworkInterfaces.CardRegex["netcard"] || "").split("|")
-
-      confs = netcard_types.reduce([]) do |res, devtype|
-        res.concat((configurations[devtype] || {}).keys)
-      end
-
-      valid = true
-
-      sel.each do |device|
-        next if !confs.include?(device)
-
-        dev_type = NetworkInterfaces.GetType(device)
-        ifcfg_conf = configurations[dev_type][device]
-
-        next if ifcfg_conf["BOOTPROTO"] == "none"
-
-        valid = Popup.ContinueCancel(
-          _(
-            "At least one selected device is already configured.\nAdapt the configuration for bridge?\n"
-          )
-        )
-        break
-      end
-      valid
-    end
   end
 end
