@@ -44,7 +44,6 @@ module Yast
       textdomain "network"
 
       Yast.import "Arch"
-      Yast.import "NetHwDetection"
       Yast.import "Hostname"
       Yast.import "IP"
       Yast.import "NetworkInterfaces"
@@ -209,53 +208,6 @@ module Yast
       nil
     end
 
-    # Reads current DNS and hostname settings
-    # Includes Host,NetworkConfig::Read
-    # @return true if success
-    def Read
-      return true if @initialized
-
-      # Used false as "no" is the default value in sysconfig for both
-      # attributes (bsc#bug_1051624)
-      @dhcp_hostname = dhclient_set_hostname || false
-      @write_hostname = get_write_hostname_to_hosts || false
-
-      @resolv_conf_policy = Convert.to_string(
-        SCR.Read(path(".sysconfig.network.config.NETCONFIG_DNS_POLICY"))
-      )
-      resolvlist = Builtins.splitstring(
-        Convert.to_string(
-          SCR.Read(
-            path(".sysconfig.network.config.NETCONFIG_DNS_STATIC_SERVERS")
-          )
-        ),
-        " "
-      )
-      if Ops.greater_than(Builtins.size(resolvlist), 0)
-        @nameservers = deep_copy(resolvlist)
-      end
-
-      @searchlist = Builtins.splitstring(
-        Convert.to_string(
-          SCR.Read(
-            path(".sysconfig.network.config.NETCONFIG_DNS_STATIC_SEARCHLIST")
-          )
-        ),
-        " "
-      )
-
-      # hostname and domain
-      ReadHostname()
-      @oldhostname = Hostname.MergeFQ(@hostname, @domain)
-
-      Builtins.y2milestone("nameservers=%1", @nameservers)
-      Builtins.y2milestone("searchlist=%1", @searchlist)
-      Builtins.y2milestone("hostname=%1", @hostname)
-      Builtins.y2milestone("domain=%1", @domain)
-
-      @initialized = true
-    end
-
     # Write new DNS and hostname settings
     # Includes Host,NetworkConfig::Write
     # @return true if success
@@ -387,69 +339,6 @@ module Yast
       # bnc#576495, FaTE#305281 - clone write_hostname, too
       Ops.set(expdns, "write_hostname", @write_hostname)
       deep_copy(expdns)
-    end
-
-    # Create DNS text summary
-    # @return summary text
-    def Summary
-      Yast.import "Summary"
-      summary = ""
-
-      has_dhcp = Ops.greater_than(
-        Builtins.size(NetworkInterfaces.Locate("BOOTPROTO", "dhcp")),
-        0
-      )
-
-      if has_dhcp && @dhcp_hostname
-        # Summary text
-        summary = Summary.AddListItem(summary, _("Hostname: Set by DHCP"))
-      elsif Ops.greater_than(Builtins.size(@hostname), 0)
-        # Summary text
-        summary = Summary.AddListItem(
-          summary,
-          Builtins.sformat(
-            _("Hostname: %1"),
-            Hostname.MergeFQ(@hostname, @domain)
-          )
-        )
-      end
-
-      # if (has_dhcp && NetworkConfig::DHCP["DHCLIENT_MODIFY_RESOLV_CONF"]:false) {
-      # Summary text
-      # summary = Summary::AddListItem(summary, _("Name Servers: Set by DHCP"));
-      # Summary text
-      # summary = Summary::AddListItem(summary, _("Search List: Set by DHCP"));
-      # }
-      # else {
-      nslist = Builtins.maplist(@nameservers) do |ns|
-        nss = NetHwDetection.ResolveIP(ns)
-        nss == "" ? ns : Ops.add(Ops.add(Ops.add(ns, " ("), nss), ")")
-      end
-
-      if Ops.greater_than(Builtins.size(nslist), 0)
-        # Summary text
-        summary = Summary.AddListItem(
-          summary,
-          Builtins.sformat(
-            _("Name Servers: %1"),
-            Builtins.mergestring(nslist, ", ")
-          )
-        )
-      end
-      if Ops.greater_than(Builtins.size(@searchlist), 0)
-        # Summary text
-        summary = Summary.AddListItem(
-          summary,
-          Builtins.sformat(
-            _("Search List: %1"),
-            Builtins.mergestring(@searchlist, ", ")
-          )
-        )
-      end
-      # }
-
-      return "" if Ops.less_than(Builtins.size(summary), 1)
-      Ops.add(Ops.add("<ul>", summary), "</ul>")
     end
 
     # Check if hostname or IP address is local computer

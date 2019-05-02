@@ -172,10 +172,6 @@ describe "LanClass" do
       expect_modification_succeedes(Yast::LanItems, :GetModified)
     end
 
-    it "returns true when DNS module was modified" do
-      expect_modification_succeedes(Yast::DNS, :modified)
-    end
-
     let(:config) do
       Y2Network::Config.new(interfaces: [], routing: routing, source: :sysconfig)
     end

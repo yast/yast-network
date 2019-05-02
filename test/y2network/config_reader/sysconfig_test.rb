@@ -18,6 +18,7 @@
 # find current contact information at www.suse.com.
 require_relative "../../test_helper"
 require "y2network/config_reader/sysconfig"
+require "y2network/config_reader/sysconfig_dns"
 
 describe Y2Network::ConfigReader::Sysconfig do
   subject(:reader) { described_class.new }
@@ -31,6 +32,12 @@ describe Y2Network::ConfigReader::Sysconfig do
   end
 
   let(:routes_file) { instance_double(Y2Network::SysconfigRoutesFile, load: nil, routes: []) }
+  let(:dns_reader) { instance_double(Y2Network::ConfigReader::SysconfigDNS, config: dns) }
+  let(:dns) { double("Y2Network::ConfigReader::DNS") }
+
+  before do
+    allow(Y2Network::ConfigReader::SysconfigDNS).to receive(:new).and_return(dns_reader)
+  end
 
   around { |e| change_scr_root(File.join(DATA_PATH, "scr_read"), &e) }
 
@@ -52,9 +59,14 @@ describe Y2Network::ConfigReader::Sysconfig do
       expect(route.interface).to be(iface)
     end
 
-    it "returns a configuration including routes" do
+    it "returns a configuration which includes routes" do
       config = reader.config
       expect(config.routing.routes.size).to eq(4)
+    end
+
+    it "returns a configuration which includes DNS settings" do
+      config = reader.config
+      expect(config.dns).to eq(dns)
     end
 
     it "sets the config source to :sysconfig" do

@@ -18,6 +18,7 @@
 # find current contact information at www.suse.com.
 
 require "y2network/autoinst_profile/routing_section"
+require "y2network/autoinst_profile/dns_section"
 
 module Y2Network
   module AutoinstProfile
@@ -33,6 +34,8 @@ module Y2Network
     class NetworkingSection
       # @return [RoutingSection]
       attr_accessor :routing
+      # @return [DNSSection]
+      attr_accessor :dns
 
       # Creates an instance based on the profile representation used by the AutoYaST modules
       # (hash with nested hashes and arrays).
@@ -42,6 +45,7 @@ module Y2Network
       def self.new_from_hashes(hash)
         result = new
         result.routing = RoutingSection.new_from_hashes(hash["routing"]) if hash["routing"]
+        result.dns = DNSSection.new_from_hashes(hash["dns"]) if hash["dns"]
         result
       end
 
@@ -53,6 +57,7 @@ module Y2Network
         result = new
         return result unless config
         result.routing = RoutingSection.new_from_network(config.routing) if config.routing
+        result.dns = DNSSection.new_from_network(config.dns) if config.dns
         result
       end
 

@@ -24,14 +24,18 @@ require "y2network/config"
 describe Y2Network::AutoinstProfile::NetworkingSection do
   describe ".new_from_network" do
     let(:config) do
-      Y2Network::Config.new(interfaces: [], routing: routing, source: :sysconfig)
+      Y2Network::Config.new(interfaces: [], routing: routing, dns: dns, source: :sysconfig)
     end
     let(:routing) { double("Y2Network::Routing") }
     let(:routing_section) { double("RoutingSection") }
+    let(:dns) { double("Y2Network::DNS") }
+    let(:dns_section) { double("DNSSection") }
 
     before do
       allow(Y2Network::AutoinstProfile::RoutingSection).to receive(:new_from_network)
         .with(routing).and_return(routing_section)
+      allow(Y2Network::AutoinstProfile::DNSSection).to receive(:new_from_network)
+        .with(dns).and_return(dns_section)
     end
 
     it "initializes the routing section" do
@@ -43,15 +47,20 @@ describe Y2Network::AutoinstProfile::NetworkingSection do
   describe ".new_from_hashes" do
     let(:hash) do
       {
-        "routing" => routing
+        "routing" => routing,
+        "dns"     => dns
       }
     end
     let(:routing) { {} }
     let(:routing_section) { double("RoutingSection") }
+    let(:dns) { {} }
+    let(:dns_section) { double("DNSSection") }
 
     before do
       allow(Y2Network::AutoinstProfile::RoutingSection).to receive(:new_from_hashes)
         .with(routing).and_return(routing_section)
+      allow(Y2Network::AutoinstProfile::DNSSection).to receive(:new_from_hashes)
+        .with(dns).and_return(dns_section)
     end
 
     it "initializes the routing section" do
@@ -67,5 +76,20 @@ describe Y2Network::AutoinstProfile::NetworkingSection do
         expect(section.routing).to eq(nil)
       end
     end
+
+    it "initializes the dns section" do
+      section = described_class.new_from_hashes(hash)
+      expect(section.dns).to eq(dns_section)
+    end
+
+    context "when no dns section is present" do
+      let(:dns) { nil }
+
+      it "does not initialize the dns section" do
+        section = described_class.new_from_hashes(hash)
+        expect(section.dns).to eq(nil)
+      end
+    end
+
   end
 end

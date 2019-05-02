@@ -3,13 +3,26 @@
 require_relative "test_helper"
 
 require "network/network_autoyast"
+require "y2network/config_reader/sysconfig"
 Yast.import "Profile"
 Yast.import "Lan"
 
 describe "NetworkAutoYast" do
   subject(:network_autoyast) { Yast::NetworkAutoYast.instance }
+  let(:config) do
+    Y2Network::Config.new(
+      interfaces: [],
+      routing:    Y2Network::Routing.new(tables: []),
+      dns:        Y2Network::DNS.new,
+      source:     :sysconfig
+    )
+  end
+
   before do
     allow(Yast::NetworkInterfaces).to receive(:adapt_old_config!)
+    allow(Y2Network::Config).to receive(:from).and_return(double("config").as_null_object)
+    allow(Yast::Lan).to receive(:Read)
+    Yast::Lan.add_config(:yast, config)
   end
 
   describe "#merge_devices" do

@@ -23,7 +23,7 @@ Yast.import "NetHwDetection"
 
 module Y2Network
   module Presenters
-    # This class converts a routing configuration object into a hash to be used
+    # This class converts a routing configuration object into a string to be used
     # in an AutoYaST summary
     class RoutingSummary
       include Yast::I18n

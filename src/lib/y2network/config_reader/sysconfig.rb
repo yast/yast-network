@@ -23,6 +23,7 @@ require "y2network/routing"
 require "y2network/sysconfig_paths"
 require "y2network/routing_table"
 require "y2network/sysconfig_routes_file"
+require "y2network/config_reader/sysconfig_dns"
 
 Yast.import "NetworkInterfaces"
 
@@ -41,7 +42,7 @@ module Y2Network
           tables: routing_tables, forward_ipv4: forward_ipv4?, forward_ipv6: forward_ipv6?
         )
 
-        Config.new(interfaces: interfaces, routing: routing, source: :sysconfig)
+        Config.new(interfaces: interfaces, routing: routing, dns: dns, source: :sysconfig)
       end
 
     private
@@ -114,6 +115,13 @@ module Y2Network
           interface = interfaces.find { |i| route.interface.name == i.name }
           route.interface = interface if interface
         end
+      end
+
+      # Returns the DNS configuration
+      #
+      # @return [Y2Network::DNS]
+      def dns
+        Y2Network::ConfigReader::SysconfigDNS.new.config
       end
     end
   end
