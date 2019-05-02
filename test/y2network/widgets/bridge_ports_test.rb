@@ -35,7 +35,7 @@ describe Y2Network::Widgets::BridgePorts do
       end
     end
 
-    context "when there is more than one physical port id per interface" do
+    context "when some of the enslaved interfaces are configured" do
       it "warns the user and request confirmation to continue" do
         # yeah, tricky mock, not sure if there is easier way
         allow(Yast::NetworkInterfaces).to receive(:FilterDevices)
