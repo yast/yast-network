@@ -36,11 +36,12 @@ module Y2Network
     # Load with reasonable defaults;
     # see LanItems::new_item_default_options, LanItems::@SysconfigDefaults and
     # others as in LanItems::Select
-    #
-    # FIXME: move reasonable methods from LanItems here?
     def initialize
-      default = init_device_config(new_item_default_options)
-      @config = load_sysconfig(default)
+      # FIXME: following lines updates config with a lot of default options for
+      # various device types, we can filter useless options by type when the type
+      # gets set or vhen providing configuration back to the user
+      @config = init_device_config(new_item_default_options)
+      @s390_config = init_device_s390_config({})
     end
 
     def set(option: nil, value: nil)
@@ -64,7 +65,11 @@ module Y2Network
     # @param [Hash<String, String>] a key, value map where key is sysconfig option
     #                               and corresponding value is the option value
     def load_sysconfig(devmap)
-      @config = devmap.nil? ? {} : devmap
+      @config = !devmap.nil? ? @config.merge(devmap) : @config
+    end
+
+    def load_s390_config(devmap)
+      @s390_config = !devmap.nil? ? @s390_config.merge(devmap) : @s390_config
     end
   end
 end
