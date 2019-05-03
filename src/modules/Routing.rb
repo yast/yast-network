@@ -163,6 +163,12 @@ module Yast
       nil
     end
 
+    # Checks whether a default gateway is defined
+    # @return [Boolean] true when a default gateway is defined
+    def default_gw?
+      @Routes.any? { |r| r["destination"] == "default" }
+    end
+
     # Reads current status for both IPv4 and IPv6 forwarding
     def ReadIPForwarding
       @Forward_v4 = if SuSEFirewall.IsEnabled
