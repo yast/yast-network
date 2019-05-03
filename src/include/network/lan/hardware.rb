@@ -419,11 +419,6 @@ module Yast
         @hardware["no_hotplug_dummy"] == true # convert tri state boolean to two state
       )
       ChangeWidgetIfExists(
-        Id(:list),
-        :Enabled,
-        @hardware["no_hotplug_dummy"] == true # convert tri state boolean to two state
-      )
-      ChangeWidgetIfExists(
         Id(:usb),
         :Enabled,
         (hotplug_type == "usb" || hotplug_type == "") &&
@@ -451,104 +446,6 @@ module Yast
       nil
     end
 
-    # Call back for a manual selection from the list
-    # @return dialog result
-    def SelectionDialog
-      type = LanItems.type
-      selected = 0
-
-      hwlist = Ops.get_list(@NetworkCards, type, [])
-      cards = hwlist2items(hwlist, 0)
-
-      # Manual selection caption
-      caption = _("Manual Network Card Selection")
-
-      # Manual selection help
-      helptext = _(
-        "<p>Select the network card to configure. Search\nfor a particular network card by entering the name in the search entry.</p>"
-      )
-
-      # Manual selection contents
-      contents = VBox(
-        VSpacing(0.5),
-        # Selection box label
-        ReplacePoint(
-          Id(:rp),
-          SelectionBox(Id(:cards), _("&Network Card"), cards)
-        ),
-        VSpacing(0.5),
-        # Text entry field
-        InputField(Id(:search), Opt(:hstretch, :notify), _("&Search")),
-        VSpacing(0.5)
-      )
-
-      Wizard.SetContentsButtons(
-        caption,
-        contents,
-        helptext,
-        Label.BackButton,
-        Label.OKButton
-      )
-
-      UI.SetFocus(Id(:cards))
-
-      ret = nil
-      loop do
-        ret = UI.UserInput
-
-        case ret
-        when :abort, :cancel
-          ReallyAbort() ? break : next
-        when :search
-          entry = Convert.to_string(UI.QueryWidget(Id(:search), :Value))
-
-          l = Builtins.filter(
-            Convert.convert(cards, from: "list", to: "list <term>")
-          ) do |e|
-            Builtins.tolower(
-              Builtins.substring(
-                Ops.get_string(e, 1, ""),
-                0,
-                Builtins.size(entry)
-              )
-            ) ==
-              Builtins.tolower(entry)
-          end
-
-          selected = 0 if Builtins.size(entry) == 0
-          if Ops.greater_than(Builtins.size(l), 0)
-            selected = Ops.get_integer(l, [0, 0, 0], 0)
-          end
-
-          cards = []
-          cards = hwlist2items(hwlist, selected)
-
-          # Selection box title
-          UI.ReplaceWidget(
-            Id(:rp),
-            SelectionBox(Id(:cards), _("&Network Card"), cards)
-          )
-        when :back
-          break
-        when :next
-          # FIXME: check_*
-          break
-        else
-          Builtins.y2error("Unexpected return code: %1", ret)
-          next
-        end
-      end
-
-      if ret == :next
-        selected = Convert.to_integer(UI.QueryWidget(Id(:cards), :CurrentItem))
-        selected = 0 if selected.nil?
-        card = Ops.get(hwlist, selected, {})
-        LanItems.description = Ops.get_string(card, "name", "")
-      end
-
-      deep_copy(ret)
-    end
-
     # Dialog for editing nic's udev rules.
     #
     # @return nic name. New one if `ok, old one otherwise.
@@ -566,7 +463,6 @@ module Yast
           Ops.get_string(event, "EventReason", "") == "Activated"
         ret = Ops.get_symbol(event, "WidgetID")
       end
-      SelectionDialog() if ret == :list
       if ret == :pcmcia || ret == :usb || ret == :type
         if UI.WidgetExists(Id(:pcmcia)) || UI.WidgetExists(Id(:usb))
           if UI.QueryWidget(Id(:pcmcia), :Value) == true
@@ -628,11 +524,6 @@ module Yast
         )
         UI.ChangeWidget(
           Id(:options),
-          :Enabled,
-          Ops.get_boolean(@hardware, "no_hotplug_dummy", false)
-        )
-        ChangeWidgetIfExists(
-          Id(:list),
           :Enabled,
           Ops.get_boolean(@hardware, "no_hotplug_dummy", false)
         )
@@ -724,7 +615,6 @@ module Yast
           UI.ChangeWidget(Id(:options), :Enabled, false)
           UI.ChangeWidget(Id(:pcmcia), :Enabled, false)
           UI.ChangeWidget(Id(:usb), :Enabled, false)
-          UI.ChangeWidget(Id(:list), :Enabled, false)
 
           UI.ChangeWidget(Id(:modul), :Value, "")
           UI.ChangeWidget(Id(:options), :Value, "")
