@@ -1,4 +1,25 @@
 -------------------------------------------------------------------
+Fri Apr 12 10:00:58 UTC 2019 - Michal Filka <mfilka@suse.com>
+
+- bnc#1131588
+  - display a confirmation popup when static route is going to be
+    removed when switching a device to dhcp
+- 4.0.46
+
+-------------------------------------------------------------------
+Wed Mar 20 21:44:27 UTC 2019 - knut.anderssen@suse.com
+
+- bnc#1129012
+  - AY: Use the bus_id of the udev parent device when using virtio
+    netcards and matching the existent rules with the defined in
+    in the profile.
+
+-------------------------------------------------------------------
+Wed Jan  2 17:17:58 CET 2019 - schubi@suse.de
+
+- Showing correct start mode for nfsroot device (bsc#1105692).
+
+-------------------------------------------------------------------
 Mon Nov 26 09:28:29 UTC 2018 - mfilka@suse.com
 
 - bnc#709176
