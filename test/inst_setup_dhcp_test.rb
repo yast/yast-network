@@ -7,6 +7,14 @@ require "network/clients/inst_setup_dhcp"
 describe Yast::SetupDhcp do
   subject { Yast::SetupDhcp.instance }
 
+  let(:lan_config) do
+    double("lan_config").as_null_object
+  end
+
+  before do
+    allow(Yast::Lan).to receive(:yast_config).and_return(lan_config)
+  end
+
   describe "#main" do
     let(:nac) { Yast::NetworkAutoconfiguration.instance }
 

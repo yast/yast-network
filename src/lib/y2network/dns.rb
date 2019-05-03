@@ -21,19 +21,19 @@ module Y2Network
   # DNS configuration (hostname, nameservers, etc.).
   class DNS
     # @return [String] Hostname (local part)
-    attr_reader :hostname
+    attr_accessor :hostname
 
     # @return [Array<IPAddr>] List of nameservers
-    attr_reader :nameservers
+    attr_accessor :nameservers
 
     # @return [Array<String>] List of search domains
-    attr_reader :search_domains
+    attr_accessor :search_domains
 
     # @return [String] resolv.conf update policy
-    attr_reader :resolv_conf_policy
+    attr_accessor :resolv_conf_policy
 
     # @return [Boolean] Whether to take the hostname from DHCP
-    attr_reader :dhcp_hostname
+    attr_accessor :dhcp_hostname
 
     # @todo receive an array instead all these arguments
     #

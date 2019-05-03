@@ -40,6 +40,31 @@ module Yast
     HOSTNAME_FILE = "hostname".freeze
     HOSTNAME_PATH = "/etc/" + HOSTNAME_FILE
 
+    # Defines a proxy method to DNS configuration
+    #
+    # The idea is to keep DNS.hostname, DNS.nameservers, etc. methods
+    # so they can still being used in the UI. This mechanism should
+    # be removed in the future, when the widgets are adapted to the new API.
+    #
+    # @param name [Symbol]       Public method's name
+    # @param proxy_name [Symbol] Method's name in the new API
+    def self.define_config_method(name, proxy_name = nil)
+      proxy_name = name unless proxy_name
+      define_method(name) do
+        yast_dns_config.public_send(proxy_name)
+      end
+
+      define_method("#{name}=") do |value|
+        yast_dns_config.public_send("#{proxy_name}=", value)
+      end
+    end
+
+    define_config_method :hostname
+    define_config_method :nameservers
+    define_config_method :searchlist, :search_domains
+    define_config_method :dhcp_hostname
+    define_config_method :resolv_conf_policy
+
     def main
       Yast.import "UI"
       textdomain "network"
@@ -54,30 +79,13 @@ module Yast
       Yast.import "String"
       Yast.import "FileUtils"
       Yast.import "Stage"
-      Yast.import "Mode"
       Yast.import "Report"
 
       Yast.include self, "network/routines.rb"
       Yast.include self, "network/runtime.rb"
 
-      # Short Hostname
-      @hostname = ""
-
       # Domain Name (not including the host part)
       @domain = ""
-
-      @nameservers = []
-      @searchlist = []
-
-      @dhcp_hostname = false
-      @write_hostname = false
-      @resolv_conf_policy = ""
-
-      # fully qualified
-      @oldhostname = ""
-
-      # Data was modified?
-      @modified = false
 
       # resolver config file location
       @resolv_conf = "/etc/resolv.conf"
@@ -292,13 +300,15 @@ module Yast
       SYSCFG_TO_BOOL[SCR.Read(path(".sysconfig.network.dhcp.WRITE_HOSTNAME_TO_HOSTS"))]
     end
 
-    publish variable: :hostname, type: "string"
+    # Returns the YaST configuration
+    #
+    # @return [Y2Network::Config] LAN configuration
+    def yast_dns_config
+      raise "Yast::Lan module has not been initialized" if Yast::Lan.yast_config.nil?
+      Yast::Lan.yast_config.dns
+    end
+
     publish variable: :domain, type: "string"
-    publish variable: :nameservers, type: "list <string>"
-    publish variable: :searchlist, type: "list <string>"
-    publish variable: :dhcp_hostname, type: "boolean"
-    publish variable: :write_hostname, type: "boolean"
-    publish variable: :resolv_conf_policy, type: "string"
     publish variable: :modified, type: "boolean"
     publish function: :ReadNameserver, type: "boolean (string)"
     publish function: :DefaultWriteHostname, type: "boolean ()"

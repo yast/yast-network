@@ -8,8 +8,17 @@ module Yast
   import "Arch"
   import "DNS"
   import "ProductControl"
+  import "Lan"
 
   describe DNS do
+    let(:lan_config) do
+      double("yast_config").as_null_object
+    end
+
+    before do
+      allow(Lan).to receive(:yast_config).and_return(lan_config)
+    end
+
     describe ".default_dhcp_hostname" do
       before do
         allow(Arch).to receive(:is_laptop).and_return laptop
@@ -77,7 +86,7 @@ module Yast
       end
     end
 
-    describe ".IsHostLocal" do
+    xdescribe ".IsHostLocal" do
       let(:ip) { "10.111.66.75" }
       let(:hostname_short) { "test" }
       let(:hostname_fq) { "test.test.de" }
