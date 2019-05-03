@@ -184,31 +184,6 @@ module Yast
       end
     end
 
-    def ReadHostname
-      # In installation (standard, or AutoYaST one), prefer /etc/install.inf
-      # (because HOSTNAME comes with netcfg.rpm already, #144687)
-      if (Mode.installation || Mode.autoinst) && FileUtils.Exists("/etc/install.inf")
-        fqhostname = read_hostname_from_install_inf
-      end
-
-      # reads setup from /etc/HOSTNAME, returns a default if nothing found
-      fqhostname = Hostname.CurrentFQ if fqhostname.nil? || fqhostname.empty?
-
-      @hostname, @domain = *Hostname.SplitFQ(fqhostname)
-
-      nil
-    end
-
-    def ProposeHostname
-      if @hostname == "linux"
-        Builtins.srandom
-        @hostname = Ops.add("linux-", String.Random(4)) # #157107
-        @modified = true
-      end
-
-      nil
-    end
-
     # Reads DNS settings
     #
     # @note It reads all network settings, including DNS ones.
@@ -224,91 +199,6 @@ module Yast
       writer = Y2Network::ConfigWriter::SysconfigDNS.new
       writer.write(Yast::Lan.yast_config, Yast::Lan.system_config)
       true
-    end
-
-    # Get all the DNS configuration from a map.
-    # When called by dns_auto (preparing autoinstallation data)
-    # the map may be empty.
-    # @param [Hash] settings autoinstallation settings
-    # @return true if success
-    def Import(settings)
-      settings = deep_copy(settings)
-      @dhcp_hostname = settings.fetch("dhcp_hostname") { default_dhcp_hostname }
-      # if not defined, set to 'auto'
-      @resolv_conf_policy = Ops.get_string(
-        settings,
-        "resolv_conf_policy",
-        "auto"
-      )
-
-      # user-defined value has higher priority - FaTE#305281
-      @write_hostname = if Builtins.haskey(settings, "write_hostname")
-        Ops.get_boolean(settings, "write_hostname", false)
-      else
-        # otherwise, use control.xml default
-        DefaultWriteHostname()
-      end
-
-      # user-defined <hostname>
-      if Builtins.haskey(settings, "hostname")
-        @hostname = Ops.get_string(settings, "hostname", "")
-        @domain = Ops.get_string(settings, "domain", "") # empty is not a bug, bnc#677471
-      else
-        # otherwise, check 1) install.inf 2) /etc/HOSTNAME
-        ReadHostname()
-        # if nothing is found, generate a random one
-        ProposeHostname()
-      end
-
-      @nameservers = Builtins.eval(Ops.get_list(settings, "nameservers", []))
-      @searchlist = Builtins.eval(Ops.get_list(settings, "searchlist", []))
-
-      @modified = true
-      # empty settings means that we're probably resetting the config
-      # thus, setup is not initialized anymore
-      @initialized = settings != {}
-
-      Builtins.y2milestone("DNS Import:")
-      Builtins.y2milestone("nameservers=%1", @nameservers)
-      Builtins.y2milestone("searchlist=%1", @searchlist)
-      Builtins.y2milestone("hostname=%1", @hostname)
-      Builtins.y2milestone("domain=%1", @domain)
-      Builtins.y2milestone(
-        "dhcp_hostname=%1, write_hostname=%2",
-        @dhcp_hostname,
-        @write_hostname
-      )
-
-      true
-    end
-
-    # Dump the DNS settings to a map, for autoinstallation use.
-    # @return autoinstallation settings
-    def Export
-      expdns = {}
-
-      # It should be case only for installer (1st stage). When resolver / hostname
-      # was configured via linuxrc, yast needn't to be aware of it. bnc#957377
-      Read() if !@initialized
-
-      if Ops.greater_than(Builtins.size(@hostname), 0)
-        Ops.set(expdns, "hostname", @hostname)
-      end
-      if Ops.greater_than(Builtins.size(@domain), 0)
-        Ops.set(expdns, "domain", @domain)
-      end
-      if Ops.greater_than(Builtins.size(@nameservers), 0)
-        Ops.set(expdns, "nameservers", Builtins.eval(@nameservers))
-      end
-      if Ops.greater_than(Builtins.size(@searchlist), 0)
-        Ops.set(expdns, "searchlist", Builtins.eval(@searchlist))
-      end
-      Ops.set(expdns, "dhcp_hostname", @dhcp_hostname)
-      # TODO: test if it really works with empty string
-      Ops.set(expdns, "resolv_conf_policy", @resolv_conf_policy)
-      # bnc#576495, FaTE#305281 - clone write_hostname, too
-      Ops.set(expdns, "write_hostname", @write_hostname)
-      deep_copy(expdns)
     end
 
     # Check if hostname or IP address is local computer
@@ -383,27 +273,6 @@ module Yast
       }
     end
 
-    def read_hostname_from_install_inf
-      install_inf_hostname = SCR.Read(path(".etc.install_inf.Hostname")) || ""
-      log.info("Got #{install_inf_hostname} from install.inf")
-
-      return "" if install_inf_hostname.empty?
-
-      # if the name is actually IP, try to resolve it (bnc#556613, bnc#435649)
-      if IP.Check(install_inf_hostname)
-        fqhostname = ResolveIP(install_inf_hostname)
-        log.info("Got #{fqhostname} after resolving IP from install.inf")
-      else
-        fqhostname = install_inf_hostname
-      end
-
-      # We have non-empty hostname by now => we must set DNS modified flag
-      # in order to get the setting actually written (bnc#588938)
-      @modified = true if !fqhostname.empty?
-
-      fqhostname
-    end
-
     # A constant for translating sysconfig's yes/no values into boolean
     SYSCFG_TO_BOOL = { "yes" => true, "no" => false }.freeze
 
@@ -437,8 +306,6 @@ module Yast
     publish function: :ProposeHostname, type: "void ()"
     publish function: :Read, type: "boolean ()"
     publish function: :Write, type: "boolean ()"
-    publish function: :Import, type: "boolean (map)"
-    publish function: :Export, type: "map ()"
     publish function: :Summary, type: "string ()"
     publish function: :IsHostLocal, type: "boolean (string)"
   end

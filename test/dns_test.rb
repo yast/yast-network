@@ -77,36 +77,6 @@ module Yast
       end
     end
 
-    describe ".Import" do
-      before do
-        allow(Yast::Stage).to receive(:initial).and_return(false)
-      end
-
-      context "with present dhcp_hostname and write_hostname" do
-        let(:settings) { { "hostname" => "host", "dhcp_hostname" => true, "write_hostname" => true } }
-
-        it "honors the provided values" do
-          expect(DNS).to_not receive(:DefaultWriteHostname)
-          expect(DNS).to_not receive(:default_dhcp_hostname)
-          DNS.Import(settings)
-          expect(DNS.write_hostname).to eql(true)
-          expect(DNS.dhcp_hostname).to eql(true)
-        end
-      end
-
-      context "with missing dhcp_hostname and write_hostname" do
-        let(:settings) { { "hostname" => "host" } }
-
-        it "relies on proper methods to get default values" do
-          expect(DNS).to receive(:DefaultWriteHostname).and_return false
-          expect(DNS).to receive(:default_dhcp_hostname).and_return false
-          DNS.Import(settings)
-          expect(DNS.write_hostname).to eql(false)
-          expect(DNS.dhcp_hostname).to eql(false)
-        end
-      end
-    end
-
     describe ".IsHostLocal" do
       let(:ip) { "10.111.66.75" }
       let(:hostname_short) { "test" }
