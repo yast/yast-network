@@ -1367,7 +1367,15 @@ module Yast
           #		 "No IP address" case, then default gw must stay (#460262)
           # and also: don't delete default GW for usb/pcmcia devices (#307102)
           if LanItems.isCurrentDHCP && !LanItems.isCurrentHotplug
-            Routing.RemoveDefaultGw
+            remove_gw = Routing.default_gw? && Popup.YesNo(
+              _(
+                "A static default route is defined.\n" \
+                "It is suggested to remove the static default route definition \n" \
+                "if one can be obtained also via DHCP.\n" \
+                "Do you want to remove the static default route?"
+              )
+            )
+            Routing.RemoveDefaultGw if remove_gw
           end
         end
 
