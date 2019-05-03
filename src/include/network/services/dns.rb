@@ -252,9 +252,9 @@ module Yast
         searchstring = Ops.get_string(settings, "DOMAIN", "")
       end
       Ops.set(settings, "SEARCHLIST_S", searchstring)
-      Ops.set(settings, "NAMESERVER_1", Ops.get(DNS.nameservers, 0, ""))
-      Ops.set(settings, "NAMESERVER_2", Ops.get(DNS.nameservers, 1, ""))
-      Ops.set(settings, "NAMESERVER_3", Ops.get(DNS.nameservers, 2, ""))
+      Ops.set(settings, "NAMESERVER_1", DNS.nameservers[0].to_s)
+      Ops.set(settings, "NAMESERVER_2", DNS.nameservers[1].to_s)
+      Ops.set(settings, "NAMESERVER_3", DNS.nameservers[2].to_s)
 
       @settings_orig = deep_copy(settings)
 
@@ -275,13 +275,17 @@ module Yast
       )
 
       DNS.hostname = Ops.get_string(settings, "HOSTNAME", "")
-      DNS.nameservers = NonEmpty(nameservers)
+      valid_nameservers = NonEmpty(nameservers).each_with_object([]) do |ip_str, all|
+        begin
+          ip = IPAddr.new(ip_str)
+          all << ip
+        rescue IPAddr::InvalidAddressError
+          log.info "Not valid IP address: #{ip}"
+        end
+      end
+      DNS.nameservers = valid_nameservers
       DNS.searchlist = NonEmpty(searchlist)
       DNS.resolv_conf_policy = settings["PLAIN_POLICY"]
-
-      # update modified flag
-      DNS.modified = DNS.modified || settings != @settings_orig
-      Builtins.y2milestone("Modified DNS: %1", DNS.modified)
 
       nil
     end
