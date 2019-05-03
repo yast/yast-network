@@ -88,6 +88,8 @@ describe "LanItemsClass#BuildLanOverview" do
       # locale search path
       stub_const("Yast::I18n::LOCALE_DIR", File.expand_path("../locale", __FILE__))
 
+      textdomain("network")
+
       # other checks depends on this
       # - output of BuildLanOverview changes according number of devices
       # even for "failing" (unknown devices) path

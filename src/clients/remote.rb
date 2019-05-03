@@ -168,7 +168,7 @@ module Yast
       )
       allow_ra == "yes" ? remote.enable! : remote.disable!
 
-      remote.Write
+      remote.write
     end
   end
 end
