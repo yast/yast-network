@@ -184,12 +184,6 @@ module Yast
           "init"              => fun_ref(
             method(:initIfcfg),
             "void (string)"
-          ),
-          #	"handle": HandleIfcfg,
-          "validate_type"     => :function,
-          "validate_function" => fun_ref(
-            method(:ValidateIfcfgType),
-            "boolean (string, map)"
           )
         },
         "IFCFGID"                      => {
@@ -435,46 +429,6 @@ module Yast
       event = deep_copy(event)
       if UI.QueryWidget(:bootproto, :CurrentButton) == :static
         return ValidateIP(key, event)
-      end
-      true
-    end
-
-    # Validator for ifcfg names
-    # @param key [String] the widget being validated
-    # @param _event [Hash] the event being handled
-    # @return whether valid
-    def ValidateIfcfgType(key, _event)
-      if LanItems.operation == :add
-        ifcfgtype = Convert.to_string(UI.QueryWidget(Id(key), :Value))
-
-        # validate device type, misdetection
-        if ifcfgtype != LanItems.type
-          UI.SetFocus(Id(key))
-          if !Popup.ContinueCancel(
-            _(
-              "You have changed the interface type from the one\n" \
-                "that has been detected. This only makes sense\n" \
-                "if you know that the detection is wrong."
-            )
-          )
-            return false
-          end
-        end
-
-        ifcfgid = Convert.to_string(UI.QueryWidget(Id("IFCFGID"), :Value))
-        ifcfgname = Builtins.sformat("%1%2", ifcfgtype, ifcfgid)
-
-        # Check should be improved to find differently named but
-        # equivalent configs (eg. by-mac and by-bus, depends on the
-        # current hardware)
-        if NetworkInterfaces.Check(ifcfgname)
-          UI.SetFocus(Id(key))
-          # Popup text
-          Popup.Error(
-            Builtins.sformat(_("Configuration %1 already present."), ifcfgname)
-          )
-          return false
-        end
       end
       true
     end
