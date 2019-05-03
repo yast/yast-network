@@ -19,6 +19,8 @@
 
 require "yast"
 require "y2network/dns"
+require "ipaddr"
+Yast.import "IP"
 
 module Y2Network
   module ConfigReader
@@ -36,12 +38,27 @@ module Y2Network
       #
       # @return [DNS] the imported {DNS} config
       def config
-        options = section.class.attributes.each_with_object({}) do |attr_entry, result|
-          value = section.public_send(attr_entry[:name])
-          result[attr_entry[:name]] = value unless value.nil?
-        end
+        Y2Network::DNS.new(
+          dhcp_hostname:      section.dhcp_hostname,
+          hostname:           section.hostname,
+          nameservers:        valid_ips(section.nameservers),
+          resolv_conf_policy: section.resolv_conf_policy,
+          searchlist:         section.searchlist
+        )
+      end
 
-        Y2Network::DNS.new(options)
+    private
+
+      # Given a list of IPs in string form, builds a list of valid IPAddr objects
+      #
+      # Invalid IPs are filtered out.
+      #
+      # @param nameservers [Array<String>]
+      # @return [Array<IPAddr>]
+      def valid_ips(ips)
+        ips.each_with_object([]) do |ip_str, all|
+          all << IPAddr.new(ip_str) if Yast::IP.Check(ip_str)
+        end
       end
     end
   end
