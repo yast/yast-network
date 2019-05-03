@@ -192,6 +192,17 @@ module Yast
       end
     end
 
+    # Determines whether the hostname should be written to /etc/hosts
+    #
+    # This method stays just for compatibility reasons and it always returns `false`.
+    # It should be removed when `WRITE_HOSTNAME_TO_HOSTS` related stuff is dropped.
+    #
+    # @return [false]
+    # @see https://features.opensuse.org/308824
+    def write_hostname
+      false
+    end
+
     # Reads DNS settings
     #
     # @note It reads all network settings, including DNS ones.
