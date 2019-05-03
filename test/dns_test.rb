@@ -12,7 +12,10 @@ module Yast
 
   describe DNS do
     let(:lan_config) do
-      double("yast_config", dhcp_hostname: true).as_null_object
+      Y2Network::Config.new(dns: dns_config, source: :sysconfig)
+    end
+    let(:dns_config) do
+      Y2Network::DNS.new(dhcp_hostname: true)
     end
 
     before do
@@ -179,6 +182,13 @@ module Yast
         it "returns false" do
           expect(DNS.modified).to eq(false)
         end
+      end
+    end
+
+    describe "#propose_hostname" do
+      it "proposes a hostname" do
+        expect(dns_config).to receive(:ensure_hostname!)
+        DNS.propose_hostname
       end
     end
   end

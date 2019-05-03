@@ -27,7 +27,7 @@ module Y2Network
     # @return [Boolean] whether IPv6 forwarding is enabled
     attr_accessor :forward_ipv6
 
-    def initialize(tables:, forward_ipv4: false, forward_ipv6: false)
+    def initialize(tables: [], forward_ipv4: false, forward_ipv6: false)
       @tables = tables
       @forward_ipv4 = forward_ipv4
       @forward_ipv6 = forward_ipv6

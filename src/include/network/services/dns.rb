@@ -276,12 +276,7 @@ module Yast
 
       DNS.hostname = Ops.get_string(settings, "HOSTNAME", "")
       valid_nameservers = NonEmpty(nameservers).each_with_object([]) do |ip_str, all|
-        begin
-          ip = IPAddr.new(ip_str)
-          all << ip
-        rescue IPAddr::InvalidAddressError
-          log.info "Not valid IP address: #{ip}"
-        end
+        all << IPAddr.new(ip_str) if IP.Check(ip_str)
       end
       DNS.nameservers = valid_nameservers
       DNS.searchlist = NonEmpty(searchlist)

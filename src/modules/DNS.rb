@@ -220,6 +220,13 @@ module Yast
       true
     end
 
+    # Proposes hostname if none was given
+    #
+    # @see Y2Network::DNS#ensure_hostname!
+    def propose_hostname
+      yast_dns_config.ensure_hostname!
+    end
+
     # Check if hostname or IP address is local computer
     # Used to determine if LDAP server is local (and it should be checked if
     #  required schemes are included

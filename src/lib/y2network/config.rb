@@ -19,6 +19,7 @@
 require "y2network/interface"
 require "y2network/config_writer"
 require "y2network/config_reader"
+require "y2network/routing"
 require "y2network/dns"
 
 module Y2Network
