@@ -157,5 +157,29 @@ module Yast
         DNS.Write
       end
     end
+
+    describe ".modified" do
+      let(:yast_config) { double("Y2Network::Config", dns: double("dns")) }
+      let(:system_config) { double("Y2Network::Config", dns: double("dns")) }
+
+      before do
+        allow(Yast::Lan).to receive(:yast_config).and_return(yast_config)
+        allow(Yast::Lan).to receive(:system_config).and_return(system_config)
+      end
+
+      context "when DNS configuration has changed" do
+        it "returns true" do
+          expect(DNS.modified).to eq(true)
+        end
+      end
+
+      context "when DNS configuration has not changed" do
+        let(:system_config) { double("Y2Network::Config", dns: yast_config.dns) }
+
+        it "returns false" do
+          expect(DNS.modified).to eq(false)
+        end
+      end
+    end
   end
 end

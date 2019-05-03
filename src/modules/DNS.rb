@@ -268,6 +268,13 @@ module Yast
       false
     end
 
+    # Determines whether the DNS configuration has been modified
+    #
+    # @return [Boolean]
+    def modified
+      system_dns_config.nil? || yast_dns_config != system_dns_config
+    end
+
   private
 
     # Return current IP and hostname values
@@ -308,8 +315,12 @@ module Yast
       Yast::Lan.yast_config.dns
     end
 
+    def system_dns_config
+      raise "Yast::Lan module has not been initialized" if Yast::Lan.system_config.nil?
+      Yast::Lan.system_config.dns
+    end
+
     publish variable: :domain, type: "string"
-    publish variable: :modified, type: "boolean"
     publish function: :ReadNameserver, type: "boolean (string)"
     publish function: :DefaultWriteHostname, type: "boolean ()"
     publish function: :ReadHostname, type: "void ()"
