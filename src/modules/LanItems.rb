@@ -1437,7 +1437,7 @@ module Yast
           bullets += ip_overview(iface.config) if iface.config["STARTMODE"] != "managed"
 
           if iface.type == "wlan" &&
-            iface.config["WIRELESS_AUTH_MODE"] == "open" && iface.config.fetch("WIRELESS_KEY_0", {}).empty
+            iface.config["WIRELESS_AUTH_MODE"] == "open" && iface.config.fetch("WIRELESS_KEY_0", {}).empty?
 
             # avoid colons
             ifcfg_name = iface.name.tr(":", "/")

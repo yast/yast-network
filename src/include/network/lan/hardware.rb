@@ -181,7 +181,10 @@ module Yast
         LanItems.GetItemModules(Ops.get_string(@hardware, "modul", ""))
       )
 
-      Ops.set(@hardware, "type", LanItems.type)
+      # this makes sense only when Edit button of Overview dialog was pressed on
+      # unconfigured but present device (a hardware device without assigned configuration)
+      # in such case @builder should carry type already (was read from hwinfo)
+      Ops.set(@hardware, "type", @builder.type || "")
       if Ops.get_string(@hardware, "type", "") == ""
         Builtins.y2error("Shouldn't happen -- type is empty. Assuming eth.")
         Ops.set(@hardware, "type", "eth")
@@ -717,16 +720,16 @@ module Yast
 
     # S/390 devices configuration dialog
     # @return dialog result
-    def S390Dialog
+    def S390Dialog(builder: nil)
       # S/390 dialog caption
       caption = _("S/390 Network Card Configuration")
 
-      drvtype = DriverType(LanItems.type)
+      drvtype = DriverType(builder.type)
 
       helptext = ""
       contents = Empty()
 
-      if Builtins.contains(["qeth", "hsi"], LanItems.type)
+      if Builtins.contains(["qeth", "hsi"], builder.type)
         # CHANIDS
         tmp_list = Builtins.splitstring(LanItems.qeth_chanids, " ")
         chanids_map = {
@@ -996,7 +999,7 @@ module Yast
         )
       end
 
-      id = case LanItems.type
+      id = case builder.type
       when "hsi"  then :qeth_options
       when "qeth" then :qeth_portname
       when "iucv" then :iucv_user
@@ -1021,7 +1024,7 @@ module Yast
         when :back
           break
         when :next
-          if LanItems.type == "iucv"
+          if builder.type == "iucv"
             LanItems.device = Ops.add(
               "id-",
               Convert.to_string(UI.QueryWidget(Id(:iucv_user), :Value))
@@ -1031,12 +1034,12 @@ module Yast
             )
           end
 
-          if LanItems.type == "ctc"
+          if builder.type == "ctc"
             LanItems.chan_mode = Convert.to_string(
               UI.QueryWidget(Id(:chan_mode), :Value)
             )
           end
-          if LanItems.type == "lcs"
+          if builder.type == "lcs"
             LanItems.lcs_timeout = Convert.to_string(
               UI.QueryWidget(Id(:lcs_timeout), :Value)
             )
@@ -1044,7 +1047,7 @@ module Yast
               UI.QueryWidget(Id(:chan_mode), :Value)
             )
           end
-          if LanItems.type == "qeth" || LanItems.type == "hsi"
+          if builder.type == "qeth" || builder.type == "hsi"
             LanItems.qeth_options = Convert.to_string(
               UI.QueryWidget(Id(:qeth_options), :Value)
             )
