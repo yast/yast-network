@@ -115,7 +115,7 @@ module Y2Network
     def ==(other)
       source == other.source &&
         ((interfaces - other.interfaces) | (other.interfaces - interfaces)).empty? &&
-        routing == other.routing
+        routing == other.routing && dns == other.dns
     end
 
     alias_method :eql?, :==
