@@ -1129,7 +1129,12 @@ module Yast
     end
 
     def address_tab
-      type = LanItems.GetCurrentType
+      # in such case ifcfg is not existing and /sys might not contain
+      # any device info (especially for virtual devices like vlan)
+      # @type variable is already initialized by @see HardwareDialog
+      # resp its storage handler @see storeHW
+      type = LanItems.type
+
       drvtype = DriverType(type)
       is_ptp = drvtype == "ctc" || drvtype == "iucv"
       # TODO: dynamic for dummy. or add dummy from outside?
@@ -1390,7 +1395,15 @@ module Yast
           #		 "No IP address" case, then default gw must stay (#460262)
           # and also: don't delete default GW for usb/pcmcia devices (#307102)
           if LanItems.isCurrentDHCP && !LanItems.isCurrentHotplug
-            Routing.RemoveDefaultGw
+            remove_gw = Routing.default_gw? && Popup.YesNo(
+              _(
+                "A static default route is defined.\n" \
+                "It is suggested to remove the static default route definition \n" \
+                "if one can be obtained also via DHCP.\n" \
+                "Do you want to remove the static default route?"
+              )
+            )
+            Routing.RemoveDefaultGw if remove_gw
           end
         end
       end
