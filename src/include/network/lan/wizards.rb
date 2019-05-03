@@ -171,7 +171,7 @@ module Yast
         "hardware" => -> { HardwareDialog(builder: builder) },
         # TODO: first param in AddressSequence seems to be never used
         "address"  => -> { AddressSequence("", builder: builder) },
-        "s390"     => -> { S390Dialog() }
+        "s390"     => -> { S390Dialog(builder: builder) }
       }
 
       Builtins.y2milestone("ws_start %1", ws_start)
@@ -186,7 +186,7 @@ module Yast
       Sequencer.Run(aliases, sequence)
     end
 
-    def AddressSequence(which, builder: builder)
+    def AddressSequence(which, builder: nil)
       # TODO: add builder wherever needed
       aliases = {
         "address"     => -> { AddressDialog(builder: builder) },
