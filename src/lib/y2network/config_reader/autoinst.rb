@@ -21,6 +21,7 @@ require "yast"
 require "y2network/interface"
 require "y2network/config"
 require "y2network/config_reader/autoinst_routing"
+require "y2network/config_reader/autoinst_dns"
 require "y2network/autoinst_profile/networking_section"
 
 Yast.import "Lan"
@@ -41,9 +42,11 @@ module Y2Network
 
       # @return [Y2Network::Config] Network configuration
       def config
-        interfaces = find_interfaces
-        routing = section.routing ? AutoinstRouting.new(section.routing).config : nil
-        Y2Network::Config.new(interfaces: interfaces, routing: routing, source: :sysconfig)
+        attrs = { source: :sysconfig }
+        attrs[:interfaces] = find_interfaces
+        attrs[:routing] = AutoinstRouting.new(section.routing).config if section.routing
+        attrs[:dns] = AutoinstDNS.new(section.dns).config if section.dns
+        Y2Network::Config.new(attrs)
       end
 
     private

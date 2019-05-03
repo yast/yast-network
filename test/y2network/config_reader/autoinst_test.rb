@@ -63,6 +63,7 @@ describe Y2Network::ConfigReader::Autoinst do
     it "builds a new Y2Network::Config from a Y2Networking::Section" do
       expect(subject.config).to be_a Y2Network::Config
       expect(subject.config.routing).to be_a Y2Network::Routing
+      expect(subject.config.dns).to be_a Y2Network::DNS
     end
   end
 end
