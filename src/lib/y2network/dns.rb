@@ -51,17 +51,22 @@ module Y2Network
       @dhcp_hostname = opts[:dhcp_hostname]
     end
 
+    # @return [Array<String>] Valid chars to be used in the random part of a hostname
+    HOSTNAME_CHARS = (("a".."z").to_a + ("0".."9").to_a).freeze
+    private_constant :HOSTNAME_CHARS
+
     # Sets a hostname is none is present
     def ensure_hostname!
       return unless @hostname.nil? || @hostname.empty?
-      suffix = ("a".."z").to_a.sample(4).join
+      suffix = HOSTNAME_CHARS.sample(4).join
       @hostname = "linux-#{suffix}"
-      nil
     end
 
+    # @return [Array<Symbol>] Methods to check when comparing two instances
     ATTRS = [
       :hostname, :nameservers, :search_domains, :resolv_conf_policy, :dhcp_hostname
     ].freeze
+    private_constant :ATTRS
 
     # Determines whether two set of DNS settings are equal
     #
