@@ -12,7 +12,7 @@ module Yast
 
   describe DNS do
     let(:lan_config) do
-      double("yast_config").as_null_object
+      double("yast_config", dhcp_hostname: true).as_null_object
     end
 
     before do
@@ -86,7 +86,7 @@ module Yast
       end
     end
 
-    xdescribe ".IsHostLocal" do
+    describe ".IsHostLocal" do
       let(:ip) { "10.111.66.75" }
       let(:hostname_short) { "test" }
       let(:hostname_fq) { "test.test.de" }

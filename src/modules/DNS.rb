@@ -235,7 +235,7 @@ module Yast
       if Ops.greater_than(
         Builtins.size(NetworkInterfaces.Locate("BOOTPROTO", "dhcp")),
         0
-      ) || @dhcp_hostname
+      ) || dhcp_hostname
         dhcp_data = dhcp_data()
         Builtins.y2milestone("Got DHCP-configured data: %1", dhcp_data)
       end
