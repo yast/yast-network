@@ -30,7 +30,7 @@ describe Y2Network::ConfigWriter::SysconfigDNS do
       Y2Network::DNS.new(
         nameservers:        [IPAddr.new("10.0.0.1"), IPAddr.new("10.0.0.2")],
         hostname:           hostname,
-        search_domains:     ["example.net", "example.org"],
+        searchlist:         ["example.net", "example.org"],
         resolv_conf_policy: "auto",
         dhcp_hostname:      dhcp_hostname
       )
@@ -41,7 +41,7 @@ describe Y2Network::ConfigWriter::SysconfigDNS do
       Y2Network::DNS.new(
         nameservers:        [IPAddr.new("10.0.0.1")],
         hostname:           "linux-abcd.example.org",
-        search_domains:     ["example.org"],
+        searchlist:         ["example.org"],
         resolv_conf_policy: "auto",
         dhcp_hostname:      old_dhcp_hostname
       )

@@ -87,7 +87,7 @@ module Y2Network
         )
         Yast::SCR.Write(
           Yast::Path.new(".sysconfig.network.config.NETCONFIG_DNS_STATIC_SEARCHLIST"),
-          dns.search_domains.join(" ")
+          dns.searchlist.join(" ")
         )
         Yast::SCR.Write(
           Yast::Path.new(".sysconfig.network.config.NETCONFIG_DNS_STATIC_SERVERS"),

@@ -27,7 +27,7 @@ module Y2Network
     attr_accessor :nameservers
 
     # @return [Array<String>] List of search domains
-    attr_accessor :search_domains
+    attr_accessor :searchlist
 
     # @return [String] resolv.conf update policy
     attr_accessor :resolv_conf_policy
@@ -40,13 +40,13 @@ module Y2Network
     # @param opts [Hash] DNS configuration options
     # @option opts [String] :hostname
     # @option opts [Array<String>] :nameservers
-    # @option opts [Array<String>] :search_domains
+    # @option opts [Array<String>] :searchlist
     # @option opts [ResolvConfPolicy] :resolv_conf_policy
     # @option opts [Boolean] :dhcp_hostname
     def initialize(opts = {})
       @hostname = opts[:hostname]
       @nameservers = opts[:nameservers] || []
-      @search_domains = opts[:search_domains] || []
+      @searchlist = opts[:searchlist] || []
       @resolv_conf_policy = opts[:resolv_conf_policy]
       @dhcp_hostname = opts[:dhcp_hostname]
     end
@@ -64,7 +64,7 @@ module Y2Network
 
     # @return [Array<Symbol>] Methods to check when comparing two instances
     ATTRS = [
-      :hostname, :nameservers, :search_domains, :resolv_conf_policy, :dhcp_hostname
+      :hostname, :nameservers, :searchlist, :resolv_conf_policy, :dhcp_hostname
     ].freeze
     private_constant :ATTRS
 

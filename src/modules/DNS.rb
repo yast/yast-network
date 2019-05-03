@@ -47,21 +47,19 @@ module Yast
     # be removed in the future, when the widgets are adapted to the new API.
     #
     # @param name [Symbol]       Public method's name
-    # @param proxy_name [Symbol] Method's name in the new API
-    def self.define_config_method(name, proxy_name = nil)
-      proxy_name = name unless proxy_name
+    def self.define_config_method(name)
       define_method(name) do
-        yast_dns_config.public_send(proxy_name)
+        yast_dns_config.public_send(name)
       end
 
       define_method("#{name}=") do |value|
-        yast_dns_config.public_send("#{proxy_name}=", value)
+        yast_dns_config.public_send("#{name}=", value)
       end
     end
 
     define_config_method :hostname
     define_config_method :nameservers
-    define_config_method :searchlist, :search_domains
+    define_config_method :searchlist
     define_config_method :dhcp_hostname
     define_config_method :resolv_conf_policy
 

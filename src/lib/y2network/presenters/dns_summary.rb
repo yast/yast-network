@@ -43,7 +43,7 @@ module Y2Network
       def text
         summary = add_hostname("")
         summary = add_nameservers(summary)
-        summary = add_search_domains(summary)
+        summary = add_searchlist(summary)
         "<ul>#{summary}\n</ul>"
       end
 
@@ -69,9 +69,9 @@ module Y2Network
         Yast::Summary.AddListItem(summary, item)
       end
 
-      def add_search_domains(summary)
-        return summary if dns.search_domains.empty?
-        item = format(_("Search List: %s"), dns.search_domains.join(", "))
+      def add_searchlist(summary)
+        return summary if dns.searchlist.empty?
+        item = format(_("Search List: %s"), dns.searchlist.join(", "))
         Yast::Summary.AddListItem(summary, item)
       end
 

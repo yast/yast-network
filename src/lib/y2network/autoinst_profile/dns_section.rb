@@ -90,7 +90,7 @@ module Y2Network
       def init_from_hashes(hash)
         super
         @nameservers = hash["nameservers"] || []
-        @searchlist = hash["search_domains"] || []
+        @searchlist = hash["searchlist"] || []
       end
 
       # Method used by {.new_from_network} to populate the attributes when cloning DNS options
@@ -102,7 +102,7 @@ module Y2Network
         @hostname = dns.hostname
         @nameservers = dns.nameservers.map(&:to_s)
         @resolv_conf_policy = dns.resolv_conf_policy
-        @searchlist = dns.search_domains
+        @searchlist = dns.searchlist
         true
       end
     end

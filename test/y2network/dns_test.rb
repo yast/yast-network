@@ -71,7 +71,7 @@ describe Y2Network::DNS do
     end
 
     context "when the list of domains to search are different" do
-      let(:other) { described_class.new(attrs.merge(search_domains: ["example.net"])) }
+      let(:other) { described_class.new(attrs.merge(searchlist: ["example.net"])) }
 
       it "returns false" do
         expect(dns).to_not eq(other)
