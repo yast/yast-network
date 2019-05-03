@@ -424,11 +424,6 @@ module Yast
         @hardware["no_hotplug_dummy"] == true # convert tri state boolean to two state
       )
       ChangeWidgetIfExists(
-        Id(:hwcfg),
-        :Enabled,
-        @hardware["no_hotplug"] == true # convert tri state boolean to two state
-      )
-      ChangeWidgetIfExists(
         Id(:usb),
         :Enabled,
         (hotplug_type == "usb" || hotplug_type == "") &&
@@ -645,11 +640,6 @@ module Yast
           Ops.get_boolean(@hardware, "no_hotplug_dummy", false)
         )
         ChangeWidgetIfExists(
-          Id(:hwcfg),
-          :Enabled,
-          Ops.get_boolean(@hardware, "no_hotplug", false)
-        )
-        ChangeWidgetIfExists(
           Id(:usb),
           :Enabled,
           (Ops.get_string(@hardware, "hotplug", "") == "usb" ||
@@ -719,22 +709,6 @@ module Yast
         elsif Ops.get_string(@hardware, "type", "") == "dummy" # #44582
           Ops.set(@hardware, "modul", "dummy")
 
-          if UI.WidgetExists(Id(:hwcfg)) # bnc#767946
-            Ops.set(
-              @hardware,
-              "hwcfg",
-              Convert.to_string(UI.QueryWidget(Id(:hwcfg), :Value))
-            )
-            Ops.set(
-              @hardware,
-              "options",
-              Builtins.sformat(
-                "-o dummy-%1",
-                Ops.get_string(@hardware, "hwcfg", "")
-              )
-            )
-          end
-
           UI.ChangeWidget(
             Id(:modul),
             :Value,
@@ -749,14 +723,12 @@ module Yast
           ["bond", "vlan", "br", "tun", "tap"],
           Ops.get_string(@hardware, "type", "")
         )
-          UI.ChangeWidget(Id(:hwcfg), :Enabled, false)
           UI.ChangeWidget(Id(:modul), :Enabled, false)
           UI.ChangeWidget(Id(:options), :Enabled, false)
           UI.ChangeWidget(Id(:pcmcia), :Enabled, false)
           UI.ChangeWidget(Id(:usb), :Enabled, false)
           UI.ChangeWidget(Id(:list), :Enabled, false)
 
-          UI.ChangeWidget(Id(:hwcfg), :Value, "")
           UI.ChangeWidget(Id(:modul), :Value, "")
           UI.ChangeWidget(Id(:options), :Value, "")
         end
