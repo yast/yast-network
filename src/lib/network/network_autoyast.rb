@@ -335,8 +335,13 @@ module Yast
 
         # find item which matches to the given rule definition
         item_id, matching_item = LanItems.Items.find do |_, i|
-          i["hwinfo"] &&
-            (i["hwinfo"]["busid"].downcase == key || i["hwinfo"]["mac"].downcase == key)
+          next unless i["hwinfo"]
+          busid = i["hwinfo"]["busid"]
+          # Match also parent busid if exist (bsc#1129012)
+          parent_busid = i["hwinfo"]["parent_busid"] || busid
+          mac = i["hwinfo"]["mac"]
+
+          [busid, parent_busid, mac].any? { |v| v.casecmp(key).zero? }
         end
         next if !matching_item
 
