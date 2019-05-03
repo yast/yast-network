@@ -30,7 +30,7 @@ module Y2Network
       # @param dns [Y2Network::DNS] DNS configuration
       # @param old_dns [Y2Network::DNS] Old DNS configuration
       def write(dns, old_dns)
-        return if dns == old_dns
+        return if old_dns && dns == old_dns
         update_sysconfig_dhcp(dns, old_dns)
         update_hostname(dns)
         update_mta_config

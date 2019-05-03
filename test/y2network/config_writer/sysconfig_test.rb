@@ -36,7 +36,7 @@ describe Y2Network::ConfigWriter::Sysconfig do
         source:     :sysconfig
       )
     end
-    let(:old_config) { instance_double(Y2Network::Config) }
+    let(:old_config) { instance_double(Y2Network::Config, dns: double("dns")) }
     let(:eth0) { Y2Network::Interface.new("eth0") }
     let(:route) do
       Y2Network::Route.new(
@@ -149,7 +149,7 @@ describe Y2Network::ConfigWriter::Sysconfig do
     end
 
     it "writes DNS configuration" do
-      expect(dns_writer).to receive(:write).with(config, old_config)
+      expect(dns_writer).to receive(:write).with(config.dns, old_config.dns)
       writer.write(config, old_config)
     end
   end
