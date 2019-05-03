@@ -44,6 +44,7 @@ module Y2Network
       @s390_config = init_device_s390_config({})
     end
 
+    # Stores one option value tuple
     def set(option: nil, value: nil)
       # TODO: guards on option / value
       # TODO: we can validate if the option is reasonable for given type
@@ -51,11 +52,14 @@ module Y2Network
       @config[option] = value
     end
 
+    # Returns currently stored option value
     def option(option)
       @config.fetch(option, "")
     end
 
     # Provides stored configuration in sysconfig format
+    #
+    # @return [Hash<String, String>] where key is sysconfig option and value is the option's value
     def device_sysconfig
       @config
     end
