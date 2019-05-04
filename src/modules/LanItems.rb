@@ -1186,8 +1186,8 @@ module Yast
     # 3) variables which keeps (some of) attributes of the current item (= item
     # which is being pointed by the iterator)
     def reset_cache
-# FIXME: what is suitable replacement with new config storage?
-#      LanItems.Items = {}
+      # FIXME: what is suitable replacement with new config storage?
+      # LanItems.Items = {}
 
       @modified = false
     end
@@ -1239,10 +1239,10 @@ module Yast
     # Checks whether device need (known) firmware to be loaded
     def needFirmwareCurrentItem(iface)
       need = if iface.hardware.driver
-        @request_firmware.has_key?(iface.hardware.driver) ? iface.hardware.driver : nil
+        @request_firmware.key?(iface.hardware.driver) ? iface.hardware.driver : nil
       else
         iface.hardware.drivers.find do |driver|
-          driver if @request_firmware.has_key?(driver)
+          driver if @request_firmware.key?(driver)
         end
       end
       log.info("Device #{iface.hardware.name} need driver: #{need}")
@@ -1437,7 +1437,8 @@ module Yast
           bullets += ip_overview(iface.config) if iface.config["STARTMODE"] != "managed"
 
           if iface.type == "wlan" &&
-            iface.config["WIRELESS_AUTH_MODE"] == "open" && iface.config.fetch("WIRELESS_KEY_0", {}).empty?
+             iface.config["WIRELESS_AUTH_MODE"] == "open" &&
+             iface.config.fetch("WIRELESS_KEY_0", {}).empty?
 
             # avoid colons
             ifcfg_name = iface.name.tr(":", "/")
@@ -1466,9 +1467,9 @@ module Yast
           end
 
           # FIXME: renaming currently not supported in new object hierarchy
-#          if renamed?(key)
-#            note = format("%s -> %s", GetDeviceName(key), renamed_to(key))
-#          end
+          # if renamed?(key)
+          #   note = format("%s -> %s", GetDeviceName(key), renamed_to(key))
+          # end
 
           overview << Summary.Device(descr, status)
         else
@@ -1503,7 +1504,6 @@ module Yast
           rich << _("The device is not configured. Press <b>Edit</b>\nto configure.\n")
           rich << "</p>"
 
-
           fw = GetFirmwareForCurrentItem(iface)
           rich << format("%s : %s", _("Needed firmware"), !fw.empty? ? fw : _("unknown")) if fw
         end
@@ -1514,9 +1514,9 @@ module Yast
       end
 
       {
-        overview: overview,
+        overview:  overview,
         overviews: overviews,
-        links: links
+        links:     links
       }
     end
 
@@ -1943,17 +1943,17 @@ module Yast
       newdev = builder.device_sysconfig
 
       # #104494 - always write IPADDR+NETMASK, even empty
-#      newdev["IPADDR"] = @ipaddr
-      if !@prefix.empty?
-#        newdev["PREFIXLEN"] = @prefix
-      else
-#        newdev["NETMASK"] = @netmask
-      end
+      # newdev["IPADDR"] = @ipaddr
+      # if !@prefix.empty?
+        # newdev["PREFIXLEN"] = @prefix
+      # else
+        # newdev["NETMASK"] = @netmask
+      # end
       # #50955 omit computable fields
       newdev["BROADCAST"] = ""
       newdev["NETWORK"] = ""
 
-#      newdev["REMOTE_IPADDR"] = @remoteip
+      # newdev["REMOTE_IPADDR"] = @remoteip
 
       # set LLADDR to sysconfig only for device on layer2 and only these which needs it
       # do not write incorrect LLADDR.
@@ -2269,7 +2269,7 @@ module Yast
 
     def enableCurrentEditButton
       # FIXME: needFirmwareCurrentItem has changed signature -> check and fix this call if needed
-      #return true if needFirmwareCurrentItem
+      # return true if needFirmwareCurrentItem
       return true if Arch.s390
       if IsEmpty(Ops.get_string(getCurrentItem, ["hwinfo", "dev_name"], "")) &&
           Ops.greater_than(
