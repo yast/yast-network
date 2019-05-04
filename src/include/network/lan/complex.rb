@@ -175,7 +175,7 @@ module Yast
 
       # FIXME: network-ng currently depends on this - do not read interfaces configuration
       # itself yet
-     ret = Lan.Read(:cache)
+      ret = Lan.Read(:cache)
 
       # Load sysconfig into new backend
       # It is done here bcs this method is currently called during "yast2 lan"
