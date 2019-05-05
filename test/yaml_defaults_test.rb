@@ -38,7 +38,6 @@ describe "LanItems#SetDeviceVars" do
     expect(lan_items.bootproto).to eql "static"
     expect(lan_items.startmode).to eql "manual"
     expect(lan_items.ifplugd_priority).to eql "0"
-    expect(lan_items.ipoib_mode).to eql "connected"
   end
 end
 

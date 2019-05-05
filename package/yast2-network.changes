@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Sat May  4 15:06:10 UTC 2019 - kanderssen@suse.com
+
+- bnc#1086454
+  - do not enforce particular mode for IPoIB devices by default
+- 3.4.5
+
+-------------------------------------------------------------------
 Fri Apr 12 10:00:58 UTC 2019 - Michal Filka <mfilka@suse.com>
 
 - bnc#1131588

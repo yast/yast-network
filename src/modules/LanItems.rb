@@ -197,11 +197,6 @@ module Yast
 
       # infiniband options
       @ipoib_mode = ""
-      @ipoib_modes = {
-        # translators: a possible value for: IPoIB device mode
-        "connected" => _("connected"),
-        "datagram"  => _("datagram")
-      }
 
       Yast.include self, "network/hardware.rb"
 
@@ -2111,7 +2106,6 @@ module Yast
 
       when "ib"
         newdev["IPOIB_MODE"] = @ipoib_mode
-
       end
 
       if DriverType(@type) == "ctc"
