@@ -1136,7 +1136,7 @@ module Yast
     def dns_summary
       config = find_config(:yast)
       return "" unless config && config.dns
-      presenter = Y2Network::Presenters::DnsSummary.new(config.dns)
+      presenter = Y2Network::Presenters::DNSSummary.new(config.dns)
       presenter.text
     end
 
