@@ -767,7 +767,7 @@ module Yast
       devices = NetworkInterfaces.Export("")
       udev_rules = LanItems.export(devices)
       ay = {
-        "dns"                  => profile.dns.to_hashes,
+        "dns"                  => profile.dns ? profile.dns.to_hashes : {},
         "s390-devices"         => Ops.get_map(
           udev_rules,
           "s390-devices",
