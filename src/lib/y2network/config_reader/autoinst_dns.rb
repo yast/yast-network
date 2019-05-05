@@ -53,7 +53,7 @@ module Y2Network
       #
       # Invalid IPs are filtered out.
       #
-      # @param nameservers [Array<String>]
+      # @param ips [Array<String>]
       # @return [Array<IPAddr>]
       def valid_ips(ips)
         ips.each_with_object([]) do |ip_str, all|
