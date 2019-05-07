@@ -37,39 +37,19 @@ module Y2Network
 
     extend Forwardable
 
-    def_delegator :@old_items, :each
-    def_delegator :@old_items, :map
-    def_delegator :@old_items, :select
+    def_delegators :@old_items, :each, :map, :select
 
-    # Converts old LanItems::Items into internal data format
-    #
-    # @return [Interfaces] a container with available interfaces
-    def from_lan_items(lan_items)
-      # FIXME: should be replaced, separating backend from old API
-      @old_items = hash_to_interface(lan_items)
-      self
+    # @param interfaces [Array<Interface>] List of interfaces
+    def initialize(interfaces)
+      @old_items = interfaces
     end
 
     def find(name)
-      @old_items.find { |i| !i.name.nil? ? i.name == name : i.hardware.name }
+      old_items.find { |i| !i.name.nil? ? i.name == name : i.hardware.name }
     end
 
     def add(name)
-      @old_items.push Interface.new(name)
-    end
-
-  private
-
-    # Converts old LanItems::Items into new format
-    #
-    # @param hash [Hash] a set of interfaces in LanItems::Items format
-    # @return [Array<Interface>] a list of interfaces obtained from the hash
-    def hash_to_interface(hash)
-      hash.map do |_, iface|
-        # one of those has to exist in LanItems::Items
-        name = iface["ifcfg"] || iface["hwinfo"]["dev_name"]
-        Interface.new(name)
-      end
+      old_items.push(Interface.new(name))
     end
   end
 end
