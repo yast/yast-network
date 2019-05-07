@@ -25,7 +25,7 @@ module Y2Network
   #
   # FIXME: Intended for LanItems::Items separation
   # proper cleanup is must
-  class Interfaces
+  class InterfacesCollection
     # FIXME: Direct access to be replaced to make possible
     # Y2Network::Config.interfaces.eth0
     # Y2Network::Config.interfaces.of_type(:eth)

@@ -30,7 +30,7 @@ require "network/lan_items_summary"
 require "y2network/config"
 
 require "y2network/config"
-require "y2network/interfaces"
+require "y2network/interfaces_collection"
 
 require "shellwords"
 
