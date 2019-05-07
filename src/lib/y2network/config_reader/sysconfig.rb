@@ -36,8 +36,7 @@ module Y2Network
 
       # @return [Y2Network::Config] Network configuration
       def config
-        # LanItems has to be already initialized
-        interfaces = Y2Network::Interfaces.new.from_lan_items(Yast::LanItems.Items)
+        interfaces = find_interfaces
         routing_tables = find_routing_tables(interfaces.select(&:configured))
         routing = Routing.new(
           tables: routing_tables, forward_ipv4: forward_ipv4?, forward_ipv6: forward_ipv6?
@@ -65,6 +64,18 @@ module Y2Network
         all_routes = main_routes + iface_routes
         link_routes_to_interfaces(all_routes, interfaces)
         [Y2Network::RoutingTable.new(all_routes.uniq)]
+      end
+
+      # Returns the list of network interfaces
+      #
+      # @return [Array<Interface>] Interfaces
+      def find_interfaces
+        # LanItems has to be already initialized
+        interfaces = Yast::LanItems.Items.map do |_index, item|
+          name = item["ifcfg"] || item["hwinfo"]["dev_name"]
+          Y2Network::Interface.new(name)
+        end
+        Y2Network::Interfaces.new(interfaces)
       end
 
       # Load a set of routes for a given path
