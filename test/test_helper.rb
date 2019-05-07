@@ -28,6 +28,8 @@ end
 
 require "yast"
 require "yast/rspec"
+require "y2network/config"
+require "y2network/routing"
 Yast.import "Lan"
 
 require_relative "SCRStub"
