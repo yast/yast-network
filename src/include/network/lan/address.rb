@@ -177,13 +177,13 @@ module Yast
         },
         mtu_widget.widget_id          => mtu_widget.cwm_definition,
         "IFCFGTYPE"                   => {
-          "widget"            => :combobox,
+          "widget" => :combobox,
           # ComboBox label
-          "label"             => _("&Device Type"),
-          "opt"               => [:hstretch, :notify],
-          "help"              => "",
+          "label"  => _("&Device Type"),
+          "opt"    => [:hstretch, :notify],
+          "help"   => "",
           # "items" will be filled in the dialog itself
-          "init"              => fun_ref(
+          "init"   => fun_ref(
             method(:initIfcfg),
             "void (string)"
           )
