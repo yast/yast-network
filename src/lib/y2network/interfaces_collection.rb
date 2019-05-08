@@ -23,33 +23,43 @@ require "y2network/interfaces/virtual"
 require "forwardable"
 
 module Y2Network
-  # A container for network devices. In the end should carry methods for mass operations
-  # over network interfaces like old LanItems::find_dhcp_ifaces or so.
+  # A container for network devices. In the end should implement methods for mass operations over
+  # network interfaces like old LanItems::find_dhcp_ifaces.
   #
-  # FIXME: Intended for LanItems::Items separation
-  # proper cleanup is must
+  # @example Create a new collection
+  #   eth0 = Y2Network::Interface.new("eth0")
+  #   collection = Y2Network::InterfacesCollection.new(eth0)
+  #
+  # @example Find an interface using its name
+  #   iface = collection.find("eth0") #=> #<Y2Network::Interface:0x...>
   class InterfacesCollection
     # FIXME: Direct access to be replaced to make possible
     # Y2Network::Config.interfaces.eth0
     # Y2Network::Config.interfaces.of_type(:eth)
     # ...
-    attr_reader :old_items
+    attr_reader :interfaces
 
     extend Forwardable
 
-    def_delegators :@old_items, :each, :map, :select
+    def_delegators :@interfaces, :each, :map, :select
 
+    # Constructor
+    #
     # @param interfaces [Array<Interface>] List of interfaces
     def initialize(interfaces)
-      @old_items = interfaces
+      @interfaces = interfaces
     end
 
+    # @param [String] Returns the interface with the given name
     def find(name)
-      old_items.find { |i| !i.name.nil? ? i.name == name : i.hardware.name }
+      interfaces.find { |i| !i.name.nil? ? i.name == name : i.hardware.name }
     end
 
+    # Add an interface with the given name
+    #
+    # @param [String] Interface's name
     def add(name)
-      old_items.push(Interface.new(name))
+      interfaces.push(Interface.new(name))
     end
   end
 end
