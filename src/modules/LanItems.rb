@@ -1437,8 +1437,8 @@ module Yast
           bullets += ip_overview(iface.config) if iface.config["STARTMODE"] != "managed"
 
           if iface.type == "wlan" &&
-             iface.config["WIRELESS_AUTH_MODE"] == "open" &&
-             iface.config.fetch("WIRELESS_KEY_0", {}).empty?
+              iface.config["WIRELESS_AUTH_MODE"] == "open" &&
+              iface.config.fetch("WIRELESS_KEY_0", {}).empty?
 
             # avoid colons
             ifcfg_name = iface.name.tr(":", "/")
@@ -1945,9 +1945,9 @@ module Yast
       # #104494 - always write IPADDR+NETMASK, even empty
       # newdev["IPADDR"] = @ipaddr
       # if !@prefix.empty?
-        # newdev["PREFIXLEN"] = @prefix
+      # newdev["PREFIXLEN"] = @prefix
       # else
-        # newdev["NETMASK"] = @netmask
+      # newdev["NETMASK"] = @netmask
       # end
       # #50955 omit computable fields
       newdev["BROADCAST"] = ""
@@ -1968,10 +1968,10 @@ module Yast
         end
       end
 
-#      newdev["ZONE"] = @firewall_zone
-#      newdev["NAME"] = @description
+      #      newdev["ZONE"] = @firewall_zone
+      #      newdev["NAME"] = @description
 
-#      newdev = setup_basic_device_options(newdev)
+      #      newdev = setup_basic_device_options(newdev)
       newdev = setup_dhclient_options(newdev)
 
       # FIXME: network-ng currently works for eth only
