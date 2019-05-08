@@ -75,7 +75,7 @@ module Y2Network
           name = item["ifcfg"] || item["hwinfo"]["dev_name"]
           Y2Network::Interface.new(name)
         end
-        Y2Network::Interfaces.new(interfaces)
+        Y2Network::InterfacesCollection.new(interfaces)
       end
 
       # Load a set of routes for a given path
