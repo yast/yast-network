@@ -77,8 +77,8 @@ module Y2Network
 
     # Updates itself according to the given sysconfig configuration
     #
-    # @param [Hash<String, String>] a key, value map where key is sysconfig option
-    #                               and corresponding value is the option value
+    # @param devmap [Hash<String, String>] a key, value map where key is sysconfig option and
+    #                                      corresponding value is the option value
     def load_sysconfig(devmap)
       @config = !devmap.nil? ? @config.merge(devmap) : @config
     end
