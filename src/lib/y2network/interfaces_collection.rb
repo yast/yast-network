@@ -47,14 +47,14 @@ module Y2Network
       @interfaces = interfaces
     end
 
-    # @param [String] Returns the interface with the given name
+    # @param name [String] Returns the interface with the given name
     def find(name)
       interfaces.find { |i| !i.name.nil? ? i.name == name : i.hardware.name }
     end
 
     # Add an interface with the given name
     #
-    # @param [String] Interface's name
+    # @param name [String] Interface's name
     def add(name)
       interfaces.push(Interface.new(name))
     end

@@ -1320,7 +1320,7 @@ module Yast
 
     # Creates item's startmode human description
     #
-    # @param item_id [Integer] a key for {#Items}
+    # @param ifcfg [Hash] Interface sysconfig configuration
     def startmode_overview(ifcfg)
       startmode_descrs = {
         # summary description of STARTMODE=auto
@@ -1553,7 +1553,7 @@ module Yast
     end
 
     # Select the hardware component
-    # @param hardware the component
+    # @param iface [Y2Network::Interface] Network interface
     def SelectHWMap(iface)
       # FIXME: check in depth whether it is needed
       # - currently it seems to be useless (an attempt for virtual method which
