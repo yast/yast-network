@@ -8,8 +8,20 @@ module Yast
   import "Arch"
   import "DNS"
   import "ProductControl"
+  import "Lan"
 
   describe DNS do
+    let(:lan_config) do
+      Y2Network::Config.new(dns: dns_config, source: :sysconfig)
+    end
+    let(:dns_config) do
+      Y2Network::DNS.new(dhcp_hostname: true)
+    end
+
+    before do
+      allow(Lan).to receive(:yast_config).and_return(lan_config)
+    end
+
     describe ".default_dhcp_hostname" do
       before do
         allow(Arch).to receive(:is_laptop).and_return laptop
@@ -77,36 +89,6 @@ module Yast
       end
     end
 
-    describe ".Import" do
-      before do
-        allow(Yast::Stage).to receive(:initial).and_return(false)
-      end
-
-      context "with present dhcp_hostname and write_hostname" do
-        let(:settings) { { "hostname" => "host", "dhcp_hostname" => true, "write_hostname" => true } }
-
-        it "honors the provided values" do
-          expect(DNS).to_not receive(:DefaultWriteHostname)
-          expect(DNS).to_not receive(:default_dhcp_hostname)
-          DNS.Import(settings)
-          expect(DNS.write_hostname).to eql(true)
-          expect(DNS.dhcp_hostname).to eql(true)
-        end
-      end
-
-      context "with missing dhcp_hostname and write_hostname" do
-        let(:settings) { { "hostname" => "host" } }
-
-        it "relies on proper methods to get default values" do
-          expect(DNS).to receive(:DefaultWriteHostname).and_return false
-          expect(DNS).to receive(:default_dhcp_hostname).and_return false
-          DNS.Import(settings)
-          expect(DNS.write_hostname).to eql(false)
-          expect(DNS.dhcp_hostname).to eql(false)
-        end
-      end
-    end
-
     describe ".IsHostLocal" do
       let(:ip) { "10.111.66.75" }
       let(:hostname_short) { "test" }
@@ -152,6 +134,61 @@ module Yast
         it "returns false when the ip of local machine is not given" do
           expect(DNS.IsHostLocal("1.2.3.4")).to eq(false)
         end
+      end
+    end
+
+    describe ".Read" do
+      it "delegates DNS settings reading to Yast::Lan module" do
+        expect(Yast::Lan).to receive(:Read).with(:cache)
+        Yast::DNS.Read
+      end
+    end
+
+    describe ".Write" do
+      let(:dns_writer) { instance_double(Y2Network::ConfigWriter::SysconfigDNS) }
+      let(:yast_config) { double("Y2Network::Config") }
+      let(:system_config) { double("Y2Network::Config") }
+
+      before do
+        allow(Y2Network::ConfigWriter::SysconfigDNS).to receive(:new).and_return(dns_writer)
+        allow(Yast::Lan).to receive(:yast_config).and_return(yast_config)
+        allow(Yast::Lan).to receive(:system_config).and_return(system_config)
+      end
+
+      it "writes DNS settings" do
+        expect(dns_writer).to receive(:write).with(yast_config, system_config)
+        DNS.Write
+      end
+    end
+
+    describe ".modified" do
+      let(:yast_config) { double("Y2Network::Config", dns: double("dns")) }
+      let(:system_config) { double("Y2Network::Config", dns: double("dns")) }
+
+      before do
+        allow(Yast::Lan).to receive(:yast_config).and_return(yast_config)
+        allow(Yast::Lan).to receive(:system_config).and_return(system_config)
+      end
+
+      context "when DNS configuration has changed" do
+        it "returns true" do
+          expect(DNS.modified).to eq(true)
+        end
+      end
+
+      context "when DNS configuration has not changed" do
+        let(:system_config) { double("Y2Network::Config", dns: yast_config.dns) }
+
+        it "returns false" do
+          expect(DNS.modified).to eq(false)
+        end
+      end
+    end
+
+    describe "#propose_hostname" do
+      it "proposes a hostname" do
+        expect(dns_config).to receive(:ensure_hostname!)
+        DNS.propose_hostname
       end
     end
   end

@@ -36,6 +36,7 @@ require "y2firewall/firewalld"
 require "y2network/autoinst_profile/networking_section"
 require "y2network/config"
 require "y2network/presenters/routing_summary"
+require "y2network/presenters/dns_summary"
 
 require "shellwords"
 
@@ -767,7 +768,7 @@ module Yast
       devices = NetworkInterfaces.Export("")
       udev_rules = LanItems.export(devices)
       ay = {
-        "dns"                  => profile.dns.to_hashes,
+        "dns"                  => profile.dns ? profile.dns.to_hashes : {},
         "s390-devices"         => Ops.get_map(
           udev_rules,
           "s390-devices",
@@ -1136,7 +1137,7 @@ module Yast
     def dns_summary
       config = find_config(:yast)
       return "" unless config && config.dns
-      presenter = Y2Network::Presenters::DnsSummary.new(config.dns)
+      presenter = Y2Network::Presenters::DNSSummary.new(config.dns)
       presenter.text
     end
 

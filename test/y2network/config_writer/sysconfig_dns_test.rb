@@ -29,8 +29,8 @@ describe Y2Network::ConfigWriter::SysconfigDNS do
     let(:dns) do
       Y2Network::DNS.new(
         nameservers:        [IPAddr.new("10.0.0.1"), IPAddr.new("10.0.0.2")],
-        hostname:           "myhost.example.net",
-        search_domains:     ["example.net", "example.org"],
+        hostname:           hostname,
+        searchlist:         ["example.net", "example.org"],
         resolv_conf_policy: "auto",
         dhcp_hostname:      dhcp_hostname
       )
@@ -41,11 +41,12 @@ describe Y2Network::ConfigWriter::SysconfigDNS do
       Y2Network::DNS.new(
         nameservers:        [IPAddr.new("10.0.0.1")],
         hostname:           "linux-abcd.example.org",
-        search_domains:     ["example.org"],
+        searchlist:         ["example.org"],
         resolv_conf_policy: "auto",
         dhcp_hostname:      old_dhcp_hostname
       )
     end
+    let(:hostname) { "myhost.example.net" }
 
     before do
       allow(Yast::SCR).to receive(:Write)
@@ -97,6 +98,15 @@ describe Y2Network::ConfigWriter::SysconfigDNS do
       expect(Yast::SCR).to receive(:Write)
         .with(Yast::Path.new(".target.string"), "/etc/hostname", "myhost.example.net\n")
       writer.write(dns, old_dns)
+    end
+
+    context "when no hostname is given" do
+      let(:hostname) { nil }
+
+      it "proposes a hostname" do
+        expect(Yast::Execute).to receive(:on_target!).with("/bin/hostname", /linux-/)
+        writer.write(dns, old_dns)
+      end
     end
 
     context "when sendmail update script is installed" do

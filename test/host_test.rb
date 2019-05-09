@@ -9,11 +9,16 @@ require "cfa/base_model"
 require "cfa/hosts"
 
 Yast.import "Host"
+Yast.import "DNS"
 
 describe Yast::Host do
   let(:file) do
     file_path = File.join(DATA_PATH, "hosts")
     CFA::MemoryFile.new(File.read(file_path))
+  end
+
+  let(:lan_config) do
+    double("lan_config").as_null_object
   end
 
   around do |test|
@@ -26,7 +31,7 @@ describe Yast::Host do
   end
 
   before do
-
+    allow(Yast::Lan).to receive(:yast_config).and_return(lan_config)
     allow(Yast::SCR).to receive(:Read).with(path(".target.size"), "/etc/hosts").and_return(50)
 
     # reset internal caches

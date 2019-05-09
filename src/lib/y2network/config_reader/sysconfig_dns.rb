@@ -38,7 +38,7 @@ module Y2Network
         Y2Network::DNS.new(
           nameservers:        nameservers,
           hostname:           hostname,
-          search_domains:     search_domains,
+          searchlist:         searchlist,
           resolv_conf_policy: resolv_conf_policy,
           dhcp_hostname:      dhcp_hostname
         )
@@ -118,7 +118,7 @@ module Y2Network
       # Return the list of search domains
       #
       # @return [Array<String>]
-      def search_domains
+      def searchlist
         Yast::SCR.Read(
           Yast::Path.new(".sysconfig.network.config.NETCONFIG_DNS_STATIC_SEARCHLIST")
         ).to_s.split

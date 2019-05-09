@@ -130,7 +130,7 @@ describe Y2Network::ConfigReader::SysconfigDNS do
 
     it "includes a list of domains to search" do
       config = reader.config
-      expect(config.search_domains).to eq(["example.net", "mydomain"])
+      expect(config.searchlist).to eq(["example.net", "mydomain"])
     end
 
     context "when no list of domains to search is defined" do
@@ -140,7 +140,7 @@ describe Y2Network::ConfigReader::SysconfigDNS do
 
       it "includes an empty list of domains to search" do
         config = reader.config
-        expect(config.search_domains).to eq([])
+        expect(config.searchlist).to eq([])
       end
     end
 

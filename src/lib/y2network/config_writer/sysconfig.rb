@@ -139,11 +139,12 @@ module Y2Network
 
       # Updates the DNS configuration
       #
-      # @param dns     [Y2Network::DNS] Current DNS configuration
-      # @param old_dns [Y2Network::DNS] Old DNS configuration; nil if it is unknown
-      def write_dns_settings(dns, old_dns)
+      # @param config     [Y2Network::Config] Current DNS configuration
+      # @param old_config [Y2Network::Config,nil] Old DNS configuration; nil if it is unknown
+      def write_dns_settings(config, old_config)
+        old_dns = old_config.dns if old_config
         writer = Y2Network::ConfigWriter::SysconfigDNS.new
-        writer.write(dns, old_dns)
+        writer.write(config.dns, old_dns)
       end
     end
   end

@@ -21,47 +21,52 @@ module Y2Network
   # DNS configuration (hostname, nameservers, etc.).
   class DNS
     # @return [String] Hostname (local part)
-    attr_reader :hostname
+    attr_accessor :hostname
 
     # @return [Array<IPAddr>] List of nameservers
-    attr_reader :nameservers
+    attr_accessor :nameservers
 
     # @return [Array<String>] List of search domains
-    attr_reader :search_domains
+    attr_accessor :searchlist
 
     # @return [String] resolv.conf update policy
-    attr_reader :resolv_conf_policy
+    attr_accessor :resolv_conf_policy
 
     # @return [Boolean] Whether to take the hostname from DHCP
-    attr_reader :dhcp_hostname
+    attr_accessor :dhcp_hostname
 
     # @todo receive an array instead all these arguments
     #
     # @param opts [Hash] DNS configuration options
     # @option opts [String] :hostname
     # @option opts [Array<String>] :nameservers
-    # @option opts [Array<String>] :search_domains
+    # @option opts [Array<String>] :searchlist
     # @option opts [ResolvConfPolicy] :resolv_conf_policy
     # @option opts [Boolean] :dhcp_hostname
     def initialize(opts = {})
       @hostname = opts[:hostname]
       @nameservers = opts[:nameservers] || []
-      @search_domains = opts[:search_domains] || []
+      @searchlist = opts[:searchlist] || []
       @resolv_conf_policy = opts[:resolv_conf_policy]
       @dhcp_hostname = opts[:dhcp_hostname]
     end
 
+    # @return [Array<String>] Valid chars to be used in the random part of a hostname
+    HOSTNAME_CHARS = (("a".."z").to_a + ("0".."9").to_a).freeze
+    private_constant :HOSTNAME_CHARS
+
     # Sets a hostname is none is present
     def ensure_hostname!
       return unless @hostname.nil? || @hostname.empty?
-      suffix = ("a".."z").to_a.sample(4).join
+      suffix = HOSTNAME_CHARS.sample(4).join
       @hostname = "linux-#{suffix}"
-      nil
     end
 
+    # @return [Array<Symbol>] Methods to check when comparing two instances
     ATTRS = [
-      :hostname, :nameservers, :search_domains, :resolv_conf_policy, :dhcp_hostname
+      :hostname, :nameservers, :searchlist, :resolv_conf_policy, :dhcp_hostname
     ].freeze
+    private_constant :ATTRS
 
     # Determines whether two set of DNS settings are equal
     #

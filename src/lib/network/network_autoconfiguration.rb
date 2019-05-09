@@ -90,15 +90,8 @@ module Yast
     # Propose DNS and Hostname setup
     def configure_dns
       DNS.Read # handles NetworkConfig too
-      DNS.ProposeHostname # generate random hostname, if none known so far
-
-      # get default value, from control.xml
-      DNS.write_hostname = DNS.DefaultWriteHostname
-
+      DNS.propose_hostname
       log.info("NetworkAutoconfiguration: proposing DNS / Hostname configuration")
-      log.info("dhcp hostname: #{DNS.dhcp_hostname}")
-      log.info("write hostname: #{DNS.write_hostname}")
-
       DNS.Write
     end
 

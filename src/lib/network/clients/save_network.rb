@@ -232,16 +232,6 @@ module Yast
       true
     end
 
-    # Creates target's default DNS configuration
-    #
-    # It proposes a predefined default values in common installation, exits
-    # in AY mode.
-    def configure_dns
-      return if Mode.autoinst
-
-      NetworkAutoconfiguration.instance.configure_dns
-    end
-
     # Creates target's /etc/hosts configuration
     #
     # It uses hosts' configuration as defined in AY profile (if any) or
@@ -259,10 +249,10 @@ module Yast
     def configure_lan
       NetworkAutoconfiguration.instance.configure_virtuals
 
-      if !Mode.autoinst
-        configure_dns
-      else
+      if Mode.autoinst
         NetworkAutoYast.instance.configure_lan
+      else
+        NetworkAutoconfiguration.instance.configure_dns
       end
 
       # this depends on DNS configuration

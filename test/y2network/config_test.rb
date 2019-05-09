@@ -132,9 +132,16 @@ describe Y2Network::Config do
       end
     end
 
-    context "when routing information is differt" do
+    context "when routing information is different" do
       it "returns false" do
         copy.routing.forward_ipv4 = !config.routing.forward_ipv4
+        expect(copy).to_not eq(config)
+      end
+    end
+
+    context "when DNS information is different" do
+      it "returns false" do
+        copy.dns.hostname = "dummy"
         expect(copy).to_not eq(config)
       end
     end

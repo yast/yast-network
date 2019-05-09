@@ -28,12 +28,12 @@ describe Y2Network::AutoinstProfile::DNSSection do
     let(:dns) do
       instance_double(
         Y2Network::DNS, hostname: "linux", dhcp_hostname: true, resolv_conf_policy: "auto",
-        nameservers: nameservers, search_domains: search_domains
+        nameservers: nameservers, searchlist: searchlist
       )
     end
 
     let(:nameservers) { [IPAddr.new("1.1.1.1")] }
-    let(:search_domains) { ["example.net"] }
+    let(:searchlist) { ["example.net"] }
 
     it "sets the hostname attribute" do
       section = described_class.new_from_network(dns)
@@ -68,7 +68,7 @@ describe Y2Network::AutoinstProfile::DNSSection do
         "dhcp_hostname"      => true,
         "resolv_conf_policy" => "auto",
         "nameservers"        => ["192.168.122.1", "10.0.0.1"],
-        "search_domains"     => ["suse.com"]
+        "searchlist"         => ["suse.com"]
       }
     end
 

@@ -30,9 +30,9 @@ module Y2Network
       # @param dns [Y2Network::DNS] DNS configuration
       # @param old_dns [Y2Network::DNS] Old DNS configuration
       def write(dns, old_dns)
-        return if dns == old_dns
+        return if old_dns && dns == old_dns
         update_sysconfig_dhcp(dns, old_dns)
-        update_hostname(dns.hostname)
+        update_hostname(dns)
         update_mta_config
         update_sysconfig_config(dns)
       end
@@ -61,10 +61,11 @@ module Y2Network
 
       # Sets the hostname
       #
-      # @param hostname     [String] Hostname (FQDN)
-      def update_hostname(hostname)
-        Yast::Execute.on_target!("/bin/hostname", hostname.split(".")[0])
-        Yast::SCR.Write(Yast::Path.new(".target.string"), HOSTNAME_PATH, "#{hostname}\n")
+      # @param dns [Y2Network::DNS] DNS configuration
+      def update_hostname(dns)
+        dns.ensure_hostname!
+        Yast::Execute.on_target!("/bin/hostname", dns.hostname.split(".")[0])
+        Yast::SCR.Write(Yast::Path.new(".target.string"), HOSTNAME_PATH, "#{dns.hostname}\n")
       end
 
       # Updates the MTA configuration
@@ -86,7 +87,7 @@ module Y2Network
         )
         Yast::SCR.Write(
           Yast::Path.new(".sysconfig.network.config.NETCONFIG_DNS_STATIC_SEARCHLIST"),
-          dns.search_domains.join(" ")
+          dns.searchlist.join(" ")
         )
         Yast::SCR.Write(
           Yast::Path.new(".sysconfig.network.config.NETCONFIG_DNS_STATIC_SERVERS"),
