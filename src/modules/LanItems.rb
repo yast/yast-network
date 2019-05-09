@@ -1320,8 +1320,8 @@ module Yast
 
     # Creates item's startmode human description
     #
-    # @param ifcfg [Hash] Interface sysconfig configuration
-    def startmode_overview(ifcfg)
+    # @param devmap [Hash] Interface sysconfig configuration
+    def startmode_overview(devmap)
       startmode_descrs = {
         # summary description of STARTMODE=auto
         "auto"    => _(
@@ -1353,7 +1353,7 @@ module Yast
         )
       }
 
-      startmode_descr = startmode_descrs[ifcfg["STARTMODE"].to_s] || _("Started manually")
+      startmode_descr = startmode_descrs[devmap["STARTMODE"].to_s] || _("Started manually")
 
       [startmode_descr]
     end
