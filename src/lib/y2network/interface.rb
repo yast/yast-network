@@ -66,7 +66,7 @@ module Y2Network
 
       if !(name.nil? || name.empty?)
         @name = name
-      elsif hwinfo.nil?
+      elsif @hardware.nil?
         # the interface has to be either configured (ifcfg) or known to hwinfo
         raise "Attempting to create representation of nonexistent interface"
       end
