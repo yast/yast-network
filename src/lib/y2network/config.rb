@@ -36,7 +36,7 @@ module Y2Network
   #   config.routing.tables.first << route
   #   config.write
   class Config
-    # @return [Array<Interface>]
+    # @return [InterfacesCollection]
     attr_accessor :interfaces
     # @return [Routing] Routing configuration
     attr_accessor :routing
@@ -115,8 +115,9 @@ module Y2Network
     # @return [Boolean] true if both configurations are equal; false otherwise
     def ==(other)
       source == other.source &&
-        ((interfaces - other.interfaces) | (other.interfaces - interfaces)).empty? &&
-        routing == other.routing && dns == other.dns
+        interfaces == other.interfaces &&
+        routing == other.routing &&
+        dns == other.dns
     end
 
     alias_method :eql?, :==

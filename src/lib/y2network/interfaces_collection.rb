@@ -61,5 +61,14 @@ module Y2Network
     def add(name)
       interfaces.push(Interface.new(name))
     end
+
+    # Compares InterfacesCollections
+    #
+    # @return [Boolean] true when both collections are equal, false otherwise
+    def ==(other)
+      @interfaces - other.interfaces && other.interfaces == @interfaces
+    end
+
+    alias_method :eql?, :==
   end
 end

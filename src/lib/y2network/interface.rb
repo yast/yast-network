@@ -93,6 +93,7 @@ module Y2Network
     # @return [Boolean]
     def ==(other)
       return false unless other.is_a?(Interface)
+      # FIXME: take renaming into account too
       name == other.name
     end
 
