@@ -224,7 +224,7 @@ module Yast
       # (e.g. only routing was modified -> write only routing)
       if yast_config != system_config
         log.info("Writing configuration from new backend")
-        Y2Network::Config.write(:yast)
+        yast_config.write
       end
 
       ret = Lan.Write
