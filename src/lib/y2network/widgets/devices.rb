@@ -18,7 +18,7 @@ module Y2Network
 
       def help
         _(
-          "<p><b>Device</b> specifies the device throught which the traffic" \
+          "<p><b>Device</b> specifies the device through which the traffic" \
             " to the defined network will be routed.</p>"
         )
       end
