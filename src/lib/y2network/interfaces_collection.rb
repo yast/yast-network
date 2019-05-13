@@ -64,7 +64,8 @@ module Y2Network
 
     # Compares InterfacesCollections
     #
-    # @return [Boolean] true when both collections are equal, false otherwise
+    # @return [Boolean] true when both collections contain only equal interfaces,
+    #                   false otherwise
     def ==(other)
       @interfaces - other.interfaces && other.interfaces == @interfaces
     end
