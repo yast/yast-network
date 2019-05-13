@@ -152,6 +152,7 @@ module Yast
     end
 
     def handleStartmode(_key, _event)
+      # FIXME: not working with object CWM
       UI.ChangeWidget(
         Id("IFPLUGD_PRIORITY"),
         :Enabled,

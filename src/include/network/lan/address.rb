@@ -32,6 +32,7 @@ require "y2network/widgets/tunnel"
 require "y2network/widgets/bond_options"
 require "y2network/widgets/bond_slave"
 require "y2network/widgets/bridge_ports"
+require "y2network/widgets/ifplugd_priority"
 require "y2network/widgets/mtu"
 
 module Yast
@@ -97,6 +98,10 @@ module Yast
 
     def mtu_widget
       @mtu_widget ||= Y2Network::Widgets::MTU.new(@settings)
+    end
+
+    def ifplugd_priority_widget
+      @ifplugd_priority_widget ||= Y2Network::Widgets::IfplugdPriority.new(@settings)
     end
 
     def widget_descr_local
@@ -370,10 +375,7 @@ module Yast
     def InitAddrWidget(key)
       value = Ops.get(@settings, key)
       my2debug("AW", Builtins.sformat("init k: %1, v: %2", key, value))
-      # because IFPLUGD_PRIORITY is integer, not string
-      if key != "IFPLUGD_PRIORITY"
-        UI.ChangeWidget(Id(key), ValueProp(key), value)
-      end
+      UI.ChangeWidget(Id(key), ValueProp(key), value)
 
       nil
     end
@@ -797,22 +799,6 @@ module Yast
       end
     end
 
-    def initIfplugdPriority(_key)
-      UI.ChangeWidget(
-        Id("IFPLUGD_PRIORITY"),
-        :Value,
-        @settings["IFPLUGD_PRIORITY"].to_i
-      )
-
-      nil
-    end
-
-    # Stores content of IFPLUGD_PRIORITY widget into internal variables
-    def store_ifplugd_priority(_key, _event)
-      ifp_prio = UI.QueryWidget(Id("IFPLUGD_PRIORITY"), :Value).to_s
-      LanItems.ifplugd_priority = ifp_prio if !ifp_prio.empty?
-    end
-
     def general_tab
       type = LanItems.GetCurrentType
 
@@ -829,7 +815,7 @@ module Yast
                 # TODO: "MANDATORY",
                 Frame(
                   _("Device Activation"),
-                  HBox("STARTMODE", "IFPLUGD_PRIORITY", HStretch())
+                  HBox("STARTMODE", ifplugd_priority_widget.widget_id, HStretch())
                 ),
                 VSpacing(0.4),
                 Frame(_("Firewall Zone"), HBox("FWZONE", HStretch())),
@@ -969,29 +955,7 @@ module Yast
         ["auto", "ifplugd", "hotplug", "manual", "off", "nfsroot"]
       )
 
-      Ops.set(
-        wd,
-        "IFPLUGD_PRIORITY",
-        "widget"  => :intfield,
-        "minimum" => 0,
-        "maximum" => 100,
-        # Combo box label - when to activate device (e.g. on boot, manually, never,..)
-        "label"   => _(
-          "Ifplugd Priority"
-        ),
-        "help"    =>
-                     # Device activation main help. The individual parts will be
-                     # substituted as %1
-                     _(
-                       "<p><b><big>IFPLUGD PRIORITY</big></b></p> \n" \
-                         "<p> All interfaces configured with <b>On Cable Connection</b> and with IFPLUGD_PRIORITY != 0 will be\n" \
-                         " used mutually exclusive. If more then one of these interfaces is <b>On Cable Connection</b>\n" \
-                         " then we need a way to decide which interface to take up. Therefore we have to\n" \
-                         " set the priority of each interface.  </p>\n"
-                     ),
-        "init"    => fun_ref(method(:initIfplugdPriority), "void (string)"),
-        "store"   => fun_ref(method(:store_ifplugd_priority), "void (string, map)")
-      )
+      wd[ifplugd_priority_widget.widget_id] = ifplugd_priority_widget.cwm_definition
 
       Ops.set(wd, ["IFCFGTYPE", "items"], BuildTypesListCWM(NetworkInterfaces.GetDeviceTypes))
       Ops.set(
@@ -1083,6 +1047,7 @@ module Yast
         LanItems.startmode = Ops.get_string(@settings, "STARTMODE", "")
         LanItems.mtu = Ops.get_string(@settings, "MTU", "")
         LanItems.firewall_zone = firewall_zone.store_permanent if firewalld.installed?
+        LanItems.ifplugd_priority = @settings["IFPLUGD_PRIORITY"]
 
         # address tab
         bootproto = @settings.fetch("BOOTPROTO", "")
