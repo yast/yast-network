@@ -340,6 +340,8 @@ module Yast
     end
 
     # Automatically configures slaves when user enslaves them into a bond or bridge device
+    #
+    # FIXME: not working in network-ng
     def UpdateSlaves
       current = LanItems.current
 
