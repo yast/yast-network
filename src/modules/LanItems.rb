@@ -1952,9 +1952,6 @@ module Yast
       # else
       # newdev["NETMASK"] = @netmask
       # end
-      # #50955 omit computable fields
-      newdev["BROADCAST"] = ""
-      newdev["NETWORK"] = ""
 
       # newdev["REMOTE_IPADDR"] = @remoteip
 
@@ -1984,16 +1981,6 @@ module Yast
         # configure it for deletion from ifcfg (SCR expects special value nil)
         current_slaves = (GetCurrentMap() || {}).select { |k, _| k.start_with?("BONDING_SLAVE") }
         newdev = setup_bonding(newdev.merge(current_slaves), @bond_slaves, @bond_option)
-
-      when "vlan"
-        newdev["ETHERDEVICE"] = @vlan_etherdevice
-        newdev["VLAN_ID"] = @vlan_id
-
-      when "br"
-        newdev["BRIDGE_PORTS"] = @bridge_ports
-        newdev["BRIDGE"] = "yes"
-        newdev["BRIDGE_STP"] = "off"
-        newdev["BRIDGE_FORWARDDELAY"] = "0"
 
       when "wlan"
         newdev["WIRELESS_MODE"] = @wl_mode
@@ -2119,9 +2106,10 @@ module Yast
         Builtins.y2debug("%1", NetworkInterfaces.ConcealSecrets1(newdev))
 
         # configure bridge ports
-        if @bridge_ports
-          log.info "Configuring bridge ports #{@bridge_ports} for: #{ifcfg_name}"
-          @bridge_ports.split.each { |bp| configure_as_bridge_port(bp) }
+        bridge_ports = builder.option("BRIDGE_PORTS")
+        if bridge_ports
+          log.info "Configuring bridge ports #{bridge_ports} for: #{ifcfg_name}"
+          bridge_ports.split.each { |bp| configure_as_bridge_port(bp) }
         end
 
         SetModified()

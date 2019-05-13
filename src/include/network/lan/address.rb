@@ -746,7 +746,7 @@ module Yast
         builder.set(option: "BONDOPTION", value: @settings["BONDOPTION"])
         Lan.autoconf_slaves = (Lan.autoconf_slaves + new_slaves).uniq.sort
         log.info "bond settings #{builder.option("BONDOPTION")}"
-      elsif Builtins.contains(["tun", "tap"], builder.type)
+      elsif ["tun", "tap"].include?(builder.type)
         builder.set(
           option: "TUNNEL_SET_OWNER",
           value:  Ops.get_string(@settings, "TUNNEL_SET_OWNER", "")
