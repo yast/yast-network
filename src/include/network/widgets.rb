@@ -64,81 +64,6 @@ module Yast
           "help"   => _("<p>H</p>")
         }
       }
-
-      # This is the data for widget_descr["STARTMODE"].
-      # It is separated because the list of items depends on the device type
-      # and will be substituted dynamically.
-      # Helps are rich text, but not paragraphs.
-      @startmode_items = {
-        # onboot, on and boot are aliases for auto
-        # See NetworkInterfaces::CanonicalizeStartmode
-        "auto"    =>
-                     # is a part of the static help text
-                     {
-                       # Combo box option for Device Activation
-                       "label" => _(
-                         "At Boot Time"
-                       ),
-                       "help"  => ""
-                     },
-        "off"     =>
-                     # is a part of the static help text
-                     { "label" => _("Never"), "help" => "" },
-        "managed" => {
-          # Combo box option for Device Activation
-          # DO NOT TRANSLATE NetworkManager, it is a program name
-          "label" => _(
-            "By NetworkManager"
-          ),
-          # help text for Device Activation
-          # DO NOT TRANSLATE NetworkManager, it is a program name
-          "help"  => _(
-            "<b>By NetworkManager</b>: a desktop applet\ncontrols the interface. There is no need to set it up in YaST."
-          )
-        },
-        "manual"  => {
-          # Combo box option for Device Activation
-          "label" => _("Manually"),
-          # help text for Device Activation
-          "help"  => _(
-            "<p><b>Manually</b>: You control the interface manually\nvia 'ifup' or 'qinternet' (see 'User Controlled' below).</p>\n"
-          )
-        },
-        "ifplugd" => {
-          # Combo box option for Device Activation
-          "label" => _(
-            "On Cable Connection"
-          ),
-          # help text for Device Activation
-          "help"  => _(
-            "<b>On Cable Connection</b>:\n" \
-              "The interface is watched for whether there is a physical\n" \
-              "network connection. That means either the cable is connected or the\n" \
-              "wireless interface can connect to an access point.\n"
-          )
-        },
-        "hotplug" => {
-          # Combo box option for Device Activation
-          "label" => _("On Hotplug"),
-          # help text for Device Activation
-          "help"  => _(
-            "With <b>On Hotplug</b>,\n" \
-              "the interface is set up as soon as it is available. This is\n" \
-              "nearly the same as 'At Boot Time', but does not result in an error at\n" \
-              "boot time if the interface is not present.\n"
-          )
-        },
-        "nfsroot" => {
-          # Combo box option for Device Activation
-          "label" => _("On NFSroot"),
-          # help text for Device Activation
-          "help"  => _(
-            "Using <b>On NFSroot</b> is similar to <tt>auto</tt>. Interfaces with this startmode will never\n" \
-              "be shut down via <tt>rcnetwork stop</tt>. <tt>ifdown <iface></tt> is still available.\n" \
-              "Use this if you have an NFS or iSCSI root filesystem.\n"
-          )
-        }
-      }
     end
 
     # Validator for IP adresses, no_popup
@@ -149,52 +74,6 @@ module Yast
       value = Convert.to_string(UI.QueryWidget(Id(key), :Value))
       return IP.Check(value) if value != ""
       true
-    end
-
-    def handleStartmode(_key, _event)
-      # FIXME: not working with object CWM
-      UI.ChangeWidget(
-        Id("IFPLUGD_PRIORITY"),
-        :Enabled,
-        UI.QueryWidget(Id("STARTMODE"), :Value) == "ifplugd"
-      )
-      nil
-    end
-
-    def MakeStartmode(ids)
-      ids = deep_copy(ids)
-      ret = {
-        "widget" => :combobox,
-        # Combo box label - when to activate device (e.g. on boot, manually, never,..)
-        "label"  => _("Activate &Device"),
-        "opt"    => [:notify],
-        "handle" => fun_ref(method(:handleStartmode), "symbol (string, map)"),
-        "help"   =>
-                    # Device activation main help. The individual parts will be
-                    # substituted as %1
-                    _(
-                      "<p><b><big>Device Activation</big></b></p> \n" \
-                        "<p>Choose when to bring up the network interface. <b>At Boot Time</b> activates it during system boot, \n" \
-                        "<b>Never</b> does not start the device.\n" \
-                        "%1</p>\n"
-                    )
-      }
-      helps = ""
-      items = Builtins.maplist(ids) do |id|
-        helps = Ops.add(
-          Ops.add(helps, " "),
-          Ops.get(@startmode_items, [id, "help"], "")
-        )
-        [id, Ops.get(@startmode_items, [id, "label"], "")]
-      end
-
-      Ops.set(
-        ret,
-        "help",
-        Builtins.sformat(Ops.get_string(ret, "help", "%1"), helps)
-      )
-      Ops.set(ret, "items", items)
-      deep_copy(ret)
     end
 
     def init_ipoib_mode_widget(key)

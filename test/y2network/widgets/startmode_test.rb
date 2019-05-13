@@ -20,10 +20,10 @@
 require_relative "../../test_helper"
 require "cwm/rspec"
 
-require "y2network/widgets/ifplugd_priority"
+require "y2network/widgets/startmode"
 
-describe Y2Network::Widgets::IfplugdPriority do
-  subject { described_class.new({}) }
+describe Y2Network::Widgets::Startmode do
+  subject { described_class.new({}, double().as_null_object) }
 
-  include_examples "CWM::IntField"
+  include_examples "CWM::ComboBox"
 end

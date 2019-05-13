@@ -33,6 +33,7 @@ require "y2network/widgets/bond_options"
 require "y2network/widgets/bond_slave"
 require "y2network/widgets/bridge_ports"
 require "y2network/widgets/ifplugd_priority"
+require "y2network/widgets/startmode"
 require "y2network/widgets/mtu"
 
 module Yast
@@ -102,6 +103,10 @@ module Yast
 
     def ifplugd_priority_widget
       @ifplugd_priority_widget ||= Y2Network::Widgets::IfplugdPriority.new(@settings)
+    end
+
+    def startmode_widget
+      @startmode_widget ||= Y2Network::Widgets::Startmode.new(@settings, ifplugd_priority_widget)
     end
 
     def widget_descr_local
@@ -815,7 +820,7 @@ module Yast
                 # TODO: "MANDATORY",
                 Frame(
                   _("Device Activation"),
-                  HBox("STARTMODE", ifplugd_priority_widget.widget_id, HStretch())
+                  HBox(startmode_widget.widget_id, ifplugd_priority_widget.widget_id, HStretch())
                 ),
                 VSpacing(0.4),
                 Frame(_("Firewall Zone"), HBox("FWZONE", HStretch())),
@@ -951,10 +956,7 @@ module Yast
         to:   "map <string, map <string, any>>"
       )
 
-      wd["STARTMODE"] = MakeStartmode(
-        ["auto", "ifplugd", "hotplug", "manual", "off", "nfsroot"]
-      )
-
+      wd[startmode_widget.widget_id] = startmode_widget.cwm_definition
       wd[ifplugd_priority_widget.widget_id] = ifplugd_priority_widget.cwm_definition
 
       Ops.set(wd, ["IFCFGTYPE", "items"], BuildTypesListCWM(NetworkInterfaces.GetDeviceTypes))
