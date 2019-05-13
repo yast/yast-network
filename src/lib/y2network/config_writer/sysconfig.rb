@@ -44,7 +44,7 @@ module Y2Network
           file = routes_file_for(dev)
 
           # Remove ifroutes-* if empty
-          file.remove if  routes.empty?
+          file.remove if routes.empty?
 
           file.routes = routes
           file.save

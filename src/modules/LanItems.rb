@@ -1237,17 +1237,19 @@ module Yast
     end
 
     # Checks whether device need (known) firmware to be loaded
+    #
+    # @return [String, nil] name of well known driver or nil if not known
     def needFirmwareCurrentItem(iface)
-      need = if iface.hardware.driver
+      driver_name = if iface.hardware.driver
         @request_firmware.key?(iface.hardware.driver) ? iface.hardware.driver : nil
       else
         iface.hardware.drivers.find do |driver|
           driver if @request_firmware.key?(driver)
         end
       end
-      log.info("Device #{iface.hardware.name} need driver: #{need}")
+      log.info("Device #{iface.hardware.name} need driver: #{driver_name}")
 
-      need
+      driver_name
     end
 
     def GetFirmwareForCurrentItem(iface)
@@ -1321,6 +1323,7 @@ module Yast
     # Creates item's startmode human description
     #
     # @param devmap [Hash] Interface sysconfig configuration
+    # TODO: this is too sysconfig centric
     def startmode_overview(devmap)
       startmode_descrs = {
         # summary description of STARTMODE=auto
