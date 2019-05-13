@@ -1657,13 +1657,6 @@ module Yast
     #-------------------
     # PRIVATE FUNCTIONS
 
-    def SetDefaultsForHW
-      Builtins.y2milestone("SetDefaultsForHW type %1", @type)
-      @mtu = "1492" if Arch.s390 && Builtins.contains(["lcs", "eth"], @type)
-
-      nil
-    end
-
     # Distributes an ifcfg hash to individual attributes.
     # @param devmap   [Hash] an ifcfg, values are strings
     # @param defaults [Hash] should provide defaults for devmap
@@ -1945,16 +1938,6 @@ module Yast
       # when generating sysconfig configuration
       newdev = builder.device_sysconfig
 
-      # #104494 - always write IPADDR+NETMASK, even empty
-      # newdev["IPADDR"] = @ipaddr
-      # if !@prefix.empty?
-      # newdev["PREFIXLEN"] = @prefix
-      # else
-      # newdev["NETMASK"] = @netmask
-      # end
-
-      # newdev["REMOTE_IPADDR"] = @remoteip
-
       # set LLADDR to sysconfig only for device on layer2 and only these which needs it
       # do not write incorrect LLADDR.
       # FIXME: s390 - broken in network-ng
@@ -1969,9 +1952,7 @@ module Yast
       end
 
       #      newdev["ZONE"] = @firewall_zone
-      #      newdev["NAME"] = @description
 
-      #      newdev = setup_basic_device_options(newdev)
       newdev = setup_dhclient_options(newdev)
 
       # FIXME: network-ng currently works for eth only
@@ -2217,7 +2198,7 @@ module Yast
       Builtins.y2milestone("Propose configuration for %1", getCurrentItem)
       @operation = nil
       return false if Select("") != true
-      SetDefaultsForHW()
+      @mtu = "1492" if Arch.s390 && Builtins.contains(["lcs", "eth"], @type)
       @ipaddr = ""
       @netmask = ""
       @bootproto = "dhcp"
@@ -2886,7 +2867,6 @@ module Yast
     publish function: :isCurrentDHCP, type: "boolean ()"
     publish function: :GetItemDescription, type: "string ()"
     publish function: :SelectHWMap, type: "void (map)"
-    publish function: :SetDefaultsForHW, type: "void ()"
     publish function: :SetDeviceVars, type: "void (map, map)"
     publish function: :Select, type: "boolean (string)"
     publish function: :Commit, type: "boolean ()"
