@@ -472,7 +472,7 @@ module Yast
       end
 
       route_dest = "#{dest}/#{cidr}"
-      route["destination"] = route_dest.start_with?("0.0.0.0" ) ? "default" : route_dest
+      route["destination"] = route_dest.start_with?("0.0.0.0") ? "default" : route_dest
       route["netmask"] = "-"
 
       route
