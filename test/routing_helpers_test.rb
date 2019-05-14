@@ -69,13 +69,11 @@ describe "RoutingHelpers" do
       expect(routing.valid_netmask?("/255/")).to be false
       expect(routing.valid_netmask?("/255")).to be false
       expect(routing.valid_netmask?("/-255")).to be false
-      expect(routing.valid_netmask?("/0")).to be false
     end
 
     it "declines malformed IPv4 netmask" do
       expect(routing.valid_netmask?("/255.0.0.0")).to be false
       expect(routing.valid_netmask?("255.0.255.0")).to be false
-      expect(routing.valid_netmask?("0.0.0.0")).to be false
     end
   end
 end
