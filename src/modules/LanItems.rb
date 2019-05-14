@@ -1781,58 +1781,6 @@ module Yast
       SetS390Vars({}, @s390_defaults)
     end
 
-    def hotplug_usable?
-      true unless Ops.get_string(@Items, [@current, "hwinfo", "hotplug"], "").empty?
-    end
-
-    def replace_ifplugd?
-      return true if !Arch.is_laptop
-      return true if NetworkService.is_network_manager
-      return true if ["bond", "vlan", "br"].include? type
-
-      false
-    end
-
-    # returns default startmode for a new device
-    #
-    # startmode is returned according product, Arch and current device type
-    def new_device_startmode
-      product_startmode = ProductFeatures.GetStringFeature(
-        "network",
-        "startmode"
-      )
-
-      Builtins.y2milestone("Startmode by product: #{product_startmode}")
-
-      startmode = case product_startmode
-      when "ifplugd"
-        if replace_ifplugd?
-          hotplug_usable? ? "hotplug" : "auto"
-        else
-          product_startmode
-        end
-      when "auto"
-        "auto"
-      else
-        hotplug_usable? ? "hotplug" : "auto"
-      end
-
-      Builtins.y2milestone("New device startmode: #{startmode}")
-
-      startmode
-    end
-
-    # returns a map with device options for newly created item
-    def new_item_default_options
-      {
-        # bnc#46369
-        "NETMASK"                    => NetHwDetection.result["NETMASK"] || "255.255.255.0",
-        "STARTMODE"                  => new_device_startmode,
-        # bnc#883836 bnc#868187
-        "DHCLIENT_SET_DEFAULT_ROUTE" => "no"
-      }
-    end
-
     # Select the given device
     # FIXME: currently *dev* is always ""
     # @param [String] dev device to select ("" for new device, default values)
