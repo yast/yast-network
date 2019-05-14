@@ -2796,7 +2796,6 @@ module Yast
     publish function: :WriteUdevRules, type: "void ()"
     publish function: :GetModified, type: "boolean ()"
     publish function: :SetModified, type: "void ()"
-    publish function: :AddNew, type: "void ()"
     publish function: :GetItemModules, type: "list <string> (string)"
     publish function: :GetSlaveCandidates, type: "list <integer> (string, boolean (string, integer))"
     publish function: :GetBondableInterfaces, type: "list <integer> (string)"

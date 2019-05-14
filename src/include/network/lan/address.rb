@@ -901,7 +901,7 @@ module Yast
 
     # Dialog for setting up IP address
     # @return dialog result
-    def AddressDialog(builder: nil)
+    def AddressDialog(builder:)
       @builder = builder
       initialize_address_settings(builder)
 
