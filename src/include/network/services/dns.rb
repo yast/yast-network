@@ -425,19 +425,16 @@ module Yast
       when NONE_LABEL
         LanItems.clear_set_hostname
 
-        DNS.modified = true if DNS.dhcp_hostname
         DNS.dhcp_hostname = false
       when ANY_LABEL
         LanItems.clear_set_hostname
 
-        DNS.modified = true if !DNS.dhcp_hostname
         DNS.dhcp_hostname = true
       when NO_CHANGE_LABEL
         nil
       else
         LanItems.conf_set_hostname(device)
 
-        DNS.modified = true if DNS.dhcp_hostname
         DNS.dhcp_hostname = false
       end
 
