@@ -154,7 +154,7 @@ module Yast
       Sequencer.Run(aliases, sequence)
     end
 
-    def NetworkCardSequence(action, builder: nil)
+    def NetworkCardSequence(action, builder:)
       ws_start = case action
       when "add"
         "hardware"
@@ -186,7 +186,7 @@ module Yast
       Sequencer.Run(aliases, sequence)
     end
 
-    def AddressSequence(which, builder: nil)
+    def AddressSequence(which, builder:)
       # TODO: add builder wherever needed
       aliases = {
         "address"     => -> { AddressDialog(builder: builder) },
