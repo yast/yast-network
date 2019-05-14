@@ -135,7 +135,7 @@ module Yast
     # @param [String] gw ip of the default gateway
     # @return true if success
     def ReadFromGateway(gw)
-      return false if gw == "" || gw.nil?
+      return false if  gw == "" || gw.nil?
       @Routes = [
         {
           "destination" => "default",
