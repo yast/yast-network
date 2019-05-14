@@ -152,7 +152,7 @@ module Yast
       return true if Netmask.Check4(netmask)
 
       if netmask.start_with?("/")
-        return true if netmask[1..-1].to_i.between?(1, 128)
+        return true if netmask[1..-1].to_i.between?(0, 128)
       end
 
       false
@@ -471,7 +471,8 @@ module Yast
         raise ArgumentError, "Invalid netmask or prefix length: #{netmask}"
       end
 
-      route["destination"] = "#{dest}/#{cidr}"
+      route_dest = "#{dest}/#{cidr}"
+      route["destination"] = route_dest.start_with?("0.0.0.0" ) ? "default" : route_dest
       route["netmask"] = "-"
 
       route
