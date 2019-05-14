@@ -36,7 +36,7 @@ describe "LanItems#SetDeviceVars" do
     lan_items.SetDeviceVars({}, lan_items.instance_variable_get("@SysconfigDefaults"))
 
     expect(lan_items.bootproto).to eql "static"
-    expect(lan_items.startmode).to eql "manual"
+    expect(lan_items.startmode).to be_empty
     expect(lan_items.ifplugd_priority).to eql "0"
   end
 end

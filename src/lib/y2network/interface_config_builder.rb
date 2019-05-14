@@ -97,17 +97,17 @@ module Y2Network
 
       # #104494 - always write IPADDR+NETMASK, even empty
       # #50955 omit computable fields
-      config["BROADCAST"] = ""
-      config["NETWORK"] = ""
+      @config["BROADCAST"] = ""
+      @config["NETWORK"] = ""
 
-      if !config["NETMASK"] || config["NETMASK"].empty?
-        config["NETMASK"] = Yast::NetHwDetection.result["NETMASK"] || "255.255.255.0"
+      if !@config["NETMASK"] || @config["NETMASK"].empty?
+        @config["NETMASK"] = Yast::NetHwDetection.result["NETMASK"] || "255.255.255.0"
       end
-      if !config["STARTMODE"] || config["STARTMODE"].empty?
-        config["STARTMODE"] = new_device_startmode
+      if !@config["STARTMODE"] || @config["STARTMODE"].empty?
+        @config["STARTMODE"] = new_device_startmode
       end
-      if !config["DHCLIENT_SET_DEFAULT_ROUTE"] || config["DHCLIENT_SET_DEFAULT_ROUTE"].empty?
-        config["DHCLIENT_SET_DEFAULT_ROUTE"] = "no"
+      if !@config["DHCLIENT_SET_DEFAULT_ROUTE"] || @config["DHCLIENT_SET_DEFAULT_ROUTE"].empty?
+        @config["DHCLIENT_SET_DEFAULT_ROUTE"] = "no"
       end
     end
 
@@ -150,7 +150,7 @@ module Y2Network
     end
 
     def hotplug_usable?
-      Hwinfo.new(name).hotplug
+      Hwinfo.new(name: name).hotplug
     end
   end
 end
