@@ -22,48 +22,7 @@ require "yaml"
 
 module Y2Network
   module InterfaceDefaults
-    # returns default startmode for a new device
-    #
-    # startmode is returned according product, Arch and current device type
-    def new_device_startmode
-      Yast.import "ProductFeatures"
-
-      product_startmode = Yast::ProductFeatures.GetStringFeature(
-        "network",
-        "startmode"
-      )
-
-      startmode = case product_startmode
-      when "ifplugd"
-        if replace_ifplugd?
-          hotplug_usable? ? "hotplug" : "auto"
-        else
-          product_startmode
-        end
-      when "auto"
-        "auto"
-      else
-        hotplug_usable? ? "hotplug" : "auto"
-      end
-
-      startmode
-    end
-
-    # returns a map with device options for newly created item
-    def new_item_default_options
-      # FIXME: NetHwDetection is done in Lan.Read
-      Yast.import "NetHwDetection"
-
-      {
-        # bnc#46369
-        "NETMASK"                    => Yast::NetHwDetection.result["NETMASK"] || "255.255.255.0",
-        "STARTMODE"                  => new_device_startmode,
-        # bnc#883836 bnc#868187
-        "DHCLIENT_SET_DEFAULT_ROUTE" => "no"
-      }
-    end
-
-    # Initialiates device configuration map with default values when needed
+    # Initializes device configuration map with default values when needed
     #
     # @param devmap [Hash<String, String>] current device configuration
     #

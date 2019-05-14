@@ -16,6 +16,7 @@
 #
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
+require "yast"
 require "y2network/interface_defaults"
 
 module Y2Network
@@ -37,10 +38,7 @@ module Y2Network
     # see LanItems::new_item_default_options, LanItems::@SysconfigDefaults and
     # others as in LanItems::Select
     def initialize
-      # FIXME: following lines updates config with a lot of default options for
-      # various device types, we can filter useless options by type when the type
-      # gets set or vhen providing configuration back to the user
-      @config = init_device_config(new_item_default_options)
+      @config = init_device_config({})
       @s390_config = init_device_s390_config({})
     end
 
@@ -72,10 +70,8 @@ module Y2Network
       config = config.delete_if { |k, _| k == "IPOIB_MODE" } if type != "ib"
       config = config.delete_if { |k, _| k == "INTERFACE" } if type != "dummy"
 
-      # #104494 - always write IPADDR+NETMASK, even empty
-      # #50955 omit computable fields
-      config["BROADCAST"] = ""
-      config["NETWORK"] = ""
+      # initalize options which has to be known and was not set by the user explicitly
+      init_mandatory_options
 
       config
     end
@@ -90,6 +86,71 @@ module Y2Network
 
     def load_s390_config(devmap)
       @s390_config = !devmap.nil? ? @s390_config.merge(devmap) : @s390_config
+    end
+
+  private
+
+    # returns a map with device options for newly created item
+    def init_mandatory_options
+      # FIXME: NetHwDetection is done in Lan.Read
+      Yast.import "NetHwDetection"
+
+      # #104494 - always write IPADDR+NETMASK, even empty
+      # #50955 omit computable fields
+      config["BROADCAST"] = ""
+      config["NETWORK"] = ""
+
+      if !config["NETMASK"] || config["NETMASK"].empty?
+        config["NETMASK"] = Yast::NetHwDetection.result["NETMASK"] || "255.255.255.0"
+      end
+      if !config["STARTMODE"] || config["STARTMODE"].empty?
+        config["STARTMODE"] = new_device_startmode
+      end
+      if !config["DHCLIENT_SET_DEFAULT_ROUTE"] || config["DHCLIENT_SET_DEFAULT_ROUTE"].empty?
+        config["DHCLIENT_SET_DEFAULT_ROUTE"] = "no"
+      end
+    end
+
+    # returns default startmode for a new device
+    #
+    # startmode is returned according product, Arch and current device type
+    def new_device_startmode
+      Yast.import "ProductFeatures"
+
+      product_startmode = Yast::ProductFeatures.GetStringFeature(
+        "network",
+        "startmode"
+      )
+
+      startmode = case product_startmode
+      when "ifplugd"
+        if replace_ifplugd?
+          hotplug_usable? ? "hotplug" : "auto"
+        else
+          product_startmode
+        end
+      when "auto"
+        "auto"
+      else
+        hotplug_usable? ? "hotplug" : "auto"
+      end
+
+      startmode
+    end
+
+    def replace_ifplugd?
+      Yast.import "Arch"
+      Yast.import "NetworkService"
+
+      return true if !Yast::Arch.is_laptop
+      return true if Yast::NetworkService.is_network_manager
+      return true if ["bond", "vlan", "br"].include? type
+
+      false
+    end
+
+    def hotplug_usable?
+      Hwinfo.new(name).hotplug
     end
   end
 end
