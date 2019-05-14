@@ -34,56 +34,6 @@ require "shellwords"
 
 module Yast
   class RoutingClass < Module
-    # @return [Array<String>] names of devices with sysconfig configuration
-    attr_reader :devices
-
-    include Logger
-
-    # @attribute Routes
-    # Entries of a routes(5) style routing table.
-    #
-    # An array of hashes whose keys are
-    #
-    # - "destination"
-    #     May be "default", "10.20.0.0/16" (then netmask is "-")
-    #     or "10.20.0.0" (then netmask must be a quad)
-    # - "gateway"
-    # - "netmask"
-    # - "device"
-    # - "extrapara"
-    #
-    # but the values depend on which flavor of RoutingHash this is:
-    # - the quad flavor: netmask has the form "255.255.0.0"
-    # - the CIDR flavor: netmask must be "-" (and destination is 1.1.1.1/16)
-    # - the slash flavor (only for the UI): netmask has the form "/16"
-    #
-    # @return [Array<Hash>] routing table entries
-
-    # @attribute Orig_Routes [Array]        array of hashes. Caches known routes
-    #
-    # @attribute Orig_Forward_v4 [Boolean]  current status of ipv4 forwarding
-    # @attribute Orig_Forward_v6 [Boolean]  current status of ipv6 forwarding
-    #
-    # @attribute modified [Boolean]         modified by AY (bnc#649494)
-
-    # "routes" and ifroute-DEV file directory
-    ROUTES_DIR  = "/etc/sysconfig/network".freeze
-    # "routes" file location
-    ROUTES_FILE = "/etc/sysconfig/network/routes".freeze
-
-    # sysctl keys, used as *single* SCR path components below
-    IPV4_SYSCTL = "net.ipv4.ip_forward".freeze
-    IPV6_SYSCTL = "net.ipv6.conf.all.forwarding".freeze
-    # SCR paths
-    SYSCTL_AGENT_PATH = ".etc.sysctl_conf".freeze
-    SYSCTL_IPV4_PATH = SYSCTL_AGENT_PATH + ".\"#{IPV4_SYSCTL}\""
-    SYSCTL_IPV6_PATH = SYSCTL_AGENT_PATH + ".\"#{IPV6_SYSCTL}\""
-
-    # see man routes - difference on implicit device param (aka "-") in
-    # case of /etc/sysconfig/network/routes and /etc/sysconfig/network/
-    # /ifroute-<device>
-    ANY_DEVICE = "-".freeze
-
     def main
       Yast.import "UI"
       textdomain "network"

@@ -6,7 +6,6 @@ module Yast
   Yast.import "UI"
   Yast.import "LanItems"
   Yast.import "Popup"
-  Yast.import "Routing"
 
   # The class represents a simple dialog which allows user to input new NIC
   # name. It also allows to select a device attribute (MAC, Bus id, ...) which will
@@ -74,11 +73,7 @@ module Yast
         # FIXME: it changes udev key used for device identification
         #  and / or its value only, name is changed elsewhere
         LanItems.update_item_udev_rule!(udev_type)
-
-        if new_name != old_name
-          LanItems.update_routing_devices!
-          LanItems.update_routes!(old_name) if update_routes?(old_name)
-        end
+        LanItems.rename_current_device_in_routing(old_name) if new_name != old_name
       end
 
       close

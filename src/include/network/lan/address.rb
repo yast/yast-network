@@ -55,7 +55,6 @@ module Yast
       Yast.import "NetworkInterfaces"
       Yast.import "Popup"
       Yast.import "ProductFeatures"
-      Yast.import "Routing"
       Yast.import "String"
       Yast.import "Wizard"
       Yast.import "Map"
@@ -1376,12 +1375,13 @@ module Yast
               )
             )
             Routing.RemoveDefaultGw if remove_gw
+
           end
         end
 
         # When virtual interfaces are added the list of routing devices needs
         # to be updated to offer them
-        LanItems.update_routing_devices! if LanItems.update_routing_devices?
+        LanItems.add_current_device_to_routing if LanItems.update_routing_devices?
       end
 
       if LanItems.type == "vlan"

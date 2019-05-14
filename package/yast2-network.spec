@@ -17,7 +17,8 @@
 
 
 Name:           yast2-network
-Version:        4.1.46
+
+Version:        4.2.2
 Release:        0
 BuildArch:      noarch
 
@@ -88,11 +89,8 @@ rake install DESTDIR="%{buildroot}"
 
 %files
 %defattr(-,root,root)
-%{yast_ybindir}/*
 %{yast_yncludedir}/network
 %{yast_clientdir}/*.rb
-%dir %{yast_moduledir}/YaPI
-%{yast_moduledir}/YaPI/NETWORK.pm
 %{yast_moduledir}/*.rb
 %{yast_desktopdir}/*.desktop
 %{yast_scrconfdir}/*.scr

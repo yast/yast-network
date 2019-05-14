@@ -28,71 +28,38 @@
 #
 #
 # Routing configuration dialogs
+
+require "y2network/dialogs/route"
+require "y2network/routing_table"
+require "y2network/widgets/routing_table"
+require "y2network/widgets/routing_buttons"
+require "y2network/widgets/ip4_forwarding"
+require "y2network/widgets/ip6_forwarding"
+
 module Yast
   module NetworkServicesRoutingInclude
     include Yast::I18n
     include Yast::UIShortcuts
+    include Yast::Logger
 
-    def initialize_network_services_routing(include_target)
-      Yast.import "UI"
-
+    def initialize_network_services_routing(_include_target)
       textdomain "network"
 
-      Yast.import "IP"
       Yast.import "Label"
-      Yast.import "Netmask"
-      Yast.import "Popup"
-      Yast.import "Routing"
       Yast.import "Wizard"
-      Yast.import "Lan"
       Yast.import "CWM"
-      Yast.import "CWMTab"
-      Yast.import "NetworkService"
+      Yast.import "Lan"
+    end
 
-      Yast.include include_target, "network/lan/help.rb"
-      Yast.include include_target, "network/routines.rb"
-
-      @r_items = []
-      @defgw = ""
-      @defgwdev = ""
-
-      @defgw6 = ""
-      @defgwdev6 = ""
-      @wd_routing = {
-        "ROUTING" => {
-          "widget"            => :custom,
-          "custom_widget"     => HBox(
-            HSpacing(5),
-            routing_box_widget,
-            HSpacing(5)
-          ),
-          "init"              => fun_ref(method(:initRouting), "void (string)"),
-          "handle"            => fun_ref(
-            method(:handleRouting),
-            "symbol (string, map)"
-          ),
-          "validate_type"     => :function,
-          "validate_function" => fun_ref(
-            method(:validateRouting),
-            "boolean (string, map)"
-          ),
-          "store"             => fun_ref(
-            method(:storeRouting),
-            "void (string, map)"
-          ),
-          "help"              => Ops.get_string(@help, "routing", "")
-        }
-      }
-
-      @route_td = {
+    def route_td
+      {
         "route" => {
           "header"       => _("Routing"),
-          "contents"     => VBox("ROUTING"),
-          "widget_names" => ["ROUTING"]
+          "contents"     => content,
+          "widget_names" => widgets.keys
         }
       }
     end
-
     # Validates user's input obtained from Netmask field
     #
     # It currently allows to use netmask for IPv4 (e.g. 255.0.0.0) or
@@ -466,6 +433,7 @@ module Yast
       Routing.Forward_v6 = UI.QueryWidget(Id(:forward_v6), :Value)
 
       nil
+
     end
 
     # Main routing dialog
@@ -474,18 +442,14 @@ module Yast
       caption = _("Routing Configuration")
 
       functions = {
-        "init"  => fun_ref(method(:initRouting), "void (string)"),
-        "store" => fun_ref(method(:storeRouting), "void (string, map)"),
-        :abort  => fun_ref(method(:ReallyAbort), "boolean ()")
+        abort: Yast::FunRef.new(method(:ReallyAbort), "boolean ()")
       }
-
-      contents = VBox("ROUTING")
 
       Wizard.HideBackButton
 
       CWM.ShowAndRun(
-        "widget_descr"       => @wd_routing,
-        "contents"           => contents,
+        "widget_descr"       => widgets,
+        "contents"           => content,
         "caption"            => caption,
         "back_button"        => Label.BackButton,
         "next_button"        => Label.NextButton,
@@ -495,66 +459,64 @@ module Yast
 
   private
 
-    def default_static_ipv4_gw_widget
-      HBox(
-        InputField(Id(:gw), Opt(:hstretch), _("Default IPv4 &Gateway")),
-        ComboBox(Id(:gw4dev), Opt(:editable), _("Device"), [])
-      )
+    def config
+      # TODO: get it from some config holder
+      @routing_config ||= Yast::Lan.yast_config
     end
 
-    def default_static_ipv6_gw_widget
-      HBox(
-        InputField(Id(:gw6), Opt(:hstretch), _("Default IPv6 &Gateway")),
-        ComboBox(Id(:gw6dev), Opt(:editable), _("Device"), [])
-      )
+    def routing_table
+      @routing_table_widget ||= Y2Network::Widgets::RoutingTable.new(config.routing.tables.first)
     end
 
-    def routing_box_widget
+    def ip4_forwarding
+      @ip4_forwarding_widget ||= Y2Network::Widgets::IP4Forwarding.new(config)
+    end
+
+    def ip6_forwarding
+      @ip6_forwarding_widget ||= Y2Network::Widgets::IP6Forwarding.new(config)
+    end
+
+    def add_button
+      @add_button ||= Y2Network::Widgets::AddRoute.new(routing_table, config)
+    end
+
+    def edit_button
+      @edit_button ||= Y2Network::Widgets::EditRoute.new(routing_table, config)
+    end
+
+    def delete_button
+      @delete_button ||= Y2Network::Widgets::DeleteRoute.new(routing_table)
+    end
+
+    def content
       VBox(
-        VStretch(),
-        # ComboBox label
-        default_static_ipv4_gw_widget,
-        default_static_ipv6_gw_widget,
-        VSpacing(1),
+        Left(ip4_forwarding.widget_id),
+        Left(ip6_forwarding.widget_id),
+        VSpacing(),
         # Frame label
         Frame(
           _("Routing Table"),
           VBox(
-            # CheckBox label
-            Table(
-              Id(:table),
-              Opt(:notify),
-              Header(
-                # Table header 1/4
-                _("Destination"),
-                # Table header 2/4
-                _("Gateway"),
-                # Table header 3/4
-                _("Netmask"),
-                # Table header 4/4
-                _("Device"),
-                # Table header 5/4
-                # FIXME
-                Builtins.deletechars(Label.Options, "&")
-              ),
-              []
-            ),
-            # PushButton label
+            routing_table.widget_id,
             HBox(
-              PushButton(Id(:add), _("Ad&d")),
-              # PushButton label
-              PushButton(Id(:edit), _("&Edit")),
-              # PushButton label
-              PushButton(Id(:delete), _("De&lete"))
+              add_button.widget_id,
+              edit_button.widget_id,
+              delete_button.widget_id
             )
           )
-        ),
-        VSpacing(1),
-        # CheckBox label
-        Left(CheckBox(Id(:forward_v4), _("Enable &IPv4 Forwarding"))),
-        Left(CheckBox(Id(:forward_v6), _("Enable I&Pv6 Forwarding"))),
-        VStretch()
+        )
       )
+    end
+
+    def widgets
+      {
+        routing_table.widget_id  => routing_table.cwm_definition,
+        ip4_forwarding.widget_id => ip4_forwarding.cwm_definition,
+        ip6_forwarding.widget_id => ip6_forwarding.cwm_definition,
+        add_button.widget_id     => add_button.cwm_definition,
+        edit_button.widget_id    => edit_button.cwm_definition,
+        delete_button.widget_id  => delete_button.cwm_definition
+      }
     end
   end
 end
