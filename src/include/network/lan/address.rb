@@ -168,13 +168,6 @@ module Yast
           "opt"    => [:hstretch],
           "help"   => _("<p>TODO kind of vague!</p>")
         },
-        "MANDATORY"                   => {
-          "widget" => :checkbox,
-          # check box label
-          "label"  => _("&Mandatory Interface"),
-          "opt"    => [],
-          "help"   => Ops.get_string(@help, "mandatory", "")
-        },
         mtu_widget.widget_id          => mtu_widget.cwm_definition,
         "IFCFGTYPE"                   => {
           "widget"            => :combobox,
@@ -817,7 +810,6 @@ module Yast
               1,
               0,
               VBox(
-                # TODO: "MANDATORY",
                 Frame(
                   _("Device Activation"),
                   HBox(startmode_widget.widget_id, ifplugd_priority_widget.widget_id, HStretch())
