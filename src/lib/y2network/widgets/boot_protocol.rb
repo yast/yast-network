@@ -7,6 +7,7 @@ Yast.import "Label"
 Yast.import "Netmask"
 Yast.import "NetHwDetection"
 Yast.import "Popup"
+Yast.import "ProductFeatures"
 Yast.import "UI"
 
 module Y2Network
@@ -278,6 +279,41 @@ module Y2Network
         end
 
         true
+      end
+
+      def help
+        res = _(
+          "<p><b><big>Address Setup</big></b></p>\n" \
+            "<p>Select <b>No Address Setup</b> if you do not want to assign an IP address to this device.\n" \
+            "This is particularly useful for bonding ethernet devices.</p>\n"
+        ) +
+          _(
+            "<p>Check <b>iBFT</b> if you want to keep the network configured in your BIOS.</p>\n"
+          ) +
+          # Address dialog help 2/8
+          _(
+            "<p>Select <b>Dynamic Address</b> if you do not have a static IP address \nassigned by the system administrator or your Internet provider.</p>\n"
+          ) +
+          # Address dialog help 3/8
+          _(
+            "<p>Choose one of the dynamic address assignment methods. Select <b>DHCP</b>\n" \
+              "if you have a DHCP server running on your local network. Network addresses \n" \
+              "are then automatically obtained from the server.</p>\n"
+          ) +
+          # Address dialog help 4/8
+          _(
+            "<p>To search for an IP address and assign it statically, select \n" \
+              "<b>Zeroconf</b>. To use DHCP and fall back to zeroconf, select <b>DHCP + Zeroconf\n" \
+              "</b>. Otherwise, the network addresses must be assigned <b>Statically</b>.</p>\n"
+          )
+
+        if Yast::ProductFeatures.GetBooleanFeature("network", "force_static_ip")
+          res += _(
+            "<p>DHCP configuration is not recommended for this product.\nComponents of this product might not work with DHCP.</p>"
+          )
+        end
+
+        res
       end
 
       def dynamic_enabled(value)
