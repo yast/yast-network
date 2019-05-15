@@ -142,7 +142,7 @@ module Y2Network
           Yast::UI.ChangeWidget(Id(:bootproto), :CurrentButton, :bootproto_dynamic)
           Yast::UI.ChangeWidget(Id(:bootproto_dyn), :Value, :bootproto_auto)
         when "none"
-          Yast::UI.ChangeWidget(Id(:bootproto), :CurrentButton, :none)
+          Yast::UI.ChangeWidget(Id(:bootproto), :CurrentButton, :bootproto_none)
         when "ibft"
           Yast::UI.ChangeWidget(Id(:bootproto), :CurrentButton, :bootproto_none)
           Yast::UI.ChangeWidget(Id(:bootproto_ibft), :Value, true)
