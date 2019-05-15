@@ -1,4 +1,3 @@
-Yast.import "LanItems"
 require "cwm/common_widgets"
 
 module Y2Network
