@@ -5,7 +5,7 @@ module Y2Network
     # This class represents a bonding connection
     #
     # @see https://www.kernel.org/doc/Documentation/networking/bonding.txt
-    class Bond < Connection
+    class Bond < Config
       # @return [Array<Interface>]
       attr_accessor :slaves
       # @return [String] bond driver options

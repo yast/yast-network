@@ -2,7 +2,8 @@ require "y2network/connection/connection"
 
 module Y2Network
   module Connection
-    class Ethernet < Connection
+    # Profile settings for ethernet connections
+    class Ethernet < Config
     end
   end
 end

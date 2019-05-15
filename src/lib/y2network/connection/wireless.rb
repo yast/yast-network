@@ -2,7 +2,8 @@ require "y2network/connection/connection"
 
 module Y2Network
   module Connection
-    class Wireless < Connection
+    # Profile settings for wireless connections
+    class Wireless < Config
       # wireless options
       # @return [String]
       attr_accessor :mode

@@ -1,8 +1,12 @@
+require "yast"
+require "y2network/config"
 require "y2network/connection/ethernet"
 require "y2network/connection/bond"
 require "y2network/connection/wireless"
 
 # given an interfaces list (interfaces)
+
+config = Y2Network::Config.from(:sysconfig)
 
 eth0 = config.interfaces.find("eth0")
 eth_conn = Y2Network::Connection::Ethernet.new
