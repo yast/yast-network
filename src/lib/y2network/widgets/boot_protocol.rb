@@ -287,6 +287,8 @@ module Y2Network
             "<p>Select <b>No Address Setup</b> if you do not want to assign an IP address to this device.\n" \
             "This is particularly useful for bonding ethernet devices.</p>\n"
         ) +
+          # FIXME: old CWM does not allow this, but for future this should be dynamic and printed only if iBFT is available
+          # and future means when type cannot be changed and when cwm object tabs are used, as it has limited lifetime of cwm definition
           _(
             "<p>Check <b>iBFT</b> if you want to keep the network configured in your BIOS.</p>\n"
           ) +
