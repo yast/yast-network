@@ -317,20 +317,22 @@ module Yast
       !Arch.s390 || s390_DriverLoaded(devname)
     end
 
+    def enableCurrentEditButton(iface)
+      # FIXME: needFirmwareCurrentItem has changed signature -> check and fix this call if needed
+      # return true if needFirmwareCurrentItem
+      return true if Arch.s390
+      (iface.hardware.exists? && iface.hardware.dev_name.empty?) ? false : true
+    end
+
     def enableDisableButtons
-      LanItems.current = Convert.to_integer(
-        UI.QueryWidget(Id(:_hw_items), :CurrentItem)
-      )
+      iface = selected_interface
 
+      # FIXME: not working in network-ng
       UI.ChangeWidget(:_hw_sum, :Value, LanItems.GetItemDescription)
-      if !LanItems.IsCurrentConfigured # unconfigured
-        UI.ChangeWidget(Id(:delete), :Enabled, false)
-      else
-        UI.ChangeWidget(Id(:delete), :Enabled, true)
-      end
+      UI.ChangeWidget(Id(:delete), :Enabled, iface.configured)
+      UI.ChangeWidget(Id(:edit), :Enabled, enableCurrentEditButton(iface))
 
-      UI.ChangeWidget(Id(:edit), :Enabled, LanItems.enableCurrentEditButton)
-
+      # FIXME: not working in network-ng
       if !Mode.config && Lan.HaveXenBridge # #196479
         # #178848
         overview_buttons.keys.each { |b| UI.ChangeWidget(Id(b), :Enabled, false) }
@@ -429,10 +431,6 @@ module Yast
       end
       UI.ChangeWidget(:_hw_sum, :Value, LanItems.GetItemDescription)
 
-      # name is currently used as item id
-      iface_name = UI.QueryWidget(Id(:_hw_items), :CurrentItem)
-      config = Y2Network::Config.find(:yast)
-
       if Ops.get_string(event, "EventReason", "") == "Activated"
         case Ops.get_symbol(event, "ID")
         when :add
@@ -453,7 +451,7 @@ module Yast
 
           return :add
         when :edit
-          iface = config.interfaces.find(iface_name)
+          iface = selected_interface
           # FIXME: turn following lines into something like builder.load(iface) ?
           @builder.name = iface.name
           @builder.type = iface.type
@@ -511,9 +509,9 @@ module Yast
           return :edit
 
         when :delete
+          iface = selected_interface
           # warn user when device to delete has STARTMODE=nfsroot (bnc#433867)
-          devmap = LanItems.GetCurrentMap
-          if devmap && devmap["STARTMODE"] == "nfsroot"
+          if iface.configured && iface.startmode == "nfsroot"
             if !Popup.YesNoHeadline(
               Label.WarningMsg,
               _("Device you select has STARTMODE=nfsroot. Really delete?")
@@ -524,6 +522,7 @@ module Yast
             end
           end
 
+          # FIXME: not working in network-ng
           LanItems.DeleteItem
           initOverview("")
         end
@@ -645,6 +644,20 @@ module Yast
       ret[:delete] = Label.DeleteButton
 
       ret
+    end
+
+    # Returns interface currently selected by the user in overview dialog
+    #
+    # @return [Interface] interface object for selected interface
+    def selected_interface
+      # name is currently used as item id
+      iface_name = UI.QueryWidget(Id(:_hw_items), :CurrentItem)
+      config = Y2Network::Config.find(:yast)
+      iface = config.interfaces.find(iface_name)
+
+      raise "Cannot find selected interface" if iface.nil?
+
+      iface
     end
   end
 end
