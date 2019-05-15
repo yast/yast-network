@@ -62,6 +62,13 @@ module Y2Network
       interfaces.push(Interface.new(name))
     end
 
+    # Removes an interface with the given name from the collection
+    #
+    # @param name [String] Interface's name
+    def remove(name)
+      interfaces.delete_if { |i| i.name == name }
+    end
+
     # Compares InterfacesCollections
     #
     # @return [Boolean] true when both collections contain only equal interfaces,

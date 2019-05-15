@@ -522,8 +522,14 @@ module Yast
             end
           end
 
-          # FIXME: not working in network-ng
-          LanItems.DeleteItem
+          # FIXME: DeleteItem not working in network-ng,
+          # contains mostly stuff around LanItems::Items
+          # but also some important things related to /etc/hosts and routing
+          # LanItems.DeleteItem
+          NetworkInterfaces.Delete2(iface.name) # really name, not current_name
+          # FIXME: remove interface even from bridges, bonds, vlans, ... it has not
+          # been implemented and not working up to know
+          config.interfaces.remove(iface.name)
           initOverview("")
         end
       end

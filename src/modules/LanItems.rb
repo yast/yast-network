@@ -2187,21 +2187,6 @@ module Yast
       nil
     end
 
-    def enableCurrentEditButton
-      # FIXME: needFirmwareCurrentItem has changed signature -> check and fix this call if needed
-      # return true if needFirmwareCurrentItem
-      return true if Arch.s390
-      if IsEmpty(Ops.get_string(getCurrentItem, ["hwinfo", "dev_name"], "")) &&
-          Ops.greater_than(
-            Builtins.size(Ops.get_map(getCurrentItem, "hwinfo", {})),
-            0
-          )
-        return false
-      else
-        return true
-      end
-    end
-
     # Creates eth emulation for s390 devices
     #
     # @param dev_attrs [Hash] an s390 device description (e.g. as obtained from AY profile).
@@ -2823,7 +2808,6 @@ module Yast
     publish function: :SetItem, type: "void ()"
     publish function: :ProposeItem, type: "boolean ()"
     publish function: :setDriver, type: "void (string)"
-    publish function: :enableCurrentEditButton, type: "boolean ()"
     publish function: :createS390Device, type: "boolean ()"
     publish function: :find_dhcp_ifaces, type: "list <string> ()"
   end
