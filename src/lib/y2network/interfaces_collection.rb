@@ -44,13 +44,13 @@ module Y2Network
     # Constructor
     #
     # @param interfaces [Array<Interface>] List of interfaces
-    def initialize(interfaces)
+    def initialize(interfaces = [])
       @interfaces = interfaces
     end
 
     # @param name [String] Returns the interface with the given name
     def find(name)
-      interfaces.find { |i| !i.name.nil? ? i.name == name : i.hardware.name }
+      interfaces.find { |i| i.name ? i.name == name : i.hardware.name }
     end
 
     # Add an interface with the given name

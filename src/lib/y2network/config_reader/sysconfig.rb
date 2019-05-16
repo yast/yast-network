@@ -112,7 +112,7 @@ module Y2Network
       def link_routes_to_interfaces(routes, interfaces)
         routes.each do |route|
           next unless route.interface
-          interface = interfaces.find { |i| route.interface.name == i.name }
+          interface = interfaces.find(route.interface.name)
           route.interface = interface if interface
         end
       end

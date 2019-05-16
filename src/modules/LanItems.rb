@@ -2694,7 +2694,7 @@ module Yast
     def rename_current_device_in_routing(old_name)
       config = yast_config
       return if config.nil?
-      interface = config.interfaces.find { |i| i.name == old_name }
+      interface = config.interfaces.find(old_name)
       return unless interface
       interface.name = current_name
     end
