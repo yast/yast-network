@@ -21,8 +21,9 @@ require "y2network/interface"
 require "y2network/hwinfo"
 
 module Y2Network
+  # Physical interface class (ethernet, wireless, infiniband...)
   class PhysicalInterface < Interface
-    # @return [HardwareInfo]
+    # @return [Hwinfo]
     attr_accessor :hwinfo
   end
 end

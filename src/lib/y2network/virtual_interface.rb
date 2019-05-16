@@ -20,6 +20,7 @@
 require "y2network/interface"
 
 module Y2Network
+  # Virtual Interface Class (veth, bond, bridge, vlan, dummy...)
   class VirtualInterface < Interface
   end
 end
