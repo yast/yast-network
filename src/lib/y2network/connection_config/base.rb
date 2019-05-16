@@ -23,6 +23,13 @@ module Y2Network
   module ConnectionConfig
     # This class is reponsible of a connection configuration
     class Base
+      # A connection could belongs to a specific interface or not. In case of
+      # no specific interface then it could be activated by the first available
+      # device.
+      #
+      # #FIXME: Maybe it could be a matcher instead of an Interface, or just a
+      # the interface name by now.
+      #
       # @return [Interface, nil]
       attr_accessor :interface
       # @return [String] Bootproto (static, dhcp, ,dhcp4, dhcp6, autoip,
