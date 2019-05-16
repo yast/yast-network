@@ -25,7 +25,8 @@ module Y2Network
     class Base
       # @return [Interface, nil]
       attr_accessor :interface
-      # @return [String] Bootproto (static, dhcp, none)
+      # @return [String] Bootproto (static, dhcp, ,dhcp4, dhcp6, autoip,
+      #   dhcp+autoip, auto6, 6to4, none)
       attr_accessor :bootproto
       # @return [IPAddr,nil]
       attr_accessor :ip_address

@@ -24,13 +24,16 @@ module Y2Network
     # Configuration for wireless connections
     class Wireless < Base
       # wireless options
-      # @return [String]
+      #
+      # FIXME: Consider an enum
+      # @return [String] (Ad-hoc, Managed, Master)
       attr_accessor :mode
       # @return [String]
       attr_accessor :essid
       # @return [Integer]
       attr_accessor :nwid
-      # @return [String]
+      # FIXME: Consider an enum
+      # @return [String] (no-encription, open, sharedkey, eap, psk)
       attr_accessor :auth_mode
       # FIXME: Consider moving keys to different classes.
       # @return [String]
@@ -56,7 +59,8 @@ module Y2Network
       attr_accessor :accesspoint
       # @return [Boolean]
       attr_accessor :power
-      # @return [String]
+      # FIXME: Consider an enum
+      # @return [Integer] (0, 1, 2)
       attr_accessor :ap_scanmode
     end
   end
