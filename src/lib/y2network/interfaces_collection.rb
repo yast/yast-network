@@ -65,7 +65,7 @@ module Y2Network
     # @return [Boolean] true when both collections contain only equal interfaces,
     #                   false otherwise
     def ==(other)
-      @interfaces - other.interfaces && other.interfaces == @interfaces
+      ((interfaces - other.interfaces) | (other.interfaces - interfaces)).empty?
     end
 
     alias_method :eql?, :==

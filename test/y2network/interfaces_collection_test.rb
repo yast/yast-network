@@ -49,4 +49,22 @@ describe Y2Network::InterfacesCollection do
       expect(collection.find(wlan1.name)).to eq(wlan1)
     end
   end
+
+  describe "#==" do
+    context "when the given collection contains the same interfaces" do
+      let(:other) { described_class.new([wlan0, eth0]) }
+
+      it "returns true" do
+        expect(collection).to eq(other)
+      end
+    end
+
+    context "when the given collection does not contain the same interfaces" do
+      let(:other) { described_class.new([eth0]) }
+
+      it "returns false" do
+        expect(collection).to_not eq(other)
+      end
+    end
+  end
 end
