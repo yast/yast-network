@@ -21,7 +21,7 @@ bond.options = "mode=active-backup miimon=100"
 bond.interface = Y2Network::VirtualInterface.new("bond0")
 config.interfaces << bond
 
-wlan0 = config.interfaces.find {|i| i.name == "wlan0" }
+wlan0 = config.interfaces.find { |i| i.name == "wlan0" }
 wlan_conn = Y2Network::ConnectionConfig::Wireless.new
 wlan_conn.essid = "TEST_WIFI"
 wlan_conn.interface = wlan0
