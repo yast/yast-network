@@ -1,3 +1,4 @@
+require "yast"
 require "cwm/custom_widget"
 
 Yast.import "DNS"
@@ -63,7 +64,6 @@ module Y2Network
               )
             ),
             VBox(
-              # TODO : Stat ... Assigned
               Left(
                 RadioButton(
                   Id(:bootproto_static),
@@ -199,7 +199,7 @@ module Y2Network
             @settings["PREFIXLEN"] = mask[1..-1]
           else
             param = Yast::Netmask.Check6(mask) ? "PREFIXLEN" : "NETMASK"
-            @settings[param] = @mask
+            @settings[param] = mask
           end
           @settings["HOSTNAME"] = Yast::UI.QueryWidget(:bootproto_hostname, :Value)
         when :bootproto_dynamic
@@ -231,14 +231,14 @@ module Y2Network
         return true if value != :bootproto_static
 
         ipa = Yast::UI.QueryWidget(:bootproto_ipaddr, :Value)
-        if !ipa.empty? && !Yast::IP.Check(ipa)
+        if !Yast::IP.Check(ipa)
           Yast::Popup.Error(_("No valid IP address."))
           Yast::UI.SetFocus(:bootproto_ipaddr)
           return false
         end
 
         mask = Yast::UI.QueryWidget(:bootproto_netmask, :Value)
-        if ipa != "" && mask != "" && !valid_netmask(ipa, mask)
+        if mask != "" && !valid_netmask(ipa, mask)
           Popup.Error(_("No valid netmask or prefix length."))
           Yast::UI.SetFocus(:bootproto_netmask)
           return false
