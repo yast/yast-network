@@ -17,12 +17,14 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/interface"
-require "y2network/hwinfo"
-
 module Y2Network
-  class PhysicalInterface < Interface
-    # @return [HardwareInfo]
-    attr_accessor :hwinfo
+  # Physical interface hardware information
+  class Hwinfo
+    # @return [Hash] hwinfo
+    attr_accessor :data
+
+    def initialize(data)
+      @data = data
+    end
   end
 end
