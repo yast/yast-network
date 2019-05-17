@@ -18,8 +18,8 @@
 # find current contact information at www.suse.com.
 
 require "y2network/interface"
-require "y2network/interfaces/physical"
-require "y2network/interfaces/virtual"
+require "y2network/physical_interface"
+require "y2network/virtual_interface"
 require "forwardable"
 
 module Y2Network
