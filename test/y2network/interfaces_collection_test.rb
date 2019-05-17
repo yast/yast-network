@@ -42,6 +42,19 @@ describe Y2Network::InterfacesCollection do
     end
   end
 
+  describe "#delete_if" do
+    it "deletes elements which meet a condition" do
+      expect(collection.by_name("eth0")).to eq(eth0)
+      collection.delete_if { |i| i.name == "eth0" }
+      expect(collection.by_name("eth0")).to be_nil
+    end
+
+    it "returns the collection" do
+      same_collection = collection.delete_if { |i| i.name == "eth0" }
+      expect(same_collection).to eq(collection)
+    end
+  end
+
   describe "#==" do
     context "when the given collection contains the same interfaces" do
       let(:other) { described_class.new([wlan0, eth0]) }

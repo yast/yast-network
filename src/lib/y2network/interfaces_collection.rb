@@ -43,13 +43,12 @@ module Y2Network
     #   interfaces.of_type(:eth).to_a # => [eth0]
 
     extend Forwardable
-    include Enumerable
 
     # @return [Array<Interface>] List of interfaces
     attr_reader :interfaces
-    alias_method :interfaces, :to_a
+    alias_method :to_a, :interfaces
 
-    def_delegators :@interfaces, :each, :push, :<<, :reject!
+    def_delegators :@interfaces, :each, :push, :<<, :reject!, :map, :flat_map, :any?
 
     # Constructor
     #
@@ -65,7 +64,15 @@ module Y2Network
     # @param name [String] Returns the interface with the given name
     # @return [Interface,nil] Interface with the given name or nil if not found
     def by_name(name)
-      find { |i| i.name ? i.name == name : i.hardware.name }
+      interfaces.find { |i| i.name ? i.name == name : i.hardware.name }
+    end
+
+    # Deletes elements which meet a given condition
+    #
+    # @return [InterfacesCollection]
+    def delete_if(&block)
+      interfaces.delete_if(&block)
+      self
     end
 
     # Compares InterfacesCollections

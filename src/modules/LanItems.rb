@@ -2709,7 +2709,7 @@ module Yast
       return if config.nil?
       name = current_name
       return if name.empty?
-      config.interfaces.reject! { |i| i.name == name }
+      config.interfaces.delete_if { |i| i.name == name }
     end
 
   private
