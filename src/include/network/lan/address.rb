@@ -27,6 +27,7 @@
 # Authors:	Michal Svec <msvec@suse.cz>
 #
 require "y2firewall/helpers/interfaces"
+require "y2network/widgets/boot_protocol"
 require "y2network/widgets/firewall_zone"
 require "y2network/widgets/tunnel"
 require "y2network/widgets/bond_options"
@@ -109,9 +110,13 @@ module Yast
       @startmode_widget ||= Y2Network::Widgets::Startmode.new(@settings, ifplugd_priority_widget)
     end
 
+    def boot_protocol_widget
+      @boot_protocol_widget ||= Y2Network::Widgets::BootProtocol.new(@settings)
+    end
+
     def widget_descr_local
       res = {
-        "AD_ADDRESSES"                => {
+        "AD_ADDRESSES"                 => {
           "widget"        => :custom,
           "custom_widget" => Frame(
             Id(:f_additional),
@@ -162,21 +167,14 @@ module Yast
             "void (string, map)"
           )
         },
-        "IFNAME"                      => {
+        "IFNAME"                       => {
           "widget" => :textentry,
           "label"  => _("&Name of Interface"),
           "opt"    => [:hstretch],
           "help"   => _("<p>TODO kind of vague!</p>")
         },
-        "MANDATORY"                   => {
-          "widget" => :checkbox,
-          # check box label
-          "label"  => _("&Mandatory Interface"),
-          "opt"    => [],
-          "help"   => Ops.get_string(@help, "mandatory", "")
-        },
-        mtu_widget.widget_id          => mtu_widget.cwm_definition,
-        "IFCFGTYPE"                   => {
+        mtu_widget.widget_id           => mtu_widget.cwm_definition,
+        "IFCFGTYPE"                    => {
           "widget"            => :combobox,
           # ComboBox label
           "label"             => _("&Device Type"),
@@ -194,7 +192,7 @@ module Yast
             "boolean (string, map)"
           )
         },
-        "IFCFGID"                     => {
+        "IFCFGID"                      => {
           "widget" => :textentry,
           # ComboBox label
           "label"  => _("&Configuration Name"),
@@ -202,9 +200,9 @@ module Yast
           "help"   => "",
           "init"   => fun_ref(method(:initIfcfgId), "void (string)")
         },
-        tunnel_widget.widget_id       => tunnel_widget.cwm_definition,
-        bridge_ports_widget.widget_id => bridge_ports_widget.cwm_definition,
-        "ETHERDEVICE"                 => {
+        tunnel_widget.widget_id        => tunnel_widget.cwm_definition,
+        bridge_ports_widget.widget_id  => bridge_ports_widget.cwm_definition,
+        "ETHERDEVICE"                  => {
           "widget"        => :custom,
           "custom_widget" => HBox(
             ComboBox(
@@ -227,95 +225,10 @@ module Yast
           ),
           "help"          => Ops.get_string(@help, "etherdevice", "")
         },
-        bond_slave_widget.widget_id   => bond_slave_widget.cwm_definition,
-        bond_options_widget.widget_id => bond_options_widget.cwm_definition,
-        "BOOTPROTO"                   => {
-          "widget"            => :custom,
-          "custom_widget"     => RadioButtonGroup(
-            Id(:bootproto),
-            VBox(
-              ReplacePoint(
-                Id(:rp),
-                Left(
-                  HBox(
-                    RadioButton(
-                      Id(:none),
-                      Opt(:notify),
-                      _("No Link and IP Setup (Bonding Slaves)")
-                    ),
-                    HSpacing(1),
-                    CheckBox(Id(:ibft), Opt(:notify), _("Use iBFT Values"))
-                  )
-                )
-              ),
-              Left(
-                HBox(
-                  RadioButton(Id(:dynamic), Opt(:notify), _("Dynamic Address")),
-                  HSpacing(2),
-                  ComboBox(
-                    Id(:dyn),
-                    "",
-                    [
-                      Item(Id(:dhcp), "DHCP"),
-                      Item(Id(:dhcp_auto), "DHCP+Zeroconf"),
-                      Item(Id(:auto), "Zeroconf")
-                    ]
-                  ),
-                  HSpacing(2),
-                  ComboBox(
-                    Id(:dhcp_mode),
-                    "",
-                    [
-                      Item(Id(:dhcp_both), _("DHCP both version 4 and 6")),
-                      Item(Id(:dhcp_v4), _("DHCP version 4 only")),
-                      Item(Id(:dhcp_v6), _("DHCP version 6 only"))
-                    ]
-                  )
-                )
-              ),
-              VBox(
-                # TODO : Stat ... Assigned
-                Left(
-                  RadioButton(
-                    Id(:static),
-                    Opt(:notify),
-                    _("Statically Assigned IP Address")
-                  )
-                ),
-                HBox(
-                  InputField(Id(:ipaddr), Opt(:hstretch), _("&IP Address")),
-                  HSpacing(1),
-                  InputField(Id(:netmask), Opt(:hstretch), _("&Subnet Mask")),
-                  HSpacing(1),
-                  InputField(Id(:hostname), Opt(:hstretch), _("&Hostname")),
-                  HStretch()
-                )
-              )
-            )
-          ),
-          "help"              => Ops.add(
-            @help[@force_static_ip ? "force_static_ip" : "bootproto"] || "",
-            Ops.get_string(@help, "netmask", "")
-          ),
-          "init"              => fun_ref(
-            method(:initBootProto),
-            "void (string)"
-          ),
-          "handle"            => fun_ref(
-            method(:handleBootProto),
-            "symbol (string, map)"
-          ),
-          "store"             => fun_ref(
-            method(:storeBootProto),
-            "void (string, map)"
-          ),
-          "validate_type"     => :function,
-          "validate_function" => fun_ref(
-            method(:ValidateBootproto),
-            "boolean (string, map)"
-          )
-        },
-        "REMOTEIP"                    => {
+        bond_slave_widget.widget_id    => bond_slave_widget.cwm_definition,
+        bond_options_widget.widget_id  => bond_options_widget.cwm_definition,
+        boot_protocol_widget.widget_id => boot_protocol_widget.cwm_definition,
+        "REMOTEIP"                     => {
           "widget"            => :textentry,
           # Text entry label
           "label"             => _("R&emote IP Address"),
@@ -332,7 +245,7 @@ module Yast
           )
         },
         # leftovers
-        "S390"                        => {
+        "S390"                         => {
           "widget" => :push_button,
           # push button label
           "label"  => _("&S/390"),
@@ -484,177 +397,6 @@ module Yast
       nil
     end
 
-    def enableDisableBootProto(current)
-      UI.ChangeWidget(:dyn, :Enabled, current == :dynamic)
-      UI.ChangeWidget(:dhcp_mode, :Enabled, current == :dynamic)
-      UI.ChangeWidget(:ipaddr, :Enabled, current == :static)
-      UI.ChangeWidget(:netmask, :Enabled, current == :static)
-      UI.ChangeWidget(:hostname, :Enabled, current == :static)
-      UI.ChangeWidget(:ibft, :Enabled, current == :none)
-
-      nil
-    end
-
-    # Initialize a RadioButtonGroup
-    # Group called FOO has buttons FOO_bar FOO_qux and values bar qux
-    # @param _key [String] id of the widget
-    def initBootProto(_key)
-      if LanItems.type != "eth"
-        UI.ReplaceWidget(
-          :rp,
-          Left(
-            RadioButton(
-              Id(:none),
-              Opt(:notify),
-              _("No Link and IP Setup (Bonding Slaves)")
-            )
-          )
-        )
-      end
-
-      case Ops.get_string(@settings, "BOOTPROTO", "")
-      when "static"
-        UI.ChangeWidget(Id(:bootproto), :CurrentButton, :static)
-        UI.ChangeWidget(
-          Id(:ipaddr),
-          :Value,
-          Ops.get_string(@settings, "IPADDR", "")
-        )
-        if Ops.greater_than(
-          Builtins.size(Ops.get_string(@settings, "PREFIXLEN", "")),
-          0
-        )
-          UI.ChangeWidget(
-            Id(:netmask),
-            :Value,
-            Builtins.sformat(
-              "/%1",
-              Ops.get_string(@settings, "PREFIXLEN", "")
-            )
-          )
-        else
-          UI.ChangeWidget(
-            Id(:netmask),
-            :Value,
-            Ops.get_string(@settings, "NETMASK", "")
-          )
-        end
-        UI.ChangeWidget(
-          Id(:hostname),
-          :Value,
-          Ops.get_string(@settings, "HOSTNAME", "")
-        )
-      when "dhcp"
-        UI.ChangeWidget(Id(:bootproto), :CurrentButton, :dynamic)
-        UI.ChangeWidget(Id(:dhcp_mode), :Value, :dhcp_both)
-      when "dhcp4"
-        UI.ChangeWidget(Id(:bootproto), :CurrentButton, :dynamic)
-        UI.ChangeWidget(Id(:dhcp_mode), :Value, :dhcp_v4)
-      when "dhcp6"
-        UI.ChangeWidget(Id(:bootproto), :CurrentButton, :dynamic)
-        UI.ChangeWidget(Id(:dhcp_mode), :Value, :dhcp_v6)
-      when "dhcp+autoip"
-        UI.ChangeWidget(Id(:bootproto), :CurrentButton, :dynamic)
-        UI.ChangeWidget(Id(:dyn), :Value, :dhcp_auto)
-      when "autoip"
-        UI.ChangeWidget(Id(:bootproto), :CurrentButton, :dynamic)
-        UI.ChangeWidget(Id(:dyn), :Value, :auto)
-      when "none"
-        UI.ChangeWidget(Id(:bootproto), :CurrentButton, :none)
-      when "ibft"
-        UI.ChangeWidget(Id(:bootproto), :CurrentButton, :none)
-        UI.ChangeWidget(Id(:ibft), :Value, true)
-      end
-
-      enableDisableBootProto(
-        Convert.to_symbol(UI.QueryWidget(Id(:bootproto), :CurrentButton))
-      )
-
-      nil
-    end
-
-    def handleBootProto(_key, event)
-      event = deep_copy(event)
-      if Ops.get_string(event, "EventReason", "") == "ValueChanged"
-        current = Convert.to_symbol(
-          UI.QueryWidget(Id(:bootproto), :CurrentButton)
-        )
-        enableDisableBootProto(current)
-
-        if current == :static
-          one_ip = Convert.to_string(UI.QueryWidget(Id(:ipaddr), :Value))
-          if Builtins.size(one_ip) == 0
-            Builtins.y2milestone("Presetting global hostname")
-            UI.ChangeWidget(
-              Id(:hostname),
-              :Value,
-              Hostname.MergeFQ(DNS.hostname, DNS.domain)
-            )
-          end
-        end
-      end
-      nil
-    end
-
-    # Store a RadioButtonGroup
-    # Group called FOO has buttons FOO_bar FOO_qux and values bar qux
-    # @param _key [String] id of the widget
-    # @param _event [Hash] the event being handled
-    def storeBootProto(_key, _event)
-      case Convert.to_symbol(UI.QueryWidget(Id(:bootproto), :CurrentButton))
-      when :none
-        @bootproto = "none"
-        if UI.WidgetExists(Id(:ibft))
-          @bootproto = Convert.to_boolean(UI.QueryWidget(Id(:ibft), :Value)) ? "ibft" : "none"
-        end
-        Ops.set(@settings, "BOOTPROTO", @bootproto)
-        Ops.set(@settings, "IPADDR", "")
-        Ops.set(@settings, "NETMASK", "")
-        Ops.set(@settings, "PREFIXLEN", "")
-      when :static
-        Ops.set(@settings, "BOOTPROTO", "static")
-        Ops.set(@settings, "NETMASK", "")
-        Ops.set(@settings, "PREFIXLEN", "")
-        Ops.set(
-          @settings,
-          "IPADDR",
-          Convert.to_string(UI.QueryWidget(:ipaddr, :Value))
-        )
-        @mask = Convert.to_string(UI.QueryWidget(:netmask, :Value))
-        if Builtins.substring(@mask, 0, 1) == "/"
-          Ops.set(@settings, "PREFIXLEN", Builtins.substring(@mask, 1))
-        else
-          param = Netmask.Check6(@mask) ? "PREFIXLEN" : "NETMASK"
-          Ops.set(@settings, param, @mask)
-        end
-        Ops.set(
-          @settings,
-          "HOSTNAME",
-          Convert.to_string(UI.QueryWidget(:hostname, :Value))
-        )
-      else
-        case Convert.to_symbol(UI.QueryWidget(:dyn, :Value))
-        when :dhcp
-          case Convert.to_symbol(UI.QueryWidget(:dhcp_mode, :Value))
-          when :dhcp_both
-            Ops.set(@settings, "BOOTPROTO", "dhcp")
-          when :dhcp_v4
-            Ops.set(@settings, "BOOTPROTO", "dhcp4")
-          when :dhcp_v6
-            Ops.set(@settings, "BOOTPROTO", "dhcp6")
-          end
-        when :dhcp_auto
-          Ops.set(@settings, "BOOTPROTO", "dhcp+autoip")
-        when :auto
-          Ops.set(@settings, "BOOTPROTO", "autoip")
-        end
-        Ops.set(@settings, "IPADDR", "")
-        Ops.set(@settings, "NETMASK", "")
-      end
-
-      nil
-    end
-
     def initIfcfg(key)
       UI.ChangeWidget(Id(key), :Value, LanItems.type)
       UI.ChangeWidget(Id(key), :Enabled, false)
@@ -737,64 +479,6 @@ module Yast
       true
     end
 
-    # Validator for network masks adresses
-    # @param _key [String] the widget being validated
-    # @param _event [Hash] the event being handled
-    # @return whether valid
-    def ValidateBootproto(_key, _event)
-      if UI.QueryWidget(:bootproto, :CurrentButton) == :static
-        ipa = Convert.to_string(UI.QueryWidget(:ipaddr, :Value))
-        if ipa != "" && !IP.Check(ipa)
-          Popup.Error(_("No valid IP address."))
-          UI.SetFocus(:ipaddr)
-          return false
-        end
-
-        mask = Convert.to_string(UI.QueryWidget(:netmask, :Value))
-        if ipa != "" && mask != "" && !validPrefixOrNetmask(ipa, mask)
-          Popup.Error(_("No valid netmask or prefix length."))
-          UI.SetFocus(:netmask)
-          return false
-        end
-
-        hname = Convert.to_string(UI.QueryWidget(:hostname, :Value))
-        if Ops.greater_than(Builtins.size(hname), 0)
-          if !Hostname.CheckFQ(hname)
-            Popup.Error(_("Invalid hostname."))
-            UI.SetFocus(:hostname)
-            return false
-          end
-        # There'll be no 127.0.0.2 -> remind user to define some hostname
-        elsif !Host.NeedDummyIP &&
-            !Popup.YesNo(
-              _(
-                "No hostname has been specified. We recommend to associate \n" \
-                  "a hostname with a static IP, otherwise the machine name will \n" \
-                  "not be resolvable without an active network connection.\n" \
-                  "\n" \
-                  "Really leave the hostname blank?\n"
-              )
-            )
-          UI.SetFocus(:hostname)
-          return false
-        end
-
-        # validate duplication
-        if NetHwDetection.DuplicateIP(ipa)
-          UI.SetFocus(:ipaddr)
-          # Popup text
-          if !Popup.YesNoHeadline(
-            Label.WarningMsg,
-            _("Duplicate IP address detected.\nReally continue?\n")
-          )
-            return false
-          end
-        end
-      end
-
-      true
-    end
-
     # @param [Array<String>] types network card types
     # @return their descriptions for CWM
     def BuildTypesListCWM(types)
@@ -817,7 +501,6 @@ module Yast
               1,
               0,
               VBox(
-                # TODO: "MANDATORY",
                 Frame(
                   _("Device Activation"),
                   HBox(startmode_widget.widget_id, ifplugd_priority_widget.widget_id, HStretch())
@@ -874,7 +557,7 @@ module Yast
         )
       )
 
-      address_dhcp_contents = VBox("BOOTPROTO")
+      address_dhcp_contents = VBox(boot_protocol_widget.widget_id)
       just_address_contents = if is_ptp
         address_p2p_contents
       elsif no_dhcp
