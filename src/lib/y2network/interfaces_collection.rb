@@ -49,19 +49,12 @@ module Y2Network
       @interfaces = interfaces
     end
 
-    # Returns a interface with the given name if present
+    # Returns an interface with the given name if present
     #
     # @param name [String] Returns the interface with the given name
     # @return [Interface,nil] Interface with the given name or nil if not found
     def by_name(name)
       find { |i| i.name ? i.name == name : i.hardware.name }
-    end
-
-    # Add an interface with the given name
-    #
-    # @param name [String] Interface's name
-    def add(name)
-      interfaces.push(Interface.new(name))
     end
 
     # Compares InterfacesCollections

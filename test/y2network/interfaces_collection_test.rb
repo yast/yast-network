@@ -33,14 +33,6 @@ describe Y2Network::InterfacesCollection do
     end
   end
 
-  describe "#add" do
-    it "adds an interface with the given name" do
-      collection.add("eth1")
-      eth1 = collection.by_name("eth1")
-      expect(eth1.name).to eq("eth1")
-    end
-  end
-
   describe "#push" do
     let(:wlan1) { Y2Network::Interface.new("wlan1") }
 
