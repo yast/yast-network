@@ -39,7 +39,7 @@ describe "InterfaceConfigBuilder#new_device_startmode" do
         expect(Yast::ProductFeatures)
           .to receive(:GetStringFeature)
             .with("network", "startmode") { "ifplugd" }
-        allow(config_builder).to receive(:hotplug_usable?) { hwinfo_hotplug == "hotplug" }
+        allow(config_builder).to receive(:hotplug_interface?) { hwinfo_hotplug == "hotplug" }
         # setup stubs by default at results which doesn't need special handling
         allow(Yast::Arch).to receive(:is_laptop) { true }
         allow(Yast::NetworkService).to receive(:is_network_manager) { false }
@@ -87,7 +87,7 @@ describe "InterfaceConfigBuilder#new_device_startmode" do
             .to receive(:GetStringFeature)
               .with("network", "startmode") { product_startmode }
           expect(config_builder)
-            .to receive(:hotplug_usable?) { hwinfo_hotplug == "hotplug" }
+            .to receive(:hotplug_interface?) { hwinfo_hotplug == "hotplug" }
 
           result = config_builder.device_sysconfig["STARTMODE"]
           expect(result).to be_eql expected_startmode
