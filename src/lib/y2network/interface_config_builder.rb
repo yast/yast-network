@@ -122,14 +122,14 @@ module Y2Network
       startmode = case product_startmode
       when "ifplugd"
         if replace_ifplugd?
-          hotplug_usable? ? "hotplug" : "auto"
+          hotplug_interface? ? "hotplug" : "auto"
         else
           product_startmode
         end
       when "auto"
         "auto"
       else
-        hotplug_usable? ? "hotplug" : "auto"
+        hotplug_interface? ? "hotplug" : "auto"
       end
 
       startmode
@@ -141,12 +141,13 @@ module Y2Network
 
       return true if !Yast::Arch.is_laptop
       return true if Yast::NetworkService.is_network_manager
+      # virtual devices cannot expect any event from ifplugd
       return true if ["bond", "vlan", "br"].include? type
 
       false
     end
 
-    def hotplug_usable?
+    def hotplug_interface?
       Hwinfo.new(name: name).hotplug
     end
   end
