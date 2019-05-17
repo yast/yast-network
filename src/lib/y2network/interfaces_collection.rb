@@ -51,6 +51,8 @@ module Y2Network
 
     # Returns an interface with the given name if present
     #
+    # @todo It uses the hardware's name as a fallback if interface's name is not set
+    #
     # @param name [String] Returns the interface with the given name
     # @return [Interface,nil] Interface with the given name or nil if not found
     def by_name(name)
