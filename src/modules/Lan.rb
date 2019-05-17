@@ -616,7 +616,7 @@ module Yast
 
       if NetworkService.is_network_manager
         network = false
-        timeout = 15
+        timeout = 45
         while Ops.greater_than(timeout, 0)
           if NetworkService.isNetworkRunning
             network = true
