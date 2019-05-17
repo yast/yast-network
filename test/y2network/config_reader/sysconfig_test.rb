@@ -53,9 +53,8 @@ describe Y2Network::ConfigReader::Sysconfig do
 
     it "links routes with detected network devices" do
       config = reader.config
-      route = config.routing.routes.find { |r| !!r.interface }
-
-      iface = config.interfaces.find { |i| i.name == route.interface.name }
+      route = config.routing.routes.find(&:interface)
+      iface = config.interfaces.by_name(route.interface.name)
       expect(route.interface).to be(iface)
     end
 

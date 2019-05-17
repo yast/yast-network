@@ -38,8 +38,9 @@ module Y2Network
     attr_reader :interfaces
 
     extend Forwardable
+    include Enumerable
 
-    def_delegators :@interfaces, :each, :map, :select, :push
+    def_delegators :@interfaces, :each, :push, :<<, :reject!
 
     # Constructor
     #
@@ -48,9 +49,12 @@ module Y2Network
       @interfaces = interfaces
     end
 
+    # Returns a interface with the given name if present
+    #
     # @param name [String] Returns the interface with the given name
-    def find(name)
-      interfaces.find { |i| i.name ? i.name == name : i.hardware.name }
+    # @return [Interface,nil] Interface with the given name or nil if not found
+    def by_name(name)
+      find { |i| i.name ? i.name == name : i.hardware.name }
     end
 
     # Add an interface with the given name

@@ -27,16 +27,16 @@ describe Y2Network::InterfacesCollection do
   let(:wlan0) { Y2Network::Interface.new("wlan0") }
   let(:interfaces) { [eth0, wlan0] }
 
-  describe "#find" do
+  describe "#by_name" do
     it "returns the interface with the given name" do
-      expect(collection.find("eth0")).to eq(eth0)
+      expect(collection.by_name("eth0")).to eq(eth0)
     end
   end
 
   describe "#add" do
     it "adds an interface with the given name" do
       collection.add("eth1")
-      eth1 = collection.find("eth1")
+      eth1 = collection.by_name("eth1")
       expect(eth1.name).to eq("eth1")
     end
   end
@@ -46,7 +46,7 @@ describe Y2Network::InterfacesCollection do
 
     it "adds an interface to the list" do
       collection.push(wlan1)
-      expect(collection.find(wlan1.name)).to eq(wlan1)
+      expect(collection.by_name(wlan1.name)).to eq(wlan1)
     end
   end
 

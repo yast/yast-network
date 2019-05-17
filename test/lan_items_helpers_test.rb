@@ -619,8 +619,10 @@ describe "LanItems renaming methods" do
   describe "LanItems.add_current_device_to_routing" do
     let(:eth0) { Y2Network::Interface.new("eth0") }
     let(:wlan0) { Y2Network::Interface.new("wlan0") }
+    let(:interfaces) { Y2Network::InterfacesCollection.new([eth0, wlan0]) }
+
     let(:yast_config) do
-      instance_double(Y2Network::Config, interfaces: [eth0, wlan0], routing: double("routing"))
+      instance_double(Y2Network::Config, interfaces: interfaces, routing: double("routing"))
     end
 
     before do
@@ -650,8 +652,9 @@ describe "LanItems renaming methods" do
   describe "LanItems.rename_current_device_in_routing" do
     let(:eth0) { Y2Network::Interface.new("eth0") }
     let(:wlan0) { Y2Network::Interface.new("wlan0") }
+    let(:interfaces) { Y2Network::InterfacesCollection.new([eth0, wlan0]) }
     let(:yast_config) do
-      instance_double(Y2Network::Config, interfaces: [eth0, wlan0], routing: double("routing"))
+      instance_double(Y2Network::Config, interfaces: interfaces, routing: double("routing"))
     end
 
     before do
@@ -669,8 +672,10 @@ describe "LanItems renaming methods" do
   describe "LanItems.remove_current_device_from_routing" do
     let(:eth0) { Y2Network::Interface.new("eth0") }
     let(:wlan0) { Y2Network::Interface.new("wlan0") }
+    let(:interfaces) { Y2Network::InterfacesCollection.new([eth0, wlan0]) }
+
     let(:yast_config) do
-      instance_double(Y2Network::Config, interfaces: [eth0, wlan0], routing: double("routing"))
+      instance_double(Y2Network::Config, interfaces: interfaces, routing: double("routing"))
     end
 
     before do
@@ -688,8 +693,10 @@ describe "LanItems renaming methods" do
   describe "LanItems.update_routing_devices?" do
     let(:eth0) { Y2Network::Interface.new("eth0") }
     let(:wlan0) { Y2Network::Interface.new("wlan0") }
+    let(:interfaces) { Y2Network::InterfacesCollection.new([eth0, wlan0]) }
+
     let(:yast_config) do
-      instance_double(Y2Network::Config, interfaces: [eth0, wlan0], routing: double("routing"))
+      instance_double(Y2Network::Config, interfaces: interfaces, routing: double("routing"))
     end
 
     before do
