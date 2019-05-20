@@ -174,32 +174,6 @@ module Yast
           "help"   => _("<p>TODO kind of vague!</p>")
         },
         mtu_widget.widget_id           => mtu_widget.cwm_definition,
-        "IFCFGTYPE"                    => {
-          "widget"            => :combobox,
-          # ComboBox label
-          "label"             => _("&Device Type"),
-          "opt"               => [:hstretch, :notify],
-          "help"              => "",
-          # "items" will be filled in the dialog itself
-          "init"              => fun_ref(
-            method(:initIfcfg),
-            "void (string)"
-          ),
-          #	"handle": HandleIfcfg,
-          "validate_type"     => :function,
-          "validate_function" => fun_ref(
-            method(:ValidateIfcfgType),
-            "boolean (string, map)"
-          )
-        },
-        "IFCFGID"                      => {
-          "widget" => :textentry,
-          # ComboBox label
-          "label"  => _("&Configuration Name"),
-          "opt"    => [:hstretch, :disabled],
-          "help"   => "",
-          "init"   => fun_ref(method(:initIfcfgId), "void (string)")
-        },
         tunnel_widget.widget_id        => tunnel_widget.cwm_definition,
         bridge_ports_widget.widget_id  => bridge_ports_widget.cwm_definition,
         "ETHERDEVICE"                  => {
@@ -397,24 +371,6 @@ module Yast
       nil
     end
 
-    def initIfcfg(key)
-      UI.ChangeWidget(Id(key), :Value, LanItems.type)
-      UI.ChangeWidget(Id(key), :Enabled, false)
-
-      nil
-    end
-
-    def initIfcfgId(key)
-      initHardware
-      UI.ChangeWidget(
-        Id(key),
-        :Value,
-        Ops.get_string(LanItems.Items, [LanItems.current, "ifcfg"], "")
-      )
-
-      nil
-    end
-
     # Remap the buttons to their Wizard Sequencer values
     # @param _key [String] the widget receiving the event
     # @param event [Hash] the event being handled
@@ -435,46 +391,6 @@ module Yast
       event = deep_copy(event)
       if UI.QueryWidget(:bootproto, :CurrentButton) == :static
         return ValidateIP(key, event)
-      end
-      true
-    end
-
-    # Validator for ifcfg names
-    # @param key [String] the widget being validated
-    # @param _event [Hash] the event being handled
-    # @return whether valid
-    def ValidateIfcfgType(key, _event)
-      if LanItems.operation == :add
-        ifcfgtype = Convert.to_string(UI.QueryWidget(Id(key), :Value))
-
-        # validate device type, misdetection
-        if ifcfgtype != LanItems.type
-          UI.SetFocus(Id(key))
-          if !Popup.ContinueCancel(
-            _(
-              "You have changed the interface type from the one\n" \
-                "that has been detected. This only makes sense\n" \
-                "if you know that the detection is wrong."
-            )
-          )
-            return false
-          end
-        end
-
-        ifcfgid = Convert.to_string(UI.QueryWidget(Id("IFCFGID"), :Value))
-        ifcfgname = Builtins.sformat("%1%2", ifcfgtype, ifcfgid)
-
-        # Check should be improved to find differently named but
-        # equivalent configs (eg. by-mac and by-bus, depends on the
-        # current hardware)
-        if NetworkInterfaces.Check(ifcfgname)
-          UI.SetFocus(Id(key))
-          # Popup text
-          Popup.Error(
-            Builtins.sformat(_("Configuration %1 already present."), ifcfgname)
-          )
-          return false
-        end
       end
       true
     end
@@ -567,15 +483,6 @@ module Yast
       end
 
       label = HBox(
-        HSpacing(0.5),
-        # The combo is a hack to allow changing misdetected
-        # interface types. It will work in some cases, like
-        # overriding eth to wlan but not in others where we would
-        # need to change the contents of the dialog. #30890.
-        type != "vlan" ? "IFCFGTYPE" : Empty(),
-        HSpacing(1.5),
-        MinWidth(30, "IFCFGID"),
-        HSpacing(0.5),
         type == "vlan" ? VBox("ETHERDEVICE") : Empty()
       )
 
@@ -641,18 +548,6 @@ module Yast
 
       wd[startmode_widget.widget_id] = startmode_widget.cwm_definition
       wd[ifplugd_priority_widget.widget_id] = ifplugd_priority_widget.cwm_definition
-
-      Ops.set(wd, ["IFCFGTYPE", "items"], BuildTypesListCWM(NetworkInterfaces.GetDeviceTypes))
-      Ops.set(
-        wd,
-        ["IFCFGID", "items"],
-        [
-          [
-            Ops.get_string(@settings, "IFCFGID", ""),
-            Ops.get_string(@settings, "IFCFGID", "")
-          ]
-        ]
-      )
 
       wd["IPOIB_MODE"] = ipoib_mode_widget if LanItems.GetCurrentType == "ib"
 
