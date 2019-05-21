@@ -65,7 +65,7 @@ module Y2Network
     # @return [Interface,nil] Interface with the given name or nil if not found
     def by_name(name)
       interfaces.find do |iface|
-        iface_name = iface.name ? iface.name : iface.hwinfo.name
+        iface_name = iface.name || iface.hwinfo.name
         iface_name == name
       end
     end
