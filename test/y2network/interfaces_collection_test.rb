@@ -19,22 +19,41 @@
 
 require_relative "../test_helper"
 require "y2network/interfaces_collection"
+require "y2network/physical_interface"
+require "y2network/virtual_interface"
 
 describe Y2Network::InterfacesCollection do
   subject(:collection) { described_class.new(interfaces) }
 
-  let(:eth0) { Y2Network::Interface.new("eth0") }
-  let(:wlan0) { Y2Network::Interface.new("wlan0") }
-  let(:interfaces) { [eth0, wlan0] }
+  let(:eth0) { Y2Network::PhysicalInterface.new("eth0") }
+  let(:br0) { Y2Network::VirtualInterface.new("br0") }
+  let(:wlan0) { Y2Network::PhysicalInterface.new("wlan0") }
+  let(:interfaces) { [eth0, br0, wlan0] }
 
   describe "#by_name" do
     it "returns the interface with the given name" do
       expect(collection.by_name("eth0")).to eq(eth0)
     end
+
+    context "when name is not defined" do
+      let(:wlan0) { Y2Network::PhysicalInterface.new(nil) }
+      let(:eth0) { Y2Network::PhysicalInterface.new(nil) }
+      let(:wlan0_hwinfo) { double("hwinfo", name: "wlan0") }
+      let(:eth0_hwinfo) { double("hwinfo", name: "eth0") }
+
+      before do
+        allow(wlan0).to receive(:hwinfo).and_return(wlan0_hwinfo)
+        allow(eth0).to receive(:hwinfo).and_return(eth0_hwinfo)
+      end
+
+      it "returns the interface with the given name" do
+        expect(collection.by_name("wlan0")).to be(wlan0)
+      end
+    end
   end
 
   describe "#push" do
-    let(:wlan1) { Y2Network::Interface.new("wlan1") }
+    let(:wlan1) { Y2Network::PhysicalInterface.new("wlan1") }
 
     it "adds an interface to the list" do
       collection.push(wlan1)
@@ -57,7 +76,7 @@ describe Y2Network::InterfacesCollection do
 
   describe "#==" do
     context "when the given collection contains the same interfaces" do
-      let(:other) { described_class.new([wlan0, eth0]) }
+      let(:other) { described_class.new([wlan0, br0, eth0]) }
 
       it "returns true" do
         expect(collection).to eq(other)

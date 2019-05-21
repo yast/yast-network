@@ -64,7 +64,10 @@ module Y2Network
     # @param name [String] Returns the interface with the given name
     # @return [Interface,nil] Interface with the given name or nil if not found
     def by_name(name)
-      interfaces.find { |i| i.name ? i.name == name : i.hardware.name }
+      interfaces.find do |iface|
+        iface_name = iface.name ? iface.name : iface.hwinfo.name
+        iface_name == name
+      end
     end
 
     # Deletes elements which meet a given condition
