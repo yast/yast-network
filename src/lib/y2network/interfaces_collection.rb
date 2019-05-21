@@ -29,14 +29,14 @@ module Y2Network
   #   collection = Y2Network::InterfacesCollection.new(eth0)
   #
   # @example Find an interface using its name
-  #   iface = collection.find("eth0") #=> #<Y2Network::Interface:0x...>
+  #   iface = collection.by_name("eth0") #=> #<Y2Network::Interface:0x...>
   class InterfacesCollection
     # Objects of this class are able to keep a list of interfaces and perform simple queries
     # on such a list.
     #
     # @example Finding an interface by its name
     #   interfaces = Y2Network::InterfacesCollection.new([eth0, wlan0])
-    #   interfaces.find("wlan0") # => wlan0
+    #   interfaces.by_name("wlan0") # => wlan0
     #
     # @example FIXME (not implemented yet). For the future, we are aiming at this kind of API.
     #   interfaces = Y2Network::InterfacesCollection.new([eth0, wlan0])
