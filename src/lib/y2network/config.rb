@@ -16,11 +16,11 @@
 #
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
-require "y2network/interface"
 require "y2network/config_writer"
 require "y2network/config_reader"
 require "y2network/routing"
 require "y2network/dns"
+require "y2network/interfaces_collection"
 
 module Y2Network
   # This class represents the current network configuration including interfaces,
@@ -36,7 +36,7 @@ module Y2Network
   #   config.routing.tables.first << route
   #   config.write
   class Config
-    # @return [Array<Interface>]
+    # @return [InterfacesCollection]
     attr_accessor :interfaces
     # @return [Routing] Routing configuration
     attr_accessor :routing
@@ -85,11 +85,11 @@ module Y2Network
 
     # Constructor
     #
-    # @param interfaces [Array<Interface>] List of interfaces
+    # @param interfaces [InterfacesCollection] List of interfaces
     # @param routing    [Routing] Object with routing configuration
     # @param dns        [DNS] Object with DNS configuration
     # @param source     [Symbol] Configuration source
-    def initialize(interfaces: [], routing: Y2Network::Routing.new, dns: Y2Network::DNS.new, source:)
+    def initialize(interfaces: InterfacesCollection.new, routing: Routing.new, dns: DNS.new, source:)
       @interfaces = interfaces
       @routing = routing
       @dns = dns
@@ -114,8 +114,7 @@ module Y2Network
     #
     # @return [Boolean] true if both configurations are equal; false otherwise
     def ==(other)
-      source == other.source &&
-        ((interfaces - other.interfaces) | (other.interfaces - interfaces)).empty? &&
+      source == other.source && interfaces == other.interfaces &&
         routing == other.routing && dns == other.dns
     end
 

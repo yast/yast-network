@@ -23,7 +23,11 @@ require "y2network/hwinfo"
 module Y2Network
   # Physical interface class (ethernet, wireless, infiniband...)
   class PhysicalInterface < Interface
+    attr_writer :hwinfo
+
     # @return [Hwinfo]
-    attr_accessor :hwinfo
+    def hwinfo
+      @hwinfo ||= Hwinfo.new({})
+    end
   end
 end

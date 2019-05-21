@@ -24,6 +24,7 @@ require "y2network/sysconfig_paths"
 require "y2network/routing_table"
 require "y2network/sysconfig_routes_file"
 require "y2network/config_reader/sysconfig_dns"
+require "y2network/interfaces_collection"
 
 Yast.import "NetworkInterfaces"
 
@@ -58,9 +59,10 @@ module Y2Network
       def find_interfaces
         Yast::NetworkInterfaces.Read
         # TODO: for the time being, we are just relying in the underlying stuff.
-        Yast::NetworkInterfaces.List("").map do |name|
+        interfaces = Yast::NetworkInterfaces.List("").map do |name|
           Y2Network::Interface.new(name)
         end
+        Y2Network::InterfacesCollection.new(interfaces)
       end
 
       # Reads routes
@@ -112,7 +114,7 @@ module Y2Network
       def link_routes_to_interfaces(routes, interfaces)
         routes.each do |route|
           next unless route.interface
-          interface = interfaces.find { |i| route.interface.name == i.name }
+          interface = interfaces.by_name(route.interface.name)
           route.interface = interface if interface
         end
       end
