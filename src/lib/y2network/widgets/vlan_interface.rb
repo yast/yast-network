@@ -26,7 +26,7 @@ module Y2Network
         # unconfigured devices
         Yast::LanItems.Items.each_value do |lan_item|
           next unless (lan_item["ifcfg"] || "").empty?
-          dev_name = Yast::Ops.get_string(a, ["hwinfo", "dev_name"], "")
+          dev_name = Yast::Ops.get_string(lan_item, ["hwinfo", "dev_name"], "")
           items << [dev_name, dev_name]
         end
         # configured devices
