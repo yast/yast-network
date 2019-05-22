@@ -327,9 +327,7 @@ module Yast
           )
         )
 
-      if isNewDevice
-        udev_widget = Empty()
-      end
+      udev_widget = Empty() if isNewDevice
 
       blink_card = Frame(
         _("Show Visible Port Identification"),
