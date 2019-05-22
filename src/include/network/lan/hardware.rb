@@ -67,13 +67,6 @@ module Yast
         "help"          => initHelp
       }
 
-      # validation function currently checks user's input in :ifcfg_name widget
-      # However this widget is present only when adding new device
-      if isNewDevice
-        widget_descr["validate_type"] = :function
-        widget_descr["validate_function"] = fun_ref(method(:validate_hw), "boolean (string, map)")
-      end
-
       { "HWDIALOG" => widget_descr }
     end
 
@@ -325,27 +318,6 @@ module Yast
         )
       )
 
-      device_number_box = ReplacePoint(
-        Id(:rnum),
-        # TextEntry label
-        ComboBox(
-          Id(:ifcfg_name),
-          Opt(:editable, :hstretch),
-          _("&Configuration Name"),
-          @hardware["devices"]
-        )
-      )
-
-      # Manual dialog contents
-      type_name_widgets = VBox(
-        VSpacing(0.2),
-        HBox(
-          HSpacing(2),
-          device_number_box,
-          HSpacing(0.5)
-        )
-      )
-
       udev_widget =
         Frame(
           _("Udev Rules"),
@@ -355,9 +327,7 @@ module Yast
           )
         )
 
-      if !isNewDevice
-        type_name_widgets = Empty()
-      else
+      if isNewDevice
         udev_widget = Empty()
       end
 
@@ -390,7 +360,6 @@ module Yast
 
       contents = VBox(
         HBox(udev_widget, HStretch(), isNewDevice ? Empty() : blink_card),
-        type_name_widgets,
         kernel_box,
         ethtool_widget,
         VStretch()
@@ -434,12 +403,6 @@ module Yast
 
       ChangeWidgetIfExists(Id(:device_name), :Enabled, false)
       ChangeWidgetIfExists(Id(:device_name), :Value, device_name)
-
-      ChangeWidgetIfExists(
-        Id(:ifcfg_name),
-        :ValidChars,
-        NetworkInterfaces.ValidCharsIfcfg
-      )
 
       nil
     end
@@ -582,43 +545,10 @@ module Yast
       nil
     end
 
-    def devname_from_hw_dialog
-      UI.QueryWidget(Id(:ifcfg_name), :Value) if UI.WidgetExists(Id(:ifcfg_name))
-    end
-
-    def validate_hw(_key, _event)
-      nm = devname_from_hw_dialog
-
-      ret = if UsedNicName(nm)
-        Popup.Error(
-          format(_("Configuration name %s already exists.\nChoose a different one."), nm)
-        )
-
-        false
-      elsif !ValidNicName(nm)
-        Popup.Error(
-          format(_("Configuration name %s is invalid.\nChoose a different one."), nm)
-        )
-
-        false
-      else
-        true
-      end
-
-      UI.SetFocus(Id(:ifcfg_name)) if !ret
-
-      ret
-    end
-
     VLAN_SIZE = 4 # size of vlanN prefix without number
 
     def storeHW(_key, _event)
       if isNewDevice
-        nm = devname_from_hw_dialog
-        LanItems.device = nm
-
-        NetworkInterfaces.Name = nm
-        Ops.set(LanItems.Items, [LanItems.current, "ifcfg"], nm)
         # Initialize udev map, so that setDriver (see below) sets correct module
         Ops.set(LanItems.Items, [LanItems.current, "udev"], {})
         # FIXME: for interfaces with no hwinfo don't propose ifplugd
@@ -627,10 +557,6 @@ module Yast
             "interface without hwinfo, proposing STARTMODE=auto"
           )
           LanItems.startmode = "auto"
-        end
-        if LanItems.type == "vlan"
-          # for vlan devices named vlanN pre-set vlan_id to N, otherwise default to 0
-          LanItems.vlan_id = nm[VLAN_SIZE..-1]
         end
       end
 

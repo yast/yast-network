@@ -34,8 +34,11 @@ require "y2network/widgets/bond_options"
 require "y2network/widgets/bond_slave"
 require "y2network/widgets/bridge_ports"
 require "y2network/widgets/ifplugd_priority"
+require "y2network/widgets/interface_name"
 require "y2network/widgets/startmode"
 require "y2network/widgets/mtu"
+require "y2network/widgets/vlan_id"
+require "y2network/widgets/vlan_interface"
 
 module Yast
   module NetworkLanAddressInclude
@@ -86,6 +89,14 @@ module Yast
       @tunnel_widget ||= Y2Network::Widgets::Tunnel.new(@settings)
     end
 
+    def vlan_id_widget
+      @vlan_id_widget ||= Y2Network::Widgets::VlanID.new(@settings)
+    end
+
+    def vlan_interface_widget
+      @vlan_interface_widget ||= Y2Network::Widgets::VlanInterface.new(@settings)
+    end
+
     def bond_slave_widget
       @bond_slave_widget ||= Y2Network::Widgets::BondSlave.new(@settings)
     end
@@ -102,6 +113,10 @@ module Yast
       @mtu_widget ||= Y2Network::Widgets::MTU.new(@settings)
     end
 
+    def interface_name_widget
+      @interface_name_widget ||= Y2Network::Widgets::InterfaceName.new(@settings)
+    end
+
     def ifplugd_priority_widget
       @ifplugd_priority_widget ||= Y2Network::Widgets::IfplugdPriority.new(@settings)
     end
@@ -116,7 +131,7 @@ module Yast
 
     def widget_descr_local
       res = {
-        "AD_ADDRESSES"                 => {
+        "AD_ADDRESSES"                  => {
           "widget"        => :custom,
           "custom_widget" => Frame(
             Id(:f_additional),
@@ -167,42 +182,22 @@ module Yast
             "void (string, map)"
           )
         },
-        "IFNAME"                       => {
+        "IFNAME"                        => {
           "widget" => :textentry,
           "label"  => _("&Name of Interface"),
           "opt"    => [:hstretch],
           "help"   => _("<p>TODO kind of vague!</p>")
         },
-        mtu_widget.widget_id           => mtu_widget.cwm_definition,
-        tunnel_widget.widget_id        => tunnel_widget.cwm_definition,
-        bridge_ports_widget.widget_id  => bridge_ports_widget.cwm_definition,
-        "ETHERDEVICE"                  => {
-          "widget"        => :custom,
-          "custom_widget" => HBox(
-            ComboBox(
-              Id(:vlan_eth),
-              Opt(:notify),
-              _("Real Interface for &VLAN"),
-              []
-            ),
-            IntField(Id(:vlan_id), Opt(:notify), _("VLAN ID"), 0, 9999, 0)
-          ),
-          "opt"           => [:hstretch],
-          "init"          => fun_ref(method(:InitVLANSlave), "void (string)"),
-          "handle"        => fun_ref(
-            method(:HandleVLANSlave),
-            "symbol (string, map)"
-          ),
-          "store"         => fun_ref(
-            method(:StoreVLANSlave),
-            "void (string, map)"
-          ),
-          "help"          => Ops.get_string(@help, "etherdevice", "")
-        },
-        bond_slave_widget.widget_id    => bond_slave_widget.cwm_definition,
-        bond_options_widget.widget_id  => bond_options_widget.cwm_definition,
-        boot_protocol_widget.widget_id => boot_protocol_widget.cwm_definition,
-        "REMOTEIP"                     => {
+        interface_name_widget.widget_id => interface_name_widget.cwm_definition,
+        mtu_widget.widget_id            => mtu_widget.cwm_definition,
+        tunnel_widget.widget_id         => tunnel_widget.cwm_definition,
+        bridge_ports_widget.widget_id   => bridge_ports_widget.cwm_definition,
+        vlan_id_widget.widget_id        => vlan_id_widget.cwm_definition,
+        vlan_interface_widget.widget_id => vlan_interface_widget.cwm_definition,
+        bond_slave_widget.widget_id     => bond_slave_widget.cwm_definition,
+        bond_options_widget.widget_id   => bond_options_widget.cwm_definition,
+        boot_protocol_widget.widget_id  => boot_protocol_widget.cwm_definition,
+        "REMOTEIP"                      => {
           "widget"            => :textentry,
           # Text entry label
           "label"             => _("R&emote IP Address"),
@@ -219,7 +214,7 @@ module Yast
           )
         },
         # leftovers
-        "S390"                         => {
+        "S390"                          => {
           "widget" => :push_button,
           # push button label
           "label"  => _("&S/390"),
@@ -287,90 +282,6 @@ module Yast
       nil
     end
 
-    # Default function to init the value of slave ETHERDEVICE box.
-    # @param _key [String] id of the widget
-    def InitVLANSlave(_key)
-      items = []
-      # unconfigured devices
-      Builtins.foreach(
-        Convert.convert(
-          LanItems.Items,
-          from: "map <integer, any>",
-          to:   "map <integer, map>"
-        )
-      ) do |_i, a|
-        if Builtins.size(Ops.get_string(a, "ifcfg", "")) == 0
-          dev_name = Ops.get_string(a, ["hwinfo", "dev_name"], "")
-          items = Builtins.add(
-            items,
-            Item(
-              Id(dev_name),
-              dev_name,
-              dev_name == Ops.get_string(@settings, "ETHERDEVICE", "") ? true : false
-            )
-          )
-        end
-      end
-      # configured devices
-      configurations = NetworkInterfaces.FilterDevices("netcard")
-      Builtins.foreach(
-        Builtins.splitstring(
-          Ops.get(NetworkInterfaces.CardRegex, "netcard", ""),
-          "|"
-        )
-      ) do |devtype|
-        Builtins.foreach(
-          Convert.convert(
-            Map.Keys(Ops.get_map(configurations, devtype, {})),
-            from: "list",
-            to:   "list <string>"
-          )
-        ) do |devname|
-          if Builtins.contains(["vlan"], NetworkInterfaces.GetType(devname))
-            next
-          end
-          items = Builtins.add(
-            items,
-            Item(
-              Id(devname),
-              Builtins.sformat(
-                "%1 - %2",
-                devname,
-                Ops.get_string(configurations, [devtype, devname, "NAME"], "")
-              ),
-              Ops.get_string(@settings, "ETHERDEVICE", "") == devname
-            )
-          )
-        end
-      end
-      UI.ChangeWidget(Id(:vlan_eth), :Items, items)
-      UI.ChangeWidget(
-        Id(:vlan_id),
-        :Value,
-        Ops.get_integer(@settings, "VLAN_ID", 0)
-      )
-
-      nil
-    end
-
-    def HandleVLANSlave(_key, _event)
-      # formerly tried to edit ifcfg name. bad idea, surrounding code not ready
-      nil
-    end
-
-    # Default function to store the value of ETHERDEVICE devices box.
-    # @param _key [String] id of the widget
-    def StoreVLANSlave(_key, _event)
-      Ops.set(
-        @settings,
-        "ETHERDEVICE",
-        Convert.to_string(UI.QueryWidget(Id(:vlan_eth), :Value))
-      )
-      Ops.set(@settings, "VLAN_ID", UI.QueryWidget(Id(:vlan_id), :Value))
-
-      nil
-    end
-
     # Remap the buttons to their Wizard Sequencer values
     # @param _key [String] the widget receiving the event
     # @param event [Hash] the event being handled
@@ -417,6 +328,8 @@ module Yast
               1,
               0,
               VBox(
+                # TODO: if not add move here udev name
+                LanItems.operation == :add ? interface_name_widget.widget_id : Empty(),
                 Frame(
                   _("Device Activation"),
                   HBox(startmode_widget.widget_id, ifplugd_priority_widget.widget_id, HStretch())
@@ -483,7 +396,7 @@ module Yast
       end
 
       label = HBox(
-        type == "vlan" ? VBox("ETHERDEVICE") : Empty()
+        type == "vlan" ? VBox(HBox(vlan_interface_widget.widget_id, vlan_id_widget.widget_id)) : Empty()
       )
 
       address_contents = if ["tun", "tap"].include?(LanItems.type)
@@ -624,6 +537,9 @@ module Yast
 
       if ret != :back && ret != :abort
         # general tab
+        NetworkInterfaces.Name = @settings["IFCFGID"]
+        # LanItems.device modification is ignored
+        LanItems.Items[LanItems.current]["ifcfg"] = @settings["IFCFGID"]
         LanItems.startmode = Ops.get_string(@settings, "STARTMODE", "")
         LanItems.mtu = Ops.get_string(@settings, "MTU", "")
         LanItems.firewall_zone = firewall_zone.store_permanent if firewalld.installed?

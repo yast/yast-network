@@ -1,5 +1,5 @@
 require "yast"
-require "cwm/custom_widget"
+require "cwm/common_widgets"
 
 Yast.import "NetworkInterfaces"
 
@@ -18,7 +18,7 @@ module Y2Network
       def help
         # FIXME: help is not helpful
         _(
-          "<p><b>Device Type</b>. Various device types are available, select \a" \
+          "<p><b>Device Type</b>. Various device types are available, select \n" \
             "one according your needs.</p>"
         )
       end
