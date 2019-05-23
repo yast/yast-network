@@ -34,9 +34,6 @@ include Yast::UIShortcuts
 
 module Yast
   module NetworkLanHardwareInclude
-    # how many device names is proposed in Hardware dialog
-    NEW_DEVICES_COUNT = 10
-
     def initialize_network_lan_hardware(include_target)
       Yast.import "UI"
 
@@ -166,26 +163,10 @@ module Yast
 
     def initHardware
       @hardware = {}
-      Ops.set(@hardware, "hotplug", LanItems.hotplug)
-      Builtins.y2milestone("hotplug=%1", LanItems.hotplug)
       Ops.set(
         @hardware,
         "modules_from_hwinfo",
         LanItems.GetItemModules(Ops.get_string(@hardware, "modul", ""))
-      )
-
-      Ops.set(@hardware, "type", LanItems.type)
-      if Ops.get_string(@hardware, "type", "") == ""
-        Builtins.y2error("Shouldn't happen -- type is empty. Assuming eth.")
-        Ops.set(@hardware, "type", "eth")
-      end
-      Ops.set(
-        @hardware,
-        "realtype",
-        NetworkInterfaces.RealType(
-          Ops.get_string(@hardware, "type", ""),
-          Ops.get_string(@hardware, "hotplug", "")
-        )
       )
 
       # Use rather LanItems::device, so that device number is initialized correctly at all times (#308763)
@@ -213,44 +194,6 @@ module Yast
         )
       )
 
-      # #38213, remember device id when we switch back from pcmcia/usb
-      Ops.set(
-        @hardware,
-        "non_hotplug_device_id",
-        Ops.get_string(@hardware, "device", "")
-      )
-
-      # FIXME: duplicated in address.ycp
-      Ops.set(@hardware, "device_types", NetworkInterfaces.GetDeviceTypes)
-
-      if Builtins.issubstring(
-        Ops.get_string(@hardware, "device", ""),
-        "bus-pcmcia"
-      )
-        Ops.set(@hardware, "hotplug", "pcmcia")
-      elsif Builtins.issubstring(
-        Ops.get_string(@hardware, "device", ""),
-        "bus-usb"
-      )
-        Ops.set(@hardware, "hotplug", "usb")
-      end
-
-      Builtins.y2milestone("hotplug=%1", LanItems.hotplug)
-
-      # list of free device names when e.g. adding new device
-      @hardware["devices"] = LanItems.new_type_devices(@hardware["realtype"], NEW_DEVICES_COUNT)
-
-      Ops.set(
-        @hardware,
-        "no_hotplug",
-        Ops.get_string(@hardware, "hotplug", "") == ""
-      )
-      Ops.set(
-        @hardware,
-        "no_hotplug_dummy",
-        Ops.get_boolean(@hardware, "no_hotplug", false) &&
-          Ops.get_string(@hardware, "type", "") != "dummy"
-      )
       Ops.set(@hardware, "ethtool_options", LanItems.ethtool_options)
 
       nil
@@ -261,27 +204,6 @@ module Yast
 
       hotplug_type = @hardware["hotplug"] || ""
       hw_type = @hardware["type"] || ""
-
-      check_boxes = HBox(
-        HSpacing(1.5),
-        # CheckBox label
-        CheckBox(
-          Id(:pcmcia),
-          Opt(:notify),
-          _("&PCMCIA"),
-          hotplug_type == "pcmcia"
-        ),
-        HSpacing(1.5),
-
-        # CheckBox label
-        CheckBox(
-          Id(:usb),
-          Opt(:notify),
-          _("&USB"),
-          hotplug_type == "usb"
-        ),
-        HSpacing(1.5)
-      )
 
       # Disable PCMCIA and USB checkboxex on Edit and s390
       check_boxes = VSpacing(0) if !isNewDevice || Arch.s390
@@ -310,8 +232,6 @@ module Yast
                 @hardware["options"] || ""
               )
             ),
-            VSpacing(0.4),
-            check_boxes,
             VSpacing(0.4)
           ),
           HSpacing(0.5)
@@ -369,34 +289,6 @@ module Yast
         :Value,
         @hardware["default_device"] || ""
       )
-      UI.ChangeWidget(
-        Id(:modul),
-        :Enabled,
-        @hardware["no_hotplug_dummy"] == true # convert tri state boolean to two state
-      )
-      ChangeWidgetIfExists(
-        Id(:list),
-        :Enabled,
-        @hardware["no_hotplug_dummy"] == true # convert tri state boolean to two state
-      )
-      ChangeWidgetIfExists(
-        Id(:hwcfg),
-        :Enabled,
-        @hardware["no_hotplug"] == true # convert tri state boolean to two state
-      )
-      ChangeWidgetIfExists(
-        Id(:usb),
-        :Enabled,
-        (hotplug_type == "usb" || hotplug_type == "") &&
-        hw_type != "dummy"
-      )
-      ChangeWidgetIfExists(
-        Id(:pcmcia),
-        :Enabled,
-        (hotplug_type == "pcmcia" || hotplug_type == "") &&
-        hw_type != "dummy"
-      )
-
       device_name = LanItems.current_udev_name
 
       ChangeWidgetIfExists(Id(:device_name), :Enabled, false)
