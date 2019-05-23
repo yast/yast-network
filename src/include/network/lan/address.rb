@@ -32,6 +32,7 @@ require "y2network/widgets/bond_options"
 require "y2network/widgets/bond_slave"
 require "y2network/widgets/boot_protocol"
 require "y2network/widgets/bridge_ports"
+require "y2network/widgets/ethtools_options"
 require "y2network/widgets/firewall_zone"
 require "y2network/widgets/ifplugd_priority"
 require "y2network/widgets/interface_name"
@@ -99,6 +100,10 @@ module Yast
       @vlan_id_widget ||= Y2Network::Widgets::VlanID.new(@settings)
     end
 
+    def ethtools_options_widget
+      @ethtools_options_widget ||= Y2Network::Widgets::EthtoolsOptions.new(@settings)
+    end
+
     def vlan_interface_widget
       @vlan_interface_widget ||= Y2Network::Widgets::VlanInterface.new(@settings)
     end
@@ -141,7 +146,7 @@ module Yast
 
     def widget_descr_local
       res = {
-        "AD_ADDRESSES"                  => {
+        "AD_ADDRESSES"                    => {
           "widget"        => :custom,
           "custom_widget" => Frame(
             Id(:f_additional),
@@ -192,24 +197,19 @@ module Yast
             "void (string, map)"
           )
         },
-        "IFNAME"                        => {
-          "widget" => :textentry,
-          "label"  => _("&Name of Interface"),
-          "opt"    => [:hstretch],
-          "help"   => _("<p>TODO kind of vague!</p>")
-        },
-        interface_name_widget.widget_id => interface_name_widget.cwm_definition,
-        mtu_widget.widget_id            => mtu_widget.cwm_definition,
-        tunnel_widget.widget_id         => tunnel_widget.cwm_definition,
-        bridge_ports_widget.widget_id   => bridge_ports_widget.cwm_definition,
-        blink_button.widget_id          => blink_button.cwm_definition,
-        vlan_id_widget.widget_id        => vlan_id_widget.cwm_definition,
-        vlan_interface_widget.widget_id => vlan_interface_widget.cwm_definition,
-        udev_rules_widget.widget_id     => udev_rules_widget.cwm_definition,
-        bond_slave_widget.widget_id     => bond_slave_widget.cwm_definition,
-        bond_options_widget.widget_id   => bond_options_widget.cwm_definition,
-        boot_protocol_widget.widget_id  => boot_protocol_widget.cwm_definition,
-        "REMOTEIP"                      => {
+        interface_name_widget.widget_id   => interface_name_widget.cwm_definition,
+        ethtools_options_widget.widget_id => ethtools_options_widget.cwm_definition,
+        mtu_widget.widget_id              => mtu_widget.cwm_definition,
+        tunnel_widget.widget_id           => tunnel_widget.cwm_definition,
+        bridge_ports_widget.widget_id     => bridge_ports_widget.cwm_definition,
+        blink_button.widget_id            => blink_button.cwm_definition,
+        vlan_id_widget.widget_id          => vlan_id_widget.cwm_definition,
+        vlan_interface_widget.widget_id   => vlan_interface_widget.cwm_definition,
+        udev_rules_widget.widget_id       => udev_rules_widget.cwm_definition,
+        bond_slave_widget.widget_id       => bond_slave_widget.cwm_definition,
+        bond_options_widget.widget_id     => bond_options_widget.cwm_definition,
+        boot_protocol_widget.widget_id    => boot_protocol_widget.cwm_definition,
+        "REMOTEIP"                        => {
           "widget"            => :textentry,
           # Text entry label
           "label"             => _("R&emote IP Address"),
@@ -226,7 +226,7 @@ module Yast
           )
         },
         # leftovers
-        "S390"                          => {
+        "S390"                            => {
           "widget" => :push_button,
           # push button label
           "label"  => _("&S/390"),
@@ -437,7 +437,10 @@ module Yast
         "contents" => VBox(
           # FIXME: ensure that only eth, maybe also ib?
           @settings["IFCFGTYPE"] == "eth" ? blink_button.widget_id : Empty(),
-          "HWDIALOG"
+          "HWDIALOG",
+          # FIXME: probably makes sense only for eth
+          ethtools_options_widget.widget_id,
+          VStretch()
         )
       }
     end

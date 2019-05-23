@@ -85,23 +85,18 @@ module Yast
       # Manual network card setup help 2/4
       hw_help = Ops.add(
         Ops.add(
-          Ops.add(
-            hw_help,
-            _(
-              "<p><b>Kernel Module</b>. Enter the kernel module (driver) name \n" \
-                "for your network device here. If the device is already configured, see if there is more than one driver available for\n" \
-                "your device in the drop-down list. If necessary, choose a driver from the list, but usually the default value works.</p>\n"
-            )
-          ),
-          # Manual networ card setup help 3/4
+          hw_help,
           _(
-            "<p>Additionally, specify <b>Options</b> for the kernel module. Use this\n" \
-              "format: <i>option</i>=<i>value</i>. Each entry should be space-separated, for example: <i>io=0x300 irq=5</i>. <b>Note:</b> If two cards are \n" \
-              "configured with the same module name, the options will be merged while saving.</p>\n"
+            "<p><b>Kernel Module</b>. Enter the kernel module (driver) name \n" \
+              "for your network device here. If the device is already configured, see if there is more than one driver available for\n" \
+              "your device in the drop-down list. If necessary, choose a driver from the list, but usually the default value works.</p>\n"
           )
         ),
+        # Manual networ card setup help 3/4
         _(
-          "<p>If you specify options via <b>Ethtool options</b>, ifup will call ethtool with these options.</p>\n"
+          "<p>Additionally, specify <b>Options</b> for the kernel module. Use this\n" \
+            "format: <i>option</i>=<i>value</i>. Each entry should be space-separated, for example: <i>io=0x300 irq=5</i>. <b>Note:</b> If two cards are \n" \
+            "configured with the same module name, the options will be merged while saving.</p>\n"
         )
       )
 
@@ -153,8 +148,6 @@ module Yast
         )
       )
 
-      Ops.set(@hardware, "ethtool_options", LanItems.ethtool_options)
-
       nil
     end
 
@@ -191,22 +184,8 @@ module Yast
         )
       )
 
-      ethtool_widget = Frame(
-        _("Ethtool Options"),
-        HBox(
-          InputField(
-            Id(:ethtool_opts),
-            Opt(:hstretch),
-            _("Options"),
-            @hardware["ethtool_options"] || ""
-          )
-        )
-      )
-
       contents = VBox(
-        kernel_box,
-        ethtool_widget,
-        VStretch()
+        kernel_box
       )
 
       UI.ReplaceWidget(:hw_content, contents)
