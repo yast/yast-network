@@ -97,14 +97,7 @@ module Yast
         )
       else
         Ops.add(
-          Ops.add(
-            hw_help,
-            _(
-              "<p><b>Udev Rules</b> are rules for the kernel device manager that allow\n" \
-                "associating the MAC address or BusID of the network device with its name (for\n" \
-                "example, eth1, wlan0 ) and assures a persistent device name upon reboot.\n"
-            )
-          ),
+          hw_help,
           _(
             "<p><b>Show visible port identification</b> allows you to physically identify now configured NIC. \n" \
               "Set appropriate time, click <b>Blink</b> and LED diodes on you NIC will start blinking for selected time.\n" \
@@ -135,16 +128,6 @@ module Yast
           "<p>If you specify options via <b>Ethtool options</b>, ifup will call ethtool with these options.</p>\n"
         )
       )
-
-      if isNewDevice && !Arch.s390
-        # Manual dialog help 4/4
-        hw_help = Ops.add(
-          hw_help,
-          _(
-            "<p>If you have a <b>PCMCIA</b> network card, select PCMCIA.\nIf you have a <b>USB</b> network card, select USB.</p>\n"
-          )
-        )
-      end
 
       if Arch.s390
         # overwrite help
@@ -202,12 +185,6 @@ module Yast
     def initHwDialog(_text)
       initHardware
 
-      hotplug_type = @hardware["hotplug"] || ""
-      hw_type = @hardware["type"] || ""
-
-      # Disable PCMCIA and USB checkboxex on Edit and s390
-      check_boxes = VSpacing(0) if !isNewDevice || Arch.s390
-
       # #116211 - allow user to change modules from list
       # Frame label
       kernel_box = Frame(
@@ -238,17 +215,6 @@ module Yast
         )
       )
 
-      udev_widget =
-        Frame(
-          _("Udev Rules"),
-          HBox(
-            InputField(Id(:device_name), Opt(:hstretch), _("Device Name"), ""),
-            PushButton(Id(:change_udev), _("Change"))
-          )
-        )
-
-      udev_widget = Empty() if isNewDevice
-
       blink_card = Frame(
         _("Show Visible Port Identification"),
         HBox(
@@ -277,7 +243,7 @@ module Yast
       )
 
       contents = VBox(
-        HBox(udev_widget, HStretch(), isNewDevice ? Empty() : blink_card),
+        isNewDevice ? Empty() : blink_card,
         kernel_box,
         ethtool_widget,
         VStretch()
@@ -289,118 +255,8 @@ module Yast
         :Value,
         @hardware["default_device"] || ""
       )
-      device_name = LanItems.current_udev_name
-
-      ChangeWidgetIfExists(Id(:device_name), :Enabled, false)
-      ChangeWidgetIfExists(Id(:device_name), :Value, device_name)
 
       nil
-    end
-
-    # Call back for a manual selection from the list
-    # @return dialog result
-    def SelectionDialog
-      type = LanItems.type
-      selected = 0
-
-      hwlist = Ops.get_list(@NetworkCards, type, [])
-      cards = hwlist2items(hwlist, 0)
-
-      # Manual selection caption
-      caption = _("Manual Network Card Selection")
-
-      # Manual selection help
-      helptext = _(
-        "<p>Select the network card to configure. Search\nfor a particular network card by entering the name in the search entry.</p>"
-      )
-
-      # Manual selection contents
-      contents = VBox(
-        VSpacing(0.5),
-        # Selection box label
-        ReplacePoint(
-          Id(:rp),
-          SelectionBox(Id(:cards), _("&Network Card"), cards)
-        ),
-        VSpacing(0.5),
-        # Text entry field
-        InputField(Id(:search), Opt(:hstretch, :notify), _("&Search")),
-        VSpacing(0.5)
-      )
-
-      Wizard.SetContentsButtons(
-        caption,
-        contents,
-        helptext,
-        Label.BackButton,
-        Label.OKButton
-      )
-
-      UI.SetFocus(Id(:cards))
-
-      ret = nil
-      loop do
-        ret = UI.UserInput
-
-        case ret
-        when :abort, :cancel
-          ReallyAbort() ? break : next
-        when :search
-          entry = Convert.to_string(UI.QueryWidget(Id(:search), :Value))
-
-          l = Builtins.filter(
-            Convert.convert(cards, from: "list", to: "list <term>")
-          ) do |e|
-            Builtins.tolower(
-              Builtins.substring(
-                Ops.get_string(e, 1, ""),
-                0,
-                Builtins.size(entry)
-              )
-            ) ==
-              Builtins.tolower(entry)
-          end
-
-          selected = 0 if Builtins.size(entry) == 0
-          if Ops.greater_than(Builtins.size(l), 0)
-            selected = Ops.get_integer(l, [0, 0, 0], 0)
-          end
-
-          cards = []
-          cards = hwlist2items(hwlist, selected)
-
-          # Selection box title
-          UI.ReplaceWidget(
-            Id(:rp),
-            SelectionBox(Id(:cards), _("&Network Card"), cards)
-          )
-        when :back
-          break
-        when :next
-          # FIXME: check_*
-          break
-        else
-          Builtins.y2error("Unexpected return code: %1", ret)
-          next
-        end
-      end
-
-      if ret == :next
-        selected = Convert.to_integer(UI.QueryWidget(Id(:cards), :CurrentItem))
-        selected = 0 if selected.nil?
-        card = Ops.get(hwlist, selected, {})
-        LanItems.description = Ops.get_string(card, "name", "")
-      end
-
-      deep_copy(ret)
-    end
-
-    # Dialog for editing nic's udev rules.
-    #
-    # @return nic name. New one if `ok, old one otherwise.
-    def EditUdevRulesDialog
-      edit_name_dlg = EditNicName.new
-      edit_name_dlg.run
     end
 
     def handleHW(_key, event)
@@ -413,8 +269,6 @@ module Yast
       end
 
       case ret
-      when :list then SelectionDialog()
-      when :change_udev then UI.ChangeWidget(:device_name, :Value, EditUdevRulesDialog())
       when :blink
         device = LanItems.device
         timeout = Builtins.tointeger(UI.QueryWidget(:blink_time, :Value))

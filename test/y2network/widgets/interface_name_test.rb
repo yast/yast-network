@@ -23,7 +23,7 @@ require "cwm/rspec"
 require "y2network/widgets/interface_name"
 
 describe Y2Network::Widgets::InterfaceName do
-  subject { described_class.new({"IFCFGTYPE" => "eth"}) }
+  subject { described_class.new("IFCFGTYPE" => "eth") }
 
   include_examples "CWM::ComboBox"
 
@@ -56,4 +56,3 @@ describe Y2Network::Widgets::InterfaceName do
     end
   end
 end
-

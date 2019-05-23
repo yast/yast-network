@@ -27,16 +27,17 @@
 # Authors:	Michal Svec <msvec@suse.cz>
 #
 require "y2firewall/helpers/interfaces"
-require "y2network/widgets/boot_protocol"
-require "y2network/widgets/firewall_zone"
-require "y2network/widgets/tunnel"
 require "y2network/widgets/bond_options"
 require "y2network/widgets/bond_slave"
+require "y2network/widgets/boot_protocol"
 require "y2network/widgets/bridge_ports"
+require "y2network/widgets/firewall_zone"
 require "y2network/widgets/ifplugd_priority"
 require "y2network/widgets/interface_name"
-require "y2network/widgets/startmode"
 require "y2network/widgets/mtu"
+require "y2network/widgets/startmode"
+require "y2network/widgets/tunnel"
+require "y2network/widgets/udev_rules"
 require "y2network/widgets/vlan_id"
 require "y2network/widgets/vlan_interface"
 
@@ -87,6 +88,10 @@ module Yast
 
     def tunnel_widget
       @tunnel_widget ||= Y2Network::Widgets::Tunnel.new(@settings)
+    end
+
+    def udev_rules_widget
+      @udev_rules_widget ||= Y2Network::Widgets::UdevRules.new(@settings)
     end
 
     def vlan_id_widget
@@ -194,6 +199,7 @@ module Yast
         bridge_ports_widget.widget_id   => bridge_ports_widget.cwm_definition,
         vlan_id_widget.widget_id        => vlan_id_widget.cwm_definition,
         vlan_interface_widget.widget_id => vlan_interface_widget.cwm_definition,
+        udev_rules_widget.widget_id     => udev_rules_widget.cwm_definition,
         bond_slave_widget.widget_id     => bond_slave_widget.cwm_definition,
         bond_options_widget.widget_id   => bond_options_widget.cwm_definition,
         boot_protocol_widget.widget_id  => boot_protocol_widget.cwm_definition,
@@ -328,8 +334,8 @@ module Yast
               1,
               0,
               VBox(
-                # TODO: if not add move here udev name
-                LanItems.operation == :add ? interface_name_widget.widget_id : Empty(),
+                # FIXME: udev rules for anything without hwinfo is wrong
+                LanItems.operation == :add ? interface_name_widget.widget_id : udev_rules_widget.widget_id,
                 Frame(
                   _("Device Activation"),
                   HBox(startmode_widget.widget_id, ifplugd_priority_widget.widget_id, HStretch())
