@@ -27,9 +27,6 @@
 # Authors:	Michal Svec <msvec@suse.cz>
 #
 
-require "network/edit_nic_name"
-require "shellwords"
-
 include Yast::UIShortcuts
 
 module Yast
@@ -59,7 +56,6 @@ module Yast
         "widget"        => :custom,
         "custom_widget" => ReplacePoint(Id(:hw_content), Empty()),
         "init"          => fun_ref(method(:initHwDialog), "void (string)"),
-        "handle"        => fun_ref(method(:handleHW), "symbol (string, map)"),
         "store"         => fun_ref(method(:storeHW), "void (string, map)"),
         "help"          => initHelp
       }
@@ -85,26 +81,6 @@ module Yast
       hw_help = _(
         "<p>Set up hardware-specific options for \nyour network device here.</p>\n"
       )
-
-      hw_help = if isNewDevice
-        # Manual network card setup help 2/4
-        # translators: do not translated udev, MAC, BusID
-        Ops.add(
-          hw_help,
-          _(
-            "<p><b>Device Type</b>. Various device types are available, select \none according your needs.</p>"
-          )
-        )
-      else
-        Ops.add(
-          hw_help,
-          _(
-            "<p><b>Show visible port identification</b> allows you to physically identify now configured NIC. \n" \
-              "Set appropriate time, click <b>Blink</b> and LED diodes on you NIC will start blinking for selected time.\n" \
-              "</p>"
-          )
-        )
-      end
 
       # Manual network card setup help 2/4
       hw_help = Ops.add(
@@ -215,21 +191,6 @@ module Yast
         )
       )
 
-      blink_card = Frame(
-        _("Show Visible Port Identification"),
-        HBox(
-          # translators: how many seconds will card be blinking
-          IntField(
-            Id(:blink_time),
-            format("%s:", _("Seconds")),
-            0,
-            100,
-            5
-          ),
-          PushButton(Id(:blink), _("Blink"))
-        )
-      )
-
       ethtool_widget = Frame(
         _("Ethtool Options"),
         HBox(
@@ -243,7 +204,6 @@ module Yast
       )
 
       contents = VBox(
-        isNewDevice ? Empty() : blink_card,
         kernel_box,
         ethtool_widget,
         VStretch()
@@ -258,38 +218,6 @@ module Yast
 
       nil
     end
-
-    def handleHW(_key, event)
-      event = deep_copy(event)
-      LanItems.Rollback if Ops.get(event, "ID") == :cancel
-      ret = nil
-      if Ops.get_string(event, "EventReason", "") == "ValueChanged" ||
-          Ops.get_string(event, "EventReason", "") == "Activated"
-        ret = Ops.get_symbol(event, "WidgetID")
-      end
-
-      case ret
-      when :blink
-        device = LanItems.device
-        timeout = Builtins.tointeger(UI.QueryWidget(:blink_time, :Value))
-        Builtins.y2milestone(
-          "blink, blink ... %1 seconds on %2 device",
-          timeout,
-          device
-        )
-        cmd = Builtins.sformat("/usr/sbin/ethtool -p %1 %2",
-          device.shellescape, timeout.to_s.shellescape)
-        Builtins.y2milestone(
-          "%1 : %2",
-          cmd,
-          SCR.Execute(path(".target.bash_output"), cmd)
-        )
-      end
-
-      nil
-    end
-
-    VLAN_SIZE = 4 # size of vlanN prefix without number
 
     def storeHW(_key, _event)
       if isNewDevice

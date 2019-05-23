@@ -23,12 +23,16 @@ module Y2Network
         ret = super
         ret = :cancel if ret == :abort
         # TODO: replace with builder initialization
-        Yast::LanItems.type = @type_widget.result
-        proposed_name = Yast::LanItems.new_type_devices(@type_widget.result, 1).first
-        Yast::LanItems.device = proposed_name
-        Yast::NetworkInterfaces.Name = proposed_name
-        Yast::LanItems.Items[Yast::LanItems.current]["ifcfg"] = proposed_name
-        Yast::LanItems.Items[Yast::LanItems.current]["udev"] = {}
+        if ret == :cancel
+          Yast::LanItems.Rollback
+        else
+          Yast::LanItems.type = @type_widget.result
+          proposed_name = Yast::LanItems.new_type_devices(@type_widget.result, 1).first
+          Yast::LanItems.device = proposed_name
+          Yast::NetworkInterfaces.Name = proposed_name
+          Yast::LanItems.Items[Yast::LanItems.current]["ifcfg"] = proposed_name
+          Yast::LanItems.Items[Yast::LanItems.current]["udev"] = {}
+        end
         # END of TODO
 
         ret

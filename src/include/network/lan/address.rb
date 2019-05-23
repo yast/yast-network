@@ -27,6 +27,7 @@
 # Authors:	Michal Svec <msvec@suse.cz>
 #
 require "y2firewall/helpers/interfaces"
+require "y2network/widgets/blink_button"
 require "y2network/widgets/bond_options"
 require "y2network/widgets/bond_slave"
 require "y2network/widgets/boot_protocol"
@@ -100,6 +101,10 @@ module Yast
 
     def vlan_interface_widget
       @vlan_interface_widget ||= Y2Network::Widgets::VlanInterface.new(@settings)
+    end
+
+    def blink_button
+      @blink_button ||= Y2Network::Widgets::BlinkButton.new(@settings)
     end
 
     def bond_slave_widget
@@ -197,6 +202,7 @@ module Yast
         mtu_widget.widget_id            => mtu_widget.cwm_definition,
         tunnel_widget.widget_id         => tunnel_widget.cwm_definition,
         bridge_ports_widget.widget_id   => bridge_ports_widget.cwm_definition,
+        blink_button.widget_id          => blink_button.cwm_definition,
         vlan_id_widget.widget_id        => vlan_id_widget.cwm_definition,
         vlan_interface_widget.widget_id => vlan_interface_widget.cwm_definition,
         udev_rules_widget.widget_id     => udev_rules_widget.cwm_definition,
@@ -428,7 +434,11 @@ module Yast
     def hardware_tab
       {
         "header"   => _("&Hardware"),
-        "contents" => VBox("HWDIALOG")
+        "contents" => VBox(
+          # FIXME: ensure that only eth, maybe also ib?
+          @settings["IFCFGTYPE"] == "eth" ? blink_button.widget_id : Empty(),
+          "HWDIALOG"
+        )
       }
     end
 
