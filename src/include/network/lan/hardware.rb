@@ -51,55 +51,10 @@ module Yast
       @hardware = nil
     end
 
-    def widget_descr_hardware
-      widget_descr = {
-        "widget"        => :custom,
-        "custom_widget" => ReplacePoint(Id(:hw_content), Empty()),
-        "init"          => fun_ref(method(:initHwDialog), "void (string)"),
-        "store"         => fun_ref(method(:storeHW), "void (string, map)"),
-        "help"          => initHelp
-      }
-
-      { "HWDIALOG" => widget_descr }
-    end
-
-    # Determines if the dialog is used for adding new device or for editing existing one.
-    #
-    # Some widgets are disabled when creating new device. Also, when editing existing device, it is not possible
-    # to e.g. change device type.
-    #
-    # @return false if hardware widgets are embedded into another dialog, otherwise true.
-    def isNewDevice
-      LanItems.operation == :add
-    end
-
     # Dynamic initialization of help text.
     #
     # @return content of the help
     def initHelp
-      # Manual network card setup help 1/4
-      hw_help = _(
-        "<p>Set up hardware-specific options for \nyour network device here.</p>\n"
-      )
-
-      # Manual network card setup help 2/4
-      hw_help = Ops.add(
-        Ops.add(
-          hw_help,
-          _(
-            "<p><b>Kernel Module</b>. Enter the kernel module (driver) name \n" \
-              "for your network device here. If the device is already configured, see if there is more than one driver available for\n" \
-              "your device in the drop-down list. If necessary, choose a driver from the list, but usually the default value works.</p>\n"
-          )
-        ),
-        # Manual networ card setup help 3/4
-        _(
-          "<p>Additionally, specify <b>Options</b> for the kernel module. Use this\n" \
-            "format: <i>option</i>=<i>value</i>. Each entry should be space-separated, for example: <i>io=0x300 irq=5</i>. <b>Note:</b> If two cards are \n" \
-            "configured with the same module name, the options will be merged while saving.</p>\n"
-        )
-      )
-
       if Arch.s390
         # overwrite help
         # Manual dialog help 5/4
@@ -113,116 +68,6 @@ module Yast
       end
 
       hw_help
-    end
-
-    def initHardware
-      @hardware = {}
-      Ops.set(
-        @hardware,
-        "modules_from_hwinfo",
-        LanItems.GetItemModules(Ops.get_string(@hardware, "modul", ""))
-      )
-
-      # Use rather LanItems::device, so that device number is initialized correctly at all times (#308763)
-      Ops.set(@hardware, "device", LanItems.device)
-
-      driver = Ops.get_string(LanItems.getCurrentItem, ["udev", "driver"], "")
-
-      Ops.set(
-        @hardware,
-        "default_device",
-        if IsNotEmpty(driver)
-          driver
-        else
-          Ops.get_string(LanItems.getCurrentItem, ["hwinfo", "module"], "")
-        end
-      )
-
-      Ops.set(
-        @hardware,
-        "options",
-        Ops.get_string(
-          LanItems.driver_options,
-          Ops.get_string(@hardware, "default_device", ""),
-          ""
-        )
-      )
-
-      nil
-    end
-
-    def initHwDialog(_text)
-      initHardware
-
-      # #116211 - allow user to change modules from list
-      # Frame label
-      kernel_box = Frame(
-        _("&Kernel Module"),
-        HBox(
-          HSpacing(0.5),
-          VBox(
-            VSpacing(0.4),
-            HBox(
-              # Text entry label
-              ComboBox(
-                Id(:modul),
-                Opt(:editable),
-                _("&Module Name"),
-                @hardware["modules_from_hwinfo"] || []
-              ),
-              HSpacing(0.5),
-              InputField(
-                Id(:options),
-                Opt(:hstretch),
-                Label.Options,
-                @hardware["options"] || ""
-              )
-            ),
-            VSpacing(0.4)
-          ),
-          HSpacing(0.5)
-        )
-      )
-
-      contents = VBox(
-        kernel_box
-      )
-
-      UI.ReplaceWidget(:hw_content, contents)
-      UI.ChangeWidget(
-        :modul,
-        :Value,
-        @hardware["default_device"] || ""
-      )
-
-      nil
-    end
-
-    def storeHW(_key, _event)
-      if isNewDevice
-        # Initialize udev map, so that setDriver (see below) sets correct module
-        Ops.set(LanItems.Items, [LanItems.current, "udev"], {})
-        # FIXME: for interfaces with no hwinfo don't propose ifplugd
-        if Builtins.size(Ops.get_map(LanItems.getCurrentItem, "hwinfo", {})) == 0
-          Builtins.y2milestone(
-            "interface without hwinfo, proposing STARTMODE=auto"
-          )
-          LanItems.startmode = "auto"
-        end
-      end
-
-      driver = Convert.to_string(UI.QueryWidget(:modul, :Value))
-      LanItems.setDriver(driver)
-      Ops.set(
-        LanItems.driver_options,
-        driver,
-        Convert.to_string(UI.QueryWidget(:options, :Value))
-      )
-      LanItems.ethtool_options = Convert.to_string(
-        UI.QueryWidget(:ethtool_opts, :Value)
-      )
-
-      nil
     end
 
     # S/390 devices configuration dialog

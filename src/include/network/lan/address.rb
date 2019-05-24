@@ -36,6 +36,8 @@ require "y2network/widgets/ethtools_options"
 require "y2network/widgets/firewall_zone"
 require "y2network/widgets/ifplugd_priority"
 require "y2network/widgets/interface_name"
+require "y2network/widgets/kernel_module"
+require "y2network/widgets/kernel_options"
 require "y2network/widgets/mtu"
 require "y2network/widgets/startmode"
 require "y2network/widgets/tunnel"
@@ -90,6 +92,14 @@ module Yast
 
     def tunnel_widget
       @tunnel_widget ||= Y2Network::Widgets::Tunnel.new(@settings)
+    end
+
+    def kernel_module_widget
+      @kernel_module_widget ||= Y2Network::Widgets::KernelModule.new(@settings)
+    end
+
+    def kernel_options_widget
+      @kernel_options_widget ||= Y2Network::Widgets::KernelOptions.new(@settings)
     end
 
     def udev_rules_widget
@@ -205,6 +215,8 @@ module Yast
         blink_button.widget_id            => blink_button.cwm_definition,
         vlan_id_widget.widget_id          => vlan_id_widget.cwm_definition,
         vlan_interface_widget.widget_id   => vlan_interface_widget.cwm_definition,
+        kernel_module_widget.widget_id    => kernel_module_widget.cwm_definition,
+        kernel_options_widget.widget_id   => kernel_options_widget.cwm_definition,
         udev_rules_widget.widget_id       => udev_rules_widget.cwm_definition,
         bond_slave_widget.widget_id       => bond_slave_widget.cwm_definition,
         bond_options_widget.widget_id     => bond_options_widget.cwm_definition,
@@ -237,12 +249,6 @@ module Yast
           "handle" => fun_ref(method(:HandleButton), "symbol (string, map)")
         }
       }
-
-      Ops.set(
-        res,
-        "HWDIALOG",
-        Ops.get(widget_descr_hardware, "HWDIALOG", {})
-      )
 
       res
     end
@@ -437,7 +443,22 @@ module Yast
         "contents" => VBox(
           # FIXME: ensure that only eth, maybe also ib?
           @settings["IFCFGTYPE"] == "eth" ? blink_button.widget_id : Empty(),
-          "HWDIALOG",
+          Frame(
+            _("&Kernel Module"),
+            HBox(
+              HSpacing(0.5),
+              VBox(
+                VSpacing(0.4),
+                HBox(
+                  kernel_module_widget.widget_id, # Text entry label
+                  HSpacing(0.5),
+                  kernel_options_widget.widget_id
+                ),
+                VSpacing(0.4)
+              ),
+              HSpacing(0.5)
+            )
+          ),
           # FIXME: probably makes sense only for eth
           ethtools_options_widget.widget_id,
           VStretch()
