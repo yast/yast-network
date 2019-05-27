@@ -240,7 +240,7 @@ module Y2Network
 
         mask = Yast::UI.QueryWidget(:bootproto_netmask, :Value)
         if mask != "" && !valid_netmask(ipa, mask)
-          Popup.Error(_("No valid netmask or prefix length."))
+          Yast::Popup.Error(_("No valid netmask or prefix length."))
           Yast::UI.SetFocus(:bootproto_netmask)
           return false
         end

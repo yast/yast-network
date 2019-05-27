@@ -18,10 +18,10 @@ module Y2Network
 
       def help
         _(
-           "<p>Enter the <b>IP Address</b> (for example: <tt>192.168.100.99</tt>) for your computer, and the \n" \
-           " <b>Remote IP Address</b> (for example: <tt>192.168.100.254</tt>)\n" \
-           "for your peer.</p>\n"
-         )
+          "<p>Enter the <b>IP Address</b> (for example: <tt>192.168.100.99</tt>) for your computer, and the \n" \
+          " <b>Remote IP Address</b> (for example: <tt>192.168.100.254</tt>)\n" \
+          "for your peer.</p>\n"
+        )
       end
 
       def init

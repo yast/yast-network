@@ -40,6 +40,7 @@ require "y2network/widgets/ip_address"
 require "y2network/widgets/kernel_module"
 require "y2network/widgets/kernel_options"
 require "y2network/widgets/mtu"
+require "y2network/widgets/netmask"
 require "y2network/widgets/remote_ip"
 require "y2network/widgets/s390_button"
 require "y2network/widgets/startmode"
@@ -145,6 +146,10 @@ module Yast
       @mtu_widget ||= Y2Network::Widgets::MTU.new(@settings)
     end
 
+    def netmask_widget
+      @netmask_widget ||= Y2Network::Widgets::Netmask.new(@settings)
+    end
+
     def interface_name_widget
       @interface_name_widget ||= Y2Network::Widgets::InterfaceName.new(@settings)
     end
@@ -225,6 +230,7 @@ module Yast
         interface_name_widget.widget_id   => interface_name_widget.cwm_definition,
         ethtools_options_widget.widget_id => ethtools_options_widget.cwm_definition,
         mtu_widget.widget_id              => mtu_widget.cwm_definition,
+        netmask_widget.widget_id          => netmask_widget.cwm_definition,
         tunnel_widget.widget_id           => tunnel_widget.cwm_definition,
         bridge_ports_widget.widget_id     => bridge_ports_widget.cwm_definition,
         blink_button.widget_id            => blink_button.cwm_definition,
@@ -378,7 +384,7 @@ module Yast
         "", # labelless frame
         VBox(
           ip_address_widget.widget_id,
-          "NETMASK",
+          netmask_widget.widget_id,
           # TODO: new widget, add logic
           # "GATEWAY"
           Empty()

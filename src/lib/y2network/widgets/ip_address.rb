@@ -1,7 +1,8 @@
 require "yast"
 require "cwm/common_widgets"
 
-Yast.import "LanItems"
+Yast.import "IP"
+Yast.import "Popup"
 
 module Y2Network
   module Widgets
@@ -32,7 +33,14 @@ module Y2Network
       def store
         @settings["IPADDR"] = value
       end
+
+      def validate
+        return true if Yast::IP.Check(value)
+
+        Yast::Popup.Error(_("No valid IP address."))
+        focus
+        false
+      end
     end
   end
 end
-
