@@ -36,6 +36,7 @@ require "y2network/widgets/ethtools_options"
 require "y2network/widgets/firewall_zone"
 require "y2network/widgets/ifplugd_priority"
 require "y2network/widgets/interface_name"
+require "y2network/widgets/ip_address"
 require "y2network/widgets/kernel_module"
 require "y2network/widgets/kernel_options"
 require "y2network/widgets/mtu"
@@ -148,6 +149,10 @@ module Yast
       @interface_name_widget ||= Y2Network::Widgets::InterfaceName.new(@settings)
     end
 
+    def ip_address_widget
+      @ip_address_widget ||= Y2Network::Widgets::IPAddress.new(@settings)
+    end
+
     def ifplugd_priority_widget
       @ifplugd_priority_widget ||= Y2Network::Widgets::IfplugdPriority.new(@settings)
     end
@@ -223,6 +228,7 @@ module Yast
         tunnel_widget.widget_id           => tunnel_widget.cwm_definition,
         bridge_ports_widget.widget_id     => bridge_ports_widget.cwm_definition,
         blink_button.widget_id            => blink_button.cwm_definition,
+        ip_address_widget.widget_id       => ip_address_widget.cwm_definition,
         vlan_id_widget.widget_id          => vlan_id_widget.cwm_definition,
         vlan_interface_widget.widget_id   => vlan_interface_widget.cwm_definition,
         kernel_module_widget.widget_id    => kernel_module_widget.cwm_definition,
@@ -365,13 +371,13 @@ module Yast
 
       address_p2p_contents = Frame(
         "", # labelless frame
-        VBox("IPADDR", remote_ip_widget.widget_id)
+        VBox(ip_address_widget.widget_id, remote_ip_widget.widget_id)
       )
 
       address_static_contents = Frame(
         "", # labelless frame
         VBox(
-          "IPADDR",
+          ip_address_widget.widget_id,
           "NETMASK",
           # TODO: new widget, add logic
           # "GATEWAY"

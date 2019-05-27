@@ -72,6 +72,7 @@ module Y2Network
                 )
               ),
               HBox(
+                # TODO: When object CWM top level is used, then use here IPAddress object
                 InputField(Id(:bootproto_ipaddr), Opt(:hstretch), _("&IP Address")),
                 HSpacing(1),
                 InputField(Id(:bootproto_netmask), Opt(:hstretch), _("&Subnet Mask")),
