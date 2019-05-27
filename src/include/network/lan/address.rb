@@ -40,6 +40,7 @@ require "y2network/widgets/kernel_module"
 require "y2network/widgets/kernel_options"
 require "y2network/widgets/mtu"
 require "y2network/widgets/remote_ip"
+require "y2network/widgets/s390_button"
 require "y2network/widgets/startmode"
 require "y2network/widgets/tunnel"
 require "y2network/widgets/udev_rules"
@@ -155,6 +156,10 @@ module Yast
       @startmode_widget ||= Y2Network::Widgets::Startmode.new(@settings, ifplugd_priority_widget)
     end
 
+    def s390_button
+      @s390_button ||= Y2Network::Widgets::S390Button.new
+    end
+
     def boot_protocol_widget
       @boot_protocol_widget ||= Y2Network::Widgets::BootProtocol.new(@settings)
     end
@@ -228,16 +233,7 @@ module Yast
         boot_protocol_widget.widget_id    => boot_protocol_widget.cwm_definition,
         remote_ip_widget.widget_id        => remote_ip_widget.cwm_definition,
         # leftovers
-        "S390"                            => {
-          "widget" => :push_button,
-          # push button label
-          "label"  => _("&S/390"),
-          "opt"    => [],
-          "help"   => "",
-          "init"   => fun_ref(CWM.method(:InitNull), "void (string)"),
-          "store"  => fun_ref(CWM.method(:StoreNull), "void (string, map)"),
-          "handle" => fun_ref(method(:HandleButton), "symbol (string, map)")
-        }
+        s390_button.widget_id             => s390_button.cwm_definition
       }
 
       res
@@ -288,17 +284,6 @@ module Yast
       Ops.set(@settings, key, value)
 
       nil
-    end
-
-    # Remap the buttons to their Wizard Sequencer values
-    # @param _key [String] the widget receiving the event
-    # @param event [Hash] the event being handled
-    # @return nil so that the dialog loops on
-    def HandleButton(_key, event)
-      event = deep_copy(event)
-      ret = Ops.get(event, "ID")
-      symbols = { "S390" => :s390 }
-      Ops.get(symbols, ret)
     end
 
     # Validator for IP adresses
