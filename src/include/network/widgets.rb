@@ -44,26 +44,6 @@ module Yast
       Yast.import "LanItems"
 
       Yast.include include_target, "network/complex.rb"
-
-      @widget_descr = {
-        # obsoleted by BOOTPROTO_*
-        "BOOTPROTO" => {
-          "widget" => :radio_buttons,
-          # radio button group label,method of setup
-          "label"  => _(
-            "Setup Method"
-          ),
-          # is this necessary?
-          "items"  => [
-            # radio button label
-            ["dhcp", _("A&utomatic Address Setup (via DHCP)")],
-            # radio button label
-            ["static", _("S&tatic Address Setup")]
-          ],
-          "opt"    => [],
-          "help"   => _("<p>H</p>")
-        }
-      }
     end
 
     # Validator for IP adresses, no_popup

@@ -480,11 +480,7 @@ module Yast
     def AddressDialog
       initialize_address_settings
 
-      wd = Convert.convert(
-        Builtins.union(@widget_descr, widget_descr_local),
-        from: "map",
-        to:   "map <string, map <string, any>>"
-      )
+      wd = widget_descr_local
 
       wd[startmode_widget.widget_id] = startmode_widget.cwm_definition
       wd[ifplugd_priority_widget.widget_id] = ifplugd_priority_widget.cwm_definition
