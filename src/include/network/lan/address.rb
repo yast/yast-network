@@ -39,6 +39,7 @@ require "y2network/widgets/interface_name"
 require "y2network/widgets/kernel_module"
 require "y2network/widgets/kernel_options"
 require "y2network/widgets/mtu"
+require "y2network/widgets/remote_ip"
 require "y2network/widgets/startmode"
 require "y2network/widgets/tunnel"
 require "y2network/widgets/udev_rules"
@@ -112,6 +113,10 @@ module Yast
 
     def ethtools_options_widget
       @ethtools_options_widget ||= Y2Network::Widgets::EthtoolsOptions.new(@settings)
+    end
+
+    def remote_ip_widget
+      @remote_ip_widget ||= Y2Network::Widgets::RemoteIP.new(@settings)
     end
 
     def vlan_interface_widget
@@ -221,22 +226,7 @@ module Yast
         bond_slave_widget.widget_id       => bond_slave_widget.cwm_definition,
         bond_options_widget.widget_id     => bond_options_widget.cwm_definition,
         boot_protocol_widget.widget_id    => boot_protocol_widget.cwm_definition,
-        "REMOTEIP"                        => {
-          "widget"            => :textentry,
-          # Text entry label
-          "label"             => _("R&emote IP Address"),
-          "help"              => Ops.get_string(@help, "remoteip", ""),
-          "validate_type"     => :function_no_popup,
-          "validate_function" => fun_ref(
-            method(:ValidateAddrIP),
-            "boolean (string, map)"
-          ),
-          # validation error popup
-          "validate_help"     => Ops.add(
-            _("The remote IP address is invalid.") + "\n",
-            IP.Valid4
-          )
-        },
+        remote_ip_widget.widget_id        => remote_ip_widget.cwm_definition,
         # leftovers
         "S390"                            => {
           "widget" => :push_button,
@@ -312,7 +302,7 @@ module Yast
     end
 
     # Validator for IP adresses
-    # used for IPADDR and REMOTEIP
+    # used for IPADDR
     # @param [String] key	the widget being validated
     # @param [Hash] event	the event being handled
     # @return whether valid
@@ -390,7 +380,7 @@ module Yast
 
       address_p2p_contents = Frame(
         "", # labelless frame
-        VBox("IPADDR", "REMOTEIP")
+        VBox("IPADDR", remote_ip_widget.widget_id)
       )
 
       address_static_contents = Frame(

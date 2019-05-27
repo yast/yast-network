@@ -174,13 +174,6 @@ module Yast
                                    "Leaving the field blank is the same as using the <b> Only Manually</b>\n" \
                                    "policy.</p>\n"
                                  ),
-        # Address dialog help 5/8
-        "remoteip"          =>
-                               _(
-                                 "<p>Enter the <b>IP Address</b> (for example: <tt>192.168.100.99</tt>) for your computer, and the \n" \
-                                 " <b>Remote IP Address</b> (for example: <tt>192.168.100.254</tt>)\n" \
-                                 "for your peer.</p>\n"
-                               ),
         # Address dialog help 6/8
         "netmask"           =>
                                _(
