@@ -147,7 +147,7 @@ module Y2Network
       end
 
       def store
-        return if NetworkService.is_network_manager
+        return if Yast::NetworkService.is_network_manager
 
         table_items = Yast::UI.QueryWidget(Id(:address_table), :Items)
         aliases_to_delete = Yast::LanItems.aliases.dup # #48191

@@ -38,6 +38,7 @@ require "y2network/widgets/firewall_zone"
 require "y2network/widgets/ifplugd_priority"
 require "y2network/widgets/interface_name"
 require "y2network/widgets/ip_address"
+require "y2network/widgets/ipoib_mode"
 require "y2network/widgets/kernel_module"
 require "y2network/widgets/kernel_options"
 require "y2network/widgets/mtu"
@@ -162,6 +163,10 @@ module Yast
       @ip_address_widget ||= Y2Network::Widgets::IPAddress.new(@settings)
     end
 
+    def ipoib_mode_widget
+      @ipoib_mode_widget ||= Y2Network::Widgets::IPoIBMode.new(@settings)
+    end
+
     def ifplugd_priority_widget
       @ifplugd_priority_widget ||= Y2Network::Widgets::IfplugdPriority.new(@settings)
     end
@@ -189,6 +194,7 @@ module Yast
         bridge_ports_widget.widget_id     => bridge_ports_widget.cwm_definition,
         blink_button.widget_id            => blink_button.cwm_definition,
         ip_address_widget.widget_id       => ip_address_widget.cwm_definition,
+        ipoib_mode_widget.widget_id       => ipoib_mode_widget.cwm_definition,
         vlan_id_widget.widget_id          => vlan_id_widget.cwm_definition,
         vlan_interface_widget.widget_id   => vlan_interface_widget.cwm_definition,
         kernel_module_widget.widget_id    => kernel_module_widget.cwm_definition,
@@ -198,6 +204,8 @@ module Yast
         bond_options_widget.widget_id     => bond_options_widget.cwm_definition,
         boot_protocol_widget.widget_id    => boot_protocol_widget.cwm_definition,
         remote_ip_widget.widget_id        => remote_ip_widget.cwm_definition,
+        startmode_widget.widget_id => startmode_widget.cwm_definition,
+        ifplugd_priority_widget.widget_id => ifplugd_priority_widget.cwm_definition,
         # leftovers
         s390_button.widget_id             => s390_button.cwm_definition
       }
@@ -275,7 +283,7 @@ module Yast
     end
 
     def general_tab
-      type = LanItems.GetCurrentType
+      type = @settings["IFCFGTYPE"]
 
       {
         "header"   => _("&General"),
@@ -296,7 +304,7 @@ module Yast
                 VSpacing(0.4),
                 Frame(_("Firewall Zone"), HBox("FWZONE", HStretch())),
                 VSpacing(0.4),
-                type == "ib" ? HBox("IPOIB_MODE") : Empty(),
+                type == "ib" ? HBox(ipoib_mode_widget.widget_id) : Empty(),
                 type == "ib" ? VSpacing(0.4) : Empty(),
                 Frame(
                   _("Maximum Transfer Unit (MTU)"),
@@ -436,10 +444,6 @@ module Yast
 
       wd = widget_descr_local
 
-      wd[startmode_widget.widget_id] = startmode_widget.cwm_definition
-      wd[ifplugd_priority_widget.widget_id] = ifplugd_priority_widget.cwm_definition
-
-      wd["IPOIB_MODE"] = ipoib_mode_widget if LanItems.GetCurrentType == "ib"
 
       @settings["IFCFG"] = LanItems.device if LanItems.operation != :add
 
