@@ -46,7 +46,7 @@ describe Y2Network::ConfigReader::SysconfigInterfaces do
   before do
     allow(Yast::LanItems).to receive(:Hardware).and_return(netcards)
     allow(Yast::SCR).to receive(:Dir).with(Yast::Path.new(".network.section"))
-                          .and_return(configured_interfaces)
+      .and_return(configured_interfaces)
     allow(Yast::NetworkInterfaces).to receive(:GetTypeFromSysfs) { |n| TYPES[n] }
     allow(Yast::SCR).to receive(:Read) do |path, &block|
       m = SCR_PATH_REGEXP.match(path.to_s)

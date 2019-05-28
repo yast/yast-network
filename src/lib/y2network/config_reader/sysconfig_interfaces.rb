@@ -46,7 +46,7 @@ module Y2Network
 
       # List of interfaces
       #
-      # @return [Array<Interface>]
+      # @return [InterfacesCollection]
       def interfaces
         @interfaces ||= Y2Network::InterfacesCollection.new(physical_interfaces) # + virtual_interfaces
       end
