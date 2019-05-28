@@ -27,6 +27,7 @@
 # Authors:	Michal Svec <msvec@suse.cz>
 #
 require "y2firewall/helpers/interfaces"
+require "y2network/widgets/additional_addresses"
 require "y2network/widgets/blink_button"
 require "y2network/widgets/bond_options"
 require "y2network/widgets/bond_slave"
@@ -80,7 +81,6 @@ module Yast
       Yast.include include_target, "network/summary.rb"
       Yast.include include_target, "network/lan/help.rb"
       Yast.include include_target, "network/lan/hardware.rb"
-      Yast.include include_target, "network/lan/virtual.rb"
       Yast.include include_target, "network/complex.rb"
       Yast.include include_target, "network/widgets.rb"
       Yast.include include_target, "network/lan/bridge.rb"
@@ -92,6 +92,10 @@ module Yast
         "network",
         "force_static_ip"
       )
+    end
+
+    def additional_addresses
+      @additional_addresses ||= Y2Network::Widgets::AdditionalAddresses.new(@settings)
     end
 
     def tunnel_widget
@@ -176,57 +180,7 @@ module Yast
 
     def widget_descr_local
       res = {
-        "AD_ADDRESSES"                    => {
-          "widget"        => :custom,
-          "custom_widget" => Frame(
-            Id(:f_additional),
-            # Frame label
-            _("Additional Addresses"),
-            HBox(
-              HSpacing(3),
-              VBox(
-                # :-) this is a small trick to make ncurses in 80x25 happy :-)
-                # it rounds spacing up or down to the nearest integer, 0.5 -> 1, 0.49 -> 0
-                VSpacing(0.49),
-                Table(
-                  Id(:table),
-                  Opt(:notify),
-                  Header(
-                    # Table header label
-                    _("IPv4 Address Label"),
-                    # Table header label
-                    _("IP Address"),
-                    # Table header label
-                    _("Netmask")
-                  ),
-                  []
-                ),
-                Left(
-                  HBox(
-                    # PushButton label
-                    PushButton(Id(:add), _("Ad&d")),
-                    # PushButton label
-                    PushButton(Id(:edit), Opt(:disabled), _("&Edit")),
-                    # PushButton label
-                    PushButton(Id(:delete), Opt(:disabled), _("De&lete"))
-                  )
-                ),
-                VSpacing(0.49)
-              ),
-              HSpacing(3)
-            )
-          ),
-          "help"          => Ops.get_string(@help, "additional", ""),
-          "init"          => fun_ref(method(:initAdditional), "void (string)"),
-          "handle"        => fun_ref(
-            method(:handleAdditional),
-            "symbol (string, map)"
-          ),
-          "store"         => fun_ref(
-            method(:storeAdditional),
-            "void (string, map)"
-          )
-        },
+        additional_addresses.widget_id => additional_addresses.cwm_definition,
         interface_name_widget.widget_id   => interface_name_widget.cwm_definition,
         ethtools_options_widget.widget_id => ethtools_options_widget.cwm_definition,
         mtu_widget.widget_id              => mtu_widget.cwm_definition,
@@ -410,7 +364,7 @@ module Yast
         VBox(
           Left(label),
           just_address_contents,
-          "AD_ADDRESSES"
+          additional_addresses.widget_id
         )
       end
 

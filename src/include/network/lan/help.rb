@@ -220,24 +220,6 @@ module Yast
                                      "to send the current hostname (for example, the one defined in <tt>/etc/HOSTNAME</tt>). \n" \
                                      "If you do not want to send a hostname, leave the field empty.</p>\n"
                                  ),
-        "additional"        => # Aliases dialog help 1/4
-                               _(
-                                 "<p><b><big>Additional Addresses</big></b></p>\n<p>Configure additional addresses of an interface in this table.</p>\n"
-                               ) +
-                                 # Aliases dialog help 2/4
-                                 _(
-                                   "<p>Enter an <b>IPv4 Address Label</b>, an <b>IP Address</b>, and\nthe <b>Netmask</b>.</p>"
-                                 ) +
-                                 # Aliases dialog help 3/4
-                                 _(
-                                   "<p><b>IPv4 Address Label</b>, formerly known as Alias Name, is optional and legacy. The total\n" \
-                                   "length of interface name (inclusive of the colon and label) is\n" \
-                                   "limited to 15 characters. The obsolete ifconfig utility truncates it after 9 characters.</p>"
-                                 ) +
-                                 # Aliases dialog help 3/4, #83766
-                                 _(
-                                   "<p>Do not include the interface name in the label. For example, enter <b>foo</b> instead of <b>eth0:foo</b>.</p>"
-                                 ),
         # shared between WirelessDialog and WirelessKeyPopup
         # this is suited to the button-switched key typing
         # Translators: dialog help
