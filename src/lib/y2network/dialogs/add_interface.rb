@@ -21,9 +21,10 @@ module Y2Network
 
       def run
         ret = super
-        ret = :cancel if ret == :abort
+        log.info "AddInterface result #{ret}"
+        ret = :back if ret == :abort
         # TODO: replace with builder initialization
-        if ret == :cancel
+        if ret == :back
           Yast::LanItems.Rollback
         else
           Yast::LanItems.type = @type_widget.result
