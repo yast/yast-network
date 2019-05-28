@@ -58,22 +58,22 @@ module Y2Network
 
       def help
         _(
-           "<p><b><big>Additional Addresses</big></b></p>\n<p>Configure additional addresses of an interface in this table.</p>\n"
-         ) +
-           # Aliases dialog help 2/4
-           _(
-             "<p>Enter an <b>IPv4 Address Label</b>, an <b>IP Address</b>, and\nthe <b>Netmask</b>.</p>"
-           ) +
-           # Aliases dialog help 3/4
-           _(
-             "<p><b>IPv4 Address Label</b>, formerly known as Alias Name, is optional and legacy. The total\n" \
-             "length of interface name (inclusive of the colon and label) is\n" \
-             "limited to 15 characters. The obsolete ifconfig utility truncates it after 9 characters.</p>"
-           ) +
-           # Aliases dialog help 3/4, #83766
-           _(
-             "<p>Do not include the interface name in the label. For example, enter <b>foo</b> instead of <b>eth0:foo</b>.</p>"
-           )
+          "<p><b><big>Additional Addresses</big></b></p>\n<p>Configure additional addresses of an interface in this table.</p>\n"
+        ) +
+          # Aliases dialog help 2/4
+          _(
+            "<p>Enter an <b>IPv4 Address Label</b>, an <b>IP Address</b>, and\nthe <b>Netmask</b>.</p>"
+          ) +
+          # Aliases dialog help 3/4
+          _(
+            "<p><b>IPv4 Address Label</b>, formerly known as Alias Name, is optional and legacy. The total\n" \
+            "length of interface name (inclusive of the colon and label) is\n" \
+            "limited to 15 characters. The obsolete ifconfig utility truncates it after 9 characters.</p>"
+          ) +
+          # Aliases dialog help 3/4, #83766
+          _(
+            "<p>Do not include the interface name in the label. For example, enter <b>foo</b> instead of <b>eth0:foo</b>.</p>"
+          )
       end
 
       def init
@@ -87,12 +87,10 @@ module Y2Network
         # TODO: Do not touch Lan Items
         Yast::LanItems.aliases.each_value do |data|
           label = data["LABEL"] || ""
-          ip = data["IPADDR"] ||  ""
+          ip = data["IPADDR"] || ""
           mask = data["NETMASK"] || ""
           prefixlen = data["PREFIXLEN"] || ""
-          if !prefixlen.empty?
-            mask = "/#{prefixlen}"
-          end
+          mask = "/#{prefixlen}" if !prefixlen.empty?
           table_items << Item(Id(table_items.size), label, ip, mask)
         end
 
@@ -260,9 +258,7 @@ module Y2Network
 
       def valid_prefix_or_netmask(ip, mask)
         valid_mask = false
-        if mask.start_with?("/")
-          mask = mask[1..-1]
-        end
+        mask = mask[1..-1] if mask.start_with?("/")
 
         if Yast::IP.Check4(ip) && (Yast::Netmask.Check4(mask) || Yast::Netmask.CheckPrefix4(mask))
           valid_mask = true

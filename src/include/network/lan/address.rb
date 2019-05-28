@@ -185,7 +185,7 @@ module Yast
 
     def widget_descr_local
       res = {
-        additional_addresses.widget_id => additional_addresses.cwm_definition,
+        additional_addresses.widget_id    => additional_addresses.cwm_definition,
         interface_name_widget.widget_id   => interface_name_widget.cwm_definition,
         ethtools_options_widget.widget_id => ethtools_options_widget.cwm_definition,
         mtu_widget.widget_id              => mtu_widget.cwm_definition,
@@ -204,82 +204,13 @@ module Yast
         bond_options_widget.widget_id     => bond_options_widget.cwm_definition,
         boot_protocol_widget.widget_id    => boot_protocol_widget.cwm_definition,
         remote_ip_widget.widget_id        => remote_ip_widget.cwm_definition,
-        startmode_widget.widget_id => startmode_widget.cwm_definition,
+        startmode_widget.widget_id        => startmode_widget.cwm_definition,
         ifplugd_priority_widget.widget_id => ifplugd_priority_widget.cwm_definition,
         # leftovers
         s390_button.widget_id             => s390_button.cwm_definition
       }
 
       res
-    end
-
-    # `RadioButtonGroup uses CurrentButton instead of Value, grrr
-    # @param [String] key widget id
-    # @return what property to ask for to get the widget value
-    def ValueProp(key)
-      if UI.QueryWidget(Id(key), :WidgetClass) == "YRadioButtonGroup"
-        return :CurrentButton
-      end
-      :Value
-    end
-
-    # Debug messages configurable at runtime
-    # @param class_ [String] debug class
-    # @param msg [String] message to log
-    def my2debug(class_, msg)
-      if SCR.Read(path(".target.size"), Ops.add("/tmp/my2debug/", class_)) != -1
-        Builtins.y2internal(Ops.add(Ops.add(class_, ": "), msg))
-      end
-
-      nil
-    end
-
-    # Default function to init the value of a widget.
-    # Used for push buttons.
-    # @param [String] key id of the widget
-    def InitAddrWidget(key)
-      value = Ops.get(@settings, key)
-      my2debug("AW", Builtins.sformat("init k: %1, v: %2", key, value))
-      UI.ChangeWidget(Id(key), ValueProp(key), value)
-
-      nil
-    end
-
-    # Default function to store the value of a widget.
-    # @param [String] key	id of the widget
-    # @param [Hash] event	the event being handled
-    def StoreAddrWidget(key, event)
-      event = deep_copy(event)
-      value = UI.QueryWidget(Id(key), ValueProp(key))
-      my2debug(
-        "AW",
-        Builtins.sformat("store k: %1, v: %2, e: %3", key, value, event)
-      )
-      Ops.set(@settings, key, value)
-
-      nil
-    end
-
-    # Validator for IP adresses
-    # used for IPADDR
-    # @param [String] key	the widget being validated
-    # @param [Hash] event	the event being handled
-    # @return whether valid
-    def ValidateAddrIP(key, event)
-      event = deep_copy(event)
-      if UI.QueryWidget(:bootproto, :CurrentButton) == :static
-        return ValidateIP(key, event)
-      end
-      true
-    end
-
-    # @param [Array<String>] types network card types
-    # @return their descriptions for CWM
-    def BuildTypesListCWM(types)
-      types = deep_copy(types)
-      Builtins.maplist(types) do |t|
-        [t, NetworkInterfaces.GetDevTypeDescription(t, false)]
-      end
     end
 
     def general_tab
@@ -444,7 +375,6 @@ module Yast
 
       wd = widget_descr_local
 
-
       @settings["IFCFG"] = LanItems.device if LanItems.operation != :add
 
       # Firewall config
@@ -453,16 +383,8 @@ module Yast
       firewall_zone.value = @settings["FWZONE"] if firewalld.installed?
 
       functions = {
-        "init"  => fun_ref(method(:InitAddrWidget), "void (string)"),
-        "store" => fun_ref(method(:StoreAddrWidget), "void (string, map)"),
-        :abort  => fun_ref(LanItems.method(:Rollback), "boolean ()")
+        abort: fun_ref(LanItems.method(:Rollback), "boolean ()")
       }
-
-      if ["tun", "tap"].include?(LanItems.type)
-        functions = {
-          abort: fun_ref(LanItems.method(:Rollback), "boolean ()")
-        }
-      end
 
       wd_content = {
         "tab_order"          => ["t_general", "t_addr", "hardware"],
