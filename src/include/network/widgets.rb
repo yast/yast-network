@@ -44,26 +44,6 @@ module Yast
       Yast.import "LanItems"
 
       Yast.include include_target, "network/complex.rb"
-
-      @widget_descr = {
-        # obsoleted by BOOTPROTO_*
-        "BOOTPROTO" => {
-          "widget" => :radio_buttons,
-          # radio button group label,method of setup
-          "label"  => _(
-            "Setup Method"
-          ),
-          # is this necessary?
-          "items"  => [
-            # radio button label
-            ["dhcp", _("A&utomatic Address Setup (via DHCP)")],
-            # radio button label
-            ["static", _("S&tatic Address Setup")]
-          ],
-          "opt"    => [],
-          "help"   => _("<p>H</p>")
-        }
-      }
     end
 
     # Validator for IP adresses, no_popup
@@ -74,39 +54,6 @@ module Yast
       value = Convert.to_string(UI.QueryWidget(Id(key), :Value))
       return IP.Check(value) if value != ""
       true
-    end
-
-    def init_ipoib_mode_widget(key)
-      ipoib_mode = LanItems.ipoib_mode || "default"
-
-      UI.ChangeWidget(
-        Id(key),
-        :CurrentButton,
-        ipoib_mode
-      )
-    end
-
-    def store_ipoib_mode_widget(key, _event)
-      ipoib_mode = UI.QueryWidget(Id(key), :CurrentButton)
-      LanItems.ipoib_mode = ipoib_mode == "default" ? nil : ipoib_mode
-    end
-
-    def ipoib_mode_widget
-      {
-        "widget" => :radio_buttons,
-        # ipoib_modes contains known IPoIB modes, "default" is place holder for
-        # "do not set anything explicitly -> driver will choose"
-        # translators: a possible value for: IPoIB device mode
-        "items"  => [
-          ["default", _("default")],
-          ["connected", _("connected")],
-          ["datagram", _("datagram")]
-        ],
-        "label"  => _("IPoIB Device Mode"),
-        "opt"    => [:hstretch],
-        "init"   => fun_ref(method(:init_ipoib_mode_widget), "void (string)"),
-        "store"  => fun_ref(method(:store_ipoib_mode_widget), "void (string, map)")
-      }
     end
 
     # Initialize the NetworkManager widget

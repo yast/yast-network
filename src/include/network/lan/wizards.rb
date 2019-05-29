@@ -26,6 +26,9 @@
 # Summary:	Network cards configuration wizards
 # Authors:	Michal Svec <msvec@suse.cz>
 #
+
+require "y2network/dialogs/add_interface"
+
 module Yast
   module NetworkLanWizardsInclude
     def initialize_network_lan_wizards(include_target)
@@ -153,14 +156,14 @@ module Yast
 
     def NetworkCardSequence(action)
       aliases = {
-        "hardware" => -> { HardwareDialog() },
-        "address"  => -> { AddressSequence("") },
-        "s390"     => -> { S390Dialog() }
+        "add"     => -> { Y2Network::Dialogs::AddInterface.run },
+        "address" => -> { AddressSequence("") },
+        "s390"    => -> { S390Dialog() }
       }
 
       ws_start = case action
       when "add"
-        "hardware"
+        "add"
       when "init_s390"
         # s390 may require configuring additional modules. Which
         # enables IBM net cards for linux. Basicaly it creates
@@ -174,7 +177,7 @@ module Yast
 
       sequence = {
         "ws_start" => ws_start,
-        "hardware" => { abort: :back, next: "address" },
+        "add"      => { abort: :back, next: "address" },
         "address"  => { abort: :back, next: :next },
         "s390"     => { abort: :abort, next: "address" }
       }
