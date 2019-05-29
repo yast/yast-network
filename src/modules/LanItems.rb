@@ -1712,13 +1712,6 @@ module Yast
     #-------------------
     # PRIVATE FUNCTIONS
 
-    def SetDefaultsForHW
-      Builtins.y2milestone("SetDefaultsForHW type %1", @type)
-      @mtu = "1492" if Arch.s390 && Builtins.contains(["lcs", "eth"], @type)
-
-      nil
-    end
-
     # Distributes an ifcfg hash to individual attributes.
     # @param devmap   [Hash] an ifcfg, values are strings
     # @param defaults [Hash] should provide defaults for devmap
@@ -2286,7 +2279,7 @@ module Yast
       Builtins.y2milestone("Propose configuration for %1", getCurrentItem)
       @operation = nil
       return false if Select("") != true
-      SetDefaultsForHW()
+      @mtu = "1492" if Arch.s390 && Builtins.contains(["lcs", "eth"], @type)
       @ipaddr = ""
       @netmask = ""
       @bootproto = "dhcp"
@@ -2970,7 +2963,6 @@ module Yast
     publish function: :isCurrentDHCP, type: "boolean ()"
     publish function: :GetItemDescription, type: "string ()"
     publish function: :SelectHWMap, type: "void (map)"
-    publish function: :SetDefaultsForHW, type: "void ()"
     publish function: :SetDeviceVars, type: "void (map, map)"
     publish function: :Select, type: "boolean (string)"
     publish function: :Commit, type: "boolean ()"

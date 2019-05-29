@@ -72,6 +72,7 @@ module Y2Network
       config = config.delete_if { |k, _| k == "IPOIB_MODE" } if type != "ib"
       config = config.delete_if { |k, _| k == "INTERFACE" } if type != "dummy"
 
+      # #104494 - always write IPADDR+NETMASK, even empty
       # #50955 omit computable fields
       config["BROADCAST"] = ""
       config["NETWORK"] = ""
