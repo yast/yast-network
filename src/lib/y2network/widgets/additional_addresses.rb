@@ -167,7 +167,7 @@ module Y2Network
         end
         # TODO: this should not be in UI and also deleting looks strange as it remove all old
         aliases_to_delete.each_pair do |a, v|
-          Yast::NetworkInterfaces.DeleteAlias(Yast::NetworkInterfaces.Name, a) if !v.nil?
+          Yast::NetworkInterfaces.DeleteAlias(Yast::NetworkInterfaces.Name, a) if v
         end
       end
 
