@@ -139,8 +139,14 @@ module Yast
 
     # Commit changes to internal structures
     # @return always `next
-    def Commit
-      LanItems.Commit
+    def Commit(builder: builder)
+      # 1) update NetworkInterfaces with corresponding devmap
+      # FIXME: new item in NetworkInterfaces was created from handleOverview by
+      # calling Lan.Add and named in HardwareDialog via NetworkInterfaces.Name=
+      #  - all that stuff can (should) be moved here to have it isolated at one place
+      #  and later moved to Interface object
+      LanItems.Commit(builder)
+
       :next
     end
 
