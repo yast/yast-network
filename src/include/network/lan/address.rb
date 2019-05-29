@@ -729,7 +729,7 @@ module Yast
       if builder.type == "vlan"
         builder.set(option: "ETHERDEVICE", value: Ops.get_string(@settings, "ETHERDEVICE", ""))
         builder.set(
-          options: "VLANID",
+          option: "VLANID",
           value:   Builtins.tostring(Ops.get_integer(@settings, "VLAN_ID", 0))
         )
       elsif builder.type == "br"
@@ -747,7 +747,7 @@ module Yast
       elsif Builtins.contains(["tun", "tap"], builder.type)
         builder.set(
           option: "TUNNEL_SET_OWNER",
-          value: Ops.get_string(@settings, "TUNNEL_SET_OWNER", "")
+          value:  Ops.get_string(@settings, "TUNNEL_SET_OWNER", "")
         )
         builder.set(
           option: "TUNNEL_SET_GROUP",
