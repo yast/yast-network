@@ -37,7 +37,7 @@ module Yast
       @old_key = BUSID_UDEV_ATTR unless LanItems.GetItemUdev(BUSID_UDEV_ATTR).empty?
 
       if current_item["hwinfo"]
-        @mac = current_item["hwinfo"]["mac"]
+        @mac = current_item["hwinfo"]["permanent_mac"] || current_item["hwinfo"]["mac"]
         @bus_id = current_item["hwinfo"]["busid"]
       else
         @mac = ""
