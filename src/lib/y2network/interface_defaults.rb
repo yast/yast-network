@@ -64,7 +64,7 @@ module Y2Network
       }
     end
 
-    # Initialiates device configuration map with default values when needed
+    # Initializes device configuration map with default values when needed
     #
     # @param devmap [Hash<String, String>] current device configuration
     #
