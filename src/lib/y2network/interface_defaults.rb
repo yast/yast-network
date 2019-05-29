@@ -64,7 +64,7 @@ module Y2Network
       }
     end
 
-    # Initialiates device configuration with default values when needed
+    # Initialiates device configuration map with default values when needed
     #
     # @param devmap [Hash<String, String>] current device configuration
     #
@@ -76,15 +76,15 @@ module Y2Network
       # the defaults here are what sysconfig defaults to
       # (as opposed to what a new interface gets, in {#Select)}
       defaults = YAML.load_file(Yast::Directory.find_data_file("network/sysconfig_defaults.yml"))
-      new_map = defaults.merge(devmap)
+      defaults.merge(devmap)
+    end
 
-      if Yast::Arch.s390
-        # Default values used when creating an emulated NIC for physical s390 hardware.
-        s390_defaults = YAML.load_file(Directory.find_data_file("network/s390_defaults.yml")) if Arch.s390
-        new_map = s390_defaults.merge(new_map)
-      end
+    def init_device_s390_config(devmap)
+      return {} if !Yast::Arch.s390
 
-      new_map
+      # Default values used when creating an emulated NIC for physical s390 hardware.
+      s390_defaults = YAML.load_file(Directory.find_data_file("network/s390_defaults.yml")) if Arch.s390
+      s390_defaults.merge(devmap)
     end
   end
 end
