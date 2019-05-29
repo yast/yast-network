@@ -715,7 +715,7 @@ module Yast
 
     # S/390 devices configuration dialog
     # @return dialog result
-    def S390Dialog(builder: nil)
+    def S390Dialog(builder:)
       # S/390 dialog caption
       caption = _("S/390 Network Card Configuration")
 
@@ -1096,7 +1096,7 @@ module Yast
 
     # Manual network card configuration dialog
     # @return dialog result
-    def HardwareDialog(builder: nil)
+    def HardwareDialog(builder:)
       @builder = builder
       caption = _("Hardware Dialog")
 

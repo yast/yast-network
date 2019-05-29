@@ -139,7 +139,7 @@ module Yast
 
     # Commit changes to internal structures
     # @return always `next
-    def Commit(builder: nil)
+    def Commit(builder:)
       # 1) update NetworkInterfaces with corresponding devmap
       # FIXME: new item in NetworkInterfaces was created from handleOverview by
       # calling Lan.Add and named in HardwareDialog via NetworkInterfaces.Name=
@@ -528,7 +528,7 @@ module Yast
       true
     end
 
-    def MainDialog(init_tab, builder: nil)
+    def MainDialog(init_tab, builder:)
       @builder = builder
 
       caption = _("Network Settings")

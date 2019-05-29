@@ -21,9 +21,6 @@ require "y2network/interface_defaults"
 
 module Y2Network
   # Stores what's needed when creating a new configuration for an interface
-  #
-  # FIXME: it should be in charge of generating reasonable defaults too
-  #        @see LanItems::new_item_default_options & co
   class InterfaceConfigBuilder
     # @return [String] Device name (eth0, wlan0, etc.)
     attr_accessor :name
