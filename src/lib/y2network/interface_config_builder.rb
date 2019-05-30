@@ -66,6 +66,10 @@ module Y2Network
       # with naive implementation of filtering options by type
       config = @config
 
+      # initalize options which has to be known and was not set by the user explicitly
+      init_mandatory_options
+
+      # filter out options which are not needed
       config = config.delete_if { |k, _| k =~ /WIRELESS.*/ } if type != "wlan"
       config = config.delete_if { |k, _| k =~ /BONDING.*/ } if type != "bond"
       config = config.delete_if { |k, _| k =~ /BRIDGE.*/ } if type != "br"
@@ -73,9 +77,7 @@ module Y2Network
       config = config.delete_if { |k, _| k == "VLAN_ID" || k == "ETHERDEVICE" } if type != "vlan"
       config = config.delete_if { |k, _| k == "IPOIB_MODE" } if type != "ib"
       config = config.delete_if { |k, _| k == "INTERFACE" } if type != "dummy"
-
-      # initalize options which has to be known and was not set by the user explicitly
-      init_mandatory_options
+      config = config.delete_if { |k, _| k == "IFPLUGD_PRIORITY" } if config["STARTMODE"] != "ifplugd"
 
       # all keys / values has to be strings, agent won't write it otherwise
       config.map { |k, v| [k, v.to_s] }.to_h

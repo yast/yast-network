@@ -1890,20 +1890,6 @@ module Yast
       devmap
     end
 
-    # Sets device map items for device when it is not alias
-    def setup_basic_device_options(devmap)
-      devmap["MTU"] = @mtu
-      devmap["ETHTOOL_OPTIONS"] = @ethtool_options
-      devmap["STARTMODE"] = @startmode
-      devmap["IFPLUGD_PRIORITY"] = @ifplugd_priority if @startmode == "ifplugd"
-      devmap["BOOTPROTO"] = @bootproto
-      devmap["_aliases"] = @aliases if @aliases && !@aliases.empty?
-
-      log.info("aliases #{@aliases}")
-
-      devmap
-    end
-
     # Sets bonding specific sysconfig options in given device map
     #
     # If any bonding specific option is present already it gets overwritten
@@ -1947,18 +1933,9 @@ module Yast
       # when generating sysconfig configuration
       newdev = builder.device_sysconfig
 
-      # #104494 - always write IPADDR+NETMASK, even empty
-#      newdev["IPADDR"] = @ipaddr
-      if !@prefix.empty?
-#        newdev["PREFIXLEN"] = @prefix
-      else
-#        newdev["NETMASK"] = @netmask
-      end
       # #50955 omit computable fields
       newdev["BROADCAST"] = ""
       newdev["NETWORK"] = ""
-
-#      newdev["REMOTE_IPADDR"] = @remoteip
 
       # set LLADDR to sysconfig only for device on layer2 and only these which needs it
       # do not write incorrect LLADDR.
@@ -1976,7 +1953,6 @@ module Yast
 #      newdev["ZONE"] = @firewall_zone
 #      newdev["NAME"] = @description
 
-#      newdev = setup_basic_device_options(newdev)
       newdev = setup_dhclient_options(newdev)
 
       # FIXME: network-ng currently works for eth only

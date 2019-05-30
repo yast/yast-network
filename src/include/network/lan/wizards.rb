@@ -171,8 +171,8 @@ module Yast
       aliases = {
         "add"     => -> { Y2Network::Dialogs::AddInterface.run(builder) },
         # TODO: first param in AddressSequence seems to be never used
-        "address"  => -> { AddressSequence("", builder: builder) },
-        "s390"     => -> { S390Dialog(builder: builder) }
+        "address" => -> { AddressSequence("", builder: builder) },
+        "s390"    => -> { S390Dialog(builder: builder) }
       }
 
       Builtins.y2milestone("ws_start %1", ws_start)
