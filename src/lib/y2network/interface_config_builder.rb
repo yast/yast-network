@@ -49,7 +49,7 @@ module Y2Network
 
     # Returns currently stored option value
     def option(option)
-      @config.fetch(option, "")
+      @config.fetch(option, nil)
     end
 
     # Provides stored configuration in sysconfig format
