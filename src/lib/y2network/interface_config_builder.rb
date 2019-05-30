@@ -103,9 +103,6 @@ module Y2Network
       if !@config["STARTMODE"] || @config["STARTMODE"].empty?
         @config["STARTMODE"] = new_device_startmode
       end
-      if !@config["DHCLIENT_SET_DEFAULT_ROUTE"] || @config["DHCLIENT_SET_DEFAULT_ROUTE"].empty?
-        @config["DHCLIENT_SET_DEFAULT_ROUTE"] = "no"
-      end
     end
 
     # returns default startmode for a new device
