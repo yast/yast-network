@@ -134,10 +134,13 @@ module Yast
         current["ifcfg"] = card
       end
 
-      LanItems.bootproto = "dhcp"
-      LanItems.startmode = "auto"
+      builder = Y2Network::InterfaceConfigBuilder.new
+      builder.name = LanItems.GetCurrentName()
+      builder.type = LanItems.GetCurrentType()
+      builder.set(option: "BOOTPROTO", value: "dhcp")
+      builder.set(option: "STARTMODE", value: "auto")
 
-      LanItems.Commit
+      LanItems.Commit(builder)
     end
 
     def delete_config(devname)
