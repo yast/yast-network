@@ -96,83 +96,83 @@ module Yast
     end
 
     def additional_addresses
-      @additional_addresses ||= Y2Network::Widgets::AdditionalAddresses.new(@settings)
+      @additional_addresses ||= Y2Network::Widgets::AdditionalAddresses.new(@builder)
     end
 
     def tunnel_widget
-      @tunnel_widget ||= Y2Network::Widgets::Tunnel.new(@settings)
+      @tunnel_widget ||= Y2Network::Widgets::Tunnel.new(@builder)
     end
 
     def kernel_module_widget
-      @kernel_module_widget ||= Y2Network::Widgets::KernelModule.new(@settings)
+      @kernel_module_widget ||= Y2Network::Widgets::KernelModule.new(@builder)
     end
 
     def kernel_options_widget
-      @kernel_options_widget ||= Y2Network::Widgets::KernelOptions.new(@settings)
+      @kernel_options_widget ||= Y2Network::Widgets::KernelOptions.new(@builder)
     end
 
     def udev_rules_widget
-      @udev_rules_widget ||= Y2Network::Widgets::UdevRules.new(@settings)
+      @udev_rules_widget ||= Y2Network::Widgets::UdevRules.new(@builder)
     end
 
     def vlan_id_widget
-      @vlan_id_widget ||= Y2Network::Widgets::VlanID.new(@settings)
+      @vlan_id_widget ||= Y2Network::Widgets::VlanID.new(@builder)
     end
 
     def ethtools_options_widget
-      @ethtools_options_widget ||= Y2Network::Widgets::EthtoolsOptions.new(@settings)
+      @ethtools_options_widget ||= Y2Network::Widgets::EthtoolsOptions.new(@builder)
     end
 
     def remote_ip_widget
-      @remote_ip_widget ||= Y2Network::Widgets::RemoteIP.new(@settings)
+      @remote_ip_widget ||= Y2Network::Widgets::RemoteIP.new(@builder)
     end
 
     def vlan_interface_widget
-      @vlan_interface_widget ||= Y2Network::Widgets::VlanInterface.new(@settings)
+      @vlan_interface_widget ||= Y2Network::Widgets::VlanInterface.new(@builder)
     end
 
     def blink_button
-      @blink_button ||= Y2Network::Widgets::BlinkButton.new(@settings)
+      @blink_button ||= Y2Network::Widgets::BlinkButton.new(@builder)
     end
 
     def bond_slave_widget
-      @bond_slave_widget ||= Y2Network::Widgets::BondSlave.new(@settings)
+      @bond_slave_widget ||= Y2Network::Widgets::BondSlave.new(@builder)
     end
 
     def bond_options_widget
-      @bond_options_widget ||= Y2Network::Widgets::BondOptions.new(@settings)
+      @bond_options_widget ||= Y2Network::Widgets::BondOptions.new(@builder)
     end
 
     def bridge_ports_widget
-      @bridge_ports_widget ||= Y2Network::Widgets::BridgePorts.new(@settings)
+      @bridge_ports_widget ||= Y2Network::Widgets::BridgePorts.new(@builder)
     end
 
     def mtu_widget
-      @mtu_widget ||= Y2Network::Widgets::MTU.new(@settings)
+      @mtu_widget ||= Y2Network::Widgets::MTU.new(@builder)
     end
 
     def netmask_widget
-      @netmask_widget ||= Y2Network::Widgets::Netmask.new(@settings)
+      @netmask_widget ||= Y2Network::Widgets::Netmask.new(@builder)
     end
 
     def interface_name_widget
-      @interface_name_widget ||= Y2Network::Widgets::InterfaceName.new(@settings)
+      @interface_name_widget ||= Y2Network::Widgets::InterfaceName.new(@builder)
     end
 
     def ip_address_widget
-      @ip_address_widget ||= Y2Network::Widgets::IPAddress.new(@settings)
+      @ip_address_widget ||= Y2Network::Widgets::IPAddress.new(@builder)
     end
 
     def ipoib_mode_widget
-      @ipoib_mode_widget ||= Y2Network::Widgets::IPoIBMode.new(@settings)
+      @ipoib_mode_widget ||= Y2Network::Widgets::IPoIBMode.new(@builder)
     end
 
     def ifplugd_priority_widget
-      @ifplugd_priority_widget ||= Y2Network::Widgets::IfplugdPriority.new(@settings)
+      @ifplugd_priority_widget ||= Y2Network::Widgets::IfplugdPriority.new(@builder)
     end
 
     def startmode_widget
-      @startmode_widget ||= Y2Network::Widgets::Startmode.new(@settings, ifplugd_priority_widget)
+      @startmode_widget ||= Y2Network::Widgets::Startmode.new(@builder, ifplugd_priority_widget)
     end
 
     def s390_button
@@ -180,7 +180,7 @@ module Yast
     end
 
     def boot_protocol_widget
-      @boot_protocol_widget ||= Y2Network::Widgets::BootProtocol.new(@settings)
+      @boot_protocol_widget ||= Y2Network::Widgets::BootProtocol.new(@builder)
     end
 
     def widget_descr_local
@@ -372,11 +372,8 @@ module Yast
     # @return dialog result
     def AddressDialog(builder:)
       @builder = builder
-      initialize_address_settings(builder)
 
       wd = widget_descr_local
-
-      @settings["IFCFG"] = builder.name if LanItems.operation != :add
 
       # Firewall config
       firewall_zone = Y2Network::Widgets::FirewallZone.new(builder.name)
@@ -440,13 +437,6 @@ module Yast
       Builtins.y2milestone("ShowAndRun: %1", ret)
 
       if ret != :back && ret != :abort
-        # general tab
-        builder.set(option: "STARTMODE", value: Ops.get_string(@settings, "STARTMODE", ""))
-        builder.set(option: "MTU", value: Ops.get_string(@settings, "MTU", ""))
-        builder.set(option: "ZONE", value: firewall_zone.store_permanent) if firewalld.installed?
-        builder.set(option: "IFPLUGD_PRIORITY", value: @settings["IFPLUGD_PRIORITY"])
-
-        # address tab
         bootproto = builder.option("BOOTPROTO")
         ipaddr = builder.option("IPADDR")
 
@@ -454,19 +444,9 @@ module Yast
         # configuration without that.
         return ret if bootproto == "static" && ipaddr.empty?
 
-        builder.set(option: "BOOTPROTO", value: bootproto)
-
         if bootproto == "static"
-          update_hostname(ipaddr, @settings.fetch("HOSTNAME", ""))
-
-          builder.set(option: "IPADDR", value: ipaddr)
-          builder.set(option: "NETMASK", value: Ops.get_string(@settings, "NETMASK", ""))
-          builder.set(option: "PREFIXLEN", value: Ops.get_string(@settings, "PREFIXLEN", ""))
-          builder.set(option: "REMOTEIP", value: Ops.get_string(@settings, "REMOTEIP", ""))
+          update_hostname(ipaddr, builder["HOSTNAME"] || "")
         else
-          builder.set(option: "IPADDR", value: ipaddr)
-          builder.set(option: "NETMASK", value: "")
-          builder.set(option: "REMOTEIP", value: "")
           # fixed bug #73739 - if dhcp is used, dont set default gw statically
           # but also: reset default gw only if DHCP* is used, this branch covers
           #		 "No IP address" case, then default gw must stay (#460262)
@@ -483,35 +463,6 @@ module Yast
         LanItems.add_current_device_to_routing if LanItems.update_routing_devices?
       end
 
-      if builder.type == "vlan"
-        builder.set(option: "ETHERDEVICE", value: Ops.get_string(@settings, "ETHERDEVICE", ""))
-        builder.set(
-          option: "VLANID",
-          value:   Builtins.tostring(Ops.get_integer(@settings, "VLAN_ID", 0))
-        )
-      elsif builder.type == "br"
-        builder.set(option: "BRIDGE_PORTS", value: @settings["BRIDGE_PORTS"].join(" "))
-        log.info "bridge ports stored as #{builder.option("BRIDGE_PORTS")}"
-      elsif builder.type == "bond"
-        new_slaves = @settings.fetch("SLAVES", []).select do |s|
-          # TODO: check initialization of "SLAVES"
-          !builder.option("SLAVES").include? s
-        end
-        builder.set(option: "SLAVES", value: @settings["SLAVES"])
-        builder.set(option: "BONDOPTION", value: @settings["BONDOPTION"])
-        Lan.autoconf_slaves = (Lan.autoconf_slaves + new_slaves).uniq.sort
-        log.info "bond settings #{builder.option("BONDOPTION")}"
-      elsif ["tun", "tap"].include?(builder.type)
-        builder.set(
-          option: "TUNNEL_SET_OWNER",
-          value:  Ops.get_string(@settings, "TUNNEL_SET_OWNER", "")
-        )
-        builder.set(
-          option: "TUNNEL_SET_GROUP",
-          value:  Ops.get_string(@settings, "TUNNEL_SET_GROUP", "")
-        )
-      end
-
       # proceed with WLAN settings if appropriate, #42420
       ret = :wire if ret == :next && builder.type == "wlan"
 
@@ -521,6 +472,8 @@ module Yast
   private
 
     # Initializes the Address Dialog @settings with the corresponding LanItems values
+    # TODO: includes some defaults proposals check if it still works and move to
+    # interface builder when needed
     def initialize_address_settings(builder)
       @settings.replace(
         # general tab:

@@ -1848,7 +1848,8 @@ module Yast
     def Select(dev)
       Builtins.y2debug("dev=%1", dev)
 
-      devmap = new_item_default_options
+      # FIXME: should be removed, it is genereated by builder
+      devmap = {}
 
       # FIXME: encapsulate into LanItems.GetItemType ?
       @type = Ops.get_string(@Items, [@current, "hwinfo", "type"], "eth")

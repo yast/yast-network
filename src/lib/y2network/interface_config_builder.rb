@@ -40,16 +40,23 @@ module Y2Network
     end
 
     # Stores one option value tuple
+    # FIXME: obsolete by []=
     def set(option: nil, value: nil)
-      # TODO: guards on option / value
-      # TODO: we can validate if the option is reasonable for given type
-      # TODO: may be that pushing should be rejected until the type is known
       @config[option] = value
     end
 
     # Returns currently stored option value
+    # FIXME: obsolete by []
     def option(option)
       @config.fetch(option, nil)
+    end
+
+    def []=(key, value)
+      @config[key] = value
+    end
+
+    def [](key)
+      @config[key]
     end
 
     # Provides stored configuration in sysconfig format
