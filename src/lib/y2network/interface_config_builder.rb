@@ -77,7 +77,8 @@ module Y2Network
       # initalize options which has to be known and was not set by the user explicitly
       init_mandatory_options
 
-      config
+      # all keys / values has to be strings, agent won't write it otherwise
+      config.map { |k, v| [k, v.to_s] }.to_h
     end
 
     # Updates itself according to the given sysconfig configuration
