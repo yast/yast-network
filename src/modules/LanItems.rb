@@ -966,9 +966,7 @@ module Yast
     #
     # @return [Array<String>] list of NIC names which are configured to use (any) dhcp
     def find_dhcp_ifaces
-      find_by_sysconfig do |ifcfg|
-        ["dhcp4", "dhcp6", "dhcp", "dhcp+autoip"].include?(ifcfg["BOOTPROTO"])
-      end
+      find_by_sysconfig { |ifcfg| dhcp?(ifcfg) }
     end
 
     # Find all NICs configured statically
@@ -1608,6 +1606,13 @@ module Yast
       Builtins.regexpmatch(@bootproto, "dhcp[46]?")
     end
 
+    # Checks whether given device configuration is set to use a dhcp bootproto
+    #
+    # ideally should replace @see isCurrentDHCP
+    def dhcp?(devmap)
+      ["dhcp4", "dhcp6", "dhcp", "dhcp+autoip"].include?(devmap["BOOTPROTO"])
+    end
+
     def GetItemDescription
       Ops.get_string(@Items, [@current, "table_descr", "rich_descr"], "")
     end
@@ -1877,7 +1882,7 @@ module Yast
 
     # Sets device map items related to dhclient
     def setup_dhclient_options(devmap)
-      if isCurrentDHCP
+      if dhcp?(devmap)
         val = TRISTATE_TO_S.fetch(@set_default_route)
         devmap["DHCLIENT_SET_DEFAULT_ROUTE"] = val if val
       end
