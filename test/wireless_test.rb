@@ -8,7 +8,6 @@ Yast.import "LanItems"
 
 class WirelessTestClass < Yast::Module
   def initialize
-    Yast.include self, "network/lan/address.rb" # defines my2debug, but nothing mention it
     Yast.include self, "network/lan/wireless.rb"
   end
 end

@@ -27,15 +27,29 @@
 # Authors:	Michal Svec <msvec@suse.cz>
 #
 require "y2firewall/helpers/interfaces"
-require "y2network/widgets/boot_protocol"
-require "y2network/widgets/firewall_zone"
-require "y2network/widgets/tunnel"
+require "y2network/widgets/additional_addresses"
+require "y2network/widgets/blink_button"
 require "y2network/widgets/bond_options"
 require "y2network/widgets/bond_slave"
+require "y2network/widgets/boot_protocol"
 require "y2network/widgets/bridge_ports"
+require "y2network/widgets/ethtools_options"
+require "y2network/widgets/firewall_zone"
 require "y2network/widgets/ifplugd_priority"
-require "y2network/widgets/startmode"
+require "y2network/widgets/interface_name"
+require "y2network/widgets/ip_address"
+require "y2network/widgets/ipoib_mode"
+require "y2network/widgets/kernel_module"
+require "y2network/widgets/kernel_options"
 require "y2network/widgets/mtu"
+require "y2network/widgets/netmask"
+require "y2network/widgets/remote_ip"
+require "y2network/widgets/s390_button"
+require "y2network/widgets/startmode"
+require "y2network/widgets/tunnel"
+require "y2network/widgets/udev_rules"
+require "y2network/widgets/vlan_id"
+require "y2network/widgets/vlan_interface"
 
 module Yast
   module NetworkLanAddressInclude
@@ -68,7 +82,6 @@ module Yast
       Yast.include include_target, "network/summary.rb"
       Yast.include include_target, "network/lan/help.rb"
       Yast.include include_target, "network/lan/hardware.rb"
-      Yast.include include_target, "network/lan/virtual.rb"
       Yast.include include_target, "network/complex.rb"
       Yast.include include_target, "network/widgets.rb"
       Yast.include include_target, "network/lan/bridge.rb"
@@ -82,8 +95,44 @@ module Yast
       )
     end
 
+    def additional_addresses
+      @additional_addresses ||= Y2Network::Widgets::AdditionalAddresses.new(@settings)
+    end
+
     def tunnel_widget
       @tunnel_widget ||= Y2Network::Widgets::Tunnel.new(@settings)
+    end
+
+    def kernel_module_widget
+      @kernel_module_widget ||= Y2Network::Widgets::KernelModule.new(@settings)
+    end
+
+    def kernel_options_widget
+      @kernel_options_widget ||= Y2Network::Widgets::KernelOptions.new(@settings)
+    end
+
+    def udev_rules_widget
+      @udev_rules_widget ||= Y2Network::Widgets::UdevRules.new(@settings)
+    end
+
+    def vlan_id_widget
+      @vlan_id_widget ||= Y2Network::Widgets::VlanID.new(@settings)
+    end
+
+    def ethtools_options_widget
+      @ethtools_options_widget ||= Y2Network::Widgets::EthtoolsOptions.new(@settings)
+    end
+
+    def remote_ip_widget
+      @remote_ip_widget ||= Y2Network::Widgets::RemoteIP.new(@settings)
+    end
+
+    def vlan_interface_widget
+      @vlan_interface_widget ||= Y2Network::Widgets::VlanInterface.new(@settings)
+    end
+
+    def blink_button
+      @blink_button ||= Y2Network::Widgets::BlinkButton.new(@settings)
     end
 
     def bond_slave_widget
@@ -102,6 +151,22 @@ module Yast
       @mtu_widget ||= Y2Network::Widgets::MTU.new(@settings)
     end
 
+    def netmask_widget
+      @netmask_widget ||= Y2Network::Widgets::Netmask.new(@settings)
+    end
+
+    def interface_name_widget
+      @interface_name_widget ||= Y2Network::Widgets::InterfaceName.new(@settings)
+    end
+
+    def ip_address_widget
+      @ip_address_widget ||= Y2Network::Widgets::IPAddress.new(@settings)
+    end
+
+    def ipoib_mode_widget
+      @ipoib_mode_widget ||= Y2Network::Widgets::IPoIBMode.new(@settings)
+    end
+
     def ifplugd_priority_widget
       @ifplugd_priority_widget ||= Y2Network::Widgets::IfplugdPriority.new(@settings)
     end
@@ -110,340 +175,46 @@ module Yast
       @startmode_widget ||= Y2Network::Widgets::Startmode.new(@settings, ifplugd_priority_widget)
     end
 
+    def s390_button
+      @s390_button ||= Y2Network::Widgets::S390Button.new
+    end
+
     def boot_protocol_widget
       @boot_protocol_widget ||= Y2Network::Widgets::BootProtocol.new(@settings)
     end
 
     def widget_descr_local
       res = {
-        "AD_ADDRESSES"                 => {
-          "widget"        => :custom,
-          "custom_widget" => Frame(
-            Id(:f_additional),
-            # Frame label
-            _("Additional Addresses"),
-            HBox(
-              HSpacing(3),
-              VBox(
-                # :-) this is a small trick to make ncurses in 80x25 happy :-)
-                # it rounds spacing up or down to the nearest integer, 0.5 -> 1, 0.49 -> 0
-                VSpacing(0.49),
-                Table(
-                  Id(:table),
-                  Opt(:notify),
-                  Header(
-                    # Table header label
-                    _("IPv4 Address Label"),
-                    # Table header label
-                    _("IP Address"),
-                    # Table header label
-                    _("Netmask")
-                  ),
-                  []
-                ),
-                Left(
-                  HBox(
-                    # PushButton label
-                    PushButton(Id(:add), _("Ad&d")),
-                    # PushButton label
-                    PushButton(Id(:edit), Opt(:disabled), _("&Edit")),
-                    # PushButton label
-                    PushButton(Id(:delete), Opt(:disabled), _("De&lete"))
-                  )
-                ),
-                VSpacing(0.49)
-              ),
-              HSpacing(3)
-            )
-          ),
-          "help"          => Ops.get_string(@help, "additional", ""),
-          "init"          => fun_ref(method(:initAdditional), "void (string)"),
-          "handle"        => fun_ref(
-            method(:handleAdditional),
-            "symbol (string, map)"
-          ),
-          "store"         => fun_ref(
-            method(:storeAdditional),
-            "void (string, map)"
-          )
-        },
-        "IFNAME"                       => {
-          "widget" => :textentry,
-          "label"  => _("&Name of Interface"),
-          "opt"    => [:hstretch],
-          "help"   => _("<p>TODO kind of vague!</p>")
-        },
-        mtu_widget.widget_id           => mtu_widget.cwm_definition,
-        "IFCFGTYPE"                    => {
-          "widget"            => :combobox,
-          # ComboBox label
-          "label"             => _("&Device Type"),
-          "opt"               => [:hstretch, :notify],
-          "help"              => "",
-          # "items" will be filled in the dialog itself
-          "init"              => fun_ref(
-            method(:initIfcfg),
-            "void (string)"
-          )
-        },
-        "IFCFGID"                      => {
-          "widget" => :textentry,
-          # ComboBox label
-          "label"  => _("&Configuration Name"),
-          "opt"    => [:hstretch, :disabled],
-          "help"   => "",
-          "init"   => fun_ref(method(:initIfcfgId), "void (string)")
-        },
-        tunnel_widget.widget_id        => tunnel_widget.cwm_definition,
-        bridge_ports_widget.widget_id  => bridge_ports_widget.cwm_definition,
-        "ETHERDEVICE"                  => {
-          "widget"        => :custom,
-          "custom_widget" => HBox(
-            ComboBox(
-              Id(:vlan_eth),
-              Opt(:notify),
-              _("Real Interface for &VLAN"),
-              []
-            ),
-            IntField(Id(:vlan_id), Opt(:notify), _("VLAN ID"), 0, 9999, 0)
-          ),
-          "opt"           => [:hstretch],
-          "init"          => fun_ref(method(:InitVLANSlave), "void (string)"),
-          "handle"        => fun_ref(
-            method(:HandleVLANSlave),
-            "symbol (string, map)"
-          ),
-          "store"         => fun_ref(
-            method(:StoreVLANSlave),
-            "void (string, map)"
-          ),
-          "help"          => Ops.get_string(@help, "etherdevice", "")
-        },
-        bond_slave_widget.widget_id    => bond_slave_widget.cwm_definition,
-        bond_options_widget.widget_id  => bond_options_widget.cwm_definition,
-        boot_protocol_widget.widget_id => boot_protocol_widget.cwm_definition,
-        "REMOTEIP"                     => {
-          "widget"            => :textentry,
-          # Text entry label
-          "label"             => _("R&emote IP Address"),
-          "help"              => Ops.get_string(@help, "remoteip", ""),
-          "validate_type"     => :function_no_popup,
-          "validate_function" => fun_ref(
-            method(:ValidateAddrIP),
-            "boolean (string, map)"
-          ),
-          # validation error popup
-          "validate_help"     => Ops.add(
-            _("The remote IP address is invalid.") + "\n",
-            IP.Valid4
-          )
-        },
+        additional_addresses.widget_id    => additional_addresses.cwm_definition,
+        interface_name_widget.widget_id   => interface_name_widget.cwm_definition,
+        ethtools_options_widget.widget_id => ethtools_options_widget.cwm_definition,
+        mtu_widget.widget_id              => mtu_widget.cwm_definition,
+        netmask_widget.widget_id          => netmask_widget.cwm_definition,
+        tunnel_widget.widget_id           => tunnel_widget.cwm_definition,
+        bridge_ports_widget.widget_id     => bridge_ports_widget.cwm_definition,
+        blink_button.widget_id            => blink_button.cwm_definition,
+        ip_address_widget.widget_id       => ip_address_widget.cwm_definition,
+        ipoib_mode_widget.widget_id       => ipoib_mode_widget.cwm_definition,
+        vlan_id_widget.widget_id          => vlan_id_widget.cwm_definition,
+        vlan_interface_widget.widget_id   => vlan_interface_widget.cwm_definition,
+        kernel_module_widget.widget_id    => kernel_module_widget.cwm_definition,
+        kernel_options_widget.widget_id   => kernel_options_widget.cwm_definition,
+        udev_rules_widget.widget_id       => udev_rules_widget.cwm_definition,
+        bond_slave_widget.widget_id       => bond_slave_widget.cwm_definition,
+        bond_options_widget.widget_id     => bond_options_widget.cwm_definition,
+        boot_protocol_widget.widget_id    => boot_protocol_widget.cwm_definition,
+        remote_ip_widget.widget_id        => remote_ip_widget.cwm_definition,
+        startmode_widget.widget_id        => startmode_widget.cwm_definition,
+        ifplugd_priority_widget.widget_id => ifplugd_priority_widget.cwm_definition,
         # leftovers
-        "S390"                         => {
-          "widget" => :push_button,
-          # push button label
-          "label"  => _("&S/390"),
-          "opt"    => [],
-          "help"   => "",
-          "init"   => fun_ref(CWM.method(:InitNull), "void (string)"),
-          "store"  => fun_ref(CWM.method(:StoreNull), "void (string, map)"),
-          "handle" => fun_ref(method(:HandleButton), "symbol (string, map)")
-        }
+        s390_button.widget_id             => s390_button.cwm_definition
       }
-
-      Ops.set(
-        res,
-        "HWDIALOG",
-        Ops.get(widget_descr_hardware, "HWDIALOG", {})
-      )
 
       res
     end
 
-    # `RadioButtonGroup uses CurrentButton instead of Value, grrr
-    # @param [String] key widget id
-    # @return what property to ask for to get the widget value
-    def ValueProp(key)
-      if UI.QueryWidget(Id(key), :WidgetClass) == "YRadioButtonGroup"
-        return :CurrentButton
-      end
-      :Value
-    end
-
-    # Debug messages configurable at runtime
-    # @param class_ [String] debug class
-    # @param msg [String] message to log
-    def my2debug(class_, msg)
-      if SCR.Read(path(".target.size"), Ops.add("/tmp/my2debug/", class_)) != -1
-        Builtins.y2internal(Ops.add(Ops.add(class_, ": "), msg))
-      end
-
-      nil
-    end
-
-    # Default function to init the value of a widget.
-    # Used for push buttons.
-    # @param [String] key id of the widget
-    def InitAddrWidget(key)
-      value = Ops.get(@settings, key)
-      my2debug("AW", Builtins.sformat("init k: %1, v: %2", key, value))
-      UI.ChangeWidget(Id(key), ValueProp(key), value)
-
-      nil
-    end
-
-    # Default function to store the value of a widget.
-    # @param [String] key	id of the widget
-    # @param [Hash] event	the event being handled
-    def StoreAddrWidget(key, event)
-      event = deep_copy(event)
-      value = UI.QueryWidget(Id(key), ValueProp(key))
-      my2debug(
-        "AW",
-        Builtins.sformat("store k: %1, v: %2, e: %3", key, value, event)
-      )
-      Ops.set(@settings, key, value)
-
-      nil
-    end
-
-    # Default function to init the value of slave ETHERDEVICE box.
-    # @param _key [String] id of the widget
-    def InitVLANSlave(_key)
-      items = []
-      # unconfigured devices
-      Builtins.foreach(
-        Convert.convert(
-          LanItems.Items,
-          from: "map <integer, any>",
-          to:   "map <integer, map>"
-        )
-      ) do |_i, a|
-        if Builtins.size(Ops.get_string(a, "ifcfg", "")) == 0
-          dev_name = Ops.get_string(a, ["hwinfo", "dev_name"], "")
-          items = Builtins.add(
-            items,
-            Item(
-              Id(dev_name),
-              dev_name,
-              dev_name == Ops.get_string(@settings, "ETHERDEVICE", "") ? true : false
-            )
-          )
-        end
-      end
-      # configured devices
-      configurations = NetworkInterfaces.FilterDevices("netcard")
-      Builtins.foreach(
-        Builtins.splitstring(
-          Ops.get(NetworkInterfaces.CardRegex, "netcard", ""),
-          "|"
-        )
-      ) do |devtype|
-        Builtins.foreach(
-          Convert.convert(
-            Map.Keys(Ops.get_map(configurations, devtype, {})),
-            from: "list",
-            to:   "list <string>"
-          )
-        ) do |devname|
-          if Builtins.contains(["vlan"], NetworkInterfaces.GetType(devname))
-            next
-          end
-          items = Builtins.add(
-            items,
-            Item(
-              Id(devname),
-              Builtins.sformat(
-                "%1 - %2",
-                devname,
-                Ops.get_string(configurations, [devtype, devname, "NAME"], "")
-              ),
-              Ops.get_string(@settings, "ETHERDEVICE", "") == devname
-            )
-          )
-        end
-      end
-      UI.ChangeWidget(Id(:vlan_eth), :Items, items)
-      UI.ChangeWidget(
-        Id(:vlan_id),
-        :Value,
-        Ops.get_integer(@settings, "VLAN_ID", 0)
-      )
-
-      nil
-    end
-
-    def HandleVLANSlave(_key, _event)
-      # formerly tried to edit ifcfg name. bad idea, surrounding code not ready
-      nil
-    end
-
-    # Default function to store the value of ETHERDEVICE devices box.
-    # @param _key [String] id of the widget
-    def StoreVLANSlave(_key, _event)
-      Ops.set(
-        @settings,
-        "ETHERDEVICE",
-        Convert.to_string(UI.QueryWidget(Id(:vlan_eth), :Value))
-      )
-      Ops.set(@settings, "VLAN_ID", UI.QueryWidget(Id(:vlan_id), :Value))
-
-      nil
-    end
-
-    def initIfcfg(key)
-      UI.ChangeWidget(Id(key), :Value, @settings["IFCFGTYPE"])
-      UI.ChangeWidget(Id(key), :Enabled, false)
-
-      nil
-    end
-
-    def initIfcfgId(key)
-      initHardware
-      UI.ChangeWidget(
-        Id(key),
-        :Value,
-        @settings["IFCFGID"]
-      )
-
-      nil
-    end
-
-    # Remap the buttons to their Wizard Sequencer values
-    # @param _key [String] the widget receiving the event
-    # @param event [Hash] the event being handled
-    # @return nil so that the dialog loops on
-    def HandleButton(_key, event)
-      event = deep_copy(event)
-      ret = Ops.get(event, "ID")
-      symbols = { "S390" => :s390 }
-      Ops.get(symbols, ret)
-    end
-
-    # Validator for IP adresses
-    # used for IPADDR and REMOTEIP
-    # @param [String] key	the widget being validated
-    # @param [Hash] event	the event being handled
-    # @return whether valid
-    def ValidateAddrIP(key, event)
-      event = deep_copy(event)
-      if UI.QueryWidget(:bootproto, :CurrentButton) == :static
-        return ValidateIP(key, event)
-      end
-      true
-    end
-
-    # @param [Array<String>] types network card types
-    # @return their descriptions for CWM
-    def BuildTypesListCWM(types)
-      types = deep_copy(types)
-      Builtins.maplist(types) do |t|
-        [t, NetworkInterfaces.GetDevTypeDescription(t, false)]
-      end
-    end
-
     def general_tab
-      type = LanItems.GetCurrentType
+      type = @settings["IFCFGTYPE"]
 
       {
         "header"   => _("&General"),
@@ -455,6 +226,8 @@ module Yast
               1,
               0,
               VBox(
+                # FIXME: udev rules for anything without hwinfo is wrong
+                LanItems.operation == :add ? interface_name_widget.widget_id : udev_rules_widget.widget_id,
                 Frame(
                   _("Device Activation"),
                   HBox(startmode_widget.widget_id, ifplugd_priority_widget.widget_id, HStretch())
@@ -462,7 +235,7 @@ module Yast
                 VSpacing(0.4),
                 Frame(_("Firewall Zone"), HBox("FWZONE", HStretch())),
                 VSpacing(0.4),
-                type == "ib" ? HBox("IPOIB_MODE") : Empty(),
+                type == "ib" ? HBox(ipoib_mode_widget.widget_id) : Empty(),
                 type == "ib" ? VSpacing(0.4) : Empty(),
                 Frame(
                   _("Maximum Transfer Unit (MTU)"),
@@ -497,14 +270,14 @@ module Yast
 
       address_p2p_contents = Frame(
         "", # labelless frame
-        VBox("IPADDR", "REMOTEIP")
+        VBox(ip_address_widget.widget_id, remote_ip_widget.widget_id)
       )
 
       address_static_contents = Frame(
         "", # labelless frame
         VBox(
-          "IPADDR",
-          "NETMASK",
+          ip_address_widget.widget_id,
+          netmask_widget.widget_id,
           # TODO: new widget, add logic
           # "GATEWAY"
           Empty()
@@ -521,16 +294,7 @@ module Yast
       end
 
       label = HBox(
-        HSpacing(0.5),
-        # The combo is a hack to allow changing misdetected
-        # interface types. It will work in some cases, like
-        # overriding eth to wlan but not in others where we would
-        # need to change the contents of the dialog. #30890.
-        type != "vlan" ? "IFCFGTYPE" : Empty(),
-        HSpacing(1.5),
-        MinWidth(30, "IFCFGID"),
-        HSpacing(0.5),
-        type == "vlan" ? VBox("ETHERDEVICE") : Empty()
+        type == "vlan" ? VBox(HBox(vlan_interface_widget.widget_id, vlan_id_widget.widget_id)) : Empty()
       )
 
       address_contents = if ["tun", "tap"].include?(type)
@@ -539,7 +303,7 @@ module Yast
         VBox(
           Left(label),
           just_address_contents,
-          "AD_ADDRESSES"
+          additional_addresses.widget_id
         )
       end
 
@@ -556,7 +320,29 @@ module Yast
     def hardware_tab
       {
         "header"   => _("&Hardware"),
-        "contents" => VBox("HWDIALOG")
+        "contents" => VBox(
+          # FIXME: ensure that only eth, maybe also ib?
+          @settings["IFCFGTYPE"] == "eth" ? blink_button.widget_id : Empty(),
+          Frame(
+            _("&Kernel Module"),
+            HBox(
+              HSpacing(0.5),
+              VBox(
+                VSpacing(0.4),
+                HBox(
+                  kernel_module_widget.widget_id, # Text entry label
+                  HSpacing(0.5),
+                  kernel_options_widget.widget_id
+                ),
+                VSpacing(0.4)
+              ),
+              HSpacing(0.5)
+            )
+          ),
+          # FIXME: probably makes sense only for eth
+          ethtools_options_widget.widget_id,
+          VStretch()
+        )
       }
     end
 
@@ -588,28 +374,7 @@ module Yast
       @builder = builder
       initialize_address_settings(builder)
 
-      wd = Convert.convert(
-        Builtins.union(@widget_descr, widget_descr_local),
-        from: "map",
-        to:   "map <string, map <string, any>>"
-      )
-
-      wd[startmode_widget.widget_id] = startmode_widget.cwm_definition
-      wd[ifplugd_priority_widget.widget_id] = ifplugd_priority_widget.cwm_definition
-
-      Ops.set(wd, ["IFCFGTYPE", "items"], BuildTypesListCWM(NetworkInterfaces.GetDeviceTypes))
-      Ops.set(
-        wd,
-        ["IFCFGID", "items"],
-        [
-          [
-            Ops.get_string(@settings, "IFCFGID", ""),
-            Ops.get_string(@settings, "IFCFGID", "")
-          ]
-        ]
-      )
-
-      wd["IPOIB_MODE"] = ipoib_mode_widget if builder.type == "ib"
+      wd = widget_descr_local
 
       @settings["IFCFG"] = builder.name if LanItems.operation != :add
 
@@ -619,16 +384,8 @@ module Yast
       firewall_zone.value = @settings["FWZONE"] if firewalld.installed?
 
       functions = {
-        "init"  => fun_ref(method(:InitAddrWidget), "void (string)"),
-        "store" => fun_ref(method(:StoreAddrWidget), "void (string, map)"),
-        :abort  => fun_ref(LanItems.method(:Rollback), "boolean ()")
+        abort: fun_ref(LanItems.method(:Rollback), "boolean ()")
       }
-
-      if ["tun", "tap"].include?(builder.type)
-        functions = {
-          abort: fun_ref(LanItems.method(:Rollback), "boolean ()")
-        }
-      end
 
       wd_content = {
         "tab_order"          => ["t_general", "t_addr", "hardware"],
@@ -690,8 +447,8 @@ module Yast
         builder.set(option: "IFPLUGD_PRIORITY", value: @settings["IFPLUGD_PRIORITY"])
 
         # address tab
-        bootproto = @settings.fetch("BOOTPROTO", "")
-        ipaddr = @settings.fetch("IPADDR", "")
+        bootproto = builder.option("BOOTPROTO")
+        ipaddr = builder.option("IPADDR")
 
         # IP is mandatory for static configuration. Makes no sense to write static
         # configuration without that.

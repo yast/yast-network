@@ -72,6 +72,7 @@ module Y2Network
                 )
               ),
               HBox(
+                # TODO: When object CWM top level is used, then use here IPAddress object
                 InputField(Id(:bootproto_ipaddr), Opt(:hstretch), _("&IP Address")),
                 HSpacing(1),
                 InputField(Id(:bootproto_netmask), Opt(:hstretch), _("&Subnet Mask")),
@@ -126,15 +127,15 @@ module Y2Network
         when "dhcp"
           Yast::UI.ChangeWidget(Id(:bootproto), :CurrentButton, :bootproto_dynamic)
           Yast::UI.ChangeWidget(Id(:bootproto_dhcp_mode), :Value, :bootproto_dhcp_both)
-          Yast::UI.ChangeWidget(Id(:bootproto_dyn), :Value, :bootproto_dhcp_auto)
+          Yast::UI.ChangeWidget(Id(:bootproto_dyn), :Value, :bootproto_dhcp)
         when "dhcp4"
           Yast::UI.ChangeWidget(Id(:bootproto), :CurrentButton, :bootproto_dynamic)
           Yast::UI.ChangeWidget(Id(:bootproto_dhcp_mode), :Value, :bootproto_dhcp_v4)
-          Yast::UI.ChangeWidget(Id(:bootproto_dyn), :Value, :bootproto_dhcp_auto)
+          Yast::UI.ChangeWidget(Id(:bootproto_dyn), :Value, :bootproto_dhcp)
         when "dhcp6"
           Yast::UI.ChangeWidget(Id(:bootproto), :CurrentButton, :bootproto_dynamic)
           Yast::UI.ChangeWidget(Id(:bootproto_dhcp_mode), :Value, :bootproto_dhcp_v6)
-          Yast::UI.ChangeWidget(Id(:bootproto_dyn), :Value, :bootproto_dhcp_auto)
+          Yast::UI.ChangeWidget(Id(:bootproto_dyn), :Value, :bootproto_dhcp)
         when "dhcp+autoip"
           Yast::UI.ChangeWidget(Id(:bootproto), :CurrentButton, :bootproto_dynamic)
           Yast::UI.ChangeWidget(Id(:bootproto_dyn), :Value, :bootproto_dhcp_auto)
@@ -239,7 +240,7 @@ module Y2Network
 
         mask = Yast::UI.QueryWidget(:bootproto_netmask, :Value)
         if mask != "" && !valid_netmask(ipa, mask)
-          Popup.Error(_("No valid netmask or prefix length."))
+          Yast::Popup.Error(_("No valid netmask or prefix length."))
           Yast::UI.SetFocus(:bootproto_netmask)
           return false
         end

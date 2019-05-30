@@ -820,22 +820,6 @@ module Yast
       has_carrier?(dev_name)
     end
 
-    def validPrefixOrNetmask(ip, mask)
-      valid_mask = false
-      if Builtins.substring(mask, 0, 1) == "/"
-        mask = Builtins.substring(mask, 1)
-      end
-
-      if IP.Check4(ip) && (Netmask.Check4(mask) || Netmask.CheckPrefix4(mask))
-        valid_mask = true
-      elsif IP.Check6(ip) && Netmask.Check6(mask)
-        valid_mask = true
-      else
-        Builtins.y2warning("IP address %1 is not valid", ip)
-      end
-      valid_mask
-    end
-
     def unconfigureable_service?
       return true if Mode.normal && NetworkService.is_network_manager
       return true if NetworkService.is_disabled

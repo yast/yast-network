@@ -27,6 +27,7 @@
 # Authors:	Michal Svec <msvec@suse.cz>
 
 require "y2network/interface_config_builder"
+require "y2network/dialogs/add_interface"
 
 module Yast
   module NetworkLanWizardsInclude
@@ -157,7 +158,7 @@ module Yast
     def NetworkCardSequence(action, builder:)
       ws_start = case action
       when "add"
-        "hardware"
+        "add"
       when "init_s390"
         # s390 may require configuring additional modules. Which
         # enables IBM net cards for linux. Basicaly it creates
@@ -168,7 +169,7 @@ module Yast
       end
 
       aliases = {
-        "hardware" => -> { HardwareDialog(builder: builder) },
+        "add"     => -> { Y2Network::Dialogs::AddInterface.run(builder) },
         # TODO: first param in AddressSequence seems to be never used
         "address"  => -> { AddressSequence("", builder: builder) },
         "s390"     => -> { S390Dialog(builder: builder) }
@@ -178,7 +179,7 @@ module Yast
 
       sequence = {
         "ws_start" => ws_start,
-        "hardware" => { abort: :back, next: "address" },
+        "add"      => { abort: :back, next: "address" },
         "address"  => { abort: :back, next: :next },
         "s390"     => { abort: :abort, next: "address" }
       }

@@ -2827,6 +2827,7 @@ module Yast
     publish_variable :force_restart, "boolean"
     publish_variable :description, "string"
     publish_variable :type, "string"
+    # note: read-only param. Any modification is ignored.
     publish_variable :device, "string"
     publish_variable :alias, "string"
     # the index into {#Items}
