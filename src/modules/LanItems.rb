@@ -1950,9 +1950,6 @@ module Yast
         end
       end
 
-#      newdev["ZONE"] = @firewall_zone
-#      newdev["NAME"] = @description
-
       newdev = setup_dhclient_options(newdev)
 
       # FIXME: network-ng currently works for eth only

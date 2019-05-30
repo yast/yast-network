@@ -22,7 +22,6 @@ require "yaml"
 
 module Y2Network
   module InterfaceDefaults
-
     # returns default startmode for a new device
     #
     # startmode is returned according product, Arch and current device type

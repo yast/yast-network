@@ -446,16 +446,14 @@ module Yast
 
         if bootproto == "static"
           update_hostname(ipaddr, builder["HOSTNAME"] || "")
-        else
+        elsif LanItems.isCurrentDHCP && !LanItems.isCurrentHotplug
           # fixed bug #73739 - if dhcp is used, dont set default gw statically
           # but also: reset default gw only if DHCP* is used, this branch covers
           #		 "No IP address" case, then default gw must stay (#460262)
           # and also: don't delete default GW for usb/pcmcia devices (#307102)
           # FIXME: not working in network-ng
-          if LanItems.isCurrentDHCP && !LanItems.isCurrentHotplug
-            yast_config = Y2Network::Config.find(:yast)
-            yast_config.routing.remove_default_routes if yast_config
-          end
+          yast_config = Y2Network::Config.find(:yast)
+          yast_config.routing.remove_default_routes if yast_config
         end
 
         # When virtual interfaces are added the list of routing devices needs
