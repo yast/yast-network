@@ -19,7 +19,8 @@
 require "yast"
 
 module Y2Network
-  # Stores what's needed when creating a new configuration for an interface
+  # Collects data from the UI until we have enough of it to create a {Y2Network::Interface}.
+  # {LanItemsClass#Commit LanItems.Commit(builder)} uses it.
   class InterfaceConfigBuilder
     # @return [String] Device name (eth0, wlan0, etc.)
     attr_accessor :name
