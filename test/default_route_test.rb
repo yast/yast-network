@@ -102,9 +102,14 @@ describe "Yast::LanItemsClass" do
     subject.current = 0
     subject.SetItem
 
-    subject.bootproto = "dhcp"
+    # desired new devmap
+    devmap = { "STARTMODE" => "auto", "BOOTPROTO" => "dhcp" }
+    builder = Y2Network::InterfaceConfigBuilder.new
+    builder.name = subject.GetCurrentName()
+    builder.type = subject.GetCurrentType()
+    builder.load_sysconfig(devmap)
 
-    subject.Commit
+    subject.Commit(builder)
     subject.write
 
     ifcfg = Yast::NetworkInterfaces.FilterDevices("")["eth"]["eth0"]

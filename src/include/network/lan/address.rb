@@ -63,53 +63,31 @@ module Yast
 
     # Dialog for setting up IP address
     # @return dialog result
-    def AddressDialog
-      initialize_address_settings
+    def AddressDialog(builder:)
+      @builder = builder
 
-      ret = Y2Network::Dialogs::EditInterface.run(@settings)
-
+      ret = Y2Network::Dialogs::EditInterface.run(builder)
       Builtins.y2milestone("ShowAndRun: %1", ret)
 
       if ret != :back && ret != :abort
-        # general tab
-        NetworkInterfaces.Name = @settings["IFCFGID"]
-        # LanItems.device modification is ignored
-        LanItems.Items[LanItems.current]["ifcfg"] = @settings["IFCFGID"]
-        LanItems.startmode = Ops.get_string(@settings, "STARTMODE", "")
-        LanItems.mtu = Ops.get_string(@settings, "MTU", "")
-        # TODO: handle nicer firewall zone. Probably in builder?
-        # LanItems.firewall_zone = firewall_zone.store_permanent if firewalld.installed?
-        LanItems.ifplugd_priority = @settings["IFPLUGD_PRIORITY"]
 
-        # address tab
-        bootproto = @settings.fetch("BOOTPROTO", "")
-        ipaddr = @settings.fetch("IPADDR", "")
+        bootproto = builder["BOOTPROTO"]
+        ipaddr = builder["IPADDR"]
 
         # IP is mandatory for static configuration. Makes no sense to write static
         # configuration without that.
         return ret if bootproto == "static" && ipaddr.empty?
 
-        LanItems.bootproto = bootproto
-
         if bootproto == "static"
-          update_hostname(ipaddr, @settings.fetch("HOSTNAME", ""))
-
-          LanItems.ipaddr = ipaddr
-          LanItems.netmask = Ops.get_string(@settings, "NETMASK", "")
-          LanItems.prefix = Ops.get_string(@settings, "PREFIXLEN", "")
-          LanItems.remoteip = Ops.get_string(@settings, "REMOTEIP", "")
-        else
-          LanItems.ipaddr = ""
-          LanItems.netmask = ""
-          LanItems.remoteip = ""
+          update_hostname(ipaddr, builder["HOSTNAME"] || "")
+        elsif LanItems.isCurrentDHCP && !LanItems.isCurrentHotplug
           # fixed bug #73739 - if dhcp is used, dont set default gw statically
           # but also: reset default gw only if DHCP* is used, this branch covers
           #		 "No IP address" case, then default gw must stay (#460262)
           # and also: don't delete default GW for usb/pcmcia devices (#307102)
-          if LanItems.isCurrentDHCP && !LanItems.isCurrentHotplug
-            yast_config = Y2Network::Config.find(:yast)
-            yast_config.routing.remove_default_routes if yast_config
-          end
+          # FIXME: not working in network-ng
+          yast_config = Y2Network::Config.find(:yast)
+          yast_config.routing.remove_default_routes if yast_config
         end
 
         # When virtual interfaces are added the list of routing devices needs
@@ -117,81 +95,55 @@ module Yast
         LanItems.add_current_device_to_routing if LanItems.update_routing_devices?
       end
 
-      if LanItems.type == "vlan"
-        LanItems.vlan_etherdevice = Ops.get_string(@settings, "ETHERDEVICE", "")
-        LanItems.vlan_id = Builtins.tostring(
-          Ops.get_integer(@settings, "VLAN_ID", 0)
-        )
-      elsif LanItems.type == "br"
-        LanItems.bridge_ports = @settings["BRIDGE_PORTS"].join(" ")
-        log.info "bridge ports stored as #{LanItems.bridge_ports.inspect}"
-      elsif LanItems.type == "bond"
-        new_slaves = @settings.fetch("SLAVES", []).select { |s| !LanItems.bond_slaves.include? s }
-        LanItems.bond_slaves = @settings["SLAVES"]
-        LanItems.bond_option = @settings["BONDOPTION"]
-        Lan.autoconf_slaves = (Lan.autoconf_slaves + new_slaves).uniq.sort
-        log.info "bond settings #{LanItems.bond_slaves}"
-      elsif Builtins.contains(["tun", "tap"], LanItems.type)
-        LanItems.tunnel_set_owner = Ops.get_string(
-          @settings,
-          "TUNNEL_SET_OWNER",
-          ""
-        )
-        LanItems.tunnel_set_group = Ops.get_string(
-          @settings,
-          "TUNNEL_SET_GROUP",
-          ""
-        )
-      end
-
-      LanItems.Rollback if ret != :next
-
       # proceed with WLAN settings if appropriate, #42420
-      ret = :wire if ret == :next && LanItems.type == "wlan"
+      ret = :wire if ret == :next && builder.type == "wlan"
 
-      deep_copy(ret)
+      ret
     end
 
   private
 
     # Initializes the Address Dialog @settings with the corresponding LanItems values
-    def initialize_address_settings
-      @settings.replace( # general tab:
-        "STARTMODE"        => LanItems.startmode,
-        "IFPLUGD_PRIORITY" => LanItems.ifplugd_priority,
+    # TODO: includes some defaults proposals check if it still works and move to
+    # interface builder when needed
+    def initialize_address_settings(builder)
+      @settings.replace(
+        # general tab:
+        "STARTMODE"        => builder["STARTMODE"],
+        "IFPLUGD_PRIORITY" => builder["IFPLUGD_PRIORITY"],
         # problems when renaming the interface?
-        "MTU"              => LanItems.mtu,
-        "FWZONE"           => LanItems.firewall_zone,
+        "MTU"              => builder["MTU"],
+        "FWZONE"           => builder["FWZONE"],
         # address tab:
-        "BOOTPROTO"        => LanItems.bootproto,
-        "IPADDR"           => LanItems.ipaddr,
-        "NETMASK"          => LanItems.netmask,
-        "PREFIXLEN"        => LanItems.prefix,
-        "REMOTEIP"         => LanItems.remoteip,
-        "HOSTNAME"         => initial_hostname(LanItems.ipaddr),
-        "IFCFGTYPE"        => LanItems.type,
-        "IFCFGID"          => LanItems.device
+        "BOOTPROTO"        => builder["BOOTPROTO"],
+        "IPADDR"           => builder["IPADDR"],
+        "NETMASK"          => builder["NETMASK"],
+        "PREFIXLEN"        => builder["PREFIXLEN"],
+        "REMOTEIP"         => builder["REMOTEIP"],
+        "HOSTNAME"         => initial_hostname(builder["IPADDR"]),
+        "IFCFGTYPE"        => builder.type,
+        "IFCFGID"          => builder.name
       )
 
-      if LanItems.type == "vlan"
-        @settings["ETHERDEVICE"] = LanItems.vlan_etherdevice
-        @settings["VLAN_ID"]     = LanItems.vlan_id.to_i
-      elsif LanItems.type == "br"
-        ports = LanItems.bridge_ports
-        ports = Yast::NetworkInterfaces.Current["BRIDGE_PORTS"] || "" if ports.empty?
+      if builder.type == "vlan"
+        @settings["ETHERDEVICE"] = builder["ETHERDEVICE"]
+        @settings["VLAN_ID"]     = builder["VLAN_ID"]
+      elsif builder.type == "br"
+        # FIXME: check / do proper initialization mainly for the edit workflow
+        ports = builder["BRIDGE_PORTS"]
         log.info "ports #{ports.inspect}"
         @settings["BRIDGE_PORTS"] = ports.split
-      elsif LanItems.type == "bond"
-        @settings["BONDOPTION"] = Yast::LanItems.bond_option
-        @settings["SLAVES"] = Yast::LanItems.bond_slaves || []
-      end
-
-      if ["tun", "tap"].include?(LanItems.type)
-        @settings.replace("BOOTPROTO"        => "static",
-                          "STARTMODE"        => "auto",
-                          "TUNNEL"           => LanItems.type,
-                          "TUNNEL_SET_OWNER" => LanItems.tunnel_set_owner,
-                          "TUNNEL_SET_GROUP" => LanItems.tunnel_set_group)
+      elsif builder.type == "bond"
+        @settings["BONDOPTION"] = builder["BONDOPTION"]
+        @settings["SLAVES"] = builder["SLAVES"]
+      elsif ["tun", "tap"].include?(builder.type)
+        @settings.replace(
+          "BOOTPROTO"        => "static",
+          "STARTMODE"        => "auto",
+          "TUNNEL"           => builder.type,
+          "TUNNEL_SET_OWNER" => builder["TUNNEL_SET_OWNER"],
+          "TUNNEL_SET_GROUP" => builder["TUNNEL_SET_GROUP"]
+        )
       end
 
       # #65524

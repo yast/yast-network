@@ -58,7 +58,7 @@ module Y2Network
       end
 
       def type
-        @settings["IFCFGTYPE"]
+        @settings.type
       end
     end
   end

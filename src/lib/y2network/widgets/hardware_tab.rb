@@ -47,7 +47,7 @@ module Y2Network
       end
 
       def eth?
-        @settings["IFCFGTYPE"] == "eth"
+        @settings.type == "eth"
       end
     end
   end

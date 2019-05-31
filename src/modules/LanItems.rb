@@ -966,9 +966,7 @@ module Yast
     #
     # @return [Array<String>] list of NIC names which are configured to use (any) dhcp
     def find_dhcp_ifaces
-      find_by_sysconfig do |ifcfg|
-        ["dhcp4", "dhcp6", "dhcp", "dhcp+autoip"].include?(ifcfg["BOOTPROTO"])
-      end
+      find_by_sysconfig { |ifcfg| dhcp?(ifcfg) }
     end
 
     # Find all NICs configured statically
@@ -1608,6 +1606,13 @@ module Yast
       Builtins.regexpmatch(@bootproto, "dhcp[46]?")
     end
 
+    # Checks whether given device configuration is set to use a dhcp bootproto
+    #
+    # ideally should replace @see isCurrentDHCP
+    def dhcp?(devmap)
+      ["dhcp4", "dhcp6", "dhcp", "dhcp+autoip"].include?(devmap["BOOTPROTO"])
+    end
+
     def GetItemDescription
       Ops.get_string(@Items, [@current, "table_descr", "rich_descr"], "")
     end
@@ -1711,13 +1716,6 @@ module Yast
 
     #-------------------
     # PRIVATE FUNCTIONS
-
-    def SetDefaultsForHW
-      Builtins.y2milestone("SetDefaultsForHW type %1", @type)
-      @mtu = "1492" if Arch.s390 && Builtins.contains(["lcs", "eth"], @type)
-
-      nil
-    end
 
     # Distributes an ifcfg hash to individual attributes.
     # @param devmap   [Hash] an ifcfg, values are strings
@@ -1843,58 +1841,6 @@ module Yast
       SetS390Vars({}, @s390_defaults)
     end
 
-    def hotplug_usable?
-      true unless Ops.get_string(@Items, [@current, "hwinfo", "hotplug"], "").empty?
-    end
-
-    def replace_ifplugd?
-      return true if !Arch.is_laptop
-      return true if NetworkService.is_network_manager
-      return true if ["bond", "vlan", "br"].include? type
-
-      false
-    end
-
-    # returns default startmode for a new device
-    #
-    # startmode is returned according product, Arch and current device type
-    def new_device_startmode
-      product_startmode = ProductFeatures.GetStringFeature(
-        "network",
-        "startmode"
-      )
-
-      Builtins.y2milestone("Startmode by product: #{product_startmode}")
-
-      startmode = case product_startmode
-      when "ifplugd"
-        if replace_ifplugd?
-          hotplug_usable? ? "hotplug" : "auto"
-        else
-          product_startmode
-        end
-      when "auto"
-        "auto"
-      else
-        hotplug_usable? ? "hotplug" : "auto"
-      end
-
-      Builtins.y2milestone("New device startmode: #{startmode}")
-
-      startmode
-    end
-
-    # returns a map with device options for newly created item
-    def new_item_default_options
-      {
-        # bnc#46369
-        "NETMASK"                    => NetHwDetection.result["NETMASK"] || "255.255.255.0",
-        "STARTMODE"                  => new_device_startmode,
-        # bnc#883836 bnc#868187
-        "DHCLIENT_SET_DEFAULT_ROUTE" => "no"
-      }
-    end
-
     # Select the given device
     # FIXME: currently *dev* is always ""
     # @param [String] dev device to select ("" for new device, default values)
@@ -1902,7 +1848,8 @@ module Yast
     def Select(dev)
       Builtins.y2debug("dev=%1", dev)
 
-      devmap = new_item_default_options
+      # FIXME: should be removed, it is genereated by builder
+      devmap = {}
 
       # FIXME: encapsulate into LanItems.GetItemType ?
       @type = Ops.get_string(@Items, [@current, "hwinfo", "type"], "eth")
@@ -1936,24 +1883,10 @@ module Yast
 
     # Sets device map items related to dhclient
     def setup_dhclient_options(devmap)
-      if isCurrentDHCP
+      if dhcp?(devmap)
         val = TRISTATE_TO_S.fetch(@set_default_route)
         devmap["DHCLIENT_SET_DEFAULT_ROUTE"] = val if val
       end
-      devmap
-    end
-
-    # Sets device map items for device when it is not alias
-    def setup_basic_device_options(devmap)
-      devmap["MTU"] = @mtu
-      devmap["ETHTOOL_OPTIONS"] = @ethtool_options
-      devmap["STARTMODE"] = @startmode
-      devmap["IFPLUGD_PRIORITY"] = @ifplugd_priority if @startmode == "ifplugd"
-      devmap["BOOTPROTO"] = @bootproto
-      devmap["_aliases"] = @aliases if @aliases && !@aliases.empty?
-
-      log.info("aliases #{@aliases}")
-
       devmap
     end
 
@@ -1990,29 +1923,23 @@ module Yast
     # elsewhere
     #
     # @return true if success
-    def Commit
+    def Commit(builder)
       if @operation != :add && @operation != :edit
         log.error("Unknown operation: #{@operation}")
         raise ArgumentError, "Unknown operation: #{@operation}"
       end
 
-      newdev = {}
+      # FIXME: most of the following stuff should be moved into InterfaceConfigBuilder
+      # when generating sysconfig configuration
+      newdev = builder.device_sysconfig
 
-      # #104494 - always write IPADDR+NETMASK, even empty
-      newdev["IPADDR"] = @ipaddr
-      if !@prefix.empty?
-        newdev["PREFIXLEN"] = @prefix
-      else
-        newdev["NETMASK"] = @netmask
-      end
       # #50955 omit computable fields
       newdev["BROADCAST"] = ""
       newdev["NETWORK"] = ""
 
-      newdev["REMOTE_IPADDR"] = @remoteip
-
       # set LLADDR to sysconfig only for device on layer2 and only these which needs it
       # do not write incorrect LLADDR.
+      # FIXME: s390 - broken in network-ng
       if @qeth_layer2 && s390_correct_lladdr(@qeth_macaddress)
         busid = Ops.get_string(@Items, [@current, "hwinfo", "busid"], "")
         # sysfs id has changed from css0...
@@ -2023,28 +1950,15 @@ module Yast
         end
       end
 
-      newdev["ZONE"] = @firewall_zone
-      newdev["NAME"] = @description
-
-      newdev = setup_basic_device_options(newdev)
       newdev = setup_dhclient_options(newdev)
 
-      case @type
+      # FIXME: network-ng currently works for eth only
+      case builder.type
       when "bond"
         # we need current slaves - when some of them is not used anymore we need to
         # configure it for deletion from ifcfg (SCR expects special value nil)
         current_slaves = (GetCurrentMap() || {}).select { |k, _| k.start_with?("BONDING_SLAVE") }
         newdev = setup_bonding(newdev.merge(current_slaves), @bond_slaves, @bond_option)
-
-      when "vlan"
-        newdev["ETHERDEVICE"] = @vlan_etherdevice
-        newdev["VLAN_ID"] = @vlan_id
-
-      when "br"
-        newdev["BRIDGE_PORTS"] = @bridge_ports
-        newdev["BRIDGE"] = "yes"
-        newdev["BRIDGE_STP"] = "off"
-        newdev["BRIDGE_FORWARDDELAY"] = "0"
 
       when "wlan"
         newdev["WIRELESS_MODE"] = @wl_mode
@@ -2155,13 +2069,14 @@ module Yast
       # ZONE uses an empty string as the default ZONE which means that is not
       # the same than not defining the attribute
       current_map = (GetCurrentMap() || {}).select { |k, v| !v.nil? && (k == "ZONE" || !v.empty?) }
+      # FIXME: move to config builder (might depend on some proposals above)
       new_map = newdev.select { |k, v| !v.nil? && (k == "ZONE" || !v.empty?) }
 
       # CanonicalizeIP is called to get new device map into the same shape as
       # NetworkInterfaces provides the current one.
       if current_map != NetworkInterfaces.CanonicalizeIP(new_map)
         keep_existing = false
-        ifcfg_name = Items()[@current]["ifcfg"]
+        ifcfg_name = builder.name
         ifcfg_name.replace("") if !NetworkInterfaces.Change2(ifcfg_name, newdev, keep_existing)
 
         # bnc#752464 - can leak wireless passwords
@@ -2169,9 +2084,10 @@ module Yast
         Builtins.y2debug("%1", NetworkInterfaces.ConcealSecrets1(newdev))
 
         # configure bridge ports
-        if @bridge_ports
-          log.info "Configuring bridge ports #{@bridge_ports} for: #{ifcfg_name}"
-          @bridge_ports.split.each { |bp| configure_as_bridge_port(bp) }
+        bridge_ports = builder["BRIDGE_PORTS"]
+        if bridge_ports
+          log.info "Configuring bridge ports #{bridge_ports} for: #{ifcfg_name}"
+          bridge_ports.split.each { |bp| configure_as_bridge_port(bp) }
         end
 
         SetModified()
@@ -2291,7 +2207,7 @@ module Yast
       Builtins.y2milestone("Propose configuration for %1", getCurrentItem)
       @operation = nil
       return false if Select("") != true
-      SetDefaultsForHW()
+      @mtu = "1492" if Arch.s390 && Builtins.contains(["lcs", "eth"], @type)
       @ipaddr = ""
       @netmask = ""
       @bootproto = "dhcp"
@@ -2976,7 +2892,6 @@ module Yast
     publish function: :isCurrentDHCP, type: "boolean ()"
     publish function: :GetItemDescription, type: "string ()"
     publish function: :SelectHWMap, type: "void (map)"
-    publish function: :SetDefaultsForHW, type: "void ()"
     publish function: :SetDeviceVars, type: "void (map, map)"
     publish function: :Select, type: "boolean (string)"
     publish function: :Commit, type: "boolean ()"

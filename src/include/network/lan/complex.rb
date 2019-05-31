@@ -139,8 +139,14 @@ module Yast
 
     # Commit changes to internal structures
     # @return always `next
-    def Commit
-      LanItems.Commit
+    def Commit(builder:)
+      # 1) update NetworkInterfaces with corresponding devmap
+      # FIXME: new item in NetworkInterfaces was created from handleOverview by
+      # calling Lan.Add and named in HardwareDialog via NetworkInterfaces.Name=
+      #  - all that stuff can (should) be moved here to have it isolated at one place
+      #  and later moved to Interface object
+      LanItems.Commit(builder)
+
       :next
     end
 
@@ -383,7 +389,9 @@ module Yast
       if Ops.get_string(event, "EventReason", "") == "Activated"
         case Ops.get_symbol(event, "ID")
         when :add
+          # FIXME: can be mostly deleted
           LanItems.AddNew
+          # FIXME: can be partly deleted and partly moved
           Lan.Add
 
           # FIXME: This is for backward compatibility only
@@ -393,11 +401,16 @@ module Yast
           # As it could easily happen that all interfaces are set to "no" (and
           # default route is unrecheable in such case) this explicite setup was
           # added.
+          # FIXME: not implemented in network-ng
           LanItems.set_default_route = true
 
           return :add
         when :edit
+          @builder.name = LanItems.GetCurrentName()
+          @builder.type = LanItems.GetCurrentType()
           if LanItems.IsCurrentConfigured
+            @builder.load_sysconfig(LanItems.GetCurrentMap())
+            @builder.load_s390_config(LanItems.s390_ReadQethConfig(@builder.name))
             LanItems.SetItem
 
             if LanItems.startmode == "managed"
@@ -515,7 +528,9 @@ module Yast
       true
     end
 
-    def MainDialog(init_tab)
+    def MainDialog(init_tab, builder:)
+      @builder = builder
+
       caption = _("Network Settings")
       widget_descr = {
         "tab" => CWMTab.CreateWidget(
@@ -565,6 +580,8 @@ module Yast
         ret = CWM.Run(w, {})
         break if input_done?(ret)
       end
+
+      @builder = nil
 
       ret
     end

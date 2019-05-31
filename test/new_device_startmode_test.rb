@@ -3,11 +3,9 @@
 require_relative "test_helper"
 
 require "yast"
+require "y2network/interface_config_builder"
 
-Yast.import "ProductFeatures"
-Yast.import "LanItems"
-
-describe "LanItemsClass#new_device_startmode" do
+describe "InterfaceConfigBuilder#new_device_startmode" do
   DEVMAP_STARTMODE_INVALID = {
     "STARTMODE" => "invalid"
   }.freeze
@@ -19,6 +17,8 @@ describe "LanItemsClass#new_device_startmode" do
     "nfsroot"
   ].freeze
 
+  let(:config_builder) { Y2Network::InterfaceConfigBuilder.new }
+
   ["hotplug", ""].each do |hwinfo_hotplug|
     expected_startmode = hwinfo_hotplug == "hotplug" ? "hotplug" : "auto"
     hotplug_desc = hwinfo_hotplug == "hotplug" ? "can hotplug" : "cannot hotplug"
@@ -29,7 +29,7 @@ describe "LanItemsClass#new_device_startmode" do
           .to receive(:GetStringFeature)
             .with("network", "startmode") { "auto" }
 
-        result = Yast::LanItems.new_device_startmode
+        result = config_builder.device_sysconfig["STARTMODE"]
         expect(result).to be_eql "auto"
       end
     end
@@ -39,7 +39,7 @@ describe "LanItemsClass#new_device_startmode" do
         expect(Yast::ProductFeatures)
           .to receive(:GetStringFeature)
             .with("network", "startmode") { "ifplugd" }
-        allow(Yast::LanItems).to receive(:hotplug_usable?) { hwinfo_hotplug == "hotplug" }
+        allow(config_builder).to receive(:hotplug_interface?) { hwinfo_hotplug == "hotplug" }
         # setup stubs by default at results which doesn't need special handling
         allow(Yast::Arch).to receive(:is_laptop) { true }
         allow(Yast::NetworkService).to receive(:is_network_manager) { false }
@@ -49,7 +49,7 @@ describe "LanItemsClass#new_device_startmode" do
         expect(Yast::Arch)
           .to receive(:is_laptop) { false }
 
-        result = Yast::LanItems.new_device_startmode
+        result = config_builder.device_sysconfig["STARTMODE"]
         expect(result).to be_eql expected_startmode
       end
 
@@ -57,7 +57,7 @@ describe "LanItemsClass#new_device_startmode" do
         expect(Yast::Arch)
           .to receive(:is_laptop) { true }
 
-        result = Yast::LanItems.new_device_startmode
+        result = config_builder.device_sysconfig["STARTMODE"]
         expect(result).to be_eql "ifplugd"
       end
 
@@ -65,7 +65,7 @@ describe "LanItemsClass#new_device_startmode" do
         expect(Yast::NetworkService)
           .to receive(:is_network_manager) { true }
 
-        result = Yast::LanItems.new_device_startmode
+        result = config_builder.device_sysconfig["STARTMODE"]
         expect(result).to be_eql expected_startmode
       end
 
@@ -73,9 +73,9 @@ describe "LanItemsClass#new_device_startmode" do
         # check for virtual device type is done via Builtins.contains. I don't
         # want to stub it because it requires default stub value definition for
         # other calls of the function. It might have unexpected inpacts.
-        allow(Yast::LanItems).to receive(:type) { "bond" }
+        allow(config_builder).to receive(:type) { "bond" }
 
-        result = Yast::LanItems.new_device_startmode
+        result = config_builder.device_sysconfig["STARTMODE"]
         expect(result).to be_eql expected_startmode
       end
     end
@@ -86,10 +86,10 @@ describe "LanItemsClass#new_device_startmode" do
           expect(Yast::ProductFeatures)
             .to receive(:GetStringFeature)
               .with("network", "startmode") { product_startmode }
-          expect(Yast::LanItems)
-            .to receive(:hotplug_usable?) { hwinfo_hotplug == "hotplug" }
+          expect(config_builder)
+            .to receive(:hotplug_interface?) { hwinfo_hotplug == "hotplug" }
 
-          result = Yast::LanItems.new_device_startmode
+          result = config_builder.device_sysconfig["STARTMODE"]
           expect(result).to be_eql expected_startmode
         end
       end

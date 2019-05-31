@@ -21,9 +21,11 @@ require_relative "../../test_helper"
 require "cwm/rspec"
 
 require "y2network/widgets/interface_name"
+require "y2network/interface_config_builder"
 
 describe Y2Network::Widgets::InterfaceName do
-  subject { described_class.new("IFCFGTYPE" => "eth") }
+  let(:builder) { instance_double(Y2Network::InterfaceConfigBuilder, type: "eth") }
+  subject { described_class.new(builder) }
 
   include_examples "CWM::ComboBox"
 

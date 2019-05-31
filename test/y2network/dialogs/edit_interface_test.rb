@@ -23,7 +23,7 @@ require "cwm/rspec"
 require "y2network/dialogs/edit_interface"
 
 describe Y2Network::Dialogs::EditInterface do
-  subject { described_class.new({}) }
+  subject { described_class.new(Y2Network::InterfaceConfigBuilder.new) }
 
   include_examples "CWM::Dialog"
 end

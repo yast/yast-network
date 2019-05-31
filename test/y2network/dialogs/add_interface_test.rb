@@ -21,7 +21,9 @@ require_relative "../../test_helper"
 require "cwm/rspec"
 
 require "y2network/dialogs/add_interface"
+require "y2network/interface_config_builder"
 
 describe Y2Network::Dialogs::AddInterface do
+  subject { described_class.new(Y2Network::InterfaceConfigBuilder.new) }
   include_examples "CWM::Dialog"
 end

@@ -25,7 +25,7 @@ module Y2Network
       end
 
       def contents
-        type = @settings["IFCFGTYPE"]
+        type = @settings.type
 
         drvtype = driver_type(type)
         is_ptp = drvtype == "ctc" || drvtype == "iucv"
