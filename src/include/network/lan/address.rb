@@ -437,8 +437,8 @@ module Yast
       Builtins.y2milestone("ShowAndRun: %1", ret)
 
       if ret != :back && ret != :abort
-        bootproto = builder.option("BOOTPROTO")
-        ipaddr = builder.option("IPADDR")
+        bootproto = builder["BOOTPROTO"]
+        ipaddr = builder["IPADDR"]
 
         # IP is mandatory for static configuration. Makes no sense to write static
         # configuration without that.
@@ -475,40 +475,40 @@ module Yast
     def initialize_address_settings(builder)
       @settings.replace(
         # general tab:
-        "STARTMODE"        => builder.option("STARTMODE"),
-        "IFPLUGD_PRIORITY" => builder.option("IFPLUGD_PRIORITY"),
+        "STARTMODE"        => builder["STARTMODE"],
+        "IFPLUGD_PRIORITY" => builder["IFPLUGD_PRIORITY"],
         # problems when renaming the interface?
-        "MTU"              => builder.option("MTU"),
-        "FWZONE"           => builder.option("FWZONE"),
+        "MTU"              => builder["MTU"],
+        "FWZONE"           => builder["FWZONE"],
         # address tab:
-        "BOOTPROTO"        => builder.option("BOOTPROTO"),
-        "IPADDR"           => builder.option("IPADDR"),
-        "NETMASK"          => builder.option("NETMASK"),
-        "PREFIXLEN"        => builder.option("PREFIXLEN"),
-        "REMOTEIP"         => builder.option("REMOTEIP"),
-        "HOSTNAME"         => initial_hostname(builder.option("IPADDR")),
+        "BOOTPROTO"        => builder["BOOTPROTO"],
+        "IPADDR"           => builder["IPADDR"],
+        "NETMASK"          => builder["NETMASK"],
+        "PREFIXLEN"        => builder["PREFIXLEN"],
+        "REMOTEIP"         => builder["REMOTEIP"],
+        "HOSTNAME"         => initial_hostname(builder["IPADDR")],
         "IFCFGTYPE"        => builder.type,
         "IFCFGID"          => builder.name
       )
 
       if builder.type == "vlan"
-        @settings["ETHERDEVICE"] = builder.option("ETHERDEVICE")
-        @settings["VLAN_ID"]     = builder.option("VLAN_ID")
+        @settings["ETHERDEVICE"] = builder["ETHERDEVICE"]
+        @settings["VLAN_ID"]     = builder["VLAN_ID"]
       elsif builder.type == "br"
         # FIXME: check / do proper initialization mainly for the edit workflow
-        ports = builder.option("BRIDGE_PORTS")
+        ports = builder["BRIDGE_PORTS"]
         log.info "ports #{ports.inspect}"
         @settings["BRIDGE_PORTS"] = ports.split
       elsif builder.type == "bond"
-        @settings["BONDOPTION"] = builder.option("BONDOPTION")
-        @settings["SLAVES"] = builder.option("SLAVES")
+        @settings["BONDOPTION"] = builder["BONDOPTION"]
+        @settings["SLAVES"] = builder["SLAVES"]
       elsif ["tun", "tap"].include?(builder.type)
         @settings.replace(
           "BOOTPROTO"        => "static",
           "STARTMODE"        => "auto",
           "TUNNEL"           => builder.type,
-          "TUNNEL_SET_OWNER" => builder.option("TUNNEL_SET_OWNER"),
-          "TUNNEL_SET_GROUP" => builder.option("TUNNEL_SET_GROUP")
+          "TUNNEL_SET_OWNER" => builder["TUNNEL_SET_OWNER"],
+          "TUNNEL_SET_GROUP" => builder["TUNNEL_SET_GROUP"]
         )
       end
 

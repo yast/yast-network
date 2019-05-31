@@ -20,7 +20,7 @@ require "yast"
 
 module Y2Network
   # Collects data from the UI until we have enough of it to create a {Y2Network::Interface}.
-  # {LanItemsClass#Commit LanItems.Commit(builder)} uses it.
+  # {Yast::LanItemsClass#Commit Yast::LanItems.Commit(builder)} uses it.
   class InterfaceConfigBuilder
     # @return [String] Device name (eth0, wlan0, etc.)
     attr_accessor :name
@@ -33,18 +33,6 @@ module Y2Network
     def initialize
       @config = init_device_config({})
       @s390_config = init_device_s390_config({})
-    end
-
-    # Stores one option value tuple
-    # FIXME: obsolete by []=
-    def set(option: nil, value: nil)
-      @config[option] = value
-    end
-
-    # Returns currently stored option value
-    # FIXME: obsolete by []
-    def option(option)
-      @config.fetch(option, nil)
     end
 
     def []=(key, value)

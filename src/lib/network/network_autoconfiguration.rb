@@ -137,8 +137,8 @@ module Yast
       builder = Y2Network::InterfaceConfigBuilder.new
       builder.name = LanItems.GetCurrentName()
       builder.type = LanItems.GetCurrentType()
-      builder.set(option: "BOOTPROTO", value: "dhcp")
-      builder.set(option: "STARTMODE", value: "auto")
+      builder["BOOTPROTO"] = "dhcp"
+      builder["STARTMODE"] = "auto"
 
       LanItems.Commit(builder)
     end
