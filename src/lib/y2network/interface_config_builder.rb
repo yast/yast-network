@@ -23,14 +23,12 @@ module Y2Network
   class InterfaceConfigBuilder
     # @return [String] Device name (eth0, wlan0, etc.)
     attr_accessor :name
-    # @return [String] type which is intended to be build
+    # @return [String] type of @see Y2Network::Interface which is intended to be build (e.g. "eth")
     attr_accessor :type
 
     # Constructor
     #
-    # Load with reasonable defaults;
-    # see LanItems::new_item_default_options, LanItems::@SysconfigDefaults and
-    # others as in LanItems::Select
+    # Load with reasonable defaults
     def initialize
       @config = init_device_config({})
       @s390_config = init_device_s390_config({})
@@ -82,14 +80,14 @@ module Y2Network
 
     # Updates itself according to the given sysconfig configuration
     #
-    # @param devmap [Hash<String, String>] a key, value map where key is sysconfig option
-    #                                      and corresponding value is the option value
+    # @param devmap [Hash<String, String>, nil] a key, value map where key is sysconfig option
+    #                                           and corresponding value is the option value
     def load_sysconfig(devmap)
-      @config = !devmap.nil? ? @config.merge(devmap) : @config
+      @config.merge!(devmap || {})
     end
 
     def load_s390_config(devmap)
-      @s390_config = !devmap.nil? ? @s390_config.merge(devmap) : @s390_config
+      @s390_config.merge!(devmap || {})
     end
 
   private
