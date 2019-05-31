@@ -85,7 +85,7 @@ module Y2Network
       # @return driver type, like formerly type2 for s390
       def driver_type(type)
         drvtype = type
-        # handle HSI like qeth, S#40692#c15
+        # handle HSI like qeth, bsc#55692 #c15
         if type == "hsi"
           drvtype = "qeth"
         # Should eth occur on s390?
