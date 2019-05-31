@@ -17,7 +17,6 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 require "yast"
-require "y2network/interface_defaults"
 
 module Y2Network
   # Stores what's needed when creating a new configuration for an interface
@@ -26,8 +25,6 @@ module Y2Network
     attr_accessor :name
     # @return [String] type which is intended to be build
     attr_accessor :type
-
-    include Y2Network::InterfaceDefaults
 
     # Constructor
     #
@@ -96,6 +93,29 @@ module Y2Network
     end
 
   private
+
+    # Initializes device configuration map with default values when needed
+    #
+    # @param devmap [Hash<String, String>] current device configuration
+    #
+    # @return device configuration map where unspecified values were set
+    #                to reasonable defaults
+    def init_device_config(devmap)
+      # the defaults here are what sysconfig defaults to
+      # (as opposed to what a new interface gets, in {#Select)}
+      defaults = YAML.load_file(Yast::Directory.find_data_file("network/sysconfig_defaults.yml"))
+      defaults.merge(devmap)
+    end
+
+    def init_device_s390_config(devmap)
+      Yast.import "Arch"
+
+      return {} if !Yast::Arch.s390
+
+      # Default values used when creating an emulated NIC for physical s390 hardware.
+      s390_defaults = YAML.load_file(Directory.find_data_file("network/s390_defaults.yml"))
+      s390_defaults.merge(devmap)
+    end
 
     # returns a map with device options for newly created item
     def init_mandatory_options
