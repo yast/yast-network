@@ -53,8 +53,6 @@ module Yast
       Yast.include include_target, "network/lan/bridge.rb"
       Yast.include include_target, "network/lan/s390.rb"
 
-      @settings = {}
-
       @force_static_ip = ProductFeatures.GetBooleanFeature(
         "network",
         "force_static_ip"
@@ -70,7 +68,6 @@ module Yast
       Builtins.y2milestone("ShowAndRun: %1", ret)
 
       if ret != :back && ret != :abort
-
         bootproto = builder["BOOTPROTO"]
         ipaddr = builder["IPADDR"]
 
@@ -95,6 +92,8 @@ module Yast
         LanItems.add_current_device_to_routing if LanItems.update_routing_devices?
       end
 
+      # rollback if changes are canceled, as still some widgets edit LanItems directly
+      LanItems.Rollback if ret != :next
       # proceed with WLAN settings if appropriate, #42420
       ret = :wire if ret == :next && builder.type == "wlan"
 
@@ -102,55 +101,6 @@ module Yast
     end
 
   private
-
-    # Initializes the Address Dialog @settings with the corresponding LanItems values
-    # TODO: includes some defaults proposals check if it still works and move to
-    # interface builder when needed
-    def initialize_address_settings(builder)
-      @settings.replace(
-        # general tab:
-        "STARTMODE"        => builder["STARTMODE"],
-        "IFPLUGD_PRIORITY" => builder["IFPLUGD_PRIORITY"],
-        # problems when renaming the interface?
-        "MTU"              => builder["MTU"],
-        "FWZONE"           => builder["FWZONE"],
-        # address tab:
-        "BOOTPROTO"        => builder["BOOTPROTO"],
-        "IPADDR"           => builder["IPADDR"],
-        "NETMASK"          => builder["NETMASK"],
-        "PREFIXLEN"        => builder["PREFIXLEN"],
-        "REMOTEIP"         => builder["REMOTEIP"],
-        "HOSTNAME"         => initial_hostname(builder["IPADDR"]),
-        "IFCFGTYPE"        => builder.type,
-        "IFCFGID"          => builder.name
-      )
-
-      if builder.type == "vlan"
-        @settings["ETHERDEVICE"] = builder["ETHERDEVICE"]
-        @settings["VLAN_ID"]     = builder["VLAN_ID"]
-      elsif builder.type == "br"
-        # FIXME: check / do proper initialization mainly for the edit workflow
-        ports = builder["BRIDGE_PORTS"]
-        log.info "ports #{ports.inspect}"
-        @settings["BRIDGE_PORTS"] = ports.split
-      elsif builder.type == "bond"
-        @settings["BONDOPTION"] = builder["BONDOPTION"]
-        @settings["SLAVES"] = builder["SLAVES"]
-      elsif ["tun", "tap"].include?(builder.type)
-        @settings.replace(
-          "BOOTPROTO"        => "static",
-          "STARTMODE"        => "auto",
-          "TUNNEL"           => builder.type,
-          "TUNNEL_SET_OWNER" => builder["TUNNEL_SET_OWNER"],
-          "TUNNEL_SET_GROUP" => builder["TUNNEL_SET_GROUP"]
-        )
-      end
-
-      # #65524
-      @settings["BOOTPROTO"] = "static" if LanItems.operation == :add && @force_static_ip
-
-      log.info "settings after init #{@settings.inspect}"
-    end
 
     # Performs hostname update
     #
