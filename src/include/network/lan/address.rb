@@ -486,7 +486,7 @@ module Yast
         "NETMASK"          => builder["NETMASK"],
         "PREFIXLEN"        => builder["PREFIXLEN"],
         "REMOTEIP"         => builder["REMOTEIP"],
-        "HOSTNAME"         => initial_hostname(builder["IPADDR")],
+        "HOSTNAME"         => initial_hostname(builder["IPADDR"]),
         "IFCFGTYPE"        => builder.type,
         "IFCFGID"          => builder.name
       )
