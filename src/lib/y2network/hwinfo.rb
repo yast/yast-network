@@ -31,7 +31,36 @@ module Y2Network
       @hwinfo = load_hwinfo(name)
     end
 
-    # Shortcuts for accessing hwinfo items
+    # Shortcuts for accessing hwinfo items. Each hwinfo item has own method for reading
+    # its value. There are two exceptions however. First exception is hwinfo["name"] item
+    # which carries device model human friendly description. This item is accessible via
+    # {Hwinfo::description}. Second exception is hwinfo["dev_name"] item which can be read
+    # through {Hwinfo::dev_name} or its alias {Hwinfo::name}.
+    #
+    # @!method dev_name read value of hwinfo["dev_name"]
+    #   @return [String]
+    # @!method mac read value of hwinfo["mac"]
+    #   @return [String]
+    # @!method busid read value of hwinfo["busid"]
+    #   @return [String]
+    # @!method link read value of hwinfo["link"]
+    #   @return [Boolean]
+    # @!method driver read value of hwinfo["driver"]
+    #   @return [String]
+    # @!method drivers read value of hwinfo["drivers"]
+    #   @return [Array<String>]
+    # @!method requires read value of hwinfo["requires"]
+    #   @return [Array<String>]
+    # @!method hotplug read value of hwinfo["hotplug"]
+    #   @return [Boolean]
+    # @!method wl_auth_modes read value of hwinfo["wl_auth_modes"]
+    #   @return [String]
+    # @!method wl_enc_modes read value of hwinfo["wl_enc_modes"]
+    #   @return [Array<String>,nil]
+    # @!method wl_channels read value of hwinfo["wl_channels"]
+    #   @return [Array<String>, nil]
+    # @!method wl_bitrates read value of hwinfo["wl_bitrates"]
+    #   @return [String,nil]
     [
       { name: "dev_name", default: "" },
       { name: "mac", default: "" },
@@ -50,6 +79,8 @@ module Y2Network
         @hwinfo ? @hwinfo.fetch(hwinfo_item[:name], hwinfo_item[:default]) : hwinfo_item[:default]
       end
     end
+
+    # @return [<String>] device name, @see dev_name
     alias_method :name, :dev_name
 
     def exists?
