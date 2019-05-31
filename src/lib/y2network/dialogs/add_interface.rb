@@ -7,10 +7,11 @@ Yast.import "NetworkInterfaces"
 
 module Y2Network
   module Dialogs
-    # Dialog to create or edit route.
+    # Dialog which starts new device creation
     class AddInterface < CWM::Dialog
-      def initialize
+      def initialize(builder)
         @type_widget = Widgets::InterfaceType.new
+        @builder = builder
       end
 
       def contents
@@ -23,18 +24,18 @@ module Y2Network
         ret = super
         log.info "AddInterface result #{ret}"
         ret = :back if ret == :abort
+
         # TODO: replace with builder initialization
         if ret == :back
           Yast::LanItems.Rollback
         else
-          Yast::LanItems.type = @type_widget.result
+          @builder.type = @type_widget.result
           proposed_name = Yast::LanItems.new_type_devices(@type_widget.result, 1).first
-          Yast::LanItems.device = proposed_name
+          @builder.name = proposed_name
           Yast::NetworkInterfaces.Name = proposed_name
           Yast::LanItems.Items[Yast::LanItems.current]["ifcfg"] = proposed_name
           Yast::LanItems.Items[Yast::LanItems.current]["udev"] = {}
         end
-        # END of TODO
 
         ret
       end

@@ -27,14 +27,14 @@ module Y2Network
       end
 
       def init
-        self.value = @settings["IFCFGID"]
+        self.value = @settings.name
         Yast::UI.ChangeWidget(Id(widget_id), :ValidChars, Yast::NetworkInterfaces.ValidCharsIfcfg)
       end
 
       # how many device names is proposed in widget
       NEW_DEVICES_COUNT = 10
       def items
-        Yast::LanItems.new_type_devices(@settings["IFCFGTYPE"], NEW_DEVICES_COUNT).map do |name|
+        Yast::LanItems.new_type_devices(@settings.type, NEW_DEVICES_COUNT).map do |name|
           [name, name]
         end
       end

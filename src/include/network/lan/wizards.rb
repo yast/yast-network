@@ -25,8 +25,8 @@
 # Package:	Network configuration
 # Summary:	Network cards configuration wizards
 # Authors:	Michal Svec <msvec@suse.cz>
-#
 
+require "y2network/interface_config_builder"
 require "y2network/dialogs/add_interface"
 
 module Yast
@@ -119,12 +119,13 @@ module Yast
     end
 
     def MainSequence(mode)
+      iface_builder = Y2Network::InterfaceConfigBuilder.new
       aliases = {
-        "global"    => -> { MainDialog("global") },
-        "overview"  => -> { MainDialog("overview") },
-        "add"       => [-> { NetworkCardSequence("add") }, true],
-        "edit"      => [-> { NetworkCardSequence("edit") }, true],
-        "init_s390" => [-> { NetworkCardSequence("init_s390") }, true]
+        "global"    => -> { MainDialog("global", builder: iface_builder) },
+        "overview"  => -> { MainDialog("overview", builder: iface_builder) },
+        "add"       => [-> { NetworkCardSequence("add", builder: iface_builder) }, true],
+        "edit"      => [-> { NetworkCardSequence("edit", builder: iface_builder) }, true],
+        "init_s390" => [-> { NetworkCardSequence("init_s390", builder: iface_builder) }, true]
       }
 
       start = "overview"
@@ -154,13 +155,7 @@ module Yast
       Sequencer.Run(aliases, sequence)
     end
 
-    def NetworkCardSequence(action)
-      aliases = {
-        "add"     => -> { Y2Network::Dialogs::AddInterface.run },
-        "address" => -> { AddressSequence("") },
-        "s390"    => -> { S390Dialog() }
-      }
-
+    def NetworkCardSequence(action, builder:)
       ws_start = case action
       when "add"
         "add"
@@ -172,6 +167,13 @@ module Yast
       else
         "address"
       end
+
+      aliases = {
+        "add"     => -> { Y2Network::Dialogs::AddInterface.run(builder) },
+        # TODO: first param in AddressSequence seems to be never used
+        "address" => -> { AddressSequence("", builder: builder) },
+        "s390"    => -> { S390Dialog(builder: builder) }
+      }
 
       Builtins.y2milestone("ws_start %1", ws_start)
 
@@ -185,9 +187,10 @@ module Yast
       Sequencer.Run(aliases, sequence)
     end
 
-    def AddressSequence(which)
+    def AddressSequence(which, builder:)
+      # TODO: add builder wherever needed
       aliases = {
-        "address"     => -> { AddressDialog() },
+        "address"     => -> { AddressDialog(builder: builder) },
         "hosts"       => -> { HostsMainDialog(false) },
         "s390"        => -> { S390Dialog() },
         "wire"        => -> { WirelessDialog() },
@@ -195,7 +198,7 @@ module Yast
         "keys"        => -> { WirelessKeysDialog() },
         "eap"         => -> { WirelessWpaEapDialog() },
         "eap-details" => -> { WirelessWpaEapDetailsDialog() },
-        "commit"      => [-> { Commit() }, true]
+        "commit"      => [-> { Commit(builder: builder) }, true]
       }
 
       ws_start = which == "wire" ? "wire" : "address" # "changedefaults";

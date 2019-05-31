@@ -38,21 +38,22 @@ module Y2Network
 
         write_ip_forwarding(config.routing)
 
-        # list of devices used by routes
-        devices = config.interfaces + [nil]
-
-        devices.each do |dev|
+        # Write ifroute files
+        config.interfaces.each do |dev|
           routes = find_routes_for(dev, config.routing.routes)
           file = routes_file_for(dev)
 
-          # Remove ifroutes-* if empty, but not /etc/sysconfig/network/route
-          if dev && routes.empty?
-            file.remove
-          else
-            file.routes = routes
-            file.save
-          end
+          # Remove ifroutes-* if empty
+          file.remove if routes.empty?
+
+          file.routes = routes
+          file.save
         end
+
+        # update /etc/sysconfig/network/routes file
+        file = routes_file_for(nil)
+        file.routes = find_routes_for(nil, config.routing.routes)
+        file.save
 
         write_dns_settings(config, old_config)
       end
@@ -123,7 +124,7 @@ module Y2Network
       # @return [Array<Route>] List of routes for the given interface
       def find_routes_for_iface(iface, routes)
         routes.select do |route|
-          route.interface && route.interface.name == iface.name
+          route.interface == iface
         end
       end
 
