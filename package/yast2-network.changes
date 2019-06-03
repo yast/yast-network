@@ -1,7 +1,7 @@
 -------------------------------------------------------------------
 Mon May 20 14:04:47 UTC 2019 - Michal Filka <mfilka@suse.com>
 
-- bnc#1123102
+- bnc#1123102, bnc#1134784, bnc#1136103
   - do not crash with internal error when no hostname is set when
     submitting device with static configuration
 - 4.0.49
