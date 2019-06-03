@@ -53,7 +53,7 @@ module Y2Network
 
       def back_button
         # TODO: decide operation based on builder
-        Yast::LanItems.operation == :add ? Yast::Label.BackButton : ""
+        @settings.newly_added? ? Yast::Label.BackButton : ""
       end
     end
   end

@@ -18,6 +18,8 @@
 # find current contact information at www.suse.com.
 require "yast"
 
+Yast.import "LanItems"
+
 module Y2Network
   # Collects data from the UI until we have enough of it to create a {Y2Network::Interface}.
   # {Yast::LanItemsClass#Commit Yast::LanItems.Commit(builder)} uses it.
@@ -33,6 +35,10 @@ module Y2Network
     def initialize
       @config = init_device_config({})
       @s390_config = init_device_s390_config({})
+    end
+
+    def newly_added?
+      Yast::LanItems.operation == :add
     end
 
     def []=(key, value)
