@@ -11,8 +11,10 @@ Yast.import "Label"
 
 module Y2Network
   module Dialogs
-    # Dialog to create or edit route.
+    # Dialog to Edit Interface.
     class EditInterface < CWM::Dialog
+      # @param settings [InterfaceBuilder] object holding interface configuration
+      #   modified by dialog.
       def initialize(settings)
         @settings = settings
 

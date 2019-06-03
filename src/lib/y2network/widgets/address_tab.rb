@@ -28,6 +28,7 @@ module Y2Network
         type = @settings.type
 
         drvtype = driver_type(type)
+        # TODO: check if this kind of device is still valid and used
         is_ptp = drvtype == "ctc" || drvtype == "iucv"
         # TODO: dynamic for dummy. or add dummy from outside?
         no_dhcp =
