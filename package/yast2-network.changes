@@ -1,17 +1,10 @@
 -------------------------------------------------------------------
 Mon May 20 14:04:47 UTC 2019 - Michal Filka <mfilka@suse.com>
 
-- bnc#1123102, bnc#1134784, bnc#1136103
-  - do not crash with internal error when no hostname is set when
-    submitting device with static configuration
-- 4.2.3
-
--------------------------------------------------------------------
-Fri Apr 12 10:00:58 UTC 2019 - Michal Filka <mfilka@suse.com>
-
 - bnc#1131588
   - display a confirmation popup when static route is going to be
     removed when switching a device to dhcp
+- 4.2.3
 
 -------------------------------------------------------------------
 Wed Apr 24 12:44:18 UTC 2019 - knut.anderssen@suse.com
