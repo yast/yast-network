@@ -1,8 +1,6 @@
 require "yast"
 require "cwm/tabs"
 
-Yast.import "LanItems"
-
 # used widgets
 require "y2network/widgets/interface_name"
 require "y2network/widgets/udev_rules"
