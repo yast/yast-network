@@ -1,8 +1,9 @@
 require "yast"
 require "cwm/common_widgets"
 
-Yast.import "NetworkInterfaces"
-Yast.import "LanItems"
+Yast.import "Popup"
+Yast.import "UI"
+
 
 module Y2Network
   module Widgets
@@ -28,20 +29,17 @@ module Y2Network
 
       def init
         self.value = @settings.name
-        Yast::UI.ChangeWidget(Id(widget_id), :ValidChars, Yast::NetworkInterfaces.ValidCharsIfcfg)
+        Yast::UI.ChangeWidget(Id(widget_id), :ValidChars, @settings.name_valid_characters)
       end
 
-      # how many device names is proposed in widget
-      NEW_DEVICES_COUNT = 10
       def items
-        Yast::LanItems.new_type_devices(@settings.type, NEW_DEVICES_COUNT).map do |name|
+        @settings.proposed_names.map do |name|
           [name, name]
         end
       end
 
       def validate
-        # name have to be unique
-        if Yast::NetworkInterfaces.List("").include?(value)
+        if @settings.name_exists?(value)
           Yast::Popup.Error(
             format(_("Configuration name %s already exists.\nChoose a different one."), value)
           )
@@ -49,8 +47,7 @@ module Y2Network
           return false
         end
 
-        # 16 is the kernel limit on interface name size (IFNAMSIZ)
-        if value !~ /^[[:alnum:]._:-]{1,15}\z/
+        if !@setting.valid_name?(value)
           # TODO: write in popup what is limitations
           Yast::Popup.Error(
             format(_("Configuration name %s is invalid.\nChoose a different one."), value)
@@ -64,7 +61,7 @@ module Y2Network
       end
 
       def store
-        @settings["IFCFGID"] = value
+        @settings.name = value
       end
     end
   end

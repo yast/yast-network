@@ -19,6 +19,7 @@
 require "yast"
 
 Yast.import "LanItems"
+Yast.import "NetworkInterfaces"
 
 module Y2Network
   # Collects data from the UI until we have enough of it to create a {Y2Network::Interface}.
@@ -47,6 +48,27 @@ module Y2Network
 
     def [](key)
       @config[key]
+    end
+
+    # how many device names is proposed
+    NEW_DEVICES_COUNT = 10
+    # Propose bunch of possible names for interface
+    # do not modify anything
+    # @return [Array<String>]
+    def proposed_names
+      Yast::LanItems.new_type_devices(@settings.type, NEW_DEVICES_COUNT)
+    end
+
+    def valid_name?(name)
+      !(value != /^[[:alnum:]._:-]{1,15}\z/)
+    end
+
+    def already_exists?(name)
+      Yast::NetworkInterfaces.List("").include?(name)
+    end
+
+    def name_valid_characters
+      Yast::NetworkInterfaces.ValidCharsIfcfg
     end
 
     # Provides stored configuration in sysconfig format
