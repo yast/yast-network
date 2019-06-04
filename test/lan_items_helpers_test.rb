@@ -242,6 +242,22 @@ describe "LanItems#RemoveItemUdev" do
   end
 end
 
+describe "#current_udev_rule" do
+  let(:busid) { "0000:08:00.0" }
+  let(:hwinfo) { { "dev_name" => "test0", "busid" => busid, "mac" => "24:be:05:ce:1e:91" } }
+  let(:udev_net) { ["KERNELS==\"#{busid}\"", "NAME=\"test0\""] }
+  let(:rule) { { 0 => { "hwinfo" => hwinfo, "udev" => { "net" => udev_net } } } }
+
+  before do
+    Yast::LanItems.Items = rule
+    Yast::LanItems.current = 0
+  end
+
+  it "returns the current item udev rule" do
+    expect(Yast::LanItems.current_udev_rule).to contain_exactly("KERNELS==\"#{busid}\"", "NAME=\"test0\"")
+  end
+end
+
 describe "#update_item_udev_rule!" do
   let(:hwinfo) { { "dev_name" => "test0", "busid" => "0000:08:00.0", "mac" => "24:be:05:ce:1e:91" } }
   let(:udev_net) { ["ATTR{address}==\"24:be:05:ce:1e:91\"", "KERNEL==\"eth*\"", "NAME=\"test0\""] }
