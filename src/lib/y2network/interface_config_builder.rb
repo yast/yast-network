@@ -53,6 +53,8 @@ module Y2Network
     end
 
     def save
+      return if driver.empty?
+
       Yast::LanItems.setDriver(driver)
       Yast::LanItems.driver_options[driver] = driver_options
     end
