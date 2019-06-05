@@ -27,13 +27,11 @@ module Y2Network
       end
 
       def init
-        # TODO: no direct touch of lanitems
-        self.value = Yast::LanItems.ethtool_options
+        self.value = @settings["ETHTOOL_OPTIONS"]
       end
 
       def store
-        # TODO: no direct touch of lanitems
-        Yast::LanItems.ethtool_options = value
+        @settings["ETHTOOL_OPTIONS"] = value
       end
     end
   end
