@@ -22,6 +22,8 @@ require "y2network/interface"
 require "y2network/virtual_interface"
 require "y2network/physical_interface"
 require "y2network/connection_config/ethernet"
+require "y2network/config_reader/connection_config/sysconfig"
+require "y2network/sysconfig_interface_file"
 
 Yast.import "LanItems"
 Yast.import "NetworkInterfaces"
@@ -60,12 +62,12 @@ module Y2Network
 
       # @return [Array<ConnectionConfig>]
       def connections
-        configured_devices.map do |name|
+        configured_devices.each_with_object([]) do |name, connections|
           interface = physical_interfaces.find { |i| i.name == name }
-          conn_type = interface ? interface.type : find_type_for(name)
           # TODO: it may happen that the interface does not exist yet (hotplug, usb, or whatever)
           # How should we handle those cases?
-          connection_config_for(conn_type, name)
+          connection = Y2Network::ConfigReader::ConnectionConfig::Sysconfig.new.read(interface)
+          connections << connection if connection
         end
       end
 
@@ -94,60 +96,6 @@ module Y2Network
       def configured_devices
         files = Yast::SCR.Dir(Yast::Path.new(".network.section"))
         files.reject { |f| IGNORE_IFCFG_REGEX =~ f || f == "lo" }
-      end
-
-      # Returns a connection configuration
-      #
-      # @param [Symbol] Connection type (e.g., :eth)
-      # @param [String] Interface name
-      # @return [ConnectionConfig::Base] an object representing the configuration
-      def connection_config_for(type, name)
-        # find type (from associated interface, name or attributes)
-        # create connection from detected type
-        send("#{type}_connection_config_for", name)
-      end
-
-      # Determines the type of the connection using the name
-      #
-      # This logic is implemented in NetworkInterfaces#GetTypeFromIfcfgOrName but, for the time
-      # being, we are only using {GetTypeFromSysfs}.
-      #
-      # @param name [String] Interface name
-      # @return [Symbol]
-      def find_type_for(name)
-        type = Yast::NetworkInterfaces.GetTypeFromSysfs(name)
-        type.nil? ? :eth : type.to_sym
-      end
-
-      # Returns an ethernet connection configuration
-      #
-      # @param name [String] Interface name
-      # @return [ConnectionConfig::Ethernet]
-      def eth_connection_config_for(name)
-        Y2Network::ConnectionConfig::Ethernet.new.tap do |conn|
-          conn.interface = name
-          conn.bootproto = value_from_ifcfg(name, "BOOTPROTO").to_sym
-          conn.ip_address = ip_address_for(name)
-        end
-      end
-
-      # Returns the interface defined in the ifcfg-* file for a given interface
-      #
-      # @param name [String] Interface name
-      # @return [IPAddr,nil] The interface if defined
-      def ip_address_for(name)
-        str = value_from_ifcfg(name, "IPADDR")
-        str.empty? ? nil : IPAddr.new(str)
-      end
-
-      # Returns a value from the ifcfg file for a given interface
-      #
-      # @param name [String] Interface name
-      # @param key  [String] Configuration parameter name
-      # @return [String] Value from ifcfg-*
-      def value_from_ifcfg(name, key)
-        path = Yast::Path.new(".network.value.\"#{name}\".#{key}")
-        Yast::SCR.Read(path)
       end
     end
   end
