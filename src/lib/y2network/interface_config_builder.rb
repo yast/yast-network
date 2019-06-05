@@ -91,7 +91,7 @@ module Y2Network
     def driver_options
       target_driver = @driver
       if target_driver.empty?
-        target_driver = Yast::Ops.get_string(Yast::LanItems.getCurrentItem, ["hwinfo", "module"], "")
+        target_driver = hwinfo.module
       end
       @driver_options ||= Yast::LanItems.driver_options[target_driver] || ""
     end
@@ -218,7 +218,11 @@ module Y2Network
     end
 
     def hotplug_interface?
-      Hwinfo.new(name: name).hotplug
+      hwinfo.hotplug
+    end
+
+    def hwinfo
+      @hwinfo ||= Hwinfo.new(name: name)
     end
   end
 end
