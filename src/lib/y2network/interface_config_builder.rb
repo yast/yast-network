@@ -61,14 +61,14 @@ module Y2Network
     # do not modify anything
     # @return [Array<String>]
     def proposed_names
-      Yast::LanItems.new_type_devices(@settings.type, NEW_DEVICES_COUNT)
+      Yast::LanItems.new_type_devices(type, NEW_DEVICES_COUNT)
     end
 
     def valid_name?(name)
-      !(name != /^[[:alnum:]._:-]{1,15}\z/)
+      !!(name =~ /^[[:alnum:]._:-]{1,15}\z/)
     end
 
-    def already_exists?(name)
+    def name_exists?(name)
       Yast::NetworkInterfaces.List("").include?(name)
     end
 

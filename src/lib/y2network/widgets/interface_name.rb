@@ -46,7 +46,7 @@ module Y2Network
           return false
         end
 
-        if !@setting.valid_name?(value)
+        if !@settings.valid_name?(value)
           # TODO: write in popup what is limitations
           Yast::Popup.Error(
             format(_("Configuration name %s is invalid.\nChoose a different one."), value)
