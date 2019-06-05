@@ -2,8 +2,6 @@ require "yast"
 
 require "cwm/common_widgets"
 
-Yast.import "LanItems"
-
 module Y2Network
   module Widgets
     class KernelModule < CWM::ComboBox

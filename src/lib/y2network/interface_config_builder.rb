@@ -83,6 +83,19 @@ module Y2Network
       Yast::LanItems.setDriver(value)
     end
 
+    def driver_options
+      target_driver = driver
+      if target_driver.empty?
+        target_driver = Yast::Ops.get_string(Yast::LanItems.getCurrentItem, ["hwinfo", "module"], "")
+      end
+      Yast::LanItems.driver_options[target_driver] || ""
+    end
+
+    # FIXME: now it depends on order and if driver= is called after this one, it is lost
+    def driver_options=(value)
+      Yast::LanItems.driver_options[@driver] = value
+    end
+
     # Provides stored configuration in sysconfig format
     #
     # @return [Hash<String, String>] where key is sysconfig option and value is the option's value

@@ -1,7 +1,6 @@
 require "yast"
 require "cwm/common_widgets"
 
-Yast.import "LanItems"
 Yast.import "Label"
 
 module Y2Network
@@ -30,17 +29,11 @@ module Y2Network
       end
 
       def init
-        # TODO: no direct touch of lanitems
-        @driver = Yast::Ops.get_string(Yast::LanItems.getCurrentItem, ["udev", "driver"], "")
-        if @driver.empty?
-          @driver = Yast::Ops.get_string(Yast::LanItems.getCurrentItem, ["hwinfo", "module"], "")
-        end
-        self.value = Yast::LanItems.driver_options[@driver] || ""
+        self.value = @settings.driver_options
       end
 
       def store
-        # TODO: no direct touch of lanitems
-        Yast::LanItems.driver_options[@driver] = value
+        @settings.driver_options = value
       end
     end
   end
