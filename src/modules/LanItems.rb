@@ -113,7 +113,6 @@ module Yast
       @startmode = "auto"
       @ifplugd_priority = "0"
       @mtu = ""
-      @ethtool_options = ""
 
       # wireless options
       @wl_mode = ""
@@ -1737,7 +1736,6 @@ module Yast
       end
 
       @mtu               = d["MTU"]
-      @ethtool_options   = d["ETHTOOL_OPTIONS"]
       @startmode         = d["STARTMODE"]
       @ifplugd_priority  = d["IFPLUGD_PRIORITY"]
       @description       = d["NAME"]
@@ -2819,7 +2817,6 @@ module Yast
     publish_variable :startmode, "string"
     publish_variable :ifplugd_priority, "string"
     publish_variable :mtu, "string"
-    publish_variable :ethtool_options, "string"
     publish_variable :wl_mode, "string"
     publish_variable :wl_essid, "string"
     publish_variable :wl_nwid, "string"
