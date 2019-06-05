@@ -18,6 +18,8 @@
 # find current contact information at www.suse.com.
 require "yast"
 
+require "y2network/hwinfo"
+
 Yast.import "LanItems"
 Yast.import "NetworkInterfaces"
 
