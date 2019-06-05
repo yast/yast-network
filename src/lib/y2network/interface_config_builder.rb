@@ -60,7 +60,7 @@ module Y2Network
     end
 
     def valid_name?(name)
-      !(value != /^[[:alnum:]._:-]{1,15}\z/)
+      !(name != /^[[:alnum:]._:-]{1,15}\z/)
     end
 
     def already_exists?(name)

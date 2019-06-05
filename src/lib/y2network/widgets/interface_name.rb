@@ -4,7 +4,6 @@ require "cwm/common_widgets"
 Yast.import "Popup"
 Yast.import "UI"
 
-
 module Y2Network
   module Widgets
     class InterfaceName < CWM::ComboBox
