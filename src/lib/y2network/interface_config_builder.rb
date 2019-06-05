@@ -71,6 +71,18 @@ module Y2Network
       Yast::NetworkInterfaces.ValidCharsIfcfg
     end
 
+    def kernel_modules
+      Yast::LanItems.GetItemModules("")
+    end
+
+    def driver
+      Yast::Ops.get_string(Yast::LanItems.getCurrentItem, ["udev", "driver"], "")
+    end
+
+    def driver=(value)
+      Yast::LanItems.setDriver(value)
+    end
+
     # Provides stored configuration in sysconfig format
     #
     # @return [Hash<String, String>] where key is sysconfig option and value is the option's value
