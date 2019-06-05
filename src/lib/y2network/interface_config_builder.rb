@@ -90,9 +90,7 @@ module Y2Network
 
     def driver_options
       target_driver = @driver
-      if target_driver.empty?
-        target_driver = hwinfo.module
-      end
+      target_driver = hwinfo.module if target_driver.empty?
       @driver_options ||= Yast::LanItems.driver_options[target_driver] || ""
     end
 
