@@ -50,6 +50,11 @@ module Y2Network
       @config[key]
     end
 
+    def save
+      Yast::LanItems.setDriver(driver)
+      Yast::LanItems.driver_options[driver] = driver_options
+    end
+
     # how many device names is proposed
     NEW_DEVICES_COUNT = 10
     # Propose bunch of possible names for interface
@@ -76,24 +81,23 @@ module Y2Network
     end
 
     def driver
-      Yast::Ops.get_string(Yast::LanItems.getCurrentItem, ["udev", "driver"], "")
+      @driver ||= Yast::Ops.get_string(Yast::LanItems.getCurrentItem, ["udev", "driver"], "")
     end
 
     def driver=(value)
-      Yast::LanItems.setDriver(value)
+      @driver = value
     end
 
     def driver_options
-      target_driver = driver
+      target_driver = @driver
       if target_driver.empty?
         target_driver = Yast::Ops.get_string(Yast::LanItems.getCurrentItem, ["hwinfo", "module"], "")
       end
-      Yast::LanItems.driver_options[target_driver] || ""
+      @driver_options ||= Yast::LanItems.driver_options[target_driver] || ""
     end
 
-    # FIXME: now it depends on order and if driver= is called after this one, it is lost
     def driver_options=(value)
-      Yast::LanItems.driver_options[@driver] = value
+      @driver_options = value
     end
 
     # Provides stored configuration in sysconfig format
