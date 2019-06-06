@@ -18,30 +18,24 @@
 # find current contact information at www.suse.com.
 
 require "y2network/sysconfig_interface_file"
-require "y2network/config_reader/connection_config/sysconfig_ethernet"
 Yast.import "NetworkInterfaces"
 
 module Y2Network
   module ConfigReader
     module ConnectionConfig
       class Sysconfig
-        READERS = {
-          eth: SysconfigEthernet
-
-        }.freeze
-
         # Constructor
         #
         # @param name [String] Interface name
         def read(interface)
           type = find_type_for(interface)
-          reader_klass = READERS[type]
-          if reader_klass.nil?
+          handler_class = find_handler_class(type)
+          if handler_class.nil?
             log.info "Unknown connection type: '#{type}'"
             return nil
           end
           file = Y2Network::SysconfigInterfaceFile.new(interface.name)
-          reader_klass.new(file).connection_config
+          handler_class.new(file).connection_config
         end
 
       private
@@ -59,6 +53,13 @@ module Y2Network
           return interface.type if interface.type
           type = Yast::NetworkInterfaces.GetTypeFromSysfs(interface.name)
           type.nil? ? :eth : type.to_sym
+        end
+
+        def find_handler_class(type)
+          require "y2network/config_reader/connection_config/sysconfig_handlers/#{type}"
+          SysconfigHandlers.const_get(type.to_s.capitalize)
+        rescue LoadError
+          nil
         end
       end
     end
