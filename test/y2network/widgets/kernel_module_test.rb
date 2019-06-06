@@ -21,9 +21,15 @@ require_relative "../../test_helper"
 require "cwm/rspec"
 
 require "y2network/widgets/kernel_module"
+require "y2network/interface_config_builder"
 
 describe Y2Network::Widgets::KernelModule do
-  subject { described_class.new({}) }
+  let(:builder) do
+    res = Y2Network::InterfaceConfigBuilder.new
+    res.type = "eth"
+    res
+  end
+  subject { described_class.new(builder) }
 
   include_examples "CWM::ComboBox"
 end

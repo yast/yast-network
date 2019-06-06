@@ -3,9 +3,6 @@ require "cwm/custom_widget"
 require "y2network/widgets/slave_items"
 require "shellwords"
 
-Yast.import "Label"
-Yast.import "LanItems"
-Yast.import "Popup"
 Yast.import "UI"
 
 module Y2Network

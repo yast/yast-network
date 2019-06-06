@@ -1,8 +1,6 @@
 require "yast"
 require "cwm/tabs"
 
-Yast.import "LanItems"
-
 # used widgets
 require "y2network/widgets/interface_name"
 require "y2network/widgets/udev_rules"
@@ -36,7 +34,7 @@ module Y2Network
               0,
               VBox(
                 # FIXME: udev rules for anything without hwinfo is wrong
-                Yast::LanItems.operation == :add ? InterfaceName.new(@settings) : UdevRules.new(@settings),
+                @settings.newly_added? ? InterfaceName.new(@settings) : UdevRules.new(@settings),
                 Frame(
                   _("Device Activation"),
                   HBox(Startmode.new(@settings, ifplugd_widget), ifplugd_widget, HStretch())

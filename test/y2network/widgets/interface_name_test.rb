@@ -24,7 +24,11 @@ require "y2network/widgets/interface_name"
 require "y2network/interface_config_builder"
 
 describe Y2Network::Widgets::InterfaceName do
-  let(:builder) { instance_double(Y2Network::InterfaceConfigBuilder, type: "eth") }
+  let(:builder) do
+    res = Y2Network::InterfaceConfigBuilder.new
+    res.type = "eth"
+    res
+  end
   subject { described_class.new(builder) }
 
   include_examples "CWM::ComboBox"
@@ -35,16 +39,17 @@ describe Y2Network::Widgets::InterfaceName do
 
     it "passes for valid names only" do
       allow(subject).to receive(:value).and_return valid_name
+      allow(Yast::NetworkInterfaces).to receive(:List).and_return []
+      expect(Yast::Popup).to_not receive(:Error)
 
-      expect(Yast::NetworkInterfaces).to receive(:List).and_return([])
       expect(subject.validate).to be true
     end
 
     # bnc#991486
     it "fails for long names" do
       allow(subject).to receive(:value).and_return long_name
+      allow(Yast::NetworkInterfaces).to receive(:List).and_return []
 
-      expect(Yast::NetworkInterfaces).to receive(:List).and_return([])
       expect(Yast::UI).to receive(:SetFocus)
       expect(subject.validate).to be false
     end

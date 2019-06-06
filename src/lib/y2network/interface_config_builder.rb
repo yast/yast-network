@@ -18,6 +18,11 @@
 # find current contact information at www.suse.com.
 require "yast"
 
+require "y2network/hwinfo"
+
+Yast.import "LanItems"
+Yast.import "NetworkInterfaces"
+
 module Y2Network
   # Collects data from the UI until we have enough of it to create a {Y2Network::Interface}.
   # {Yast::LanItemsClass#Commit Yast::LanItems.Commit(builder)} uses it.
@@ -35,12 +40,66 @@ module Y2Network
       @s390_config = init_device_s390_config({})
     end
 
+    def newly_added?
+      Yast::LanItems.operation == :add
+    end
+
     def []=(key, value)
       @config[key] = value
     end
 
     def [](key)
       @config[key]
+    end
+
+    def save
+      return if driver.empty?
+
+      Yast::LanItems.setDriver(driver)
+      Yast::LanItems.driver_options[driver] = driver_options
+    end
+
+    # how many device names is proposed
+    NEW_DEVICES_COUNT = 10
+    # Propose bunch of possible names for interface
+    # do not modify anything
+    # @return [Array<String>]
+    def proposed_names
+      Yast::LanItems.new_type_devices(type, NEW_DEVICES_COUNT)
+    end
+
+    def valid_name?(name)
+      !!(name =~ /^[[:alnum:]._:-]{1,15}\z/)
+    end
+
+    def name_exists?(name)
+      Yast::NetworkInterfaces.List("").include?(name)
+    end
+
+    def name_valid_characters
+      Yast::NetworkInterfaces.ValidCharsIfcfg
+    end
+
+    def kernel_modules
+      Yast::LanItems.GetItemModules("")
+    end
+
+    def driver
+      @driver ||= Yast::Ops.get_string(Yast::LanItems.getCurrentItem, ["udev", "driver"], "")
+    end
+
+    def driver=(value)
+      @driver = value
+    end
+
+    def driver_options
+      target_driver = @driver
+      target_driver = hwinfo.module if target_driver.empty?
+      @driver_options ||= Yast::LanItems.driver_options[target_driver] || ""
+    end
+
+    def driver_options=(value)
+      @driver_options = value
     end
 
     # Provides stored configuration in sysconfig format
@@ -161,7 +220,11 @@ module Y2Network
     end
 
     def hotplug_interface?
-      Hwinfo.new(name: name).hotplug
+      hwinfo.hotplug
+    end
+
+    def hwinfo
+      @hwinfo ||= Hwinfo.new(name: name)
     end
   end
 end

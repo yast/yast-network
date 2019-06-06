@@ -53,6 +53,8 @@ module Y2Network
     #   @return [Array<String>]
     # @!method hotplug read value of hwinfo["hotplug"]
     #   @return [Boolean]
+    # @!method module read value of hwinfo["module"]
+    #   @return [String]
     # @!method wl_auth_modes read value of hwinfo["wl_auth_modes"]
     #   @return [String]
     # @!method wl_enc_modes read value of hwinfo["wl_enc_modes"]
@@ -68,6 +70,7 @@ module Y2Network
       { name: "link", default: false },
       { name: "driver", default: "" },
       { name: "drivers", default: [] },
+      { name: "module", default: nil },
       { name: "requires", default: [] },
       { name: "hotplug", default: false },
       { name: "wl_auth_modes", default: "" },

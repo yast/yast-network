@@ -2,8 +2,6 @@ require "yast"
 
 require "cwm/common_widgets"
 
-Yast.import "LanItems"
-
 module Y2Network
   module Widgets
     class KernelModule < CWM::ComboBox
@@ -26,18 +24,18 @@ module Y2Network
         [:editable]
       end
 
-      def init
-        items = Yast::LanItems.GetItemModules("").map do |i|
+      def items
+        @settings.kernel_modules.map do |i|
           [i, i]
         end
-        change_items(items)
+      end
 
-        driver = Yast::Ops.get_string(Yast::LanItems.getCurrentItem, ["udev", "driver"], "")
-        self.value = driver unless driver.empty?
+      def init
+        self.value = @settings.driver unless @settings.driver.empty?
       end
 
       def store
-        Yast::LanItems.setDriver(value)
+        @settings.driver = value
       end
     end
   end

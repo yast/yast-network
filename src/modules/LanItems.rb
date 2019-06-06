@@ -1927,6 +1927,7 @@ module Yast
         raise ArgumentError, "Unknown operation: #{@operation}"
       end
 
+      builder.save # does all modification, later only things that is not yet converted
       # FIXME: most of the following stuff should be moved into InterfaceConfigBuilder
       # when generating sysconfig configuration
       newdev = builder.device_sysconfig
