@@ -34,11 +34,11 @@ module Y2Network
 
       # Constructor
       #
-      # @param name [String]
-      def initialize(name)
+      # @param name [Y2Network::InterfaceConfigBuilder]
+      def initialize(builder)
         textdomain "network"
-        @value = nil
-        @interface = Y2Firewall::Firewalld::Interface.new(name)
+        @builder = builder
+        @interface = Y2Firewall::Firewalld::Interface.new(builder.name)
       end
 
       # @see CWM::AbstractWidget
@@ -53,7 +53,7 @@ module Y2Network
         return unless installed?
 
         populate_select(firewall_zones)
-        self.value = @value
+        select_zone(@builder.firewall_zone) if installed?
       end
 
       # @see CWM::AbstractWidget
@@ -64,24 +64,11 @@ module Y2Network
         Left(zones_widget)
       end
 
-      # Stores the given name and when it is enabled to configure the
-      # interface ZONE through the ifcfg file. It also selects the given zone
-      # in the select list
-      #
-      # @see CWM::AbstractWidget
-      # @param name [String,nil] zone name
-      def value=(name)
-        @value = name
-        return unless installed?
-        select_zone(name)
-      end
-
       # It returns the current ZONE selection or nil in case of not enabled
       # the management through the ifcfg files.
       #
       # @return [String, nil] current zone or nil when not managed
       def value
-        return @value unless Yast::UI.WidgetExists(Id(:zones))
         selected_zone
       end
 
@@ -90,18 +77,7 @@ module Y2Network
       # @see CWM::AbstractWidget
       # @return [String, nil]
       def store
-        @value = value
-      end
-
-      # Stores the selected zone permanently when it has change and it is
-      # enabled to be managed through the ifcfg files
-      #
-      # @return [String, nil] the current zone selection
-      def store_permanent
-        return @value unless installed?
-
-        @interface.zone = @value if zone_changed?
-        @value
+        @builder.firewall_zone = value
       end
 
       # @see CWM::AbstractWidget
@@ -119,13 +95,6 @@ module Y2Network
 
     private
 
-      # Return whether the permanent ZONE match or not the selected one.
-      #
-      # @return [Boolean]
-      def zone_changed?
-        @value && (current_zone.to_s != @value)
-      end
-
       # @return [String]
       def default_label
         # TRANSLATORS: List item describing an assigment of the interface
@@ -137,13 +106,6 @@ module Y2Network
       def no_zone_label
         # TRANSLATORS: List item to no interface ZONE assignment
         _("Do not assign ZONE")
-      end
-
-      # Current {Y2Firewall::Firewalld::Interface} name
-      # @return [String, nil]
-      def current_zone
-        return unless @interface.zone
-        @interface.zone.name
       end
 
       # @return [Yast::Term] zones select list
