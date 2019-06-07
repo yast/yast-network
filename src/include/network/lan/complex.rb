@@ -408,9 +408,7 @@ module Yast
           # FIXME: not implemented in network-ng
           LanItems.set_default_route = true
 
-          builder = Y2Network::InterfaceConfigBuilder.new
-          #Y2Network::Sequences::Interface.new.add
-          NetworkCardSequence("add", builder: builder)
+          Y2Network::Sequences::Interface.new.add
           return :redraw
         when :edit
           builder = Y2Network::InterfaceConfigBuilder.new
@@ -463,14 +461,12 @@ module Yast
                 ""
               )
             )
-              NetworkCardSequence("init_s390", builder: builder)
-              #Y2Network::Sequences::Interface.new.init_s390(builder)
+              Y2Network::Sequences::Interface.new.init_s390(builder)
               return :redraw
             end
           end
 
-          NetworkCardSequence("edit", builder: builder)
-          #Y2Network::Sequences::Interface.new.edit(builder)
+          Y2Network::Sequences::Interface.new.edit(builder)
           return :redraw
 
         when :delete

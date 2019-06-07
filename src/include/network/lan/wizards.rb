@@ -123,9 +123,6 @@ module Yast
       aliases = {
         "global"    => -> { MainDialog("global", builder: iface_builder) },
         "overview"  => -> { MainDialog("overview", builder: iface_builder) },
-        "add"       => [-> { NetworkCardSequence("add", builder: iface_builder) }, true],
-        "edit"      => [-> { NetworkCardSequence("edit", builder: iface_builder) }, true],
-        "init_s390" => [-> { NetworkCardSequence("init_s390", builder: iface_builder) }, true]
       }
 
       start = "overview"
@@ -143,10 +140,7 @@ module Yast
           abort:     :abort,
           next:      :next,
           redraw: "overview"
-        },
-        "add"       => { abort: :abort, next: "overview" },
-        "edit"      => { abort: :abort, next: "overview" },
-        "init_s390" => { abort: :abort, next: "overview" }
+        }
       }
 
       Sequencer.Run(aliases, sequence)
