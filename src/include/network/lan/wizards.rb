@@ -121,8 +121,8 @@ module Yast
     def MainSequence(mode)
       iface_builder = Y2Network::InterfaceConfigBuilder.new
       aliases = {
-        "global"    => -> { MainDialog("global", builder: iface_builder) },
-        "overview"  => -> { MainDialog("overview", builder: iface_builder) },
+        "global"   => -> { MainDialog("global", builder: iface_builder) },
+        "overview" => -> { MainDialog("overview", builder: iface_builder) }
       }
 
       start = "overview"
@@ -130,15 +130,15 @@ module Yast
       # see also #148485
       start = "global" if mode == "proposal"
       sequence = {
-        "ws_start"  => start,
-        "global"    => {
-          abort: :abort,
-          next:  :next,
+        "ws_start" => start,
+        "global"   => {
+          abort:  :abort,
+          next:   :next,
           redraw: "global"
         },
-        "overview"  => {
-          abort:     :abort,
-          next:      :next,
+        "overview" => {
+          abort:  :abort,
+          next:   :next,
           redraw: "overview"
         }
       }
@@ -148,19 +148,18 @@ module Yast
 
     def NetworkCardSequence(action, builder:)
       ws_start = case action
-      when "add"
-        "add"
       when "init_s390"
         # s390 may require configuring additional modules. Which
         # enables IBM net cards for linux. Basicaly it creates
         # linux devices with common api (e.g. eth0, hsi1, ...)
         "s390"
-      else
+      when "edit"
         "address"
+      else
+        raise "Unknown action #{action}"
       end
 
       aliases = {
-        "add"     => -> { Y2Network::Dialogs::AddInterface.run(builder) },
         # TODO: first param in AddressSequence seems to be never used
         "address" => -> { AddressSequence("", builder: builder) },
         "s390"    => -> { S390Dialog(builder: builder) }
@@ -170,7 +169,6 @@ module Yast
 
       sequence = {
         "ws_start" => ws_start,
-        "add"      => { abort: :back, next: "address" },
         "address"  => { abort: :back, next: :next },
         "s390"     => { abort: :abort, next: "address" }
       }
