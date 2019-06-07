@@ -26,6 +26,10 @@
 # Summary:	Summary, overview and IO dialogs for network cards config
 # Authors:	Michal Svec <msvec@suse.cz>
 #
+
+require "y2network/interface_config_builder"
+require "y2network/sequences/interface"
+
 module Yast
   module NetworkLanComplexInclude
     def initialize_network_lan_complex(include_target)
@@ -404,13 +408,17 @@ module Yast
           # FIXME: not implemented in network-ng
           LanItems.set_default_route = true
 
-          return :add
+          builder = Y2Network::InterfaceConfigBuilder.new
+          #Y2Network::Sequences::Interface.new.add
+          NetworkCardSequence("add", builder: builder)
+          return :redraw
         when :edit
-          @builder.name = LanItems.GetCurrentName()
-          @builder.type = LanItems.GetCurrentType()
+          builder = Y2Network::InterfaceConfigBuilder.new
+          builder.name = LanItems.GetCurrentName()
+          builder.type = LanItems.GetCurrentType()
           if LanItems.IsCurrentConfigured
-            @builder.load_sysconfig(LanItems.GetCurrentMap())
-            @builder.load_s390_config(LanItems.s390_ReadQethConfig(@builder.name))
+            builder.load_sysconfig(LanItems.GetCurrentMap())
+            builder.load_s390_config(LanItems.s390_ReadQethConfig(builder.name))
             LanItems.SetItem
 
             if LanItems.startmode == "managed"
@@ -455,11 +463,15 @@ module Yast
                 ""
               )
             )
-              return :init_s390
+              NetworkCardSequence("init_s390", builder: builder)
+              #Y2Network::Sequences::Interface.new.init_s390(builder)
+              return :redraw
             end
           end
 
-          return :edit
+          NetworkCardSequence("edit", builder: builder)
+          #Y2Network::Sequences::Interface.new.edit(builder)
+          return :redraw
 
         when :delete
           # warn user when device to delete has STARTMODE=nfsroot (bnc#433867)

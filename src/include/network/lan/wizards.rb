@@ -137,15 +137,12 @@ module Yast
         "global"    => {
           abort: :abort,
           next:  :next,
-          add:   "add",
-          edit:  "edit"
+          redraw: "global"
         },
         "overview"  => {
           abort:     :abort,
           next:      :next,
-          add:       "add",
-          edit:      "edit",
-          init_s390: "init_s390"
+          redraw: "overview"
         },
         "add"       => { abort: :abort, next: "overview" },
         "edit"      => { abort: :abort, next: "overview" },
