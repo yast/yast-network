@@ -169,7 +169,7 @@ module Yast
 
       sequence = {
         "ws_start" => ws_start,
-        "address"  => { abort: :back, next: :next },
+        "address"  => { abort: :abort, next: :next },
         "s390"     => { abort: :abort, next: "address" }
       }
 
@@ -190,12 +190,9 @@ module Yast
         "commit"      => [-> { Commit(builder: builder) }, true]
       }
 
-      ws_start = which == "wire" ? "wire" : "address" # "changedefaults";
+      ws_start = which == "wire" ? "wire" : "address"
       sequence = {
         "ws_start"    => ws_start,
-        # 	"changedefaults" : $[
-        # 	    `next	: "address",
-        # 	],
         "address"     => {
           abort:    :abort,
           next:     "commit",

@@ -6,16 +6,21 @@ module Y2Network
     # TODO: use UI::Sequence, but it needs also another object dialogs e.g for wifi
     class Interface
       include Yast::I18n
+      include Yast::Logger
 
       def initialize
         Yast.include self, "network/lan/wizards.rb"
       end
 
-      def add
-        res = Y2Network::Dialogs::AddInterface.run
+      def add(default: nil)
+        res = Y2Network::Dialogs::AddInterface.run(default: default)
         return unless res
 
-        edit(res)
+        sym = edit(res)
+        log.info "result of following edit #{sym.inspect}"
+        sym = add(default: res.type) if sym == :back
+
+        sym
       end
 
       def edit(builder)

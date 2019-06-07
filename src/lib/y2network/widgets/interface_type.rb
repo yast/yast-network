@@ -7,8 +7,10 @@ module Y2Network
   module Widgets
     class InterfaceType < CWM::RadioButtons
       attr_reader :result
-      def initialize
+      def initialize(default: nil)
         textdomain "network"
+        # eth as default
+        @default = default || "eth"
       end
 
       def label
@@ -24,7 +26,7 @@ module Y2Network
       end
 
       def init
-        self.value = "eth" # eth as default
+        self.value = @default
       end
 
       def items

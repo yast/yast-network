@@ -393,21 +393,6 @@ module Yast
       if Ops.get_string(event, "EventReason", "") == "Activated"
         case Ops.get_symbol(event, "ID")
         when :add
-          # FIXME: can be mostly deleted
-          LanItems.AddNew
-          # FIXME: can be partly deleted and partly moved
-          Lan.Add
-
-          # FIXME: This is for backward compatibility only
-          # dhclient needs to set just one dhcp enabled interface to
-          # DHCLIENT_SET_DEFAULT_ROUTE=yes. Otherwise interface is selected more
-          # or less randomly (bnc#868187). However, UI is not ready for such change yet.
-          # As it could easily happen that all interfaces are set to "no" (and
-          # default route is unrecheable in such case) this explicite setup was
-          # added.
-          # FIXME: not implemented in network-ng
-          LanItems.set_default_route = true
-
           Y2Network::Sequences::Interface.new.add
           return :redraw
         when :edit

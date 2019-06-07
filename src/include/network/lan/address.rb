@@ -97,6 +97,7 @@ module Yast
       # proceed with WLAN settings if appropriate, #42420
       ret = :wire if ret == :next && builder.type == "wlan"
 
+      Builtins.y2milestone("AddressDialog res: %1", ret)
       ret
     end
 
