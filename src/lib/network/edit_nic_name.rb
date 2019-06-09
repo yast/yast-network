@@ -31,10 +31,13 @@ module Yast
       Yast.include self, "network/routines.rb"
 
       current_item = LanItems.getCurrentItem
+      current_rule = LanItems.current_udev_rule
 
       @old_name = LanItems.current_udev_name
-      @old_key = :mac unless LanItems.GetItemUdev(MAC_UDEV_ATTR).empty?
-      @old_key = :bus_id unless LanItems.GetItemUdev(BUSID_UDEV_ATTR).empty?
+      unless current_rule.empty?
+        @old_key = :mac unless LanItems.GetItemUdev(MAC_UDEV_ATTR).empty?
+        @old_key = :bus_id unless LanItems.GetItemUdev(BUSID_UDEV_ATTR).empty?
+      end
 
       if current_item["hwinfo"]
         @mac = current_item["hwinfo"]["mac"]
