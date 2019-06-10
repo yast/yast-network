@@ -40,7 +40,7 @@ module Y2Network
                   HBox(Startmode.new(@settings, ifplugd_widget), ifplugd_widget, HStretch())
                 ),
                 VSpacing(0.4),
-                # TODO: Frame(_("Firewall Zone"), HBox("FWZONE", HStretch())),
+                Frame(_("Firewall Zone"), HBox(FirewallZone.new(@settings), HStretch())),
                 VSpacing(0.4),
                 type == "ib" ? HBox(IPoIBMode.new(@settings)) : Empty(),
                 type == "ib" ? VSpacing(0.4) : Empty(),

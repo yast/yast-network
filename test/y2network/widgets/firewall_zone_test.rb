@@ -2,11 +2,19 @@
 
 require_relative "../../test_helper.rb"
 require "y2network/widgets/firewall_zone"
+require "y2network/interface_config_builder"
 
 require "cwm/rspec"
 
 describe Y2Network::Widgets::FirewallZone do
-  let(:subject) { described_class.new("eth0") }
+  let(:builder) do
+    res = Y2Network::InterfaceConfigBuilder.new
+    res.type = "eth"
+    res.name = "eth0"
+    res
+  end
+  subject { described_class.new(builder) }
+
   let(:firewalld) { Y2Firewall::Firewalld.instance }
   let(:firewall_zones) { [["", "Default"], ["custom", "custom"]] }
   let(:installed?) { true }
@@ -24,8 +32,8 @@ describe Y2Network::Widgets::FirewallZone do
       subject.init
     end
 
-    it "selects the current zone from the list if it was cached" do
-      subject.value = "custom"
+    it "selects the current zone" do
+      builder.firewall_zone = "custom"
       expect(subject).to receive(:select_zone).with("custom")
       subject.init
     end
@@ -40,70 +48,13 @@ describe Y2Network::Widgets::FirewallZone do
       expect(subject).to receive(:selected_zone).and_return("")
       expect(subject.value).to eql("")
     end
-
-    context "when the select zone widget does not exist" do
-      before do
-        allow(Yast::UI).to receive(:WidgetExists).and_return(false)
-      end
-
-      it "returns the cached value" do
-        expect(subject.value).to eql(nil)
-        subject.value = "external"
-        expect(subject.value).to eql("external")
-      end
-    end
   end
 
   describe "#store" do
-    before do
-      allow(Yast::UI).to receive(:WidgetExists).and_return(true, false)
-    end
-
-    it "caches the current value" do
-      expect(subject).to receive(:selected_zone).and_return("external")
+    it "stores value to builder" do
+      allow(subject).to receive(:selected_zone).and_return("external")
       subject.store
-      expect(subject).to_not receive(:selected_zone?)
-      expect(subject.store).to eql("external")
-    end
-  end
-
-  describe "#store_permanent" do
-    before do
-      subject.value = "custom"
-    end
-
-    context "when firewalld is not installed" do
-      let(:installed?) { false }
-
-      it "returns the cached value" do
-        expect(subject.store_permanent).to eql("custom")
-      end
-    end
-
-    context "when firewalld is installed" do
-      context "but the firewall zone will not be managed by the ifcfg file" do
-        let(:managed?) { false }
-
-        it "returns the cached value" do
-          expect(subject.store_permanent).to eql("custom")
-        end
-      end
-
-      context "and the cached value is not equal to the firewalld interface zone" do
-        it "modifies the interface permanent ZONE" do
-          allow(subject).to receive(:current_zone).and_return("external")
-          expect_any_instance_of(Y2Firewall::Firewalld::Interface).to receive(:zone=).with("custom")
-          subject.store_permanent
-        end
-      end
-
-      context "and the cached value is the same than the firewalld interface zone" do
-        it "does not touch the interface permanent ZONE" do
-          allow(subject).to receive(:current_zone).and_return("custom")
-          expect_any_instance_of(Y2Firewall::Firewalld::Interface).to_not receive(:zone=)
-          subject.store_permanent
-        end
-      end
+      expect(builder.firewall_zone).to eq "external"
     end
   end
 end

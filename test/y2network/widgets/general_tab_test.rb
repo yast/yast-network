@@ -24,7 +24,14 @@ require "y2network/widgets/general_tab"
 require "y2network/interface_config_builder"
 
 describe Y2Network::Widgets::GeneralTab do
-  subject { described_class.new(Y2Network::InterfaceConfigBuilder.new) }
+  let(:builder) do
+    res = Y2Network::InterfaceConfigBuilder.new
+    res.type = "eth"
+    res.name = "eth0"
+    res
+  end
+
+  subject { described_class.new(builder) }
 
   include_examples "CWM::Tab"
 end

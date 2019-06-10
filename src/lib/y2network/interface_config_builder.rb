@@ -19,6 +19,8 @@
 require "yast"
 
 require "y2network/hwinfo"
+require "y2firewall/firewalld"
+require "y2firewall/firewalld/interface"
 
 Yast.import "LanItems"
 Yast.import "NetworkInterfaces"
@@ -53,10 +55,20 @@ module Y2Network
     end
 
     def save
-      return if driver.empty?
+      if !driver.empty?
+        Yast::LanItems.setDriver(driver)
+        Yast::LanItems.driver_options[driver] = driver_options
+      end
 
-      Yast::LanItems.setDriver(driver)
-      Yast::LanItems.driver_options[driver] = driver_options
+      # create new instance as name can change
+      firewall_interface = Y2Firewall::Firewalld::Interface.new(name)
+      if Y2Firewall::Firewalld.instance.installed?
+        Yast::LanItems.firewall_zone = firewall_zone
+        # TODO: should change only if different, but maybe firewall_interface responsibility?
+        firewall_interface.zone = firewall_zone if !firewall_interface.zone || firewall_zone != firewall_interface.zone.name
+      end
+
+      nil
     end
 
     # how many device names is proposed
@@ -82,6 +94,18 @@ module Y2Network
 
     def kernel_modules
       Yast::LanItems.GetItemModules("")
+    end
+
+    def firewall_zone
+      return @firewall_zone if @firewall_zone
+
+      # TODO: handle renaming
+      firewall_interface = Y2Firewall::Firewalld::Interface.new(name)
+      @firewall_zone = firewall_interface.zone && firewall_interface.zone.name
+    end
+
+    def firewall_zone=(value)
+      @firewall_zone = value
     end
 
     def driver
