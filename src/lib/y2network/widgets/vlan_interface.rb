@@ -20,33 +20,18 @@ module Y2Network
         # TODO: previously not exist, so write it
       end
 
+      def items
+        @config.possible_vlans.map do |key, value|
+          [key, value]
+        end
+      end
+
       def init
-        # TODO: items in own method. Not possible now as widget is cached in include
-        items = []
-        # unconfigured devices
-        Yast::LanItems.Items.each_value do |lan_item|
-          next unless (lan_item["ifcfg"] || "").empty?
-          dev_name = Yast::Ops.get_string(lan_item, ["hwinfo", "dev_name"], "")
-          items << [dev_name, dev_name]
-        end
-        # configured devices
-        configurations = Yast::NetworkInterfaces.FilterDevices("netcard")
-        # TODO: API looks horrible
-        Yast::NetworkInterfaces.CardRegex["netcard"].split("|").each do |devtype|
-          (configurations[devtype] || {}).each_key do |devname|
-            next if Yast::NetworkInterfaces.GetType(devname) == "vlan"
-
-            items << [devname, "#{devname} - #{Yast::Ops.get_string(configurations, [devtype, devname, "NAME"], "")}"]
-          end
-        end
-        change_items(items)
-        # TODO: END
-
-        self.value = @config["ETHERDEVICE"] if @config["ETHERDEVICE"]
+        self.value = @config.etherdevice if @config.etherdevice
       end
 
       def store
-        @config["ETHERDEVICE"] = value
+        @config.etherdevice = value
       end
     end
   end
