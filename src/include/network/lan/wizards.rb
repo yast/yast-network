@@ -121,11 +121,8 @@ module Yast
     def MainSequence(mode)
       iface_builder = Y2Network::InterfaceConfigBuilder.new
       aliases = {
-        "global"    => -> { MainDialog("global", builder: iface_builder) },
-        "overview"  => -> { MainDialog("overview", builder: iface_builder) },
-        "add"       => [-> { NetworkCardSequence("add", builder: iface_builder) }, true],
-        "edit"      => [-> { NetworkCardSequence("edit", builder: iface_builder) }, true],
-        "init_s390" => [-> { NetworkCardSequence("init_s390", builder: iface_builder) }, true]
+        "global"   => -> { MainDialog("global", builder: iface_builder) },
+        "overview" => -> { MainDialog("overview", builder: iface_builder) }
       }
 
       start = "overview"
@@ -133,23 +130,17 @@ module Yast
       # see also #148485
       start = "global" if mode == "proposal"
       sequence = {
-        "ws_start"  => start,
-        "global"    => {
-          abort: :abort,
-          next:  :next,
-          add:   "add",
-          edit:  "edit"
+        "ws_start" => start,
+        "global"   => {
+          abort:  :abort,
+          next:   :next,
+          redraw: "global"
         },
-        "overview"  => {
-          abort:     :abort,
-          next:      :next,
-          add:       "add",
-          edit:      "edit",
-          init_s390: "init_s390"
-        },
-        "add"       => { abort: :abort, next: "overview" },
-        "edit"      => { abort: :abort, next: "overview" },
-        "init_s390" => { abort: :abort, next: "overview" }
+        "overview" => {
+          abort:  :abort,
+          next:   :next,
+          redraw: "overview"
+        }
       }
 
       Sequencer.Run(aliases, sequence)
@@ -157,19 +148,18 @@ module Yast
 
     def NetworkCardSequence(action, builder:)
       ws_start = case action
-      when "add"
-        "add"
       when "init_s390"
         # s390 may require configuring additional modules. Which
         # enables IBM net cards for linux. Basicaly it creates
         # linux devices with common api (e.g. eth0, hsi1, ...)
         "s390"
-      else
+      when "edit"
         "address"
+      else
+        raise "Unknown action #{action}"
       end
 
       aliases = {
-        "add"     => -> { Y2Network::Dialogs::AddInterface.run(builder) },
         # TODO: first param in AddressSequence seems to be never used
         "address" => -> { AddressSequence("", builder: builder) },
         "s390"    => -> { S390Dialog(builder: builder) }
@@ -179,8 +169,7 @@ module Yast
 
       sequence = {
         "ws_start" => ws_start,
-        "add"      => { abort: :back, next: "address" },
-        "address"  => { abort: :back, next: :next },
+        "address"  => { abort: :abort, next: :next },
         "s390"     => { abort: :abort, next: "address" }
       }
 
@@ -201,12 +190,9 @@ module Yast
         "commit"      => [-> { Commit(builder: builder) }, true]
       }
 
-      ws_start = which == "wire" ? "wire" : "address" # "changedefaults";
+      ws_start = which == "wire" ? "wire" : "address"
       sequence = {
         "ws_start"    => ws_start,
-        # 	"changedefaults" : $[
-        # 	    `next	: "address",
-        # 	],
         "address"     => {
           abort:    :abort,
           next:     "commit",

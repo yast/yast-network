@@ -65,7 +65,7 @@ module Yast
       @builder = builder
 
       ret = Y2Network::Dialogs::EditInterface.run(builder)
-      Builtins.y2milestone("ShowAndRun: %1", ret)
+      log.info "ShowAndRun: #{ret}"
 
       if ret != :back && ret != :abort
         bootproto = builder["BOOTPROTO"]
@@ -97,6 +97,7 @@ module Yast
       # proceed with WLAN settings if appropriate, #42420
       ret = :wire if ret == :next && builder.type == "wlan"
 
+      log.info "AddressDialog res: #{ret.inspect}"
       ret
     end
 

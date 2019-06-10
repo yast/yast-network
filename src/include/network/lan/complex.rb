@@ -26,6 +26,10 @@
 # Summary:	Summary, overview and IO dialogs for network cards config
 # Authors:	Michal Svec <msvec@suse.cz>
 #
+
+require "y2network/interface_config_builder"
+require "y2network/sequences/interface"
+
 module Yast
   module NetworkLanComplexInclude
     def initialize_network_lan_complex(include_target)
@@ -389,28 +393,15 @@ module Yast
       if Ops.get_string(event, "EventReason", "") == "Activated"
         case Ops.get_symbol(event, "ID")
         when :add
-          # FIXME: can be mostly deleted
-          LanItems.AddNew
-          # FIXME: can be partly deleted and partly moved
-          Lan.Add
-
-          # FIXME: This is for backward compatibility only
-          # dhclient needs to set just one dhcp enabled interface to
-          # DHCLIENT_SET_DEFAULT_ROUTE=yes. Otherwise interface is selected more
-          # or less randomly (bnc#868187). However, UI is not ready for such change yet.
-          # As it could easily happen that all interfaces are set to "no" (and
-          # default route is unrecheable in such case) this explicite setup was
-          # added.
-          # FIXME: not implemented in network-ng
-          LanItems.set_default_route = true
-
-          return :add
+          Y2Network::Sequences::Interface.new.add
+          return :redraw
         when :edit
-          @builder.name = LanItems.GetCurrentName()
-          @builder.type = LanItems.GetCurrentType()
+          builder = Y2Network::InterfaceConfigBuilder.new
+          builder.name = LanItems.GetCurrentName()
+          builder.type = LanItems.GetCurrentType()
           if LanItems.IsCurrentConfigured
-            @builder.load_sysconfig(LanItems.GetCurrentMap())
-            @builder.load_s390_config(LanItems.s390_ReadQethConfig(@builder.name))
+            builder.load_sysconfig(LanItems.GetCurrentMap())
+            builder.load_s390_config(LanItems.s390_ReadQethConfig(builder.name))
             LanItems.SetItem
 
             if LanItems.startmode == "managed"
@@ -455,11 +446,13 @@ module Yast
                 ""
               )
             )
-              return :init_s390
+              Y2Network::Sequences::Interface.new.init_s390(builder)
+              return :redraw
             end
           end
 
-          return :edit
+          Y2Network::Sequences::Interface.new.edit(builder)
+          return :redraw
 
         when :delete
           # warn user when device to delete has STARTMODE=nfsroot (bnc#433867)
