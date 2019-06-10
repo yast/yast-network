@@ -396,9 +396,8 @@ module Yast
           Y2Network::Sequences::Interface.new.add
           return :redraw
         when :edit
-          builder = Y2Network::InterfaceConfigBuilder.new
+          builder = Y2Network::InterfaceConfigBuilder.for(LanItems.GetCurrentType())
           builder.name = LanItems.GetCurrentName()
-          builder.type = LanItems.GetCurrentType()
           if LanItems.IsCurrentConfigured
             builder.load_sysconfig(LanItems.GetCurrentMap())
             builder.load_s390_config(LanItems.s390_ReadQethConfig(builder.name))

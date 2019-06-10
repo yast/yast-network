@@ -29,6 +29,18 @@ module Y2Network
   # Collects data from the UI until we have enough of it to create a {Y2Network::Interface}.
   # {Yast::LanItemsClass#Commit Yast::LanItems.Commit(builder)} uses it.
   class InterfaceConfigBuilder
+    include Yast::Logger
+
+    def self.for(type)
+      require "y2network/interface_config_builders/#{type}"
+      InterfaceConfigBuilders.const_get(type.to_s.capitalize).new
+    rescue LoadError => e
+      log.info "Specialed builder for #{type} not found. Fallbacking to default. #{e.inspect}"
+      res = new
+      res.type = type
+      res
+    end
+
     # @return [String] Device name (eth0, wlan0, etc.)
     attr_accessor :name
     # @return [String] type of @see Y2Network::Interface which is intended to be build (e.g. "eth")

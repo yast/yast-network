@@ -32,15 +32,11 @@ module Y2Network
       end
 
       def init
-        # TODO: not direct access to LanItems
-        ipoib_mode = Yast::LanItems.ipoib_mode || "default"
-
-        self.value = ipoib_mode
+        self.value = @config.ipoib_mode
       end
 
       def store
-        # TODO: not direct access to LanItems
-        Yast::LanItems.ipoib_mode = value == "default" ? nil : value
+        @config.ipoib_mode = value
       end
     end
   end
