@@ -20,6 +20,7 @@ X-SuSE-YaST-Keywords=name,network,lan,wireless
 Icon=yast-host
 Exec=xdg-su -c "/sbin/yast2 host"
 
-Name=Hostnames
-GenericName=Assign hostnames and aliases to IP addresses
+Name=YaST Hostnames
+GenericName=Hostnames
+Comment=Assign hostnames and aliases to IP addresses
 StartupNotify=true

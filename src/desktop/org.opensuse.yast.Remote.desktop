@@ -18,6 +18,7 @@ X-SuSE-YaST-Keywords=vnc,network,remote
 Icon=yast-remote
 Exec=xdg-su -c "/sbin/yast2 remote"
 
-Name=Remote Administration (VNC)
-GenericName=Set up remote administration
+Name=YaST Remote Administration
+GenericName=Remove Administration (VNC)
+Comment=Set up remote administration
 StartupNotify=true
