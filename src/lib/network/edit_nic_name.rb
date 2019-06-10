@@ -15,9 +15,9 @@ module Yast
     include I18n
 
     # @return [String] current udev name before modifying it
-    attr_accessor :old_name
+    attr_reader :old_name
     # @return [String] current udev match criteria
-    attr_accessor :old_key
+    attr_reader :old_key
 
     # udev rule attribute for MAC address
     MAC_UDEV_ATTR   = "ATTR{address}".freeze
