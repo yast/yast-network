@@ -32,7 +32,7 @@ module Y2Network
         # DHCLIENT_SET_DEFAULT_ROUTE=yes. Otherwise interface is selected more
         # or less randomly (bnc#868187). However, UI is not ready for such change yet.
         # As it could easily happen that all interfaces are set to "no" (and
-        # default route is unrecheable in such case) this explicite setup was
+        # default route is unreachable in such case) this explicit setup was
         # added.
         # FIXME: not implemented in network-ng
         Yast::LanItems.set_default_route = true
