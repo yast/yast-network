@@ -50,6 +50,7 @@ describe Y2Network::SysconfigInterfaceFile do
     end
 
   end
+
   describe "#ip_address" do
     let(:ipaddr) { "192.168.122.122/24" }
 
@@ -67,6 +68,22 @@ describe Y2Network::SysconfigInterfaceFile do
       it "returns nil" do
         expect(file.ip_address).to be_nil
       end
+    end
+  end
+
+  describe "#bootproto" do
+    let(:bootproto) { "static"}
+
+    it "returns the bootproto as a symbol" do
+      expect(file.bootproto).to eq(:static)
+    end
+  end
+
+  describe "#wireless_keys" do
+    subject(:file) { described_class.new("wlan0") }
+
+    it "returns the list of keys" do
+      expect(file.wireless_keys).to eq(["0-1-2-3-4-5", "s:password"])
     end
   end
 end

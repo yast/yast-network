@@ -59,6 +59,34 @@ module Y2Network
       str.empty? ? nil : IPAddr.new(str)
     end
 
+    # Returns the boot protocol
+    #
+    # @return [Symbol,nil]
+    def bootproto
+      str = fetch("BOOTPROTO")
+      str.empty? ? nil : str.to_sym
+    end
+
+    # Returns the interface start mode
+    #
+    # @return [Symbol,nil]
+    def startmode
+      str = fetch("STARTMODE")
+      str.empty? ? nil : str.to_sym
+    end
+
+    # @return [Integer] Number of supported keys
+    SUPPORTED_KEYS = 4
+
+    # List of wireless keys
+    #
+    # @return [Array<String>] Wireless keys
+    def wireless_keys
+      keys = [fetch("WIRELESS_KEY")]
+      keys += SUPPORTED_KEYS.times.map { |i| fetch("WIRELESS_KEY_#{i}") }
+      keys.compact
+    end
+
     # Fetches a key
     #
     # @param key [String] Interface key
