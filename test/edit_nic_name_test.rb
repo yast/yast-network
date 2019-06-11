@@ -19,7 +19,7 @@ module Yast
       stub_const("NetworkInterfaces", double(adapt_old_config!: nil))
 
       # mock devices configuration
-      allow(LanItems).to receive(:ReadHardware) { [{ "dev_name" => CURRENT_NAME, "mac" => "00:01:02:03:04:05" }] }
+      allow(LanItems).to receive(:ReadHardware) { [{ "dev_name" => CURRENT_NAME, "permanent_mac" => "00:01:02:03:04:05" }] }
       allow(LanItems).to receive(:getNetworkInterfaces) { [CURRENT_NAME] }
       allow(LanItems).to receive(:GetItemUdev) { "" }
       allow(LanItems).to receive(:GetItemUdev).with("NAME") { CURRENT_NAME }
@@ -56,6 +56,10 @@ module Yast
         allow(UI).to receive(:UserInput) { :cancel }
 
         expect(@edit_name_dlg.run).to be_equal CURRENT_NAME
+      end
+
+      it "does not touch the current udev rule" do
+        expect(Yast::LanItems).to_not receive(:update_item_udev_rule!)
       end
     end
 
@@ -103,6 +107,32 @@ module Yast
           .with(NEW_NAME)
 
         expect(@edit_name_dlg.run).to eql NEW_NAME
+      end
+
+      context "but used the same matching udev key" do
+        it "does not touch the current udev rule" do
+          expect(Yast::LanItems).to_not receive(:update_item_udev_rule!)
+        end
+      end
+    end
+
+    context "when closed without changing the match selection" do
+      before(:each) do
+        # emulate UI work
+        allow(UI).to receive(:QueryWidget).with(:dev_name, :Value) { CURRENT_NAME }
+        allow(UI).to receive(:QueryWidget).with(:udev_type, :CurrentButton) { :mac }
+      end
+    end
+
+    context "when modified the matching udev key" do
+      before(:each) do
+        # emulate UI work
+        allow(UI).to receive(:QueryWidget).with(:dev_name, :Value) { CURRENT_NAME }
+        allow(UI).to receive(:QueryWidget).with(:udev_type, :CurrentButton) { :bus_id }
+      end
+
+      it "updates the current udev rule with the key used" do
+        expect(Yast::LanItems).to_not receive(:update_item_udev_rule!).with(:bus_id)
       end
     end
   end
