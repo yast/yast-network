@@ -85,10 +85,9 @@ module Yast
       # Moreover virtual devices are not needed during first stage. So, it can
       # wait for rebooting into just installed target
       LanItems.write
-      if Routing.Modified
-        LanItems.update_routing_devices!
-        Routing.Write
-      end
+      return unless Routing.Modified
+      LanItems.update_routing_devices!
+      Routing.Write
     end
 
     # Propose DNS and Hostname setup
