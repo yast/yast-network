@@ -149,8 +149,8 @@ describe "LanItems#InitItemUdev" do
         },
         1 => {
           "hwinfo" => {
-            "mac"      => "00:00:00:00:00:01",
-            "dev_name" => "eth1"
+            "permanent_mac" => "00:00:00:00:00:01",
+            "dev_name"      => "eth1"
           },
           # always exists
           "udev"   => {
@@ -198,7 +198,7 @@ describe "LanItems#GetItemUdev" do
     before(:each) do
       allow(Yast::LanItems)
         .to receive(:GetLanItem)
-        .and_return("hwinfo" => { "mac" => MAC }, "ifcfg" => "eth0")
+        .and_return("hwinfo" => { "permanent_mac" => MAC }, "ifcfg" => "eth0")
     end
 
     it "returns proper value when key exists" do
@@ -244,7 +244,7 @@ end
 
 describe "#current_udev_rule" do
   let(:busid) { "0000:08:00.0" }
-  let(:hwinfo) { { "dev_name" => "test0", "busid" => busid, "mac" => "24:be:05:ce:1e:91" } }
+  let(:hwinfo) { { "dev_name" => "test0", "busid" => busid, "permanent_mac" => "24:be:05:ce:1e:91" } }
   let(:udev_net) { ["KERNELS==\"#{busid}\"", "NAME=\"test0\""] }
   let(:rule) { { 0 => { "hwinfo" => hwinfo, "udev" => { "net" => udev_net } } } }
 
@@ -259,7 +259,7 @@ describe "#current_udev_rule" do
 end
 
 describe "#update_item_udev_rule!" do
-  let(:hwinfo) { { "dev_name" => "test0", "busid" => "0000:08:00.0", "mac" => "24:be:05:ce:1e:91" } }
+  let(:hwinfo) { { "dev_name" => "test0", "busid" => "0000:08:00.0", "permanent_mac" => "24:be:05:ce:1e:91" } }
   let(:udev_net) { ["ATTR{address}==\"24:be:05:ce:1e:91\"", "KERNEL==\"eth*\"", "NAME=\"test0\""] }
   let(:rule) { { 0 => { "hwinfo" => hwinfo, "udev" => { "net" => udev_net } } } }
 
