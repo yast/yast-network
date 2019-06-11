@@ -47,4 +47,3 @@ module Y2Network
     end
   end
 end
-
