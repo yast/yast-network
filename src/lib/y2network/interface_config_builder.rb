@@ -138,6 +138,11 @@ module Y2Network
       @driver_options = value
     end
 
+    def udev_name
+      # cannot cache as EditNicName dialog can change it
+      Yast::LanItems.current_udev_name
+    end
+
     # Provides stored configuration in sysconfig format
     #
     # @return [Hash<String, String>] where key is sysconfig option and value is the option's value

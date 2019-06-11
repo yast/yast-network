@@ -1,8 +1,5 @@
 require "cwm/common_widgets"
 
-Yast.import "LanItems"
-Yast.import "NetworkInterfaces"
-
 module Y2Network
   module Widgets
     class VlanInterface < CWM::ComboBox
