@@ -26,7 +26,6 @@ require "y2network/config_reader/connection_config/sysconfig"
 require "y2network/sysconfig_interface_file"
 
 Yast.import "LanItems"
-Yast.import "NetworkInterfaces"
 
 module Y2Network
   module ConfigReader
@@ -82,7 +81,7 @@ module Y2Network
         @physical_interfaces ||= Yast::LanItems.Hardware.map do |card|
           iface = Y2Network::PhysicalInterface.new(card["dev_name"])
           iface.description = card["name"]
-          iface.type = card["type"].to_sym
+          iface.type = card["type"].nil? ? :eth : card["type"].to_sym
           iface
         end
       end
