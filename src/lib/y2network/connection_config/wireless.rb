@@ -30,25 +30,25 @@ module Y2Network
       attr_accessor :mode
       # @return [String]
       attr_accessor :essid
-      # @return [Integer]
+      # @return [String] Network ID
       attr_accessor :nwid
-      # FIXME: Consider an enum
-      # @return [String] (no-encription, open, sharedkey, eap, psk)
+      #   @return [Symbol] Authorization mode (:open, :shared, :psk, :eap)
       attr_accessor :auth_mode
       # FIXME: Consider moving keys to different classes.
-      # @return [String]
+      # @return [String] WPA preshared key
       attr_accessor :wpa_psk
       # @return [Integer]
       attr_accessor :key_length
       # @return [Array<String>] WEP keys
       attr_accessor :keys
-      # @return [String] default WEP key
+      # @return [Integer] default WEP key
       attr_accessor :default_key
       # @return [String]
       attr_accessor :nick
-
-      # @return [Hash<String, String>]
-      attr_accessor :wpa_eap
+      # @return [String]
+      attr_accessor :eap_mode
+      # @return [String]
+      attr_accessor :eap_auth
       # @return [Integer]
       attr_accessor :channel
       # @return [Integer]
@@ -56,12 +56,14 @@ module Y2Network
       # @return [Integer]
       attr_accessor :bitrate
       # @return [String]
-      attr_accessor :accesspoint
+      attr_accessor :ap
       # @return [Boolean]
       attr_accessor :power
       # FIXME: Consider an enum
       # @return [Integer] (0, 1, 2)
       attr_accessor :ap_scanmode
+      # @return [String]
+      attr_accessor :wpa_password
     end
   end
 end

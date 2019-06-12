@@ -22,31 +22,39 @@ require "y2network/connection_config/wireless"
 module Y2Network
   module ConfigReader
     module ConnectionConfig
-      # This class is able to build a ConnectionConfig::Wireless object given a
-      # SysconfigInterfaceFile object.
-      class Wlan
-        # @return [Y2Network::SysconfigInterfaceFile]
-        attr_reader :file
+      module SysconfigHandlers
+        # This class is able to build a ConnectionConfig::Wireless object given a
+        # SysconfigInterfaceFile object.
+        class Wlan
+          # @return [Y2Network::SysconfigInterfaceFile]
+          attr_reader :file
 
-        def initialize(file)
-          @file = file
-        end
+          def initialize(file)
+            @file = file
+          end
 
-        # Returns an ethernet connection configuration
-        #
-        # @param name [String] Interface name
-        # @return [ConnectionConfig::Ethernet]
-        def connection_config
-          Y2Network::ConnectionConfig::Wireless.new.tap do |conn|
-            conn.interface = file.name
-            conn.bootproto = file.fetch("BOOTPROTO").to_sym
-            conn.ip_address = file.ip_address
-            conn.essid = file.fetch("WIRELESS_ESSID")
-            conn.mode = file.fetch("WIRELESS_MODE")
-            conn.auth_mode = file.fetch("WIRELESS_AUTH_MODE")
-            conn.wpa_psk = file.fetch("WIRELESS_WPA_PSK")
-            # TODO: conn.nwid
-            conn.wpa_psk = file.fetch("WIRELESS_KEY_LENGTH")
+          # Returns an ethernet connection configuration
+          #
+          # @return [ConnectionConfig::Ethernet]
+          def connection_config
+            Y2Network::ConnectionConfig::Wireless.new.tap do |conn|
+              conn.interface = file.name
+              conn.bootproto = file.bootproto
+              conn.ip_address = file.ip_address
+              conn.ap = file.wireless_ap
+              conn.ap_scanmode = file.wireless_ap_scanmode
+              conn.auth_mode = file.wireless_auth_mode
+              conn.default_key = file.wireless_default_key
+              conn.eap_auth = file.wireless_eap_auth
+              conn.eap_mode = file.wireless_eap_mode
+              conn.essid = file.wireless_essid
+              conn.key_length = file.wireless_key_length
+              conn.keys = file.wireless_keys
+              conn.mode = file.wireless_mode
+              conn.nwid = file.wireless_nwid
+              conn.wpa_password = file.wireless_wpa_password
+              conn.wpa_psk = file.wireless_wpa_psk
+            end
           end
         end
       end
