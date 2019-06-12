@@ -1,4 +1,15 @@
 -------------------------------------------------------------------
+Mon Jun 10 11:55:48 UTC 2019 - Knut Anderssen <kanderssen@suse.com>
+
+- bsc#1136929
+  - Use the hwinfo permanent mac address instead of the current mac
+    which could be wrong in case of an enslaved interface.
+- bsc#1137324
+  - Do not create duplicate udev rule attributes when editing an
+    interface name.
+- 4.0.50
+
+-------------------------------------------------------------------
 Mon May 20 14:04:47 UTC 2019 - Michal Filka <mfilka@suse.com>
 
 - bnc#1123102, bnc#1134784, bnc#1136103

@@ -14,6 +14,11 @@ module Yast
     include UIShortcuts
     include I18n
 
+    # @return [String] current udev name before modifying it
+    attr_reader :old_name
+    # @return [String] current udev match criteria
+    attr_reader :old_key
+
     # udev rule attribute for MAC address
     MAC_UDEV_ATTR   = "ATTR{address}".freeze
 
@@ -26,13 +31,16 @@ module Yast
       Yast.include self, "network/routines.rb"
 
       current_item = LanItems.getCurrentItem
+      current_rule = LanItems.current_udev_rule
 
       @old_name = LanItems.current_udev_name
-      @old_key = MAC_UDEV_ATTR unless LanItems.GetItemUdev(MAC_UDEV_ATTR).empty?
-      @old_key = BUSID_UDEV_ATTR unless LanItems.GetItemUdev(BUSID_UDEV_ATTR).empty?
+      unless current_rule.empty?
+        @old_key = :mac unless LanItems.GetItemUdev(MAC_UDEV_ATTR).empty?
+        @old_key = :bus_id unless LanItems.GetItemUdev(BUSID_UDEV_ATTR).empty?
+      end
 
       if current_item["hwinfo"]
-        @mac = current_item["hwinfo"]["mac"]
+        @mac = current_item["hwinfo"]["permanent_mac"]
         @bus_id = current_item["hwinfo"]["busid"]
       else
         @mac = ""
@@ -67,12 +75,12 @@ module Yast
 
         # FIXME: it changes udev key used for device identification
         #  and / or its value only, name is changed elsewhere
-        LanItems.update_item_udev_rule!(udev_type)
+        LanItems.update_item_udev_rule!(udev_type) if udev_type && (old_key != udev_type)
       end
 
       close
 
-      new_name || @old_name
+      new_name || old_name
     end
 
   private
@@ -118,11 +126,8 @@ module Yast
         )
       )
 
-      case @old_key
-      when MAC_UDEV_ATTR
-        UI.ChangeWidget(Id(:udev_type), :CurrentButton, :mac)
-      when BUSID_UDEV_ATTR
-        UI.ChangeWidget(Id(:udev_type), :CurrentButton, :bus_id)
+      if old_key
+        UI.ChangeWidget(Id(:udev_type), :CurrentButton, old_key)
       else
         Builtins.y2error("Unknown udev rule.")
       end

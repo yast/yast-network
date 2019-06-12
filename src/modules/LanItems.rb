@@ -258,6 +258,13 @@ module Yast
       "" # this should never happen
     end
 
+    # Convenience method to obtain the current Item udev rule
+    #
+    # @return [Array<String>] Item udev rule
+    def current_udev_rule
+      LanItems.GetItemUdevRule(LanItems.current)
+    end
+
     # Returns name which is going to be used in the udev rule
     def current_udev_name
       if LanItems.current_renamed?
@@ -355,7 +362,7 @@ module Yast
       udev = GetItemUdevRule(item_id)
       return udev if !udev.empty?
 
-      default_mac = GetLanItem(item_id).fetch("hwinfo", {})["mac"]
+      default_mac = GetLanItem(item_id).fetch("hwinfo", {})["permanent_mac"]
       raise ArgumentError, "Cannot propose udev rule - NIC not present" if !default_mac
 
       default_udev = GetDefaultUdevRule(
@@ -415,7 +422,7 @@ module Yast
       if IsEmpty(udev_rules)
         udev_rules = GetDefaultUdevRule(
           GetCurrentName(),
-          Ops.get_string(getCurrentItem, ["hwinfo", "mac"], "")
+          Ops.get_string(getCurrentItem, ["hwinfo", "permanent_mac"], "")
         )
         Builtins.y2milestone(
           "No Udev rules found, creating default: %1",
@@ -437,13 +444,11 @@ module Yast
     # @return [Object, nil] the current item's udev rule without the given key; nil if
     # there is not udev rules for the current item
     def RemoveItemUdev(key)
-      current_rule = LanItems.GetItemUdevRule(LanItems.current)
+      return nil if current_udev_rule.empty?
 
-      return nil if current_rule.empty?
-
-      log.info("Removing #{key} from #{current_rule}")
+      log.info("Removing #{key} from #{current_udev_rule}")
       Items()[@current]["udev"]["net"] =
-        LanItems.RemoveKeyFromUdevRule(current_rule, key)
+        LanItems.RemoveKeyFromUdevRule(current_udev_rule, key)
     end
 
     # Updates the udev rule of the current Lan Item based on the key given
@@ -456,8 +461,13 @@ module Yast
     # @param based_on [Symbol] principal key to be matched, `:mac` or `:bus_id`
     # @return [void]
     def update_item_udev_rule!(based_on = :mac)
+      new_rule = current_udev_rule.empty?
+      LanItems.InitItemUdevRule(LanItems.current) if new_rule
+
       case based_on
       when :mac
+        return if new_rule
+
         LanItems.RemoveItemUdev("ATTR{dev_port}")
 
         # FIXME: While the user is able to modify the udev rule using the
@@ -467,7 +477,7 @@ module Yast
         LanItems.ReplaceItemUdev(
           "KERNELS",
           "ATTR{address}",
-          LanItems.getCurrentItem.fetch("hwinfo", {}).fetch("mac", "")
+          LanItems.getCurrentItem.fetch("hwinfo", {}).fetch("permanent_mac", "")
         )
       when :bus_id
         # Update or insert the dev_port if the sysfs dev_port attribute is present
@@ -506,7 +516,6 @@ module Yast
       # =    for assignment
       # ==   for equality checks
       operator = new_key == "NAME" ? "=" : "=="
-      current_rule = GetItemUdevRule(@current)
       rule = RemoveKeyFromUdevRule(getUdevFallback, replace_key)
 
       # NAME="devname" has to be last in the rule.
@@ -516,7 +525,7 @@ module Yast
       new_rule = AddToUdevRule(rule, "#{new_key}#{operator}\"#{new_val}\"")
       new_rule.push(name_tuple)
 
-      if current_rule.sort != new_rule.sort
+      if current_udev_rule.sort != new_rule.sort
         SetModified()
 
         log.info("ReplaceItemUdev: new udev rule = #{new_rule}")
@@ -1052,7 +1061,7 @@ module Yast
 
       hardware.each do |hw|
         hw_dev_name = hw["dev_name"] || ""
-        hw_dev_mac = hw["mac"] || ""
+        hw_dev_mac = hw["permanent_mac"] || ""
         hw_dev_busid = hw["busid"] || ""
 
         case oldname
@@ -1522,11 +1531,11 @@ module Yast
         conn = HTML.Bold(format("(%s)", _("Not connected"))) if !item_hwinfo["link"]
         conn = HTML.Bold(format("(%s)", _("No hwinfo"))) if item_hwinfo.empty?
 
-        mac_dev = HTML.Bold("MAC : ") + item_hwinfo["mac"].to_s + "<br>"
+        mac_dev = HTML.Bold("MAC : ") + item_hwinfo["permanent_mac"].to_s + "<br>"
         bus_id  = HTML.Bold("BusID : ") + item_hwinfo["busid"].to_s + "<br>"
         physical_port_id = HTML.Bold("PhysicalPortID : ") + physical_port_id(ifcfg_name) + "<br>"
 
-        rich << " " << conn << "<br>" << mac_dev if IsNotEmpty(item_hwinfo["mac"])
+        rich << " " << conn << "<br>" << mac_dev if IsNotEmpty(item_hwinfo["permanent_mac"])
         rich << bus_id if IsNotEmpty(item_hwinfo["busid"])
         rich << physical_port_id if physical_port_id?(ifcfg_name)
         # display it only if we need it, don't duplicate "ifcfg_name" above
