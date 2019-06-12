@@ -26,9 +26,10 @@ describe "LanItems#getDeviceName" do
     allow(lan_items).to receive(:ReadHardware) {
       [
         {
-          "dev_name" => NEW_STYLE_NAME,
-          "mac"      => "00:11:22:33:44:FF",
-          "busid"    => "0000:00:19.0"
+          "dev_name"      => NEW_STYLE_NAME,
+          "mac"           => "00:11:22:33:44:FF",
+          "permanent_mac" => "00:11:22:33:44:FF",
+          "busid"         => "0000:00:19.0"
         }
       ]
     }

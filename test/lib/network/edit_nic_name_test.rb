@@ -12,7 +12,7 @@ describe Yast::EditNicName do
   let(:current_name) { "spec0" }
   let(:new_name) { "new1" }
   let(:existing_new_name) { "existing_new_name" }
-  let(:interface_hwinfo) { { "dev_name" => current_name, "mac" => "00:01:02:03:04:05" } }
+  let(:interface_hwinfo) { { "dev_name" => current_name, "permanent_mac" => "00:01:02:03:04:05" } }
 
   describe "#run" do
     # general mocking stuff is placed here
@@ -92,6 +92,12 @@ describe Yast::EditNicName do
           expect(Yast::Routing.devices).to include(new_name)
         end
 
+        context "but used the same matching udev key" do
+          it "does not touch the current udev rule" do
+            expect(Yast::LanItems).to_not receive(:update_item_udev_rule!)
+          end
+        end
+
         context "and there are some routes referencing the previous name" do
           before do
             allow(Yast::Routing).to receive(:device_routes?).with(current_name).and_return(true)
@@ -118,6 +124,18 @@ describe Yast::EditNicName do
             subject.run
           end
         end
+
+        context "having modified the matching udev key" do
+          before(:each) do
+            # emulate UI work
+            allow(UI).to receive(:QueryWidget).with(:dev_name, :Value) { current_name }
+            allow(UI).to receive(:QueryWidget).with(:udev_type, :CurrentButton) { :bus_id }
+          end
+
+          it "updates the current udev rule with the key used" do
+            expect(Yast::LanItems).to_not receive(:update_item_udev_rule!).with(:bus_id)
+          end
+        end
       end
 
       context "and closed canceling the changes" do
@@ -127,7 +145,6 @@ describe Yast::EditNicName do
           expect(subject.run).to be_equal current_name
         end
       end
-
     end
   end
 end
