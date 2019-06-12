@@ -80,6 +80,8 @@ module Y2Network
         firewall_interface.zone = firewall_zone if !firewall_interface.zone || firewall_zone != firewall_interface.zone.name
       end
 
+      save_aliases
+
       nil
     end
 
@@ -136,6 +138,21 @@ module Y2Network
 
     def driver_options=(value)
       @driver_options = value
+    end
+
+    def aliases
+      @aliases ||= Yast::LanItems.aliases.each_value.map do |data|
+        {
+          label: data["LABEL"] || "",
+          ip: data["IPADDR"] || "",
+          mask: data["NETMASK"] || "",
+          prefixlen: data["PREFIXLEN"] || ""
+        }
+      end
+    end
+
+    def aliases=(value)
+      @aliases = value
     end
 
     def udev_name
@@ -266,6 +283,24 @@ module Y2Network
 
     def hwinfo
       @hwinfo ||= Hwinfo.new(name: name)
+    end
+
+    def save_aliases
+      lan_items_format = aliases.each_with_index.each_with_object({}) do |(a, i), res|
+        res[i] = {
+          "IPADDR" => a[:ip],
+          "LABEL" => a[:label],
+          "PREFIXLEN" => a[:prefixlen],
+          "NETMASK" => a[:mask]
+
+        }
+      end
+      log.info "setting new aliases #{lan_items_format.inspect}"
+      aliases_to_delete = Yast::LanItems.aliases.dup # #48191
+      Yast::LanItems.aliases = lan_items_format
+      aliases_to_delete.each_pair do |a, v|
+        Yast::NetworkInterfaces.DeleteAlias(Yast::NetworkInterfaces.Name, a) if v
+      end
     end
   end
 end
