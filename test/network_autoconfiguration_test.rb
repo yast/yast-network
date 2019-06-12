@@ -180,4 +180,75 @@ describe Yast::NetworkAutoconfiguration do
       expect(instance.any_iface_active?).to be true
     end
   end
+
+  describe "#configure_virtuals" do
+    let(:instance) { Yast::NetworkAutoconfiguration.instance }
+    let(:proposal) { false }
+    let(:eth0) do
+      {
+        "BOOTPROTO" => "static",
+        "IPADDR"    => "192.168.122.213",
+        "NETMASK"   => "255.255.255.0",
+        "STARTMODE" => "auto"
+      }
+    end
+    let(:routes) do
+      [
+        {
+          "destination" => "default",
+          "gateway"     => "192.168.122.1",
+          "netmask"     => "-",
+          "device"      => "eth0"
+        }
+      ]
+    end
+
+    before do
+      allow(instance).to receive(:virtual_proposal_required?).and_return(proposal)
+      allow(Yast::LanItems).to receive(:write)
+      allow(Yast::LanItems).to receive(:Read)
+      allow(Yast::Routing).to receive(:Write)
+      allow(Yast::Lan).to receive(:connected_and_bridgeable?).and_return(true)
+      Yast::Lan.Import("devices" => { "eth" => { "eth0" => eth0 } }, "routing" => { "routes" => routes })
+    end
+
+    context "when the proposal is not required" do
+      it "does nothing" do
+        expect(Yast::Lan).to_not receive(:ProposeVirtualized)
+        instance.configure_virtuals
+      end
+    end
+
+    context "when the proposal is required" do
+      let(:proposal) { true }
+
+      it "creates the virtulization proposal config" do
+        expect(Yast::Lan).to receive(:ProposeVirtualized).and_call_original
+        expect { instance.configure_virtuals }.to change { Yast::NetworkInterfaces.Devices.keys.size }.from(1).to(2)
+        expect(Yast::NetworkInterfaces.Devices["br"]["br0"]).to include(eth0.merge("BRIDGE_PORTS" => "eth0"))
+      end
+
+      it "writes the configuration of the interfaces" do
+        expect(Yast::LanItems).to receive(:write)
+        instance.configure_virtuals
+      end
+
+      context "and the routing config was modified" do
+        before do
+          allow(Yast::Routing).to receive(:Modified).and_call_original
+        end
+
+        it "moves the routes from the enslaved interface to the bridge" do
+          expect { instance.configure_virtuals }
+            .to change { Yast::Routing.Routes[0] }
+            .from(routes[0]).to(routes[0].merge("device" => "br0"))
+        end
+
+        it "writes the routing config" do
+          expect(Yast::Routing).to receive(:Write)
+          instance.configure_virtuals
+        end
+      end
+    end
+  end
 end

@@ -272,4 +272,25 @@ describe Yast::Routing do
       expect(Yast::Routing.normalize_routes(input_routes)).to eql input_routes
     end
   end
+
+  describe "#move_routes" do
+    let(:routes) do
+      [
+        {
+          "destination" => "default",
+          "gateway"     => "192.168.122.1",
+          "netmask"     => "-",
+          "device"      => "eth0"
+        }
+      ]
+    end
+    before do
+      described_class.Import("routes" => routes)
+    end
+
+    it "assigns all the 'from' routes to the 'to' interface" do
+      expect { described_class.move_routes("eth0", "br0") }
+        .to change { described_class.device_routes("br0").size }.from(0).to(1)
+    end
+  end
 end

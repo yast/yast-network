@@ -519,6 +519,14 @@ module Yast
       "<ul>#{summary}</ul>"
     end
 
+    # Assigns all the routes from one interface to another
+    #
+    # @param from [String] interface belonging the routes to be moved
+    # @param to [String] target interface
+    def move_routes(from, to)
+      device_routes(from).each { |r| r["device"] = to }
+    end
+
     publish variable: :Routes, type: "list <map>"
     publish variable: :Forward_v4, type: "boolean"
     publish variable: :Forward_v6, type: "boolean"
