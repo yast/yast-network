@@ -40,7 +40,7 @@ module Y2Network
           def connection_config
             Y2Network::ConnectionConfig::Ethernet.new.tap do |conn|
               conn.interface = file.name
-              conn.bootproto = file.fetch("BOOTPROTO")
+              conn.bootproto = file.bootproto
               conn.ip_address = file.ip_address
             end
           end

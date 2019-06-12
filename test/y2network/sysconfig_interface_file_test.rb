@@ -72,10 +72,18 @@ describe Y2Network::SysconfigInterfaceFile do
   end
 
   describe "#bootproto" do
-    let(:bootproto) { "static"}
+    let(:bootproto) { "static" }
 
     it "returns the bootproto as a symbol" do
       expect(file.bootproto).to eq(:static)
+    end
+  end
+
+  describe "#startmode" do
+    let(:startmode) { "auto" }
+
+    it "returns the startmode as a symbol" do
+      expect(file.startmode).to eq(:auto)
     end
   end
 
