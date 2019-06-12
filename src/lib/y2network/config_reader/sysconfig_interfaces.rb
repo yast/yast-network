@@ -65,6 +65,7 @@ module Y2Network
           interface = physical_interfaces.find { |i| i.name == name }
           # TODO: it may happen that the interface does not exist yet (hotplug, usb, or whatever)
           # How should we handle those cases?
+          next if interface.nil?
           connection = Y2Network::ConfigReader::ConnectionConfig::Sysconfig.new.read(interface)
           connections << connection if connection
         end
