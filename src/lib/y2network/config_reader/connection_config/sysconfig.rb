@@ -26,7 +26,8 @@ module Y2Network
       class Sysconfig
         # Constructor
         #
-        # @param name [String] Interface name
+        # @param interface [String] Interface name
+        # @return [Y2Network::SysconfigInterfaceFile]
         def read(interface)
           type = find_type_for(interface)
           handler_class = find_handler_class(type)
