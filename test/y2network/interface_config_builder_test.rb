@@ -49,10 +49,10 @@ describe Y2Network::InterfaceConfigBuilder do
     end
 
     it "stores aliases" do
-      subject.aliases = [{ip: "10.0.0.0", prefixlen: "24", label: "test", mask: ""}]
+      subject.aliases = [{ ip: "10.0.0.0", prefixlen: "24", label: "test", mask: "" }]
       subject.save
       expect(Yast::LanItems.aliases).to eq(
-        {0 => {"IPADDR" => "10.0.0.0", "LABEL" => "test", "PREFIXLEN" => "24", "NETMASK" => ""}}
+        0 => { "IPADDR" => "10.0.0.0", "LABEL" => "test", "PREFIXLEN" => "24", "NETMASK" => "" }
       )
     end
   end

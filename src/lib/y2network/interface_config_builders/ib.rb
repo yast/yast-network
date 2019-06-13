@@ -12,12 +12,10 @@ module Y2Network
         self.type = "ib"
       end
 
+      attr_writer :ipoib_mode
+
       def ipoib_mode
         @ipoib_mode ||= Yast::LanItems.ipoib_mode || "default"
-      end
-
-      def ipoib_mode=(value)
-        @ipoib_mode = value
       end
 
       def save
