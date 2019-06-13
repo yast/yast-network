@@ -49,6 +49,8 @@ describe Y2Network::InterfaceConfigBuilder do
     end
 
     it "stores aliases" do
+      # Avoid deleting old aliases as it can break other tests, due to singleton NetworkInterfaces
+      allow(Yast::NetworkInterfaces).to receive(:DeleteAlias)
       subject.aliases = [{ ip: "10.0.0.0", prefixlen: "24", label: "test", mask: "" }]
       subject.save
       expect(Yast::LanItems.aliases).to eq(

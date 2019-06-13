@@ -28,6 +28,7 @@ end
 
 require "yast"
 require "yast/rspec"
+Yast.import "NetworkInterfaces"
 Yast.import "Lan"
 
 require_relative "SCRStub"
@@ -39,6 +40,7 @@ RSpec.configure do |c|
 
   c.before do
     Yast::Lan.clear_configs
+    allow(Yast::NetworkInterfaces).to receive(:write)
   end
 end
 
