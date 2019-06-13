@@ -2,6 +2,7 @@
 
 require "yast"
 require "network/wicked"
+require "y2network/interface_config_builder"
 
 require "shellwords"
 

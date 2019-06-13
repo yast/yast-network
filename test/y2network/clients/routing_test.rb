@@ -57,7 +57,6 @@ describe Y2Network::Clients::Routing do
         allow(subject).to receive(:read)
         allow(subject).to receive(:write)
         allow(subject).to receive(:RoutingMainDialog)
-        allow(Yast::Wizard).to receive(:anything)
       end
 
       it "reads the current config" do
