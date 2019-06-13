@@ -19,11 +19,11 @@
 module Y2Network
   # Network interface.
   class Interface
-    # @return [String] Device name (eth0, wlan0, etc.)
+    # @return [String] Device name ('eth0', 'wlan0', etc.)
     attr_accessor :name
-    # @return [String]
-    attr_accessor :ethtool_options
+    # @return [String] Interface descripion
     attr_accessor :description
+    # @return [Symbol] Interface type
     attr_accessor :type
 
     # Constructor

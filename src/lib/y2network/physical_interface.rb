@@ -24,6 +24,8 @@ module Y2Network
   # Physical interface class (ethernet, wireless, infiniband...)
   class PhysicalInterface < Interface
     attr_writer :hwinfo
+    # @return [String]
+    attr_accessor :ethtool_options
 
     # @return [Hwinfo]
     def hwinfo

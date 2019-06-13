@@ -23,10 +23,11 @@ Yast.import "NetworkInterfaces"
 module Y2Network
   module ConfigReader
     module ConnectionConfig
+      # Reads a connection configuration for a given interface
       class Sysconfig
         # Constructor
         #
-        # @param interface [String] Interface name
+        # @param interface [String] Interface
         # @return [Y2Network::SysconfigInterfaceFile]
         def read(interface)
           type = find_type_for(interface)
