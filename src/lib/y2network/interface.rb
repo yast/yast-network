@@ -21,7 +21,7 @@ module Y2Network
   class Interface
     # @return [String] Device name ('eth0', 'wlan0', etc.)
     attr_accessor :name
-    # @return [String] Interface descripion
+    # @return [String] Interface description
     attr_accessor :description
     # @return [Symbol] Interface type
     attr_accessor :type
