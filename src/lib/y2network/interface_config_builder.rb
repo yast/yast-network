@@ -143,9 +143,9 @@ module Y2Network
     def aliases
       @aliases ||= Yast::LanItems.aliases.each_value.map do |data|
         {
-          label: data["LABEL"] || "",
-          ip: data["IPADDR"] || "",
-          mask: data["NETMASK"] || "",
+          label:     data["LABEL"] || "",
+          ip:        data["IPADDR"] || "",
+          mask:      data["NETMASK"] || "",
           prefixlen: data["PREFIXLEN"] || ""
         }
       end
@@ -288,10 +288,10 @@ module Y2Network
     def save_aliases
       lan_items_format = aliases.each_with_index.each_with_object({}) do |(a, i), res|
         res[i] = {
-          "IPADDR" => a[:ip],
-          "LABEL" => a[:label],
+          "IPADDR"    => a[:ip],
+          "LABEL"     => a[:label],
           "PREFIXLEN" => a[:prefixlen],
-          "NETMASK" => a[:mask]
+          "NETMASK"   => a[:mask]
 
         }
       end
