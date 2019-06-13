@@ -909,12 +909,14 @@ module Yast
         bridge_name = LanItems.new_type_device("br")
         next unless connected_and_bridgeable?(bridge_name, current, config)
         LanItems.current = current
+        LanItems.add_current_device_to_routing
         # first configure all connected unconfigured devices with dhcp (with default parameters)
         next if !LanItems.IsCurrentConfigured && !LanItems.ProposeItem
         ifcfg = LanItems.GetCurrentName
         next unless configure_as_bridge!(ifcfg, bridge_name)
         # reconfigure existing device as newly created bridge's port
         configure_as_bridge_port(ifcfg)
+        LanItems.move_routes(ifcfg, bridge_name)
         refresh_lan_items
       end
 

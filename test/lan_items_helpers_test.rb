@@ -7,6 +7,9 @@ require "yast"
 Yast.import "LanItems"
 require "y2network/config"
 require "y2network/interface"
+require "y2network/routing"
+require "y2network/route"
+require "y2network/routing_table"
 
 describe "LanItemsClass#IsItemConfigured" do
   it "succeeds when item has configuration" do
@@ -158,8 +161,8 @@ describe "LanItems#InitItemUdev" do
         },
         1 => {
           "hwinfo" => {
-            "mac"      => "00:00:00:00:00:01",
-            "dev_name" => "eth1"
+            "permanent_mac" => "00:00:00:00:00:01",
+            "dev_name"      => "eth1"
           },
           # always exists
           "udev"   => {
@@ -207,7 +210,7 @@ describe "LanItems#GetItemUdev" do
     before(:each) do
       allow(Yast::LanItems)
         .to receive(:GetLanItem)
-        .and_return("hwinfo" => { "mac" => MAC }, "ifcfg" => "eth0")
+        .and_return("hwinfo" => { "permanent_mac" => MAC }, "ifcfg" => "eth0")
     end
 
     it "returns proper value when key exists" do
@@ -251,8 +254,24 @@ describe "LanItems#RemoveItemUdev" do
   end
 end
 
+describe "#current_udev_rule" do
+  let(:busid) { "0000:08:00.0" }
+  let(:hwinfo) { { "dev_name" => "test0", "busid" => busid, "permanent_mac" => "24:be:05:ce:1e:91" } }
+  let(:udev_net) { ["KERNELS==\"#{busid}\"", "NAME=\"test0\""] }
+  let(:rule) { { 0 => { "hwinfo" => hwinfo, "udev" => { "net" => udev_net } } } }
+
+  before do
+    Yast::LanItems.Items = rule
+    Yast::LanItems.current = 0
+  end
+
+  it "returns the current item udev rule" do
+    expect(Yast::LanItems.current_udev_rule).to contain_exactly("KERNELS==\"#{busid}\"", "NAME=\"test0\"")
+  end
+end
+
 describe "#update_item_udev_rule!" do
-  let(:hwinfo) { { "dev_name" => "test0", "busid" => "0000:08:00.0", "mac" => "24:be:05:ce:1e:91" } }
+  let(:hwinfo) { { "dev_name" => "test0", "busid" => "0000:08:00.0", "permanent_mac" => "24:be:05:ce:1e:91" } }
   let(:udev_net) { ["ATTR{address}==\"24:be:05:ce:1e:91\"", "KERNEL==\"eth*\"", "NAME=\"test0\""] }
   let(:rule) { { 0 => { "hwinfo" => hwinfo, "udev" => { "net" => udev_net } } } }
 
@@ -711,6 +730,31 @@ describe "LanItems renaming methods" do
       it "returns true" do
         expect(Yast::LanItems.update_routing_devices?).to eql(true)
       end
+    end
+  end
+
+  describe "LanItems.move_routes" do
+    let(:routing) { Y2Network::Routing.new(tables: [table1]) }
+    let(:table1) { Y2Network::RoutingTable.new(routes) }
+    let(:routes) { [route] }
+    let(:route) do
+      Y2Network::Route.new(to:        :default,
+                           gateway:   IPAddr.new("192.168.122.1"),
+                           interface: eth0)
+    end
+    let(:eth0) { Y2Network::Interface.new("eth0") }
+    let(:br0) { Y2Network::Interface.new("br0") }
+    let(:yast_config) do
+      instance_double(Y2Network::Config, interfaces: [eth0, br0], routing: routing)
+    end
+
+    before do
+      allow(Y2Network::Config).to receive(:find).with(:yast).and_return(yast_config)
+    end
+
+    it "assigns all the 'from' routes to the 'to' interface" do
+      expect { Yast::LanItems.move_routes("eth0", "br0") }
+        .to change { route.interface }.from(eth0).to(br0)
     end
   end
 end
