@@ -26,6 +26,7 @@ require "y2network/config_reader/connection_config/sysconfig"
 require "y2network/sysconfig_interface_file"
 
 Yast.import "LanItems"
+Yast.import "NetworkInterfaces"
 
 module Y2Network
   module ConfigReader
@@ -79,11 +80,26 @@ module Y2Network
       #
       # @return [Array<Interface>]
       def physical_interfaces
-        @physical_interfaces ||= Yast::LanItems.Hardware.map do |card|
-          iface = Y2Network::PhysicalInterface.new(card["dev_name"])
-          iface.description = card["name"]
-          iface.type = card["type"].nil? ? :eth : card["type"].to_sym
-          iface
+        return @physical_interfaces if @physical_interfaces
+        Yast::LanItems.Hardware.map { |h| build_physical_interface(h) }
+      end
+
+      # Instantiates an interface given a hash containing hardware details
+      #
+      # If there is not information about the type, it will rely on NetworkInterfaces#GetTypeFromSysfs.
+      # This responsability could be moved to the PhysicalInterface class.
+      #
+      # @todo Improve detection logic according to NetworkInterfaces#GetTypeFromIfcfgOrName.
+      #
+      # @param data [Hash] hardware information
+      # @option data [String] "dev_name" Device name ("eth0")
+      # @option data [String] "name"     Device description
+      # @option data [String] "type"     Device type ("eth", "wlan", etc.)
+      def build_physical_interface(data)
+        Y2Network::PhysicalInterface.new(data["dev_name"]).tap do |iface|
+          iface.description = data["name"]
+          type = data["type"] || Yast::NetworkInterfaces.GetTypeFromSysfs(iface.name)
+          iface.type = type.nil? ? :eth : type.to_sym
         end
       end
 
