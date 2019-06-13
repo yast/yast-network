@@ -19,14 +19,19 @@
 module Y2Network
   # Network interface.
   class Interface
-    # @return [String] Device name (eth0, wlan0, etc.)
+    # @return [String] Device name ('eth0', 'wlan0', etc.)
     attr_accessor :name
+    # @return [String] Interface description
+    attr_accessor :description
+    # @return [Symbol] Interface type
+    attr_accessor :type
 
     # Constructor
     #
     # @param name [String] Interface name (e.g., "eth0")
     def initialize(name)
       @name = name
+      @description = ""
     end
 
     # Determines whether two interfaces are equal

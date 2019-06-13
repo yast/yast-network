@@ -24,7 +24,7 @@ require "y2network/autoinst_profile/dns_section"
 require "y2network/config_reader/autoinst_dns"
 
 describe Y2Network::ConfigReader::AutoinstDNS do
-  let(:subject) { described_class.new(dns_section) }
+  subject { described_class.new(dns_section) }
   let(:dns_section) do
     Y2Network::AutoinstProfile::DNSSection.new_from_hashes(dns_profile)
   end

@@ -23,32 +23,34 @@ require "y2network/config_reader/sysconfig_dns"
 describe Y2Network::ConfigReader::Sysconfig do
   subject(:reader) { described_class.new }
 
-  let(:network_interfaces) do
+  let(:eth0) { Y2Network::Interface.new("eth0") }
+  let(:wlan0) { Y2Network::Interface.new("wlan0") }
+  let(:interfaces) { [eth0, wlan0] }
+  let(:eth0_config) { instance_double(Y2Network::ConnectionConfig::Ethernet) }
+  let(:connections) { [eth0_config] }
+  let(:routes_file) { instance_double(Y2Network::SysconfigRoutesFile, load: nil, routes: []) }
+  let(:dns_reader) { instance_double(Y2Network::ConfigReader::SysconfigDNS, config: dns) }
+  let(:interfaces_reader) do
     instance_double(
-      Yast::NetworkInterfacesClass,
-      Read: nil,
-      List: ["lo", "eth0", "wlan0"]
+      Y2Network::ConfigReader::SysconfigInterfaces,
+      interfaces:  Y2Network::InterfacesCollection.new(interfaces),
+      connections: connections
     )
   end
 
-  let(:routes_file) { instance_double(Y2Network::SysconfigRoutesFile, load: nil, routes: []) }
-  let(:dns_reader) { instance_double(Y2Network::ConfigReader::SysconfigDNS, config: dns) }
   let(:dns) { double("Y2Network::ConfigReader::DNS") }
 
   before do
     allow(Y2Network::ConfigReader::SysconfigDNS).to receive(:new).and_return(dns_reader)
+    allow(Y2Network::ConfigReader::SysconfigInterfaces).to receive(:new).and_return(interfaces_reader)
   end
 
   around { |e| change_scr_root(File.join(DATA_PATH, "scr_read"), &e) }
 
   describe "#config" do
-    before do
-      stub_const("Yast::NetworkInterfaces", network_interfaces)
-    end
-
     it "returns a configuration including network devices" do
       config = reader.config
-      expect(config.interfaces.map(&:name)).to eq(["lo", "eth0", "wlan0"])
+      expect(config.interfaces.map(&:name)).to eq(["eth0", "wlan0"])
     end
 
     it "links routes with detected network devices" do

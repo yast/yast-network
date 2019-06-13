@@ -38,6 +38,8 @@ module Y2Network
   class Config
     # @return [InterfacesCollection]
     attr_accessor :interfaces
+    # @return [Array<ConnectionConfig>]
+    attr_accessor :connections
     # @return [Routing] Routing configuration
     attr_accessor :routing
     # @return [DNS] DNS configuration
@@ -89,8 +91,9 @@ module Y2Network
     # @param routing    [Routing] Object with routing configuration
     # @param dns        [DNS] Object with DNS configuration
     # @param source     [Symbol] Configuration source
-    def initialize(interfaces: InterfacesCollection.new, routing: Routing.new, dns: DNS.new, source:)
+    def initialize(interfaces: InterfacesCollection.new, connections: [], routing: Routing.new, dns: DNS.new, source:)
       @interfaces = interfaces
+      @connections = connections
       @routing = routing
       @dns = dns
       @source = source

@@ -24,6 +24,7 @@ require "y2network/sysconfig_paths"
 require "y2network/routing_table"
 require "y2network/sysconfig_routes_file"
 require "y2network/config_reader/sysconfig_dns"
+require "y2network/config_reader/sysconfig_interfaces"
 require "y2network/interfaces_collection"
 
 Yast.import "NetworkInterfaces"
@@ -37,13 +38,18 @@ module Y2Network
 
       # @return [Y2Network::Config] Network configuration
       def config
-        interfaces = find_interfaces
-        routing_tables = find_routing_tables(interfaces)
+        routing_tables = find_routing_tables(interfaces_reader.interfaces)
         routing = Routing.new(
           tables: routing_tables, forward_ipv4: forward_ipv4?, forward_ipv6: forward_ipv6?
         )
 
-        Config.new(interfaces: interfaces, routing: routing, dns: dns, source: :sysconfig)
+        Config.new(
+          interfaces:  interfaces_reader.interfaces,
+          connections: interfaces_reader.connections,
+          routing:     routing,
+          dns:         dns,
+          source:      :sysconfig
+        )
       end
 
     private
@@ -65,6 +71,10 @@ module Y2Network
         Y2Network::InterfacesCollection.new(interfaces)
       end
 
+      def interfaces_reader
+        @interfaces_reader ||= Y2Network::ConfigReader::SysconfigInterfaces.new
+      end
+
       # Reads routes
       #
       # Merges routes from /etc/sysconfig/network/routes and /etc/sysconfig/network/ifroute-*
@@ -74,7 +84,7 @@ module Y2Network
       # @return [RoutingTable] an object with routes
       def find_routing_tables(interfaces)
         main_routes = load_routes_from
-        iface_routes = find_interfaces.flat_map do |iface|
+        iface_routes = interfaces.flat_map do |iface|
           load_routes_from("/etc/sysconfig/network/ifroute-#{iface.name}")
         end
         all_routes = main_routes + iface_routes
