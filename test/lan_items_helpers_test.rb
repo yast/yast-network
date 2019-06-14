@@ -635,7 +635,7 @@ describe "LanItems renaming methods" do
     end
   end
 
-  describe "LanItems.add_current_device_to_routing" do
+  describe "LanItems.add_device_to_routing" do
     let(:eth0) { Y2Network::Interface.new("eth0") }
     let(:wlan0) { Y2Network::Interface.new("wlan0") }
     let(:yast_config) do
@@ -647,10 +647,20 @@ describe "LanItems renaming methods" do
       allow(Yast::LanItems).to receive(:current_name).and_return("wlan1")
     end
 
-    it "adds a new device with the given name" do
-      Yast::LanItems.add_current_device_to_routing
-      names = yast_config.interfaces.map(&:name)
-      expect(names).to include("wlan1")
+    context "when a device name is given" do
+      it "adds a new device with the given name" do
+        Yast::LanItems.add_device_to_routing("br0")
+        names = yast_config.interfaces.map(&:name)
+        expect(names).to include("br0")
+      end
+    end
+
+    context "when no device name is given" do
+      it "adds a new device with the current device name" do
+        Yast::LanItems.add_device_to_routing
+        names = yast_config.interfaces.map(&:name)
+        expect(names).to include("wlan1")
+      end
     end
 
     context "when the interface already exists" do
@@ -659,7 +669,7 @@ describe "LanItems renaming methods" do
       end
 
       it "does not add any interface" do
-        Yast::LanItems.add_current_device_to_routing
+        Yast::LanItems.add_device_to_routing
         names = yast_config.interfaces.map(&:name)
         expect(names).to eq(["eth0", "wlan0"])
       end

@@ -909,7 +909,6 @@ module Yast
         bridge_name = LanItems.new_type_device("br")
         next unless connected_and_bridgeable?(bridge_name, current, config)
         LanItems.current = current
-        LanItems.add_current_device_to_routing
         # first configure all connected unconfigured devices with dhcp (with default parameters)
         next if !LanItems.IsCurrentConfigured && !LanItems.ProposeItem
         ifcfg = LanItems.GetCurrentName

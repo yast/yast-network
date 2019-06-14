@@ -2686,10 +2686,9 @@ module Yast
     #
     # @todo This method exists just to keep some compatibility during
     #       the migration to network-ng.
-    def add_current_device_to_routing
+    def add_device_to_routing(name = current_name)
       config = yast_config
       return if config.nil?
-      name = current_name
       return if config.interfaces.any? { |i| i.name == name }
       yast_config.interfaces << Y2Network::Interface.new(name)
     end
@@ -2702,6 +2701,7 @@ module Yast
       config = yast_config
       return unless config && config.routing
       routing = config.routing
+      add_device_to_routing(to)
       target_interface = config.interfaces.find { |i| i.name == to }
       return unless target_interface
       routing.routes.select { |r| r.interface && r.interface.name == from }
