@@ -31,14 +31,16 @@ module Y2Network
   class InterfaceConfigBuilder
     include Yast::Logger
 
+    # Load fresh instance of interface config builder for given type.
+    # It can be specialized type or generic, depending if specialized is needed.
+    # @param type [String] type of device
+    # TODO: it would be nice to have type of device as Enum and not pure string
     def self.for(type)
       require "y2network/interface_config_builders/#{type}"
       InterfaceConfigBuilders.const_get(type.to_s.capitalize).new
     rescue LoadError => e
       log.info "Specialed builder for #{type} not found. Fallbacking to default. #{e.inspect}"
-      res = new
-      res.type = type
-      res
+      new(type: type)
     end
 
     # @return [String] Device name (eth0, wlan0, etc.)
@@ -49,7 +51,8 @@ module Y2Network
     # Constructor
     #
     # Load with reasonable defaults
-    def initialize
+    def initialize(type: nil)
+      @type = type
       @config = init_device_config({})
       @s390_config = init_device_s390_config({})
     end

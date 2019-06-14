@@ -7,9 +7,7 @@ module Y2Network
   module InterfaceConfigBuilders
     class Ib < InterfaceConfigBuilder
       def initialize
-        super
-
-        self.type = "ib"
+        super(type: "ib")
       end
 
       attr_writer :ipoib_mode
