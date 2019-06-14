@@ -4,7 +4,6 @@ require "cwm/custom_widget"
 require "y2network/widgets/slave_items"
 
 Yast.import "Label"
-Yast.import "LanItems"
 Yast.import "Popup"
 Yast.import "UI"
 
@@ -69,10 +68,8 @@ module Y2Network
 
       # Default function to init the value of slave devices box for bonding.
       def init
-        items = slave_items_from(
-          Yast::LanItems.GetBondableInterfaces(Yast::LanItems.GetCurrentName),
-          @settings["SLAVES"]
-        )
+        # TODO: use def items, but problem now is that slave_items returns term and not array
+        items = slave_items_from(@settings.bondable_interfaces, @settings["SLAVES"])
 
         # reorder the items
         l1, l2 = items.partition { |t| @settings["SLAVES"].include? t[0][0] }

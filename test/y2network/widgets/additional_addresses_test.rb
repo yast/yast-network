@@ -21,9 +21,10 @@ require_relative "../../test_helper"
 require "cwm/rspec"
 
 require "y2network/widgets/additional_addresses"
+require "y2network/interface_config_builder"
 
 describe Y2Network::Widgets::AdditionalAddresses do
-  subject { described_class.new({}) }
+  subject { described_class.new(Y2Network::InterfaceConfigBuilder.new) }
 
   include_examples "CWM::CustomWidget"
 end

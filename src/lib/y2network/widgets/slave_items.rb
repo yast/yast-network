@@ -21,6 +21,7 @@ module Y2Network
         textdomain "network"
 
         item_ids.each_with_object([]) do |item_id, items|
+          # TODO: do not touch directly LanItems here, but current it is quite hard to list all items without it
           dev_name = Yast::LanItems.GetDeviceName(item_id)
 
           next if dev_name.nil? || dev_name.empty?
