@@ -80,9 +80,7 @@ describe Yast::EditNicName do
         allow(Yast::UI).to receive(:QueryWidget).with(:dev_name, :Value) { new_name }
         allow(Yast::UI).to receive(:QueryWidget).with(:udev_type, :CurrentButton) { :mac }
         allow(Yast::UI).to receive(:UserInput) { :ok }
-        allow(Yast::LanItems).to receive(:update_routing_devices!)
         allow(subject).to receive(:update_routes?).and_return(false)
-        allow(Yast::LanItems).to receive(:update_routes!)
       end
 
       context "and closed confirming the changes" do

@@ -1,8 +1,6 @@
 require "yast"
 require "cwm/custom_widget"
 
-Yast.import "NetworkService"
-Yast.import "LanItems"
 Yast.import "IP"
 Yast.import "Popup"
 Yast.import "String"
@@ -77,21 +75,14 @@ module Y2Network
       end
 
       def init
-        # #165059
-        if Yast::NetworkService.is_network_manager
-          Yast::UI.ChangeWidget(:additional_addresses, :Enabled, false)
-        end
+        refresh_table
+      end
 
-        table_items = []
-        # make ui items from the aliases list
-        # TODO: Do not touch Lan Items
-        Yast::LanItems.aliases.each_value do |data|
-          label = data["LABEL"] || ""
-          ip = data["IPADDR"] || ""
-          mask = data["NETMASK"] || ""
-          prefixlen = data["PREFIXLEN"] || ""
-          mask = "/#{prefixlen}" if !prefixlen.empty?
-          table_items << Item(Id(table_items.size), label, ip, mask)
+      def refresh_table
+        table_items = @settings.aliases.each_with_index.map do |data, i|
+
+          mask = data[:prefixlen].empty? ? data[:mask] : "/#{data[:prefixlen]}"
+          Item(Id(i), data[:label], data[:ip], mask)
         end
 
         Yast::UI.ChangeWidget(Id(:address_table), :Items, table_items)
@@ -99,99 +90,75 @@ module Y2Network
 
       # @return [Symbol, nil] dialog result
       def handle(event)
-        return nil if Yast::NetworkService.is_network_manager
-
-        table_items = Yast::UI.QueryWidget(Id(:address_table), :Items)
-
         return nil if event["EventReason"] != "Activated"
 
         cur = Yast::UI.QueryWidget(Id(:address_table), :CurrentItem).to_i
         case event["ID"]
         when :edit_address
-          item = dialog(cur, table_items[cur])
+          item = dialog(@settings.name, @settings.aliases[cur])
           if item
-            table_items[cur] = item
-            Yast::UI.ChangeWidget(Id(:address_table), :Items, table_items)
+            @settings.aliases[cur] = item
+            refresh_table
             Yast::UI.ChangeWidget(Id(:address_table), :CurrentItem, cur)
           end
         when :add_address
-          item = dialog(table_items.size, Yast::Term.new(:empty))
+          item = dialog(@settings.name, nil)
           if item
-            table_items << item
-            Yast::UI.ChangeWidget(Id(:address_table), :Items, table_items)
+            @settings.aliases << item
+            refresh_table
             Yast::UI.ChangeWidget(
               Id(:address_table),
               :CurrentItem,
-              table_items.size
+              @settings.aliases.size - 1
             )
           end
         when :delete_address
-          table_items.delete_at(cur)
-          Yast::UI.ChangeWidget(Id(:address_table), :Items, table_items)
+          @settings.aliases.delete_at(cur)
+          refresh_table
         end
 
         Yast::UI.ChangeWidget(
           Id(:edit_address),
           :Enabled,
-          !table_items.empty?
+          !@settings.aliases.empty?
         )
         Yast::UI.ChangeWidget(
           Id(:delete_address),
           :Enabled,
-          !table_items.empty?
+          !@settings.aliases.empty?
         )
 
         nil
       end
 
-      def store
-        return if Yast::NetworkService.is_network_manager
-
-        table_items = Yast::UI.QueryWidget(Id(:address_table), :Items)
-        aliases_to_delete = Yast::LanItems.aliases.dup # #48191
-        Yast::LanItems.aliases = {}
-        table_items.each_with_index do |e, i|
-          alias_ = {}
-          alias_["IPADDR"] = e.params[2] || ""
-          label = e.params[1] || ""
-          alias_["LABEL"] = label unless label.empty?
-
-          mask = e.params[3] || ""
-          if mask.start_with?("/")
-            alias_["PREFIXLEN"] = mask[1..-1]
-          else
-            param = Yast::Netmask.Check6(mask) ? "PREFIXLEN" : "NETMASK"
-            alias_[param] = mask
-          end
-          Yast::LanItems.aliases[i.to_s] = alias_
-        end
-        # TODO: this should not be in UI and also deleting looks strange as it remove all old
-        aliases_to_delete.each_pair do |a, v|
-          Yast::NetworkInterfaces.DeleteAlias(Yast::NetworkInterfaces.Name, a) if v
-        end
-      end
-
       # Open a dialog to edit a name-ipaddr-netmask triple.
       # TODO: own class for it
-      # @param id    [Integer]    an id for the table item to be returned
+      # @param name  [String]     device name. Used to ensure label is not too long
       # @param entry [Yast::Term] an existing entry to be edited, or term(:empty)
       # @return      [Yast::Term] a table item for OK, nil for Cancel
-      def dialog(id, entry)
+      def dialog(name, entry)
+        label = entry ? entry[:label] : ""
+        ip = entry ? entry[:ip] : ""
+        mask = if entry
+          entry[:prefixlen].empty? ? entry[:mask] : "/#{entry[:prefixlen]}"
+        else
+          ""
+        end
         Yast::UI.OpenDialog(
           Opt(:decorated),
           VBox(
             HSpacing(1),
             VBox(
               # TextEntry label
-              TextEntry(Id(:name), _("&Address Label"), entry.params[1] || ""),
+              TextEntry(Id(:name), _("&Address Label"), label),
               # TextEntry label
               TextEntry(
                 Id(:ipaddr),
                 _("&IP Address"),
-                entry.params[2] || ""
+                ip
               ),
               # TextEntry label
-              TextEntry(Id(:netmask), _("Net&mask"), entry.params[3] || "")
+              TextEntry(Id(:netmask), _("Net&mask"), mask)
             ),
             HSpacing(1),
             HBox(
@@ -208,26 +175,25 @@ module Y2Network
         )
         Yast::UI.ChangeWidget(Id(:ipaddr), :ValidChars, Yast::IP.ValidChars)
 
-        if entry == Yast::Term.new(:empty)
-          Yast::UI.SetFocus(Id(:name))
-        else
+        if entry
           Yast::UI.SetFocus(Id(:ipaddr))
+        else
+          Yast::UI.SetFocus(Id(:name))
         end
 
         while (ret = Yast::UI.UserInput) == :ok
 
-          host = Item(Id(id))
+          res = {}
           val = Yast::UI.QueryWidget(Id(:name), :Value)
 
-          # TODO: not access LanItems
-          if "#{Yast::LanItems.device}.#{val}" !~ /^[[:alnum:]._:-]{1,15}\z/
+          if "#{name}.#{val}" !~ /^[[:alnum:]._:-]{1,15}\z/
             # Popup::Error text
             Yast::Popup.Error(_("Label is too long."))
             Yast::UI.SetFocus(Id(:name))
             next
           end
 
-          host.params << val
+          res[:label] = val
 
           ip = Yast::UI.QueryWidget(Id(:ipaddr), :Value)
           if !Yast::IP.Check(ip)
@@ -236,7 +202,7 @@ module Y2Network
             Yast::UI.SetFocus(Id(:ipaddr))
             next
           end
-          host << ip
+          res[:ip] = ip
 
           val = Yast::UI.QueryWidget(Id(:netmask), :Value)
           if !valid_prefix_or_netmask(ip, val)
@@ -245,7 +211,17 @@ module Y2Network
             Yast::UI.SetFocus(Id(:netmask))
             next
           end
-          host << val
+          netmask = ""
+          prefixlen = ""
+          if val.start_with?("/")
+            prefixlen = val[1..-1]
+          elsif Yast::Netmask.Check6(val)
+            prefixlen = val
+          else
+            netmask = val
+          end
+          res[:mask] = netmask
+          res[:prefixlen] = prefixlen
 
           break
         end
@@ -253,7 +229,7 @@ module Y2Network
         Yast::UI.CloseDialog
         return nil if ret != :ok
 
-        host
+        res
       end
 
       def valid_prefix_or_netmask(ip, mask)

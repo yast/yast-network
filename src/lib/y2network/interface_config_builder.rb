@@ -29,6 +29,20 @@ module Y2Network
   # Collects data from the UI until we have enough of it to create a {Y2Network::Interface}.
   # {Yast::LanItemsClass#Commit Yast::LanItems.Commit(builder)} uses it.
   class InterfaceConfigBuilder
+    include Yast::Logger
+
+    # Load fresh instance of interface config builder for given type.
+    # It can be specialized type or generic, depending if specialized is needed.
+    # @param type [String] type of device
+    # TODO: it would be nice to have type of device as Enum and not pure string
+    def self.for(type)
+      require "y2network/interface_config_builders/#{type}"
+      InterfaceConfigBuilders.const_get(type.to_s.capitalize).new
+    rescue LoadError => e
+      log.info "Specialed builder for #{type} not found. Fallbacking to default. #{e.inspect}"
+      new(type: type)
+    end
+
     # @return [String] Device name (eth0, wlan0, etc.)
     attr_accessor :name
     # @return [String] type of @see Y2Network::Interface which is intended to be build (e.g. "eth")
@@ -37,7 +51,8 @@ module Y2Network
     # Constructor
     #
     # Load with reasonable defaults
-    def initialize
+    def initialize(type: nil)
+      @type = type
       @config = init_device_config({})
       @s390_config = init_device_s390_config({})
     end
@@ -67,6 +82,8 @@ module Y2Network
         # TODO: should change only if different, but maybe firewall_interface responsibility?
         firewall_interface.zone = firewall_zone if !firewall_interface.zone || firewall_zone != firewall_interface.zone.name
       end
+
+      save_aliases
 
       nil
     end
@@ -124,6 +141,26 @@ module Y2Network
 
     def driver_options=(value)
       @driver_options = value
+    end
+
+    def aliases
+      @aliases ||= Yast::LanItems.aliases.each_value.map do |data|
+        {
+          label:     data["LABEL"] || "",
+          ip:        data["IPADDR"] || "",
+          mask:      data["NETMASK"] || "",
+          prefixlen: data["PREFIXLEN"] || ""
+        }
+      end
+    end
+
+    def aliases=(value)
+      @aliases = value
+    end
+
+    def udev_name
+      # cannot cache as EditNicName dialog can change it
+      Yast::LanItems.current_udev_name
     end
 
     # Provides stored configuration in sysconfig format
@@ -249,6 +286,24 @@ module Y2Network
 
     def hwinfo
       @hwinfo ||= Hwinfo.new(name: name)
+    end
+
+    def save_aliases
+      lan_items_format = aliases.each_with_index.each_with_object({}) do |(a, i), res|
+        res[i] = {
+          "IPADDR"    => a[:ip],
+          "LABEL"     => a[:label],
+          "PREFIXLEN" => a[:prefixlen],
+          "NETMASK"   => a[:mask]
+
+        }
+      end
+      log.info "setting new aliases #{lan_items_format.inspect}"
+      aliases_to_delete = Yast::LanItems.aliases.dup # #48191
+      Yast::LanItems.aliases = lan_items_format
+      aliases_to_delete.each_pair do |a, v|
+        Yast::NetworkInterfaces.DeleteAlias(Yast::NetworkInterfaces.Name, a) if v
+      end
     end
   end
 end

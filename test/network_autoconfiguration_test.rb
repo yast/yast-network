@@ -145,6 +145,9 @@ describe Yast::NetworkAutoconfiguration do
         .to receive(:Read)
         .with(path(".udev_persistent.drivers"))
         .and_return({})
+      allow(Yast::NetworkInterfaces).to receive(:Write).and_call_original
+      # reinit network interfaces to avoid trash from other tests
+      Yast::NetworkInterfaces.main
     end
 
     it "configures just one NIC to have a default route" do

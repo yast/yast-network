@@ -53,8 +53,7 @@ module Y2Network
         end
 
         # TODO: use factory to get proper builder
-        builder = InterfaceConfigBuilder.new
-        builder.type = @type_widget.result
+        builder = InterfaceConfigBuilder.for(@type_widget.result)
         proposed_name = Yast::LanItems.new_type_devices(@type_widget.result, 1).first
         builder.name = proposed_name
         Yast::NetworkInterfaces.Name = proposed_name

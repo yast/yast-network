@@ -2,6 +2,7 @@
 
 require "yast"
 require "network/wicked"
+require "y2network/interface_config_builder"
 
 require "shellwords"
 
@@ -134,9 +135,8 @@ module Yast
         current["ifcfg"] = card
       end
 
-      builder = Y2Network::InterfaceConfigBuilder.new
+      builder = Y2Network::InterfaceConfigBuilder.for(LanItems.GetCurrentType())
       builder.name = LanItems.GetCurrentName()
-      builder.type = LanItems.GetCurrentType()
       builder["BOOTPROTO"] = "dhcp"
       builder["STARTMODE"] = "auto"
 

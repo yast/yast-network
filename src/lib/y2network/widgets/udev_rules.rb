@@ -2,7 +2,6 @@ require "yast"
 require "cwm/custom_widget"
 require "network/edit_nic_name"
 
-Yast.import "LanItems"
 Yast.import "UI"
 
 module Y2Network
@@ -25,7 +24,7 @@ module Y2Network
 
       def init
         # TODO: get it from settings
-        self.value = Yast::LanItems.current_udev_name
+        self.value = @settings.udev_name
       end
 
       def handle

@@ -569,7 +569,7 @@ describe "NetworkAutoYast" do
       let(:general_section) { nil }
 
       it "does not write the Lan module configuration" do
-        expect(Yast::Lan).to_not receive(:write)
+        expect(Yast::Lan).to_not receive(:Write)
         subject.configure_lan
       end
     end

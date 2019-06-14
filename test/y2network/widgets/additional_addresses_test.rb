@@ -20,9 +20,9 @@
 require_relative "../../test_helper"
 require "cwm/rspec"
 
-require "y2network/widgets/bond_slave"
+require "y2network/widgets/additional_addresses"
 
-describe Y2Network::Widgets::BondSlave do
+describe Y2Network::Widgets::AdditionalAddresses do
   subject { described_class.new({}) }
 
   include_examples "CWM::CustomWidget"

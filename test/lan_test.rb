@@ -325,7 +325,7 @@ describe "LanClass" do
 
     before do
       allow(Yast::LanItems).to receive(:IsCurrentConfigured).and_return(true)
-      allow(Yast::Lan).to receive(:ProposeItem)
+      allow(Yast::LanItems).to receive(:ProposeItem)
       allow(Yast::Lan).to receive(:configure_as_bridge!)
       allow(Yast::Lan).to receive(:configure_as_bridge_port)
       allow(Yast::Lan).to receive(:refresh_lan_items)
@@ -338,9 +338,9 @@ describe "LanClass" do
 
     context "when an interface is not bridgeable" do
       it "does not propose the interface" do
-        allow(Yast::LanItems).to receive(:IsBridgeable).with(anything, anything).and_return(false)
+        allow(Yast::LanItems).to receive(:IsBridgeable).and_return(false)
         allow(Yast::LanItems).to receive(:IsCurrentConfigured).and_return(false)
-        expect(Yast::Lan).not_to receive(:ProposeItem)
+        expect(Yast::LanItems).not_to receive(:ProposeItem)
 
         Yast::Lan.ProposeVirtualized
       end
@@ -357,8 +357,8 @@ describe "LanClass" do
       end
 
       it "does not configure the interface if it is not connected" do
-        allow(Yast::Lan).to receive(:connected_and_bridgeable?).with(anything).and_return(false)
-        expect(Yast::Lan).not_to receive(:ProposeItem)
+        allow(Yast::Lan).to receive(:connected_and_bridgeable?).and_return(false)
+        expect(Yast::LanItems).not_to receive(:ProposeItem)
 
         Yast::Lan.ProposeVirtualized
       end

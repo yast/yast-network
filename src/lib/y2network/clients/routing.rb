@@ -53,6 +53,7 @@ module Y2Network
       # Constructor
       def initialize
         textdomain "network"
+        Yast.include self, "network/services/routing.rb"
       end
 
       def main
@@ -76,7 +77,6 @@ module Y2Network
       # Main Routing GUI
       def RoutingGUI
         read
-        Yast.include self, "network/services/routing.rb"
 
         Wizard.CreateDialog
         Wizard.SetDesktopTitleAndIcon("routing")
