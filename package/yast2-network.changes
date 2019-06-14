@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri Jun 14 10:39:05 UTC 2019 - Knut Anderssen <kanderssen@suse.com>
+
+- boo#1138278
+  - Adapt the AddressDialog to use the new Y2Network::Routing class
+    when checking if there is some default gateway defined.
+- 4.2.6
+
+-------------------------------------------------------------------
 Thu Jun 12 11:55:48 UTC 2019 - Knut Anderssen <kanderssen@suse.com>
 
 - bsc#1136929
