@@ -41,6 +41,15 @@ module Y2Network
       attr_accessor :secondary_ip_addresses
       # @return [Integer, nil]
       attr_accessor :mtu
+
+      # Returns the connection type
+      #
+      # @todo: We should consider using an enum
+      #
+      # @return [String] :ethernet, :wireless, etc.
+      def type
+        self.class.name.split("::").last.downcase.to_sym
+      end
     end
   end
 end

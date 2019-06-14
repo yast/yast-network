@@ -29,9 +29,10 @@ module Y2Network
     # Constructor
     #
     # @param name [String] Interface name (e.g., "eth0")
-    def initialize(name)
+    def initialize(name, type: :ethernet)
       @name = name
       @description = ""
+      @type = type
     end
 
     # Determines whether two interfaces are equal
