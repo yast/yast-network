@@ -40,6 +40,7 @@ MOCKED_ITEMS = {
       "bus"           => HWINFO_DEVICE_BUS,
       "busid"         => HWINFO_DEVICE_BUSID,
       "mac"           => HWINFO_DEVICE_MAC,
+      "permanent_mac" => HWINFO_DEVICE_MAC,
       "link"          => nil,
       "wl_channels"   => nil,
       "wl_bitrates"   => nil,

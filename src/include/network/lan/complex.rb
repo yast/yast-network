@@ -317,8 +317,9 @@ module Yast
         case LanItems.GetDeviceType(current)
         when "bond"
           LanItems.startmode = "hotplug"
-
-          LanItems.update_item_udev_rule!(:bus_id)
+          if LanItems.current_udev_rule.empty? || LanItems.GetItemUdev("KERNELS").empty?
+            LanItems.update_item_udev_rule!(:bus_id)
+          end
         when "br"
           LanItems.ipaddr = ""
         end

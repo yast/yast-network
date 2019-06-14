@@ -4,6 +4,9 @@ require_relative "test_helper"
 
 require "yast"
 require "network/network_autoconfiguration"
+require "y2network/routing"
+require "y2network/routing_table"
+require "y2network/route"
 
 Yast.import "NetworkInterfaces"
 
@@ -178,6 +181,88 @@ describe Yast::NetworkAutoconfiguration do
         .and_return(0)
 
       expect(instance.any_iface_active?).to be true
+    end
+  end
+
+  describe "#configure_virtuals" do
+    let(:routing) { Y2Network::Routing.new(tables: [table1]) }
+    let(:table1) { Y2Network::RoutingTable.new(routes) }
+    let(:routes) { [route] }
+    let(:route) do
+      Y2Network::Route.new(to:        :default,
+                           gateway:   IPAddr.new("192.168.122.1"),
+                           interface: eth0)
+    end
+    let(:eth0) { Y2Network::Interface.new("eth0") }
+    let(:br0) { Y2Network::Interface.new("br0") }
+    let(:yast_config) do
+      Y2Network::Config.new(interfaces: [eth0, br0], routing: routing, source: :testing)
+    end
+    let(:system_config) { yast_config.copy }
+    let(:instance) { Yast::NetworkAutoconfiguration.instance }
+    let(:proposal) { false }
+    let(:eth0_profile) do
+      {
+        "BOOTPROTO" => "static",
+        "IPADDR"    => "192.168.122.213",
+        "NETMASK"   => "255.255.255.0",
+        "STARTMODE" => "auto"
+      }
+    end
+    let(:routes_profile) do
+      [
+        {
+          "destination" => "default",
+          "gateway"     => "192.168.122.1",
+          "netmask"     => "-",
+          "device"      => "eth0"
+        }
+      ]
+    end
+
+    before do
+      allow(Y2Network::Config).to receive(:find).with(:yast).and_return(yast_config)
+      allow(Y2Network::Config).to receive(:find).with(:system).and_return(system_config)
+      allow(instance).to receive(:virtual_proposal_required?).and_return(proposal)
+      allow(Yast::LanItems).to receive(:write)
+      allow(Yast::LanItems).to receive(:Read)
+      allow(yast_config).to receive(:write)
+      allow(Yast::Lan).to receive(:connected_and_bridgeable?).and_return(true)
+      Yast::Lan.Import("devices" => { "eth" => { "eth0" => eth0_profile } },
+                       "routing" => { "routes" => routes_profile })
+    end
+
+    context "when the proposal is not required" do
+      it "does nothing" do
+        expect(Yast::Lan).to_not receive(:ProposeVirtualized)
+        instance.configure_virtuals
+      end
+    end
+
+    context "when the proposal is required" do
+      let(:proposal) { true }
+
+      it "creates the virtulization proposal config" do
+        expect(Yast::Lan).to receive(:ProposeVirtualized).and_call_original
+        expect { instance.configure_virtuals }.to change { Yast::NetworkInterfaces.Devices.keys.size }.from(1).to(2)
+        expect(Yast::NetworkInterfaces.Devices["br"]["br0"]).to include(eth0_profile.merge("BRIDGE_PORTS" => "eth0"))
+      end
+
+      it "writes the configuration of the interfaces" do
+        expect(Yast::LanItems).to receive(:write)
+        instance.configure_virtuals
+      end
+
+      context "and the routing config was modified" do
+        it "moves the routes from the enslaved interface to the bridge" do
+          expect { instance.configure_virtuals }.to change { route.interface }.from(eth0).to(br0)
+        end
+
+        it "writes the routing config" do
+          expect(yast_config).to receive(:write)
+          instance.configure_virtuals
+        end
+      end
     end
   end
 end

@@ -1382,7 +1382,7 @@ module Yast
 
         # When virtual interfaces are added the list of routing devices needs
         # to be updated to offer them
-        LanItems.add_current_device_to_routing if LanItems.update_routing_devices?
+        LanItems.add_device_to_routing if LanItems.update_routing_devices?
       end
 
       if LanItems.type == "vlan"

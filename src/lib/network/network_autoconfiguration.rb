@@ -85,6 +85,8 @@ module Yast
       # Moreover virtual devices are not needed during first stage. So, it can
       # wait for rebooting into just installed target
       LanItems.write
+      return if Lan.yast_config == Lan.system_config
+      Lan.yast_config.write
     end
 
     # Propose DNS and Hostname setup
