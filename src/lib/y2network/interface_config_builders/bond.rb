@@ -8,6 +8,9 @@ module Y2Network
     class Bond < InterfaceConfigBuilder
       def initialize
         super(type: "bond")
+
+        # fill mandatory bond option
+        @config["SLAVES"] = []
       end
 
       def bondable_interfaces

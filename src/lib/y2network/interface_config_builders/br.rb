@@ -16,7 +16,8 @@ module Y2Network
 
       def already_configured?(devices)
         devices.any? do |device|
-          ![nil, "none"].include?(Yast::NetworkInterfaces.devmap(device))
+          next false if Yast::NetworkInterfaces.devmap(device).nil?
+          ![nil, "none"].include?(Yast::NetworkInterfaces.devmap(device)["BOOTPROTO"])
         end
       end
     end
