@@ -21,10 +21,10 @@ require_relative "../../test_helper"
 require "cwm/rspec"
 
 require "y2network/widgets/bridge_ports"
-require "y2network/interface_config_builders/bridge"
+require "y2network/interface_config_builders/br"
 
 describe Y2Network::Widgets::BridgePorts do
-  subject { described_class.new(Y2Network::InterfaceConfigBuilders::Bridge.new) }
+  subject { described_class.new(Y2Network::InterfaceConfigBuilders::Br.new) }
 
   include_examples "CWM::MultiSelectionBox"
 

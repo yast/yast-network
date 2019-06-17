@@ -27,7 +27,7 @@ module Y2Network
 
       # Default function to init the value of slave devices box for bridging.
       def init
-        br_ports = @settings["BRIDGE_PORTS"]
+        br_ports = @settings["BRIDGE_PORTS"].split
         items = slave_items_from(
           @settings.bridgable_interfaces,
           br_ports
@@ -39,7 +39,8 @@ module Y2Network
 
       # Default function to store the value of slave devices box.
       def store
-        @settings["BRIDGE_PORTS"] = value
+        # TODO: fix it in builder to use array and not space separated string
+        @settings["BRIDGE_PORTS"] = value.join(" ")
       end
 
       # Validates created bridge. Currently just prevent the user to create a

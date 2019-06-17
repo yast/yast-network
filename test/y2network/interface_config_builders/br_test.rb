@@ -3,18 +3,18 @@
 require_relative "../../test_helper"
 
 require "yast"
-require "y2network/interface_config_builders/bridge"
+require "y2network/interface_config_builders/br"
 
-describe Y2Network::InterfaceConfigBuilders::Bridge do
+describe Y2Network::InterfaceConfigBuilders::Br do
   subject(:config_builder) do
-    res = Y2Network::InterfaceConfigBuilders::Bridge.new
-    res.name = "bridge0"
+    res = Y2Network::InterfaceConfigBuilders::Br.new
+    res.name = "br0"
     res
   end
 
   describe "#type" do
-    it "returns 'bridge'" do
-      expect(subject.type).to eq "bridge"
+    it "returns 'br'" do
+      expect(subject.type).to eq "br"
     end
   end
 

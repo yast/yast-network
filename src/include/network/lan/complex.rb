@@ -320,20 +320,22 @@ module Yast
 
           AddInterface()
         end
+        builder = Y2Network::InterfaceConfigBuilder.for(LanItems.GetDeviceType(current))
+        builder.name = LanItems.GetCurrentName
         # clear defaults, some defaults are invalid for slaves and can cause troubles
         # in related sysconfig scripts or makes no sence for slaves (e.g. ip configuration).
-        LanItems.netmask = ""
-        LanItems.bootproto = "none"
-        case LanItems.GetDeviceType(current)
+        builder["NETMASK"] = ""
+        builder["BOOTPROTO"] = "none"
+        case builder.type
         when "bond"
-          LanItems.startmode = "hotplug"
+          builder["STARTMODE"] = "hotplug"
 
           LanItems.update_item_udev_rule!(:bus_id)
         when "br"
-          LanItems.ipaddr = ""
+          builder["IPADDR"] = ""
         end
 
-        LanItems.Commit
+        LanItems.Commit(builder)
       end
 
       # Once the interfaces have been configured we should empty the list to
