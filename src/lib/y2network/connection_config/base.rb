@@ -17,7 +17,7 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/interface"
+require "y2network/interface_type"
 
 module Y2Network
   module ConnectionConfig
@@ -44,11 +44,13 @@ module Y2Network
 
       # Returns the connection type
       #
-      # @todo: We should consider using an enum
+      # Any subclass could define this method is the default
+      # logic does not match.
       #
-      # @return [String] :ethernet, :wireless, etc.
+      # @return [InterfaceType] Interface type
       def type
-        self.class.name.split("::").last.downcase.to_sym
+        const_name = self.class.name.split("::").last.upcase
+        InterfaceType.const_get(const_name)
       end
     end
   end

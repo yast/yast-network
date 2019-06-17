@@ -19,13 +19,14 @@
 
 require_relative "../../test_helper"
 require "y2network/connection_config/wireless"
+require "y2network/interface_type"
 
 describe Y2Network::ConnectionConfig::Wireless do
   subject(:config) { described_class.new }
 
   describe "#type" do
     it "returns 'wireless'" do
-      expect(config.type).to eq(:wireless)
+      expect(config.type).to eq(Y2Network::InterfaceType::WIRELESS)
     end
   end
 end

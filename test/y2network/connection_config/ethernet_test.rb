@@ -19,13 +19,14 @@
 
 require_relative "../../test_helper"
 require "y2network/connection_config/ethernet"
+require "y2network/interface_type"
 
 describe Y2Network::ConnectionConfig::Ethernet do
   subject(:config) { described_class.new }
 
   describe "#type" do
     it "returns 'ethernet'" do
-      expect(config.type).to eq(:ethernet)
+      expect(config.type).to eq(Y2Network::InterfaceType::ETHERNET)
     end
   end
 end

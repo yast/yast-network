@@ -28,7 +28,7 @@ describe Y2Network::ConfigReader::ConnectionConfig::Sysconfig do
 
   describe "#read" do
     let(:interface) { instance_double(Y2Network::PhysicalInterface, name: "wlan0", type: :wlan) }
-    let(:connection_config) { double("connection_config")}
+    let(:connection_config) { double("connection_config") }
     let(:handler) do
       instance_double(
         Y2Network::ConfigReader::ConnectionConfig::SysconfigHandlers::Wlan,
@@ -49,7 +49,7 @@ describe Y2Network::ConfigReader::ConnectionConfig::Sysconfig do
       expect(conn).to be(connection_config)
     end
 
-    context "when the interface type is unknown" do
+    xcontext "when the interface type is unknown" do
       let(:interface) { instance_double(Y2Network::PhysicalInterface, type: :foo) }
 
       it "returns nil" do

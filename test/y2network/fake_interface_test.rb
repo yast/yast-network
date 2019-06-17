@@ -21,7 +21,9 @@ require "y2network/fake_interface"
 require "y2network/connection_config/wireless"
 
 describe Y2Network::FakeInterface do
-  subject(:interface) { described_class.new("eth0", type: :ethernet) }
+  subject(:interface) { described_class.new("eth0", type: iface_type) }
+
+  let(:iface_type) { Y2Network::InterfaceType::ETHERNET }
 
   describe ".from_connection" do
     let(:conn) do
@@ -32,7 +34,7 @@ describe Y2Network::FakeInterface do
 
     it "returns a fake interface using the connection's type" do
       iface = described_class.from_connection("wlan0", conn)
-      expect(iface.type).to eq(:wireless)
+      expect(iface.type).to eq(Y2Network::InterfaceType::WIRELESS)
     end
   end
 end

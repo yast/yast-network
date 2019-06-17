@@ -17,38 +17,43 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/interface_type"
+require "yast"
 
 module Y2Network
-  # Network interface.
-  class Interface
-    # @return [String] Device name ('eth0', 'wlan0', etc.)
-    attr_accessor :name
-    # @return [String] Interface description
-    attr_accessor :description
-    # @return [Symbol] Interface type
-    attr_accessor :type
+  # This class represents the interface types which are supported.
+  #
+  # Constants may be defined using the {define_type} method.
+  class InterfaceType
+    extend Yast::I18n
+    include Yast::I18n
+
+    class << self
+      # @param const_name [String] Constant name
+      # @param name       [String] Type name ("Ethernet", "Wireless", etc.)
+      def define_type(const_name, name)
+        const_set(const_name, new(name))
+      end
+    end
+
+    # @return [String] Return's type name
+    attr_reader :name
 
     # Constructor
     #
-    # @param name [String] Interface name (e.g., "eth0")
-    def initialize(name, type: InterfaceType::ETHERNET)
+    # @param name [String] Type name
+    def initialize(name)
       @name = name
-      @description = ""
-      @type = type
     end
 
-    # Determines whether two interfaces are equal
+    # Returns the translated name
     #
-    # @param other [Interface] Interface to compare with
-    # @return [Boolean]
-    def ==(other)
-      return false unless other.is_a?(Interface)
-      name == other.name
+    # @return [String]
+    def to_human_string
+      _(name)
     end
 
-    # eql? (hash key equality) should alias ==, see also
-    # https://ruby-doc.org/core-2.3.3/Object.html#method-i-eql-3F
-    alias_method :eql?, :==
+    # Define types constants
+    define_type "ETHERNET", N_("Ethernet")
+    define_type "WIRELESS", N_("Wireless")
   end
 end
