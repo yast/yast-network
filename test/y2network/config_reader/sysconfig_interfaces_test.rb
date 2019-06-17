@@ -39,6 +39,10 @@ describe Y2Network::ConfigReader::SysconfigInterfaces do
     "eth0" => {
       "BOOTPROTO" => "static",
       "IPADDR"    => "192.168.1.2"
+    },
+    "eth1" => {
+      "BOOTPROTO" => "static",
+      "IPADDR"    => "10.0.0.2"
     }
   }.freeze
   SCR_PATH_REGEXP = /.network.value.\"(\w+)\".(\w+)\Z/
@@ -69,6 +73,15 @@ describe Y2Network::ConfigReader::SysconfigInterfaces do
     it "reads bridge interfaces"
     it "reads bonding interfaces"
     it "reads interfaces configuration"
+
+    context "when a connection for a not existing device is found" do
+      let(:configured_interfaces) { ["lo", "eth0", "eth1"] }
+
+      it "creates a fake interface" do
+        eth1 = reader.interfaces.by_name("eth1")
+        expect(eth1).to_not be_nil
+      end
+    end
   end
 
   describe "#connections" do

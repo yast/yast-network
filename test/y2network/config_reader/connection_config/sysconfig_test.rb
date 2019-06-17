@@ -45,7 +45,7 @@ describe Y2Network::ConfigReader::ConnectionConfig::Sysconfig do
     it "uses the appropiate handler" do
       expect(reader).to receive(:require)
         .with("y2network/config_reader/connection_config/sysconfig_handlers/wlan")
-      conn = reader.read(interface)
+      conn = reader.read(interface, :wlan)
       expect(conn).to be(connection_config)
     end
 
@@ -53,7 +53,7 @@ describe Y2Network::ConfigReader::ConnectionConfig::Sysconfig do
       let(:interface) { instance_double(Y2Network::PhysicalInterface, type: :foo) }
 
       it "returns nil" do
-        expect(reader.read(interface)).to be_nil
+        expect(reader.read(interface, :wlan)).to be_nil
       end
     end
   end

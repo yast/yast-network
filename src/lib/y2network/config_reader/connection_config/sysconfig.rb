@@ -28,12 +28,15 @@ module Y2Network
 
         # Constructor
         #
-        # @param interface [String] Interface
-        # @return [Y2Network::SysconfigInterfaceFile]
-        def read(interface)
-          handler_class = find_handler_class(interface.type)
+        # @param name [String] Interface name
+        # @param type [Symbol,nil] Interface type (:eth, :wlan, etc.); if the type is unknown,
+        #   `nil` can be used and it will be guessed from the configuration file is possible.
+        #
+        # @return [Y2Network::ConnectionConfig::Base]
+        def read(name, type)
+          file = Y2Network::SysconfigInterfaceFile.new(name)
+          handler_class = find_handler_class(type || file.type)
           return nil if handler_class.nil?
-          file = Y2Network::SysconfigInterfaceFile.new(interface.name)
           handler_class.new(file).connection_config
         end
 
