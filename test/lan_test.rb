@@ -56,37 +56,47 @@ describe "LanClass#activate_network_service" do
   Yast.import "Stage"
   Yast.import "NetworkService"
 
+  let(:force_restart) { false }
+  let(:installation) { false }
+
+  before do
+    allow(Yast::LanItems).to receive(:force_restart).and_return(force_restart)
+    allow(Yast::Stage).to receive(:normal).and_return(!installation)
+    allow(Yast::Stage).to receive(:initial).and_return(installation)
+  end
+
   [0, 1].each do |linuxrc_usessh|
     ssh_flag = linuxrc_usessh != 0
 
     context format("when linuxrc %s usessh flag", ssh_flag ? "sets" : "doesn't set") do
       before(:each) do
-        allow(Yast::Linuxrc)
-          .to receive(:usessh)
-          .and_return(ssh_flag)
+        allow(Yast::Linuxrc).to receive(:usessh).and_return(ssh_flag)
       end
 
       context "when asked in normal mode" do
-        before(:each) do
-          allow(Yast::Stage)
-            .to receive(:normal)
-            .and_return(true)
+        context "and a restart is not forced" do
+          it "tries to reload network service" do
+            expect(Yast::NetworkService)
+              .to receive(:ReloadOrRestart)
+
+            Yast::Lan.send(:activate_network_service)
+          end
         end
 
-        it "tries to reload network service" do
-          expect(Yast::NetworkService)
-            .to receive(:ReloadOrRestart)
+        context "and a restart is forced" do
+          let(:force_restart) { true }
 
-          Yast::Lan.send(:activate_network_service)
+          it "tries to restart the network service" do
+            expect(Yast::NetworkService)
+              .to receive(:Restart)
+
+            Yast::Lan.send(:activate_network_service)
+          end
         end
       end
 
       context "when asked during installation" do
-        before(:each) do
-          allow(Yast::Stage)
-            .to receive(:normal)
-            .and_return(false)
-        end
+        let(:installation) { true }
 
         it "updates network service according usessh flag" do
           if ssh_flag
