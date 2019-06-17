@@ -24,7 +24,12 @@ require "y2network/widgets/bridge_ports"
 require "y2network/interface_config_builders/br"
 
 describe Y2Network::Widgets::BridgePorts do
-  subject { described_class.new(Y2Network::InterfaceConfigBuilders::Br.new) }
+  let(:builder) { Y2Network::InterfaceConfigBuilders::Br.new }
+  subject { described_class.new(builder) }
+
+  before do
+    allow(builder).to receive(:already_configured?).and_return(false)
+  end
 
   include_examples "CWM::MultiSelectionBox"
 
@@ -38,10 +43,7 @@ describe Y2Network::Widgets::BridgePorts do
 
     context "when some of the enslaved interfaces are configured" do
       it "warns the user and request confirmation to continue" do
-        # yeah, tricky mock, not sure if there is easier way
-        allow(Yast::NetworkInterfaces).to receive(:FilterDevices)
-          .and_return(double(:[] => { "eth0" => { "BOOTPROTO"  => "dhcp" } }))
-        allow(subject).to receive(:value).and_return(["eth0"])
+        allow(builder).to receive(:already_configured?).and_return(true)
 
         expect(Yast::Popup).to receive(:ContinueCancel).and_return(true)
 
