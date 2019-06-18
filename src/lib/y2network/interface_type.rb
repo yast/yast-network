@@ -42,6 +42,7 @@ module Y2Network
     #
     # @param name [String] Type name
     def initialize(name)
+      textdomain "network"
       @name = name
     end
 
