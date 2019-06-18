@@ -197,7 +197,7 @@ module Y2Network
         return false
       end
 
-      return true
+      true
     end
 
     # Checks whether an interface can be enslaved in particular bond interface
