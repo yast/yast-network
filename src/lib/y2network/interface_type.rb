@@ -30,20 +30,40 @@ module Y2Network
     class << self
       # @param const_name [String] Constant name
       # @param name       [String] Type name ("Ethernet", "Wireless", etc.)
-      def define_type(const_name, name)
-        const_set(const_name, new(name))
+      # @param short_name [String] Short name used in legacy code
+      def define_type(const_name, name, short_name)
+        const_set(const_name, new(name, short_name))
+        all << const_get(const_name)
+      end
+
+      # Returns all the existing types
+      #
+      # @return [Array<InterfaceType>] Interface types
+      def all
+        @types ||= []
+      end
+
+      # Returns the interface type with a given short name
+      #
+      # @param short_name [String] Short name
+      # @return [InterfaceType,nil] Interface type or nil is not found
+      def from_short_name(short_name)
+        all.find { |t| t.short_name == short_name }
       end
     end
 
-    # @return [String] Return's type name
+    # @return [String] Returns type name
     attr_reader :name
+    # @return [String] Returns type's short name
+    attr_reader :short_name
 
     # Constructor
     #
     # @param name [String] Type name
-    def initialize(name)
+    def initialize(name, short_name)
       textdomain "network"
       @name = name
+      @short_name = short_name
     end
 
     # Returns the translated name
@@ -54,7 +74,11 @@ module Y2Network
     end
 
     # Define types constants
-    define_type "ETHERNET", N_("Ethernet")
-    define_type "WIRELESS", N_("Wireless")
+    define_type "ETHERNET", N_("Ethernet"), "eth"
+    define_type "WIRELESS", N_("Wireless"), "wlan"
+    define_type "INFINIBAND", N_("Infiniband"), "ib"
+    define_type "BONDING", N_("Bonding"), "bond"
+    define_type "BRIDGE", N_("Bridge"), "br"
+    define_type "VLAN", N_("VLAN"), "vlan"
   end
 end
