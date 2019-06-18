@@ -17,10 +17,10 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 require_relative "../../test_helper"
-require "y2network/config_reader/sysconfig"
-require "y2network/config_reader/sysconfig_dns"
+require "y2network/sysconfig/config_reader"
+require "y2network/sysconfig/dns_reader"
 
-describe Y2Network::ConfigReader::Sysconfig do
+describe Y2Network::Sysconfig::ConfigReader do
   subject(:reader) { described_class.new }
 
   let(:eth0) { Y2Network::Interface.new("eth0") }
@@ -29,20 +29,20 @@ describe Y2Network::ConfigReader::Sysconfig do
   let(:eth0_config) { instance_double(Y2Network::ConnectionConfig::Ethernet) }
   let(:connections) { [eth0_config] }
   let(:routes_file) { instance_double(Y2Network::SysconfigRoutesFile, load: nil, routes: []) }
-  let(:dns_reader) { instance_double(Y2Network::ConfigReader::SysconfigDNS, config: dns) }
+  let(:dns_reader) { instance_double(Y2Network::Sysconfig::DNSReader, config: dns) }
   let(:interfaces_reader) do
     instance_double(
-      Y2Network::ConfigReader::SysconfigInterfaces,
+      Y2Network::Sysconfig::InterfacesReader,
       interfaces:  Y2Network::InterfacesCollection.new(interfaces),
       connections: connections
     )
   end
 
-  let(:dns) { double("Y2Network::ConfigReader::DNS") }
+  let(:dns) { double("Y2Network::Sysconfig::DNSReader") }
 
   before do
-    allow(Y2Network::ConfigReader::SysconfigDNS).to receive(:new).and_return(dns_reader)
-    allow(Y2Network::ConfigReader::SysconfigInterfaces).to receive(:new).and_return(interfaces_reader)
+    allow(Y2Network::Sysconfig::DNSReader).to receive(:new).and_return(dns_reader)
+    allow(Y2Network::Sysconfig::InterfacesReader).to receive(:new).and_return(interfaces_reader)
   end
 
   around { |e| change_scr_root(File.join(DATA_PATH, "scr_read"), &e) }

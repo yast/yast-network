@@ -26,9 +26,9 @@ Yast.import "FileUtils"
 Yast.import "NetHwDetection"
 
 module Y2Network
-  module ConfigReader
+  module Sysconfig
     # Reads DNS configuration from sysconfig files
-    class SysconfigDNS
+    class DNSReader
       include Yast::Logger
 
       # Return configuration from sysconfig files

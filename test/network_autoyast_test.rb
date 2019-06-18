@@ -3,7 +3,7 @@
 require_relative "test_helper"
 
 require "network/network_autoyast"
-require "y2network/config_reader/sysconfig"
+require "y2network/sysconfig/config_reader"
 Yast.import "Profile"
 Yast.import "Lan"
 

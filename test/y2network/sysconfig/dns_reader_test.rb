@@ -17,9 +17,9 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 require_relative "../../test_helper"
-require "y2network/config_reader/sysconfig_dns"
+require "y2network/sysconfig/dns_reader"
 
-describe Y2Network::ConfigReader::SysconfigDNS do
+describe Y2Network::Sysconfig::DNSReader do
   subject(:reader) { described_class.new }
 
   describe "#config" do

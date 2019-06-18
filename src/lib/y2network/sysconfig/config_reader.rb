@@ -23,16 +23,16 @@ require "y2network/routing"
 require "y2network/sysconfig_paths"
 require "y2network/routing_table"
 require "y2network/sysconfig_routes_file"
-require "y2network/config_reader/sysconfig_dns"
-require "y2network/config_reader/sysconfig_interfaces"
+require "y2network/sysconfig/dns_reader"
+require "y2network/sysconfig/interfaces_reader"
 require "y2network/interfaces_collection"
 
 Yast.import "NetworkInterfaces"
 
 module Y2Network
-  module ConfigReader
+  module Sysconfig
     # This class reads the current configuration from `/etc/sysconfig` files
-    class Sysconfig
+    class ConfigReader
       def initialize(_opts = {})
       end
 
@@ -60,7 +60,7 @@ module Y2Network
       #
       # @return [SysconfigInterfaces] Interfaces reader
       def interfaces_reader
-        @interfaces_reader ||= Y2Network::ConfigReader::SysconfigInterfaces.new
+        @interfaces_reader ||= Y2Network::Sysconfig::InterfacesReader.new
       end
 
       # Reads routes
@@ -121,7 +121,7 @@ module Y2Network
       #
       # @return [Y2Network::DNS]
       def dns
-        Y2Network::ConfigReader::SysconfigDNS.new.config
+        Y2Network::Sysconfig::DNSReader.new.config
       end
     end
   end

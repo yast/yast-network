@@ -30,7 +30,7 @@ Yast.import "LanItems"
 Yast.import "NetworkInterfaces"
 
 module Y2Network
-  module ConfigReader
+  module Sysconfig
     # This class reads interfaces configuration from sysconfig files
     #
     # * Physical interfaces are read from the hardware.
@@ -38,7 +38,7 @@ module Y2Network
     #
     # @see Y2Network::Interface
     # @see Y2Network::Connection::Connection
-    class SysconfigInterfaces
+    class InterfacesReader
       # Returns the interfaces and connections configuration
       #
       # @return [Hash<Symbol,Object>] Returns a hash containing

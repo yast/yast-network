@@ -18,9 +18,9 @@
 # find current contact information at www.suse.com.
 
 require_relative "../../test_helper"
-require "y2network/config_reader/sysconfig_interfaces"
+require "y2network/sysconfig/interfaces_reader"
 
-describe Y2Network::ConfigReader::SysconfigInterfaces do
+describe Y2Network::Sysconfig::InterfacesReader do
   subject(:reader) { described_class.new }
   let(:netcards) do
     [eth0]
