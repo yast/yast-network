@@ -45,8 +45,9 @@ module Y2Network
         def find_handler_class(type)
           require "y2network/config_reader/connection_config/sysconfig_handlers/#{type}"
           SysconfigHandlers.const_get(type.to_s.capitalize)
-        rescue LoadError, NameError
-          log.info "Unknown connection type: '#{type}'"
+        rescue LoadError, NameError => e
+          log.info "Unknown connection type: '#{type}'. " \
+                   "Connection handler could not be loaded: #{e.message}"
           nil
         end
       end

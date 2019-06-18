@@ -48,7 +48,7 @@ module Y2Network
         return @config if @config
         find_physical_interfaces
         find_connections
-        { interfaces: @interfaces, connections: @connections }
+        @config = { interfaces: @interfaces, connections: @connections }
       end
 
       # Convenience method to get connections configuration
