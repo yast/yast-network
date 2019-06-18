@@ -33,9 +33,9 @@ module Y2Network
             @file = file
           end
 
-          # Returns an ethernet connection configuration
+          # Returns a wireless connection configuration
           #
-          # @return [ConnectionConfig::Ethernet]
+          # @return [ConnectionConfig::Wireless]
           def connection_config
             Y2Network::ConnectionConfig::Wireless.new.tap do |conn|
               conn.interface = file.name
