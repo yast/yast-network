@@ -21,10 +21,10 @@
 
 require_relative "../../test_helper"
 require "y2network/autoinst_profile/routing_section"
-require "y2network/config_reader/autoinst_routing"
+require "y2network/autoinst/routing_reader"
 require "y2network/interface"
 
-describe Y2Network::ConfigReader::AutoinstRouting do
+describe Y2Network::Autoinst::RoutingReader do
   let(:subject) { described_class.new(routing_section) }
   let(:routing_section) do
     Y2Network::AutoinstProfile::RoutingSection.new_from_hashes(routing_profile)

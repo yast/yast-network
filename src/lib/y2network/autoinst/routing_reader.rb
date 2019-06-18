@@ -24,9 +24,9 @@ require "y2network/routing"
 require "y2network/route"
 
 module Y2Network
-  module ConfigReader
+  module Autoinst
     # This class is responsible of importing the AutoYast routing section
-    class AutoinstRouting
+    class RoutingReader
       # @return [AutoinstProfile::RoutingSection]
       attr_reader :section
 

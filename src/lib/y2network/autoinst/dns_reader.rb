@@ -23,9 +23,9 @@ require "ipaddr"
 Yast.import "IP"
 
 module Y2Network
-  module ConfigReader
+  module Autoinst
     # This class is responsible of importing the AutoYast dns section
-    class AutoinstDNS
+    class DNSReader
       # @return [AutoinstProfile::DNSSection]
       attr_reader :section
 

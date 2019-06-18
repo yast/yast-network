@@ -21,9 +21,9 @@
 
 require_relative "../../test_helper"
 require "y2network/autoinst_profile/dns_section"
-require "y2network/config_reader/autoinst_dns"
+require "y2network/autoinst/dns_reader"
 
-describe Y2Network::ConfigReader::AutoinstDNS do
+describe Y2Network::Autoinst::DNSReader do
   subject { described_class.new(dns_section) }
   let(:dns_section) do
     Y2Network::AutoinstProfile::DNSSection.new_from_hashes(dns_profile)
