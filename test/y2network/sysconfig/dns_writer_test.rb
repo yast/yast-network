@@ -17,10 +17,10 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 require_relative "../../test_helper"
-require "y2network/config_writer/sysconfig_dns"
+require "y2network/sysconfig/dns_writer"
 require "ipaddr"
 
-describe Y2Network::ConfigWriter::SysconfigDNS do
+describe Y2Network::Sysconfig::DNSWriter do
   subject(:writer) { described_class.new }
 
   describe "#write" do

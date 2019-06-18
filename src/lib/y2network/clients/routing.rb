@@ -32,7 +32,7 @@
 
 require "yast"
 require "y2network/config"
-require "y2network/config_writer/sysconfig"
+require "y2network/sysconfig/config_writer"
 require "y2network/serializer/route_sysconfig"
 
 Yast.import "Lan"
@@ -355,7 +355,7 @@ module Y2Network
       # @return [Boolean]
       def write
         if modified?
-          Y2Network::ConfigWriter::Sysconfig.new.write(yast_config)
+          Y2Network::Sysconfig::ConfigWriter.new.write(yast_config)
           log.info("Writing routing configuration: #{yast_config.routing.inspect}")
         end
 

@@ -17,7 +17,7 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 require_relative "../../test_helper"
-require "y2network/config_writer/sysconfig"
+require "y2network/sysconfig/config_writer"
 require "y2network/config"
 require "y2network/interface"
 require "y2network/routing"
@@ -25,7 +25,7 @@ require "y2network/route"
 require "y2network/routing_table"
 require "y2network/sysconfig_paths"
 
-describe Y2Network::ConfigWriter::Sysconfig do
+describe Y2Network::Sysconfig::ConfigWriter do
   subject(:writer) { described_class.new }
 
   describe "#write" do
@@ -70,7 +70,7 @@ describe Y2Network::ConfigWriter::Sysconfig do
 
     let(:routes) { [route, default_route] }
 
-    let(:dns_writer) { instance_double(Y2Network::ConfigWriter::SysconfigDNS, write: nil) }
+    let(:dns_writer) { instance_double(Y2Network::Sysconfig::DNSWriter, write: nil) }
 
     before do
       allow(Y2Network::SysconfigRoutesFile).to receive(:new)
@@ -79,7 +79,7 @@ describe Y2Network::ConfigWriter::Sysconfig do
       allow(Y2Network::SysconfigRoutesFile).to receive(:new)
         .with(no_args)
         .and_return(routes_file)
-      allow(Y2Network::ConfigWriter::SysconfigDNS).to receive(:new)
+      allow(Y2Network::Sysconfig::DNSWriter).to receive(:new)
         .and_return(dns_writer)
     end
 

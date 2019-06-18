@@ -20,9 +20,9 @@ require "yast"
 require "yast2/execute"
 
 module Y2Network
-  module ConfigWriter
+  module Sysconfig
     # This class writes DNS configuration settings.
-    class SysconfigDNS
+    class DNSWriter
       include Yast::Logger
 
       # Writes DNS configuration

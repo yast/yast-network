@@ -20,15 +20,15 @@
 require "yast"
 require "y2network/sysconfig_paths"
 require "y2network/sysconfig_routes_file"
-require "y2network/config_writer/sysconfig_dns"
+require "y2network/sysconfig/dns_writer"
 
 module Y2Network
-  module ConfigWriter
+  module Sysconfig
     # This class imports a configuration into YaST modules
     #
     # Ideally, it should be responsible of writing the changes to the underlying
     # system. But, for the time being, it just relies in {Yast::Routing}.
-    class Sysconfig
+    class ConfigWriter
       # Writes the configuration into YaST network related modules
       #
       # @param config     [Y2Network::Config] Configuration to write
@@ -144,7 +144,7 @@ module Y2Network
       # @param old_config [Y2Network::Config,nil] Old DNS configuration; nil if it is unknown
       def write_dns_settings(config, old_config)
         old_dns = old_config.dns if old_config
-        writer = Y2Network::ConfigWriter::SysconfigDNS.new
+        writer = Y2Network::Sysconfig::DNSWriter.new
         writer.write(config.dns, old_dns)
       end
     end
