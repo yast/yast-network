@@ -135,10 +135,10 @@ module Y2Network
 
     # Creates list of devices enslaved in the bond device.
     #
-    # @param bond_iface [Interface] a name of an nterface of bond type
+    # @param bond_iface [String] a name of an interface of bond type
     # @return list of names of interfaces enslaved in the bond_iface
     def bond_slaves(bond_iface)
-      bond_map = Yast::NetworkInterfaces::Devices().fetch("bond", {}).fetch(bond_iface, {})
+      bond_map = Yast::NetworkInterfaces::FilterDevices("netcard").fetch("bond", {}).fetch(bond_iface, {})
 
       bond_map.select { |k, _| k.start_with?("BONDING_SLAVE") }.values
     end

@@ -45,6 +45,8 @@ describe Yast::LanItems do
 
     allow(Yast::LanItems).to receive(:ReadHardware) { hwinfo_items }
 
+    allow(Yast::NetworkInterfaces).to receive(:devmap).and_return(nil)
+
     netconfig_items.each_pair do |_type, device_maps|
       device_maps.each_pair do |dev, devmap|
         allow(Yast::NetworkInterfaces)
@@ -59,21 +61,21 @@ describe Yast::LanItems do
 
   describe "#GetBondableInterfaces" do
     let(:expected_bondable) { ["eth4", "eth5", "eth11", "eth12"] }
+    # when converting to new API new API is used
+    # for selecting bridgable devices but imports interfaces
+    # from LanItems internally
+    let(:bond0) { instance_double(Y2Network::Interface, name: "bond0", type: "bond") }
+    let(:bond1) { instance_double(Y2Network::Interface, name: "bond1", type: "bond") }
+    let(:config) { Y2Network::Config.new(source: :test) }
 
     context "on common architectures" do
       before(:each) do
         expect(Yast::Arch).to receive(:s390).at_least(:once).and_return false
-        # FindAndSelect initializes internal state of Yast::LanItems it
-        # is used internally by some helpers
-        Yast::LanItems.FindAndSelect("bond1")
       end
 
       it "returns list of slave candidates" do
-        expect(
-          Yast::LanItems
-            .GetBondableInterfaces(Yast::LanItems.GetCurrentName)
-            .map { |i| Yast::LanItems.GetDeviceName(i) }
-        ).to match_array expected_bondable
+        expect(config.interfaces.select_bondable(bond1).map(&:name))
+          .to match_array expected_bondable
       end
     end
 
@@ -83,35 +85,14 @@ describe Yast::LanItems do
       end
 
       it "returns list of slave candidates" do
-        expect(Yast::LanItems).to receive(:s390_ReadQethConfig).with("eth4")
+        expect(config.interfaces).to receive(:s390_ReadQethConfig).with("eth4")
           .and_return("QETH_LAYER2" => "yes")
-        expect(Yast::LanItems).to receive(:s390_ReadQethConfig).with(::String)
+        expect(config.interfaces).to receive(:s390_ReadQethConfig).with(::String)
           .at_least(:once).and_return("QETH_LAYER2" => "no")
 
-        expect(
-          Yast::LanItems
-            .GetBondableInterfaces(Yast::LanItems.GetCurrentName)
-            .map { |i| Yast::LanItems.GetDeviceName(i) }
-        ).to match_array ["eth4"]
+        expect(config.interfaces.select_bondable(bond1).map(&:name))
+          .to match_array ["eth4"]
       end
-    end
-  end
-
-  describe "#GetBondSlaves" do
-    it "returns list of slaves if bond device has some" do
-      expect(Yast::LanItems.GetBondSlaves("bond0")).to match_array ["eth1", "eth2"]
-    end
-
-    it "returns empty list if bond device doesn't have slaves assigned" do
-      expect(Yast::LanItems.GetBondSlaves("bond1")).to be_empty
-    end
-  end
-
-  describe "#BuildBondIndex" do
-    let(:expected_mapping) { { "eth1" => "bond0", "eth2" => "bond0" } }
-
-    it "creates mapping of device names to corresponding bond master" do
-      expect(Yast::LanItems.BuildBondIndex).to match(expected_mapping)
     end
   end
 
