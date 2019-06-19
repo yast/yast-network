@@ -44,7 +44,7 @@ directory.
 ### Overview
 
 #### Frontend
-![overview picture](doc/overview.svg)
+![frontend overview](doc/frontend.svg)
 
 Now frontend mostly describes Add/Edit dialog for interfaces which is the most complex. For links to parts see:
 
