@@ -17,7 +17,7 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/sysconfig_interface_file"
+require "y2network/sysconfig/interface_file"
 
 module Y2Network
   module ConfigReader
@@ -34,7 +34,7 @@ module Y2Network
         #
         # @return [Y2Network::ConnectionConfig::Base]
         def read(name, type)
-          file = Y2Network::SysconfigInterfaceFile.new(name)
+          file = Y2Network::Sysconfig::InterfaceFile.new(name)
           handler_class = find_handler_class(type || file.type)
           return nil if handler_class.nil?
           handler_class.new(file).connection_config

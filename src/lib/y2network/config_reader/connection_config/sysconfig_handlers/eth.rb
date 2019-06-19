@@ -24,14 +24,14 @@ module Y2Network
     module ConnectionConfig
       module SysconfigHandlers
         # This class is able to build a ConnectionConfig::Ethernet object given a
-        # SysconfigInterfaceFile object.
+        # Sysconfig::InterfaceFile object.
         class Eth
-          # @return [Y2Network::SysconfigInterfaceFile]
+          # @return [Y2Network::Sysconfig::InterfaceFile]
           attr_reader :file
 
           # Constructor
           #
-          # @param file [Y2Network::SysconfigInterfaceFile] File to get interface configuration from
+          # @param file [Y2Network::Sysconfig::InterfaceFile] File to get interface configuration from
           def initialize(file)
             @file = file
           end

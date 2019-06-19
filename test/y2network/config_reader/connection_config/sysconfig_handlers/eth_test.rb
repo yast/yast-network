@@ -19,7 +19,7 @@
 
 require_relative "../../../../test_helper"
 require "y2network/config_reader/connection_config/sysconfig_handlers/eth"
-require "y2network/sysconfig_interface_file"
+require "y2network/sysconfig/interface_file"
 
 describe Y2Network::ConfigReader::ConnectionConfig::SysconfigHandlers::Eth do
   subject(:handler) { described_class.new(file) }
@@ -28,7 +28,7 @@ describe Y2Network::ConfigReader::ConnectionConfig::SysconfigHandlers::Eth do
 
   let(:file) do
     instance_double(
-      Y2Network::SysconfigInterfaceFile,
+      Y2Network::Sysconfig::InterfaceFile,
       name:       "eth0",
       bootproto:  :static,
       ip_address: address

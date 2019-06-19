@@ -24,7 +24,7 @@ require "y2network/physical_interface"
 require "y2network/fake_interface"
 require "y2network/connection_config/ethernet"
 require "y2network/config_reader/connection_config/sysconfig"
-require "y2network/sysconfig_interface_file"
+require "y2network/sysconfig/interface_file"
 
 Yast.import "LanItems"
 Yast.import "NetworkInterfaces"

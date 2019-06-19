@@ -17,11 +17,10 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require_relative "../test_helper"
+require_relative "../../test_helper"
+require "y2network/sysconfig/interface_file"
 
-require "y2network/sysconfig_interface_file"
-
-describe Y2Network::SysconfigInterfaceFile do
+describe Y2Network::Sysconfig::InterfaceFile do
   subject(:file) { described_class.new("eth0") }
 
   let(:scr_root) { File.join(DATA_PATH, "scr_read") }

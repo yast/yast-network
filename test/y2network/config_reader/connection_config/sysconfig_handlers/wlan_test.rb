@@ -19,7 +19,7 @@
 
 require_relative "../../../../test_helper"
 require "y2network/config_reader/connection_config/sysconfig_handlers/wlan"
-require "y2network/sysconfig_interface_file"
+require "y2network/sysconfig/interface_file"
 
 describe Y2Network::ConfigReader::ConnectionConfig::SysconfigHandlers::Wlan do
   subject(:handler) { described_class.new(file) }
@@ -28,7 +28,7 @@ describe Y2Network::ConfigReader::ConnectionConfig::SysconfigHandlers::Wlan do
 
   let(:file) do
     instance_double(
-      Y2Network::SysconfigInterfaceFile,
+      Y2Network::Sysconfig::InterfaceFile,
       name:                 "wlan0",
       startmode:            :auto,
       bootproto:            :static,
@@ -42,7 +42,7 @@ describe Y2Network::ConfigReader::ConnectionConfig::SysconfigHandlers::Wlan do
   context "WPA-EAP network configuration" do
     let(:file) do
       instance_double(
-        Y2Network::SysconfigInterfaceFile,
+        Y2Network::Sysconfig::InterfaceFile,
         name:                  "wlan0",
         bootproto:             :static,
         ip_address:            address,
@@ -87,7 +87,7 @@ describe Y2Network::ConfigReader::ConnectionConfig::SysconfigHandlers::Wlan do
     end
     let(:file) do
       instance_double(
-        Y2Network::SysconfigInterfaceFile,
+        Y2Network::Sysconfig::InterfaceFile,
         name:               "wlan0",
         bootproto:          :static,
         wireless_ap:        "00:11:22:33:44:55",
@@ -115,7 +115,7 @@ describe Y2Network::ConfigReader::ConnectionConfig::SysconfigHandlers::Wlan do
   context "WEP network configuration" do
     let(:file) do
       instance_double(
-        Y2Network::SysconfigInterfaceFile,
+        Y2Network::Sysconfig::InterfaceFile,
         name:                 "wlan0",
         bootproto:            :static,
         ip_address:           address,
@@ -147,7 +147,7 @@ describe Y2Network::ConfigReader::ConnectionConfig::SysconfigHandlers::Wlan do
   context "open network configuration" do
     let(:file) do
       instance_double(
-        Y2Network::SysconfigInterfaceFile,
+        Y2Network::Sysconfig::InterfaceFile,
         name:               "wlan0",
         wireless_auth_mode: :open,
         wireless_mode:      :managed

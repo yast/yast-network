@@ -28,7 +28,7 @@ describe Y2Network::Sysconfig::ConfigReader do
   let(:interfaces) { [eth0, wlan0] }
   let(:eth0_config) { instance_double(Y2Network::ConnectionConfig::Ethernet) }
   let(:connections) { [eth0_config] }
-  let(:routes_file) { instance_double(Y2Network::SysconfigRoutesFile, load: nil, routes: []) }
+  let(:routes_file) { instance_double(Y2Network::Sysconfig::RoutesFile, load: nil, routes: []) }
   let(:dns_reader) { instance_double(Y2Network::Sysconfig::DNSReader, config: dns) }
   let(:interfaces_reader) do
     instance_double(
@@ -78,7 +78,7 @@ describe Y2Network::Sysconfig::ConfigReader do
 
   describe "#forward_ipv4?" do
     before do
-      allow(Y2Network::SysconfigRoutesFile).to receive(:new).and_return(routes_file)
+      allow(Y2Network::Sysconfig::RoutesFile).to receive(:new).and_return(routes_file)
     end
 
     it "returns true when IPv4 forwarding is allowed" do
@@ -94,7 +94,7 @@ describe Y2Network::Sysconfig::ConfigReader do
 
   describe "#forward_ipv6?" do
     before do
-      allow(Y2Network::SysconfigRoutesFile).to receive(:new).and_return(routes_file)
+      allow(Y2Network::Sysconfig::RoutesFile).to receive(:new).and_return(routes_file)
     end
 
     it "returns false when IPv6 forwarding is disabled" do

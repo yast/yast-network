@@ -24,9 +24,9 @@ module Y2Network
     module ConnectionConfig
       module SysconfigHandlers
         # This class is able to build a ConnectionConfig::Wireless object given a
-        # SysconfigInterfaceFile object.
+        # Sysconfig::InterfaceFile object.
         class Wlan
-          # @return [Y2Network::SysconfigInterfaceFile]
+          # @return [Y2Network::Sysconfig::InterfaceFile]
           attr_reader :file
 
           def initialize(file)
