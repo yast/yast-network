@@ -156,7 +156,7 @@ module Yast
     def bridge_summary
       config = Y2Network::Config.find(:yast)
       _("Bridges: %s") % config.interfaces.by_type("br").map do |n|
-        "#{n} (#{config.interfaces.bridge_slaves(n.name).sort.join(", ")})"
+        "#{n.name} (#{config.interfaces.bridge_slaves(n.name).sort.join(", ")})"
       end
     end
 
@@ -166,7 +166,7 @@ module Yast
     def bonding_summary
       config = Y2Network::Config.find(:yast)
       _("Bonds: %s") % config.interfaces.by_type("bond").map do |n|
-        "#{n} (#{config.interfaces.bond_slaves(n.name).sort.join(", ")})"
+        "#{n.name} (#{config.interfaces.bond_slaves(n.name).sort.join(", ")})"
       end
     end
   end

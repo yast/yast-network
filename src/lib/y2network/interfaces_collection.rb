@@ -62,7 +62,6 @@ module Y2Network
     #
     # @return [Array<Interface>] list of interfaces usable in bridge_iface
     def select_bridgeable(bridge_iface)
-      raise "Bridge interface expected" unless bridge_iface.type == "br"
       lan_items.select { |i| bridgeable?(bridge_iface, i) }
     end
 
@@ -70,7 +69,6 @@ module Y2Network
     #
     # @return [Array<Interface>] list of interfaces usable in bridge_iface
     def select_bondable(bond_iface)
-      raise "Bond interface expected" unless bond_iface.type == "bond"
       lan_items.select { |i| bondable?(bond_iface, i) }
     end
 
@@ -133,23 +131,12 @@ module Y2Network
       bond_map.select { |k, _| k.start_with?("BONDING_SLAVE") }.values
     end
 
-  private
-
-    # FIXME: this is only helper when coexisting with old LanItems module
-    # can be used in new API of network-ng for read-only methods. It converts
-    # old LanItems::Items into new Interface objects
-    def lan_items
-      Yast::LanItems.Items.map do |_index, item|
-        name = item["ifcfg"] || item["hwinfo"]["dev_name"]
-        Y2Network::Interface.new(name)
-      end
-    end
-
     # Creates a map where the keys are the interfaces enslaved and the values
     # are the bridges where them are taking part.
     def bridge_index
       index = {}
 
+      # TODO: should use by_type
       bridge_devs = Yast::NetworkInterfaces.FilterDevices("netcard").fetch("br", {})
 
       bridge_devs.each do |bridge_master, value|
@@ -164,6 +151,7 @@ module Y2Network
     def bond_index
       index = {}
 
+      # TODO: should use by_type
       bond_devs = Yast::NetworkInterfaces.FilterDevices("netcard").fetch("bond", {})
 
       bond_devs.each do |bond_master, _value|
@@ -175,6 +163,18 @@ module Y2Network
       log.debug("bond slaves index: #{index}")
 
       index
+    end
+
+  private
+
+    # FIXME: this is only helper when coexisting with old LanItems module
+    # can be used in new API of network-ng for read-only methods. It converts
+    # old LanItems::Items into new Interface objects
+    def lan_items
+      Yast::LanItems.Items.map do |_index, item|
+        name = item["ifcfg"] || item["hwinfo"]["dev_name"]
+        Y2Network::Interface.new(name)
+      end
     end
 
     # Checks whether an interface can be bridged in particular bridge

@@ -27,6 +27,8 @@ describe Yast::LanItemsSummary do
     }.freeze
   end
 
+  let(:interfaces) { }
+
   before do
     allow(Yast::LanItems).to receive(:Items).and_return(items)
     allow(Yast::LanItems).to receive(:IsItemConfigured).and_return(true)
@@ -34,7 +36,10 @@ describe Yast::LanItemsSummary do
     dhcp_maps.each_with_index do |item, index|
       allow(Yast::LanItems).to receive(:GetDeviceMap).with(index).and_return(item)
     end
-    allow(subject).to receive(:bridges).and_return(["br0"])
+
+    allow(Y2Network::Config)
+      .to receive(:find)
+      .and_return(instance_double(Y2Network::Config, interfaces: interfaces))
   end
 
   describe "#default" do
@@ -55,7 +60,14 @@ describe Yast::LanItemsSummary do
   end
 
   describe "#proposal" do
+    let(:interfaces) { instance_double(Y2Network::InterfacesCollection) }
+    let(:br0) { instance_double(Y2Network::Interface, name: "br0", type: "br") }
+
     it "returns a Richtext summary of the configured interfaces" do
+      allow(interfaces).to receive(:by_type).and_return([])
+      allow(interfaces).to receive(:by_type).with("br").and_return([br0])
+      allow(interfaces).to receive(:bridge_slaves).and_return(["eth1"])
+
       expect(subject.proposal)
         .to eql "<ul>" \
                 "<li>Configured with DHCP: eth0</li>" \
@@ -67,8 +79,7 @@ describe Yast::LanItemsSummary do
     it "returns Summary.NotConfigured in case of not configured interfaces" do
       allow(Yast::LanItems).to receive(:find_dhcp_ifaces).and_return([])
       allow(Yast::LanItems).to receive(:find_static_ifaces).and_return([])
-      allow(subject).to receive(:bridges).and_return([])
-      allow(subject).to receive(:bonds).and_return([])
+      allow(interfaces).to receive(:by_type).and_return([])
 
       expect(subject.proposal).to eql Yast::Summary.NotConfigured
     end

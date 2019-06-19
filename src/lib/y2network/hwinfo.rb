@@ -102,8 +102,7 @@ module Y2Network
     include Yast::I18n
 
     def load_hwinfo(name)
-      Yast.include self, "network/hardware.rb"
-      ReadHardware("netcard").find { |h| h["dev_name"] == name }
+      Yast::LanItems.Hardware.find { |h| h["dev_name"] == name }
     end
   end
 end

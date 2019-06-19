@@ -857,6 +857,7 @@ module Yast
 
     def IfcfgsToSkipVirtualizedProposal
       skipped = []
+      yast_config = Y2Network::Config.find(:yast)
 
       LanItems.Items.each do |_current, config|
         ifcfg = config["ifcfg"]
@@ -866,11 +867,9 @@ module Yast
         when "br"
           skipped << ifcfg
 
-          bridge_ports = NetworkInterfaces.GetValue(ifcfg, "BRIDGE_PORTS").to_s
-
-          bridge_ports.split.each { |port| skipped << port }
+          yast_config.interfaces.bridge_slaves(ifcfg).each { |port| skipped << port }
         when "bond"
-          LanItems.GetBondSlaves(ifcfg).each do |slave|
+          yast_config.interfaces.bond_slaves(ifcfg).each do |slave|
             log.info("For interface #{ifcfg} found slave #{slave}")
             skipped << slave
           end
@@ -1087,11 +1086,14 @@ module Yast
     end
 
     # Convenience method that returns true if the current item has link and can
-    # be enslabed in a bridge.
+    # be enslaved in a bridge.
     #
     # @return [Boolean] true if it is bridgeable
     def connected_and_bridgeable?(bridge_name, item, config)
-      if !LanItems.IsBridgeable(bridge_name, item)
+      yast_config = Y2Network::Config.find(:yast)
+      # FIXME: until we fully use interfaces in objects we have to workaround it
+      bridge = Y2Network::Interface.new(name: bridge_name)
+      if !yast_config.interfaces.select_bridgeable(bridge).map(&:name).include?(LanItems.GetDeviceName(item))
         log.info "The interface #{config["ifcfg"]} cannot be proposed as bridge."
         return false
       end

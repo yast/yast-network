@@ -1177,15 +1177,6 @@ module Yast
       firmware
     end
 
-    # Returns the interfaces that are enslaved in the given bridge
-    #
-    # @param master [String] bridge name
-    # @return [Array<String>] a list of interface names
-    def bridge_slaves(master)
-      # FIXME: bridge index was moved into InterfacesCollection
-      bridge_index.select { |_k, v| v == master }.keys
-    end
-
     # Creates item's startmode human description
     #
     # @param item_id [Integer] a key for {#Items}
@@ -1281,7 +1272,7 @@ module Yast
       overview = []
       links = []
 
-      bond_index = BuildBondIndex()
+      bond_index = Y2Network::Config.find(:yast).interfaces.bond_index
 
       LanItems.Items.each_key do |key|
         rich = ""
@@ -2362,7 +2353,9 @@ module Yast
     #
     # @return [Boolean] true if enslaved
     def enslaved?(ifcfg_name)
-      bond_index = BuildBondIndex()
+      bond_index = Y2Network::Config.find(:yast).interfaces.bond_index
+      bridge_index = Y2Network::Config.find(:yast).interfaces.bridge_index
+
       return true if bond_index[ifcfg_name] || bridge_index[ifcfg_name]
 
       false
