@@ -16,6 +16,9 @@
 #
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
+
+require "y2network/interface_type"
+
 module Y2Network
   # Network interface.
   class Interface
@@ -29,9 +32,10 @@ module Y2Network
     # Constructor
     #
     # @param name [String] Interface name (e.g., "eth0")
-    def initialize(name)
+    def initialize(name, type: InterfaceType::ETHERNET)
       @name = name
       @description = ""
+      @type = type
     end
 
     # Determines whether two interfaces are equal

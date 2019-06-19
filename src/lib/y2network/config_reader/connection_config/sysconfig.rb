@@ -18,49 +18,36 @@
 # find current contact information at www.suse.com.
 
 require "y2network/sysconfig_interface_file"
-Yast.import "NetworkInterfaces"
 
 module Y2Network
   module ConfigReader
     module ConnectionConfig
       # Reads a connection configuration for a given interface
       class Sysconfig
+        include Yast::Logger
+
         # Constructor
         #
-        # @param interface [String] Interface
-        # @return [Y2Network::SysconfigInterfaceFile]
-        def read(interface)
-          type = find_type_for(interface)
-          handler_class = find_handler_class(type)
-          if handler_class.nil?
-            log.info "Unknown connection type: '#{type}'"
-            return nil
-          end
-          file = Y2Network::SysconfigInterfaceFile.new(interface.name)
+        # @param name [String] Interface name
+        # @param type [Symbol,nil] Interface type (:eth, :wlan, etc.); if the type is unknown,
+        #   `nil` can be used and it will be guessed from the configuration file is possible.
+        #
+        # @return [Y2Network::ConnectionConfig::Base]
+        def read(name, type)
+          file = Y2Network::SysconfigInterfaceFile.new(name)
+          handler_class = find_handler_class(type || file.type)
+          return nil if handler_class.nil?
           handler_class.new(file).connection_config
         end
 
       private
 
-        # Determines the type of the connection using the name
-        #
-        # If the interface does not contain information about the type, it will rely on
-        # NetworkInterfaces#GetTypeFromSysfs.
-        #
-        # @todo Improve detection logic according to NetworkInterfaces#GetTypeFromIfcfgOrName.
-        #
-        # @param interface [Interface] Interface to seach the type for
-        # @return [Symbol]
-        def find_type_for(interface)
-          return interface.type if interface.type
-          type = Yast::NetworkInterfaces.GetTypeFromSysfs(interface.name)
-          type.nil? ? :eth : type.to_sym
-        end
-
         def find_handler_class(type)
           require "y2network/config_reader/connection_config/sysconfig_handlers/#{type}"
           SysconfigHandlers.const_get(type.to_s.capitalize)
-        rescue LoadError
+        rescue LoadError, NameError => e
+          log.info "Unknown connection type: '#{type}'. " \
+                   "Connection handler could not be loaded: #{e.message}"
           nil
         end
       end

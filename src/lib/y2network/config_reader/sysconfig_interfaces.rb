@@ -21,11 +21,13 @@ require "yast"
 require "y2network/interface"
 require "y2network/virtual_interface"
 require "y2network/physical_interface"
+require "y2network/fake_interface"
 require "y2network/connection_config/ethernet"
 require "y2network/config_reader/connection_config/sysconfig"
 require "y2network/sysconfig_interface_file"
 
 Yast.import "LanItems"
+Yast.import "NetworkInterfaces"
 
 module Y2Network
   module ConfigReader
@@ -39,51 +41,75 @@ module Y2Network
     class SysconfigInterfaces
       # Returns the interfaces and connections configuration
       #
-      # @todo Should we use different readers?
-      # @todo Are virtual interfaces coming from connections only?
+      # @return [Hash<Symbol,Object>] Returns a hash containing
+      #   an interfaces collection (with the key `:interfaces`)
+      #   and an array of connection config objects.
       def config
-        [interfaces, connections]
+        return @config if @config
+        find_physical_interfaces
+        find_connections
+        @config = { interfaces: @interfaces, connections: @connections }
       end
 
-      # List of interfaces
+      # Convenience method to get connections configuration
       #
-      # @return [InterfacesCollection]
-      def interfaces
-        @interfaces ||= Y2Network::InterfacesCollection.new(physical_interfaces) # + virtual_interfaces
-      end
-
-      # List of virtual interfaces
-      #
-      # @return [Array<Interface>]
-      def virtual_interfaces
-        @virtual_interfaces ||= connections.map(&:interface).compact
-      end
-
-      # @return [Array<ConnectionConfig>]
+      # @return [Array<Y2Network::ConnectionConfig::Base>] Array of connection
+      #   config objects.
       def connections
-        configured_devices.each_with_object([]) do |name, connections|
-          interface = physical_interfaces.find { |i| i.name == name }
-          # TODO: it may happen that the interface does not exist yet (hotplug, usb, or whatever)
-          # How should we handle those cases?
-          next if interface.nil?
-          connection = Y2Network::ConfigReader::ConnectionConfig::Sysconfig.new.read(interface)
-          connections << connection if connection
-        end
+        config[:connections]
+      end
+
+      # Convenience method to get the interfaces list
+      #
+      # @return [Y2Network::InterfacesCollection]
+      def interfaces
+        config[:interfaces]
       end
 
     private
 
-      # Returns the physical interfaces
+      # Finds the physical interfaces
       #
       # Physical interfaces are read from the old LanItems module
+      def find_physical_interfaces
+        return if @interfaces
+        physical_interfaces = Yast::LanItems.Hardware.map do |h|
+          build_physical_interface(h)
+        end
+        @interfaces = Y2Network::InterfacesCollection.new(physical_interfaces)
+      end
+
+      # Finds the connections configurations
+      def find_connections
+        @connections ||=
+          configured_devices.each_with_object([]) do |name, conns|
+            interface = @interfaces.by_name(name)
+            connection = Y2Network::ConfigReader::ConnectionConfig::Sysconfig.new.read(
+              name,
+              interface ? interface.type : nil
+            )
+            next unless connection
+            add_fake_interface(name, connection) if interface.nil?
+            conns << connection
+          end
+      end
+
+      # Instantiates an interface given a hash containing hardware details
       #
-      # @return [Array<Interface>]
-      def physical_interfaces
-        @physical_interfaces ||= Yast::LanItems.Hardware.map do |card|
-          iface = Y2Network::PhysicalInterface.new(card["dev_name"])
-          iface.description = card["name"]
-          iface.type = card["type"].nil? ? :eth : card["type"].to_sym
-          iface
+      # If there is not information about the type, it will rely on NetworkInterfaces#GetTypeFromSysfs.
+      # This responsability could be moved to the PhysicalInterface class.
+      #
+      # @todo Improve detection logic according to NetworkInterfaces#GetTypeFromIfcfgOrName.
+      #
+      # @param data [Hash] hardware information
+      # @option data [String] "dev_name" Device name ("eth0")
+      # @option data [String] "name"     Device description
+      # @option data [String] "type"     Device type ("eth", "wlan", etc.)
+      def build_physical_interface(data)
+        Y2Network::PhysicalInterface.new(data["dev_name"]).tap do |iface|
+          iface.description = data["name"]
+          type = data["type"] || Yast::NetworkInterfaces.GetTypeFromSysfs(iface.name)
+          iface.type = type.nil? ? :eth : type.to_sym
         end
       end
 
@@ -96,6 +122,20 @@ module Y2Network
       def configured_devices
         files = Yast::SCR.Dir(Yast::Path.new(".network.section"))
         files.reject { |f| IGNORE_IFCFG_REGEX =~ f || f == "lo" }
+      end
+
+      # Adds a fake interface for a given connection
+      #
+      # It may happen that a configured interface is not plugged
+      # while reading the configuration. In such situations, a fake one
+      # should be added.
+      #
+      # @param name [String] Interface name
+      # @param conn [ConnectionConfig] Connection configuration related to the
+      #   network interface
+      def add_fake_interface(name, conn)
+        new_interface = Y2Network::FakeInterface.from_connection(name, conn)
+        @interfaces << new_interface
       end
     end
   end

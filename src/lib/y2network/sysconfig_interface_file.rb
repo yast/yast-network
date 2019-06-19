@@ -153,6 +153,15 @@ module Y2Network
       Yast::SCR.Read(path)
     end
 
+    # Determines the interface's type
+    #
+    # @todo Borrow logic from https://github.com/yast/yast-yast2/blob/6f7a789d00cd03adf62e00da34720f326f0e0633/library/network/src/modules/NetworkInterfaces.rb#L291
+    #
+    # @return [Symbol] Interface's type depending on the file values
+    def type
+      :eth
+    end
+
   private
 
     # Converts the value into a string (or nil if empty)

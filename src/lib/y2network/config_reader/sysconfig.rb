@@ -56,21 +56,9 @@ module Y2Network
 
       include SysconfigPaths
 
-      # Find configured network interfaces
+      # Returns an interfaces reader instance
       #
-      # Configured interfaces have a configuration (ifcfg file) assigned.
-      #
-      # @return [Array<Interface>] Detected interfaces
-      # @see Yast::NetworkInterfaces.Read
-      def find_interfaces
-        Yast::NetworkInterfaces.Read
-        # TODO: for the time being, we are just relying in the underlying stuff.
-        interfaces = Yast::NetworkInterfaces.List("").map do |name|
-          Y2Network::Interface.new(name)
-        end
-        Y2Network::InterfacesCollection.new(interfaces)
-      end
-
+      # @return [SysconfigInterfaces] Interfaces reader
       def interfaces_reader
         @interfaces_reader ||= Y2Network::ConfigReader::SysconfigInterfaces.new
       end
