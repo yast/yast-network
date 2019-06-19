@@ -20,29 +20,27 @@
 require "y2network/connection_config/ethernet"
 
 module Y2Network
-  module ConfigReader
-    module ConnectionConfig
-      module SysconfigHandlers
-        # This class is able to build a ConnectionConfig::Ethernet object given a
-        # Sysconfig::InterfaceFile object.
-        class Eth
-          # @return [Y2Network::Sysconfig::InterfaceFile]
-          attr_reader :file
+  module Sysconfig
+    module ConnectionConfigReaderHandlers
+      # This class is able to build a ConnectionConfig::Ethernet object given a
+      # Sysconfig::InterfaceFile object.
+      class Eth
+        # @return [Y2Network::Sysconfig::InterfaceFile]
+        attr_reader :file
 
-          # Constructor
-          #
-          # @param file [Y2Network::Sysconfig::InterfaceFile] File to get interface configuration from
-          def initialize(file)
-            @file = file
-          end
+        # Constructor
+        #
+        # @param file [Y2Network::Sysconfig::InterfaceFile] File to get interface configuration from
+        def initialize(file)
+          @file = file
+        end
 
-          # @return [Y2Network::ConnectionConfig::Ethernet]
-          def connection_config
-            Y2Network::ConnectionConfig::Ethernet.new.tap do |conn|
-              conn.interface = file.name
-              conn.bootproto = file.bootproto
-              conn.ip_address = file.ip_address
-            end
+        # @return [Y2Network::ConnectionConfig::Ethernet]
+        def connection_config
+          Y2Network::ConnectionConfig::Ethernet.new.tap do |conn|
+            conn.interface = file.name
+            conn.bootproto = file.bootproto
+            conn.ip_address = file.ip_address
           end
         end
       end

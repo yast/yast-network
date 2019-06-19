@@ -17,11 +17,11 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require_relative "../../../../test_helper"
-require "y2network/config_reader/connection_config/sysconfig_handlers/wlan"
+require_relative "../../../test_helper"
+require "y2network/sysconfig/connection_config_reader_handlers/wlan"
 require "y2network/sysconfig/interface_file"
 
-describe Y2Network::ConfigReader::ConnectionConfig::SysconfigHandlers::Wlan do
+describe Y2Network::Sysconfig::ConnectionConfigReaderHandlers::Wlan do
   subject(:handler) { described_class.new(file) }
 
   let(:address) { IPAddr.new("192.168.122.1") }
