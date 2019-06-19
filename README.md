@@ -1,5 +1,4 @@
-YaST Network Module
-======================
+## YaST Network Module
 
 [![Travis Build](https://travis-ci.org/yast/yast-network.svg?branch=master)](https://travis-ci.org/yast/yast-network)
 [![Jenkins Build](http://img.shields.io/jenkins/s/https/ci.opensuse.org/yast-network-master.svg)](https://ci.opensuse.org/view/Yast/job/yast-network-master/)
@@ -9,8 +8,7 @@ YaST Network Module
 The YaST2 Network module manages network configuration including device configuration,
 DNS, Routing and more
 
-Features
---------
+## Features
 
   * device configuration via netconfig
   * network service selection (netconfig, NetworkManager, wicked)
@@ -20,15 +18,13 @@ Features
 
 Some features are SuSE Linux specific.
 
-Installation
-------------
+## Installation
 
 To install the latest stable version on openSUSE or SLE, use zypper:
 
     $ sudo zypper install yast2-network
 
-Running
--------
+## Running
 
 To run the module, use the following command as root:
 
@@ -38,16 +34,26 @@ This will start complex dialog with most of features available.
 For more options see section on [running YaST](https://en.opensuse.org/SDB:Starting_YaST) 
 in the YaST documentation.
 
-Documentation
--------------
+## Documentation
 
 User YaST documentation is available in [general YaST documentation](https://en.opensuse.org/Portal:YaST).
 
 Developer documentation specific for this module is in the [doc](doc)
 directory.
 
-Development
------------
+### Overview
+
+#### Frontend
+![overview picture](doc/overview.svg)
+
+Now frontend mostly describes Add/Edit dialog for interfaces which is the most complex. For links to parts see:
+
+* [Interface Config Builder](https://www.rubydoc.info/github/yast/yast-network/master/Y2Network/InterfaceConfigBuilder)
+* [Add Dialog](https://www.rubydoc.info/github/yast/yast-network/master/Y2Network/Dialogs/AddInterface)
+* [Edit Dialog](https://www.rubydoc.info/github/yast/yast-network/master/Y2Network/Dialogs/EditInterface)
+* Tabs and Widgets live in Y2Network::Widgets
+
+## Development
 
 This module is developed as part of YaST. See
 [YaST development documentation](
