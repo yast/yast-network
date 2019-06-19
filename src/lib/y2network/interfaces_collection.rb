@@ -78,13 +78,21 @@ module Y2Network
     #
     # @todo It uses the hardware's name as a fallback if interface's name is not set
     #
-    # @param name [String] Returns the interface with the given name
+    # @param name [String] interface name ("eth0", "br1", ...)
     # @return [Interface,nil] Interface with the given name or nil if not found
     def by_name(name)
       interfaces.find do |iface|
         iface_name = iface.name || iface.hwinfo.name
         iface_name == name
       end
+    end
+
+    # Returns list of interfaces of given type
+    #
+    # @param type [String] device type name ("eth", "br", ...)
+    # @retutn [Array<Interfaces>] list of found interfaces
+    def by_type(type)
+      interfaces.select { |i| i.type == type }
     end
 
     # Deletes elements which meet a given condition
@@ -105,6 +113,26 @@ module Y2Network
 
     alias_method :eql?, :==
 
+    # Returns the interfaces that are enslaved in the given bridge
+    #
+    # @param master [String] bridge name
+    # @return [Array<String>] a list of interface names
+    # TODO: move to class of interface type br
+    def bridge_slaves(master)
+      bridge_index.select { |_k, v| v == master }.keys
+    end
+
+    # Creates list of devices enslaved in the bond device.
+    #
+    # @param bond_iface [String] a name of an interface of bond type
+    # @return list of names of interfaces enslaved in the bond_iface
+    # TODO: move to class of interface type bond
+    def bond_slaves(bond_iface)
+      bond_map = Yast::NetworkInterfaces::FilterDevices("netcard").fetch("bond", {}).fetch(bond_iface, {})
+
+      bond_map.select { |k, _| k.start_with?("BONDING_SLAVE") }.values
+    end
+
   private
 
     # FIXME: this is only helper when coexisting with old LanItems module
@@ -115,14 +143,6 @@ module Y2Network
         name = item["ifcfg"] || item["hwinfo"]["dev_name"]
         Y2Network::Interface.new(name)
       end
-    end
-
-    # Returns the interfaces that are enslaved in the given bridge
-    #
-    # @param master [String] bridge name
-    # @return [Array<String>] a list of interface names
-    def bridge_slaves(master)
-      bridge_index.select { |_k, v| v == master }.keys
     end
 
     # Creates a map where the keys are the interfaces enslaved and the values
@@ -139,16 +159,6 @@ module Y2Network
       end
 
       index
-    end
-
-    # Creates list of devices enslaved in the bond device.
-    #
-    # @param bond_iface [String] a name of an interface of bond type
-    # @return list of names of interfaces enslaved in the bond_iface
-    def bond_slaves(bond_iface)
-      bond_map = Yast::NetworkInterfaces::FilterDevices("netcard").fetch("bond", {}).fetch(bond_iface, {})
-
-      bond_map.select { |k, _| k.start_with?("BONDING_SLAVE") }.values
     end
 
     def bond_index

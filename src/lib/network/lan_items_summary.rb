@@ -68,11 +68,12 @@ module Yast
     # @return [String] summary in RichText
     def proposal
       items = []
+      config = Y2Network::Config.find(:yast)
 
       items << "<li>#{dhcp_summary}</li>" unless LanItems.find_dhcp_ifaces.empty?
       items << "<li>#{static_summary}</li>" unless LanItems.find_static_ifaces.empty?
-      items << "<li>#{bridge_summary}</li>" unless bridges.empty?
-      items << "<li>#{bonding_summary}</li>" unless bonds.empty?
+      items << "<li>#{bridge_summary}</li>" unless config.interfaces.by_type("br").empty?
+      items << "<li>#{bonding_summary}</li>" unless config.interfaces.by_type("bond").empty?
 
       return Summary.NotConfigured if items.empty?
 
@@ -153,28 +154,20 @@ module Yast
     #
     # @return [String] bridge configured interfaces summary
     def bridge_summary
-      _("Bridges: %s") % bridges.map { |n| "#{n} (#{LanItems.bridge_slaves(n).sort.join(", ")})" }
+      config = Y2Network::Config.find(:yast)
+      _("Bridges: %s") % config.interfaces.by_type("br").map do |n|
+        "#{n} (#{config.interfaces.bridge_slaves(n.name).sort.join(", ")})"
+      end
     end
 
     # Return a summary of the configured bonding interfaces
     #
     # @return [String] bonding configured interfaces summary
     def bonding_summary
-      _("Bonds: %s") % bonds.map { |n| "#{n} (#{LanItems.GetBondSlaves(n).sort.join(", ")})" }
-    end
-
-    # Convenience method that obtains the list of bonding configured interfaces
-    #
-    # @return [Array<String>] bonding configured interface names
-    def bonds
-      LanItems.getNetworkInterfaces("bond").sort
-    end
-
-    # Convenience method that obtains the list of bridge configured interfaces
-    #
-    # @return [Array<String>] bridge configured interface names
-    def bridges
-      LanItems.getNetworkInterfaces("br").sort
+      config = Y2Network::Config.find(:yast)
+      _("Bonds: %s") % config.interfaces.by_type("bond").map do |n|
+        "#{n} (#{config.interfaces.bond_slaves(n.name).sort.join(", ")})"
+      end
     end
   end
 end
