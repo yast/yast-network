@@ -96,5 +96,8 @@ reader and will write it to the final system using the one corresponding to the 
 | Bridge          |  ⌛   |       |
 | Bonding         |      |       |
 | VLAN            |      |       |
+| TAP             |      |       |
 | TUN             |      |       |
+| USB             |      |       |
 | Dummy           |      |       |
+| s390 types      |      |       |
