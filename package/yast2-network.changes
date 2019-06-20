@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Jun 20 14:50:57 UTC 2019 - Josef Reidinger <jreidinger@suse.com>
+
+- backport: - change proposal naming and add option to set cpu
+  mitigations (bsc#1128707)
+- 3.4.10
+
+-------------------------------------------------------------------
 Mon Jun 17 15:47:45 UTC 2019 - Knut Anderssen <kanderssen@suse.com>
 
 - bsc#1133442
