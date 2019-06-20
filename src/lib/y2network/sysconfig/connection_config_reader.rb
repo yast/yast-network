@@ -41,6 +41,10 @@ module Y2Network
 
     private
 
+      # Returns the class to handle a given interface type
+      #
+      # @param type [Symbol]
+      # @return [Class] A class which belongs to the ConnectionConfigReaders module
       def find_handler_class(type)
         require "y2network/sysconfig/connection_config_readers/#{type}"
         ConnectionConfigReaders.const_get(type.to_s.capitalize)
