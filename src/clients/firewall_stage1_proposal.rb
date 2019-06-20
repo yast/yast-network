@@ -41,6 +41,7 @@ module Yast
     LINK_DISABLE_SSHD = "firewall--disable_sshd_in_proposal".freeze
     LINK_ENABLE_VNC = "firewall--enable_vnc_in_proposal".freeze
     LINK_DISABLE_VNC = "firewall--disable_vnc_in_proposal".freeze
+    LINK_CPU_MITIGATIONS = "firewall--cpu_mitigations".freeze
     LINK_FIREWALL_DIALOG = "firewall_stage1".freeze
 
     # Namespace for UI constants
@@ -91,7 +92,8 @@ module Yast
             LINK_ENABLE_SSHD,
             LINK_DISABLE_SSHD,
             LINK_ENABLE_VNC,
-            LINK_DISABLE_VNC
+            LINK_DISABLE_VNC,
+            LINK_CPU_MITIGATIONS
           ]
         }
       when "AskUser"
@@ -100,6 +102,9 @@ module Yast
         log.info "User clicked #{chosen_link}"
 
         case chosen_link
+        when LINK_CPU_MITIGATIONS
+          log.info "cpu mitigations"
+          return { "workflow_sequence" => bootloader_dialog }
         when LINK_ENABLE_FIREWALL
           log.info "Enabling FW"
           SuSEFirewall4Network.SetEnabled1stStage(true)
@@ -138,9 +143,9 @@ module Yast
       when "Description"
         script_return = {
           # Proposal title
-          "rich_text_title" => _("Firewall and SSH"),
+          "rich_text_title" => Yast::Builtins.dgettext("security", "Security"),
           # Menu entry label
-          "menu_title"      => _("&Firewall and SSH"),
+          "menu_title"      => Yast::Builtins.dgettext("ncurses-pkg", "&Security"),
           "id"              => LINK_FIREWALL_DIALOG
         }
       when "Write"
@@ -279,6 +284,42 @@ module Yast
 
   private
 
+    # Returns the cpu mitigation part of the bootloader proposal description
+    # Returns nil if this part should be skipped
+    # @return [String] proposal html text
+    def cpu_mitigations_proposal
+      require "bootloader/bootloader_factory"
+      bl = ::Bootloader::BootloaderFactory.current
+      return nil if bl.name == "none"
+
+      mitigations = bl.cpu_mitigations
+
+      res = _("CPU Mitigations: ") + "<a href=\"#{LINK_CPU_MITIGATIONS}\">" +
+        ERB::Util.html_escape(mitigations.to_human_string) + "</a>"
+      log.info "mitigations output #{res.inspect}"
+      res
+    end
+
+    def bootloader_dialog
+      require "bootloader/config_dialog"
+      Yast.import "Bootloader"
+
+      begin
+        # do it in own dialog window
+        Yast::Wizard.CreateDialog
+        dialog = ::Bootloader::ConfigDialog.new(initial_tab: :kernel)
+        settings = Yast::Bootloader.Export
+        result = dialog.run
+        if result != :next
+          Yast::Bootloader.Import(settings)
+        else
+          Yast::Bootloader.proposed_cfg_changed = true
+        end
+      ensure
+        Yast::Wizard.CloseDialog
+      end
+    end
+
     def preformatted_proposal
       firewall_proposal = if SuSEFirewall4Network.Enabled1stStage
         _(
@@ -301,7 +342,7 @@ module Yast
       end
 
       # Filter proposals with content and sort them
-      proposals = [firewall_proposal, ssh_fw_proposal, sshd_proposal, vnc_fw_proposal].compact
+      proposals = [cpu_mitigations_proposal, firewall_proposal, ssh_fw_proposal, sshd_proposal, vnc_fw_proposal].compact
       "<ul>\n" + proposals.map { |prop| "<li>#{prop}</li>\n" }.join + "</ul>\n"
     end
 
