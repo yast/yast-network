@@ -28,9 +28,9 @@ module Y2Network
     # @param opts   [Hash] Reader options
     # @return [#config] Configuration reader from {Y2Network::ConfigReader}
     def self.for(source, opts = {})
-      require "y2network/config_reader/#{source}"
-      name = source.to_s.split("_").map(&:capitalize).join
-      klass = const_get(name)
+      require "y2network/#{source}/config_reader"
+      modname = source.to_s.split("_").map(&:capitalize).join
+      klass = Y2Network.const_get("#{modname}::ConfigReader")
       klass.new(opts)
     end
   end

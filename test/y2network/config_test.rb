@@ -20,8 +20,8 @@ require_relative "../test_helper"
 require "y2network/config"
 require "y2network/routing_table"
 require "y2network/interface"
-require "y2network/config_reader/sysconfig"
-require "y2network/config_writer/sysconfig"
+require "y2network/sysconfig/config_reader"
+require "y2network/sysconfig/config_writer"
 
 describe Y2Network::Config do
   before do
@@ -44,7 +44,7 @@ describe Y2Network::Config do
 
   describe ".from" do
     let(:reader) do
-      instance_double(Y2Network::ConfigReader::Sysconfig, config: config)
+      instance_double(Y2Network::Sysconfig::ConfigReader, config: config)
     end
 
     before do
@@ -88,7 +88,7 @@ describe Y2Network::Config do
   end
 
   describe "#write" do
-    let(:writer) { instance_double(Y2Network::ConfigWriter::Sysconfig) }
+    let(:writer) { instance_double(Y2Network::Sysconfig::ConfigWriter) }
 
     before do
       allow(Y2Network::ConfigWriter).to receive(:for).with(:sysconfig)

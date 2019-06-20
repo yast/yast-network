@@ -31,7 +31,7 @@
 # respecting DHCP.
 require "yast"
 require "shellwords"
-require "y2network/config_writer/sysconfig_dns"
+require "y2network/sysconfig/config_writer"
 
 module Yast
   class DNSClass < Module
@@ -213,7 +213,7 @@ module Yast
     # @todo Update GUI
     # @return true if success
     def Write(_gui: true)
-      writer = Y2Network::ConfigWriter::SysconfigDNS.new
+      writer = Y2Network::Sysconfig::DNSWriter.new
       writer.write(Yast::Lan.yast_config, Yast::Lan.system_config)
       true
     end
