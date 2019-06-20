@@ -18,10 +18,10 @@
 # find current contact information at www.suse.com.
 
 require_relative "../../../test_helper"
-require "y2network/sysconfig/connection_config_reader_handlers/eth"
+require "y2network/sysconfig/connection_config_readers/eth"
 require "y2network/sysconfig/interface_file"
 
-describe Y2Network::Sysconfig::ConnectionConfigReaderHandlers::Eth do
+describe Y2Network::Sysconfig::ConnectionConfigReaders::Eth do
   subject(:handler) { described_class.new(file) }
 
   let(:address) { IPAddr.new("192.168.122.1") }

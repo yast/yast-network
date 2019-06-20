@@ -17,30 +17,42 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/connection_config/ethernet"
+require "y2network/connection_config/wireless"
 
 module Y2Network
   module Sysconfig
-    module ConnectionConfigReaderHandlers
-      # This class is able to build a ConnectionConfig::Ethernet object given a
+    module ConnectionConfigReaders
+      # This class is able to build a ConnectionConfig::Wireless object given a
       # Sysconfig::InterfaceFile object.
-      class Eth
+      class Wlan
         # @return [Y2Network::Sysconfig::InterfaceFile]
         attr_reader :file
 
-        # Constructor
-        #
-        # @param file [Y2Network::Sysconfig::InterfaceFile] File to get interface configuration from
         def initialize(file)
           @file = file
         end
 
-        # @return [Y2Network::ConnectionConfig::Ethernet]
+        # Returns a wireless connection configuration
+        #
+        # @return [ConnectionConfig::Wireless]
         def connection_config
-          Y2Network::ConnectionConfig::Ethernet.new.tap do |conn|
+          Y2Network::ConnectionConfig::Wireless.new.tap do |conn|
             conn.interface = file.name
             conn.bootproto = file.bootproto
             conn.ip_address = file.ip_address
+            conn.ap = file.wireless_ap
+            conn.ap_scanmode = file.wireless_ap_scanmode
+            conn.auth_mode = file.wireless_auth_mode
+            conn.default_key = file.wireless_default_key
+            conn.eap_auth = file.wireless_eap_auth
+            conn.eap_mode = file.wireless_eap_mode
+            conn.essid = file.wireless_essid
+            conn.key_length = file.wireless_key_length
+            conn.keys = file.wireless_keys
+            conn.mode = file.wireless_mode
+            conn.nwid = file.wireless_nwid
+            conn.wpa_password = file.wireless_wpa_password
+            conn.wpa_psk = file.wireless_wpa_psk
           end
         end
       end

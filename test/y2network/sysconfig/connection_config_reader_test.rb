@@ -20,7 +20,7 @@
 require_relative "../../test_helper"
 
 require "y2network/sysconfig/connection_config_reader"
-require "y2network/sysconfig/connection_config_reader_handlers/wlan"
+require "y2network/sysconfig/connection_config_readers/wlan"
 require "y2network/physical_interface"
 
 describe Y2Network::Sysconfig::ConnectionConfigReader do
@@ -31,14 +31,14 @@ describe Y2Network::Sysconfig::ConnectionConfigReader do
     let(:connection_config) { double("connection_config") }
     let(:handler) do
       instance_double(
-        Y2Network::Sysconfig::ConnectionConfigReaderHandlers::Wlan,
+        Y2Network::Sysconfig::ConnectionConfigReaders::Wlan,
         connection_config: connection_config
       )
     end
 
     before do
       allow(reader).to receive(:require).and_call_original
-      allow(Y2Network::Sysconfig::ConnectionConfigReaderHandlers::Wlan)
+      allow(Y2Network::Sysconfig::ConnectionConfigReaders::Wlan)
         .to receive(:new).and_return(handler)
     end
 
