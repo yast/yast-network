@@ -135,7 +135,7 @@ module Yast
           raise "INTERNAL ERROR: unknown action '#{@chosen_link}' for proposal client"
         end
 
-        SuSEFirewallProposal.SetChangedByUser(true) 
+        SuSEFirewallProposal.SetChangedByUser(true)
 
         adjust_configuration
 
