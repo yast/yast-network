@@ -93,22 +93,6 @@ module Yast
       nil
     end
 
-    # Change UI widget only if it exists
-    # @param [Yast::Term] id widget id
-    # @param [Symbol] param widget parameter
-    # @param [Object] value widget parameter value
-    def ChangeWidgetIfExists(id, param, value)
-      id = deep_copy(id)
-      value = deep_copy(value)
-      if UI.WidgetExists(id)
-        UI.ChangeWidget(id, param, value)
-      else
-        Builtins.y2debug("Not changing: %1", id)
-      end
-
-      nil
-    end
-
     # Adds the packages to the software proposal to make sure they are available
     # in the installed system
     # @param [Array<String>] packages list of required packages (["rpm", "bash"])
@@ -183,26 +167,6 @@ module Yast
     def IsNotEmpty(value)
       value = deep_copy(value)
       !IsEmpty(value)
-    end
-
-    # Create a list of items for UI from the given hardware list.
-    #
-    # This list is used when selecting <ol>
-    # <li> detected unconfigured cards,
-    # there we want to see the link status </li>
-    # <li> undetected cards manually. there is no link status there
-    # and it won't be displayed. all is ok. </li>
-    # </ol>
-    # @param descriptions [Array<Hash>] given list for conversion
-    # @param selected_index [Fixnum] selected item (0 for the first)
-    # @return a list of items
-    def hwlist2items(descriptions, selected_index)
-      descriptions.map.with_index do |d, i|
-        hwname = d["name"] || _("Unknown")
-        num = d["num"] || i
-
-        Item(Id(num), hwname, num == selected_index)
-      end
     end
 
     # For s390 hwinfo gives us a multitude of types but some are handled
@@ -290,11 +254,6 @@ module Yast
     def ValidNicName(name)
       # 16 is the kernel limit on interface name size (IFNAMSIZ)
       !(name =~ /^[[:alnum:]._:-]{1,15}\z/).nil?
-    end
-
-    # Checks if device with the given name is configured already.
-    def UsedNicName(name)
-      Builtins.contains(NetworkInterfaces.List(""), name)
     end
 
     # Simple convertor from subclass to controller type.
@@ -716,23 +675,6 @@ module Yast
       ret
     end
     # TODO: end
-
-    # Return list of all interfaces present in the system.
-    #
-    # It means all interfaces which exists in the system at the time.
-    # /sys filesystem is used for checking that.
-    #
-    # @return [Array] of interface names.
-    # FIXME: rename e.g. to sys_interfaces
-    def GetAllInterfaces
-      result = RunAndRead("/bin/ls /sys/class/net")
-
-      if Ops.get_boolean(result, "exit", false)
-        Ops.get_list(result, "output", [])
-      else
-        []
-      end
-    end
 
     # Wrapper to call 'ip link set up' with the given interface
     #
