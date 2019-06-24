@@ -58,13 +58,6 @@ module Y2Network
       @interfaces = interfaces
     end
 
-    # @param bond_iface [Interface] an interface of bond type
-    #
-    # @return [Array<Interface>] list of interfaces usable in bridge_iface
-    def select_bondable(bond_iface)
-      all.select { |i| bondable?(bond_iface, i) }
-    end
-
     # Returns an interface with the given name if present
     #
     # @todo It uses the hardware's name as a fallback if interface's name is not set
@@ -166,37 +159,6 @@ module Y2Network
         name = item["ifcfg"] || item["hwinfo"]["dev_name"]
         Y2Network::Interface.new(name)
       end
-    end
-
-  private
-
-    # Checks whether an interface can be enslaved in particular bond interface
-    #
-    # @param bond_iface [Interface]
-    # @param iface [Interface] an interface to be validated as bond_iface slave
-    # TODO: Check for valid configurations. E.g. bond device over vlan
-    # is nonsense and is not supported by netconfig.
-    # Also devices enslaved in a bridge should be excluded too.
-    def bondable?(bond_iface, iface)
-      Yast.import "Arch"
-      Yast.include self, "network/lan/s390.rb"
-
-      # check if the device is L2 capable on s390
-      if Yast::Arch.s390
-        s390_config = s390_ReadQethConfig(iface.name)
-
-        # only devices with L2 support can be enslaved in bond. See bnc#719881
-        return false unless s390_config["QETH_LAYER2"] == "yes"
-      end
-
-      if bond_index[iface.name] && bond_index[iface.name] != bond_iface.name
-        log.debug("Excluding (#{iface.name}) - is already bonded")
-        return false
-      end
-
-      return true if !iface.configured
-
-      iface.bootproto == "none"
     end
   end
 end
