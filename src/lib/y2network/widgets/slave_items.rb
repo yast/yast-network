@@ -13,12 +13,14 @@ module Y2Network
       # Builds content for slave configuration dialog (used e.g. when configuring
       # bond slaves) according the given list of item_ids (see LanItems::Items)
       #
-      # @param [Array<Fixnum>] item_ids           list of indexes into LanItems::Items
+      # @param [Array<String>] slaves             list of device names
       # @param [Array<String>] enslaved_ifaces    list of device names of already enslaved devices
-      def slave_items_from(item_ids, enslaved_ifaces)
-        raise ArgumentError, "no slave device defined" if item_ids.nil?
+      def slave_items_from(slaves, enslaved_ifaces)
+        raise ArgumentError, "no slave device defined" if slaves.nil?
 
         textdomain "network"
+
+        item_ids = slaves.map { |s| Yast::LanItems.find_configured(s) || Yast::LanItems.FindDeviceIndex(s) }
 
         item_ids.each_with_object([]) do |item_id, items|
           # TODO: do not touch directly LanItems here, but current it is quite hard to list all items without it

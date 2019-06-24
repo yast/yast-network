@@ -29,7 +29,7 @@ module Y2Network
       def init
         br_ports = @settings["BRIDGE_PORTS"].split
         items = slave_items_from(
-          @settings.select_bridgeable,
+          @settings.select_bridgeable.map(&:name),
           br_ports
         )
 
