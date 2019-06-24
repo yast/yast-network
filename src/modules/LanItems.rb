@@ -1513,7 +1513,7 @@ module Yast
     # Distributes an ifcfg hash to individual attributes.
     # @param devmap   [Hash] an ifcfg, values are strings
     # @param defaults [Hash] should provide defaults for devmap
-    # @return [void]
+    # @return [Hash] devmap with used values
     def SetDeviceVars(devmap, defaults)
       d = defaults.merge(devmap)
       # address options
@@ -1548,6 +1548,7 @@ module Yast
           end
         end
       end
+      d["BOND_SLAVES"] = @bond_slaves
 
       # tun/tap settings
       @tunnel_set_owner = d["TUNNEL_SET_OWNER"]
@@ -1593,13 +1594,14 @@ module Yast
 
       @aliases = Ops.get_map(devmap, "_aliases", {})
 
-      nil
+      d
     end
 
     # Initializes s390 specific device variables.
     #
     # @param [Hash] devmap    map with s390 specific attributes and its values
     # @param [Hash] defaults  map with default values for attributes not found in devmap
+    # @return [Hash] devmap with used values
     def SetS390Vars(devmap, defaults)
       return if !Arch.s390
       d = defaults.merge(devmap)
@@ -1626,7 +1628,7 @@ module Yast
       @iucv_user = defaults["IUCV_USER"] || ""
       @chan_mode = defaults["CHAN_MODE"] || ""
 
-      nil
+      d
     end
 
     def InitS390VarsByDefaults
@@ -1966,7 +1968,7 @@ module Yast
       nil
     end
 
-    def SetItem
+    def SetItem(builder: nil)
       @operation = :edit
       @device = Ops.get_string(getCurrentItem, "ifcfg", "")
 
@@ -1983,8 +1985,14 @@ module Yast
 
       @description = BuildDescription(@type, @device, devmap, @Hardware)
 
-      SetDeviceVars(devmap, @SysconfigDefaults)
-      SetS390Vars(s390_devmap, @s390_defaults)
+      devmap = SetDeviceVars(devmap, @SysconfigDefaults)
+      s390_devmap = SetS390Vars(s390_devmap, @s390_defaults)
+
+      # FIXME: should raise an exception
+      if builder
+        builder.load_sysconfig(devmap)
+        builder.load_s390_config(s390_devmap)
+      end
 
       @hotplug = ""
       Builtins.y2debug("type=%1", @type)

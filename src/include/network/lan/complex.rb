@@ -403,7 +403,7 @@ module Yast
           if LanItems.IsCurrentConfigured
             builder.load_sysconfig(LanItems.GetCurrentMap())
             builder.load_s390_config(LanItems.s390_ReadQethConfig(builder.name))
-            LanItems.SetItem
+            LanItems.SetItem(builder: builder)
 
             if LanItems.startmode == "managed"
               # Continue-Cancel popup

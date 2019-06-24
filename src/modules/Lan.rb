@@ -1090,7 +1090,6 @@ module Yast
     #
     # @return [Boolean] true if it is bridgeable
     def connected_and_bridgeable?(bridge_name, item, config)
-      yast_config = Y2Network::Config.find(:yast)
       # FIXME: a workaround until we fully use builders in proposals
       bridge_builder = Y2Network::InterfaceConfigBuilder.for("br")
       bridge_builder.name = bridge_name
