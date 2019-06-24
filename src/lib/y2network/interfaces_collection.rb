@@ -58,18 +58,11 @@ module Y2Network
       @interfaces = interfaces
     end
 
-    # @param bridge_iface [Interface] an interface of bridge type
-    #
-    # @return [Array<Interface>] list of interfaces usable in bridge_iface
-    def select_bridgeable(bridge_iface)
-      lan_items.select { |i| bridgeable?(bridge_iface, i) }
-    end
-
     # @param bond_iface [Interface] an interface of bond type
     #
     # @return [Array<Interface>] list of interfaces usable in bridge_iface
     def select_bondable(bond_iface)
-      lan_items.select { |i| bondable?(bond_iface, i) }
+      all.select { |i| bondable?(bond_iface, i) }
     end
 
     # Returns an interface with the given name if present
@@ -165,58 +158,17 @@ module Y2Network
       index
     end
 
-  private
-
-    # FIXME: this is only helper when coexisting with old LanItems module
-    # can be used in new API of network-ng for read-only methods. It converts
-    # old LanItems::Items into new Interface objects
-    def lan_items
+    def all
+      # FIXME: this is only helper when coexisting with old LanItems module
+      # can be used in new API of network-ng for read-only methods. It converts
+      # old LanItems::Items into new Interface objects
       Yast::LanItems.Items.map do |_index, item|
         name = item["ifcfg"] || item["hwinfo"]["dev_name"]
         Y2Network::Interface.new(name)
       end
     end
 
-    # Checks whether an interface can be bridged in particular bridge
-    #
-    # @param bridge_iface [Interface]
-    # @param iface [Interface] an interface to be validated as the bridge_iface slave
-    def bridgeable?(bridge_iface, iface)
-      return true if !iface.configured
-
-      if bond_index[iface.name]
-        log.debug("Excluding (#{iface.name}) - is bonded")
-        return false
-      end
-
-      # the iface is already in another bridge
-      if bridge_index[iface.name] && bridge_index[devname] != bridge_iface.name
-        log.debug("Excluding (#{iface.name}) - already bridged")
-        return false
-      end
-
-      # exclude interfaces of type unusable for bridge
-      case iface.type
-      when "br"
-        log.debug("Excluding (#{iface.name}) - is bridge")
-        return false
-      when "tun", "usb", "wlan"
-        log.debug("Excluding (#{iface.name}) - is #{iface.type}")
-        return false
-      end
-
-      case iface.startmode
-      when "nfsroot"
-        log.debug("Excluding (#{iface.name}) - is nfsroot")
-        return false
-
-      when "ifplugd"
-        log.debug("Excluding (#{iface.name}) - ifplugd")
-        return false
-      end
-
-      true
-    end
+  private
 
     # Checks whether an interface can be enslaved in particular bond interface
     #

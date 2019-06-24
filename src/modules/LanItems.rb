@@ -1272,8 +1272,6 @@ module Yast
       overview = []
       links = []
 
-      bond_index = Y2Network::Config.find(:yast).interfaces.bond_index
-
       LanItems.Items.each_key do |key|
         rich = ""
 
@@ -1317,11 +1315,11 @@ module Yast
           end
 
           if enslaved?(ifcfg_name)
-            if bond_index[ifcfg_name]
-              master = bond_index[ifcfg_name]
+            if yast_config.interfaces.bond_index[ifcfg_name]
+              master = yast_config.interfaces.bond_index[ifcfg_name]
               master_desc = _("Bonding master")
             else
-              master = bridge_index[ifcfg_name]
+              master = yast_config.interfaces.bridge_index[ifcfg_name]
               master_desc = _("Bridge")
             end
             note = format(_("enslaved in %s"), master)
@@ -1998,33 +1996,42 @@ module Yast
       nil
     end
 
-    def ProposeItem
-      Builtins.y2milestone("Propose configuration for %1", getCurrentItem)
-      @operation = nil
+    # A default configuration for device when installer needs to configure it
+    def ProposeItem(item_id)
+      Builtins.y2milestone("Propose configuration for %1", GetDeviceName(item_id))
       return false if Select("") != true
-      @mtu = "1492" if Arch.s390 && Builtins.contains(["lcs", "eth"], @type)
-      @ipaddr = ""
-      @netmask = ""
-      @bootproto = "dhcp"
+
+      type = Items().fetch(item_id, {}).fetch("hwinfo", {})[type]
+      builder = Y2Network::InterfaceConfigBuilder.for(type)
+
+      builder["MTU"] = "1492" if Arch.s390 && Builtins.contains(["lcs", "eth"], type)
+      builder["IPADDR"] = ""
+      builder["NETMASK"] = ""
+      builder["BOOTPROTO"] = "dhcp"
+
       # see bsc#176804
       devicegraph = Y2Storage::StorageManager.instance.staging
       if devicegraph.filesystem_in_network?("/")
-        @startmode = "nfsroot"
+        builder["STARTMODE"] = "nfsroot"
         Builtins.y2milestone("startmode nfsroot")
       end
+
+      # FIXME: seems like a hack
       NetworkInterfaces.Add
       @operation = :edit
       Ops.set(
         @Items,
-        [@current, "ifcfg"],
-        Ops.get_string(getCurrentItem, ["hwinfo", "dev_name"], "")
+        [item_id, "ifcfg"],
+        Ops.get_string(GetLanItem(item_id), ["hwinfo", "dev_name"], "")
       )
+      # FIXME: is it needed?
       @description = HardwareName(
-        [Ops.get_map(getCurrentItem, "hwinfo", {})],
-        Ops.get_string(getCurrentItem, ["hwinfo", "dev_name"], "")
+        [Ops.get_map(GetLanItem(item_id), "hwinfo", {})],
+        Ops.get_string(GetLanItem(item_id), ["hwinfo", "dev_name"], "")
       )
-      Commit()
-      Builtins.y2milestone("After configuration propose %1", getCurrentItem)
+
+      Commit(builder)
+      Builtins.y2milestone("After configuration propose %1", GetLanItem(item_id))
       true
     end
 
@@ -2339,10 +2346,10 @@ module Yast
     # @return [String] formated string with the interface type and the interfaces enslaved
     def slaves_desc(ifcfg_type, ifcfg_name)
       if ifcfg_type == "bond"
-        slaves = GetBondSlaves(ifcfg_name)
+        slaves = Y2Network::Config.find(:yast).interfaces.bond_slaves(ifcfg_name)
         desc = _("Bonding slaves")
       else
-        slaves = bridge_slaves(ifcfg_name)
+        slaves = Y2Network::Config.find(:yast).interfaces.bridge_slaves(ifcfg_name)
         desc = _("Bridge Ports")
       end
 

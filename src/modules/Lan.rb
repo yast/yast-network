@@ -896,11 +896,14 @@ module Yast
       # and add old device name into bridge_ports
       LanItems.Items.each do |current, config|
         bridge_name = LanItems.new_type_device("br")
+
         next unless connected_and_bridgeable?(bridge_name, current, config)
-        LanItems.current = current
+
         # first configure all connected unconfigured devices with dhcp (with default parameters)
-        next if !LanItems.IsCurrentConfigured && !LanItems.ProposeItem
-        ifcfg = LanItems.GetCurrentName
+        # FIXME: ProposeItem is always true
+        next if !LanItems.IsItemConfigured(current) && !LanItems.ProposeItem(current)
+
+        ifcfg = LanItems.GetDeviceName(current)
         next unless configure_as_bridge!(ifcfg, bridge_name)
         # reconfigure existing device as newly created bridge's port
         configure_as_bridge_port(ifcfg)
@@ -1058,10 +1061,7 @@ module Yast
     def configure_as_bridge!(ifcfg, bridge_name)
       return false if !NetworkInterfaces.Edit(ifcfg)
 
-      old_config = deep_copy(NetworkInterfaces.Current)
-      log.debug("Old Config #{ifcfg}\n#{old_config}")
-
-      log.info("old configuration #{ifcfg}, bridge #{bridge_name}")
+      log.info("device #{ifcfg} is gointg to be in bridge #{bridge_name}")
 
       NetworkInterfaces.Name = bridge_name
 
@@ -1091,9 +1091,11 @@ module Yast
     # @return [Boolean] true if it is bridgeable
     def connected_and_bridgeable?(bridge_name, item, config)
       yast_config = Y2Network::Config.find(:yast)
-      # FIXME: until we fully use interfaces in objects we have to workaround it
-      bridge = Y2Network::Interface.new(name: bridge_name)
-      if !yast_config.interfaces.select_bridgeable(bridge).map(&:name).include?(LanItems.GetDeviceName(item))
+      # FIXME: a workaround until we fully use builders in proposals
+      bridge_builder = Y2Network::InterfaceConfigBuilder.for("br")
+      bridge_builder.name = bridge_name
+
+      if !bridge_builder.select_bridgeable.map(&:name).include?(LanItems.GetDeviceName(item))
         log.info "The interface #{config["ifcfg"]} cannot be proposed as bridge."
         return false
       end

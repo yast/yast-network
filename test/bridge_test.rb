@@ -102,11 +102,17 @@ describe Yast::LanItems do
     # when converting to new API new API is used
     # for selecting bridgable devices but imports interfaces
     # from LanItems internally
-    let(:br0) { instance_double(Y2Network::Interface, name: "br0", type: "br") }
     let(:config) { Y2Network::Config.new(source: :test) }
+    let(:builder) { Y2Network::InterfaceConfigBuilder.for("br") }
 
     it "returns list of slave candidates" do
-      expect(config.interfaces.select_bridgeable(br0).map(&:name))
+      allow(Y2Network::Config)
+        .to receive(:find)
+        .with(:yast)
+        .and_return(config)
+
+      builder.name = "br0"
+      expect(builder.select_bridgeable.map(&:name))
         .to match_array expected_bridgeable
     end
   end

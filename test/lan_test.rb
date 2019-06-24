@@ -372,7 +372,7 @@ describe "LanClass" do
       end
 
       it "configures the interface with defaults before anything if not configured" do
-        allow(Yast::LanItems).to receive(:IsCurrentConfigured).and_return(false)
+        allow(Yast::LanItems).to receive(:IsItemConfigured).and_return(false)
         expect(Yast::LanItems).to receive(:ProposeItem)
 
         Yast::Lan.ProposeVirtualized

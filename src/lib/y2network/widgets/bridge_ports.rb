@@ -29,7 +29,7 @@ module Y2Network
       def init
         br_ports = @settings["BRIDGE_PORTS"].split
         items = slave_items_from(
-          Yast::LanItems.GetBridgeableInterfaces(Yast::LanItems.GetCurrentName),
+          @settings.select_bridgeable,
           br_ports
         )
 
