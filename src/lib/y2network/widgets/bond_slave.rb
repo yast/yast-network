@@ -69,10 +69,13 @@ module Y2Network
       # Default function to init the value of slave devices box for bonding.
       def init
         # TODO: use def items, but problem now is that slave_items returns term and not array
-        items = slave_items_from(@settings.bondable_interfaces, @settings["SLAVES"])
+        items = slave_items_from(
+          @settings.select_bondable.map(&:name),
+          @settings["SLAVES"]
+        )
 
         # reorder the items
-        l1, l2 = items.partition { |t| @settings["SLAVES"].include? t[0][0] }
+        l1, l2 = items.partition { |t| slaves.include? t[0][0] }
 
         items = l1 + l2.sort_by { |t| justify_dev_name(t[0][0]) }
 
@@ -81,7 +84,7 @@ module Y2Network
         Yast::UI.ChangeWidget(
           :bond_slaves_items,
           :SelectedItems,
-          @settings["SLAVES"]
+          slaves
         )
 
         enable_slave_buttons

@@ -49,6 +49,11 @@ module Y2Network
           return false
         end
 
+        # cannot enslave itself
+        # FIXME: this can happen only bcs we silently use LanItems::Items which
+        # already contains partially configured bond when adding
+        return false if iface.name == @name
+
         return true if !iface.configured
 
         iface.bootproto == "none"
