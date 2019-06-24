@@ -64,9 +64,15 @@ describe Yast::LanItems do
     # when converting to new API new API is used
     # for selecting bridgable devices but imports interfaces
     # from LanItems internally
-    let(:bond0) { instance_double(Y2Network::Interface, name: "bond0", type: "bond") }
-    let(:bond1) { instance_double(Y2Network::Interface, name: "bond1", type: "bond") }
     let(:config) { Y2Network::Config.new(source: :test) }
+    let(:builder) { Y2Network::InterfaceConfigBuilder.for("bond") }
+
+    before do
+      allow(Y2Network::Config)
+        .to receive(:find)
+        .with(:yast)
+        .and_return(config)
+    end
 
     context "on common architectures" do
       before(:each) do
@@ -74,7 +80,8 @@ describe Yast::LanItems do
       end
 
       it "returns list of slave candidates" do
-        expect(config.interfaces.select_bondable(bond1).map(&:name))
+        builder.name = "bond1"
+        expect(builder.select_bondable.map(&:name))
           .to match_array expected_bondable
       end
     end
@@ -85,12 +92,13 @@ describe Yast::LanItems do
       end
 
       it "returns list of slave candidates" do
-        expect(config.interfaces).to receive(:s390_ReadQethConfig).with("eth4")
+        expect(builder).to receive(:s390_ReadQethConfig).with("eth4")
           .and_return("QETH_LAYER2" => "yes")
-        expect(config.interfaces).to receive(:s390_ReadQethConfig).with(::String)
+        expect(builder).to receive(:s390_ReadQethConfig).with(::String)
           .at_least(:once).and_return("QETH_LAYER2" => "no")
 
-        expect(config.interfaces.select_bondable(bond1).map(&:name))
+        builder.name = "bond1"
+        expect(builder.select_bondable.map(&:name))
           .to match_array ["eth4"]
       end
     end
