@@ -15,7 +15,7 @@ module Y2Network
         @config["SLAVES"] = []
       end
 
-      # @return [Array<Interface>] list of interfaces usable in bridge_iface
+      # @return [Array<Interface>] list of interfaces usable for the bond device
       def select_bondable
         interfaces.all.select { |i| bondable?(i) }
       end

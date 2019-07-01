@@ -21,7 +21,7 @@ module Y2Network
         end
       end
 
-      # @return [Array<Interface>] list of interfaces usable in bridge
+      # @return [Array<Interface>] list of interfaces usable in the bridge
       def select_bridgeable
         interfaces.all.select { |i| bridgeable?(i) }
       end

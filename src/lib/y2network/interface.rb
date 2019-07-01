@@ -38,7 +38,7 @@ module Y2Network
       define_method method_name do
         # when switching to new backend we need as much guards as possible
         if !configured || config.nil? || config.empty?
-          raise "Trying to read configuration of an unconfigured interface"
+          raise "Trying to read configuration of an unconfigured interface #{@name}"
         end
 
         config[ifcfg_option]
