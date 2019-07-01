@@ -74,7 +74,7 @@ module Y2Network
     # Returns list of interfaces of given type
     #
     # @param type [String] device type name ("eth", "br", ...)
-    # @retutn [Array<Interfaces>] list of found interfaces
+    # @return [Array<Interfaces>] list of found interfaces
     def by_type(type)
       interfaces.select { |i| i.type == type }
     end
