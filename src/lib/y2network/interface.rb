@@ -32,6 +32,9 @@ module Y2Network
     attr_reader :hardware
 
     # Shortcuts for accessing interfaces' ifcfg options
+    #
+    # TODO: this makes Interface class tighly couplet to netconfig backend
+    # once we have generic layer for accessing backends these methods has to be replaced
     ["STARTMODE", "BOOTPROTO"].each do |ifcfg_option|
       method_name = ifcfg_option.downcase
 
@@ -83,6 +86,9 @@ module Y2Network
     # https://ruby-doc.org/core-2.3.3/Object.html#method-i-eql-3F
     alias_method :eql?, :==
 
+    # Complete configuration of the interface
+    #
+    # @return [Hash<String, String>] option, value hash map
     def config
       system_config(name)
     end
