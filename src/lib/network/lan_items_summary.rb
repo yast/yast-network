@@ -72,8 +72,8 @@ module Yast
 
       items << "<li>#{dhcp_summary}</li>" unless LanItems.find_dhcp_ifaces.empty?
       items << "<li>#{static_summary}</li>" unless LanItems.find_static_ifaces.empty?
-      items << "<li>#{bridge_summary}</li>" unless config.interfaces.by_type("br").empty?
-      items << "<li>#{bonding_summary}</li>" unless config.interfaces.by_type("bond").empty?
+      items << "<li>#{bridge_summary}</li>" unless config.interfaces.by_type(Y2Network::InterfaceType::BRIDGE).to_a.empty?
+      items << "<li>#{bonding_summary}</li>" unless config.interfaces.by_type(Y2Network::InterfaceType::BONDING).to_a.empty?
 
       return Summary.NotConfigured if items.empty?
 
@@ -155,7 +155,7 @@ module Yast
     # @return [String] bridge configured interfaces summary
     def bridge_summary
       config = Y2Network::Config.find(:yast)
-      _("Bridges: %s") % config.interfaces.by_type("br").map do |n|
+      _("Bridges: %s") % config.interfaces.by_type(Y2Network::InterfaceType::BRIDGE).to_a.map do |n|
         "#{n.name} (#{config.interfaces.bridge_slaves(n.name).sort.join(", ")})"
       end
     end
@@ -165,7 +165,7 @@ module Yast
     # @return [String] bonding configured interfaces summary
     def bonding_summary
       config = Y2Network::Config.find(:yast)
-      _("Bonds: %s") % config.interfaces.by_type("bond").map do |n|
+      _("Bonds: %s") % config.interfaces.by_type(Y2Network::InterfaceType::BONDING).to_a.map do |n|
         "#{n.name} (#{config.interfaces.bond_slaves(n.name).sort.join(", ")})"
       end
     end

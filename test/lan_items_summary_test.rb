@@ -61,11 +61,11 @@ describe Yast::LanItemsSummary do
 
   describe "#proposal" do
     let(:interfaces) { instance_double(Y2Network::InterfacesCollection) }
-    let(:br0) { instance_double(Y2Network::Interface, name: "br0", type: "br") }
+    let(:br0) { instance_double(Y2Network::Interface, name: "br0", type: Y2Network::InterfaceType::BRIDGE) }
 
     it "returns a Richtext summary of the configured interfaces" do
       allow(interfaces).to receive(:by_type).and_return([])
-      allow(interfaces).to receive(:by_type).with("br").and_return([br0])
+      allow(interfaces).to receive(:by_type).with(Y2Network::InterfaceType::BRIDGE).and_return([br0])
       allow(interfaces).to receive(:bridge_slaves).and_return(["eth1"])
 
       expect(subject.proposal)
