@@ -157,7 +157,8 @@ module Y2Network
       # old LanItems::Items into new Interface objects
       Yast::LanItems.Items.map do |_index, item|
         name = item["ifcfg"] || item["hwinfo"]["dev_name"]
-        Y2Network::Interface.new(name)
+        type = Yast::NetworkInterfaces.GetType(name)
+        Y2Network::Interface.new(name, InterfaceType.from_short_name)
       end
     end
   end

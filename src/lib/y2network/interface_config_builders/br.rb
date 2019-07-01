@@ -57,8 +57,8 @@ module Y2Network
         end
 
         # exclude interfaces of type unusable for bridge
-        if NONBRIDGEABLE_TYPES.include?(iface.type)
-          log.debug("Excluding (#{iface.name}) - is #{iface.type}")
+        if NONBRIDGEABLE_TYPES.include?(iface.type.short_name)
+          log.debug("Excluding (#{iface.name}) - is #{iface.type.short_name}")
           return false
         end
 
