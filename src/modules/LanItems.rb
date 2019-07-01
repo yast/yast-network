@@ -1968,7 +1968,7 @@ module Yast
       nil
     end
 
-    def SetItem(builder: nil)
+    def SetItem(builder:)
       @operation = :edit
       @device = Ops.get_string(getCurrentItem, "ifcfg", "")
 
@@ -1988,11 +1988,8 @@ module Yast
       devmap = SetDeviceVars(devmap, @SysconfigDefaults)
       s390_devmap = SetS390Vars(s390_devmap, @s390_defaults)
 
-      # FIXME: should raise an exception
-      if builder
-        builder.load_sysconfig(devmap)
-        builder.load_s390_config(s390_devmap)
-      end
+      builder.load_sysconfig(devmap)
+      builder.load_s390_config(s390_devmap)
 
       @hotplug = ""
       Builtins.y2debug("type=%1", @type)

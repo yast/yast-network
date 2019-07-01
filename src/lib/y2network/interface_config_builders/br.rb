@@ -32,6 +32,9 @@ module Y2Network
         Config.find(:yast).interfaces
       end
 
+      NONBRIDGEABLE_TYPES = ["br", "tun", "usb", "wlan"].freeze
+      NONBRIDGEABLE_STARTMODE = ["nfsroot", "ifplugd"].freeze
+
       # Checks whether an interface can be bridged in particular bridge
       #
       # @param iface [Interface] an interface to be validated as the bridge slave
@@ -54,22 +57,13 @@ module Y2Network
         end
 
         # exclude interfaces of type unusable for bridge
-        case iface.type
-        when "br"
-          log.debug("Excluding (#{iface.name}) - is bridge")
-          return false
-        when "tun", "usb", "wlan"
+        if NONBRIDGEABLE_TYPES.include?(iface.type)
           log.debug("Excluding (#{iface.name}) - is #{iface.type}")
           return false
         end
 
-        case iface.startmode
-        when "nfsroot"
-          log.debug("Excluding (#{iface.name}) - is nfsroot")
-          return false
-
-        when "ifplugd"
-          log.debug("Excluding (#{iface.name}) - ifplugd")
+        if NONBRIDGEABLE_STARTMODE.include?(iface.startmode)
+          log.debug("Excluding (#{iface.name}) - is #{iface.startmode}")
           return false
         end
 

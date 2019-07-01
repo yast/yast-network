@@ -16,7 +16,9 @@ module Y2Network
       # @param [Array<String>] slaves             list of device names
       # @param [Array<String>] enslaved_ifaces    list of device names of already enslaved devices
       def slave_items_from(slaves, enslaved_ifaces)
-        raise ArgumentError, "no slave device defined" if slaves.nil?
+        raise ArgumentError, "slaves cannot be nil" if slaves.nil?
+        raise ArgumentError, "enslaved interfaces cannot be nil" if enslaved_ifaces.nil?
+        raise ArgumentError, "slaves cannot be empty" if slaves.empty? && !enslaved_ifaces.empty?
 
         textdomain "network"
 
