@@ -27,7 +27,7 @@ describe Yast::LanItemsSummary do
     }.freeze
   end
 
-  let(:interfaces) { }
+  let(:interfaces) {}
 
   before do
     allow(Yast::LanItems).to receive(:Items).and_return(items)

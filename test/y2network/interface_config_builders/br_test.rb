@@ -6,13 +6,13 @@ require "yast"
 require "y2network/interface_config_builders/br"
 
 describe Y2Network::InterfaceConfigBuilders::Br do
- let(:config) { Y2Network::Config.new(source: :test) }
+  let(:config) { Y2Network::Config.new(source: :test) }
 
- before do
-  allow(Y2Network::Config)
-    .to receive(:find)
-    .with(:yast)
-    .and_return(config)
+  before do
+    allow(Y2Network::Config)
+      .to receive(:find)
+      .with(:yast)
+      .and_return(config)
   end
 
   subject(:config_builder) do

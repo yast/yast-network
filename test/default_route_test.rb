@@ -101,8 +101,6 @@ describe "Yast::LanItemsClass" do
     subject.Read
     subject.current = 0
 
-    # desired new devmap
-    devmap = { "STARTMODE" => "auto", "BOOTPROTO" => "dhcp" }
     builder = Y2Network::InterfaceConfigBuilder.new
     builder.name = subject.GetCurrentName()
     builder.type = subject.GetCurrentType()

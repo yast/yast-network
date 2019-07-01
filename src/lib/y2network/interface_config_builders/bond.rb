@@ -5,7 +5,6 @@ require "y2network/interface_config_builder"
 module Y2Network
   module InterfaceConfigBuilders
     class Bond < InterfaceConfigBuilder
-
       include Yast::Logger
 
       def initialize

@@ -7,7 +7,6 @@ Yast.import "NetworkInterfaces"
 module Y2Network
   module InterfaceConfigBuilders
     class Br < InterfaceConfigBuilder
-
       include Yast::Logger
 
       def initialize
