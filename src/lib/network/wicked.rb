@@ -6,6 +6,7 @@ require "shellwords"
 module Yast
   module Wicked
     BASH_PATH = Path.new(".target.bash")
+    BASH_OUTPUT_PATH = Path.new(".target.bash_output")
 
     # Reloads configuration for each device named in devs
     #
@@ -28,7 +29,7 @@ module Yast
 
       lease_files = ["ipv4", "ipv6"].map { |ip| "/var/lib/wicked/lease-#{iface}-dhcp-#{ip}.xml" }
       lease_files.find_all { |f| File.file?(f) }.reduce([]) do |stack, file|
-        result = SCR.Execute(path(".target.bash_output"), "/usr/sbin/wicked xpath --file #{file.shellescape} \"%{//ntp/server}\"")
+        result = SCR.Execute(BASH_OUTPUT_PATH, "/usr/sbin/wicked xpath --file #{file.shellescape} \"%{//ntp/server}\"")
 
         stack + result.fetch("stdout", "").split("\n")
       end
