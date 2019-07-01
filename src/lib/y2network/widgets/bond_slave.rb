@@ -70,7 +70,7 @@ module Y2Network
       def init
         # TODO: use def items, but problem now is that slave_items returns term and not array
         items = slave_items_from(
-          @settings.select_bondable.map(&:name),
+          @settings.bondable_interfaces.map(&:name),
           @settings["SLAVES"]
         )
 

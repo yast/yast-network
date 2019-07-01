@@ -112,7 +112,7 @@ describe Yast::LanItems do
         .and_return(config)
 
       builder.name = "br0"
-      expect(builder.select_bridgeable.map(&:name))
+      expect(builder.bridgeable_interfaces.map(&:name))
         .to match_array expected_bridgeable
     end
   end

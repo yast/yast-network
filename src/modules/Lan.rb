@@ -1094,7 +1094,7 @@ module Yast
       bridge_builder = Y2Network::InterfaceConfigBuilder.for("br")
       bridge_builder.name = bridge_name
 
-      if !bridge_builder.select_bridgeable.map(&:name).include?(LanItems.GetDeviceName(item))
+      if !bridge_builder.bridgeable_interfaces.map(&:name).include?(LanItems.GetDeviceName(item))
         log.info "The interface #{config["ifcfg"]} cannot be proposed as bridge."
         return false
       end

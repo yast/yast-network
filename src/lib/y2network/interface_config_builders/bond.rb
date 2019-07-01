@@ -16,7 +16,7 @@ module Y2Network
       end
 
       # @return [Array<Interface>] list of interfaces usable for the bond device
-      def select_bondable
+      def bondable_interfaces
         interfaces.all.select { |i| bondable?(i) }
       end
 

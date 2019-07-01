@@ -81,7 +81,7 @@ describe Yast::LanItems do
 
       it "returns list of slave candidates" do
         builder.name = "bond1"
-        expect(builder.select_bondable.map(&:name))
+        expect(builder.bondable_interfaces.map(&:name))
           .to match_array expected_bondable
       end
     end
@@ -98,7 +98,7 @@ describe Yast::LanItems do
           .at_least(:once).and_return("QETH_LAYER2" => "no")
 
         builder.name = "bond1"
-        expect(builder.select_bondable.map(&:name))
+        expect(builder.bondable_interfaces.map(&:name))
           .to match_array ["eth4"]
       end
     end
