@@ -101,7 +101,7 @@ module Y2Network
     #
     # @param master [String] bridge name
     # @return [Array<String>] a list of interface names
-    # TODO: move to class of interface type br
+    # TODO: move to class of interface type br, also change return type to InterfaceCollection
     def bridge_slaves(master)
       bridge_index.select { |_k, v| v == master }.keys
     end
@@ -110,7 +110,7 @@ module Y2Network
     #
     # @param bond_iface [String] a name of an interface of bond type
     # @return list of names of interfaces enslaved in the bond_iface
-    # TODO: move to class of interface type bond
+    # TODO: move to class of interface type bond, also change return type to InterfaceCollection
     def bond_slaves(bond_iface)
       bond_map = Yast::NetworkInterfaces::FilterDevices("netcard").fetch("bond", {}).fetch(bond_iface, {})
 
