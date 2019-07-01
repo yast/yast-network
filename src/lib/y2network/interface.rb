@@ -50,11 +50,6 @@ module Y2Network
 
     # Constructor
     #
-    # For now until we start to use descendants of interface class, name can be empty.
-    # In such case the system is checked if the device is physically present, but
-    # unconfigured - which is valid. If the name is not provided and the device is not
-    # physical one, an exception is raised.
-    #
     # @param name [String] Interface name (e.g., "eth0")
     def initialize(name, type: InterfaceType::ETHERNET)
       @name = name
@@ -62,13 +57,6 @@ module Y2Network
       @type = type
       # @hardware and @name should not change during life of the object
       @hardware = Hwinfo.new(name: name)
-
-      if !(name.nil? || name.empty?)
-        @name = name
-      elsif @hardware.nil?
-        # the interface has to be either configured (ifcfg) or known to hwinfo
-        raise "Attempting to create representation of nonexistent interface"
-      end
 
       init(name)
     end
