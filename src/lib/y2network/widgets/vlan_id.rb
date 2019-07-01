@@ -15,6 +15,7 @@ module Y2Network
 
       def help
         # TODO: previously not exist, so write it
+        ""
       end
 
       def init
