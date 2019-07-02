@@ -146,8 +146,8 @@ module Yast
 
     describe ".Write" do
       let(:dns_writer) { instance_double(Y2Network::Sysconfig::DNSWriter) }
-      let(:yast_config) { double("Y2Network::Config") }
-      let(:system_config) { double("Y2Network::Config") }
+      let(:yast_config) { double("Y2Network::Config", dns: instance_double("Y2Network::DNS")) }
+      let(:system_config) { double("Y2Network::Config", dns: instance_double("Y2Network::DNS")) }
 
       before do
         allow(Y2Network::Sysconfig::DNSWriter).to receive(:new).and_return(dns_writer)
@@ -156,7 +156,7 @@ module Yast
       end
 
       it "writes DNS settings" do
-        expect(dns_writer).to receive(:write).with(yast_config, system_config)
+        expect(dns_writer).to receive(:write).with(yast_config.dns, system_config.dns)
         DNS.Write
       end
     end

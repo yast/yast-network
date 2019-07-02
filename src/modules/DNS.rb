@@ -214,7 +214,7 @@ module Yast
     # @return true if success
     def Write(_gui: true)
       writer = Y2Network::Sysconfig::DNSWriter.new
-      writer.write(Yast::Lan.yast_config, Yast::Lan.system_config)
+      writer.write(Yast::Lan.yast_config.dns, Yast::Lan.system_config.dns)
       true
     end
 
