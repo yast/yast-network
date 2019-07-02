@@ -1,7 +1,7 @@
 #
 # spec file for package yast2-network
 #
-# Copyright (c) 2018 SUSE LINUX GmbH, Nuernberg, Germany.
+# Copyright (c) 2019 SUSE LINUX GmbH, Nuernberg, Germany.
 #
 # All modifications and additions to the file contributed by third parties
 # remain the property of their copyright owners, unless otherwise agreed
@@ -12,48 +12,51 @@
 # license that conforms to the Open Source Definition (Version 1.9)
 # published by the Open Source Initiative.
 
-# Please submit bugfixes or comments via http://bugs.opensuse.org/
+# Please submit bugfixes or comments via https://bugs.opensuse.org/
 #
 
 
 Name:           yast2-network
-Version:        4.2.2
+Version:        4.2.7
 Release:        0
-BuildArch:      noarch
+Summary:        YaST2 - Network Configuration
+License:        GPL-2.0-only
+Group:          System/YaST
+Url:            https://github.com/yast/yast-network
 
-BuildRoot:      %{_tmppath}/%{name}-%{version}-build
-Url:		https://github.com/yast/yast-network
 Source0:        %{name}-%{version}.tar.bz2
 
+# testsuite
+BuildRequires:  rubygem(%rb_default_ruby_abi:rspec)
 BuildRequires:  update-desktop-files
 BuildRequires:  yast2-devtools >= 3.1.15
-Requires:       yast2-proxy
 #for install task
 BuildRequires:  rubygem(%rb_default_ruby_abi:yast-rake)
-
+BuildRequires:  yast2-storage-ng
 # Y2Firewall interface zone mapping methods
 BuildRequires:  yast2 >= 4.1.53
-Requires:       yast2 >= 4.1.53
-
+BuildRequires:  yast2-packager >= 4.0.18
 # Product control need xml agent
 BuildRequires:  yast2-xml
-Requires:       yast2-xml
-
-#netconfig (FaTE #303618)
-Requires:       sysconfig >= 0.80.0
-BuildRequires:  yast2-storage-ng
-Requires:       yast2-storage-ng
-# Packages::vnc_packages
-Requires:       yast2-packager >= 4.0.18
-BuildRequires:  yast2-packager >= 4.0.18
 # cfa for parsing hosts
 BuildRequires:  rubygem(%rb_default_ruby_abi:cfa) >= 0.6.4
-Requires:       rubygem(%rb_default_ruby_abi:cfa) >= 0.6.4
 # lenses are needed to use cfa
 BuildRequires:  augeas-lenses
+
+PreReq:         /bin/rm
+#netconfig (FaTE #303618)
+Requires:       sysconfig >= 0.80.0
+Requires:       yast2-proxy
+Requires:       yast2-storage-ng
+Requires:       yast2 >= 4.1.53
+# Packages::vnc_packages
+Requires:       yast2-packager >= 4.0.18
+Requires:       rubygem(%rb_default_ruby_abi:cfa) >= 0.6.4
 Requires:       augeas-lenses
 # BusID of all the cards with the same one (bsc#1007172)
 Requires:       hwinfo         >= 21.35
+Requires:       yast2-ruby-bindings >= 1.0.0
+Requires:       yast2-xml
 
 # testsuite
 BuildRequires:  rubygem(%rb_default_ruby_abi:rspec)
@@ -61,19 +64,13 @@ BuildRequires:  rubygem(%rb_default_ruby_abi:rspec)
 # support for reading Profile etc.
 BuildRequires:  autoyast2-installation
 
-PreReq:         /bin/rm
-
 # carrier detection
 Conflicts:      yast2-core < 2.10.6
-
-Requires:       yast2-ruby-bindings >= 1.0.0
 
 Obsoletes:      yast2-network-devel-doc <= 3.1.154
 Provides:       yast2-network-devel-doc = %{version}
 
-Summary:        YaST2 - Network Configuration
-License:        GPL-2.0-only
-Group:          System/YaST
+BuildArch:      noarch
 
 %build
 
@@ -81,33 +78,28 @@ Group:          System/YaST
 This package contains the YaST2 component for network configuration.
 
 %prep
-%setup -n %{name}-%{version}
+%setup -q
 
 %check
-rake test:unit
+%yast_check
 
 %install
-rake install DESTDIR="%{buildroot}"
+%yast_install
+%yast_metainfo
 
 %files
-%defattr(-,root,root)
-%{yast_yncludedir}/network
-%{yast_clientdir}/*.rb
-%{yast_moduledir}/*.rb
-%{yast_desktopdir}/*.desktop
-%{yast_scrconfdir}/*.scr
-%{yast_agentdir}/ag_udev_persistent
-%{yast_schemadir}/autoyast/rnc/networking.rnc
-%{yast_schemadir}/autoyast/rnc/host.rnc
-%{yast_libdir}/network
-%{yast_libdir}/y2network
-%{yast_libdir}/y2remote
-%{yast_libdir}/cfa/
-%{yast_ydatadir}/network
+%{yast_yncludedir}
+%{yast_clientdir}
+%{yast_moduledir}
+%{yast_desktopdir}
+%{yast_scrconfdir}
+%{yast_agentdir}
+%{yast_schemadir}
+%{yast_libdir}
+%{yast_ydatadir}
 %{yast_icondir}
-%dir %{yast_docdir}
-%doc %{yast_docdir}/CONTRIBUTING.md
+%{yast_metainfodir}
 %license COPYING
-%doc %{yast_docdir}/README.md
+%doc %{yast_docdir}
 
 %changelog

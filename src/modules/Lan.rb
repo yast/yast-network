@@ -907,6 +907,7 @@ module Yast
         next unless configure_as_bridge!(ifcfg, bridge_name)
         # reconfigure existing device as newly created bridge's port
         configure_as_bridge_port(ifcfg)
+        LanItems.move_routes(ifcfg, bridge_name)
         refresh_lan_items
       end
 

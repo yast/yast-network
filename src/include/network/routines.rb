@@ -573,6 +573,7 @@ module Yast
             one["parent_busid"] = one["sysfs_id"].split("/")[-2]
           end
           one["mac"] = Ops.get_string(resource, ["hwaddr", 0, "addr"], "")
+          one["permanent_mac"] = Ops.get_string(resource, ["phwaddr", 0, "addr"], "")
           # is the cable plugged in? nil = don't know
           one["link"] = Ops.get(resource, ["link", 0, "state"])
 

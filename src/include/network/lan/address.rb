@@ -82,14 +82,25 @@ module Yast
           # but also: reset default gw only if DHCP* is used, this branch covers
           #		 "No IP address" case, then default gw must stay (#460262)
           # and also: don't delete default GW for usb/pcmcia devices (#307102)
-          # FIXME: not working in network-ng
-          yast_config = Y2Network::Config.find(:yast)
-          yast_config.routing.remove_default_routes if yast_config
+          if LanItems.isCurrentDHCP && !LanItems.isCurrentHotplug
+            yast_config = Y2Network::Config.find(:yast)
+            if yast_config && yast_config.routing && yast_config.routing.default_route
+              remove_gw = Popup.YesNo(
+                _(
+                  "A static default route is defined.\n" \
+                  "It is suggested to remove the static default route definition \n" \
+                  "if one can be obtained also via DHCP.\n" \
+                  "Do you want to remove the static default route?"
+                )
+              )
+              yast_config.routing.remove_default_routes if remove_gw
+            end
+          end
         end
 
         # When virtual interfaces are added the list of routing devices needs
         # to be updated to offer them
-        LanItems.add_current_device_to_routing if LanItems.update_routing_devices?
+        LanItems.add_device_to_routing if LanItems.update_routing_devices?
       end
 
       # rollback if changes are canceled, as still some widgets edit LanItems directly

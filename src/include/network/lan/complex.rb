@@ -328,9 +328,10 @@ module Yast
         builder["BOOTPROTO"] = "none"
         case builder.type
         when "bond"
-          builder["STARTMODE"] = "hotplug"
-
-          LanItems.update_item_udev_rule!(:bus_id)
+          LanItems.startmode = "hotplug"
+          if LanItems.current_udev_rule.empty? || LanItems.GetItemUdev("KERNELS").empty?
+            LanItems.update_item_udev_rule!(:bus_id)
+          end
         when "br"
           builder["IPADDR"] = ""
         end
