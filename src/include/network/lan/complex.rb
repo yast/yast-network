@@ -329,6 +329,7 @@ module Yast
         case builder.type
         when "bond"
           LanItems.startmode = "hotplug"
+          # If there is already a rule based on the bus_id, do not update it.
           if LanItems.current_udev_rule.empty? || LanItems.GetItemUdev("KERNELS").empty?
             LanItems.update_item_udev_rule!(:bus_id)
           end
