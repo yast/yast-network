@@ -174,14 +174,14 @@ module Y2Network
       init_mandatory_options
 
       # filter out options which are not needed
-      config = config.delete_if { |k, _| k =~ /WIRELESS.*/ } if type != "wlan"
-      config = config.delete_if { |k, _| k =~ /BONDING.*/ } if type != "bond"
-      config = config.delete_if { |k, _| k =~ /BRIDGE.*/ } if type != "br"
-      config = config.delete_if { |k, _| k =~ /TUNNEL.*/ } if !["tun", "tap"].include?(type)
-      config = config.delete_if { |k, _| k == "VLAN_ID" || k == "ETHERDEVICE" } if type != "vlan"
-      config = config.delete_if { |k, _| k == "IPOIB_MODE" } if type != "ib"
-      config = config.delete_if { |k, _| k == "INTERFACE" } if type != "dummy"
-      config = config.delete_if { |k, _| k == "IFPLUGD_PRIORITY" } if config["STARTMODE"] != "ifplugd"
+      config.delete_if { |k, _| k =~ /WIRELESS.*/ } if type != "wlan"
+      config.delete_if { |k, _| k =~ /BONDING.*/ } if type != "bond"
+      config.delete_if { |k, _| k =~ /BRIDGE.*/ } if type != "br"
+      config.delete_if { |k, _| k =~ /TUNNEL.*/ } if !["tun", "tap"].include?(type)
+      config.delete_if { |k, _| k == "VLAN_ID" || k == "ETHERDEVICE" } if type != "vlan"
+      config.delete_if { |k, _| k == "IPOIB_MODE" } if type != "ib"
+      config.delete_if { |k, _| k == "INTERFACE" } if type != "dummy"
+      config.delete_if { |k, _| k == "IFPLUGD_PRIORITY" } if config["STARTMODE"] != "ifplugd"
 
       # all keys / values has to be strings, agent won't write it otherwise
       # JR this does not work for aliases, BON_OPTIONS and SLAVES which is later processed
