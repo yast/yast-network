@@ -23,7 +23,7 @@ module Y2Network
       end
 
       def store
-        @config["VLAN_ID"] = value
+        @config["VLAN_ID"] = value.to_s
       end
 
       def minimum
