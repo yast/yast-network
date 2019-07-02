@@ -327,12 +327,12 @@ module Yast
     #
     # @return [Y2Network::Config] LAN configuration
     def yast_dns_config
-      raise "Yast::Lan module has not been initialized" if Yast::Lan.yast_config.nil?
+      Yast::Lan.Read(:cache)
       Yast::Lan.yast_config.dns
     end
 
     def system_dns_config
-      raise "Yast::Lan module has not been initialized" if Yast::Lan.system_config.nil?
+      Yast::Lan.Read(:cache)
       Yast::Lan.system_config.dns
     end
 
