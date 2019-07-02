@@ -2703,7 +2703,6 @@ module Yast
     publish function: :Rollback, type: "boolean ()"
     publish function: :GetModuleForInterface, type: "map (string, list <map>)"
     publish function: :DeleteItem, type: "void ()"
-    publish function: :SetItem, type: "void ()"
     publish function: :ProposeItem, type: "boolean ()"
     publish function: :setDriver, type: "void (string)"
     publish function: :enableCurrentEditButton, type: "boolean ()"

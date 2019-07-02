@@ -309,7 +309,13 @@ module Yast
 
       Lan.autoconf_slaves.each do |dev|
         if LanItems.FindAndSelect(dev)
-          LanItems.SetItem
+          builder = Y2Network::InterfaceConfigBuilder.for(LanItems.GetCurrentType())
+          builder.name = LanItems.GetCurrentName()
+          if LanItems.IsCurrentConfigured
+            builder.load_sysconfig(LanItems.GetCurrentMap())
+            builder.load_s390_config(LanItems.s390_ReadQethConfig(builder.name))
+          end
+          LanItems.SetItem(builder: builder)
         else
           dev_index = LanItems.FindDeviceIndex(dev)
           if dev_index < 0

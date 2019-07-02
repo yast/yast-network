@@ -236,7 +236,13 @@ module Yast
       return false if validateId(options, config) == false
 
       LanItems.current = getItem(options, config)
-      LanItems.SetItem
+      builder = Y2Network::InterfaceConfigBuilder.for(LanItems.GetCurrentType())
+      builder.name = LanItems.GetCurrentName()
+      if LanItems.IsCurrentConfigured
+        builder.load_sysconfig(LanItems.GetCurrentMap())
+        builder.load_s390_config(LanItems.s390_ReadQethConfig(builder.name))
+      end
+      LanItems.SetItem(builder: builder)
 
       if Builtins.size(Ops.get_string(LanItems.getCurrentItem, "ifcfg", "")) == 0
         NetworkInterfaces.Add
