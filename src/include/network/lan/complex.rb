@@ -311,10 +311,6 @@ module Yast
         if LanItems.FindAndSelect(dev)
           builder = Y2Network::InterfaceConfigBuilder.for(LanItems.GetCurrentType())
           builder.name = LanItems.GetCurrentName()
-          if LanItems.IsCurrentConfigured
-            builder.load_sysconfig(LanItems.GetCurrentMap())
-            builder.load_s390_config(LanItems.s390_ReadQethConfig(builder.name))
-          end
           LanItems.SetItem(builder: builder)
         else
           dev_index = LanItems.FindDeviceIndex(dev)
@@ -325,9 +321,9 @@ module Yast
           LanItems.current = dev_index
 
           AddInterface()
+          builder = Y2Network::InterfaceConfigBuilder.for(LanItems.GetDeviceType(current))
+          builder.name = LanItems.GetCurrentName
         end
-        builder = Y2Network::InterfaceConfigBuilder.for(LanItems.GetDeviceType(current))
-        builder.name = LanItems.GetCurrentName
         # clear defaults, some defaults are invalid for slaves and can cause troubles
         # in related sysconfig scripts or makes no sence for slaves (e.g. ip configuration).
         builder["NETMASK"] = ""
@@ -407,8 +403,6 @@ module Yast
           builder = Y2Network::InterfaceConfigBuilder.for(LanItems.GetCurrentType())
           builder.name = LanItems.GetCurrentName()
           if LanItems.IsCurrentConfigured
-            builder.load_sysconfig(LanItems.GetCurrentMap())
-            builder.load_s390_config(LanItems.s390_ReadQethConfig(builder.name))
             LanItems.SetItem(builder: builder)
 
             if LanItems.startmode == "managed"

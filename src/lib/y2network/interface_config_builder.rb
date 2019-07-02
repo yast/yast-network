@@ -300,7 +300,7 @@ module Y2Network
       end
       log.info "setting new aliases #{lan_items_format.inspect}"
       aliases_to_delete = Yast::LanItems.aliases.dup # #48191
-      Yast::LanItems.aliases = lan_items_format
+      Yast::NetworkInterfaces.Current["_aliases"] = lan_items_format
       aliases_to_delete.each_pair do |a, v|
         Yast::NetworkInterfaces.DeleteAlias(Yast::NetworkInterfaces.Name, a) if v
       end
