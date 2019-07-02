@@ -184,7 +184,8 @@ module Y2Network
       config = config.delete_if { |k, _| k == "IFPLUGD_PRIORITY" } if config["STARTMODE"] != "ifplugd"
 
       # all keys / values has to be strings, agent won't write it otherwise
-      config.map { |k, v| [k, v.to_s] }.to_h
+      # JR this does not work for aliases, BON_OPTIONS and SLAVES which is later processed
+      # config.map { |k, v| [k, v.to_s] }.to_h
     end
 
     # Updates itself according to the given sysconfig configuration
