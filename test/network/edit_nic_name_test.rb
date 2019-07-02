@@ -140,8 +140,8 @@ describe Yast::EditNicName do
         context "having modified the matching udev key" do
           before(:each) do
             # emulate UI work
-            allow(UI).to receive(:QueryWidget).with(:dev_name, :Value) { current_name }
-            allow(UI).to receive(:QueryWidget).with(:udev_type, :CurrentButton) { :bus_id }
+            allow(Yast::UI).to receive(:QueryWidget).with(:dev_name, :Value) { current_name }
+            allow(Yast::UI).to receive(:QueryWidget).with(:udev_type, :CurrentButton) { :bus_id }
           end
 
           it "updates the current udev rule with the key used" do
