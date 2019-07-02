@@ -68,10 +68,11 @@ module Y2Network
 
       # Default function to init the value of slave devices box for bonding.
       def init
+        slaves = @settings["SLAVES"] || []
         # TODO: use def items, but problem now is that slave_items returns term and not array
         items = slave_items_from(
           @settings.bondable_interfaces.map(&:name),
-          @settings["SLAVES"]
+          slaves
         )
 
         # reorder the items
