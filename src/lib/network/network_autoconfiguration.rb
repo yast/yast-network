@@ -125,7 +125,11 @@ module Yast
       raise "Failed to save configuration for device #{card}" if index == -1
 
       LanItems.current = index
-      LanItems.SetItem
+
+      builder = Y2Network::InterfaceConfigBuilder.for(LanItems.GetCurrentType())
+      builder.name = LanItems.GetCurrentName()
+
+      LanItems.SetItem(builder: builder)
 
       # tricky part if ifcfg is not set
       # yes, this code smell and show bad API of LanItems
@@ -135,8 +139,6 @@ module Yast
         current["ifcfg"] = card
       end
 
-      builder = Y2Network::InterfaceConfigBuilder.for(LanItems.GetCurrentType())
-      builder.name = LanItems.GetCurrentName()
       builder["BOOTPROTO"] = "dhcp"
       builder["STARTMODE"] = "auto"
 

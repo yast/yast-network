@@ -80,5 +80,8 @@ module Y2Network
     define_type "BONDING", N_("Bonding"), "bond"
     define_type "BRIDGE", N_("Bridge"), "br"
     define_type "VLAN", N_("VLAN"), "vlan"
+    define_type "TUN", N_("TUN"), "tun"
+    define_type "TAP", N_("TAP"), "tap"
+    define_type "USB", N_("USB"), "usb"
   end
 end

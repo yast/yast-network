@@ -6,6 +6,15 @@ require "yast"
 require "y2network/interface_config_builders/bond"
 
 describe Y2Network::InterfaceConfigBuilders::Bond do
+  let(:config) { Y2Network::Config.new(source: :test) }
+
+  before do
+    allow(Y2Network::Config)
+      .to receive(:find)
+      .with(:yast)
+      .and_return(config)
+  end
+
   subject(:config_builder) do
     res = Y2Network::InterfaceConfigBuilders::Bond.new
     res.name = "bond0"

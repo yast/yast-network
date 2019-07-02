@@ -243,6 +243,8 @@ describe "LanClass" do
     end
 
     context "when various interfaces are present in the system" do
+      let(:interfaces) { Y2Network::InterfacesCollection.new([]) }
+
       before do
         allow(Yast::NetworkInterfaces).to receive(:GetType).with("br0").and_return("br")
         allow(Yast::NetworkInterfaces).to receive(:GetType).with("bond0").and_return("bond")
@@ -253,6 +255,9 @@ describe "LanClass" do
         allow(Yast::NetworkInterfaces).to receive(:Current).and_return(current_interface)
         allow(Yast::NetworkInterfaces).to receive(:GetValue).and_return(nil)
         allow(Yast::LanItems).to receive(:Items).and_return(items)
+        allow(Y2Network::Config)
+          .to receive(:find)
+          .and_return(instance_double(Y2Network::Config, interfaces: interfaces))
       end
 
       context "and one of them is a bridge" do
@@ -261,8 +266,7 @@ describe "LanClass" do
         end
 
         it "returns an array containing the bridged interfaces" do
-          allow(Yast::NetworkInterfaces).to receive(:GetValue)
-            .with("br0", "BRIDGE_PORTS").and_return("eth1")
+          allow(interfaces).to receive(:bridge_slaves).and_return(["eth1"])
 
           expect(Yast::Lan.IfcfgsToSkipVirtualizedProposal).to include("eth1")
           expect(Yast::Lan.IfcfgsToSkipVirtualizedProposal).to_not include("eth0")
@@ -337,10 +341,14 @@ describe "LanClass" do
     end
 
     context "when an interface is not bridgeable" do
+      let(:interfaces) { Y2Network::InterfacesCollection.new([]) }
+
       it "does not propose the interface" do
-        allow(Yast::LanItems).to receive(:IsBridgeable).and_return(false)
         allow(Yast::LanItems).to receive(:IsCurrentConfigured).and_return(false)
         expect(Yast::LanItems).not_to receive(:ProposeItem)
+        allow(Y2Network::Config)
+          .to receive(:find)
+          .and_return(instance_double(Y2Network::Config, interfaces: interfaces))
 
         Yast::Lan.ProposeVirtualized
       end
@@ -364,7 +372,7 @@ describe "LanClass" do
       end
 
       it "configures the interface with defaults before anything if not configured" do
-        allow(Yast::LanItems).to receive(:IsCurrentConfigured).and_return(false)
+        allow(Yast::LanItems).to receive(:IsItemConfigured).and_return(false)
         expect(Yast::LanItems).to receive(:ProposeItem)
 
         Yast::Lan.ProposeVirtualized

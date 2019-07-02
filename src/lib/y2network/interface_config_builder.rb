@@ -220,7 +220,7 @@ module Y2Network
       return {} if !Yast::Arch.s390
 
       # Default values used when creating an emulated NIC for physical s390 hardware.
-      s390_defaults = YAML.load_file(Directory.find_data_file("network/s390_defaults.yml"))
+      s390_defaults = YAML.load_file(Yast::Directory.find_data_file("network/s390_defaults.yml"))
       s390_defaults.merge(devmap)
     end
 

@@ -58,6 +58,9 @@ Requires:       hwinfo         >= 21.35
 # testsuite
 BuildRequires:  rubygem(%rb_default_ruby_abi:rspec)
 
+# support for reading Profile etc.
+BuildRequires:  autoyast2-installation
+
 PreReq:         /bin/rm
 
 # carrier detection

@@ -786,156 +786,6 @@ module Yast
       deep_copy(mods)
     end
 
-    # Searches map of known devices and decides if referenced lan item
-    # can be enslaved in a bond device
-    #
-    # @param [String] bondMaster    name of master device
-    # @param [Fixnum] itemId        index into LanItems::Items
-    # TODO: Check for valid configurations. E.g. bond device over vlan
-    # is nonsense and is not supported by netconfig.
-    # Also devices enslaved in a bridge should be excluded too.
-    def IsBondable(bondMaster, itemId)
-      ret = true
-      devname = GetDeviceName(itemId)
-      bonded = BuildBondIndex()
-
-      # check if the device is L2 capable
-      if Arch.s390
-        s390_config = s390_ReadQethConfig(devname)
-
-        # only devices with L2 support can be enslaved in bond. See bnc#719881
-        ret &&= s390_config["QETH_LAYER2"] == "yes"
-      end
-
-      ifcfg = GetDeviceMap(itemId)
-
-      itemBondMaster = bonded[devname] || ""
-
-      if !itemBondMaster.empty? && bondMaster != itemBondMaster
-        log.debug("IsBondable: excluding lan item (#{itemId}: #{devname}) for #{GetCurrentName()} - is already bonded")
-        return false
-      end
-
-      return ret if ifcfg.nil?
-
-      # filter the eth devices (BOOTPROTO=none)
-      # don't care about STARTMODE (see bnc#652987c6)
-      ret &&= ifcfg["BOOTPROTO"] == "none"
-
-      ret
-    end
-
-    # Decides if given lan item can be enslaved in a bridge.
-    #
-    # @param [String] bridgeMaster  name of master device
-    # @param [Fixnum] itemId        index into LanItems::Items
-    def IsBridgeable(bridgeMaster, itemId)
-      ifcfg = GetDeviceMap(itemId)
-
-      # no netconfig configuration has been found so nothing
-      # blocks using the device as bridge slave
-      return true if ifcfg.nil?
-
-      devname = GetDeviceName(itemId)
-      bonded = BuildBondIndex()
-
-      if bonded[devname]
-        log.debug("Excluding lan item (#{itemId}: #{devname}) - is bonded")
-        return false
-      end
-
-      if bridge_index[devname] && bridge_index[devname] != bridgeMaster
-        log.debug("Excluding lan item (#{itemId}: #{devname}) - is already in a bridge")
-        return false
-      end
-
-      devtype = GetDeviceType(itemId)
-
-      # exclude forbidden configurations
-      case devtype
-      when "br"
-        log.debug("Excluding lan item (#{itemId}: #{devname}) - is bridge")
-        return false
-      when "tun", "usb", "wlan"
-        log.debug("Excluding lan item (#{itemId}: #{devname}) - is #{devtype}")
-        return false
-      end
-
-      case ifcfg["STARTMODE"]
-      when "nfsroot"
-        log.debug("Excluding lan item (#{itemId}: #{devname}) - is nfsroot")
-        return false
-
-      when "ifplugd"
-        log.debug("Excluding lan item (#{itemId}: #{devname}) - ifplugd")
-        return false
-
-      else
-        return true
-      end
-    end
-
-    # Iterates over all items and lists those for which given validator returns
-    # true.
-    #
-    # @param [boolean (string, integer)] validator   a reference to function which checks if an interface
-    #                      can be enslaved. Validator takes one argument - itemId.
-    # @return  [Array] of lan item ids (see LanItems::Items)
-    def GetSlaveCandidates(master, validator)
-      validator = deep_copy(validator)
-      if validator.nil?
-        Builtins.y2error("GetSlaveCandidates: needs a validator.")
-        return []
-      end
-      if IsEmpty(master)
-        Builtins.y2error("GetSlaveCandidates: master device name is required.")
-        return []
-      end
-
-      result = []
-
-      LanItems.Items.each do |itemId, _attribs|
-        if @current != itemId && validator.call(master, itemId)
-          result = Builtins.add(result, itemId)
-        else
-          Builtins.y2debug(
-            "GetSlaveCandidates: validation failed for item (%1), current (%2)",
-            itemId,
-            @current
-          )
-        end
-      end
-
-      Builtins.y2milestone(
-        "GetSlaveCandidates: candidates for enslaving: %1",
-        result
-      )
-
-      deep_copy(result)
-    end
-
-    # Creates list of items (interfaces) which can be used as
-    # a bond slave.
-    #
-    # @param [String] bondMaster    bond device name
-    def GetBondableInterfaces(bondMaster)
-      GetSlaveCandidates(
-        bondMaster,
-        fun_ref(method(:IsBondable), "boolean (string, integer)")
-      )
-    end
-
-    # Creates list of items (interfaces) which can be used as
-    # a bridge slave.
-    #
-    # @param [String] bridgeMaster  bridge device name
-    def GetBridgeableInterfaces(bridgeMaster)
-      GetSlaveCandidates(
-        bridgeMaster,
-        fun_ref(method(:IsBridgeable), "boolean (string, integer)")
-      )
-    end
-
     # Creates list of all known netcard items
     #
     # It means list of item ids of all netcards which are detected and/or
@@ -1327,60 +1177,6 @@ module Yast
       firmware
     end
 
-    # Creates list of devices enslaved in the bond device.
-    #
-    # @param bond_master [string] device name of a bond master (e.g. bond0)
-    # @return list of the bond slaves
-    def GetBondSlaves(bond_master)
-      net_cards = NetworkInterfaces.FilterDevices("netcard") || { "bond" => {} }
-      bonds = net_cards["bond"] || {}
-      bond_map = bonds[bond_master] || {}
-
-      slaves = bond_map.select { |k, _| k.start_with?("BONDING_SLAVE") }.values
-
-      deep_copy(slaves)
-    end
-
-    def BuildBondIndex
-      index = {}
-
-      bond_devs = NetworkInterfaces.FilterDevices("netcard").fetch("bond", {})
-
-      bond_devs.each do |bond_master, _value|
-        GetBondSlaves(bond_master).each do |slave|
-          index[slave] = bond_master
-        end
-      end
-
-      log.debug("bond slaves index: #{index}")
-
-      index
-    end
-
-    # Creates a map where the keys are the interfaces enslaved and the values
-    # are the bridges where them are taking part.
-    def bridge_index
-      index = {}
-
-      bridge_devs = NetworkInterfaces.FilterDevices("netcard").fetch("br", {})
-
-      bridge_devs.each do |bridge_master, value|
-        value["BRIDGE_PORTS"].to_s.split.each do |if_name|
-          index[if_name] = bridge_master
-        end
-      end
-
-      index
-    end
-
-    # Returns the interfaces that are enslaved in the given bridge
-    #
-    # @param master [String] bridge name
-    # @return [Array<String>] a list of interface names
-    def bridge_slaves(master)
-      bridge_index.select { |_k, v| v == master }.keys
-    end
-
     # Creates item's startmode human description
     #
     # @param item_id [Integer] a key for {#Items}
@@ -1476,8 +1272,6 @@ module Yast
       overview = []
       links = []
 
-      bond_index = BuildBondIndex()
-
       LanItems.Items.each_key do |key|
         rich = ""
 
@@ -1521,11 +1315,11 @@ module Yast
           end
 
           if enslaved?(ifcfg_name)
-            if bond_index[ifcfg_name]
-              master = bond_index[ifcfg_name]
+            if yast_config.interfaces.bond_index[ifcfg_name]
+              master = yast_config.interfaces.bond_index[ifcfg_name]
               master_desc = _("Bonding master")
             else
-              master = bridge_index[ifcfg_name]
+              master = yast_config.interfaces.bridge_index[ifcfg_name]
               master_desc = _("Bridge")
             end
             note = format(_("enslaved in %s"), master)
@@ -1719,7 +1513,7 @@ module Yast
     # Distributes an ifcfg hash to individual attributes.
     # @param devmap   [Hash] an ifcfg, values are strings
     # @param defaults [Hash] should provide defaults for devmap
-    # @return [void]
+    # @return [Hash] devmap with used values
     def SetDeviceVars(devmap, defaults)
       d = defaults.merge(devmap)
       # address options
@@ -1754,6 +1548,7 @@ module Yast
           end
         end
       end
+      d["BOND_SLAVES"] = @bond_slaves
 
       # tun/tap settings
       @tunnel_set_owner = d["TUNNEL_SET_OWNER"]
@@ -1799,13 +1594,14 @@ module Yast
 
       @aliases = Ops.get_map(devmap, "_aliases", {})
 
-      nil
+      d
     end
 
     # Initializes s390 specific device variables.
     #
     # @param [Hash] devmap    map with s390 specific attributes and its values
     # @param [Hash] defaults  map with default values for attributes not found in devmap
+    # @return [Hash] devmap with used values
     def SetS390Vars(devmap, defaults)
       return if !Arch.s390
       d = defaults.merge(devmap)
@@ -1832,7 +1628,7 @@ module Yast
       @iucv_user = defaults["IUCV_USER"] || ""
       @chan_mode = defaults["CHAN_MODE"] || ""
 
-      nil
+      d
     end
 
     def InitS390VarsByDefaults
@@ -2172,7 +1968,7 @@ module Yast
       nil
     end
 
-    def SetItem
+    def SetItem(builder:)
       @operation = :edit
       @device = Ops.get_string(getCurrentItem, "ifcfg", "")
 
@@ -2189,8 +1985,11 @@ module Yast
 
       @description = BuildDescription(@type, @device, devmap, @Hardware)
 
-      SetDeviceVars(devmap, @SysconfigDefaults)
-      SetS390Vars(s390_devmap, @s390_defaults)
+      devmap = SetDeviceVars(devmap, @SysconfigDefaults)
+      s390_devmap = SetS390Vars(s390_devmap, @s390_defaults)
+
+      builder.load_sysconfig(devmap)
+      builder.load_s390_config(s390_devmap)
 
       @hotplug = ""
       Builtins.y2debug("type=%1", @type)
@@ -2202,33 +2001,42 @@ module Yast
       nil
     end
 
-    def ProposeItem
-      Builtins.y2milestone("Propose configuration for %1", getCurrentItem)
-      @operation = nil
+    # A default configuration for device when installer needs to configure it
+    def ProposeItem(item_id)
+      Builtins.y2milestone("Propose configuration for %1", GetDeviceName(item_id))
       return false if Select("") != true
-      @mtu = "1492" if Arch.s390 && Builtins.contains(["lcs", "eth"], @type)
-      @ipaddr = ""
-      @netmask = ""
-      @bootproto = "dhcp"
+
+      type = Items().fetch(item_id, {}).fetch("hwinfo", {})[type]
+      builder = Y2Network::InterfaceConfigBuilder.for(type)
+
+      builder["MTU"] = "1492" if Arch.s390 && Builtins.contains(["lcs", "eth"], type)
+      builder["IPADDR"] = ""
+      builder["NETMASK"] = ""
+      builder["BOOTPROTO"] = "dhcp"
+
       # see bsc#176804
       devicegraph = Y2Storage::StorageManager.instance.staging
       if devicegraph.filesystem_in_network?("/")
-        @startmode = "nfsroot"
+        builder["STARTMODE"] = "nfsroot"
         Builtins.y2milestone("startmode nfsroot")
       end
+
+      # FIXME: seems like a hack
       NetworkInterfaces.Add
       @operation = :edit
       Ops.set(
         @Items,
-        [@current, "ifcfg"],
-        Ops.get_string(getCurrentItem, ["hwinfo", "dev_name"], "")
+        [item_id, "ifcfg"],
+        Ops.get_string(GetLanItem(item_id), ["hwinfo", "dev_name"], "")
       )
+      # FIXME: is it needed?
       @description = HardwareName(
-        [Ops.get_map(getCurrentItem, "hwinfo", {})],
-        Ops.get_string(getCurrentItem, ["hwinfo", "dev_name"], "")
+        [Ops.get_map(GetLanItem(item_id), "hwinfo", {})],
+        Ops.get_string(GetLanItem(item_id), ["hwinfo", "dev_name"], "")
       )
-      Commit()
-      Builtins.y2milestone("After configuration propose %1", getCurrentItem)
+
+      Commit(builder)
+      Builtins.y2milestone("After configuration propose %1", GetLanItem(item_id))
       true
     end
 
@@ -2543,10 +2351,10 @@ module Yast
     # @return [String] formated string with the interface type and the interfaces enslaved
     def slaves_desc(ifcfg_type, ifcfg_name)
       if ifcfg_type == "bond"
-        slaves = GetBondSlaves(ifcfg_name)
+        slaves = Y2Network::Config.find(:yast).interfaces.bond_slaves(ifcfg_name)
         desc = _("Bonding slaves")
       else
-        slaves = bridge_slaves(ifcfg_name)
+        slaves = Y2Network::Config.find(:yast).interfaces.bridge_slaves(ifcfg_name)
         desc = _("Bridge Ports")
       end
 
@@ -2557,7 +2365,9 @@ module Yast
     #
     # @return [Boolean] true if enslaved
     def enslaved?(ifcfg_name)
-      bond_index = BuildBondIndex()
+      bond_index = Y2Network::Config.find(:yast).interfaces.bond_index
+      bridge_index = Y2Network::Config.find(:yast).interfaces.bridge_index
+
       return true if bond_index[ifcfg_name] || bridge_index[ifcfg_name]
 
       false
@@ -2873,9 +2683,6 @@ module Yast
     publish function: :SetModified, type: "void ()"
     publish function: :AddNew, type: "void ()"
     publish function: :GetItemModules, type: "list <string> (string)"
-    publish function: :GetSlaveCandidates, type: "list <integer> (string, boolean (string, integer))"
-    publish function: :GetBondableInterfaces, type: "list <integer> (string)"
-    publish function: :GetBridgeableInterfaces, type: "list <integer> (string)"
     publish function: :GetNetcardNames, type: "list <string> ( list <integer>)"
     publish function: :FindAndSelect, type: "boolean (string)"
     publish function: :FindDeviceIndex, type: "integer (string)"

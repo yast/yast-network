@@ -28,6 +28,25 @@ module Y2Network
     attr_accessor :description
     # @return [Symbol] Interface type
     attr_accessor :type
+    attr_reader :configured
+    attr_reader :hardware
+
+    # Shortcuts for accessing interfaces' ifcfg options
+    #
+    # TODO: this makes Interface class tighly couplet to netconfig backend
+    # once we have generic layer for accessing backends these methods has to be replaced
+    ["STARTMODE", "BOOTPROTO"].each do |ifcfg_option|
+      method_name = ifcfg_option.downcase
+
+      define_method method_name do
+        # when switching to new backend we need as much guards as possible
+        if !configured || config.nil? || config.empty?
+          raise "Trying to read configuration of an unconfigured interface #{@name}"
+        end
+
+        config[ifcfg_option]
+      end
+    end
 
     # Constructor
     #
@@ -36,6 +55,10 @@ module Y2Network
       @name = name
       @description = ""
       @type = type
+      # @hardware and @name should not change during life of the object
+      @hardware = Hwinfo.new(name: name)
+
+      init(name)
     end
 
     # Determines whether two interfaces are equal
@@ -50,5 +73,22 @@ module Y2Network
     # eql? (hash key equality) should alias ==, see also
     # https://ruby-doc.org/core-2.3.3/Object.html#method-i-eql-3F
     alias_method :eql?, :==
+
+    # Complete configuration of the interface
+    #
+    # @return [Hash<String, String>] option, value hash map
+    def config
+      system_config(name)
+    end
+
+  private
+
+    def system_config(name)
+      Yast::NetworkInterfaces.devmap(name)
+    end
+
+    def init(name)
+      @configured = !system_config(name).nil? if !(name.nil? || name.empty?)
+    end
   end
 end
