@@ -167,24 +167,28 @@ module Y2Network
     #
     # @return [Hash<String, String>] where key is sysconfig option and value is the option's value
     def device_sysconfig
-      # with naive implementation of filtering options by type
-      config = @config
-
       # initalize options which has to be known and was not set by the user explicitly
       init_mandatory_options
 
+      # with naive implementation of filtering options by type
+      config = @config.dup
+
       # filter out options which are not needed
-      config = config.delete_if { |k, _| k =~ /WIRELESS.*/ } if type != "wlan"
-      config = config.delete_if { |k, _| k =~ /BONDING.*/ } if type != "bond"
-      config = config.delete_if { |k, _| k =~ /BRIDGE.*/ } if type != "br"
-      config = config.delete_if { |k, _| k =~ /TUNNEL.*/ } if !["tun", "tap"].include?(type)
-      config = config.delete_if { |k, _| k == "VLAN_ID" || k == "ETHERDEVICE" } if type != "vlan"
-      config = config.delete_if { |k, _| k == "IPOIB_MODE" } if type != "ib"
-      config = config.delete_if { |k, _| k == "INTERFACE" } if type != "dummy"
-      config = config.delete_if { |k, _| k == "IFPLUGD_PRIORITY" } if config["STARTMODE"] != "ifplugd"
+      config.delete_if { |k, _| k =~ /WIRELESS.*/ } if type != "wlan"
+      config.delete_if { |k, _| k =~ /BONDING.*/ } if type != "bond"
+      config.delete_if { |k, _| k =~ /BRIDGE.*/ } if type != "br"
+      config.delete_if { |k, _| k =~ /TUNNEL.*/ } if !["tun", "tap"].include?(type)
+      config.delete_if { |k, _| k == "VLAN_ID" || k == "ETHERDEVICE" } if type != "vlan"
+      config.delete_if { |k, _| k == "IPOIB_MODE" } if type != "ib"
+      config.delete_if { |k, _| k == "INTERFACE" } if type != "dummy"
+      config.delete_if { |k, _| k == "IFPLUGD_PRIORITY" } if config["STARTMODE"] != "ifplugd"
 
       # all keys / values has to be strings, agent won't write it otherwise
-      config.map { |k, v| [k, v.to_s] }.to_h
+      # JR: this does not work for aliases, BON_OPTIONS and SLAVES which are later processed
+      # so comment it for now and if works without it, just delete it.
+      # FIXME: test and remove
+      # config.map { |k, v| [k, v.to_s] }.to_h
+      config
     end
 
     # Updates itself according to the given sysconfig configuration
@@ -300,6 +304,7 @@ module Y2Network
       end
       log.info "setting new aliases #{lan_items_format.inspect}"
       aliases_to_delete = Yast::LanItems.aliases.dup # #48191
+      Yast::NetworkInterfaces.Current["_aliases"] = lan_items_format
       Yast::LanItems.aliases = lan_items_format
       aliases_to_delete.each_pair do |a, v|
         Yast::NetworkInterfaces.DeleteAlias(Yast::NetworkInterfaces.Name, a) if v
