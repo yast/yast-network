@@ -130,7 +130,7 @@ module Y2Network
       # @return [IPAddr,nil] IP address or nil if it is not defined
       def ip_address
         str = fetch("IPADDR")
-        str.empty? ? nil : IPAddr.new(str)
+        str.nil? || str.empty? ? nil : IPAddr.new(str)
       end
 
       # @return [Integer] Number of supported keys
@@ -170,7 +170,7 @@ module Y2Network
       # @param [String] value
       # @return [String,nil]
       def value_as_string(value)
-        value.empty? ? nil : value
+        value.nil? || value.empty? ? nil : value
       end
 
       # Converts the value into an integer (or nil if empty)
@@ -178,7 +178,7 @@ module Y2Network
       # @param [String] value
       # @return [Integer,nil]
       def value_as_integer(value)
-        value.empty? ? nil : value.to_i
+        value.nil? || value.empty? ? nil : value.to_i
       end
 
       # Converts the value into a symbol (or nil if empty)
@@ -186,7 +186,7 @@ module Y2Network
       # @param [String] value
       # @return [Symbol,nil]
       def value_as_symbol(value)
-        value.empty? ? nil : value.to_sym
+        value.nil? || value.empty? ? nil : value.to_sym
       end
     end
   end

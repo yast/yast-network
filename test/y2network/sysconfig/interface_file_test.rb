@@ -61,8 +61,16 @@ describe Y2Network::Sysconfig::InterfaceFile do
       expect(file.ip_address).to eq(IPAddr.new(ipaddr))
     end
 
-    context "when the IP address is not defined" do
+    context "when the IP address is empty" do
       let(:ipaddr) { "" }
+
+      it "returns nil" do
+        expect(file.ip_address).to be_nil
+      end
+    end
+
+    context "when the IP address is undefined" do
+      let(:ipaddr) { nil }
 
       it "returns nil" do
         expect(file.ip_address).to be_nil
