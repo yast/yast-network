@@ -306,6 +306,8 @@ module Yast
     # Automatically configures slaves when user enslaves them into a bond or bridge device
     def UpdateSlaves
       current = LanItems.current
+      master_builder = Y2Network::InterfaceConfigBuilder.for(LanItems.GetCurrentType())
+      master_builder.name = LanItems.GetCurrentName()
 
       Lan.autoconf_slaves.each do |dev|
         if LanItems.FindAndSelect(dev)
@@ -328,7 +330,7 @@ module Yast
         # in related sysconfig scripts or makes no sence for slaves (e.g. ip configuration).
         builder["NETMASK"] = ""
         builder["BOOTPROTO"] = "none"
-        case builder.type
+        case master_builder.type
         when "bond"
           LanItems.startmode = "hotplug"
           # If there is already a rule based on the bus_id, do not update it.
@@ -337,6 +339,8 @@ module Yast
           end
         when "br"
           builder["IPADDR"] = ""
+        else
+          raise "Adapting slaves for wrong type #{master_builder.type.inspect}"
         end
 
         LanItems.Commit(builder)
