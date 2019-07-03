@@ -68,7 +68,7 @@ module Y2Network
 
       # Default function to init the value of slave devices box for bonding.
       def init
-        slaves = @settings["SLAVES"] || []
+        slaves = @settings["BOND_SLAVES"] || []
         # TODO: use def items, but problem now is that slave_items returns term and not array
         items = slave_items_from(
           @settings.bondable_interfaces.map(&:name),
@@ -95,7 +95,7 @@ module Y2Network
 
       # Default function to store the value of slave devices box.
       def store
-        @settings["SLAVES"] = selected_items
+        @settings["BOND_SLAVES"] = selected_items
       end
 
       # Validates created bonding. Currently just prevent the user to create a
