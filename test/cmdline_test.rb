@@ -23,7 +23,7 @@ describe "NetworkLanCmdlineInclude" do
   end
 
   describe "AddHandler" do
-    let(:vlan_config) { { "name" => "vlan0", "type" => "vlan", "bootproto" => "dhcp" } }
+    let(:options) { { "name" => "vlan0", "ethdevice" => "eth0", "bootproto" => "dhcp" } }
 
     before do
       allow(Yast::Report).to receive(:Error)
@@ -31,13 +31,15 @@ describe "NetworkLanCmdlineInclude" do
     end
 
     context "when called without type" do
-      it "reports an error" do
-        expect(Yast::Report).to receive(:Error)
-        subject.AddHandler(vlan_config.reject { |k| k == "type" })
-      end
+      context "and it cannot be infered from the given options" do
+        it "reports an error" do
+          expect(Yast::Report).to receive(:Error)
+          subject.AddHandler(options.reject { |k| k == "ethdevice" })
+        end
 
-      it "returns false" do
-        expect(subject.AddHandler(vlan_config.reject { |k| k == "type" })).to eq false
+        it "returns false" do
+          expect(subject.AddHandler(options.reject { |k| k == "ethdevice" })).to eq false
+        end
       end
     end
 
@@ -45,11 +47,11 @@ describe "NetworkLanCmdlineInclude" do
       context "but with an invalid option" do
         it "reports an error" do
           expect(Yast::Report).to receive(:Error)
-          subject.AddHandler(vlan_config.merge("startmode" => "wrong"))
+          subject.AddHandler(options.merge("startmode" => "wrong"))
         end
 
         it "returns false" do
-          expect(subject.AddHandler(vlan_config.merge("startmode" => "wrong"))).to eq false
+          expect(subject.AddHandler(options.merge("startmode" => "wrong"))).to eq false
         end
       end
     end
@@ -61,17 +63,17 @@ describe "NetworkLanCmdlineInclude" do
 
       it "commits the new configuration" do
         expect(Yast::LanItems).to receive(:Commit)
-        subject.AddHandler(vlan_config)
+        subject.AddHandler(options)
       end
 
       it "lists the final configuration" do
         expect(subject).to receive(:ListHandler)
-        subject.AddHandler(vlan_config)
+        subject.AddHandler(options)
       end
 
       it "returns true" do
         expect(Yast::Report).to_not receive(:Error)
-        expect(subject.AddHandler(vlan_config)).to eq true
+        expect(subject.AddHandler(options)).to eq true
       end
     end
   end

@@ -185,7 +185,7 @@ module Yast
       LanItems.AddNew
       Lan.Add
       LanItems.Items[LanItems.current]["ifcfg"] = options.fetch("name", "")
-      LanItems.type = options.fetch("type", "")
+      LanItems.type = options.fetch("type", infered_type(options))
       if LanItems.type.empty?
         Report.Error(_("The device type is mandatory."))
         return false
@@ -311,6 +311,21 @@ module Yast
       end
 
       true
+    end
+
+  private
+
+    # Return the infered type from the given options or an empty string if no
+    # one infered.
+    #
+    # @param options [Hash{String => String}] action options
+    # @return [String] infered device type; an empty string if not infered
+    def infered_type(options)
+      return "bond" if options.include? "slaves"
+      return "vlan" if options.include? "ethdevice"
+      return "br"   if options.include? "bridge_ports"
+
+      ""
     end
   end
 end
