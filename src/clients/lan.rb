@@ -199,7 +199,7 @@ module Yast
 
       # EOF
 
-      nil
+      @ret
     end
   end
 end
