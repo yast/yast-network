@@ -90,9 +90,9 @@ module Yast
               "boolean (map <string, string>)"
             ),
             "example" => [
-              "yast lan add name=vlan50 ethdevice=eth0 bootproto=dhcp",
-              "yast lan add name=br0 bridge_ports=eth0 eth1 bootproot=dhcp",
-              "yast lan add name=bond0 slaves=eth0 eth1 bootproto=dhcp"
+              "yast lan add type=vlan name=vlan50 ethdevice=eth0 bootproto=dhcp",
+              "yast lan add type=br name=br0 bridge_ports=eth0 eth1 bootproot=dhcp",
+              "yast lan add type=bond name=bond0 slaves=eth0 eth1 bootproto=dhcp"
             ]
           },
           "edit"   => {

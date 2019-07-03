@@ -182,41 +182,35 @@ module Yast
     # Handler for action "add"
     # @param [Hash{String => String}] options action options
     def AddHandler(options)
-      options = deep_copy(options)
       LanItems.AddNew
       Lan.Add
-      Ops.set(
-        LanItems.Items,
-        [LanItems.current, "ifcfg"],
-        Ops.get(options, "name", "")
-      )
-      LanItems.type = options["type"]
-      raise "Device type is mandatory." if !LanItems.type
-
-      if LanItems.type == "bond"
-        LanItems.bond_slaves = Builtins.splitstring(
-          Ops.get(options, "slaves", ""),
-          " "
-        )
-      end
-      if LanItems.type == "vlan"
-        LanItems.vlan_etherdevice = Ops.get(options, "ethdevice", "")
-      end
-      if LanItems.type == "br"
-        LanItems.bridge_ports = Ops.get(options, "bridge_ports", "")
+      LanItems.Items[LanItems.current]["ifcfg"] = options.fetch("name", "")
+      LanItems.type = options.fetch("type", "")
+      if LanItems.type.empty?
+        Report.Error(_("The device type is mandatory."))
+        return false
       end
 
-      LanItems.bootproto = Ops.get(options, "bootproto", "none")
-      if !Builtins.contains(["none", "static", "dhcp"], LanItems.bootproto)
+      case LanItems.type
+      when "bond"
+        LanItems.bond_slaves = options.fetch("slaves", "").split(" ")
+      when "vlan"
+        LanItems.vlan_etherdevice = options.fetch("ethdevice", "")
+      when "br"
+        LanItems.bridge_ports = options.fetch("bridge_ports", "")
+      end
+
+      LanItems.bootproto = options.fetch("bootproto", "none")
+      unless ["none", "static", "dhcp"].include? LanItems.bootproto
         Report.Error(_("Impossible value for bootproto."))
         return false
       end
 
-      LanItems.ipaddr = Ops.get(options, "ip", "")
-      LanItems.prefix = Ops.get(options, "prefix", "")
-      LanItems.netmask = Ops.get(options, "netmask", "255.255.255.0")
-      LanItems.startmode = Ops.get(options, "startmode", "auto")
-      if !Builtins.contains(["auto", "ifplugd", "nfsroot"], LanItems.startmode)
+      LanItems.ipaddr = options.fetch("ip", "")
+      LanItems.prefix = options.fetch("prefix", "")
+      LanItems.netmask = options.fetch("netmask", "255.255.255.0")
+      LanItems.startmode = options.fetch("startmode", "auto")
+      unless ["auto", "ifplugd", "nfsroot"].include? LanItems.startmode
         Report.Error(_("Impossible value for startmode."))
         return false
       end
