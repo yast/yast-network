@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Jul  3 16:40:45 UTC 2019 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
+
+- The 'lan' client returns the correct value (bsc#1140199).
+- 4.0.51
+
+-------------------------------------------------------------------
 Mon Jun 10 11:55:48 UTC 2019 - Knut Anderssen <kanderssen@suse.com>
 
 - bsc#1136929
