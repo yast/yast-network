@@ -138,7 +138,6 @@ module Yast
 
       # VLAN option
       @vlan_etherdevice = ""
-      @vlan_id = ""
 
       # wl_wpa_eap aggregates the settings in a map for easier CWM access.
       #
@@ -1544,8 +1543,6 @@ module Yast
       @description       = d["NAME"]
       @bond_option       = d["BONDING_MODULE_OPTS"]
       @vlan_etherdevice  = d["ETHERDEVICE"]
-      # FIXME, remember that it can be implied from the name. probably
-      @vlan_id           = d["VLAN_ID"]
 
       @bridge_ports = d["BRIDGE_PORTS"]
 
@@ -2663,7 +2660,6 @@ module Yast
     publish_variable :bond_slaves, "list <string>"
     publish_variable :bond_option, "string"
     publish_variable :vlan_etherdevice, "string"
-    publish_variable :vlan_id, "string"
     publish_variable :bridge_ports, "string"
     publish_variable :wl_wpa_eap, "map <string, any>"
     publish_variable :wl_channel, "string"

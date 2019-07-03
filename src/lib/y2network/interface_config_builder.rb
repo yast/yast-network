@@ -183,11 +183,6 @@ module Y2Network
       config.delete_if { |k, _| k == "INTERFACE" } if type != "dummy"
       config.delete_if { |k, _| k == "IFPLUGD_PRIORITY" } if config["STARTMODE"] != "ifplugd"
 
-      # all keys / values has to be strings, agent won't write it otherwise
-      # JR: this does not work for aliases, BON_OPTIONS and SLAVES which are later processed
-      # so comment it for now and if works without it, just delete it.
-      # FIXME: test and remove
-      # config.map { |k, v| [k, v.to_s] }.to_h
       config
     end
 
