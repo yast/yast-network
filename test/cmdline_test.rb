@@ -31,14 +31,16 @@ describe "NetworkLanCmdlineInclude" do
     end
 
     context "when called without type" do
+      let(:no_type_options) { options.reject { |k| k == "ethdevice" } }
+
       context "and it cannot be infered from the given options" do
         it "reports an error" do
           expect(Yast::Report).to receive(:Error)
-          subject.AddHandler(options.reject { |k| k == "ethdevice" })
+          subject.AddHandler(no_type_options)
         end
 
         it "returns false" do
-          expect(subject.AddHandler(options.reject { |k| k == "ethdevice" })).to eq false
+          expect(subject.AddHandler(no_type_options)).to eq false
         end
       end
     end

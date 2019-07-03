@@ -2,7 +2,7 @@
 Wed Jul  3 13:18:05 UTC 2019 - Knut Anderssen <kanderssen@suse.com>
 
 - bsc#1137346
-  - CLI: Report an error isntead of raise an exception when the
+  - CLI: Report an error instead of raising an exception when the
     device type is not provided and there is no way to infer it
     from the given options.
 - 4.1.50
