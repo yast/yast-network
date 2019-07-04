@@ -25,4 +25,35 @@ require "y2network/interface_config_builder"
 
 describe Y2Network::Dialogs::AddInterface do
   include_examples "CWM::Dialog"
+
+  describe "#run" do
+    before do
+      allow(Y2Network::Widgets::InterfaceType).to receive(:new).and_return(double(result: "eth"))
+      allow(subject).to receive(:cwm_show).and_return(:abort)
+    end
+
+    it "adds new interface to lan items" do
+      expect(Yast::LanItems).to receive(:AddNew)
+
+      subject.run
+    end
+
+    it "adds new interface to lan" do
+      expect(Yast::Lan).to receive(:Add)
+
+      subject.run
+    end
+
+    it "returns nil if canceled" do
+      allow(subject).to receive(:cwm_show).and_return(:abort)
+
+      expect(subject.run).to eq nil
+    end
+
+    it "returns interface config builder if approved" do
+      allow(subject).to receive(:cwm_show).and_return(:next)
+
+      expect(subject.run).to be_a Y2Network::InterfaceConfigBuilder
+    end
+  end
 end
