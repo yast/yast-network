@@ -1839,16 +1839,6 @@ module Yast
         end
       end
 
-      if ["tun", "tap"].include?(@type)
-        newdev = {
-          "BOOTPROTO"        => "static",
-          "STARTMODE"        => "auto",
-          "TUNNEL"           => @type,
-          "TUNNEL_SET_OWNER" => @tunnel_set_owner,
-          "TUNNEL_SET_GROUP" => @tunnel_set_group
-        }
-      end
-
       # ZONE uses an empty string as the default ZONE which means that is not
       # the same than not defining the attribute
       current_map = (GetCurrentMap() || {}).select { |k, v| !v.nil? && (k == "ZONE" || !v.empty?) }
