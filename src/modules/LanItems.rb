@@ -1729,6 +1729,7 @@ module Yast
         raise ArgumentError, "Unknown operation: #{@operation}"
       end
 
+      log.info "committing builder #{builder.inspect}"
       builder.save # does all modification, later only things that is not yet converted
       # FIXME: most of the following stuff should be moved into InterfaceConfigBuilder
       # when generating sysconfig configuration
@@ -1872,6 +1873,9 @@ module Yast
       current_map = (GetCurrentMap() || {}).select { |k, v| !v.nil? && (k == "ZONE" || !v.empty?) }
       # FIXME: move to config builder (might depend on some proposals above)
       new_map = newdev.select { |k, v| !v.nil? && (k == "ZONE" || !v.empty?) }
+
+      log.info "current map #{current_map.inspect}"
+      log.info "new map #{newdev.inspect}"
 
       # CanonicalizeIP is called to get new device map into the same shape as
       # NetworkInterfaces provides the current one.
