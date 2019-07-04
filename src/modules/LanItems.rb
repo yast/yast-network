@@ -1829,7 +1829,7 @@ module Yast
         newdev["WIRELESS_POWER"] = @wl_power ? "yes" : "no"
       end
 
-      if DriverType(@type) == "ctc"
+      if DriverType(builder.type) == "ctc"
         if Ops.get(NetworkConfig.Config, "WAIT_FOR_INTERFACES").nil? ||
             Ops.less_than(
               Ops.get_integer(NetworkConfig.Config, "WAIT_FOR_INTERFACES", 0),
