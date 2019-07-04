@@ -17,8 +17,8 @@ describe Y2Network::ProposalSettings do
   def stub_features(features)
     Yast.import "ProductFeatures"
     Yast::ProductFeatures.Import(features)
-    # stub restore as during Stage normal it restores features
-    allow(Yast::ProductFeatures).to receive(:Restore)
+    # Prevent to Restore or Init
+    allow(Yast::ProductFeatures).to receive(:InitIfNeeded)
   end
 
   describe ".instance" do
