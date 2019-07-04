@@ -205,6 +205,7 @@ module Yast
       end
 
       update_builder_from_options!(builder, options)
+      return false unless validate_config(builder)
 
       LanItems.Commit(builder)
       ListHandler({})
