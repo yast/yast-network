@@ -8,6 +8,11 @@ Yast.import "ProductFeatures"
 Yast.import "LanItems"
 
 describe "LanItemsClass#new_device_startmode" do
+  before do
+    allow(Yast::ProductFeatures).to receive(:GetStringFeature)
+    allow(Yast::LanItems).to receive(:type) { "eth" }
+  end
+
   DEVMAP_STARTMODE_INVALID = {
     "STARTMODE" => "invalid"
   }.freeze
@@ -53,14 +58,6 @@ describe "LanItemsClass#new_device_startmode" do
         expect(result).to be_eql expected_startmode
       end
 
-      it "results to ifplugd when running on laptop" do
-        expect(Yast::Arch)
-          .to receive(:is_laptop) { true }
-
-        result = Yast::LanItems.new_device_startmode
-        expect(result).to be_eql "ifplugd"
-      end
-
       it "results to #{expected_startmode} when running NetworkManager" do
         expect(Yast::NetworkService)
           .to receive(:is_network_manager) { true }
@@ -77,6 +74,18 @@ describe "LanItemsClass#new_device_startmode" do
 
         result = Yast::LanItems.new_device_startmode
         expect(result).to be_eql expected_startmode
+      end
+
+      context "and running on a laptop without NetworkManager" do
+        it "returns ifplugd is the device is not a virtual one" do
+          expect(Yast::Arch)
+            .to receive(:is_laptop) { true }
+          allow(Yast::NetworkService)
+            .to receive(:is_network_manager) { false }
+
+          result = Yast::LanItems.new_device_startmode
+          expect(result).to be_eql "ifplugd"
+        end
       end
     end
 
