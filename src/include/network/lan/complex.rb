@@ -406,9 +406,10 @@ module Yast
           Y2Network::Sequences::Interface.new.add
           return :redraw
         when :edit
-          builder = Y2Network::InterfaceConfigBuilder.for(LanItems.GetCurrentType())
-          builder.name = LanItems.GetCurrentName()
           if LanItems.IsCurrentConfigured
+
+            builder = Y2Network::InterfaceConfigBuilder.for(LanItems.GetCurrentType())
+            builder.name = LanItems.GetCurrentName()
             LanItems.SetItem(builder: builder)
 
             if LanItems.startmode == "managed"
@@ -436,6 +437,12 @@ module Yast
               # but in this function return will do
               return nil
             end
+
+            type = LanItems.GetCurrentType()
+            # s390 does not have type yet set, but it can be read from hwinfo
+            type = LanItems.Items.dig(LanItems.current, "hwinfo", "type") if !type || type.empty?
+            builder = Y2Network::InterfaceConfigBuilder.for(type)
+            builder.name = LanItems.GetCurrentName()
 
             # FIXME: This is for backward compatibility only
             # dhclient needs to set just one dhcp enabled interface to

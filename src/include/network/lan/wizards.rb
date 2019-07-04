@@ -181,7 +181,7 @@ module Yast
       aliases = {
         "address"     => -> { AddressDialog(builder: builder) },
         "hosts"       => -> { HostsMainDialog(false) },
-        "s390"        => -> { S390Dialog() },
+        "s390"        => -> { S390Dialog(builder: builder) },
         "wire"        => -> { WirelessDialog() },
         "expert"      => -> { WirelessExpertDialog() },
         "keys"        => -> { WirelessKeysDialog() },

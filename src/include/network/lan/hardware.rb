@@ -430,7 +430,9 @@ module Yast
           LanItems.qeth_chanids = String.CutBlanks(
             Builtins.sformat("%1 %2 %3", read, write, control)
           )
-          if !LanItems.createS390Device
+          if LanItems.createS390Device
+            builder.name = LanItems.GetCurrentName
+          else
             Popup.Error(
               _(
                 "An error occurred while creating device.\nSee YaST log for details."
