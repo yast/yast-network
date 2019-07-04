@@ -1837,8 +1837,6 @@ module Yast
 
       when "ib"
         newdev["IPOIB_MODE"] = @ipoib_mode
-      when "dummy"
-        newdev["INTERFACETYPE"] = @type
       end
 
       if DriverType(@type) == "ctc"
