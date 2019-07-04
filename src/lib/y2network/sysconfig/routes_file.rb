@@ -177,7 +177,8 @@ module Y2Network
         scr_path = ifroute_agent_scr_path(file_path)
         block.call(scr_path)
       ensure
-        Yast::SCR.UnregisterAgent(scr_path) if register_agent?
+        # scr_path can failed when creating agent, so in such case, do not unregister it
+        Yast::SCR.UnregisterAgent(scr_path) if register_agent? && scr_path
       end
 
       # Returns the path to the SCR agent

@@ -33,6 +33,8 @@ module Y2Network
   module Sysconfig
     # This class reads the current configuration from `/etc/sysconfig` files
     class ConfigReader
+      include Yast::Logger
+
       def initialize(_opts = {})
       end
 
@@ -73,10 +75,15 @@ module Y2Network
       def find_routing_tables(interfaces)
         main_routes = load_routes_from
         iface_routes = interfaces.flat_map do |iface|
-          load_routes_from("/etc/sysconfig/network/ifroute-#{iface.name}")
+          if iface.name.empty?
+            [] # not activated s390 devices, does not have name and so no routes file
+          else
+            load_routes_from("/etc/sysconfig/network/ifroute-#{iface.name}")
+          end
         end
         all_routes = main_routes + iface_routes
         link_routes_to_interfaces(all_routes, interfaces)
+        log.info "found routes #{all_routes.inspect}"
         [Y2Network::RoutingTable.new(all_routes.uniq)]
       end
 
