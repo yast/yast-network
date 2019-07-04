@@ -48,8 +48,6 @@ module Yast
 
   # FIXME: well this class really is not nice
   class LanItemsClass < Module
-    attr_reader :ipoib_modes
-    attr_accessor :ipoib_mode
     attr_accessor :firewall_zone
 
     include Logger
@@ -191,9 +189,6 @@ module Yast
       # for TUN / TAP devices
       @tunnel_set_owner = ""
       @tunnel_set_group = ""
-
-      # infiniband options
-      @ipoib_mode = ""
 
       Yast.include self, "network/hardware.rb"
 
@@ -1590,8 +1585,6 @@ module Yast
       @wl_power       = d["WIRELESS_POWER"] == "yes"
       @wl_ap_scanmode = d["WIRELESS_AP_SCANMODE"]
 
-      @ipoib_mode = d["IPOIB_MODE"]
-
       @aliases = Ops.get_map(devmap, "_aliases", {})
 
       d
@@ -1834,9 +1827,6 @@ module Yast
         newdev["WIRELESS_BITRATE"] = @wl_bitrate
         newdev["WIRELESS_AP"] = @wl_accesspoint
         newdev["WIRELESS_POWER"] = @wl_power ? "yes" : "no"
-
-      when "ib"
-        newdev["IPOIB_MODE"] = @ipoib_mode
       end
 
       if DriverType(@type) == "ctc"

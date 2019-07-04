@@ -13,13 +13,17 @@ module Y2Network
       attr_writer :ipoib_mode
 
       def ipoib_mode
-        @ipoib_mode ||= Yast::LanItems.ipoib_mode || "default"
+        @ipoib_mode ||= if [nil, ""].include?(@config["IPOIB_MODE"])
+          "default"
+        else
+          @config["IPOIB_MODE"]
+        end
       end
 
       def save
         super
 
-        Yast::LanItems.ipoib_mode = ipoib_mode == "default" ? nil : ipoib_mode
+        @config["IPOIB_MODE"] = ipoib_mode == "default" ? nil : ipoib_mode
       end
     end
   end
