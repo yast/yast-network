@@ -194,17 +194,8 @@ module Yast
 
       builder = Y2Network::InterfaceConfigBuilder.for(LanItems.type)
       builder.name = LanItems.GetCurrentName()
-
-      case LanItems.type
-      when "bond"
-        builder["BOND_SLAVES"] = options.fetch("slaves", "").split(" ")
-      when "vlan"
-        builder["ETHERDEVICE"] = options.fetch("ethdevice", "")
-      when "br"
-        builder["BRIDGE_PORTS"] = options.fetch("bridge_ports", "")
-      end
-
       update_builder_from_options!(builder, options)
+
       return false unless validate_config(builder)
 
       LanItems.Commit(builder)
@@ -225,6 +216,7 @@ module Yast
       builder.name = LanItems.GetCurrentName()
       LanItems.SetItem(builder: builder)
       update_builder_from_options!(builder, options)
+
       return false unless validate_config(builder)
 
       LanItems.Commit(builder)
@@ -305,6 +297,15 @@ module Yast
     # @param builder [Y2Network::InterfaceConfigBuilder]
     # @param options [Hash{String => String}] action options
     def update_builder_from_options!(builder, options)
+      case builder.type
+      when "bond"
+        builder["BOND_SLAVES"] = options.fetch("slaves", "").split(" ")
+      when "vlan"
+        builder["ETHERDEVICE"] = options.fetch("ethdevice", "")
+      when "br"
+        builder["BRIDGE_PORTS"] = options.fetch("bridge_ports", "")
+      end
+
       default_bootproto = options.keys.include?("ip") ? "static" : "none"
       builder["BOOTPROTO"] = options.fetch("bootproto", default_bootproto)
       if builder["BOOTPROTO"] == "static"
