@@ -24,6 +24,7 @@ require "y2network/routing"
 require "y2network/route"
 require "y2network/routing_table"
 require "y2network/sysconfig_paths"
+require "y2network/connection_config/ethernet"
 
 describe Y2Network::Sysconfig::ConfigWriter do
   subject(:writer) { described_class.new }
@@ -31,13 +32,22 @@ describe Y2Network::Sysconfig::ConfigWriter do
   describe "#write" do
     let(:config) do
       Y2Network::Config.new(
-        interfaces: [eth0],
-        routing:    routing,
-        source:     :sysconfig
+        interfaces:  [eth0],
+        connections: [eth0_conn],
+        routing:     routing,
+        source:      :sysconfig
       )
     end
     let(:old_config) { instance_double(Y2Network::Config, dns: double("dns")) }
+
     let(:eth0) { Y2Network::Interface.new("eth0") }
+    let(:eth0_conn) do
+      Y2Network::ConnectionConfig::Ethernet.new.tap do |conn|
+        conn.interface = "eth0"
+        conn.bootproto = :static,
+        conn.ip_address = IPAddr.new("192.168.122.1")
+      end
+    end
     let(:route) do
       Y2Network::Route.new(
         to:        IPAddr.new("10.0.0.2/8"),
@@ -71,6 +81,7 @@ describe Y2Network::Sysconfig::ConfigWriter do
     let(:routes) { [route, default_route] }
 
     let(:dns_writer) { instance_double(Y2Network::Sysconfig::DNSWriter, write: nil) }
+    let(:conn_writer) { instance_double(Y2Network::Sysconfig::ConnectionConfigWriter, write: nil) }
 
     before do
       allow(Y2Network::Sysconfig::RoutesFile).to receive(:new)
@@ -81,6 +92,8 @@ describe Y2Network::Sysconfig::ConfigWriter do
         .and_return(routes_file)
       allow(Y2Network::Sysconfig::DNSWriter).to receive(:new)
         .and_return(dns_writer)
+      allow(Y2Network::Sysconfig::ConnectionConfigWriter).to receive(:new)
+        .and_return(conn_writer)
     end
 
     it "saves general routes to main routes file" do
@@ -150,6 +163,11 @@ describe Y2Network::Sysconfig::ConfigWriter do
 
     it "writes DNS configuration" do
       expect(dns_writer).to receive(:write).with(config.dns, old_config.dns)
+      writer.write(config, old_config)
+    end
+
+    it "writes connections configurations" do
+      expect(conn_writer).to receive(:write).with(eth0_conn)
       writer.write(config, old_config)
     end
   end
