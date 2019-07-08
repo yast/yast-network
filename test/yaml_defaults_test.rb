@@ -37,7 +37,6 @@ describe "LanItems#SetDeviceVars" do
 
     expect(lan_items.bootproto).to eql "static"
     expect(lan_items.startmode).to be_empty
-    expect(lan_items.ifplugd_priority).to eql "0"
   end
 end
 

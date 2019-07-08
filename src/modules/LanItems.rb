@@ -48,8 +48,6 @@ module Yast
 
   # FIXME: well this class really is not nice
   class LanItemsClass < Module
-    attr_reader :ipoib_modes
-    attr_accessor :ipoib_mode
     attr_accessor :firewall_zone
 
     include Logger
@@ -106,13 +104,10 @@ module Yast
       # boot protocol: BOOTPROTO
       @bootproto = "static"
       @ipaddr = ""
-      @remoteip = ""
       @netmask = ""
       @prefix = ""
 
       @startmode = "auto"
-      @ifplugd_priority = "0"
-      @mtu = ""
 
       # wireless options
       @wl_mode = ""
@@ -194,9 +189,6 @@ module Yast
       # for TUN / TAP devices
       @tunnel_set_owner = ""
       @tunnel_set_group = ""
-
-      # infiniband options
-      @ipoib_mode = ""
 
       Yast.include self, "network/hardware.rb"
 
@@ -1528,7 +1520,6 @@ module Yast
       @bootproto         = d["BOOTPROTO"]
       @ipaddr            = d["IPADDR"]
       @prefix            = d["PREFIXLEN"]
-      @remoteip          = d["REMOTE_IPADDR"]
       @netmask           = d["NETMASK"]
       @firewall_zone     = d["ZONE"]
       @set_default_route = case d["DHCLIENT_SET_DEFAULT_ROUTE"]
@@ -1537,9 +1528,7 @@ module Yast
         # all other values! count as unspecified which is default value
       end
 
-      @mtu               = d["MTU"]
       @startmode         = d["STARTMODE"]
-      @ifplugd_priority  = d["IFPLUGD_PRIORITY"]
       @description       = d["NAME"]
       @bond_option       = d["BONDING_MODULE_OPTS"]
       @vlan_etherdevice  = d["ETHERDEVICE"]
@@ -1595,8 +1584,6 @@ module Yast
       @wl_accesspoint = d["WIRELESS_AP"]
       @wl_power       = d["WIRELESS_POWER"] == "yes"
       @wl_ap_scanmode = d["WIRELESS_AP_SCANMODE"]
-
-      @ipoib_mode = d["IPOIB_MODE"]
 
       @aliases = Ops.get_map(devmap, "_aliases", {})
 
@@ -1841,14 +1828,9 @@ module Yast
         newdev["WIRELESS_BITRATE"] = @wl_bitrate
         newdev["WIRELESS_AP"] = @wl_accesspoint
         newdev["WIRELESS_POWER"] = @wl_power ? "yes" : "no"
-
-      when "ib"
-        newdev["IPOIB_MODE"] = @ipoib_mode
-      when "dummy"
-        newdev["INTERFACETYPE"] = @type
       end
 
-      if DriverType(@type) == "ctc"
+      if DriverType(builder.type) == "ctc"
         if Ops.get(NetworkConfig.Config, "WAIT_FOR_INTERFACES").nil? ||
             Ops.less_than(
               Ops.get_integer(NetworkConfig.Config, "WAIT_FOR_INTERFACES", 0),
@@ -1856,16 +1838,6 @@ module Yast
             )
           Ops.set(NetworkConfig.Config, "WAIT_FOR_INTERFACES", 40)
         end
-      end
-
-      if ["tun", "tap"].include?(@type)
-        newdev = {
-          "BOOTPROTO"        => "static",
-          "STARTMODE"        => "auto",
-          "TUNNEL"           => @type,
-          "TUNNEL_SET_OWNER" => @tunnel_set_owner,
-          "TUNNEL_SET_GROUP" => @tunnel_set_group
-        }
       end
 
       # ZONE uses an empty string as the default ZONE which means that is not
@@ -2645,13 +2617,10 @@ module Yast
     publish_variable :Requires, "list <string>"
     publish_variable :bootproto, "string"
     publish_variable :ipaddr, "string"
-    publish_variable :remoteip, "string"
     publish_variable :netmask, "string"
     publish_variable :set_default_route, "boolean"
     publish_variable :prefix, "string"
     publish_variable :startmode, "string"
-    publish_variable :ifplugd_priority, "string"
-    publish_variable :mtu, "string"
     publish_variable :wl_mode, "string"
     publish_variable :wl_essid, "string"
     publish_variable :wl_nwid, "string"

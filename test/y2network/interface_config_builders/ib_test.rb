@@ -19,22 +19,22 @@ describe Y2Network::InterfaceConfigBuilders::Ib do
   end
 
   describe "#save" do
-    around do |block|
-      Yast::LanItems.AddNew
-      block.call
-      Yast::LanItems.Rollback
-    end
-
     it "stores ipoib configuration" do
       subject.ipoib_mode = "datagram"
+
       subject.save
-      expect(Yast::LanItems.ipoib_mode).to eq "datagram"
+      devmap = subject.device_sysconfig
+
+      expect(devmap).to include("IPOIB_MODE" => "datagram")
     end
 
     it "stores nil to ipoib configuration if mode is 'default'" do
       subject.ipoib_mode = "default"
+
       subject.save
-      expect(Yast::LanItems.ipoib_mode).to eq nil
+      devmap = subject.device_sysconfig
+
+      expect(devmap).to include("IPOIB_MODE" => nil)
     end
   end
 
@@ -43,13 +43,6 @@ describe Y2Network::InterfaceConfigBuilders::Ib do
       it "returns modified value" do
         subject.ipoib_mode = "default"
         expect(subject.ipoib_mode).to eq "default"
-      end
-    end
-
-    context "not modified" do
-      it "returns value of LanItems.ipoib_mode" do
-        Yast::LanItems.ipoib_mode = "datagram"
-        expect(subject.ipoib_mode).to eq "datagram"
       end
     end
   end

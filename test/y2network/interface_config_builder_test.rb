@@ -22,7 +22,7 @@ describe Y2Network::InterfaceConfigBuilder do
 
     context "specialized class for given type does NOT exist" do
       it "returns instance of InterfaceConfigBuilder" do
-        expect(described_class.for("dummy").class).to eq described_class
+        expect(described_class.for("generic-device").class).to eq described_class
       end
 
       it "sets type to passed type" do
