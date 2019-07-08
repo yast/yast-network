@@ -44,7 +44,7 @@ describe Y2Network::Sysconfig::ConfigWriter do
     let(:eth0_conn) do
       Y2Network::ConnectionConfig::Ethernet.new.tap do |conn|
         conn.interface = "eth0"
-        conn.bootproto = :static,
+        conn.bootproto = :static
         conn.ip_address = IPAddr.new("192.168.122.1")
       end
     end

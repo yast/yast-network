@@ -154,7 +154,7 @@ describe Y2Network::Sysconfig::InterfaceFile do
 
     describe "when multiple wireless keys are specified" do
       it "writes indexes keys" do
-        file.wireless_keys = [ "123456", "abcdef" ]
+        file.wireless_keys = ["123456", "abcdef"]
         file.save
 
         content = file_content(scr_root, file)

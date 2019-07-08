@@ -39,7 +39,7 @@ describe Y2Network::Sysconfig::ConnectionConfigWriter do
       instance_double(
         Y2Network::ConnectionConfig::Ethernet,
         interface: "eth0",
-        type: Y2Network::InterfaceType::ETHERNET
+        type:      Y2Network::InterfaceType::ETHERNET
       )
     end
 
