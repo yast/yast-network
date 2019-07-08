@@ -42,15 +42,77 @@ module Y2Network
           new(name)
         end
 
+        # Defines a parameter
+        #
+        # This method adds a pair of methods to get and set the parameter's value.
+        #
+        # @param name [Symbol] Parameter name
+        # @param type [Symbol] Type to be used (:string, :integer, :symbol, :ipaddr)
         def define_parameter(name, type = :string)
           define_method name do
+            return @values[name] if @values.key?(name)
             value = fetch(name.to_s.upcase)
             send("value_as_#{type}", value)
+          end
+
+          define_method "#{name}=" do |value|
+            @values[name] = value
+          end
+        end
+
+        # Defines an array parameter
+        #
+        # This method adds a pair of methods to get and set the parameter's values.
+        #
+        # @param name [Symbol] Parameter name
+        # @param limit [Integer] Maximum array size
+        # @param type [Symbol] Type to be used (:string, :integer, :symbol, :ipaddr)
+        def define_array_parameter(name, limit, type = :string)
+          define_method "#{name}s" do
+            return @values[name] if @values.key?(name)
+            key = name.to_s.upcase
+            values = [fetch(key)]
+            values += Array.new(limit) do |idx|
+              value = fetch("#{key}_#{idx}")
+              next if value.nil?
+              send("value_as_#{type}", value)
+            end
+            values.compact
+          end
+
+          define_method "#{name}s=" do |value|
+            @values[name] = value
+          end
+        end
+
+        # Defines an array parameter
+        #
+        # This method adds a pair of methods to get and set the parameter's values.
+        #
+        # @param name [String] Parameter name
+        # @param limit [Integer] Maximum array size
+        # @param type [Symbol] Type to be used (:string, :integer, :symbol, :ipaddr)
+        def define_array_parameter(name, limit, type = :string)
+          define_method "#{name}s" do
+            key = name.to_s.upcase
+            values = [fetch(key)]
+            values += Array.new(limit) do |idx|
+              value = fetch("#{key}_#{idx}")
+              next if value.nil?
+              send("value_as_#{type}", value)
+            end
+            values.compact
+          end
+
+          define_method "#{name}s=" do |value|
+            @values["#{name}"] = value
           end
         end
       end
 
       attr_reader :name
+
+      define_parameter(:ipaddr, :ipaddr)
 
       # !@attribute [r] bootproto
       #   return [Symbol] Set up protocol (:static, :dhcp, :dhcp4, :dhcp6, :autoip, :dhcp+autoip,
@@ -64,6 +126,11 @@ module Y2Network
       # !@attribute [r] wireless_key_length
       #   @return [Integer] Length in bits for all keys used
       define_parameter(:wireless_key_length, :integer)
+
+      # @return [Integer] Number of supported keys
+      SUPPORTED_KEYS = 4
+
+      define_array_parameter(:wireless_key, SUPPORTED_KEYS, :string)
 
       # !@attribute [r] wireless_default_key
       #   @return [Integer] Index of the default key
@@ -123,6 +190,16 @@ module Y2Network
       # @param name [String] Interface name
       def initialize(name)
         @name = name
+        @values = {}
+      end
+
+      SYSCONFIG_NETWORK_PATH = Pathname.new("/etc").join("sysconfig", "network").freeze
+
+      # Returns the file path
+      #
+      # @return [Pathname]
+      def path
+        SYSCONFIG_NETWORK_PATH.join("ifcfg-#{name}")
       end
 
       # Returns the IP address if defined
@@ -132,18 +209,7 @@ module Y2Network
         str = fetch("IPADDR")
         str.nil? || str.empty? ? nil : IPAddr.new(str)
       end
-
-      # @return [Integer] Number of supported keys
-      SUPPORTED_KEYS = 4
-
-      # List of wireless keys
-      #
-      # @return [Array<String>] Wireless keys
-      def wireless_keys
-        keys = [fetch("WIRELESS_KEY")]
-        keys += Array.new(SUPPORTED_KEYS) { |i| fetch("WIRELESS_KEY_#{i}") }
-        keys.compact
-      end
+      alias_method :ip_address, :ipaddr
 
       # Fetches a key
       #
@@ -152,6 +218,21 @@ module Y2Network
       def fetch(key)
         path = Yast::Path.new(".network.value.\"#{name}\".#{key}")
         Yast::SCR.Read(path)
+      end
+
+      # Writes the changes to the file
+      #
+      # @note Writes only changed values, keeping the rest as they are.
+      def save
+        @values.each do |key, value|
+          normalized_key = key.upcase
+          if value.is_a?(Array)
+            write_array(normalized_key, value)
+          else
+            write(normalized_key, value)
+          end
+        end
+        Yast::SCR.Write(Yast::Path.new(".network"), nil)
       end
 
       # Determines the interface's type
@@ -187,6 +268,44 @@ module Y2Network
       # @return [Symbol,nil]
       def value_as_symbol(value)
         value.nil? || value.empty? ? nil : value.to_sym
+      end
+
+      # Converts the value into a IPAddr (or nil if empty)
+      #
+      # @param [String] value
+      # @return [IPAddr,nil]
+      def value_as_ipaddr(value)
+        value.nil? || value.empty? ? nil : IPAddr.new(value)
+      end
+
+      # Writes an array as a value for a given key
+      #
+      # @param key [Symbol] Key
+      # @param value [Array<#to_s>] Values to write
+      def write_array(key, values)
+        values.each_with_index do |value, idx|
+          write("#{key}_#{idx}", value)
+        end
+      end
+
+      # Writes an array as a value for a given key
+      #
+      # @param key [Symbol] Key
+      # @param value [Array<#to_s>] Values to write
+      def write_array(key, values)
+        values.each_with_index do |value, idx|
+          write("#{key}_#{idx}", value)
+        end
+      end
+
+      # Writes the value for a given key
+      #
+      # @param key [Symbol] Key
+      # @param value [#to_s] Value to write
+      def write(key, value)
+        raw_value = value ? value.to_s : nil
+        path = Yast::Path.new(".network.value.\"#{name}\".#{key}")
+        Yast::SCR.Write(path, raw_value)
       end
     end
   end
