@@ -281,8 +281,8 @@ module Y2Network
 
       # Writes an array as a value for a given key
       #
-      # @param key [Symbol] Key
-      # @param value [Array<#to_s>] Values to write
+      # @param key    [Symbol] Key
+      # @param values [Array<#to_s>] Values to write
       def write_array(key, values)
         values.each_with_index do |value, idx|
           write("#{key}_#{idx}", value)
@@ -291,7 +291,7 @@ module Y2Network
 
       # Writes the value for a given key
       #
-      # @param key [Symbol] Key
+      # @param key   [Symbol] Key
       # @param value [#to_s] Value to write
       def write(key, value)
         raw_value = value ? value.to_s : nil
