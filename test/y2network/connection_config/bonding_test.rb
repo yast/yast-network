@@ -17,23 +17,14 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/connection_config/base"
+require_relative "../../test_helper"
+require "y2network/connection_config/bonding"
+require "y2network/interface_type"
 
-module Y2Network
-  module ConnectionConfig
-    # Configuration for bonding connections
-    #
-    # @see https://www.kernel.org/doc/Documentation/networking/bonding.txt
-    class Bond < Base
-      # @return [Array<Interface>]
-      attr_accessor :slaves
-      # @return [String] bond driver options
-      attr_accessor :options
-
-      def initialize
-        @slaves = []
-        @options = ""
-      end
+describe Y2Network::ConnectionConfig::Bonding do
+  describe "#type" do
+    it "returns 'bonding'" do
+      expect(subject.type).to eq(Y2Network::InterfaceType::BONDING)
     end
   end
 end
