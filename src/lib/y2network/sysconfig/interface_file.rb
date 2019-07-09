@@ -35,30 +35,30 @@ module Y2Network
 
         # Finds the ifcfg-* file for a given interface
         #
-        # @param name [String] Interface name
+        # @param interface [String] Interface name
         # @return [Sysconfig::InterfaceFile,nil] Sysconfig
-        def find(name)
-          return nil unless Yast::FileUtils.Exists(SYSCONFIG_NETWORK_DIR.join("ifcfg-#{name}").to_s)
-          new(name)
+        def find(interface)
+          return nil unless Yast::FileUtils.Exists(SYSCONFIG_NETWORK_DIR.join("ifcfg-#{interface}").to_s)
+          new(interface)
         end
 
         # Defines a parameter
         #
         # This method adds a pair of methods to get and set the parameter's value.
         #
-        # @param name [Symbol] Parameter name
-        # @param type [Symbol] Type to be used (:string, :integer, :symbol, :ipaddr)
-        def define_parameter(name, type = :string)
-          params << name
+        # @param param_name [Symbol] Parameter name
+        # @param type       [Symbol] Type to be used (:string, :integer, :symbol, :ipaddr)
+        def define_parameter(param_name, type = :string)
+          params << param_name
 
-          define_method name do
-            return @values[name] if @values.key?(name)
-            value = fetch(name.to_s.upcase)
+          define_method param_name do
+            return @values[param_name] if @values.key?(param_name)
+            value = fetch(param_name.to_s.upcase)
             send("value_as_#{type}", value)
           end
 
-          define_method "#{name}=" do |value|
-            @values[name] = value
+          define_method "#{param_name}=" do |value|
+            @values[param_name] = value
           end
         end
 
@@ -66,13 +66,13 @@ module Y2Network
         #
         # This method adds a pair of methods to get and set the parameter's values.
         #
-        # @param name [Symbol] Parameter name
-        # @param limit [Integer] Maximum array size
-        # @param type [Symbol] Type to be used (:string, :integer, :symbol, :ipaddr)
-        def define_array_parameter(name, limit, type = :string)
-          define_method "#{name}s" do
-            return @values[name] if @values.key?(name)
-            key = name.to_s.upcase
+        # @param param_name [Symbol] Parameter name
+        # @param limit      [Integer] Maximum array size
+        # @param type       [Symbol] Type to be used (:string, :integer, :symbol, :ipaddr)
+        def define_array_parameter(param_name, limit, type = :string)
+          define_method "#{param_name}s" do
+            return @values[param_name] if @values.key?(param_name)
+            key = param_name.to_s.upcase
             values = [fetch(key)]
             values += Array.new(limit) do |idx|
               value = fetch("#{key}_#{idx}")
@@ -82,8 +82,8 @@ module Y2Network
             values.compact
           end
 
-          define_method "#{name}s=" do |value|
-            @values[name] = value
+          define_method "#{param_name}s=" do |value|
+            @values[param_name] = value
           end
         end
 
@@ -97,9 +97,16 @@ module Y2Network
         end
       end
 
-      attr_reader :name
+      # @return [String] Interface's name
+      attr_reader :interface
 
+      # !@attribute [r] ipaddr
+      #   return [IPAddr] IP address
       define_parameter(:ipaddr, :ipaddr)
+
+      # !@attribute [r] name
+      #   return [String] Interface's description (e.g., "Ethernet Card 0")
+      define_parameter(:name, :string)
 
       # !@attribute [r] bootproto
       #   return [Symbol] Set up protocol (:static, :dhcp, :dhcp4, :dhcp6, :autoip, :dhcp+autoip,
@@ -174,9 +181,9 @@ module Y2Network
 
       # Constructor
       #
-      # @param name [String] Interface name
-      def initialize(name)
-        @name = name
+      # @param interface [String] Interface interface
+      def initialize(interface)
+        @interface = interface
         @values = {}
       end
 
@@ -186,7 +193,7 @@ module Y2Network
       #
       # @return [Pathname]
       def path
-        SYSCONFIG_NETWORK_PATH.join("ifcfg-#{name}")
+        SYSCONFIG_NETWORK_PATH.join("ifcfg-#{interface}")
       end
 
       # Returns the IP address if defined
@@ -203,7 +210,7 @@ module Y2Network
       # @param key [String] Interface key
       # @return [Object] Value for the given key
       def fetch(key)
-        path = Yast::Path.new(".network.value.\"#{name}\".#{key}")
+        path = Yast::Path.new(".network.value.\"#{interface}\".#{key}")
         Yast::SCR.Read(path)
       end
 
@@ -288,7 +295,7 @@ module Y2Network
       # @param value [#to_s] Value to write
       def write(key, value)
         raw_value = value ? value.to_s : nil
-        path = Yast::Path.new(".network.value.\"#{name}\".#{key}")
+        path = Yast::Path.new(".network.value.\"#{interface}\".#{key}")
         Yast::SCR.Write(path, raw_value)
       end
     end

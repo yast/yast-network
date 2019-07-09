@@ -44,6 +44,8 @@ module Y2Network
       attr_accessor :secondary_ip_addresses
       # @return [Integer, nil]
       attr_accessor :mtu
+      # @return [String] Connection's description (e.g., "Ethernet Card 0")
+      attr_accessor :description
 
       # Returns the connection type
       #

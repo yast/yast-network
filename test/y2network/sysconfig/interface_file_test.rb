@@ -44,7 +44,7 @@ describe Y2Network::Sysconfig::InterfaceFile do
     it "returns an object representing the file" do
       file = described_class.find("eth0")
       expect(file).to be_a(described_class)
-      expect(file.name).to eq("eth0")
+      expect(file.interface).to eq("eth0")
     end
 
     context "when a file for the given interface does not exist" do

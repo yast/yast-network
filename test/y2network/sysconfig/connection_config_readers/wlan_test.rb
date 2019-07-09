@@ -29,7 +29,8 @@ describe Y2Network::Sysconfig::ConnectionConfigReaders::Wlan do
   let(:file) do
     instance_double(
       Y2Network::Sysconfig::InterfaceFile,
-      name:                 "wlan0",
+      interface:            "wlan0",
+      name:                 "Wireless Card 0",
       startmode:            :auto,
       bootproto:            :static,
       ip_address:           address,
@@ -43,7 +44,8 @@ describe Y2Network::Sysconfig::ConnectionConfigReaders::Wlan do
     let(:file) do
       instance_double(
         Y2Network::Sysconfig::InterfaceFile,
-        name:                  "wlan0",
+        interface:             "wlan0",
+        name:                  "Wireless Card 0",
         bootproto:             :static,
         ip_address:            address,
         wireless_auth_mode:    "eap",
@@ -88,7 +90,8 @@ describe Y2Network::Sysconfig::ConnectionConfigReaders::Wlan do
     let(:file) do
       instance_double(
         Y2Network::Sysconfig::InterfaceFile,
-        name:               "wlan0",
+        interface:          "wlan0",
+        name:               "Wireless Card 0",
         bootproto:          :static,
         wireless_ap:        "00:11:22:33:44:55",
         wireless_auth_mode: "psk",
@@ -116,7 +119,8 @@ describe Y2Network::Sysconfig::ConnectionConfigReaders::Wlan do
     let(:file) do
       instance_double(
         Y2Network::Sysconfig::InterfaceFile,
-        name:                 "wlan0",
+        interface:            "wlan0",
+        name:                 "Wireless Card 0",
         bootproto:            :static,
         ip_address:           address,
         wireless_auth_mode:   "shared",
@@ -148,7 +152,8 @@ describe Y2Network::Sysconfig::ConnectionConfigReaders::Wlan do
     let(:file) do
       instance_double(
         Y2Network::Sysconfig::InterfaceFile,
-        name:               "wlan0",
+        interface:          "wlan0",
+        name:               "Wireless Card 0",
         wireless_auth_mode: :open,
         wireless_mode:      :managed
       ).as_null_object

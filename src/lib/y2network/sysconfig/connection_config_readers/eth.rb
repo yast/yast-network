@@ -38,8 +38,9 @@ module Y2Network
         # @return [Y2Network::ConnectionConfig::Ethernet]
         def connection_config
           Y2Network::ConnectionConfig::Ethernet.new.tap do |conn|
-            conn.interface = file.name
             conn.bootproto = file.bootproto
+            conn.description = file.name
+            conn.interface = file.interface
             conn.ip_address = file.ip_address
           end
         end

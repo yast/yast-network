@@ -25,27 +25,28 @@ require "y2network/sysconfig/interface_file"
 describe Y2Network::Sysconfig::ConnectionConfigWriters::Eth do
   subject(:writer) { described_class.new(file) }
 
-  let(:address) { IPAddr.new("192.168.122.1") }
   let(:conn) do
     instance_double(
       Y2Network::ConnectionConfig::Ethernet,
-      interface: "eth0", bootproto: :static, ip_address: address, startmode: :auto
+      interface:   "eth0",
+      description: "Ethernet Card 0",
+      bootproto:   :static,
+      ip_address:  IPAddr.new("192.168.122.1"),
+      startmode:   :auto
     )
   end
-  let(:file) do
-    instance_double(Y2Network::Sysconfig::InterfaceFile)
-  end
+  let(:file) { instance_double(Y2Network::Sysconfig::InterfaceFile) }
 
   before do
-    allow(Y2Network::Sysconfig::InterfaceFile)
-      .to receive(:new).and_return(file)
+    allow(Y2Network::Sysconfig::InterfaceFile).to receive(:new).and_return(file)
   end
 
   describe "#write" do
     it "updates ethernet related properties" do
-      expect(file).to receive(:bootproto=).with(:static)
-      expect(file).to receive(:ipaddr=).with(address)
-      expect(file).to receive(:startmode=).with(:auto)
+      expect(file).to receive(:name=).with(conn.description)
+      expect(file).to receive(:bootproto=).with(conn.bootproto)
+      expect(file).to receive(:ipaddr=).with(conn.ip_address)
+      expect(file).to receive(:startmode=).with(conn.startmode)
       writer.write(conn)
     end
   end

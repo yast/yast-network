@@ -34,9 +34,10 @@ module Y2Network
         #
         # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
         def write(conn)
-          file.startmode = conn.startmode
           file.bootproto = conn.bootproto
           file.ipaddr = conn.ip_address
+          file.name = conn.description
+          file.startmode = conn.startmode
         end
       end
     end
