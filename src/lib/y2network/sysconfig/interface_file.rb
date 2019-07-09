@@ -95,31 +95,6 @@ module Y2Network
         def params
           @params ||= []
         end
-
-        # Defines an array parameter
-        #
-        # This method adds a pair of methods to get and set the parameter's values.
-        #
-        # @param name [Symbol] Parameter name
-        # @param limit [Integer] Maximum array size
-        # @param type [Symbol] Type to be used (:string, :integer, :symbol, :ipaddr)
-        def define_array_parameter(name, limit, type = :string)
-          define_method "#{name}s" do
-            return @values[name] if @values.key?(name)
-            key = name.to_s.upcase
-            values = [fetch(key)]
-            values += Array.new(limit) do |idx|
-              value = fetch("#{key}_#{idx}")
-              next if value.nil?
-              send("value_as_#{type}", value)
-            end
-            values.compact
-          end
-
-          define_method "#{name}s=" do |value|
-            @values[name] = value
-          end
-        end
       end
 
       attr_reader :name
