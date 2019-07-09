@@ -45,7 +45,7 @@ describe Y2Network::Sysconfig::ConnectionConfigWriter do
 
     let(:file) do
       instance_double(
-        Y2Network::Sysconfig::InterfaceFile, save: nil
+        Y2Network::Sysconfig::InterfaceFile, save: nil, clean: nil
       )
     end
 
@@ -62,7 +62,8 @@ describe Y2Network::Sysconfig::ConnectionConfigWriter do
       writer.write(conn)
     end
 
-    it "writes changes to the file" do
+    it "cleans old values and writes new ones" do
+      expect(file).to receive(:clean)
       expect(file).to receive(:save)
       writer.write(conn)
     end

@@ -31,6 +31,7 @@ module Y2Network
         file = Y2Network::Sysconfig::InterfaceFile.new(conn.interface)
         handler_class = find_handler_class(conn.type.short_name)
         return nil if handler_class.nil?
+        file.clean
         handler_class.new(file).write(conn)
         file.save
       end

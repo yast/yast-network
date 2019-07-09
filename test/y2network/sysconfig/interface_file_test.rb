@@ -132,7 +132,7 @@ describe Y2Network::Sysconfig::InterfaceFile do
   end
 
   describe "#wireless_keys=" do
-    let(:keys) { [ "123456", "abcdef" ] }
+    let(:keys) { ["123456", "abcdef"] }
 
     it "sets the wireless keys" do
       expect { file.wireless_keys = keys }.to change { file.wireless_keys }.to(keys)
@@ -171,6 +171,18 @@ describe Y2Network::Sysconfig::InterfaceFile do
         content = file_content(scr_root, file)
         expect(content).to_not include("BOOTPROTO")
       end
+    end
+  end
+
+  describe "#clean" do
+    subject(:file) { described_class.new("eth0") }
+
+    it "removes all known values from the file" do
+      file.clean
+      file.save
+
+      content = file_content(scr_root, file)
+      expect(content).to include("BROADCAST=''")
     end
   end
 end

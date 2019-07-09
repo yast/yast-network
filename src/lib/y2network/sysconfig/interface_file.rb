@@ -49,6 +49,8 @@ module Y2Network
         # @param name [Symbol] Parameter name
         # @param type [Symbol] Type to be used (:string, :integer, :symbol, :ipaddr)
         def define_parameter(name, type = :string)
+          params << name
+
           define_method name do
             return @values[name] if @values.key?(name)
             value = fetch(name.to_s.upcase)
@@ -83,6 +85,15 @@ module Y2Network
           define_method "#{name}s=" do |value|
             @values[name] = value
           end
+        end
+
+        # Known configuration attributes/parameters
+        #
+        # A parameter is defined by using {define_parameter} or {define_array_parameter} methods.
+        #
+        # @return [Array<Symbol>]
+        def params
+          @params ||= []
         end
 
         # Defines an array parameter
@@ -245,6 +256,13 @@ module Y2Network
         :eth
       end
 
+      # Empties all known values
+      #
+      # This idea is to use this method to clear all unneeded values from interface files.
+      def clean
+        @values = self.class.params.each_with_object({}) { |e, h| h[e] = nil }
+      end
+
     private
 
       # Converts the value into a string (or nil if empty)
@@ -277,16 +295,6 @@ module Y2Network
       # @return [IPAddr,nil]
       def value_as_ipaddr(value)
         value.nil? || value.empty? ? nil : IPAddr.new(value)
-      end
-
-      # Writes an array as a value for a given key
-      #
-      # @param key [Symbol] Key
-      # @param value [Array<#to_s>] Values to write
-      def write_array(key, values)
-        values.each_with_index do |value, idx|
-          write("#{key}_#{idx}", value)
-        end
       end
 
       # Writes an array as a value for a given key
