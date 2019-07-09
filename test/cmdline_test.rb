@@ -93,6 +93,7 @@ describe "NetworkLanCmdlineInclude" do
     context "when a valid configuration is providen" do
       before do
         allow(subject).to receive(:ListHandler)
+        allow(Yast::LanItems).to receive(:Commit)
       end
 
       it "commits the configuration changes" do
