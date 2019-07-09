@@ -70,6 +70,7 @@ module Y2Network
     end
 
     def save
+      Yast::LanItems.Items[Yast::LanItems.current]["ifcfg"] = name
       if !driver.empty?
         Yast::LanItems.setDriver(driver)
         Yast::LanItems.driver_options[driver] = driver_options

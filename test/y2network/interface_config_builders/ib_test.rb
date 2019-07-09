@@ -19,6 +19,12 @@ describe Y2Network::InterfaceConfigBuilders::Ib do
   end
 
   describe "#save" do
+    around do |test|
+      Yast::LanItems.AddNew
+      test.call
+      Yast::LanItems.Rollback
+    end
+
     it "stores ipoib configuration" do
       subject.ipoib_mode = "datagram"
 
