@@ -36,7 +36,7 @@ describe Y2Network::Sysconfig::ConfigWriter do
         source:     :sysconfig
       )
     end
-    let(:old_config) { instance_double(Y2Network::Config, dns: double("dns")) }
+    let(:old_config) { instance_double(Y2Network::Config, dns: double("dns"), interfaces: nil) }
     let(:eth0) { Y2Network::Interface.new("eth0") }
     let(:route) do
       Y2Network::Route.new(
