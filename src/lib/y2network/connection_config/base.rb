@@ -32,7 +32,10 @@ module Y2Network
       #
       # @return [Interface, nil]
       attr_accessor :interface
-      # @return [String] Bootproto (static, dhcp, ,dhcp4, dhcp6, autoip,
+      # @return [Symbol] Choose when the interface should be set up (manual, auto, nfsroot, hotplug,
+      #   off)
+      attr_accessor :startmode
+      # @return [Symbol] Bootproto (static, dhcp, ,dhcp4, dhcp6, autoip,
       #   dhcp+autoip, auto6, 6to4, none)
       attr_accessor :bootproto
       # @return [IPAddr,nil]

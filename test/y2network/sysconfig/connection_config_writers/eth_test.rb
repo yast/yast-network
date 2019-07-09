@@ -29,7 +29,7 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Eth do
   let(:conn) do
     instance_double(
       Y2Network::ConnectionConfig::Ethernet,
-      interface: "eth0", bootproto: :static, ip_address: address
+      interface: "eth0", bootproto: :static, ip_address: address, startmode: :auto
     )
   end
   let(:file) do
@@ -45,6 +45,7 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Eth do
     it "updates ethernet related properties" do
       expect(file).to receive(:bootproto=).with(:static)
       expect(file).to receive(:ipaddr=).with(address)
+      expect(file).to receive(:startmode=).with(:auto)
       writer.write(conn)
     end
   end
