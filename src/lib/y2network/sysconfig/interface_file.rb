@@ -58,6 +58,8 @@ module Y2Network
           end
 
           define_method "#{param_name}=" do |value|
+            # The `value` should be an object which responds to #to_s so its value can be written to
+            # the ifcfg file.
             @values[param_name] = value
           end
         end
@@ -103,7 +105,7 @@ module Y2Network
       attr_reader :interface
 
       # !@attribute [r] ipaddr
-      #   return [IPAddr] IP address
+      #   return [Y2Network::IPAddress] IP address
       define_parameter(:ipaddr, :ipaddr)
 
       # !@attribute [r] name
