@@ -108,7 +108,7 @@ module Y2Network
     #
     # @see Y2Network::ConfigWriter
     def write(original: nil)
-      Y2Network::ConfigWriter.for(source).write(self, old_config = original)
+      Y2Network::ConfigWriter.for(source).write(self, original)
     end
 
     # Returns a deep-copy of the configuration

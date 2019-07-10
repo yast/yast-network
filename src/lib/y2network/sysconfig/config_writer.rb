@@ -54,7 +54,9 @@ module Y2Network
       # Writes changes per interface
       #
       # @param config     [Y2Network::Config] current configuration for writing
-      # @param old_config [Y2Network::Config] original confiuration used for detecting changes
+      # @param old_config [Y2Network::Config, nil] original configuration used
+      #                   for detecting changes. When nil, no actions related to
+      #                   configuration changes are processed.
       def write_interface_changes(config, old_config)
         # Write ifroute files
         config.interfaces.each do |dev|
