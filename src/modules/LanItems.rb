@@ -1747,7 +1747,7 @@ module Yast
         # we need current slaves - when some of them is not used anymore we need to
         # configure it for deletion from ifcfg (SCR expects special value nil)
         current_slaves = (GetCurrentMap() || {}).select { |k, _| k.start_with?("BONDING_SLAVE") }
-        newdev = setup_bonding(newdev.merge(current_slaves), @bond_slaves, @bond_option)
+        newdev = setup_bonding(newdev.merge(current_slaves), @bond_slaves, builder.bond_options)
 
       when "wlan"
         newdev["WIRELESS_MODE"] = @wl_mode

@@ -37,11 +37,11 @@ module Y2Network
       end
 
       def init
-        self.value = @settings["BONDOPTION"]
+        self.value = @settings.bond_options
       end
 
       def store
-        @settings["BONDOPTION"] = value
+        @settings.bond_options = value
       end
     end
   end
