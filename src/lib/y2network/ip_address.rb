@@ -48,7 +48,6 @@ module Y2Network
     class << self
       def from_string(str)
         address, prefix = str.split("/")
-        address = IPAddr.new(address)
         prefix = prefix.to_i if prefix
         new(address, prefix)
       end
@@ -59,15 +58,29 @@ module Y2Network
     # @return [Integer] IPv6 address default prefix
     IPV6_DEFAULT_PREFIX = 128
 
+    # Constructor
+    #
+    # @param address [String] IP address without the prefix
+    # @param prefix [Integer] IP prefix (number of bits). If not specified, 32 will be used for IPv4
+    #   and 128 for IPv6.
     def initialize(address, prefix = nil)
-      @address = address
+      @address = IPAddr.new(address)
       @prefix = prefix
-      @prefix ||= address.ipv4? ? IPV4_DEFAULT_PREFIX : IPV6_DEFAULT_PREFIX
+      @prefix ||= @address.ipv4? ? IPV4_DEFAULT_PREFIX : IPV6_DEFAULT_PREFIX
     end
 
     # Returns a string representation of the address
     def to_s
-      "#{@address}/#{@prefix}"
+      host? ? @address.to_s : "#{@address}/#{@prefix}"
+    end
+
+  private
+
+    # Determines whether it is a host address
+    #
+    # @return [Boolean]
+    def host?
+      (ipv4? && prefix == IPV4_DEFAULT_PREFIX) && (ipv6? && prefix == IPV6_DEFAULT_PREFIX)
     end
   end
 end

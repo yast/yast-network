@@ -62,4 +62,20 @@ describe Y2Network::IPAddress do
       end
     end
   end
+
+  describe "#to_s" do
+    subject(:ip) { described_class.new("192.168.122.1", 24) }
+
+    it "returns a string CIDR based representation" do
+      expect(ip.to_s).to eq("192.168.122.1/24")
+    end
+
+    context "when it is a host address" do
+      subject(:ip) { described_class.new("192.168.122.1") }
+
+      it "omits the prefix" do
+        expect(ip.to_s).to eq("192.168.122.1")
+      end
+    end
+  end
 end
