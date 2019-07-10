@@ -70,6 +70,8 @@ module Y2Network
         # @param limit      [Integer] Maximum array size
         # @param type       [Symbol] Type to be used (:string, :integer, :symbol, :ipaddr)
         def define_array_parameter(param_name, limit, type = :string)
+          params << param_name
+
           define_method "#{param_name}s" do
             return @values[param_name] if @values.key?(param_name)
             key = param_name.to_s.upcase
