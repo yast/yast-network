@@ -19,7 +19,7 @@
 
 require "yast"
 require "pathname"
-require "ipaddr"
+require "y2network/ip_address"
 
 module Y2Network
   module Sysconfig
@@ -203,7 +203,7 @@ module Y2Network
       # @return [IPAddr,nil] IP address or nil if it is not defined
       def ip_address
         str = fetch("IPADDR")
-        str.nil? || str.empty? ? nil : IPAddr.new(str)
+        str.nil? || str.empty? ? nil : IPAddress.new(str)
       end
       alias_method :ip_address, :ipaddr
 
