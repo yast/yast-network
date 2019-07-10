@@ -19,10 +19,22 @@ module Y2Network
         interfaces.all.select { |i| bondable?(i) }
       end
 
+      attr_writer :bond_options
+      def bond_options
+        return @bond_options if @bond_options
+
+        @bond_options = Yast::LanItems.bond_option
+        if @bond_options.nil? || @bond_options.empty?
+          @bond_options = @config["BONDING_MODULE_OPTS"]
+        end
+        @bond_options
+      end
+
       def save
         super
 
         Yast::LanItems.bond_slaves = @config["BOND_SLAVES"]
+        Yast::LanItems.bond_option = bond_options
       end
 
     private
