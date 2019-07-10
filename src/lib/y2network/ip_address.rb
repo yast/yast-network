@@ -81,7 +81,7 @@ module Y2Network
     #
     # @return [Boolean]
     def host?
-      (ipv4? && prefix == IPV4_DEFAULT_PREFIX) && (ipv6? && prefix == IPV6_DEFAULT_PREFIX)
+      (ipv4? && prefix == IPV4_DEFAULT_PREFIX) || (ipv6? && prefix == IPV6_DEFAULT_PREFIX)
     end
   end
 end
