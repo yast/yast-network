@@ -681,7 +681,7 @@ module Yast
       Builtins.foreach(interfaces) do |devname, if_data|
         # devname can be in old-style fashion (eth-bus-<pci_id>). So, convert it
         devname = LanItems.getDeviceName(devname)
-        type = NetworkInterfaces.GetType(devname)
+        type = NetworkInterfaces.GetTypeFromIfcfgOrName(devname, if_data)
         d = Ops.get(devices, type, {})
         Ops.set(d, devname, if_data)
         Ops.set(devices, type, d)

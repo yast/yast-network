@@ -23,6 +23,7 @@ require "y2network/config"
 require "y2network/autoinst/routing_reader"
 require "y2network/autoinst/dns_reader"
 require "y2network/autoinst_profile/networking_section"
+require "y2network/sysconfig/interfaces_reader"
 
 Yast.import "Lan"
 
@@ -43,7 +44,9 @@ module Y2Network
       # @return [Y2Network::Config] Network configuration
       def config
         attrs = { source: :sysconfig }
-        attrs[:interfaces] = find_interfaces
+        # FIXME: implement prper readers for AutoYaST
+        attrs[:interfaces] =  interfaces_reader.interfaces
+        attrs[:connections] = interfaces_reader.connections
         attrs[:routing] = RoutingReader.new(section.routing).config if section.routing
         attrs[:dns] = DNSReader.new(section.dns).config if section.dns
         Y2Network::Config.new(attrs)
@@ -51,18 +54,11 @@ module Y2Network
 
     private
 
-      # Find configured network interfaces
+      # Returns an interfaces reader instance
       #
-      # Configured interfaces have a configuration (ifcfg file) assigned.
-      #
-      # @return [Array<Interface>] Detected interfaces
-      # @see Yast::NetworkInterfaces.Read
-      def find_interfaces
-        Yast::NetworkInterfaces.Read
-        # TODO: for the time being, we are just relying in the underlying stuff.
-        Yast::NetworkInterfaces.List("").map do |name|
-          Y2Network::Interface.new(name)
-        end
+      # @return [SysconfigInterfaces] Interfaces reader
+      def interfaces_reader
+        @interfaces_reader ||= Y2Network::Sysconfig::InterfacesReader.new
       end
     end
   end
