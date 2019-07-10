@@ -44,7 +44,7 @@ module Y2Network
       # @return [Y2Network::Config] Network configuration
       def config
         attrs = { source: :sysconfig }
-        # FIXME: implement prper readers for AutoYaST
+        # FIXME: implement proper readers for AutoYaST
         attrs[:interfaces] =  interfaces_reader.interfaces
         attrs[:connections] = interfaces_reader.connections
         attrs[:routing] = RoutingReader.new(section.routing).config if section.routing
