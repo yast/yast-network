@@ -143,13 +143,13 @@ describe Y2Network::Sysconfig::InterfaceFile do
     subject(:file) { described_class.new("eth0") }
 
     it "writes the changes to the file" do
-      file.ipaddr = IPAddr.new("192.168.122.1")
+      file.ipaddr = Y2Network::IPAddress.from_string("192.168.122.1/24")
       file.bootproto = :static
       file.save
 
       content = file_content(scr_root, file)
       expect(content).to include("BOOTPROTO='static'")
-      expect(content).to include("IPADDR='192.168.122.1'")
+      expect(content).to include("IPADDR='192.168.122.1/24'")
     end
 
     describe "when multiple wireless keys are specified" do
