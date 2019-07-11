@@ -119,7 +119,7 @@ describe Y2Network::Sysconfig::ConfigWriter do
       let(:old_config) do
         instance_double(
           Y2Network::Config,
-          dns: double("dns"),
+          dns:        double("dns"),
           interfaces: [eth0, eth1]
         )
       end
