@@ -8,16 +8,15 @@ module Y2Network
         super(type: "dummy")
       end
 
-      # It does all operations needed for sucessfull configuration export.
+      # (see Y2Network::InterfaceConfigBuilder#save)
       #
       # In case of config builder for dummy interface type it gurantees that
       # the interface will be recognized as dummy one by the backend properly.
+      # @return [void]
       def save
         super
 
         @config["INTERFACETYPE"] = "dummy"
-
-        nil
       end
     end
   end
