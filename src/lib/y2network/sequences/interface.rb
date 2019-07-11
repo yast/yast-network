@@ -4,9 +4,10 @@ module Y2Network
   module Sequences
     # The responsibility of this class is to drive workflow for sequence of dialogs.
     #
-    # In this case for interface allowed operations are add for adding new interface,
-    # edit which edits existing device ( can exist only in memory ) and initialization
-    # of s390 devices which needs specific activation before using it.
+    # In this case, allowed operations for interface are, 'add' for adding a new interface,
+    # 'edit' for editing an existing device / interface or 'init_s390' for s390
+    # initialization which needs specific activation before using it.
+    #
     # TODO: use UI::Sequence, but it needs also another object dialogs e.g for wifi
     class Interface
       include Yast::I18n
