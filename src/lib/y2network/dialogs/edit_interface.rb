@@ -11,7 +11,7 @@ Yast.import "Label"
 
 module Y2Network
   module Dialogs
-    # Dialog to Edit Interface. Content of dialog heavily depend on type and
+    # Dialog to Edit Interface. Content of dialog heavily depends on type and
     # change of type is not allowed after dialog creation.
     class EditInterface < CWM::Dialog
       # @param settings [InterfaceBuilder] object holding interface configuration
@@ -48,7 +48,7 @@ module Y2Network
         VBox(CWM::Tabs.new(*tabs))
       end
 
-      # abort is just cancel as this is sub dialog
+      # abort is just cancel as this is a sub dialog
       def abort_button
         Yast::Label.CancelButton
       end

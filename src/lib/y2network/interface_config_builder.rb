@@ -61,7 +61,7 @@ module Y2Network
       Yast::LanItems.operation == :add
     end
 
-    # change internal config keys.
+    # changes internal config keys.
     # @note always prefer specialized method if available
     def []=(key, value)
       @config[key] = value
@@ -73,10 +73,10 @@ module Y2Network
       @config[key]
     end
 
-    # save builder content to backend
+    # saves builder content to backend
     # @ TODO now still LanItems actively query config attribute and write it
     #   down, so here mainly workarounds, but ideally this save should change
-    #   completelly backend
+    #   completely backend
     def save
       Yast::LanItems.Items[Yast::LanItems.current]["ifcfg"] = name
       if !driver.empty?
@@ -99,7 +99,7 @@ module Y2Network
 
     # how many device names is proposed
     NEW_DEVICES_COUNT = 10
-    # Propose bunch of possible names for interface
+    # Proposes bunch of possible names for interface
     # do not modify anything
     # @return [Array<String>]
     def proposed_names
@@ -112,18 +112,18 @@ module Y2Network
       !!(name =~ /^[[:alnum:]._:-]{1,15}\z/)
     end
 
-    # checks if internace name already exists
+    # checks if interface name already exists
     def name_exists?(name)
       Yast::NetworkInterfaces.List("").include?(name)
     end
 
-    # valid characters that can be used in interface name
+    # gets valid characters that can be used in interface name
     # TODO: looks sysconfig specific
     def name_valid_characters
       Yast::NetworkInterfaces.ValidCharsIfcfg
     end
 
-    # List of available kernel modules for the interface
+    # gets a list of available kernel modules for the interface
     def kernel_modules
       Yast::LanItems.GetItemModules("")
     end
@@ -185,7 +185,7 @@ module Y2Network
       @aliases = value
     end
 
-    # Gets interface name that will be assigned by udev
+    # gets interface name that will be assigned by udev
     def udev_name
       # cannot cache as EditNicName dialog can change it
       Yast::LanItems.current_udev_name

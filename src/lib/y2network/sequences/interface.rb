@@ -2,7 +2,7 @@ require "yast"
 
 module Y2Network
   module Sequences
-    # The response of this class is to drive workflow for sequence of dialogs.
+    # The responsibility of this class is to drive workflow for sequence of dialogs.
     #
     # In this case for interface allowed operations are add for adding new interface,
     # edit which edits existing device ( can exist only in memory ) and initialization

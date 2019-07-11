@@ -68,7 +68,7 @@ module Y2Network
         ""
       end
 
-      # as it is sub dialog it can only cancel and cannot abort
+      # as it is a sub dialog it can only cancel and cannot abort
       def abort_button
         Yast::Label.CancelButton
       end
