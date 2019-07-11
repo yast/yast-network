@@ -1928,11 +1928,12 @@ module Yast
 
       devmap = GetCurrentMap()
       drop_hosts(devmap["IPADDR"]) if devmap
+      # We have to remove it from routing before deleting the item
+      remove_current_device_from_routing
+
       SetCurrentName("")
 
       current_item = @Items[@current]
-      # We have to remove it from routing before deleting the item
-      remove_current_device_from_routing
 
       if current_item["hwinfo"].nil? || current_item["hwinfo"].empty?
         # size is always > 0 here and items are numbered 0, 1, ..., size -1

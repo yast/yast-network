@@ -36,7 +36,7 @@ describe Y2Network::Sysconfig::ConfigWriter do
         source:     :sysconfig
       )
     end
-    let(:old_config) { instance_double(Y2Network::Config, dns: double("dns")) }
+    let(:old_config) { instance_double(Y2Network::Config, dns: double("dns"), interfaces: nil) }
     let(:eth0) { Y2Network::Interface.new("eth0") }
     let(:route) do
       Y2Network::Route.new(
@@ -81,6 +81,7 @@ describe Y2Network::Sysconfig::ConfigWriter do
         .and_return(routes_file)
       allow(Y2Network::Sysconfig::DNSWriter).to receive(:new)
         .and_return(dns_writer)
+      allow(eth0).to receive(:configured).and_return(true)
     end
 
     it "saves general routes to main routes file" do
@@ -111,6 +112,32 @@ describe Y2Network::Sysconfig::ConfigWriter do
       it "removes the ifroute file" do
         expect(ifroute_eth0).to receive(:remove)
         writer.write(config)
+      end
+    end
+
+    context "when an interface is deleted" do
+      let(:old_config) do
+        instance_double(
+          Y2Network::Config,
+          dns:        double("dns"),
+          interfaces: [eth0, eth1]
+        )
+      end
+      let(:eth1) { Y2Network::Interface.new("eth1") }
+      let(:ifroute_eth1) do
+        instance_double(Y2Network::Sysconfig::RoutesFile, save: nil, :routes= => nil)
+      end
+
+      before do
+        allow(Y2Network::Sysconfig::RoutesFile).to receive(:new)
+          .with("/etc/sysconfig/network/ifroute-eth1")
+          .and_return(ifroute_eth1)
+        allow(eth1).to receive(:configured).and_return(true)
+      end
+
+      it "removes the ifroute file" do
+        expect(ifroute_eth1).to receive(:remove)
+        writer.write(config, old_config)
       end
     end
 
