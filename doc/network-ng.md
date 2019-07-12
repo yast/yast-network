@@ -3,7 +3,9 @@
 This document tries to describe the details of the network-ng data model and how all the pieces are
 combined.
 
-## Overall Approach
+## Data Model
+
+### Overall Approach
 
 {Y2Network::Config} and other associated classes represent the network configuration in a backend
 agnostic way. It should not matter whether you are using `sysconfig` files, NetworkManager or
@@ -25,7 +27,7 @@ filesystem by using a *configuration writer*.
 Obviously, we should implement configuration readers and writers for whathever backend we would like
 to support. At this point of time, only `Sysconfig` and `Autoinst` are supported.
 
-## The Configuration Classes
+### The Configuration Classes
 
 {Y2Network::Config} offers and API to deal with network configuration, but it collaborates with
 other classes.
@@ -38,7 +40,7 @@ other classes.
   Currently it is bound to an interface name, but we plan to provide more advanced matchers.
 * {Y2Network::Routing}: holds routing information, including IP forwarding settings, routing tables, etc.
 
-## Backend Support
+### Multi-Backend Support
 
 As mentioned above, Y2Network is designed to support different backends. It is expected to implement
 a reader and a writer for each backend (except for AutoYaST, which is an special case). The reader
@@ -50,7 +52,7 @@ As a developer, you rarely will need to access to readers/writers because `Yast:
 an API to read and write the configuration. See the [Accessing the
 Configuration](#accessing-the-configuration) section for further details.
 
-### Sysconfig
+#### Sysconfig
 
 The sysconfig backend support is composed by these files:
 
@@ -59,12 +61,14 @@ The sysconfig backend support is composed by these files:
     ├── config_writer.rb <- WRITER
     ├── connection_config_reader.rb
     ├── connection_config_readers
-    │   ├── eth.rb
-    │   └── wlan.rb
+    │   ├── ethernet.rb
+    │   ├── wireless.rb
+    │   └── ...
     ├── connection_config_writer.rb
     ├── connection_config_writers
-    │   ├── eth.rb
-    │   └── wlan.rb
+    │   ├── ethernet.rb
+    │   ├── wireless.rb
+    │   └── ...
     ├── dns_reader.rb
     ├── dns_writer.rb
     ├── interface_file.rb
@@ -89,7 +93,7 @@ interfaces the configuration is handled through connection configuration files.
 Last but not least, there are additional classes like {Y2Network::Sysconfig::RoutesFile} and
 {Y2Network::Sysconfig::InterfaceFile} which abstract the details of reading/writing `ifcfg` files.
 
-### AutoYaST
+#### AutoYaST
 
 AutoYaST is a special case in the sense that it reads the information from a profile, instead of
 using the running system as reference. Additionally, it does not implement a writer because the
@@ -102,7 +106,7 @@ configuration will be written using a different backend (like sysconfig).
 
 For the time being, it only implements support to read DNS and routing information.
 
-## Accessing the Configuration
+### Accessing the Configuration
 
 The `Yast::Lan` module is still the entry point to read and write the network configuration.
 Basically, it keeps two configuration objects, one for the running system and another want for the
@@ -122,11 +126,32 @@ wanted configuration.
 Any change you want to apply to the running system should be performed by modifying the
 `yast_config` and writing the changes.
 
-## AutoYaST Support
+## New UI layer
 
-AutoYaST is somehow and special case, as the configuration is read from the profile instead of the
-running system. So in this scenario, YaST2 Network will read the configuration using the `Autoinst`
-reader and will write it to the final system using the one corresponding to the wanted backend.
+### Interface Configuration Builders
+
+In the old code, there was no clear separation between UI and business logic. In order to improve
+the situation, we introduced the concept of [interface configuration
+builders](https://github.com/yast/yast-network/blob/network-ng/src/lib/y2network/interface_config_builder.rb).
+
+We already have implemented support for several interface types. You can find them under the
+[Y2Network::InterfaceConfigBuilders
+namespace](https://github.com/yast/yast-network/tree/843f75bfdb71d4026b3f97facf18eece479b8a0e/src/lib/y2network/interface_config_builders).
+
+### Widgets
+
+The user interaction is driven by a set of sequences, which determine which dialogs are shown to the
+user. Each of those dialogs contain a set of widgets, usually grouped in tabs. The content of the
+dialog depends on the interface type.
+
+Below you can find some pointers to relevant sequences, dialogs and widgets:
+
+* Sequences:
+  *  [Sequences::Interface](https://github.com/yast/yast-network/blob/358bcd13b4e92e7c4e9c0e477c83196ca67b578e/src/lib/y2network/sequences/interface.rb)
+* Dialogs:
+  * [Dialogs::AddInterface](https://github.com/yast/yast-network/blob/358bcd13b4e92e7c4e9c0e477c83196ca67b578e/src/lib/y2network/dialogs/add_interface.rb)
+  * [Dialogs::EditInterface](https://github.com/yast/yast-network/blob/358bcd13b4e92e7c4e9c0e477c83196ca67b578e/src/lib/y2network/dialogs/edit_interface.rb)
+* [Y2Network::Widgets](https://github.com/yast/yast-network/tree/358bcd13b4e92e7c4e9c0e477c83196ca67b578e/src/lib/y2network/widgets)
 
 ## Current Status
 
@@ -145,3 +170,9 @@ reader and will write it to the final system using the one corresponding to the 
 | USB             |      |       |
 | Dummy           |      |       |
 | s390 types      |      |       |
+
+## (Short Term) Plan
+
+- [ ] Finish reading/writing interfaces
+- [ ] Move missing UI logic to interface configuration builders
+- [ ] Replace LanItems with the new data model
