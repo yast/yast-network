@@ -475,63 +475,28 @@ module Yast
     # @param _key [String] id of the widget
     def InitVLANSlave(_key)
       items = []
-      # unconfigured devices
-      Builtins.foreach(
-        Convert.convert(
-          LanItems.Items,
-          from: "map <integer, any>",
-          to:   "map <integer, map>"
-        )
-      ) do |_i, a|
-        if Builtins.size(Ops.get_string(a, "ifcfg", "")) == 0
-          dev_name = Ops.get_string(a, ["hwinfo", "dev_name"], "")
-          items = Builtins.add(
-            items,
-            Item(
-              Id(dev_name),
-              dev_name,
-              dev_name == Ops.get_string(@settings, "ETHERDEVICE", "") ? true : false
-            )
-          )
-        end
+      LanItems.Items.each do |_i, a|
+        next unless a.fetch("ifcfg", "").empty?
+        dev_name = a.dig("hwinfo", "dev_name") || ""
+        next if dev_name.empty?
+        selected = dev_name == @settings.fetch("ETHERDEVICE", "")
+        items << Item(Id(dev_name), dev_name, selected)
       end
       # configured devices
       configurations = NetworkInterfaces.FilterDevices("netcard")
-      Builtins.foreach(
-        Builtins.splitstring(
-          Ops.get(NetworkInterfaces.CardRegex, "netcard", ""),
-          "|"
-        )
-      ) do |devtype|
-        Builtins.foreach(
-          Convert.convert(
-            Map.Keys(Ops.get_map(configurations, devtype, {})),
-            from: "list",
-            to:   "list <string>"
-          )
-        ) do |devname|
-          if Builtins.contains(["vlan"], NetworkInterfaces.GetType(devname))
-            next
-          end
-          items = Builtins.add(
-            items,
-            Item(
-              Id(devname),
-              Builtins.sformat(
-                "%1 - %2",
-                devname,
-                Ops.get_string(configurations, [devtype, devname, "NAME"], "")
-              ),
-              Ops.get_string(@settings, "ETHERDEVICE", "") == devname
-            )
-          )
+      NetworkInterfaces.CardRegex["netcard"].split("|").each do |devtype|
+        (configurations[devtype] || {}).keys.each do |devname|
+          next if NetworkInterfaces.GetType(devname) == "vlan"
+          description = configurations.dig(devtype, devname, "NAME")
+          selected = devname == @settings.fetch("ETHERDEVICE", "")
+          items << Item(Id(devname), "#{devname} - #{description}", selected)
         end
       end
       UI.ChangeWidget(Id(:vlan_eth), :Items, items)
       UI.ChangeWidget(
         Id(:vlan_id),
         :Value,
-        Ops.get_integer(@settings, "VLAN_ID", 0)
+        @settings.fetch("VLAN_ID", 0).to_i
       )
 
       nil
