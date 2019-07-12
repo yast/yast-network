@@ -1892,25 +1892,6 @@ module Yast
       true
     end
 
-    # Get the module configuration for the modules configured in the
-    # interface section
-    # @param [String] ay_device Device, for example eth0
-    # @param [Array<Hash>] ay_modules list of modules from the AY profile
-    # @return [Hash] the module map with module name and options
-    def GetModuleForInterface(ay_device, ay_modules)
-      ay_modules = deep_copy(ay_modules)
-      ayret = {}
-      ay_filtered = Builtins.filter(ay_modules) do |ay_m|
-        Ops.get_string(ay_m, "device", "") == ay_device
-      end
-
-      if Ops.greater_than(Builtins.size(ay_filtered), 0)
-        ayret = Ops.get(ay_filtered, 0, {})
-      end
-
-      deep_copy(ayret)
-    end
-
     # Deletes item and its configuration
     #
     # Item for deletion is searched using device name
@@ -2694,7 +2675,6 @@ module Yast
     publish function: :Select, type: "boolean (string)"
     publish function: :Commit, type: "boolean ()"
     publish function: :Rollback, type: "boolean ()"
-    publish function: :GetModuleForInterface, type: "map (string, list <map>)"
     publish function: :DeleteItem, type: "void ()"
     publish function: :ProposeItem, type: "boolean ()"
     publish function: :setDriver, type: "void (string)"
