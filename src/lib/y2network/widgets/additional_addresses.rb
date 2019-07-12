@@ -86,6 +86,16 @@ module Y2Network
         end
 
         Yast::UI.ChangeWidget(Id(:address_table), :Items, table_items)
+        Yast::UI.ChangeWidget(
+          Id(:edit_address),
+          :Enabled,
+          !@settings.aliases.empty?
+        )
+        Yast::UI.ChangeWidget(
+          Id(:delete_address),
+          :Enabled,
+          !@settings.aliases.empty?
+        )
       end
 
       # @return [Symbol, nil] dialog result
@@ -116,17 +126,6 @@ module Y2Network
           @settings.aliases.delete_at(cur)
           refresh_table
         end
-
-        Yast::UI.ChangeWidget(
-          Id(:edit_address),
-          :Enabled,
-          !@settings.aliases.empty?
-        )
-        Yast::UI.ChangeWidget(
-          Id(:delete_address),
-          :Enabled,
-          !@settings.aliases.empty?
-        )
 
         nil
       end

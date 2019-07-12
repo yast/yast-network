@@ -184,7 +184,7 @@ module Y2Network
       config.delete_if { |k, _| k == "INTERFACE" } if type != "dummy"
       config.delete_if { |k, _| k == "IFPLUGD_PRIORITY" } if config["STARTMODE"] != "ifplugd"
 
-      config
+      config.merge("_aliases" => lan_items_format_aliases)
     end
 
     # Updates itself according to the given sysconfig configuration
@@ -288,8 +288,8 @@ module Y2Network
       @hwinfo ||= Hwinfo.new(name: name)
     end
 
-    def save_aliases
-      lan_items_format = aliases.each_with_index.each_with_object({}) do |(a, i), res|
+    def lan_items_format_aliases
+      aliases.each_with_index.each_with_object({}) do |(a, i), res|
         res[i] = {
           "IPADDR"    => a[:ip],
           "LABEL"     => a[:label],
@@ -298,10 +298,13 @@ module Y2Network
 
         }
       end
-      log.info "setting new aliases #{lan_items_format.inspect}"
+    end
+
+    def save_aliases
+      log.info "setting new aliases #{lan_items_format_aliases.inspect}"
       aliases_to_delete = Yast::LanItems.aliases.dup # #48191
-      Yast::NetworkInterfaces.Current["_aliases"] = lan_items_format
-      Yast::LanItems.aliases = lan_items_format
+      Yast::NetworkInterfaces.Current["_aliases"] = lan_items_format_aliases
+      Yast::LanItems.aliases = lan_items_format_aliases
       aliases_to_delete.each_pair do |a, v|
         Yast::NetworkInterfaces.DeleteAlias(Yast::NetworkInterfaces.Name, a) if v
       end
