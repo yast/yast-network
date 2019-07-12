@@ -75,6 +75,16 @@ module Y2Network
       host? ? @address.to_s : "#{@address}/#{@prefix}"
     end
 
+    # Determines whether two addresses are equivalent
+    #
+    # @param other [IPAddress] The address to compare with
+    # @return [Boolean]
+    def ==(other)
+      address == other.address && prefix == other.prefix
+    end
+
+    alias_method :eql?, :==
+
   private
 
     # Determines whether it is a host address

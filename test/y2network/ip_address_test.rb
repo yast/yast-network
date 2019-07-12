@@ -78,4 +78,28 @@ describe Y2Network::IPAddress do
       end
     end
   end
+
+  describe "#==" do
+    context "when address and prefix are the same" do
+      it "returns true" do
+        expect(described_class.new("192.168.122.1", 24))
+          .to eq(described_class.new("192.168.122.1", 24))
+      end
+    end
+
+    context "when addresses are different" do
+      it "returns false" do
+        expect(described_class.new("192.168.122.1", 24))
+          .to_not eq(described_class.new("192.168.122.2", 24))
+      end
+    end
+
+    context "when prefixes are different" do
+      it "returns false" do
+        expect(described_class.new("192.168.122.1", 24))
+          .to_not eq(described_class.new("192.168.122.1", 32))
+
+      end
+    end
+  end
 end
