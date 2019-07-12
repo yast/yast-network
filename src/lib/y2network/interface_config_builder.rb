@@ -184,7 +184,7 @@ module Y2Network
       config.delete_if { |k, _| k == "INTERFACE" } if type != "dummy"
       config.delete_if { |k, _| k == "IFPLUGD_PRIORITY" } if config["STARTMODE"] != "ifplugd"
 
-      aliases.empty? ? config : config.merge("_aliases" => lan_items_format_aliases)
+      config.merge("_aliases" => lan_items_format_aliases)
     end
 
     # Updates itself according to the given sysconfig configuration
