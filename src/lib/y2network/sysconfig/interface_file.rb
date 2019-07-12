@@ -275,12 +275,12 @@ module Y2Network
         value.nil? || value.empty? ? nil : value.to_sym
       end
 
-      # Converts the value into a IPAddr (or nil if empty)
+      # Converts the value into a IPAddress (or nil if empty)
       #
       # @param [String] value
-      # @return [IPAddr,nil]
+      # @return [Y2Network::IPAddress,nil]
       def value_as_ipaddr(value)
-        value.nil? || value.empty? ? nil : IPAddr.new(value)
+        value.nil? || value.empty? ? nil : Y2Network::IPAddress.from_string(value)
       end
 
       # Writes an array as a value for a given key

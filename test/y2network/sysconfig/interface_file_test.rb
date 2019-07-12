@@ -22,7 +22,9 @@ require "y2network/sysconfig/interface_file"
 require "tmpdir"
 
 describe Y2Network::Sysconfig::InterfaceFile do
-  subject(:file) { described_class.new("eth0") }
+  subject(:file) { described_class.new(interface_name) }
+
+  let(:interface_name) { "eth0" }
 
   def file_content(scr_root, file)
     path = File.join(scr_root, file.path.to_s)
@@ -61,26 +63,20 @@ describe Y2Network::Sysconfig::InterfaceFile do
   end
 
   describe "#ip_address" do
-    let(:ipaddr) { "192.168.122.122/24" }
-
-    before do
-      allow(file).to receive(:fetch).with("IPADDR").and_return(ipaddr)
-    end
-
     it "returns the IP address" do
-      expect(file.ip_address).to eq(IPAddr.new(ipaddr))
+      expect(file.ip_address).to eq(Y2Network::IPAddress.from_string("192.168.123.1/24"))
     end
 
     context "when the IP address is empty" do
-      let(:ipaddr) { "" }
+      let(:interface_name) { "eth1" }
 
       it "returns nil" do
         expect(file.ip_address).to be_nil
       end
     end
 
-    context "when the IP address is undefined" do
-      let(:ipaddr) { nil }
+    context "when the IP address is missing" do
+      let(:interface_name) { "eth2" }
 
       it "returns nil" do
         expect(file.ip_address).to be_nil
@@ -90,8 +86,8 @@ describe Y2Network::Sysconfig::InterfaceFile do
 
   describe "#ipaddr=" do
     it "sets the bootproto" do
-      expect { file.ipaddr = IPAddr.new("10.0.0.1") }
-        .to change { file.ipaddr }.to(IPAddr.new("10.0.0.1"))
+      expect { file.ipaddr = Y2Network::IPAddress.from_string("10.0.0.1") }
+        .to change { file.ipaddr }.to(Y2Network::IPAddress.from_string("10.0.0.1"))
     end
   end
 
