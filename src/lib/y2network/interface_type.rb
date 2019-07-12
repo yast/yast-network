@@ -79,6 +79,7 @@ module Y2Network
     define_type "INFINIBAND", N_("Infiniband"), "ib"
     define_type "BONDING", N_("Bonding"), "bond"
     define_type "BRIDGE", N_("Bridge"), "br"
+    define_type "DUMMY", N_("Dummy"), "dummy"
     define_type "VLAN", N_("VLAN"), "vlan"
     define_type "TUN", N_("TUN"), "tun"
     define_type "TAP", N_("TAP"), "tap"
