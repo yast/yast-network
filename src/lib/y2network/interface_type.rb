@@ -84,5 +84,10 @@ module Y2Network
     define_type "TUN", N_("TUN"), "tun"
     define_type "TAP", N_("TAP"), "tap"
     define_type "USB", N_("USB"), "usb"
+    # s390
+    define_type "QETH", N_("QETH"), "qeth"
+    define_type "LCS", N_("LCS"), "lcs"
+    define_type "HIPERSOCKETS", N_("HiperSockets"), "hsi"
+    define_type "FICON", N_("FICON"), "ficon"
   end
 end
