@@ -51,7 +51,7 @@ module Y2Network
     # Constructor
     #
     # Load with reasonable defaults
-    def initialize(type: nil)
+    def initialize(type:)
       @type = type
       @config = init_device_config({})
       @s390_config = init_device_s390_config({})
