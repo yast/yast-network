@@ -24,7 +24,7 @@ require "y2network/widgets/address_tab"
 require "y2network/interface_config_builder"
 
 describe Y2Network::Widgets::AddressTab do
-  subject { described_class.new(Y2Network::InterfaceConfigBuilder.new) }
+  subject { described_class.new(Y2Network::InterfaceConfigBuilder.for("eth")) }
 
   include_examples "CWM::Tab"
 end

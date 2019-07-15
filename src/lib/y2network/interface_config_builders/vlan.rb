@@ -8,7 +8,7 @@ module Y2Network
   module InterfaceConfigBuilders
     class Vlan < InterfaceConfigBuilder
       def initialize
-        super(type: "vlan")
+        super(type: InterfaceType::VLAN)
       end
 
       def etherdevice

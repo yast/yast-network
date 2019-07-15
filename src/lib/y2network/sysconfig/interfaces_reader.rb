@@ -19,6 +19,7 @@
 
 require "yast"
 require "y2network/interface"
+require "y2network/interface_type"
 require "y2network/virtual_interface"
 require "y2network/physical_interface"
 require "y2network/fake_interface"
@@ -108,7 +109,13 @@ module Y2Network
         Y2Network::PhysicalInterface.new(data["dev_name"]).tap do |iface|
           iface.description = data["name"]
           type = data["type"] || Yast::NetworkInterfaces.GetTypeFromSysfs(iface.name)
-          iface.type = type.nil? ? :eth : type.to_sym
+          iface.type = case type
+          when nil then InterfaceType::ETHERNET
+          when ::String then InterfaceType.from_short_name(type)
+          when InterfaceType then type
+          else
+            raise "Unexpected value in interface type #{type.class.inspect}:#{type.inspect}"
+          end
         end
       end
 

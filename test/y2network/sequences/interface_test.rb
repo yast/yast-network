@@ -26,9 +26,7 @@ Yast.import "Sequencer"
 
 describe Y2Network::Sequences::Interface do
   let(:builder) do
-    res = Y2Network::InterfaceConfigBuilder.new
-    res.type = "eth"
-    res
+    Y2Network::InterfaceConfigBuilder.for("eth")
   end
 
   describe "#edit" do

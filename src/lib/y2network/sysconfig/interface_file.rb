@@ -158,9 +158,9 @@ module Y2Network
       #
       # @todo Borrow logic from https://github.com/yast/yast-yast2/blob/6f7a789d00cd03adf62e00da34720f326f0e0633/library/network/src/modules/NetworkInterfaces.rb#L291
       #
-      # @return [Symbol] Interface's type depending on the file values
+      # @return [String] Interface's type depending on the file values
       def type
-        :eth
+        "eth"
       end
 
     private

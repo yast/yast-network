@@ -21,10 +21,10 @@ require_relative "../../test_helper"
 require "cwm/rspec"
 
 require "y2network/widgets/bridge_ports"
-require "y2network/interface_config_builders/br"
+require "y2network/interface_config_builders/bridge"
 
 describe Y2Network::Widgets::BridgePorts do
-  let(:builder) { Y2Network::InterfaceConfigBuilders::Br.new }
+  let(:builder) { Y2Network::InterfaceConfigBuilders::Bridge.new }
   subject { described_class.new(builder) }
 
   before do

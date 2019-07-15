@@ -27,7 +27,7 @@ module Y2Network
     attr_accessor :name
     # @return [String] Interface description
     attr_accessor :description
-    # @return [Symbol] Interface type
+    # @return [InterfaceType] Interface type
     attr_accessor :type
     attr_reader :configured
     attr_reader :hardware

@@ -24,7 +24,7 @@ require "y2network/widgets/additional_addresses"
 require "y2network/interface_config_builder"
 
 describe Y2Network::Widgets::AdditionalAddresses do
-  subject { described_class.new(Y2Network::InterfaceConfigBuilder.new) }
+  subject { described_class.new(Y2Network::InterfaceConfigBuilder.for("eth")) }
 
   include_examples "CWM::CustomWidget"
 
