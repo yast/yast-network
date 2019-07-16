@@ -130,9 +130,9 @@ module Y2Network
       # fully in game
       bond_devs = InterfacesCollection.new(all).by_type(InterfaceType::BONDING)
 
-      bond_devs.each do |bond_master, _value|
+      bond_devs.each do |bond_master|
         bond_master.slaves.each do |slave|
-          index[slave] = bond_master
+          index[slave.name] = bond_master.name
         end
       end
 

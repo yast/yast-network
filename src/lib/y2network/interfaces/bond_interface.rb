@@ -26,8 +26,14 @@ module Y2Network
       # Returns list of interfaces enslaved in the bond interface
       #
       # @return [Y2Network::InterfacesCollection] interfaces enslaved in the bond
+      # TODO: reading from backend should be handled elsewhere
       def slaves
-        Y2Network::InterfacesCollection.new(@slaves ||= bond_slaves(name))
+        @slaves ||= bond_slaves(name).map do |iface|
+          type = Yast::NetworkInterfaces.GetType(iface)
+          Y2Network::Interface.for(iface, InterfaceType.from_short_name(type))
+        end
+
+        Y2Network::InterfacesCollection.new(@slaves)
       end
 
     private
@@ -35,7 +41,6 @@ module Y2Network
       #
       # @param bond_iface [String] a name of an interface of bond type
       # @return list of names of interfaces enslaved in the bond_iface
-      # TODO: change return type to InterfaceCollection
       def bond_slaves(bond_iface)
         bond_map = Yast::NetworkInterfaces::FilterDevices("netcard").fetch("bond", {}).fetch(bond_iface, {})
 
