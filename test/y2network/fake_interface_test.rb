@@ -20,7 +20,7 @@ require_relative "../test_helper"
 require "y2network/interfaces/fake_interface"
 require "y2network/connection_config/wireless"
 
-describe Y2Network::FakeInterface do
+describe Y2Network::Interfaces::FakeInterface do
   subject(:interface) { described_class.new("eth0", type: iface_type) }
 
   let(:iface_type) { Y2Network::InterfaceType::ETHERNET }

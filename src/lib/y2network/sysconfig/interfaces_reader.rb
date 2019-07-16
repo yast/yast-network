@@ -104,7 +104,7 @@ module Y2Network
       # @option data [String] "name"     Device description
       # @option data [String] "type"     Device type ("eth", "wlan", etc.)
       def build_physical_interface(data)
-        Y2Network::PhysicalInterface.new(data["dev_name"]).tap do |iface|
+        Y2Network::Interfaces::PhysicalInterface.new(data["dev_name"]).tap do |iface|
           iface.description = data["name"]
           type = data["type"] || Yast::NetworkInterfaces.GetTypeFromSysfs(iface.name)
           iface.type = case type
@@ -138,7 +138,7 @@ module Y2Network
       # @param conn [ConnectionConfig] Connection configuration related to the
       #   network interface
       def add_fake_interface(name, conn)
-        new_interface = Y2Network::FakeInterface.from_connection(name, conn)
+        new_interface = Y2Network::Interfaces::FakeInterface.from_connection(name, conn)
         @interfaces << new_interface
       end
     end

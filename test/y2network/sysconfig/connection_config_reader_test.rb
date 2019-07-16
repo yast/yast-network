@@ -27,7 +27,7 @@ describe Y2Network::Sysconfig::ConnectionConfigReader do
   subject(:reader) { described_class.new }
 
   describe "#read" do
-    let(:interface) { instance_double(Y2Network::PhysicalInterface, name: "wlan0", type: "wlan") }
+    let(:interface) { instance_double(Y2Network::Interfaces::PhysicalInterface, name: "wlan0", type: :wlan) }
     let(:interface_file) do
       instance_double(Y2Network::Sysconfig::InterfaceFile, type: "wlan").as_null_object
     end
