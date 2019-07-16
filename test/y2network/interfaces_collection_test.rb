@@ -19,8 +19,8 @@
 
 require_relative "../test_helper"
 require "y2network/interfaces_collection"
-require "y2network/physical_interface"
-require "y2network/virtual_interface"
+require "y2network/interfaces/physical_interface"
+require "y2network/interfaces/virtual_interface"
 
 describe Y2Network::InterfacesCollection do
   subject(:collection) { described_class.new(interfaces) }

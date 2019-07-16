@@ -21,7 +21,7 @@ require_relative "../../test_helper"
 
 require "y2network/sysconfig/connection_config_reader"
 require "y2network/sysconfig/connection_config_readers/wireless"
-require "y2network/physical_interface"
+require "y2network/interfaces/physical_interface"
 
 describe Y2Network::Sysconfig::ConnectionConfigReader do
   subject(:reader) { described_class.new }
