@@ -126,7 +126,8 @@ module Y2Network
     def bond_index
       index = {}
 
-      # TODO: should use by_type
+      # TODO: that "all" is a workaround until Physical, Virtual and FakeInterface is
+      # fully in game
       bond_devs = InterfacesCollection.new(all).by_type(InterfaceType::BONDING)
 
       bond_devs.each do |bond_master, _value|

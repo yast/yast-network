@@ -22,6 +22,10 @@ require "y2network/interfaces/virtual_interface"
 module Y2Network
   module Interfaces
     class BondInterface < VirtualInterface
+
+      # Returns list of interfaces enslaved in the bond interface
+      #
+      # @return [Y2Network::InterfacesCollection] interfaces enslaved in the bond
       def slaves
         Y2Network::InterfacesCollection.new(@slaves ||= bond_slaves(name))
       end
