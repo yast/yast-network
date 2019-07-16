@@ -127,10 +127,10 @@ module Y2Network
       index = {}
 
       # TODO: should use by_type
-      bond_devs = Yast::NetworkInterfaces.FilterDevices("netcard").fetch("bond", {})
+      bond_devs = InterfacesCollection.new(all).by_type(InterfaceType::BONDING)
 
       bond_devs.each do |bond_master, _value|
-        bond_slaves(bond_master).each do |slave|
+        bond_master.slaves.each do |slave|
           index[slave] = bond_master
         end
       end

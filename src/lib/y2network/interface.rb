@@ -60,7 +60,7 @@ module Y2Network
     # @param type [Y2Network::InterfaceType] interface type (InterfaceType::ETHERNET, ...)
     def self.for(name, type)
       type_name = type.short_name
-      require "y2network/interfaces/#{type.short_name}_interface}"
+      require "y2network/interfaces/#{type_name}_interface"
       Interfaces.const_get(type_name.to_s.capitalize + "Interface").new(name, type: type)
     rescue LoadError => e
       log.info "Specialed interface class for #{type.short_name} not found. Fallbacking to default. #{e.inspect}"

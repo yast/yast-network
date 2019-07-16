@@ -46,13 +46,18 @@ describe Yast::LanItems do
     allow(Yast::LanItems).to receive(:ReadHardware) { hwinfo_items }
 
     allow(Yast::NetworkInterfaces).to receive(:devmap).and_return(nil)
+    allow(Yast::NetworkInterfaces).to receive(:GetType).and_return("eth")
 
-    netconfig_items.each_pair do |_type, device_maps|
+    netconfig_items.each_pair do |type, device_maps|
       device_maps.each_pair do |dev, devmap|
         allow(Yast::NetworkInterfaces)
           .to receive(:devmap)
           .with(dev)
           .and_return(devmap)
+        allow(Yast::NetworkInterfaces)
+          .to receive(:GetType)
+          .with(dev)
+          .and_return(type)
       end
     end
 

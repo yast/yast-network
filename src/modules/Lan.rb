@@ -869,7 +869,7 @@ module Yast
 
           yast_config.interfaces.bridge_slaves(ifcfg).each { |port| skipped << port }
         when "bond"
-          yast_config.interfaces.bond_slaves(ifcfg).each do |slave|
+          Y2Network::InterfacesCollection.new(yast_config.interfaces.all).by_name(ifcfg).slaves do |slave|
             log.info("For interface #{ifcfg} found slave #{slave}")
             skipped << slave
           end
