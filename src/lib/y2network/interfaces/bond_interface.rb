@@ -17,12 +17,26 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/interface"
+require "y2network/interfaces/virtual_interface"
 
 module Y2Network
   module Interfaces
-    # Virtual Interface Class (veth, bond, bridge, vlan, dummy...)
-    class VirtualInterface < Interface
+    class BondInterface < VirtualInterface
+      def slaves
+        Y2Network::InterfacesCollection.new(@slaves ||= bond_slaves(name))
+      end
+
+    private
+      # Creates list of devices enslaved in the bond device.
+      #
+      # @param bond_iface [String] a name of an interface of bond type
+      # @return list of names of interfaces enslaved in the bond_iface
+      # TODO: change return type to InterfaceCollection
+      def bond_slaves(bond_iface)
+        bond_map = Yast::NetworkInterfaces::FilterDevices("netcard").fetch("bond", {}).fetch(bond_iface, {})
+
+        bond_map.select { |k, _| k.start_with?("BONDING_SLAVE") }.values
+      end
     end
   end
 end

@@ -16,6 +16,7 @@
 #
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
+require "yast"
 
 require "y2network/interface_type"
 require "y2network/hwinfo"
@@ -34,6 +35,8 @@ module Y2Network
     # @return [HwInfo]
     attr_reader :hardware
 
+    include Yast::Logger
+
     # Shortcuts for accessing interfaces' ifcfg options
     #
     # TODO: this makes Interface class tighly couplet to netconfig backend
@@ -49,6 +52,19 @@ module Y2Network
 
         config[ifcfg_option]
       end
+    end
+
+    # Creates an instance of interface class based on the given interface type
+    #
+    # @param name [String] interface name (eth0, ...)
+    # @param type [Y2Network::InterfaceType] interface type (InterfaceType::ETHERNET, ...)
+    def self.for(name, type)
+      type_name = type.short_name
+      require "y2network/interfaces/#{type.short_name}_interface}"
+      Interfaces.const_get(type_name.to_s.capitalize + "Interface").new(name, type: type)
+    rescue LoadError => e
+      log.info "Specialed interface class for #{type.short_name} not found. Fallbacking to default. #{e.inspect}"
+      new(name, type: type)
     end
 
     # Constructor

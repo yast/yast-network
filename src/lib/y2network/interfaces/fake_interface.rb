@@ -20,18 +20,20 @@
 require "y2network/interface"
 
 module Y2Network
-  # A physical interface that is not plugged in.
-  class FakeInterface < Interface
-    class << self
-      # Build connection
-      #
-      # @todo Would be possible to get the name from the connection?
-      #
-      # @param name [String] Interface name
-      # @param conn [ConnectionConfig] Connection configuration related to the
-      #   network interface
-      def from_connection(name, conn)
-        new(name, type: conn.type)
+  module Interfaces
+    # A physical interface that is not plugged in.
+    class FakeInterface < Interface
+      class << self
+        # Build connection
+        #
+        # @todo Would be possible to get the name from the connection?
+        #
+        # @param name [String] Interface name
+        # @param conn [ConnectionConfig] Connection configuration related to the
+        #   network interface
+        def from_connection(name, conn)
+          new(name, type: conn.type)
+        end
       end
     end
   end

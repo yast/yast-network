@@ -106,17 +106,6 @@ module Y2Network
       bridge_index.select { |_k, v| v == master }.keys
     end
 
-    # Creates list of devices enslaved in the bond device.
-    #
-    # @param bond_iface [String] a name of an interface of bond type
-    # @return list of names of interfaces enslaved in the bond_iface
-    # TODO: move to class of interface type bond, also change return type to InterfaceCollection
-    def bond_slaves(bond_iface)
-      bond_map = Yast::NetworkInterfaces::FilterDevices("netcard").fetch("bond", {}).fetch(bond_iface, {})
-
-      bond_map.select { |k, _| k.start_with?("BONDING_SLAVE") }.values
-    end
-
     # Creates a map where the keys are the interfaces enslaved and the values
     # are the bridges where them are taking part.
     def bridge_index
@@ -158,7 +147,7 @@ module Y2Network
       Yast::LanItems.Items.map do |_index, item|
         name = item["ifcfg"] || item["hwinfo"]["dev_name"]
         type = Yast::NetworkInterfaces.GetType(name)
-        Y2Network::Interface.new(name, type: InterfaceType.from_short_name(type))
+        Y2Network::Interface.for(name, InterfaceType.from_short_name(type))
       end
     end
   end
