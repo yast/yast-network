@@ -97,26 +97,18 @@ module Y2Network
 
     alias_method :eql?, :==
 
-    # Returns the interfaces that are enslaved in the given bridge
-    #
-    # @param master [String] bridge name
-    # @return [Array<String>] a list of interface names
-    # TODO: move to class of interface type br, also change return type to InterfaceCollection
-    def bridge_slaves(master)
-      bridge_index.select { |_k, v| v == master }.keys
-    end
-
     # Creates a map where the keys are the interfaces enslaved and the values
     # are the bridges where them are taking part.
     def bridge_index
       index = {}
 
-      # TODO: should use by_type
-      bridge_devs = Yast::NetworkInterfaces.FilterDevices("netcard").fetch("br", {})
+      # TODO: that "all" is a workaround until Physical, Virtual and FakeInterface is
+      # fully in game
+      bridge_devs = InterfacesCollection.new(all).by_type(InterfaceType::BRIDGE)
 
-      bridge_devs.each do |bridge_master, value|
-        value["BRIDGE_PORTS"].to_s.split.each do |if_name|
-          index[if_name] = bridge_master
+      bridge_devs.each do |bridge_master|
+        bridge_master.slaves.each do |slave|
+          index[slave.name] = bridge_master.name
         end
       end
 
