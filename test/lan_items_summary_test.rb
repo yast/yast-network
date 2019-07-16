@@ -2,6 +2,7 @@
 
 require_relative "test_helper"
 require "network/lan_items_summary"
+require "y2network/interfaces/br_interface"
 
 Yast.import "LanItems"
 
@@ -61,12 +62,20 @@ describe Yast::LanItemsSummary do
 
   describe "#proposal" do
     let(:interfaces) { instance_double(Y2Network::InterfacesCollection) }
-    let(:br0) { instance_double(Y2Network::Interface, name: "br0", type: Y2Network::InterfaceType::BRIDGE) }
+    let(:eth1) { instance_double(Y2Network::Interface, name: "eth1") }
+    let(:slaves_collection) { instance_double(Y2Network::InterfacesCollection, to_a: [eth1]) }
+    let(:br0) do
+      instance_double(
+        Y2Network::Interfaces::BrInterface,
+        name:   "br0",
+        type:   Y2Network::InterfaceType::BRIDGE,
+        slaves: slaves_collection
+      )
+    end
 
     it "returns a Richtext summary of the configured interfaces" do
       allow(interfaces).to receive(:by_type).and_return([])
       allow(interfaces).to receive(:by_type).with(Y2Network::InterfaceType::BRIDGE).and_return([br0])
-      allow(interfaces).to receive(:bridge_slaves).and_return(["eth1"])
 
       expect(subject.proposal)
         .to eql "<ul>" \

@@ -867,11 +867,13 @@ module Yast
         when "br"
           skipped << ifcfg
 
-          yast_config.interfaces.bridge_slaves(ifcfg).each { |port| skipped << port }
+          Y2Network::InterfacesCollection.new(yast_config.interfaces.all).by_name(ifcfg).slaves.each do |port|
+            skipped << port.name
+          end
         when "bond"
-          Y2Network::InterfacesCollection.new(yast_config.interfaces.all).by_name(ifcfg).slaves do |slave|
-            log.info("For interface #{ifcfg} found slave #{slave}")
-            skipped << slave
+          Y2Network::InterfacesCollection.new(yast_config.interfaces.all).by_name(ifcfg).slaves.each do |slave|
+            log.info("For interface #{ifcfg} found slave #{slave.name}")
+            skipped << slave.name
           end
 
         # Skip also usb and wlan devices as they are not good for bridge proposal (bnc#710098)

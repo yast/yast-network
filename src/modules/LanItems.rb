@@ -2320,11 +2320,13 @@ module Yast
     # @param [String] ifcfg_name
     # @return [String] formated string with the interface type and the interfaces enslaved
     def slaves_desc(ifcfg_type, ifcfg_name)
+      config = Y2Network::Config.find(:yast)
+
       if ifcfg_type == "bond"
-        slaves = Y2Network::Config.find(:yast).interfaces.bond_slaves(ifcfg_name)
+        slaves = Y2Network::InterfacesCollection.new(config.interfaces.all).by_name(ifcfg_name).slaves
         desc = _("Bonding slaves")
       else
-        slaves = Y2Network::Config.find(:yast).interfaces.bridge_slaves(ifcfg_name)
+        slaves = Y2Network::InterfacesCollection.new(config.interfaces.all).by_name(ifcfg_name).slaves
         desc = _("Bridge Ports")
       end
 

@@ -42,8 +42,7 @@ module Y2Network
       # @param bridge_iface [String] a name of an interface of bridge type
       # @return list of names of interfaces enslaved in the bridge_iface
       def bridge_slaves(bridge_iface)
-        bridge_map = Yast::NetworkInterfaces::FilterDevices("netcard").fetch("br", {}).fetch(bridge_iface, {})
-
+        bridge_map = Yast::NetworkInterfaces.FilterDevices("netcard").fetch("br", {}).fetch(bridge_iface, {})
         bridge_map["BRIDGE_PORTS"].to_s.split
       end
     end

@@ -243,7 +243,7 @@ describe "LanClass" do
       {
         "ONBOOT"       => "yes",
         "BOOTPROTO"    => "dhcp",
-        "DEVICE"       => "br1",
+        "DEVICE"       => "br0",
         "BRIDGE"       => "yes",
         "BRIDGE_PORTS" => "eth1",
         "BRIDGE_STP"   => "off",
@@ -276,7 +276,10 @@ describe "LanClass" do
         end
 
         it "returns an array containing the bridged interfaces" do
-          allow(interfaces).to receive(:bridge_slaves).and_return(["eth1"])
+          allow(Yast::NetworkInterfaces)
+            .to receive(:FilterDevices)
+            .with("netcard")
+            .and_return("br" => { "br0" => current_interface })
 
           expect(Yast::Lan.IfcfgsToSkipVirtualizedProposal).to include("eth1")
           expect(Yast::Lan.IfcfgsToSkipVirtualizedProposal).to_not include("eth0")
