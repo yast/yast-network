@@ -56,32 +56,40 @@ describe Y2Network::Sysconfig::InterfaceFile do
     end
   end
 
-  describe "#ip_address" do
-    it "returns the IP address" do
-      expect(file.ip_address).to eq(Y2Network::IPAddress.from_string("192.168.123.1/24"))
+  describe "#ipaddrs" do
+    it "returns the IP addresses" do
+      expect(file.ipaddrs).to eq(
+        default: Y2Network::IPAddress.from_string("192.168.123.1/24")
+      )
     end
 
-    context "when the IP address is empty" do
+    context "when multiple addresses are defined" do
       let(:interface_name) { "eth1" }
 
-      it "returns nil" do
-        expect(file.ip_address).to be_nil
+      it "returns a hash with IP addresses indexed by their suffixes" do
+        expect(file.ipaddrs).to eq(
+          "0" => Y2Network::IPAddress.from_string("192.168.123.1/24"),
+          "1" => Y2Network::IPAddress.from_string("10.0.0.1"),
+        )
       end
     end
 
     context "when the IP address is missing" do
       let(:interface_name) { "eth2" }
 
-      it "returns nil" do
-        expect(file.ip_address).to be_nil
+      it "returns an empty hash" do
+        expect(file.ipaddrs).to be_empty
       end
     end
   end
 
-  describe "#ipaddr=" do
+  describe "#ipaddrs=" do
+    let(:interface_name) { "eth2" }
+
     it "sets the bootproto" do
-      expect { file.ipaddr = Y2Network::IPAddress.from_string("10.0.0.1") }
-        .to change { file.ipaddr }.to(Y2Network::IPAddress.from_string("10.0.0.1"))
+      addresses = { default: Y2Network::IPAddress.from_string("10.0.0.1")}
+      expect { file.ipaddrs = addresses }
+        .to change { file.ipaddrs }.from({}).to(addresses)
     end
   end
 
@@ -114,7 +122,7 @@ describe Y2Network::Sysconfig::InterfaceFile do
   end
 
   describe "#wireless_keys" do
-    let(:interface_name) { "wlan0" }
+    let(:interface_name) { "wlan2" }
 
     it "returns the list of keys" do
       expect(file.wireless_keys).to eq(default: "0-1-2-3-4-5", "1" => "s:password")
@@ -133,7 +141,7 @@ describe Y2Network::Sysconfig::InterfaceFile do
     subject(:file) { described_class.new("eth0") }
 
     it "writes the changes to the file" do
-      file.ipaddr = Y2Network::IPAddress.from_string("192.168.122.1/24")
+      file.ipaddrs = { default: Y2Network::IPAddress.from_string("192.168.122.1/24") }
       file.bootproto = :static
       file.save
 
