@@ -340,7 +340,7 @@ module Y2Network
       # @param [String] value
       # @return [Symbol,nil]
       def value_as_symbol(value)
-        value.nil? || value.empty? ? nil : value.to_sym
+        value.nil? || value.empty? ? nil : value.downcase.to_sym
       end
 
       # Converts the value into a IPAddress (or nil if empty)
