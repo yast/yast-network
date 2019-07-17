@@ -140,6 +140,7 @@ module Y2Network
       #   network interface
       def add_fake_interface(name, conn)
         new_interface = Y2Network::FakeInterface.from_connection(name, conn)
+        conn.interface = new_interface
         @interfaces << new_interface
       end
     end

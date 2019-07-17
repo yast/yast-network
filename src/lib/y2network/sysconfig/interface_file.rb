@@ -57,6 +57,7 @@ module Y2Network
         # @param interface [String] Interface name
         # @return [Sysconfig::InterfaceFile,nil] Sysconfig
         def find(interface)
+          Yast.import "FileUtils"
           return nil unless Yast::FileUtils.Exists(SYSCONFIG_NETWORK_DIR.join("ifcfg-#{interface}").to_s)
           new(interface)
         end
@@ -230,6 +231,44 @@ module Y2Network
       # @!attribute [r] wireless_nwid
       #   @return [String] Network ID
       define_variable(:wireless_nwid)
+
+      ## INFINIBAND
+
+      # @!attribute [r] ipoib_mode
+      #   @return [String] IPOIB mode ("connected" or "datagram")
+      define_parameter(:ipoib_mode)
+
+      ## BONDING
+
+      # @return [Integer] Number of bonding slaves supported
+      MAX_BONDS = 10
+
+      # List of bonding slaves
+      #
+      # @return [Array<String>] Bonding slaves
+      def bonding_slaves
+        keys = Array.new(MAX_BONDS) { |i| fetch("BONDING_SLAVE#{i}") }
+        keys.compact
+      end
+
+      # @!attribute [r] bonding_module_opts
+      #   @return [String] options for the bonding module ('mode=active-backup
+      #                     miimon=100')
+      define_parameter(:bonding_module_opts)
+
+      ## BRIDGE
+
+      # @!attribute [r] bridge_ports
+      #   @return [String] interfaces members of the bridge
+      define_parameter(:bridge_ports)
+
+      # @!attribute [r] bridge_stp
+      #   @return [String] Spanning Tree Protocol ("off" or "on")
+      define_parameter(:bridge_stp)
+
+      # @!attribute [r] bridge_forwarddelay
+      #   @return [Integer]
+      define_parameter(:bridge_forwarddelay, :integer)
 
       # Constructor
       #
