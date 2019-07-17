@@ -29,6 +29,7 @@ module Y2Network
     attr_accessor :description
     # @return [Symbol] Interface type
     attr_accessor :type
+    # @return [Boolean]
     attr_reader :configured
     # @return [HwInfo]
     attr_reader :hardware
@@ -90,6 +91,7 @@ module Y2Network
     end
 
     def init(name)
+      @configured = false
       @configured = !system_config(name).nil? if !(name.nil? || name.empty?)
     end
   end
