@@ -42,10 +42,8 @@ module Y2Network
       # @return [Symbol] Bootproto (static, dhcp, ,dhcp4, dhcp6, autoip,
       #   dhcp+autoip, auto6, 6to4, none)
       attr_accessor :bootproto
-      # @return [IPAddr,nil]
-      attr_accessor :ip_address
-      # @return [Array<IPAddr>]
-      attr_accessor :secondary_ip_addresses
+      # @return [Array<IPConfig>]
+      attr_accessor :ip_configs
       # @return [Integer, nil]
       attr_accessor :mtu
       # @return [String] Connection's description (e.g., "Ethernet Card 0")
