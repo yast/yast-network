@@ -22,7 +22,7 @@ module Y2Network
     #
     # @param source [Symbol] Source name (e.g., :sysconfig)
     # @param opts   [Hash] Reader options
-     # @return [Y2Network::Autoinst::ConfigReader,Y2Network::Sysconfig::ConfigReader]
+    # @return [Y2Network::Autoinst::ConfigReader,Y2Network::Sysconfig::ConfigReader]
     def self.for(source, opts = {})
       require "y2network/#{source}/config_reader"
       modname = source.to_s.split("_").map(&:capitalize).join
