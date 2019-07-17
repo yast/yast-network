@@ -30,6 +30,7 @@ module Y2Network
     # @return [Symbol] Interface type
     attr_accessor :type
     attr_reader :configured
+    # @return [HwInfo]
     attr_reader :hardware
 
     # Shortcuts for accessing interfaces' ifcfg options
