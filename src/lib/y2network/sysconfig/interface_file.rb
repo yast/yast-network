@@ -128,6 +128,29 @@ module Y2Network
       #   return [Symbol] When the interface should be set up (:manual, :auto, :hotplug, :nfsroot, :off)
       define_parameter(:startmode, :symbol)
 
+      # !@attribute [r] scopes
+      #   @return [Hash] Scopes of the area where addresses are valid (:global, :site, :link, :host)
+      define_array_parameter(:scope, :symbol)
+
+      # !@attribute [r] labels
+      #   @return [Hash] Label to assign to the address
+      define_array_parameter(:label, :symbol)
+
+      # !@attribute [r] remote_ipaddrs
+      #   @return [Hash] Remote IP address of a point to point connection
+      define_array_parameter(:remote_ipaddr, :ipaddr)
+
+      # !@attribute [r] broadcasts
+      #   @return [Hash] Broadcasts addresses
+      define_array_parameter(:broadcast, :ipaddr)
+
+      # !@attribute [r] prefixlens
+      #  @return [Hash] Prefixes lengths
+      define_array_parameter(:prefixlen, :ipaddr)
+
+      # !@attribute [r] netmasks
+      #  @return [Hash] Netmasks
+      define_array_parameter(:netmask, :ipaddr)
       # !@attribute [r] wireless_key_length
       #   @return [Integer] Length in bits for all keys used
       define_parameter(:wireless_key_length, :integer)
