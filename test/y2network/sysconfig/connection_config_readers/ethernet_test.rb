@@ -24,16 +24,14 @@ require "y2network/sysconfig/interface_file"
 describe Y2Network::Sysconfig::ConnectionConfigReaders::Ethernet do
   subject(:handler) { described_class.new(file) }
 
-  let(:address) { IPAddr.new("192.168.122.1") }
+  let(:scr_root) { File.join(DATA_PATH, "scr_read") }
+
+  around do |example|
+    change_scr_root(scr_root, &example)
+  end
 
   let(:file) do
-    instance_double(
-      Y2Network::Sysconfig::InterfaceFile,
-      interface:  "eth0",
-      name:       "Ethernet Card 0",
-      bootproto:  :static,
-      ip_address: address
-    )
+    Y2Network::Sysconfig::InterfaceFile.find("eth0").tap(&:load)
   end
 
   describe "#connection_config" do
@@ -41,7 +39,7 @@ describe Y2Network::Sysconfig::ConnectionConfigReaders::Ethernet do
       eth = handler.connection_config
       expect(eth.interface).to eq("eth0")
       expect(eth.bootproto).to eq(:static)
-      expect(eth.ip_address).to eq(address)
+      expect(eth.ip_configs.map(&:address)).to eq([Y2Network::IPAddress.from_string("192.168.123.1/24")])
     end
   end
 end

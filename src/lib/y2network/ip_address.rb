@@ -42,7 +42,7 @@ module Y2Network
     # @return [IPAddr] IP address
     attr_reader :address
     # @return [Integer] Prefix
-    attr_reader :prefix
+    attr_accessor :prefix
 
     def_delegators :@address, :ipv4?, :ipv6?
 
