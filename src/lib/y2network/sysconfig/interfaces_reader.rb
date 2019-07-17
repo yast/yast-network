@@ -35,8 +35,8 @@ module Y2Network
     # * Physical interfaces are read from the hardware.
     # * Virtual interfaces + Connections are read from sysconfig.
     #
-    # @see Y2Network::Interface
-    # @see Y2Network::Connection::Connection
+    # @see Y2Network::InterfacesCollection
+    # @see Y2Network::ConnectionConfig
     class InterfacesReader
       # Returns the interfaces and connections configuration
       #
