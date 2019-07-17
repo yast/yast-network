@@ -1,0 +1,12 @@
+# WEP network configuration
+BOOTPROTO='static'
+BROADCAST=''
+NAME='Wireless Adapter 2'
+STARTMODE='auto'
+WIRELESS_AUTH_MODE='shared'
+WIRELESS_DEFAULT_KEY='1'
+WIRELESS_ESSID='example_ssid'
+WIRELESS_KEY_0="0-1-2-3-4-5"
+WIRELESS_KEY_1="s:password"
+WIRELESS_KEY_LENGTH='128'
+WIRELESS_MODE='Managed'

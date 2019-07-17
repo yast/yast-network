@@ -24,39 +24,20 @@ require "y2network/sysconfig/interface_file"
 describe Y2Network::Sysconfig::ConnectionConfigReaders::Wireless do
   subject(:handler) { described_class.new(file) }
 
-  let(:address) { IPAddr.new("192.168.122.1") }
+  let(:interface_name) { "wlan0" }
+
+  let(:scr_root) { File.join(DATA_PATH, "scr_read") }
+
+  around do |example|
+    change_scr_root(scr_root, &example)
+  end
 
   let(:file) do
-    instance_double(
-      Y2Network::Sysconfig::InterfaceFile,
-      interface:            "wlan0",
-      name:                 "Wireless Card 0",
-      startmode:            :auto,
-      bootproto:            :static,
-      ip_address:           address,
-      wireless_keys:        ["0-1-2-3-4-5", "s:password"],
-      wireless_default_key: 1,
-      wireless_key_length:  128
-    ).as_null_object
+    Y2Network::Sysconfig::InterfaceFile.find(interface_name).tap(&:load)
   end
 
   context "WPA-EAP network configuration" do
-    let(:file) do
-      instance_double(
-        Y2Network::Sysconfig::InterfaceFile,
-        interface:             "wlan0",
-        name:                  "Wireless Card 0",
-        bootproto:             :static,
-        ip_address:            address,
-        wireless_auth_mode:    "eap",
-        wireless_eap_mode:     "PEAP",
-        wireless_eap_auth:     "mschapv2",
-        wireless_essid:        "example_ssid",
-        wireless_mode:         "Managed",
-        wireless_wpa_password: "example_passwd",
-        wireless_ap_scanmode:  "1"
-      ).as_null_object
-    end
+    let(:interface_name) { "wlan0" }
 
     it "returns a wireless connection config object" do
       wlan = handler.connection_config
@@ -67,10 +48,10 @@ describe Y2Network::Sysconfig::ConnectionConfigReaders::Wireless do
       wlan = handler.connection_config
       expect(wlan).to have_attributes(
         interface:    "wlan0",
-        mode:         "Managed",
+        mode:         :managed,
         essid:        "example_ssid",
         ap_scanmode:  "1",
-        auth_mode:    "eap",
+        auth_mode:    :eap,
         eap_mode:     "PEAP",
         eap_auth:     "mschapv2",
         wpa_password: "example_passwd"
@@ -79,25 +60,7 @@ describe Y2Network::Sysconfig::ConnectionConfigReaders::Wireless do
   end
 
   context "WPA-PSK network configuration" do
-    let(:wireless_attributes) do
-      COMMON_PARAMETERS.merge(
-        "WIRELESS_AP"        => "00:11:22:33:44:55",
-        "WIRELESS_AUTH_MODE" => "psk",
-        "WIRELESS_ESSID"     => "example_ssid",
-        "WIRELESS_WPA_PSK"   => "example_psk"
-      )
-    end
-    let(:file) do
-      instance_double(
-        Y2Network::Sysconfig::InterfaceFile,
-        interface:          "wlan0",
-        name:               "Wireless Card 0",
-        bootproto:          :static,
-        wireless_ap:        "00:11:22:33:44:55",
-        wireless_auth_mode: "psk",
-        wireless_wpa_psk:   "example_psk"
-      ).as_null_object
-    end
+    let(:interface_name) { "wlan1" }
 
     it "returns a wireless connection config object" do
       wlan = handler.connection_config
@@ -107,8 +70,8 @@ describe Y2Network::Sysconfig::ConnectionConfigReaders::Wireless do
     it "sets relevant attributes" do
       wlan = handler.connection_config
       expect(wlan).to have_attributes(
-        interface: "wlan0",
-        auth_mode: "psk",
+        interface: "wlan1",
+        auth_mode: :psk,
         wpa_psk:   "example_psk",
         ap:        "00:11:22:33:44:55"
       )
@@ -116,20 +79,7 @@ describe Y2Network::Sysconfig::ConnectionConfigReaders::Wireless do
   end
 
   context "WEP network configuration" do
-    let(:file) do
-      instance_double(
-        Y2Network::Sysconfig::InterfaceFile,
-        interface:            "wlan0",
-        name:                 "Wireless Card 0",
-        bootproto:            :static,
-        ip_address:           address,
-        wireless_auth_mode:   "shared",
-        wireless_essid:       "example_ssid",
-        wireless_keys:        ["0-1-2-3-4-5", "s:password"],
-        wireless_key_length:  128,
-        wireless_default_key: 1
-      ).as_null_object
-    end
+    let(:interface_name) { "wlan2" }
 
     it "returns a wireless connection config object" do
       wlan = handler.connection_config
@@ -139,9 +89,9 @@ describe Y2Network::Sysconfig::ConnectionConfigReaders::Wireless do
     it "sets relevant attributes" do
       wlan = handler.connection_config
       expect(wlan).to have_attributes(
-        interface:   "wlan0",
+        interface:   "wlan2",
         essid:       "example_ssid",
-        keys:        ["0-1-2-3-4-5", "s:password"],
+        keys:        ["0-1-2-3-4-5", "s:password", nil, nil],
         key_length:  128,
         default_key: 1
       )
@@ -149,15 +99,7 @@ describe Y2Network::Sysconfig::ConnectionConfigReaders::Wireless do
   end
 
   context "open network configuration" do
-    let(:file) do
-      instance_double(
-        Y2Network::Sysconfig::InterfaceFile,
-        interface:          "wlan0",
-        name:               "Wireless Card 0",
-        wireless_auth_mode: :open,
-        wireless_mode:      :managed
-      ).as_null_object
-    end
+    let(:interface_name) { "wlan3" }
 
     it "returns a wireless connection object" do
       wlan = handler.connection_config

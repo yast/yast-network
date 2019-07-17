@@ -17,6 +17,7 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
+require "y2network/sysconfig/connection_config_readers/base"
 require "y2network/connection_config/wireless"
 
 module Y2Network
@@ -24,14 +25,7 @@ module Y2Network
     module ConnectionConfigReaders
       # This class is able to build a ConnectionConfig::Wireless object given a
       # Sysconfig::InterfaceFile object.
-      class Wireless
-        # @return [Y2Network::Sysconfig::InterfaceFile]
-        attr_reader :file
-
-        def initialize(file)
-          @file = file
-        end
-
+      class Wireless < Base
         # Returns a wireless connection configuration
         #
         # @return [ConnectionConfig::Wireless]
@@ -47,14 +41,24 @@ module Y2Network
             conn.eap_mode = file.wireless_eap_mode
             conn.essid = file.wireless_essid
             conn.interface = file.interface
-            conn.ip_address = file.ip_address
+            conn.ip_configs = ip_configs
             conn.key_length = file.wireless_key_length
-            conn.keys = file.wireless_keys
+            conn.keys = wireless_keys
             conn.mode = file.wireless_mode
             conn.nwid = file.wireless_nwid
             conn.wpa_password = file.wireless_wpa_password
             conn.wpa_psk = file.wireless_wpa_psk
           end
+        end
+
+        private
+
+        # Max number of wireless keys
+        MAX_WIRELESS_KEYS = 4
+
+        # Reads the array of wireless keys from the file
+        def wireless_keys
+          (0..MAX_WIRELESS_KEYS - 1).map { |i| file.wireless_keys["_#{i}"] }
         end
       end
     end
