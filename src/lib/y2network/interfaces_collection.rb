@@ -104,7 +104,7 @@ module Y2Network
 
       # TODO: that "all" is a workaround until Physical, Virtual and FakeInterface is
       # fully in game
-      bridge_devs = InterfacesCollection.new(all).by_type(InterfaceType::BRIDGE)
+      bridge_devs = all.by_type(InterfaceType::BRIDGE)
 
       bridge_devs.each do |bridge_master|
         bridge_master.slaves.each do |slave|
@@ -120,7 +120,7 @@ module Y2Network
 
       # TODO: that "all" is a workaround until Physical, Virtual and FakeInterface is
       # fully in game
-      bond_devs = InterfacesCollection.new(all).by_type(InterfaceType::BONDING)
+      bond_devs = all.by_type(InterfaceType::BONDING)
 
       bond_devs.each do |bond_master|
         bond_master.slaves.each do |slave|
@@ -137,11 +137,13 @@ module Y2Network
       # FIXME: this is only helper when coexisting with old LanItems module
       # can be used in new API of network-ng for read-only methods. It converts
       # old LanItems::Items into new Interface objects
-      Yast::LanItems.Items.map do |_index, item|
+      interfaces = Yast::LanItems.Items.map do |_index, item|
         name = item["ifcfg"] || item["hwinfo"]["dev_name"]
         type = Yast::NetworkInterfaces.GetType(name)
         Y2Network::Interface.for(name, InterfaceType.from_short_name(type))
       end
+
+      InterfacesCollection.new(interfaces)
     end
   end
 end

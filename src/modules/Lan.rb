@@ -867,11 +867,11 @@ module Yast
         when "br"
           skipped << ifcfg
 
-          Y2Network::InterfacesCollection.new(yast_config.interfaces.all).by_name(ifcfg).slaves.each do |port|
+          yast_config.interfaces.all.by_name(ifcfg).slaves.each do |port|
             skipped << port.name
           end
         when "bond"
-          Y2Network::InterfacesCollection.new(yast_config.interfaces.all).by_name(ifcfg).slaves.each do |slave|
+          yast_config.interfaces.all.by_name(ifcfg).slaves.each do |slave|
             log.info("For interface #{ifcfg} found slave #{slave.name}")
             skipped << slave.name
           end

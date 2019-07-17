@@ -23,7 +23,7 @@ module Y2Network
 
       # @return [Array<Interface>] list of interfaces usable in the bridge
       def bridgeable_interfaces
-        interfaces.all.select { |i| bridgeable?(i) }
+        interfaces.all.to_a.select { |i| bridgeable?(i) }
       end
 
       # @return [Array<String>]

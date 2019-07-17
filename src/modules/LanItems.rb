@@ -2323,10 +2323,10 @@ module Yast
       config = Y2Network::Config.find(:yast)
 
       if ifcfg_type == "bond"
-        slaves = Y2Network::InterfacesCollection.new(config.interfaces.all).by_name(ifcfg_name).slaves
+        slaves = config.interfaces.all.by_name(ifcfg_name).slaves
         desc = _("Bonding slaves")
       else
-        slaves = Y2Network::InterfacesCollection.new(config.interfaces.all).by_name(ifcfg_name).slaves
+        slaves = config.interfaces.all.by_name(ifcfg_name).slaves
         desc = _("Bridge Ports")
       end
 
