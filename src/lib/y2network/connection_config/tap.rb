@@ -21,17 +21,8 @@ require "y2network/connection_config/base"
 
 module Y2Network
   module ConnectionConfig
-    # Configuration for infiniband connections
-    #
-    # @see https://www.kernel.org/doc/Documentation/infiniband/ipoib.txt
-    class Infiniband < Base
-      # @return [String] transport mode ("datagram" or "connected")
-      attr_accessor :ipoib_mode
-
-      # Constructor
-      def initialize
-        @ipoib_mode = ""
-      end
+    # Configuration for TAP connections
+    class Tap < Base
     end
   end
 end

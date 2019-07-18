@@ -17,21 +17,12 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/connection_config/base"
+require "y2network/interface_type"
 
 module Y2Network
   module ConnectionConfig
-    # Configuration for infiniband connections
-    #
-    # @see https://www.kernel.org/doc/Documentation/infiniband/ipoib.txt
-    class Infiniband < Base
-      # @return [String] transport mode ("datagram" or "connected")
-      attr_accessor :ipoib_mode
-
-      # Constructor
-      def initialize
-        @ipoib_mode = ""
-      end
+    # Configuration for dummy connections
+    class Dummy < Base
     end
   end
 end
