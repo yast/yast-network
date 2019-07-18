@@ -28,6 +28,7 @@ end
 
 require "yast"
 require "yast/rspec"
+Yast.import "NetworkInterfaces"
 Yast.import "Lan"
 
 require_relative "SCRStub"
@@ -36,9 +37,13 @@ RSpec.configure do |c|
   c.extend Yast::I18n # available in context/describe
   c.include Yast::I18n
   c.include SCRStub
+  c.mock_with :rspec do |mocks|
+    mocks.verify_partial_doubles = true
+  end
 
   c.before do
     Yast::Lan.clear_configs
+    allow(Yast::NetworkInterfaces).to receive(:Write)
   end
 end
 
@@ -47,7 +52,17 @@ DATA_PATH = File.join(File.expand_path(File.dirname(__FILE__)), "data")
 # stub module to prevent its Import
 # Useful for modules from different yast packages, to avoid build dependencies
 def stub_module(name)
-  Yast.const_set name.to_sym, Class.new { def self.fake_method; end }
+  stubbed_class = Class.new do
+    # fake respond_to? to avoid failure of partial doubles
+    singleton_class.define_method(:respond_to?) do |_mname, _include_all = nil|
+      true
+    end
+
+    # needed to fake at least one class method to avoid Yast.import
+    singleton_class.define_method(:fake_method) do
+    end
+  end
+  Yast.const_set(name.to_sym, stubbed_class)
 end
 
 # stub classes from other modules to speed up a build

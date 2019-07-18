@@ -20,8 +20,8 @@ require_relative "../test_helper"
 require "y2network/config"
 require "y2network/routing_table"
 require "y2network/interface"
-require "y2network/config_reader/sysconfig"
-require "y2network/config_writer/sysconfig"
+require "y2network/sysconfig/config_reader"
+require "y2network/sysconfig/config_writer"
 
 describe Y2Network::Config do
   before do
@@ -44,7 +44,7 @@ describe Y2Network::Config do
 
   describe ".from" do
     let(:reader) do
-      instance_double(Y2Network::ConfigReader::Sysconfig, config: config)
+      instance_double(Y2Network::Sysconfig::ConfigReader, config: config)
     end
 
     before do
@@ -88,7 +88,7 @@ describe Y2Network::Config do
   end
 
   describe "#write" do
-    let(:writer) { instance_double(Y2Network::ConfigWriter::Sysconfig) }
+    let(:writer) { instance_double(Y2Network::Sysconfig::ConfigWriter) }
 
     before do
       allow(Y2Network::ConfigWriter).to receive(:for).with(:sysconfig)
@@ -96,7 +96,7 @@ describe Y2Network::Config do
     end
 
     it "writes the config using the required writer" do
-      expect(writer).to receive(:write).with(config)
+      expect(writer).to receive(:write).with(config, nil)
       config.write
     end
   end
@@ -132,9 +132,16 @@ describe Y2Network::Config do
       end
     end
 
-    context "when routing information is differt" do
+    context "when routing information is different" do
       it "returns false" do
         copy.routing.forward_ipv4 = !config.routing.forward_ipv4
+        expect(copy).to_not eq(config)
+      end
+    end
+
+    context "when DNS information is different" do
+      it "returns false" do
+        copy.dns.hostname = "dummy"
         expect(copy).to_not eq(config)
       end
     end

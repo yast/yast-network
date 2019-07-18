@@ -27,16 +27,10 @@
 # Authors:	Michal Svec <msvec@suse.cz>
 #
 
-require "network/edit_nic_name"
-require "shellwords"
-
 include Yast::UIShortcuts
 
 module Yast
   module NetworkLanHardwareInclude
-    # how many device names is proposed in Hardware dialog
-    NEW_DEVICES_COUNT = 10
-
     def initialize_network_lan_hardware(include_target)
       Yast.import "UI"
 
@@ -57,105 +51,10 @@ module Yast
       @hardware = nil
     end
 
-    def widget_descr_hardware
-      widget_descr = {
-        "widget"        => :custom,
-        "custom_widget" => ReplacePoint(Id(:hw_content), Empty()),
-        "init"          => fun_ref(method(:initHwDialog), "void (string)"),
-        "handle"        => fun_ref(method(:handleHW), "symbol (string, map)"),
-        "store"         => fun_ref(method(:storeHW), "void (string, map)"),
-        "help"          => initHelp
-      }
-
-      # validation function currently checks user's input in :ifcfg_name widget
-      # However this widget is present only when adding new device
-      if isNewDevice
-        widget_descr["validate_type"] = :function
-        widget_descr["validate_function"] = fun_ref(method(:validate_hw), "boolean (string, map)")
-      end
-
-      { "HWDIALOG" => widget_descr }
-    end
-
-    # Determines if the dialog is used for adding new device or for editing existing one.
-    #
-    # Some widgets are disabled when creating new device. Also, when editing existing device, it is not possible
-    # to e.g. change device type.
-    #
-    # @return false if hardware widgets are embedded into another dialog, otherwise true.
-    def isNewDevice
-      LanItems.operation == :add
-    end
-
     # Dynamic initialization of help text.
     #
     # @return content of the help
     def initHelp
-      # Manual network card setup help 1/4
-      hw_help = _(
-        "<p>Set up hardware-specific options for \nyour network device here.</p>\n"
-      )
-
-      hw_help = if isNewDevice
-        # Manual network card setup help 2/4
-        # translators: do not translated udev, MAC, BusID
-        Ops.add(
-          hw_help,
-          _(
-            "<p><b>Device Type</b>. Various device types are available, select \none according your needs.</p>"
-          )
-        )
-      else
-        Ops.add(
-          Ops.add(
-            hw_help,
-            _(
-              "<p><b>Udev Rules</b> are rules for the kernel device manager that allow\n" \
-                "associating the MAC address or BusID of the network device with its name (for\n" \
-                "example, eth1, wlan0 ) and assures a persistent device name upon reboot.\n"
-            )
-          ),
-          _(
-            "<p><b>Show visible port identification</b> allows you to physically identify now configured NIC. \n" \
-              "Set appropriate time, click <b>Blink</b> and LED diodes on you NIC will start blinking for selected time.\n" \
-              "</p>"
-          )
-        )
-      end
-
-      # Manual network card setup help 2/4
-      hw_help = Ops.add(
-        Ops.add(
-          Ops.add(
-            hw_help,
-            _(
-              "<p><b>Kernel Module</b>. Enter the kernel module (driver) name \n" \
-                "for your network device here. If the device is already configured, see if there is more than one driver available for\n" \
-                "your device in the drop-down list. If necessary, choose a driver from the list, but usually the default value works.</p>\n"
-            )
-          ),
-          # Manual networ card setup help 3/4
-          _(
-            "<p>Additionally, specify <b>Options</b> for the kernel module. Use this\n" \
-              "format: <i>option</i>=<i>value</i>. Each entry should be space-separated, for example: <i>io=0x300 irq=5</i>. <b>Note:</b> If two cards are \n" \
-              "configured with the same module name, the options will be merged while saving.</p>\n"
-          )
-        ),
-        _(
-          "<p>If you specify options via <b>Ethtool options</b>, ifup will call ethtool with these options.</p>\n"
-        )
-      )
-
-      if isNewDevice && !Arch.s390
-        # Manual dialog help 4/4
-        hw_help = Ops.add(
-          hw_help,
-          _(
-            "<p>If you have a <b>PCMCIA</b> network card, select PCMCIA.\nIf you have a <b>USB</b> network card, select USB.</p>\n"
-          )
-        )
-      end
-
       if Arch.s390
         # overwrite help
         # Manual dialog help 5/4
@@ -171,693 +70,18 @@ module Yast
       hw_help
     end
 
-    def initHardware
-      @hardware = {}
-      Ops.set(@hardware, "hotplug", LanItems.hotplug)
-      Builtins.y2milestone("hotplug=%1", LanItems.hotplug)
-      Ops.set(
-        @hardware,
-        "modules_from_hwinfo",
-        LanItems.GetItemModules(Ops.get_string(@hardware, "modul", ""))
-      )
-
-      Ops.set(@hardware, "type", LanItems.type)
-      if Ops.get_string(@hardware, "type", "") == ""
-        Builtins.y2error("Shouldn't happen -- type is empty. Assuming eth.")
-        Ops.set(@hardware, "type", "eth")
-      end
-      Ops.set(
-        @hardware,
-        "realtype",
-        NetworkInterfaces.RealType(
-          Ops.get_string(@hardware, "type", ""),
-          Ops.get_string(@hardware, "hotplug", "")
-        )
-      )
-
-      # Use rather LanItems::device, so that device number is initialized correctly at all times (#308763)
-      Ops.set(@hardware, "device", LanItems.device)
-
-      driver = Ops.get_string(LanItems.getCurrentItem, ["udev", "driver"], "")
-
-      Ops.set(
-        @hardware,
-        "default_device",
-        if IsNotEmpty(driver)
-          driver
-        else
-          Ops.get_string(LanItems.getCurrentItem, ["hwinfo", "module"], "")
-        end
-      )
-
-      Ops.set(
-        @hardware,
-        "options",
-        Ops.get_string(
-          LanItems.driver_options,
-          Ops.get_string(@hardware, "default_device", ""),
-          ""
-        )
-      )
-
-      # #38213, remember device id when we switch back from pcmcia/usb
-      Ops.set(
-        @hardware,
-        "non_hotplug_device_id",
-        Ops.get_string(@hardware, "device", "")
-      )
-
-      # FIXME: duplicated in address.ycp
-      Ops.set(@hardware, "device_types", NetworkInterfaces.GetDeviceTypes)
-
-      if Builtins.issubstring(
-        Ops.get_string(@hardware, "device", ""),
-        "bus-pcmcia"
-      )
-        Ops.set(@hardware, "hotplug", "pcmcia")
-      elsif Builtins.issubstring(
-        Ops.get_string(@hardware, "device", ""),
-        "bus-usb"
-      )
-        Ops.set(@hardware, "hotplug", "usb")
-      end
-
-      Builtins.y2milestone("hotplug=%1", LanItems.hotplug)
-
-      # list of free device names when e.g. adding new device
-      @hardware["devices"] = LanItems.new_type_devices(@hardware["realtype"], NEW_DEVICES_COUNT)
-
-      Ops.set(
-        @hardware,
-        "no_hotplug",
-        Ops.get_string(@hardware, "hotplug", "") == ""
-      )
-      Ops.set(
-        @hardware,
-        "no_hotplug_dummy",
-        Ops.get_boolean(@hardware, "no_hotplug", false) &&
-          Ops.get_string(@hardware, "type", "") != "dummy"
-      )
-      Ops.set(@hardware, "ethtool_options", LanItems.ethtool_options)
-
-      nil
-    end
-
-    def initHwDialog(_text)
-      initHardware
-
-      hotplug_type = @hardware["hotplug"] || ""
-      hw_type = @hardware["type"] || ""
-
-      check_boxes = HBox(
-        HSpacing(1.5),
-        # CheckBox label
-        CheckBox(
-          Id(:pcmcia),
-          Opt(:notify),
-          _("&PCMCIA"),
-          hotplug_type == "pcmcia"
-        ),
-        HSpacing(1.5),
-
-        # CheckBox label
-        CheckBox(
-          Id(:usb),
-          Opt(:notify),
-          _("&USB"),
-          hotplug_type == "usb"
-        ),
-        HSpacing(1.5)
-      )
-
-      # Disable PCMCIA and USB checkboxex on Edit and s390
-      check_boxes = VSpacing(0) if !isNewDevice || Arch.s390
-
-      # #116211 - allow user to change modules from list
-      # Frame label
-      kernel_box = Frame(
-        _("&Kernel Module"),
-        HBox(
-          HSpacing(0.5),
-          VBox(
-            VSpacing(0.4),
-            HBox(
-              # Text entry label
-              ComboBox(
-                Id(:modul),
-                Opt(:editable),
-                _("&Module Name"),
-                @hardware["modules_from_hwinfo"] || []
-              ),
-              HSpacing(0.5),
-              InputField(
-                Id(:options),
-                Opt(:hstretch),
-                Label.Options,
-                @hardware["options"] || ""
-              )
-            ),
-            VSpacing(0.4),
-            check_boxes,
-            VSpacing(0.4)
-          ),
-          HSpacing(0.5)
-        )
-      )
-
-      device_number_box = ReplacePoint(
-        Id(:rnum),
-        # TextEntry label
-        ComboBox(
-          Id(:ifcfg_name),
-          Opt(:editable, :hstretch),
-          _("&Configuration Name"),
-          @hardware["devices"]
-        )
-      )
-
-      # Manual dialog contents
-      type_name_widgets = VBox(
-        VSpacing(0.2),
-        HBox(
-          HSpacing(0.5),
-          ComboBox(
-            Id(:type),
-            Opt(:hstretch, :notify),
-            # ComboBox label
-            _("&Device Type"),
-            BuildTypesList(
-              @hardware["device_types"] || [],
-              hw_type
-            )
-          ),
-          HSpacing(1.5),
-          device_number_box,
-          HSpacing(0.5)
-        )
-      )
-
-      udev_widget =
-        Frame(
-          _("Udev Rules"),
-          HBox(
-            InputField(Id(:device_name), Opt(:hstretch), _("Device Name"), ""),
-            PushButton(Id(:change_udev), _("Change"))
-          )
-        )
-
-      if !isNewDevice
-        type_name_widgets = Empty()
-      else
-        udev_widget = Empty()
-      end
-
-      blink_card = Frame(
-        _("Show Visible Port Identification"),
-        HBox(
-          # translators: how many seconds will card be blinking
-          IntField(
-            Id(:blink_time),
-            format("%s:", _("Seconds")),
-            0,
-            100,
-            5
-          ),
-          PushButton(Id(:blink), _("Blink"))
-        )
-      )
-
-      ethtool_widget = Frame(
-        _("Ethtool Options"),
-        HBox(
-          InputField(
-            Id(:ethtool_opts),
-            Opt(:hstretch),
-            _("Options"),
-            @hardware["ethtool_options"] || ""
-          )
-        )
-      )
-
-      contents = VBox(
-        HBox(udev_widget, HStretch(), isNewDevice ? Empty() : blink_card),
-        type_name_widgets,
-        kernel_box,
-        ethtool_widget,
-        VStretch()
-      )
-
-      UI.ReplaceWidget(:hw_content, contents)
-      UI.ChangeWidget(
-        :modul,
-        :Value,
-        @hardware["default_device"] || ""
-      )
-      UI.ChangeWidget(
-        Id(:modul),
-        :Enabled,
-        @hardware["no_hotplug_dummy"] == true # convert tri state boolean to two state
-      )
-      ChangeWidgetIfExists(
-        Id(:list),
-        :Enabled,
-        @hardware["no_hotplug_dummy"] == true # convert tri state boolean to two state
-      )
-      ChangeWidgetIfExists(
-        Id(:hwcfg),
-        :Enabled,
-        @hardware["no_hotplug"] == true # convert tri state boolean to two state
-      )
-      ChangeWidgetIfExists(
-        Id(:usb),
-        :Enabled,
-        (hotplug_type == "usb" || hotplug_type == "") &&
-        hw_type != "dummy"
-      )
-      ChangeWidgetIfExists(
-        Id(:pcmcia),
-        :Enabled,
-        (hotplug_type == "pcmcia" || hotplug_type == "") &&
-        hw_type != "dummy"
-      )
-
-      device_name = LanItems.current_udev_name
-
-      ChangeWidgetIfExists(Id(:device_name), :Enabled, false)
-      ChangeWidgetIfExists(Id(:device_name), :Value, device_name)
-
-      ChangeWidgetIfExists(Id(:type), :Enabled, false) if !isNewDevice
-      ChangeWidgetIfExists(
-        Id(:ifcfg_name),
-        :ValidChars,
-        NetworkInterfaces.ValidCharsIfcfg
-      )
-
-      nil
-    end
-
-    # Call back for a manual selection from the list
-    # @return dialog result
-    def SelectionDialog
-      type = LanItems.type
-      selected = 0
-
-      hwlist = Ops.get_list(@NetworkCards, type, [])
-      cards = hwlist2items(hwlist, 0)
-
-      # Manual selection caption
-      caption = _("Manual Network Card Selection")
-
-      # Manual selection help
-      helptext = _(
-        "<p>Select the network card to configure. Search\nfor a particular network card by entering the name in the search entry.</p>"
-      )
-
-      # Manual selection contents
-      contents = VBox(
-        VSpacing(0.5),
-        # Selection box label
-        ReplacePoint(
-          Id(:rp),
-          SelectionBox(Id(:cards), _("&Network Card"), cards)
-        ),
-        VSpacing(0.5),
-        # Text entry field
-        InputField(Id(:search), Opt(:hstretch, :notify), _("&Search")),
-        VSpacing(0.5)
-      )
-
-      Wizard.SetContentsButtons(
-        caption,
-        contents,
-        helptext,
-        Label.BackButton,
-        Label.OKButton
-      )
-
-      UI.SetFocus(Id(:cards))
-
-      ret = nil
-      loop do
-        ret = UI.UserInput
-
-        case ret
-        when :abort, :cancel
-          ReallyAbort() ? break : next
-        when :search
-          entry = Convert.to_string(UI.QueryWidget(Id(:search), :Value))
-
-          l = Builtins.filter(
-            Convert.convert(cards, from: "list", to: "list <term>")
-          ) do |e|
-            Builtins.tolower(
-              Builtins.substring(
-                Ops.get_string(e, 1, ""),
-                0,
-                Builtins.size(entry)
-              )
-            ) ==
-              Builtins.tolower(entry)
-          end
-
-          selected = 0 if Builtins.size(entry) == 0
-          if Ops.greater_than(Builtins.size(l), 0)
-            selected = Ops.get_integer(l, [0, 0, 0], 0)
-          end
-
-          cards = []
-          cards = hwlist2items(hwlist, selected)
-
-          # Selection box title
-          UI.ReplaceWidget(
-            Id(:rp),
-            SelectionBox(Id(:cards), _("&Network Card"), cards)
-          )
-        when :back
-          break
-        when :next
-          # FIXME: check_*
-          break
-        else
-          Builtins.y2error("Unexpected return code: %1", ret)
-          next
-        end
-      end
-
-      if ret == :next
-        selected = Convert.to_integer(UI.QueryWidget(Id(:cards), :CurrentItem))
-        selected = 0 if selected.nil?
-        card = Ops.get(hwlist, selected, {})
-        LanItems.description = Ops.get_string(card, "name", "")
-      end
-
-      deep_copy(ret)
-    end
-
-    # Dialog for editing nic's udev rules.
-    #
-    # @return nic name. New one if `ok, old one otherwise.
-    def EditUdevRulesDialog
-      edit_name_dlg = EditNicName.new
-      edit_name_dlg.run
-    end
-
-    def handleHW(_key, event)
-      event = deep_copy(event)
-      LanItems.Rollback if Ops.get(event, "ID") == :cancel
-      ret = nil
-      if Ops.get_string(event, "EventReason", "") == "ValueChanged" ||
-          Ops.get_string(event, "EventReason", "") == "Activated"
-        ret = Ops.get_symbol(event, "WidgetID")
-      end
-      SelectionDialog() if ret == :list
-      if ret == :pcmcia || ret == :usb || ret == :type
-        if UI.WidgetExists(Id(:pcmcia)) || UI.WidgetExists(Id(:usb))
-          if UI.QueryWidget(Id(:pcmcia), :Value) == true
-            Ops.set(@hardware, "hotplug", "pcmcia")
-          elsif UI.QueryWidget(Id(:usb), :Value) == true
-            Ops.set(@hardware, "hotplug", "usb")
-          else
-            Ops.set(@hardware, "hotplug", "")
-          end
-        end
-        Builtins.y2debug("hotplug=%1", Ops.get_string(@hardware, "hotplug", ""))
-
-        if UI.WidgetExists(Id(:type))
-          Ops.set(
-            @hardware,
-            "type",
-            Convert.to_string(UI.QueryWidget(Id(:type), :Value))
-          )
-          Ops.set(
-            @hardware,
-            "realtype",
-            NetworkInterfaces.RealType(
-              Ops.get_string(@hardware, "type", ""),
-              Ops.get_string(@hardware, "hotplug", "")
-            )
-          )
-          UI.ChangeWidget(
-            Id(:ifcfg_name),
-            :Items,
-            LanItems.new_type_devices(@hardware["realtype"], NEW_DEVICES_COUNT)
-          )
-        end
-        Builtins.y2debug("type=%1", Ops.get_string(@hardware, "type", ""))
-        Builtins.y2debug(
-          "realtype=%1",
-          Ops.get_string(@hardware, "realtype", "")
-        )
-
-        if Ops.get_string(@hardware, "type", "") == "usb"
-          UI.ChangeWidget(Id(:usb), :Value, true)
-          Ops.set(@hardware, "hotplug", "usb")
-        end
-
-        Ops.set(
-          @hardware,
-          "no_hotplug",
-          Ops.get_string(@hardware, "hotplug", "") == ""
-        )
-        Ops.set(
-          @hardware,
-          "no_hotplug_dummy",
-          Ops.get_boolean(@hardware, "no_hotplug", false) &&
-            Ops.get_string(@hardware, "type", "") != "dummy"
-        )
-        UI.ChangeWidget(
-          Id(:modul),
-          :Enabled,
-          Ops.get_boolean(@hardware, "no_hotplug_dummy", false)
-        )
-        UI.ChangeWidget(
-          Id(:options),
-          :Enabled,
-          Ops.get_boolean(@hardware, "no_hotplug_dummy", false)
-        )
-        ChangeWidgetIfExists(
-          Id(:list),
-          :Enabled,
-          Ops.get_boolean(@hardware, "no_hotplug_dummy", false)
-        )
-        ChangeWidgetIfExists(
-          Id(:hwcfg),
-          :Enabled,
-          Ops.get_boolean(@hardware, "no_hotplug", false)
-        )
-        ChangeWidgetIfExists(
-          Id(:usb),
-          :Enabled,
-          (Ops.get_string(@hardware, "hotplug", "") == "usb" ||
-            Ops.get_string(@hardware, "hotplug", "") == "") &&
-            Ops.get_string(@hardware, "type", "") != "dummy"
-        )
-        ChangeWidgetIfExists(
-          Id(:pcmcia),
-          :Enabled,
-          (Ops.get_string(@hardware, "hotplug", "") == "pcmcia" ||
-            Ops.get_string(@hardware, "hotplug", "") == "") &&
-            Ops.get_string(@hardware, "type", "") != "dummy"
-        )
-        Ops.set(
-          @hardware,
-          "device",
-          Convert.to_string(UI.QueryWidget(Id(:ifcfg_name), :Value))
-        )
-        if Ops.get_string(@hardware, "device", "") != "bus-usb" &&
-            Ops.get_string(@hardware, "device", "") != "bus-pcmcia"
-          Ops.set(
-            @hardware,
-            "non_hotplug_device_id",
-            Ops.get_string(@hardware, "device", "")
-          )
-        end
-
-        if Ops.get_string(@hardware, "hotplug", "") == "usb"
-          Ops.set(@hardware, "device", "bus-usb")
-        elsif Ops.get_string(@hardware, "hotplug", "") == "pcmcia"
-          Ops.set(@hardware, "device", "bus-pcmcia")
-        else
-          Ops.set(
-            @hardware,
-            "device",
-            Ops.get_string(@hardware, "non_hotplug_device_id", "")
-          )
-        end
-
-        UI.ChangeWidget(
-          Id(:ifcfg_name),
-          :Value,
-          Ops.get_string(@hardware, "device", "")
-        )
-
-        if Arch.s390
-          drvtype = DriverType(Ops.get_string(@hardware, "type", ""))
-
-          if Builtins.contains(["lcs", "qeth", "ctc"], drvtype)
-            Ops.set(@hardware, "modul", drvtype)
-          elsif drvtype == "iucv"
-            Ops.set(@hardware, "modul", "netiucv")
-          end
-          UI.ChangeWidget(
-            Id(:modul),
-            :Value,
-            Ops.get_string(@hardware, "modul", "")
-          )
-        end
-        if Ops.get_string(@hardware, "type", "") == "xp"
-          Ops.set(@hardware, "modul", "xpnet")
-          UI.ChangeWidget(
-            Id(:modul),
-            :Value,
-            Ops.get_string(@hardware, "modul", "")
-          )
-        elsif Ops.get_string(@hardware, "type", "") == "dummy" # #44582
-          Ops.set(@hardware, "modul", "dummy")
-
-          if UI.WidgetExists(Id(:hwcfg)) # bnc#767946
-            Ops.set(
-              @hardware,
-              "hwcfg",
-              Convert.to_string(UI.QueryWidget(Id(:hwcfg), :Value))
-            )
-            Ops.set(
-              @hardware,
-              "options",
-              Builtins.sformat(
-                "-o dummy-%1",
-                Ops.get_string(@hardware, "hwcfg", "")
-              )
-            )
-          end
-
-          UI.ChangeWidget(
-            Id(:modul),
-            :Value,
-            Ops.get_string(@hardware, "modul", "")
-          )
-          UI.ChangeWidget(
-            Id(:options),
-            :Value,
-            Ops.get_string(@hardware, "options", "")
-          )
-        elsif Builtins.contains(
-          ["bond", "vlan", "br", "tun", "tap"],
-          Ops.get_string(@hardware, "type", "")
-        )
-          UI.ChangeWidget(Id(:hwcfg), :Enabled, false)
-          UI.ChangeWidget(Id(:modul), :Enabled, false)
-          UI.ChangeWidget(Id(:options), :Enabled, false)
-          UI.ChangeWidget(Id(:pcmcia), :Enabled, false)
-          UI.ChangeWidget(Id(:usb), :Enabled, false)
-          UI.ChangeWidget(Id(:list), :Enabled, false)
-
-          UI.ChangeWidget(Id(:hwcfg), :Value, "")
-          UI.ChangeWidget(Id(:modul), :Value, "")
-          UI.ChangeWidget(Id(:options), :Value, "")
-        end
-      end
-      if ret == :change_udev
-        UI.ChangeWidget(:device_name, :Value, EditUdevRulesDialog())
-      end
-      if ret == :blink
-        device = LanItems.device
-        timeout = Builtins.tointeger(UI.QueryWidget(:blink_time, :Value))
-        Builtins.y2milestone(
-          "blink, blink ... %1 seconds on %2 device",
-          timeout,
-          device
-        )
-        cmd = Builtins.sformat("/usr/sbin/ethtool -p %1 %2",
-          device.shellescape, timeout.to_s.shellescape)
-        Builtins.y2milestone(
-          "%1 : %2",
-          cmd,
-          SCR.Execute(path(".target.bash_output"), cmd)
-        )
-      end
-      nil
-    end
-
-    def devname_from_hw_dialog
-      UI.QueryWidget(Id(:ifcfg_name), :Value) if UI.WidgetExists(Id(:ifcfg_name))
-    end
-
-    def validate_hw(_key, _event)
-      nm = devname_from_hw_dialog
-
-      ret = if UsedNicName(nm)
-        Popup.Error(
-          format(_("Configuration name %s already exists.\nChoose a different one."), nm)
-        )
-
-        false
-      elsif !ValidNicName(nm)
-        Popup.Error(
-          format(_("Configuration name %s is invalid.\nChoose a different one."), nm)
-        )
-
-        false
-      else
-        true
-      end
-
-      UI.SetFocus(Id(:ifcfg_name)) if !ret
-
-      ret
-    end
-
-    VLAN_SIZE = 4 # size of vlanN prefix without number
-
-    def storeHW(_key, _event)
-      if isNewDevice
-        nm = devname_from_hw_dialog
-        LanItems.type = UI.QueryWidget(Id(:type), :Value)
-        LanItems.device = nm
-
-        NetworkInterfaces.Name = nm
-        Ops.set(LanItems.Items, [LanItems.current, "ifcfg"], nm)
-        # Initialize udev map, so that setDriver (see below) sets correct module
-        Ops.set(LanItems.Items, [LanItems.current, "udev"], {})
-        # FIXME: for interfaces with no hwinfo don't propose ifplugd
-        if Builtins.size(Ops.get_map(LanItems.getCurrentItem, "hwinfo", {})) == 0
-          Builtins.y2milestone(
-            "interface without hwinfo, proposing STARTMODE=auto"
-          )
-          LanItems.startmode = "auto"
-        end
-        if LanItems.type == "vlan"
-          # for vlan devices named vlanN pre-set vlan_id to N, otherwise default to 0
-          LanItems.vlan_id = nm[VLAN_SIZE..-1]
-        end
-      end
-
-      driver = Convert.to_string(UI.QueryWidget(:modul, :Value))
-      LanItems.setDriver(driver)
-      Ops.set(
-        LanItems.driver_options,
-        driver,
-        Convert.to_string(UI.QueryWidget(:options, :Value))
-      )
-      LanItems.ethtool_options = Convert.to_string(
-        UI.QueryWidget(:ethtool_opts, :Value)
-      )
-
-      nil
-    end
-
     # S/390 devices configuration dialog
     # @return dialog result
-    def S390Dialog
+    def S390Dialog(builder:)
       # S/390 dialog caption
       caption = _("S/390 Network Card Configuration")
 
-      drvtype = DriverType(LanItems.type)
+      drvtype = DriverType(builder.type)
 
       helptext = ""
       contents = Empty()
 
-      if Builtins.contains(["qeth", "hsi"], LanItems.type)
+      if Builtins.contains(["qeth", "hsi"], builder.type)
         # CHANIDS
         tmp_list = Builtins.splitstring(LanItems.qeth_chanids, " ")
         chanids_map = {
@@ -1127,7 +351,7 @@ module Yast
         )
       end
 
-      id = case LanItems.type
+      id = case builder.type
       when "hsi"  then :qeth_options
       when "qeth" then :qeth_portname
       when "iucv" then :iucv_user
@@ -1152,7 +376,7 @@ module Yast
         when :back
           break
         when :next
-          if LanItems.type == "iucv"
+          if builder.type == "iucv"
             LanItems.device = Ops.add(
               "id-",
               Convert.to_string(UI.QueryWidget(Id(:iucv_user), :Value))
@@ -1162,12 +386,12 @@ module Yast
             )
           end
 
-          if LanItems.type == "ctc"
+          if builder.type == "ctc"
             LanItems.chan_mode = Convert.to_string(
               UI.QueryWidget(Id(:chan_mode), :Value)
             )
           end
-          if LanItems.type == "lcs"
+          if builder.type == "lcs"
             LanItems.lcs_timeout = Convert.to_string(
               UI.QueryWidget(Id(:lcs_timeout), :Value)
             )
@@ -1175,7 +399,7 @@ module Yast
               UI.QueryWidget(Id(:chan_mode), :Value)
             )
           end
-          if LanItems.type == "qeth" || LanItems.type == "hsi"
+          if builder.type == "qeth" || builder.type == "hsi"
             LanItems.qeth_options = Convert.to_string(
               UI.QueryWidget(Id(:qeth_options), :Value)
             )
@@ -1206,7 +430,9 @@ module Yast
           LanItems.qeth_chanids = String.CutBlanks(
             Builtins.sformat("%1 %2 %3", read, write, control)
           )
-          if !LanItems.createS390Device
+          if LanItems.createS390Device
+            builder.name = LanItems.GetCurrentName
+          else
             Popup.Error(
               _(
                 "An error occurred while creating device.\nSee YaST log for details."
@@ -1225,34 +451,6 @@ module Yast
       end
 
       deep_copy(ret)
-    end
-
-    # Manual network card configuration dialog
-    # @return dialog result
-    def HardwareDialog
-      caption = _("Hardware Dialog")
-
-      w = CWM.CreateWidgets(["HWDIALOG"], widget_descr_hardware)
-      contents = VBox(
-        VStretch(),
-        HBox(
-          HStretch(),
-          HSpacing(1),
-          VBox(Ops.get_term(w, [0, "widget"]) { VSpacing(1) }),
-          HSpacing(1),
-          HStretch()
-        ),
-        VStretch()
-      )
-
-      contents = CWM.PrepareDialog(contents, w)
-
-      Wizard.OpenNextBackDialog
-      Wizard.SetContents(caption, contents, initHelp, false, true)
-      Wizard.SetAbortButton(:cancel, Label.CancelButton)
-      ret = CWM.Run(w, {})
-      Wizard.CloseDialog
-      ret
     end
   end
 end

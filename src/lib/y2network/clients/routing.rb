@@ -32,7 +32,7 @@
 
 require "yast"
 require "y2network/config"
-require "y2network/config_writer/sysconfig"
+require "y2network/sysconfig/config_writer"
 require "y2network/serializer/route_sysconfig"
 
 Yast.import "Lan"
@@ -53,6 +53,7 @@ module Y2Network
       # Constructor
       def initialize
         textdomain "network"
+        Yast.include self, "network/services/routing.rb"
       end
 
       def main
@@ -76,7 +77,6 @@ module Y2Network
       # Main Routing GUI
       def RoutingGUI
         read
-        Yast.include self, "network/services/routing.rb"
 
         Wizard.CreateDialog
         Wizard.SetDesktopTitleAndIcon("routing")
@@ -355,7 +355,7 @@ module Y2Network
       # @return [Boolean]
       def write
         if modified?
-          Y2Network::ConfigWriter::Sysconfig.new.write(yast_config)
+          Y2Network::Sysconfig::ConfigWriter.new.write(yast_config)
           log.info("Writing routing configuration: #{yast_config.routing.inspect}")
         end
 

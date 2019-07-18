@@ -16,9 +16,11 @@
 #
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
-require "y2network/interface"
 require "y2network/config_writer"
 require "y2network/config_reader"
+require "y2network/routing"
+require "y2network/dns"
+require "y2network/interfaces_collection"
 
 module Y2Network
   # This class represents the current network configuration including interfaces,
@@ -34,10 +36,14 @@ module Y2Network
   #   config.routing.tables.first << route
   #   config.write
   class Config
-    # @return [Array<Interface>]
+    # @return [InterfacesCollection]
     attr_accessor :interfaces
-    # @return [Routing]
+    # @return [Array<ConnectionConfig>]
+    attr_accessor :connections
+    # @return [Routing] Routing configuration
     attr_accessor :routing
+    # @return [DNS] DNS configuration
+    attr_accessor :dns
     # @return [Symbol] Information source (see {Y2Network::Reader} and {Y2Network::Writer})
     attr_accessor :source
 
@@ -81,20 +87,28 @@ module Y2Network
 
     # Constructor
     #
-    # @param interfaces [Array<Interface>] List of interfaces
+    # @param interfaces [InterfacesCollection] List of interfaces
     # @param routing    [Routing] Object with routing configuration
+    # @param dns        [DNS] Object with DNS configuration
     # @param source     [Symbol] Configuration source
-    def initialize(interfaces:, routing:, source:)
+    def initialize(interfaces: InterfacesCollection.new, connections: [], routing: Routing.new, dns: DNS.new, source:)
       @interfaces = interfaces
+      @connections = connections
       @routing = routing
+      @dns = dns
       @source = source
     end
 
     # Writes the configuration into the YaST modules
     #
+    # Writes only changes agains original configuration if the original configuration
+    # is provided
+    #
+    # @param original [Y2Network::Config] configuration used for detecting changes
+    #
     # @see Y2Network::ConfigWriter
-    def write
-      Y2Network::ConfigWriter.for(source).write(self)
+    def write(original: nil)
+      Y2Network::ConfigWriter.for(source).write(self, original)
     end
 
     # Returns a deep-copy of the configuration
@@ -108,9 +122,8 @@ module Y2Network
     #
     # @return [Boolean] true if both configurations are equal; false otherwise
     def ==(other)
-      source == other.source &&
-        ((interfaces - other.interfaces) | (other.interfaces - interfaces)).empty? &&
-        routing == other.routing
+      source == other.source && interfaces == other.interfaces &&
+        routing == other.routing && dns == other.dns
     end
 
     alias_method :eql?, :==

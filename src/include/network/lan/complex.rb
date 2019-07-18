@@ -26,6 +26,10 @@
 # Summary:	Summary, overview and IO dialogs for network cards config
 # Authors:	Michal Svec <msvec@suse.cz>
 #
+
+require "y2network/interface_config_builder"
+require "y2network/sequences/interface"
+
 module Yast
   module NetworkLanComplexInclude
     def initialize_network_lan_complex(include_target)
@@ -139,8 +143,14 @@ module Yast
 
     # Commit changes to internal structures
     # @return always `next
-    def Commit
-      LanItems.Commit
+    def Commit(builder:)
+      # 1) update NetworkInterfaces with corresponding devmap
+      # FIXME: new item in NetworkInterfaces was created from handleOverview by
+      # calling Lan.Add and named in HardwareDialog via NetworkInterfaces.Name=
+      #  - all that stuff can (should) be moved here to have it isolated at one place
+      #  and later moved to Interface object
+      LanItems.Commit(builder)
+
       :next
     end
 
@@ -296,10 +306,14 @@ module Yast
     # Automatically configures slaves when user enslaves them into a bond or bridge device
     def UpdateSlaves
       current = LanItems.current
+      master_builder = Y2Network::InterfaceConfigBuilder.for(LanItems.GetCurrentType())
+      master_builder.name = LanItems.GetCurrentName()
 
       Lan.autoconf_slaves.each do |dev|
         if LanItems.FindAndSelect(dev)
-          LanItems.SetItem
+          builder = Y2Network::InterfaceConfigBuilder.for(LanItems.GetCurrentType())
+          builder.name = LanItems.GetCurrentName()
+          LanItems.SetItem(builder: builder)
         else
           dev_index = LanItems.FindDeviceIndex(dev)
           if dev_index < 0
@@ -309,22 +323,27 @@ module Yast
           LanItems.current = dev_index
 
           AddInterface()
+          builder = Y2Network::InterfaceConfigBuilder.for(LanItems.GetDeviceType(current))
+          builder.name = LanItems.GetCurrentName
         end
         # clear defaults, some defaults are invalid for slaves and can cause troubles
         # in related sysconfig scripts or makes no sence for slaves (e.g. ip configuration).
-        LanItems.netmask = ""
-        LanItems.bootproto = "none"
-        case LanItems.GetDeviceType(current)
+        builder["NETMASK"] = ""
+        builder["BOOTPROTO"] = "none"
+        case master_builder.type
         when "bond"
           LanItems.startmode = "hotplug"
+          # If there is already a rule based on the bus_id, do not update it.
           if LanItems.current_udev_rule.empty? || LanItems.GetItemUdev("KERNELS").empty?
             LanItems.update_item_udev_rule!(:bus_id)
           end
         when "br"
-          LanItems.ipaddr = ""
+          builder["IPADDR"] = ""
+        else
+          raise "Adapting slaves for wrong type #{master_builder.type.inspect}"
         end
 
-        LanItems.Commit
+        LanItems.Commit(builder)
       end
 
       # Once the interfaces have been configured we should empty the list to
@@ -384,22 +403,14 @@ module Yast
       if Ops.get_string(event, "EventReason", "") == "Activated"
         case Ops.get_symbol(event, "ID")
         when :add
-          LanItems.AddNew
-          Lan.Add
-
-          # FIXME: This is for backward compatibility only
-          # dhclient needs to set just one dhcp enabled interface to
-          # DHCLIENT_SET_DEFAULT_ROUTE=yes. Otherwise interface is selected more
-          # or less randomly (bnc#868187). However, UI is not ready for such change yet.
-          # As it could easily happen that all interfaces are set to "no" (and
-          # default route is unrecheable in such case) this explicite setup was
-          # added.
-          LanItems.set_default_route = true
-
-          return :add
+          Y2Network::Sequences::Interface.new.add
+          return :redraw
         when :edit
           if LanItems.IsCurrentConfigured
-            LanItems.SetItem
+
+            builder = Y2Network::InterfaceConfigBuilder.for(LanItems.GetCurrentType())
+            builder.name = LanItems.GetCurrentName()
+            LanItems.SetItem(builder: builder)
 
             if LanItems.startmode == "managed"
               # Continue-Cancel popup
@@ -427,6 +438,12 @@ module Yast
               return nil
             end
 
+            type = LanItems.GetCurrentType()
+            # s390 does not have type yet set, but it can be read from hwinfo
+            type = LanItems.Items.dig(LanItems.current, "hwinfo", "type") if !type || type.empty?
+            builder = Y2Network::InterfaceConfigBuilder.for(type)
+            builder.name = LanItems.GetCurrentName()
+
             # FIXME: This is for backward compatibility only
             # dhclient needs to set just one dhcp enabled interface to
             # DHCLIENT_SET_DEFAULT_ROUTE=yes. Otherwise interface is selected more
@@ -443,11 +460,13 @@ module Yast
                 ""
               )
             )
-              return :init_s390
+              Y2Network::Sequences::Interface.new.init_s390(builder)
+              return :redraw
             end
           end
 
-          return :edit
+          Y2Network::Sequences::Interface.new.edit(builder)
+          return :redraw
 
         when :delete
           # warn user when device to delete has STARTMODE=nfsroot (bnc#433867)
@@ -516,7 +535,9 @@ module Yast
       true
     end
 
-    def MainDialog(init_tab)
+    def MainDialog(init_tab, builder:)
+      @builder = builder
+
       caption = _("Network Settings")
       widget_descr = {
         "tab" => CWMTab.CreateWidget(
@@ -566,6 +587,8 @@ module Yast
         ret = CWM.Run(w, {})
         break if input_done?(ret)
       end
+
+      @builder = nil
 
       ret
     end

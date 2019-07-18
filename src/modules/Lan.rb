@@ -36,6 +36,7 @@ require "y2firewall/firewalld"
 require "y2network/autoinst_profile/networking_section"
 require "y2network/config"
 require "y2network/presenters/routing_summary"
+require "y2network/presenters/dns_summary"
 
 require "shellwords"
 
@@ -48,7 +49,6 @@ module Yast
       textdomain "network"
 
       Yast.import "Arch"
-      Yast.import "DNS"
       Yast.import "NetHwDetection"
       Yast.import "Host"
       Yast.import "IP"
@@ -111,7 +111,6 @@ module Yast
     # @return true if data was modified
     def Modified
       return true if LanItems.GetModified
-      return true if DNS.modified
       return true unless system_config == yast_config
       return true if NetworkConfig.Modified
       return true if NetworkService.Modified
@@ -236,21 +235,19 @@ module Yast
 
     def read_step_labels
       steps = [
-        # Progress stage 1/8
+        # Progress stage 1/7
         _("Detect network devices"),
-        # Progress stage 2/8
+        # Progress stage 2/7
         _("Read driver information"),
-        # Progress stage 3/8 - multiple devices may be present, really plural
+        # Progress stage 3/7 - multiple devices may be present, really plural
         _("Read device configuration"),
-        # Progress stage 4/8
+        # Progress stage 4/7
         _("Read network configuration"),
-        # Progress stage 5/8
-        _("Read hostname and DNS configuration"),
-        # Progress stage 6/8
+        # Progress stage 5/7
         _("Read installation information"),
-        # Progress stage 7/8
+        # Progress stage 6/7
         _("Read routing configuration"),
-        # Progress stage 8/8
+        # Progress stage 7/7
         _("Detect current status")
       ]
 
@@ -348,10 +345,6 @@ module Yast
         @ipv6 = readIPv6
 
         Builtins.sleep(sl)
-
-        return false if Abort()
-        ProgressNextStage(_("Reading hostname and DNS configuration...")) if @gui
-        DNS.Read
 
         Host.Read
         Builtins.sleep(sl)
@@ -530,7 +523,7 @@ module Yast
       ProgressNextStage(_("Writing routing configuration..."))
       orig = Progress.set(false)
 
-      yast_config.write
+      yast_config.write(original: system_config)
       Progress.set(orig)
       Builtins.sleep(sl)
 
@@ -540,7 +533,6 @@ module Yast
       # write resolv.conf after change from dhcp to static (#327074)
       # reload/restart network before this to put correct resolv.conf from dhcp-backup
       orig = Progress.set(false)
-      DNS.Write(gui: gui)
       Host.EnsureHostnameResolvable
       Host.Write(gui: gui)
       Progress.set(orig)
@@ -689,7 +681,7 @@ module Yast
       Builtins.foreach(interfaces) do |devname, if_data|
         # devname can be in old-style fashion (eth-bus-<pci_id>). So, convert it
         devname = LanItems.getDeviceName(devname)
-        type = NetworkInterfaces.GetType(devname)
+        type = NetworkInterfaces.GetTypeFromIfcfgOrName(devname, if_data)
         d = Ops.get(devices, type, {})
         Ops.set(d, devname, if_data)
         Ops.set(devices, type, d)
@@ -756,8 +748,6 @@ module Yast
 
       LanItems.Import(settings)
       NetworkConfig.Import(settings["config"] || {})
-      DNS.Import(settings["dns"] || {})
-
       # Ensure that the /etc/hosts has been read to no blank out it in case of
       # not defined <host> section (bsc#1058396)
       Host.Read
@@ -778,7 +768,7 @@ module Yast
       devices = NetworkInterfaces.Export("")
       udev_rules = LanItems.export(devices)
       ay = {
-        "dns"                  => DNS.Export,
+        "dns"                  => profile.dns ? profile.dns.to_hashes : {},
         "s390-devices"         => Ops.get_map(
           udev_rules,
           "s390-devices",
@@ -812,9 +802,9 @@ module Yast
     def Summary(mode)
       case mode
       when "summary"
-        "#{LanItems.BuildLanOverview.first}#{DNS.Summary}#{routing_summary}"
+        "#{LanItems.BuildLanOverview.first}#{dns_summary}#{routing_summary}"
       when "proposal"
-        "#{LanItems.summary(:proposal)}#{DNS.Summary}#{routing_summary}"
+        "#{LanItems.summary(:proposal)}#{dns_summary}#{routing_summary}"
       else
         LanItems.BuildLanOverview.first
       end
@@ -867,6 +857,7 @@ module Yast
 
     def IfcfgsToSkipVirtualizedProposal
       skipped = []
+      yast_config = Y2Network::Config.find(:yast)
 
       LanItems.Items.each do |_current, config|
         ifcfg = config["ifcfg"]
@@ -876,11 +867,9 @@ module Yast
         when "br"
           skipped << ifcfg
 
-          bridge_ports = NetworkInterfaces.GetValue(ifcfg, "BRIDGE_PORTS").to_s
-
-          bridge_ports.split.each { |port| skipped << port }
+          yast_config.interfaces.bridge_slaves(ifcfg).each { |port| skipped << port }
         when "bond"
-          LanItems.GetBondSlaves(ifcfg).each do |slave|
+          yast_config.interfaces.bond_slaves(ifcfg).each do |slave|
             log.info("For interface #{ifcfg} found slave #{slave}")
             skipped << slave
           end
@@ -907,11 +896,14 @@ module Yast
       # and add old device name into bridge_ports
       LanItems.Items.each do |current, config|
         bridge_name = LanItems.new_type_device("br")
+
         next unless connected_and_bridgeable?(bridge_name, current, config)
-        LanItems.current = current
+
         # first configure all connected unconfigured devices with dhcp (with default parameters)
-        next if !LanItems.IsCurrentConfigured && !LanItems.ProposeItem
-        ifcfg = LanItems.GetCurrentName
+        # FIXME: ProposeItem is always true
+        next if !LanItems.IsItemConfigured(current) && !LanItems.ProposeItem(current)
+
+        ifcfg = LanItems.GetDeviceName(current)
         next unless configure_as_bridge!(ifcfg, bridge_name)
         # reconfigure existing device as newly created bridge's port
         configure_as_bridge_port(ifcfg)
@@ -1070,10 +1062,7 @@ module Yast
     def configure_as_bridge!(ifcfg, bridge_name)
       return false if !NetworkInterfaces.Edit(ifcfg)
 
-      old_config = deep_copy(NetworkInterfaces.Current)
-      log.debug("Old Config #{ifcfg}\n#{old_config}")
-
-      log.info("old configuration #{ifcfg}, bridge #{bridge_name}")
+      log.info("device #{ifcfg} is gointg to be in bridge #{bridge_name}")
 
       NetworkInterfaces.Name = bridge_name
 
@@ -1098,11 +1087,15 @@ module Yast
     end
 
     # Convenience method that returns true if the current item has link and can
-    # be enslabed in a bridge.
+    # be enslaved in a bridge.
     #
     # @return [Boolean] true if it is bridgeable
     def connected_and_bridgeable?(bridge_name, item, config)
-      if !LanItems.IsBridgeable(bridge_name, item)
+      # FIXME: a workaround until we fully use builders in proposals
+      bridge_builder = Y2Network::InterfaceConfigBuilder.for("br")
+      bridge_builder.name = bridge_name
+
+      if !bridge_builder.bridgeable_interfaces.map(&:name).include?(LanItems.GetDeviceName(item))
         log.info "The interface #{config["ifcfg"]} cannot be proposed as bridge."
         return false
       end
@@ -1139,6 +1132,16 @@ module Yast
       config = find_config(:yast)
       return "" unless config && config.routing
       presenter = Y2Network::Presenters::RoutingSummary.new(config.routing)
+      presenter.text
+    end
+
+    # Returns the DNS configuration summary
+    #
+    # @return [String]
+    def dns_summary
+      config = find_config(:yast)
+      return "" unless config && config.dns
+      presenter = Y2Network::Presenters::DNSSummary.new(config.dns)
       presenter.text
     end
 

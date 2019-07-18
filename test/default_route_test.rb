@@ -100,11 +100,13 @@ describe "Yast::LanItemsClass" do
 
     subject.Read
     subject.current = 0
-    subject.SetItem
 
-    subject.bootproto = "dhcp"
+    builder = Y2Network::InterfaceConfigBuilder.new
+    builder.name = subject.GetCurrentName()
+    builder.type = subject.GetCurrentType()
+    subject.SetItem(builder: builder)
 
-    subject.Commit
+    subject.Commit(builder)
     subject.write
 
     ifcfg = Yast::NetworkInterfaces.FilterDevices("")["eth"]["eth0"]

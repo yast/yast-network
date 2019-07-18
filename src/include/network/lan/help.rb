@@ -174,39 +174,6 @@ module Yast
                                    "Leaving the field blank is the same as using the <b> Only Manually</b>\n" \
                                    "policy.</p>\n"
                                  ),
-        "bootproto"         => # Address dialog help 1-6/8: dynamic address preferred
-                               # Address dialog help 1/8
-                               _(
-                                 "<p><b><big>Address Setup</big></b></p>\n" \
-                                   "<p>Select <b>No Address Setup</b> if you do not want to assign an IP address to this device.\n" \
-                                   "This is particularly useful for bonding ethernet devices.</p>\n"
-                               ) +
-                                 _(
-                                   "<p>Check <b>iBFT</b> if you want to keep the network configured in your BIOS.</p>\n"
-                                 ) +
-                                 # Address dialog help 2/8
-                                 _(
-                                   "<p>Select <b>Dynamic Address</b> if you do not have a static IP address \nassigned by the system administrator or your Internet provider.</p>\n"
-                                 ) +
-                                 # Address dialog help 3/8
-                                 _(
-                                   "<p>Choose one of the dynamic address assignment methods. Select <b>DHCP</b>\n" \
-                                     "if you have a DHCP server running on your local network. Network addresses \n" \
-                                     "are then automatically obtained from the server.</p>\n"
-                                 ) +
-                                 # Address dialog help 4/8
-                                 _(
-                                   "<p>To search for an IP address and assign it statically, select \n" \
-                                     "<b>Zeroconf</b>. To use DHCP and fall back to zeroconf, select <b>DHCP + Zeroconf\n" \
-                                     "</b>. Otherwise, the network addresses must be assigned <b>Statically</b>.</p>\n"
-                                 ),
-        # Address dialog help 5/8
-        "remoteip"          =>
-                               _(
-                                 "<p>Enter the <b>IP Address</b> (for example: <tt>192.168.100.99</tt>) for your computer, and the \n" \
-                                 " <b>Remote IP Address</b> (for example: <tt>192.168.100.254</tt>)\n" \
-                                 "for your peer.</p>\n"
-                               ),
         # Address dialog help 6/8
         "netmask"           =>
                                _(
@@ -219,14 +186,6 @@ module Yast
                                  _(
                                    "<p>Contact your <b>network administrator</b> for more information about\nthe network configuration.</p>"
                                  ),
-        "force_static_ip"   =>
-                               _(
-                                 "<p>DHCP configuration is not recommended for this product.\nComponents of this product might not work with DHCP.</p>"
-                               ),
-        "mandatory"         =>
-                               _(
-                                 "<p><b>Mandatory Interface</b> specifies whether the network service reports failure if the interface fails to start at boot time.</p>"
-                               ),
         "mtu"               =>
                                _(
                                  "<p><b><big>Maximum Transfer Unit</big></b></p>\n" \
@@ -260,24 +219,6 @@ module Yast
                                      "contain a specific string in the DHCP messages from clients. Leave <b>AUTO</b>\n" \
                                      "to send the current hostname (for example, the one defined in <tt>/etc/HOSTNAME</tt>). \n" \
                                      "If you do not want to send a hostname, leave the field empty.</p>\n"
-                                 ),
-        "additional"        => # Aliases dialog help 1/4
-                               _(
-                                 "<p><b><big>Additional Addresses</big></b></p>\n<p>Configure additional addresses of an interface in this table.</p>\n"
-                               ) +
-                                 # Aliases dialog help 2/4
-                                 _(
-                                   "<p>Enter an <b>IPv4 Address Label</b>, an <b>IP Address</b>, and\nthe <b>Netmask</b>.</p>"
-                                 ) +
-                                 # Aliases dialog help 3/4
-                                 _(
-                                   "<p><b>IPv4 Address Label</b>, formerly known as Alias Name, is optional and legacy. The total\n" \
-                                   "length of interface name (inclusive of the colon and label) is\n" \
-                                   "limited to 15 characters. The obsolete ifconfig utility truncates it after 9 characters.</p>"
-                                 ) +
-                                 # Aliases dialog help 3/4, #83766
-                                 _(
-                                   "<p>Do not include the interface name in the label. For example, enter <b>foo</b> instead of <b>eth0:foo</b>.</p>"
                                  ),
         # shared between WirelessDialog and WirelessKeyPopup
         # this is suited to the button-switched key typing

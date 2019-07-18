@@ -22,7 +22,7 @@ describe "NetworkLanCmdlineInclude" do
     end
   end
 
-  describe "AddHandler" do
+  describe "#AddHandler" do
     let(:options) { { "name" => "vlan0", "ethdevice" => "eth0", "bootproto" => "dhcp" } }
 
     before do
@@ -64,7 +64,7 @@ describe "NetworkLanCmdlineInclude" do
       end
 
       it "commits the new configuration" do
-        expect(Yast::LanItems).to receive(:Commit)
+        expect(Yast::LanItems).to receive(:Commit).with(anything)
         subject.AddHandler(options)
       end
 
@@ -76,6 +76,39 @@ describe "NetworkLanCmdlineInclude" do
       it "returns true" do
         expect(Yast::Report).to_not receive(:Error)
         expect(subject.AddHandler(options)).to eq true
+      end
+    end
+  end
+
+  describe "#EditHandler" do
+    let(:items) { { 0 => { "ifcfg" => "eth0" } } }
+    let(:options) { { "id" => 0, "ip" => "192.168.0.40" } }
+
+    before do
+      allow(Yast::LanItems).to receive(:Items).and_return(items)
+      richtext = "test<br><ul><li>item1</li></ul>"
+      allow(subject).to receive(:getConfigList).and_return(["0" => { "rich_descr" => richtext }])
+    end
+
+    context "when a valid configuration is providen" do
+      before do
+        allow(subject).to receive(:ListHandler)
+        allow(Yast::LanItems).to receive(:Commit)
+      end
+
+      it "commits the configuration changes" do
+        expect(Yast::LanItems).to receive(:Commit).with(anything)
+        subject.EditHandler(options)
+      end
+
+      it "shows the configuration of the edited interface" do
+        expect(subject).to receive(:ShowHandler)
+        subject.EditHandler(options)
+      end
+
+      it "returns true" do
+        expect(Yast::Report).to_not receive(:Error)
+        expect(subject.EditHandler(options)).to eq true
       end
     end
   end

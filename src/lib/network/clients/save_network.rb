@@ -232,16 +232,6 @@ module Yast
       true
     end
 
-    # Creates target's default DNS configuration
-    #
-    # It proposes a predefined default values in common installation, exits
-    # in AY mode.
-    def configure_dns
-      return if Mode.autoinst
-
-      NetworkAutoconfiguration.instance.configure_dns
-    end
-
     # Creates target's /etc/hosts configuration
     #
     # It uses hosts' configuration as defined in AY profile (if any) or
@@ -257,13 +247,15 @@ module Yast
     # It creates a proposal in case of common installation. In case of AY
     # installation it does full import of <networking> section
     def configure_lan
-      NetworkAutoconfiguration.instance.configure_virtuals
+      NetworkAutoYast.instance.configure_lan if Mode.autoinst
 
-      if !Mode.autoinst
-        configure_dns
-      else
-        NetworkAutoYast.instance.configure_lan
-      end
+      # FIXME: Really make sense to configure it in autoinst mode? At least the
+      # proposal should be done and checked after lan configuration and in case
+      # that a bridge configuratio is present in the profile it should be
+      # skipped or even only done in case of missing `networking -> interfaces`
+      # section
+      NetworkAutoconfiguration.instance.configure_virtuals
+      NetworkAutoconfiguration.instance.configure_dns unless Mode.autoinst
 
       # this depends on DNS configuration
       configure_hosts

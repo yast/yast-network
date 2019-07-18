@@ -28,6 +28,7 @@
 #
 
 require "shellwords"
+require "y2network/interface_config_builder"
 
 module Yast
   module NetworkLanCmdlineInclude
@@ -191,31 +192,13 @@ module Yast
         return false
       end
 
-      case LanItems.type
-      when "bond"
-        LanItems.bond_slaves = options.fetch("slaves", "").split(" ")
-      when "vlan"
-        LanItems.vlan_etherdevice = options.fetch("ethdevice", "")
-      when "br"
-        LanItems.bridge_ports = options.fetch("bridge_ports", "")
-      end
+      builder = Y2Network::InterfaceConfigBuilder.for(LanItems.type)
+      builder.name = LanItems.GetCurrentName()
+      update_builder_from_options!(builder, options)
 
-      LanItems.bootproto = options.fetch("bootproto", "none")
-      unless ["none", "static", "dhcp"].include? LanItems.bootproto
-        Report.Error(_("Impossible value for bootproto."))
-        return false
-      end
+      return false unless validate_config(builder)
 
-      LanItems.ipaddr = options.fetch("ip", "")
-      LanItems.prefix = options.fetch("prefix", "")
-      LanItems.netmask = options.fetch("netmask", "255.255.255.0")
-      LanItems.startmode = options.fetch("startmode", "auto")
-      unless ["auto", "ifplugd", "nfsroot"].include? LanItems.startmode
-        Report.Error(_("Impossible value for startmode."))
-        return false
-      end
-
-      LanItems.Commit
+      LanItems.Commit(builder)
       ListHandler({})
 
       true
@@ -224,64 +207,19 @@ module Yast
     # Handler for action "edit"
     # @param [Hash{String => String}] options action options
     def EditHandler(options)
-      options = deep_copy(options)
       config = getConfigList("")
 
       return false if validateId(options, config) == false
 
       LanItems.current = getItem(options, config)
-      LanItems.SetItem
+      builder = Y2Network::InterfaceConfigBuilder.for(LanItems.GetCurrentType())
+      builder.name = LanItems.GetCurrentName()
+      LanItems.SetItem(builder: builder)
+      update_builder_from_options!(builder, options)
 
-      if Builtins.size(Ops.get_string(LanItems.getCurrentItem, "ifcfg", "")) == 0
-        NetworkInterfaces.Add
-        LanItems.operation = :edit
-        interfacename = Ops.get_string(
-          LanItems.getCurrentItem,
-          ["hwinfo", "dev_name"],
-          ""
-        )
-        Ops.set(
-          LanItems.Items,
-          [LanItems.current, "ifcfg"],
-          interfacename
-        )
-      end
+      return false unless validate_config(builder)
 
-      if Builtins.contains(Map.Keys(options), "ip")
-        Ops.set(options, "bootproto", "static")
-      end
-
-      LanItems.bootproto = Ops.get(options, "bootproto", "none")
-      if !Builtins.contains(["none", "static", "dhcp"], LanItems.bootproto)
-        Report.Error(_("Impossible value for bootproto."))
-        return false
-      end
-      if LanItems.bootproto == "static"
-        if !Ops.greater_than(Builtins.size(Ops.get(options, "ip", "")), 0)
-          Report.Error(
-            _("For static configuration, the \"ip\" option is needed.")
-          )
-          return false
-        end
-        LanItems.ipaddr = Ops.get(options, "ip", "")
-        if Ops.greater_than(Builtins.size(Ops.get(options, "prefix", "")), 0)
-          LanItems.prefix = Ops.get(options, "prefix", "")
-        else
-          LanItems.netmask = Ops.get(options, "netmask", "255.255.255.0")
-          LanItems.prefix = ""
-        end
-      else
-        LanItems.ipaddr = ""
-        LanItems.netmask = ""
-      end
-
-      LanItems.startmode = Ops.get(options, "startmode", "auto")
-      if !Builtins.contains(["auto", "ifplugd", "nfsroot"], LanItems.startmode)
-        Report.Error(_("Impossible value for startmode."))
-        return false
-      end
-
-      LanItems.Commit
+      LanItems.Commit(builder)
       ShowHandler(options)
       true
     end
@@ -289,7 +227,6 @@ module Yast
     # Handler for action "delete"
     # @param [Hash{String => String}] options action options
     def DeleteHandler(options)
-      options = deep_copy(options)
       config = getConfigList("")
       return false if validateId(options, config) == false
       Builtins.foreach(config) do |row|
@@ -326,6 +263,60 @@ module Yast
       return "br"   if options.include? "bridge_ports"
 
       ""
+    end
+
+    # Convenience method to validate some specific options like the STARTMODE,
+    # BOOTPROTO and the IPADDR reporting an error in case of invalid
+    #
+    # @param builder [Y2Network::InterfaceConfigBuilder]
+    # @return [Boolean] true when the options are valid; false otherwise
+    def validate_config(builder)
+      unless ["none", "static", "dhcp"].include? builder["BOOTPROTO"]
+        Report.Error(_("Impossible value for bootproto."))
+        return false
+      end
+
+      if builder["BOOTPROTO"] == "static" && builder["IPADDR"].empty?
+        Report.Error(
+          _("For static configuration, the \"ip\" option is needed.")
+        )
+        return false
+      end
+
+      unless ["auto", "ifplugd", "nfsroot"].include? builder["STARTMODE"]
+        Report.Error(_("Impossible value for startmode."))
+        return false
+      end
+
+      true
+    end
+
+    # Convenience method to update the builder internal state taking in account
+    # the given options
+    #
+    # @param builder [Y2Network::InterfaceConfigBuilder]
+    # @param options [Hash{String => String}] action options
+    def update_builder_from_options!(builder, options)
+      case builder.type
+      when "bond"
+        builder["BOND_SLAVES"] = options.fetch("slaves", "").split(" ")
+      when "vlan"
+        builder["ETHERDEVICE"] = options.fetch("ethdevice", "")
+      when "br"
+        builder["BRIDGE_PORTS"] = options.fetch("bridge_ports", "")
+      end
+
+      default_bootproto = options.keys.include?("ip") ? "static" : "none"
+      builder["BOOTPROTO"] = options.fetch("bootproto", default_bootproto)
+      if builder["BOOTPROTO"] == "static"
+        builder["IPADDR"] = options.fetch("ip", "")
+        builder["PREFIX"] = options.fetch("prefix", "")
+        builder["NETMASK"] = options.fetch("netmask", "255.255.255.0") if builder["PREFIX"].empty?
+      else
+        builder["IPADDR"] = ""
+        builder["NETMASK"] = ""
+      end
+      builder["STARTMODE"] = options.fetch("startmode", "auto")
     end
   end
 end

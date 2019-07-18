@@ -93,22 +93,6 @@ module Yast
       nil
     end
 
-    # Change UI widget only if it exists
-    # @param [Yast::Term] id widget id
-    # @param [Symbol] param widget parameter
-    # @param [Object] value widget parameter value
-    def ChangeWidgetIfExists(id, param, value)
-      id = deep_copy(id)
-      value = deep_copy(value)
-      if UI.WidgetExists(id)
-        UI.ChangeWidget(id, param, value)
-      else
-        Builtins.y2debug("Not changing: %1", id)
-      end
-
-      nil
-    end
-
     # Adds the packages to the software proposal to make sure they are available
     # in the installed system
     # @param [Array<String>] packages list of required packages (["rpm", "bash"])
@@ -185,35 +169,6 @@ module Yast
       !IsEmpty(value)
     end
 
-    # Create a list of items for UI from the given list
-    # @param descriptions [Array] given list for conversion
-    # @param selected_index [Fixnum] selected item (0 for the first)
-    # @return a list of items
-    # @example [ "x", "y" ] -&gt; [ `item(`id(0), "x"), `item(`id(1), "y") ]
-    def list2items(descriptions, selected_index)
-      descriptions.map.with_index { |d, i| Item(Id(i), d, i == selected_index) }
-    end
-
-    # Create a list of items for UI from the given hardware list.
-    #
-    # This list is used when selecting <ol>
-    # <li> detected unconfigured cards,
-    # there we want to see the link status </li>
-    # <li> undetected cards manually. there is no link status there
-    # and it won't be displayed. all is ok. </li>
-    # </ol>
-    # @param descriptions [Array<Hash>] given list for conversion
-    # @param selected_index [Fixnum] selected item (0 for the first)
-    # @return a list of items
-    def hwlist2items(descriptions, selected_index)
-      descriptions.map.with_index do |d, i|
-        hwname = d["name"] || _("Unknown")
-        num = d["num"] || i
-
-        Item(Id(num), hwname, num == selected_index)
-      end
-    end
-
     # For s390 hwinfo gives us a multitude of types but some are handled
     # the same, mostly acording to the driver which is used. So let's group
     # them under the name Driver Type.
@@ -232,15 +187,6 @@ module Yast
         drvtype = "ctc"
       end
       drvtype
-    end
-
-    def dev_name_to_sysfs_id(dev_name, hardware)
-      hardware = deep_copy(hardware)
-      # hardware is cached list of netcards
-      hw_item = Builtins.find(hardware) do |i|
-        Ops.get_string(i, "dev_name", "") == dev_name
-      end
-      Ops.get_string(hw_item, "sysfs_id", "")
     end
 
     def sysfs_card_type(sysfs_id, _hardware)
@@ -308,11 +254,6 @@ module Yast
     def ValidNicName(name)
       # 16 is the kernel limit on interface name size (IFNAMSIZ)
       !(name =~ /^[[:alnum:]._:-]{1,15}\z/).nil?
-    end
-
-    # Checks if device with the given name is configured already.
-    def UsedNicName(name)
-      Builtins.contains(NetworkInterfaces.List(""), name)
     end
 
     # Simple convertor from subclass to controller type.
@@ -736,23 +677,6 @@ module Yast
     end
     # TODO: end
 
-    # Return list of all interfaces present in the system.
-    #
-    # It means all interfaces which exists in the system at the time.
-    # /sys filesystem is used for checking that.
-    #
-    # @return [Array] of interface names.
-    # FIXME: rename e.g. to sys_interfaces
-    def GetAllInterfaces
-      result = RunAndRead("/bin/ls /sys/class/net")
-
-      if Ops.get_boolean(result, "exit", false)
-        Ops.get_list(result, "output", [])
-      else
-        []
-      end
-    end
-
     # Wrapper to call 'ip link set up' with the given interface
     #
     # @param dev_name [String] name of interface to 'set link up'
@@ -761,33 +685,12 @@ module Yast
       Run("/sbin/ip link set #{dev_name.shellescape} up")
     end
 
-    # Wrapper to call 'ip link set down' with the given interface
-    #
-    # @param dev_name [String] name of interface to 'set link down'
-    def SetLinkDown(dev_name)
-      log.info("Setting link down for interface #{dev_name}")
-      Run("/sbin/ip link set #{dev_name.shellescape} down")
-    end
-
-    # Calls wicked ifup with the given interface
-    #
-    # @param dev_name [String] name of interface to put down
-    def SetIfaceUp(dev_name)
-      log.info("Setting interface #{dev_name} up")
-      Run("/sbin/ifup #{dev_name.shellescape}")
-    end
-
     # Calls wicked ifdown with the given interface
     #
     # @param dev_name [String] name of interface to put down
     def SetIfaceDown(dev_name)
       log.info("Setting interface #{dev_name} down")
       Run("/sbin/ifdown #{dev_name.shellescape}")
-    end
-
-    # Tries to set the link up of all available interfaces
-    def SetAllLinksUp
-      GetAllInterfaces().each { |i| SetLinkUp(i) }
     end
 
     # Checks if given device has carrier
@@ -858,22 +761,6 @@ module Yast
       sleep(5)
 
       has_carrier?(dev_name)
-    end
-
-    def validPrefixOrNetmask(ip, mask)
-      valid_mask = false
-      if Builtins.substring(mask, 0, 1) == "/"
-        mask = Builtins.substring(mask, 1)
-      end
-
-      if IP.Check4(ip) && (Netmask.Check4(mask) || Netmask.CheckPrefix4(mask))
-        valid_mask = true
-      elsif IP.Check6(ip) && Netmask.Check6(mask)
-        valid_mask = true
-      else
-        Builtins.y2warning("IP address %1 is not valid", ip)
-      end
-      valid_mask
     end
 
     def unconfigureable_service?

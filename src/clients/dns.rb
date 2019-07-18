@@ -49,7 +49,6 @@ module Yast
       Yast.import "CommandLine"
       Yast.import "RichText"
 
-      Yast.include self, "network/runtime.rb"
       Yast.include self, "network/services/dns.rb"
 
       @HOSTNAME = "hostname"

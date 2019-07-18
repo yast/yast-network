@@ -139,10 +139,16 @@ describe "NetworkComplexInclude#HardwareName" do
 end
 
 describe "LanItemsClass#BuildLanOverview" do
+  let(:interfaces) { Y2Network::InterfacesCollection.new([]) }
+
   before(:each) do
     @lan_items = Yast::LanItems
     @lan_items.main
     @lan_items.Items = Yast.deep_copy(MOCKED_ITEMS)
+
+    allow(Y2Network::Config)
+      .to receive(:find)
+      .and_return(instance_double(Y2Network::Config, interfaces: interfaces))
   end
 
   it "returns description and uses custom name if present" do

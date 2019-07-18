@@ -2,6 +2,7 @@
 
 require "yast"
 require "network/wicked"
+require "y2network/interface_config_builder"
 
 require "shellwords"
 
@@ -92,15 +93,8 @@ module Yast
     # Propose DNS and Hostname setup
     def configure_dns
       DNS.Read # handles NetworkConfig too
-      DNS.ProposeHostname # generate random hostname, if none known so far
-
-      # get default value, from control.xml
-      DNS.write_hostname = DNS.DefaultWriteHostname
-
+      DNS.propose_hostname
       log.info("NetworkAutoconfiguration: proposing DNS / Hostname configuration")
-      log.info("dhcp hostname: #{DNS.dhcp_hostname}")
-      log.info("write hostname: #{DNS.write_hostname}")
-
       DNS.Write
     end
 
@@ -133,7 +127,11 @@ module Yast
       raise "Failed to save configuration for device #{card}" if index == -1
 
       LanItems.current = index
-      LanItems.SetItem
+
+      builder = Y2Network::InterfaceConfigBuilder.for(LanItems.GetCurrentType())
+      builder.name = LanItems.GetCurrentName()
+
+      LanItems.SetItem(builder: builder)
 
       # tricky part if ifcfg is not set
       # yes, this code smell and show bad API of LanItems
@@ -143,10 +141,10 @@ module Yast
         current["ifcfg"] = card
       end
 
-      LanItems.bootproto = "dhcp"
-      LanItems.startmode = "auto"
+      builder["BOOTPROTO"] = "dhcp"
+      builder["STARTMODE"] = "auto"
 
-      LanItems.Commit
+      LanItems.Commit(builder)
     end
 
     def delete_config(devname)

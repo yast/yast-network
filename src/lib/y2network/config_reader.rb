@@ -17,20 +17,16 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 module Y2Network
-  # This module contains a set of classes to read the network configuration from the system
-  #
-  # For the time being, only the wicked via its backward compatibility with sysconfig
-  # is available in ({Y2Network::ConfigReader::Sysconfig}) reader
   module ConfigReader
     # Config reader for a given source
     #
     # @param source [Symbol] Source name (e.g., :sysconfig)
     # @param opts   [Hash] Reader options
-    # @return [#config] Configuration reader from {Y2Network::ConfigReader}
+    # @return [Y2Network::Autoinst::ConfigReader,Y2Network::Sysconfig::ConfigReader]
     def self.for(source, opts = {})
-      require "y2network/config_reader/#{source}"
-      name = source.to_s.split("_").map(&:capitalize).join
-      klass = const_get(name)
+      require "y2network/#{source}/config_reader"
+      modname = source.to_s.split("_").map(&:capitalize).join
+      klass = Y2Network.const_get("#{modname}::ConfigReader")
       klass.new(opts)
     end
   end

@@ -1123,12 +1123,21 @@ module Yast
 
     # -------------------- WPA EAP --------------------
 
+    # `RadioButtonGroup uses CurrentButton instead of Value, grrr
+    # @param [String] key widget id
+    # @return what property to ask for to get the widget value
+    def ValueProp(key)
+      if UI.QueryWidget(Id(key), :WidgetClass) == "YRadioButtonGroup"
+        return :CurrentButton
+      end
+      :Value
+    end
+
     # function to initialize widgets
     # @param [String] key widget id
     def InitializeWidget(key)
       # the "" serves instead of a default constructor for wl_wpa_eap
       value = Ops.get_string(LanItems.wl_wpa_eap, key, "")
-      my2debug("AW", Builtins.sformat("init k: %1, v: %2", key, value))
       UI.ChangeWidget(Id(key), ValueProp(key), value)
 
       nil
@@ -1136,14 +1145,9 @@ module Yast
 
     # function to store data from widget
     # @param [String] key widget id
-    # @param [Hash] event ?
-    def StoreWidget(key, event)
-      event = deep_copy(event)
+    # @param [Hash] _event unused
+    def StoreWidget(key, _event)
       value = UI.QueryWidget(Id(key), ValueProp(key))
-      my2debug(
-        "AW",
-        Builtins.sformat("store k: %1, v: %2, e: %3", key, value, event)
-      )
       Ops.set(LanItems.wl_wpa_eap, key, value)
 
       nil

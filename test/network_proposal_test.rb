@@ -116,7 +116,7 @@ describe Yast::NetworkProposal do
       let(:args) { { "chosen_id" => "network--switch-to-wicked" } }
 
       it "does not launchs the inst_lan client" do
-        expect(Yast::WFM).to_not receive(:CallFuntion).with("inst_lan", anything)
+        expect(Yast::WFM).to_not receive(:CallFunction).with("inst_lan", anything)
       end
 
       it "changes the network backend to wicked" do
@@ -134,7 +134,7 @@ describe Yast::NetworkProposal do
       let(:args) { { "chosen_id" => "network--switch-to-nm" } }
 
       it "does not launchs the inst_lan client" do
-        expect(Yast::WFM).to_not receive(:CallFuntion).with("inst_lan", anything)
+        expect(Yast::WFM).to_not receive(:CallFunction).with("inst_lan", anything)
       end
 
       it "changes the netwotk backend to NetworkManager" do

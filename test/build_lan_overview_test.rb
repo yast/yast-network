@@ -67,6 +67,13 @@ describe "LanItemsClass#BuildLanOverview" do
       "BOOTPROTO"                  => "dhcp",
       "DHCLIENT_SET_DEFAULT_ROUTE" => "yes" }
   end
+  let(:interfaces) { Y2Network::InterfacesCollection.new([]) }
+
+  before do
+    allow(Y2Network::Config)
+      .to receive(:find)
+      .and_return(instance_double(Y2Network::Config, interfaces: interfaces))
+  end
 
   # targeted mainly against bnc#906694
   context "with an wlan interface" do

@@ -4,6 +4,9 @@ require_relative "test_helper"
 
 require "yast"
 
+require "y2network/config"
+require "y2network/interface"
+
 Yast.import "LanItems"
 
 describe Yast::LanItems do
@@ -35,7 +38,10 @@ describe Yast::LanItems do
         }
       },
       "br"   => {
-        "br0" => { "BOOTPROTO" => "dhcp" }
+        "br0" => {
+          "BOOTPROTO" => "dhcp",
+          "BRIDGE"    => "yes"
+        }
       },
       "bond" => {
         "bond0" => {
@@ -70,17 +76,22 @@ describe Yast::LanItems do
     allow(Yast::NetworkInterfaces).to receive(:FilterDevices).with("netcard") { netconfig_items }
     allow(Yast::NetworkInterfaces).to receive(:adapt_old_config!)
     allow(Yast::NetworkInterfaces).to receive(:CleanHotplugSymlink).and_return(true)
-    allow(Yast::NetworkInterfaces).to receive(:GetType).and_call_original
-    allow(Yast::NetworkInterfaces).to receive(:GetType).with("tun0").and_return("tun") # tun type detection relies on sysfs
 
     allow(Yast::LanItems).to receive(:ReadHardware) { hwinfo_items }
 
-    netconfig_items.each_pair do |_type, device_maps|
+    allow(Yast::NetworkInterfaces).to receive(:devmap).and_return(nil)
+    allow(Yast::NetworkInterfaces).to receive(:GetType).and_return("eth")
+
+    netconfig_items.each_pair do |type, device_maps|
       device_maps.each_pair do |dev, devmap|
         allow(Yast::NetworkInterfaces)
           .to receive(:devmap)
           .with(dev)
           .and_return(devmap)
+        allow(Yast::NetworkInterfaces)
+          .to receive(:GetType)
+          .with(dev)
+          .and_return(type)
       end
     end
 
@@ -88,18 +99,21 @@ describe Yast::LanItems do
   end
 
   describe "#GetBridgeableInterfaces" do
-    before(:each) do
-      # FindAndSelect initializes internal state of LanItems it
-      # is used internally by some helpers
-      Yast::LanItems.FindAndSelect("br0")
-    end
+    # when converting to new API new API is used
+    # for selecting bridgable devices but imports interfaces
+    # from LanItems internally
+    let(:config) { Y2Network::Config.new(source: :test) }
+    let(:builder) { Y2Network::InterfaceConfigBuilder.for("br") }
 
     it "returns list of slave candidates" do
-      expect(
-        Yast::LanItems
-          .GetBridgeableInterfaces(Yast::LanItems.GetCurrentName)
-          .map { |i| Yast::LanItems.GetDeviceName(i) }
-      ).to match_array expected_bridgeable
+      allow(Y2Network::Config)
+        .to receive(:find)
+        .with(:yast)
+        .and_return(config)
+
+      builder.name = "br0"
+      expect(builder.bridgeable_interfaces.map(&:name))
+        .to match_array expected_bridgeable
     end
   end
 end

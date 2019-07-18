@@ -8,6 +8,7 @@ require "network/edit_nic_name"
 require "y2network/route"
 require "y2network/routing"
 require "y2network/routing_table"
+require "y2network/interfaces_collection"
 require "y2network/interface"
 require "y2network/config"
 
@@ -24,8 +25,9 @@ describe Yast::EditNicName do
   let(:table1) { Y2Network::RoutingTable.new(routes: [route1]) }
   let(:routing) { Y2Network::Routing.new(tables: table1) }
   let(:iface) { Y2Network::Interface.new(current_name) }
+  let(:ifaces) { Y2Network::InterfacesCollection.new([iface]) }
   let(:yast_config) do
-    Y2Network::Config.new(interfaces: [iface], routing: routing, source: :sysconfig)
+    Y2Network::Config.new(interfaces: ifaces, routing: routing, source: :sysconfig)
   end
 
   before do
@@ -78,9 +80,7 @@ describe Yast::EditNicName do
         allow(Yast::UI).to receive(:QueryWidget).with(:dev_name, :Value) { new_name }
         allow(Yast::UI).to receive(:QueryWidget).with(:udev_type, :CurrentButton) { :mac }
         allow(Yast::UI).to receive(:UserInput) { :ok }
-        allow(Yast::LanItems).to receive(:update_routing_devices!)
         allow(subject).to receive(:update_routes?).and_return(false)
-        allow(Yast::LanItems).to receive(:update_routes!)
       end
 
       context "and closed confirming the changes" do
@@ -140,8 +140,8 @@ describe Yast::EditNicName do
         context "having modified the matching udev key" do
           before(:each) do
             # emulate UI work
-            allow(UI).to receive(:QueryWidget).with(:dev_name, :Value) { current_name }
-            allow(UI).to receive(:QueryWidget).with(:udev_type, :CurrentButton) { :bus_id }
+            allow(Yast::UI).to receive(:QueryWidget).with(:dev_name, :Value) { current_name }
+            allow(Yast::UI).to receive(:QueryWidget).with(:udev_type, :CurrentButton) { :bus_id }
           end
 
           it "updates the current udev rule with the key used" do

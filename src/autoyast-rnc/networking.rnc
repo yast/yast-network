@@ -280,6 +280,7 @@ gateway = element gateway { text }
 dns =
   element dns {
     dhcp_hostname ? &
+    # ignored, present for backward compatibility
     write_hostname ? &
     resolv_conf_policy ? &
     hostname ? &

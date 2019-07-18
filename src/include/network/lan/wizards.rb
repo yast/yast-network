@@ -25,7 +25,10 @@
 # Package:	Network configuration
 # Summary:	Network cards configuration wizards
 # Authors:	Michal Svec <msvec@suse.cz>
-#
+
+require "y2network/interface_config_builder"
+require "y2network/dialogs/add_interface"
+
 module Yast
   module NetworkLanWizardsInclude
     def initialize_network_lan_wizards(include_target)
@@ -116,12 +119,10 @@ module Yast
     end
 
     def MainSequence(mode)
+      iface_builder = Y2Network::InterfaceConfigBuilder.new
       aliases = {
-        "global"    => -> { MainDialog("global") },
-        "overview"  => -> { MainDialog("overview") },
-        "add"       => [-> { NetworkCardSequence("add") }, true],
-        "edit"      => [-> { NetworkCardSequence("edit") }, true],
-        "init_s390" => [-> { NetworkCardSequence("init_s390") }, true]
+        "global"   => -> { MainDialog("global", builder: iface_builder) },
+        "overview" => -> { MainDialog("overview", builder: iface_builder) }
       }
 
       start = "overview"
@@ -129,78 +130,69 @@ module Yast
       # see also #148485
       start = "global" if mode == "proposal"
       sequence = {
-        "ws_start"  => start,
-        "global"    => {
-          abort: :abort,
-          next:  :next,
-          add:   "add",
-          edit:  "edit"
+        "ws_start" => start,
+        "global"   => {
+          abort:  :abort,
+          next:   :next,
+          redraw: "global"
         },
-        "overview"  => {
-          abort:     :abort,
-          next:      :next,
-          add:       "add",
-          edit:      "edit",
-          init_s390: "init_s390"
-        },
-        "add"       => { abort: :abort, next: "overview" },
-        "edit"      => { abort: :abort, next: "overview" },
-        "init_s390" => { abort: :abort, next: "overview" }
+        "overview" => {
+          abort:  :abort,
+          next:   :next,
+          redraw: "overview"
+        }
       }
 
       Sequencer.Run(aliases, sequence)
     end
 
-    def NetworkCardSequence(action)
-      aliases = {
-        "hardware" => -> { HardwareDialog() },
-        "address"  => -> { AddressSequence("") },
-        "s390"     => -> { S390Dialog() }
-      }
-
+    def NetworkCardSequence(action, builder:)
       ws_start = case action
-      when "add"
-        "hardware"
       when "init_s390"
         # s390 may require configuring additional modules. Which
         # enables IBM net cards for linux. Basicaly it creates
         # linux devices with common api (e.g. eth0, hsi1, ...)
         "s390"
-      else
+      when "edit"
         "address"
+      else
+        raise "Unknown action #{action}"
       end
+
+      aliases = {
+        # TODO: first param in AddressSequence seems to be never used
+        "address" => -> { AddressSequence("", builder: builder) },
+        "s390"    => -> { S390Dialog(builder: builder) }
+      }
 
       Builtins.y2milestone("ws_start %1", ws_start)
 
       sequence = {
         "ws_start" => ws_start,
-        "hardware" => { abort: :back, next: "address" },
-        "address"  => { abort: :back, next: :next },
+        "address"  => { abort: :abort, next: :next },
         "s390"     => { abort: :abort, next: "address" }
       }
 
       Sequencer.Run(aliases, sequence)
     end
 
-    def AddressSequence(which)
+    def AddressSequence(which, builder:)
+      # TODO: add builder wherever needed
       aliases = {
-        "address"     => -> { AddressDialog() },
+        "address"     => -> { AddressDialog(builder: builder) },
         "hosts"       => -> { HostsMainDialog(false) },
-        "s390"        => -> { S390Dialog() },
+        "s390"        => -> { S390Dialog(builder: builder) },
         "wire"        => -> { WirelessDialog() },
         "expert"      => -> { WirelessExpertDialog() },
         "keys"        => -> { WirelessKeysDialog() },
         "eap"         => -> { WirelessWpaEapDialog() },
         "eap-details" => -> { WirelessWpaEapDetailsDialog() },
-        "commit"      => [-> { Commit() }, true]
+        "commit"      => [-> { Commit(builder: builder) }, true]
       }
 
-      ws_start = which == "wire" ? "wire" : "address" # "changedefaults";
+      ws_start = which == "wire" ? "wire" : "address"
       sequence = {
         "ws_start"    => ws_start,
-        # 	"changedefaults" : $[
-        # 	    `next	: "address",
-        # 	],
         "address"     => {
           abort:    :abort,
           next:     "commit",
