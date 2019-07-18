@@ -28,10 +28,10 @@ module Y2Network
     include Yast::I18n
 
     class << self
-      # @param const_name [String] Constant name
       # @param name       [String] Type name ("Ethernet", "Wireless", etc.)
       # @param short_name [String] Short name used in legacy code
-      def define_type(const_name, name, short_name)
+      def define_type(name, short_name)
+        const_name = name.upcase
         const_set(const_name, new(name, short_name))
         all << const_get(const_name)
       end
@@ -73,21 +73,33 @@ module Y2Network
       _(name)
     end
 
+    # Returns name for specialized class for this type e.g. for reader, write or builder
+    # @return [String]
+    def class_name
+      name.capitalize
+    end
+
+    # Returns name for file without suffix for this type e.g. for reader, write or builder
+    # @return [String]
+    def file_name
+      name.downcase
+    end
+
     # Define types constants
-    define_type "ETHERNET", N_("Ethernet"), "eth"
-    define_type "WIRELESS", N_("Wireless"), "wlan"
-    define_type "INFINIBAND", N_("Infiniband"), "ib"
-    define_type "BONDING", N_("Bonding"), "bond"
-    define_type "BRIDGE", N_("Bridge"), "br"
-    define_type "DUMMY", N_("Dummy"), "dummy"
-    define_type "VLAN", N_("VLAN"), "vlan"
-    define_type "TUN", N_("TUN"), "tun"
-    define_type "TAP", N_("TAP"), "tap"
-    define_type "USB", N_("USB"), "usb"
+    define_type N_("Ethernet"), "eth"
+    define_type N_("Wireless"), "wlan"
+    define_type N_("Infiniband"), "ib"
+    define_type N_("Bonding"), "bond"
+    define_type N_("Bridge"), "br"
+    define_type N_("Dummy"), "dummy"
+    define_type N_("VLAN"), "vlan"
+    define_type N_("TUN"), "tun"
+    define_type N_("TAP"), "tap"
+    define_type N_("USB"), "usb"
     # s390
-    define_type "QETH", N_("QETH"), "qeth"
-    define_type "LCS", N_("LCS"), "lcs"
-    define_type "HIPERSOCKETS", N_("HiperSockets"), "hsi"
-    define_type "FICON", N_("FICON"), "ficon"
+    define_type N_("QETH"), "qeth"
+    define_type N_("LCS"), "lcs"
+    define_type N_("HiperSockets"), "hsi"
+    define_type N_("FICON"), "ficon"
   end
 end

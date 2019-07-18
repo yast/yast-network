@@ -5,9 +5,9 @@ Yast.import "LanItems"
 
 module Y2Network
   module InterfaceConfigBuilders
-    class Ib < InterfaceConfigBuilder
+    class Infiniband < InterfaceConfigBuilder
       def initialize
-        super(type: "ib")
+        super(type: InterfaceType::INFINIBAND)
       end
 
       attr_writer :ipoib_mode

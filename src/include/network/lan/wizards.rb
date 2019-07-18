@@ -119,10 +119,9 @@ module Yast
     end
 
     def MainSequence(mode)
-      iface_builder = Y2Network::InterfaceConfigBuilder.new
       aliases = {
-        "global"   => -> { MainDialog("global", builder: iface_builder) },
-        "overview" => -> { MainDialog("overview", builder: iface_builder) }
+        "global"   => -> { MainDialog("global") },
+        "overview" => -> { MainDialog("overview") }
       }
 
       start = "overview"

@@ -86,6 +86,7 @@ describe "NetworkLanCmdlineInclude" do
 
     before do
       allow(Yast::LanItems).to receive(:Items).and_return(items)
+      allow(Yast::LanItems).to receive(:GetCurrentType).and_return("eth")
       richtext = "test<br><ul><li>item1</li></ul>"
       allow(subject).to receive(:getConfigList).and_return(["0" => { "rich_descr" => richtext }])
     end

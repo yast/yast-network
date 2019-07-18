@@ -33,11 +33,13 @@ module Y2Network
 
     # Load fresh instance of interface config builder for given type.
     # It can be specialized type or generic, depending if specialized is needed.
-    # @param type [String] type of device
-    # TODO: it would be nice to have type of device as Enum and not pure string
+    # @param type [Y2Network::InterfaceType,String] type of device or its short name
     def self.for(type)
-      require "y2network/interface_config_builders/#{type}"
-      InterfaceConfigBuilders.const_get(type.to_s.capitalize).new
+      if !type.is_a?(InterfaceType)
+        type = InterfaceType.from_short_name(type) or raise "Unknown type #{type.inspect}"
+      end
+      require "y2network/interface_config_builders/#{type.file_name}"
+      InterfaceConfigBuilders.const_get(type.class_name).new
     rescue LoadError => e
       log.info "Specialed builder for #{type} not found. Fallbacking to default. #{e.inspect}"
       new(type: type)
@@ -51,7 +53,8 @@ module Y2Network
     # Constructor
     #
     # Load with reasonable defaults
-    def initialize(type: nil)
+    # @param type [Y2Network::InterfaceType] type of device
+    def initialize(type:)
       @type = type
       @config = init_device_config({})
       @s390_config = init_device_s390_config({})
@@ -95,7 +98,7 @@ module Y2Network
     # do not modify anything
     # @return [Array<String>]
     def proposed_names
-      Yast::LanItems.new_type_devices(type, NEW_DEVICES_COUNT)
+      Yast::LanItems.new_type_devices(type.short_name, NEW_DEVICES_COUNT)
     end
 
     def valid_name?(name)
@@ -175,13 +178,15 @@ module Y2Network
       config = @config.dup
 
       # filter out options which are not needed
-      config.delete_if { |k, _| k =~ /WIRELESS.*/ } if type != "wlan"
-      config.delete_if { |k, _| k =~ /BONDING.*/ } if type != "bond"
-      config.delete_if { |k, _| k =~ /BRIDGE.*/ } if type != "br"
-      config.delete_if { |k, _| k =~ /TUNNEL.*/ } if !["tun", "tap"].include?(type)
-      config.delete_if { |k, _| k == "VLAN_ID" || k == "ETHERDEVICE" } if type != "vlan"
-      config.delete_if { |k, _| k == "IPOIB_MODE" } if type != "ib"
-      config.delete_if { |k, _| k == "INTERFACE" } if type != "dummy"
+      config.delete_if { |k, _| k =~ /WIRELESS.*/ } if type != InterfaceType::WIRELESS
+      config.delete_if { |k, _| k =~ /BONDING.*/ } if type != InterfaceType::BONDING
+      config.delete_if { |k, _| k =~ /BRIDGE.*/ } if type != InterfaceType::BRIDGE
+      if ![InterfaceType::TUN, InterfaceType::TAP].include?(type)
+        config.delete_if { |k, _| k =~ /TUNNEL.*/ }
+      end
+      config.delete_if { |k, _| k == "VLAN_ID" || k == "ETHERDEVICE" } if type != InterfaceType::VLAN
+      config.delete_if { |k, _| k == "IPOIB_MODE" } if type != InterfaceType::INFINIBAND
+      config.delete_if { |k, _| k == "INTERFACE" } if type != InterfaceType::DUMMY
       config.delete_if { |k, _| k == "IFPLUGD_PRIORITY" } if config["STARTMODE"] != "ifplugd"
 
       config.merge("_aliases" => lan_items_format_aliases)

@@ -3,9 +3,9 @@
 require_relative "../../test_helper"
 
 require "yast"
-require "y2network/interface_config_builders/bond"
+require "y2network/interface_config_builders/bonding"
 
-describe Y2Network::InterfaceConfigBuilders::Bond do
+describe Y2Network::InterfaceConfigBuilders::Bonding do
   let(:config) { Y2Network::Config.new(source: :test) }
 
   before do
@@ -16,14 +16,14 @@ describe Y2Network::InterfaceConfigBuilders::Bond do
   end
 
   subject(:config_builder) do
-    res = Y2Network::InterfaceConfigBuilders::Bond.new
+    res = Y2Network::InterfaceConfigBuilders::Bonding.new
     res.name = "bond0"
     res
   end
 
   describe "#type" do
-    it "returns 'bond'" do
-      expect(subject.type).to eq "bond"
+    it "returns bonding interface type" do
+      expect(subject.type).to eq Y2Network::InterfaceType::BONDING
     end
   end
 
