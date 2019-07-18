@@ -31,6 +31,19 @@ module Y2Network
     # @example Finding the file for a given interface
     #   file = Y2Network::Sysconfig::InterfaceFile.find("wlan0")
     #   file.wireless_essid #=> "dummy"
+    #
+    # ## Multivalued variables
+    #
+    # When dealing with multivalued variables, values are returned in a hash which
+    # indexes are the suffixes. For instance:
+    #
+    #   IPADDR='192.168.122.1/24'
+    #   IPADDR_EXTRA='192.168.123.1/24'
+    #   IPADDR_ALT='10.0.0.1/8'
+    #
+    # @example Reading multivalued variables
+    #   file = Y2Network::Sysconfig::InterfaceFile.find("wlan0")
+    #   file.ipaddrs #=> { default: #<IPAddr: ...>, "EXTRA" => #<IPAddr: ...>, "ALT" => #<IPAddr: ...> }
     class InterfaceFile
       # Auxiliar class to hold variables definition information
       Variable = Struct.new(:name, :type, :collection?)
@@ -55,7 +68,7 @@ module Y2Network
         #
         # @param param_name [Symbol] Parameter name
         # @param type       [Symbol] Parameter type (:string, :integer, :symbol, :ipaddr)
-        def define_parameter(param_name, type = :string)
+        def define_variable(param_name, type = :string)
           name = variable_name(param_name)
           variables[name] = Variable.new(name, type, false)
 
@@ -77,7 +90,7 @@ module Y2Network
         #
         # @param param_name [Symbol] Parameter name
         # @param type       [Symbol] Array elements type (:string, :integer, :symbol, :ipaddr)
-        def define_array_parameter(param_name, type = :string)
+        def define_collection_parameter(param_name, type = :string)
           name = variable_name(param_name)
           variables[name] = Variable.new(name, type, true)
 
@@ -92,7 +105,7 @@ module Y2Network
 
         # Known configuration variables
         #
-        # A variable is defined by using {define_parameter} or {define_array_parameter} methods.
+        # A variable is defined by using {define_variable} or {define_collection_parameter} methods.
         #
         # @return [Array<Symbol>]
         def variables
@@ -112,105 +125,105 @@ module Y2Network
       attr_reader :interface
 
       # !@attribute [r] ipaddr
-      #   return [Y2Network::IPAddress] IP address
-      define_array_parameter(:ipaddr, :ipaddr)
+      #   @return [Y2Network::IPAddress] IP address
+      define_collection_parameter(:ipaddr, :ipaddr)
 
       # !@attribute [r] name
-      #   return [String] Interface's description (e.g., "Ethernet Card 0")
-      define_parameter(:name, :string)
+      #   @return [String] Interface's description (e.g., "Ethernet Card 0")
+      define_variable(:name, :string)
 
       # !@attribute [r] bootproto
-      #   return [Symbol] Set up protocol (:static, :dhcp, :dhcp4, :dhcp6, :autoip, :dhcp+autoip,
+      #   @return [Symbol] Set up protocol (:static, :dhcp, :dhcp4, :dhcp6, :autoip, :dhcp+autoip,
       #                   :auto6, :6to4, :none)
-      define_parameter(:bootproto, :symbol)
+      define_variable(:bootproto, :symbol)
 
       # !@attribute [r] bootproto
-      #   return [Symbol] When the interface should be set up (:manual, :auto, :hotplug, :nfsroot, :off)
-      define_parameter(:startmode, :symbol)
+      #   @return [Symbol] When the interface should be set up (:manual, :auto, :hotplug, :nfsroot, :off)
+      define_variable(:startmode, :symbol)
 
       # !@attribute [r] scopes
       #   @return [Hash] Scopes of the area where addresses are valid (:global, :site, :link, :host)
-      define_array_parameter(:scope, :symbol)
+      define_collection_parameter(:scope, :symbol)
 
       # !@attribute [r] labels
       #   @return [Hash] Label to assign to the address
-      define_array_parameter(:label, :symbol)
+      define_collection_parameter(:label, :symbol)
 
       # !@attribute [r] remote_ipaddrs
       #   @return [Hash] Remote IP address of a point to point connection
-      define_array_parameter(:remote_ipaddr, :ipaddr)
+      define_collection_parameter(:remote_ipaddr, :ipaddr)
 
       # !@attribute [r] broadcasts
       #   @return [Hash] Broadcasts addresses
-      define_array_parameter(:broadcast, :ipaddr)
+      define_collection_parameter(:broadcast, :ipaddr)
 
       # !@attribute [r] prefixlens
-      #  @return [Hash] Prefixes lengths
-      define_array_parameter(:prefixlen, :ipaddr)
+      #   @return [Hash] Prefixes lengths
+      define_collection_parameter(:prefixlen, :ipaddr)
 
       # !@attribute [r] netmasks
-      #  @return [Hash] Netmasks
-      define_array_parameter(:netmask, :ipaddr)
+      #   @return [Hash] Netmasks
+      define_collection_parameter(:netmask, :ipaddr)
       # !@attribute [r] wireless_key_length
       #   @return [Integer] Length in bits for all keys used
-      define_parameter(:wireless_key_length, :integer)
+      define_variable(:wireless_key_length, :integer)
 
       # !@attribute [r] wireless_keys
       #   @return [Array<String>] List of wireless keys
-      define_array_parameter(:wireless_key, :string)
+      define_collection_parameter(:wireless_key, :string)
 
       # !@attribute [r] wireless_default_key
       #   @return [Integer] Index of the default key
       #   @see #wireless_keys
-      define_parameter(:wireless_default_key, :integer)
+      define_variable(:wireless_default_key, :integer)
 
       # !@attribute [r] wireless_essid
       #   @return [String] Wireless SSID/ESSID
-      define_parameter(:wireless_essid)
+      define_variable(:wireless_essid)
 
       # !@attribute [r] wireless_auth_mode
       #   @return [Symbol] Wireless authorization mode (:open, :shared, :psk, :eap)
-      define_parameter(:wireless_auth_mode, :symbol)
+      define_variable(:wireless_auth_mode, :symbol)
 
       # @!attribute [r] wireless_mode
       #  @return [Symbol] Operating mode for the device (:managed, :ad_hoc or :master)
-      define_parameter(:wireless_mode, :symbol)
+      define_variable(:wireless_mode, :symbol)
 
       # @!attribute [r] wireless_wpa_password
       #  @return [String] Password as configured on the RADIUS server (for WPA-EAP)
-      define_parameter(:wireless_wpa_password)
+      define_variable(:wireless_wpa_password)
 
       # @!attribute [r] wireless_wpa_driver
       #   @return [String] Driver to be used by the wpa_supplicant program
-      define_parameter(:wireless_wpa_driver)
+      define_variable(:wireless_wpa_driver)
 
       # @!attribute [r] wireless_wpa_psk
       #   @return [String] WPA preshared key (for WPA-PSK)
-      define_parameter(:wireless_wpa_psk)
+      define_variable(:wireless_wpa_psk)
 
       # @!attribute [r] wireless_eap_mode
       #   @return [String] WPA-EAP outer authentication method
-      define_parameter(:wireless_eap_mode)
+      define_variable(:wireless_eap_mode)
 
       # @!attribute [r] wireless_eap_auth
       #   @return [String] WPA-EAP inner authentication with TLS tunnel method
-      define_parameter(:wireless_eap_auth)
+      define_variable(:wireless_eap_auth)
 
       # @!attribute [r] wireless_ap_scanmode
       #   @return [String] SSID scan mode ("0", "1" and "2")
-      define_parameter(:wireless_ap_scanmode)
+      define_variable(:wireless_ap_scanmode)
 
       # @!attribute [r] wireless_ap
       #   @return [String] AP MAC address
-      define_parameter(:wireless_ap)
+      define_variable(:wireless_ap)
 
       # @!attribute [r] wireless_channel
       #   @return [Integer] Wireless channel
-      define_parameter(:wireless_channel)
+      define_variable(:wireless_channel)
 
       # @!attribute [r] wireless_nwid
       #   @return [String] Network ID
-      define_parameter(:wireless_nwid)
+      define_variable(:wireless_nwid)
 
       # Constructor
       #
@@ -265,7 +278,10 @@ module Y2Network
       # This method clears all values from the file. The idea is to use this method
       # to do some clean-up before writing the final values.
       def clean
-        @values = self.class.variables.each_with_object({}) { |e, h| h[e] = nil }
+        @values = self.class.variables.values.each_with_object({}) do |variable, hash|
+          hash[variable.name] = variable.collection? ? {} : nil
+        end
+        @defined_variables = nil
       end
 
     private
@@ -306,17 +322,19 @@ module Y2Network
       # @return [Hash<String, Object>]
       # TODO: simplify
       def fetch_collection(key, type)
+        collection_keys(key).each_with_object({}) do |k, h|
+          index = key == k ? :default : k.sub(prefix, "")
+          h[index] = fetch_scalar(k, type)
+        end
+      end
+
+      def collection_keys(key)
         prefix = "#{key}_"
         collection_keys = defined_variables.select do |k|
           k == key || k.start_with?(prefix)
         end
         other_keys = self.class.variables.keys - [key]
-        collection_keys = collection_keys - other_keys
-
-        collection_keys.each_with_object({}) do |k, h|
-          index = key == k ? :default : k.sub(prefix, "")
-          h[index] = fetch_scalar(k, type)
-        end
+        collection_keys - other_keys
       end
 
       # Converts the value into a string (or nil if empty)
@@ -356,6 +374,7 @@ module Y2Network
       # @param key    [Symbol] Key
       # @param values [Array<#to_s>] Values to write
       def write_collection(key, values)
+        # clean old values
         values.each do |suffix, value|
           write_key = suffix == :default ? key : "#{key}_#{suffix}"
           write_scalar(write_key, value)
