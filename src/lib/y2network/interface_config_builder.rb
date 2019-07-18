@@ -18,7 +18,9 @@
 # find current contact information at www.suse.com.
 require "yast"
 
+require "y2network/connection_config/base"
 require "y2network/hwinfo"
+require "y2network/startmode"
 require "y2firewall/firewalld"
 require "y2firewall/firewalld/interface"
 
@@ -58,6 +60,8 @@ module Y2Network
       @type = type
       @config = init_device_config({})
       @s390_config = init_device_s390_config({})
+      # TODO: create specialized connection for type
+      @connection_config = ConnectionConfig::Base.new
     end
 
     def newly_added?
@@ -127,6 +131,31 @@ module Y2Network
 
     def firewall_zone=(value)
       @firewall_zone = value
+    end
+
+    # @return [Startmode]
+    def startmode
+      # in future use only @connection_config and just delegate method
+      startmode = Startmode.create(@config["STARTMODE"])
+      startmode.priority = @config["IFPLUGD_PRIORITY"] if startmode.name == "ifplugd"
+      startmode
+    end
+
+    def startmode=(name)
+      mode = Startmode.create(name)
+      @connection_config.startmode = mode
+      @config["STARTMODE"] = mode.name
+    end
+
+    def ifplugd_priority=(value)
+      @config["IFPLUGD_PRIORITY"] = value.to_s
+      @connection_config.startmode = Startmode.create("ifplugd")
+      @connection_config.startmode.priority = value.to_i
+    end
+
+    def ifplugd_priority
+      # in future use only @connection_config and just delegate method
+      @config["IFPLUGD_PRIORITY"].to_i
     end
 
     def driver

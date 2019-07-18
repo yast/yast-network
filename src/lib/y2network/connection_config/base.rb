@@ -45,6 +45,8 @@ module Y2Network
       attr_accessor :secondary_ip_addresses
       # @return [Integer, nil]
       attr_accessor :mtu
+      # @return [Startmode, nil]
+      attr_accessor :startmode
 
       # Returns the connection type
       #
