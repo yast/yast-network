@@ -40,7 +40,9 @@ module Y2Network
       #
       # @return [Array<InterfaceType>] Interface types
       def all
-        @types ||= InterfaceType.constants.map { |c| InterfaceType.const_get(c) }
+        @types ||= InterfaceType.constants
+                                .map { |c| InterfaceType.const_get(c) }
+                                .select { |c| c.is_a?(InterfaceType) }
       end
 
       # Returns the interface type with a given short name

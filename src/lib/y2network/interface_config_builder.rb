@@ -150,7 +150,7 @@ module Y2Network
 
     def ifplugd_priority=(value)
       @config["IFPLUGD_PRIORITY"] = value.to_s
-      if @connection_config.startmode.name == "ifplugd"
+      if !@connection_config.startmode || @connection_config.startmode.name != "ifplugd"
         @connection_config.startmode = Startmode.create("ifplugd")
       end
       @connection_config.startmode.priority = value.to_i

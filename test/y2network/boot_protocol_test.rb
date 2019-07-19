@@ -42,11 +42,10 @@ describe Y2Network::BootProtocol do
   end
 
   describe "#dhcp?" do
-   it "returns true if protocol at least partially is read from dhcp" do
+    it "returns true if protocol at least partially is read from dhcp" do
       expect(Y2Network::BootProtocol::DHCP4.dhcp?).to eq true
       expect(Y2Network::BootProtocol::DHCP_AUTOIP.dhcp?).to eq true
       expect(Y2Network::BootProtocol::STATIC.dhcp?).to eq false
-   end
+    end
   end
 end
-

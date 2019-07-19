@@ -272,7 +272,7 @@ module Yast
     # @param builder [Y2Network::InterfaceConfigBuilder]
     # @return [Boolean] true when the options are valid; false otherwise
     def validate_config(builder)
-      if Y2Network::BootProtocol.all.none? { |bp| bp.name == builder["BOOTPROTO"]
+      if Y2Network::BootProtocol.all.none? { |bp| bp.name == builder["BOOTPROTO"] }
         Report.Error(_("Impossible value for bootproto."))
         return false
       end

@@ -17,7 +17,6 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-
 module Y2Network
   # Base class for startmode. It allows to create new one according to name or anlist all.
   # Its child have to define `to_human_string` method and possibly its own specialized attributes.
