@@ -35,33 +35,16 @@ describe Y2Network::Sysconfig::InterfacesReader do
 
   let(:configured_interfaces) { ["lo", "eth0"] }
   TYPES = { "eth0" => "eth" }.freeze
-  IFCFGS = {
-    "eth0" => {
-      "BOOTPROTO" => "static",
-      "IPADDR"    => "192.168.1.2"
-    },
-    "eth1" => {
-      "BOOTPROTO" => "static",
-      "IPADDR"    => "10.0.0.2"
-    }
-  }.freeze
-  SCR_PATH_REGEXP = /.network.value.\"(\w+)\".(\w+)\Z/
 
   before do
     allow(Yast::LanItems).to receive(:Hardware).and_return(netcards)
     allow(Yast::SCR).to receive(:Dir).with(Yast::Path.new(".network.section"))
       .and_return(configured_interfaces)
+    allow(Yast::SCR).to receive(:Dir).and_call_original
     allow(Yast::NetworkInterfaces).to receive(:GetTypeFromSysfs) { |n| TYPES[n] }
-    allow(Yast::SCR).to receive(:Read) do |path, &block|
-      m = SCR_PATH_REGEXP.match(path.to_s)
-      if m
-        iface, key = m[1..2]
-        IFCFGS[iface][key]
-      else
-        block.call
-      end
-    end
   end
+
+  around { |e| change_scr_root(File.join(DATA_PATH, "scr_read"), &e) }
 
   describe "#interfaces" do
     it "reads physical interfaces" do
