@@ -40,5 +40,13 @@ describe Y2Network::BootProtocol do
       expect(described_class.from_name("dhcp8")).to eq nil
     end
   end
+
+  describe "#dhcp?" do
+   it "returns true if protocol at least partially is read from dhcp" do
+      expect(Y2Network::BootProtocol::DHCP4.dhcp?).to eq true
+      expect(Y2Network::BootProtocol::DHCP_AUTOIP.dhcp?).to eq true
+      expect(Y2Network::BootProtocol::STATIC.dhcp?).to eq false
+   end
+  end
 end
 

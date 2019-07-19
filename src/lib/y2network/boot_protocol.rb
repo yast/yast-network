@@ -51,6 +51,11 @@ module Y2Network
       @name = name
     end
 
+    # checks if boot protocol is at least partially configured by dhcp
+    def dhcp?
+      [DHCP4, DHCP6, DHCP, DHCP_AUTOIP].include?(self)
+    end
+
     # iBFT boot protocol
     IBFT = new("ibft")
     # statically assigned interface properties
