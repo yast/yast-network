@@ -34,6 +34,7 @@ module Y2Network
       # @return [Y2Network::ConnectionConfig::Base]
       def read(name, type)
         file = Y2Network::Sysconfig::InterfaceFile.new(name)
+        file.load
         handler_class = find_handler_class(type || file.type)
         return nil if handler_class.nil?
         handler_class.new(file).connection_config

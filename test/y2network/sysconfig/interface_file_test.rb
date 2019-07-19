@@ -22,7 +22,7 @@ require "y2network/sysconfig/interface_file"
 require "tmpdir"
 
 describe Y2Network::Sysconfig::InterfaceFile do
-  subject(:file) { described_class.new(interface_name) }
+  subject(:file) { described_class.new(interface_name).tap { |f| f.load } }
 
   let(:interface_name) { "eth0" }
 
@@ -53,12 +53,6 @@ describe Y2Network::Sysconfig::InterfaceFile do
       it "returns nil" do
         expect(described_class.find("em1")).to be_nil
       end
-    end
-  end
-
-  describe "#fetch" do
-    it "returns the raw value from the sysconfig file" do
-      expect(file.fetch("IPADDR")).to eq("192.168.123.1/24")
     end
   end
 
@@ -120,15 +114,15 @@ describe Y2Network::Sysconfig::InterfaceFile do
   end
 
   describe "#wireless_keys" do
-    subject(:file) { described_class.new("wlan0") }
+    let(:interface_name) { "wlan0" }
 
     it "returns the list of keys" do
-      expect(file.wireless_keys).to eq(["0-1-2-3-4-5", "s:password"])
+      expect(file.wireless_keys).to eq(default: "0-1-2-3-4-5", "1" => "s:password")
     end
   end
 
   describe "#wireless_keys=" do
-    let(:keys) { ["123456", "abcdef"] }
+    let(:keys) { { default: "123456", "1" => "abcdef" } }
 
     it "sets the wireless keys" do
       expect { file.wireless_keys = keys }.to change { file.wireless_keys }.to(keys)
@@ -150,11 +144,11 @@ describe Y2Network::Sysconfig::InterfaceFile do
 
     describe "when multiple wireless keys are specified" do
       it "writes indexes keys" do
-        file.wireless_keys = ["123456", "abcdef"]
+        file.wireless_keys = { :default => "123456", "1" => "abcdef" }
         file.save
 
         content = file_content(scr_root, file)
-        expect(content).to include("WIRELESS_KEY_0='123456")
+        expect(content).to include("WIRELESS_KEY='123456")
         expect(content).to include("WIRELESS_KEY_1='abcdef")
       end
     end
