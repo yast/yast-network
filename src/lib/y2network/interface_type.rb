@@ -21,21 +21,11 @@ require "yast"
 
 module Y2Network
   # This class represents the interface types which are supported.
-  #
-  # Constants may be defined using the {define_type} method.
   class InterfaceType
     extend Yast::I18n
     include Yast::I18n
 
     class << self
-      # @param name       [String] Type name ("Ethernet", "Wireless", etc.)
-      # @param short_name [String] Short name used in legacy code
-      def define_type(name, short_name)
-        const_name = name.upcase
-        const_set(const_name, new(name, short_name))
-        all << const_get(const_name)
-      end
-
       # Returns all the existing types
       #
       # @return [Array<InterfaceType>] Interface types

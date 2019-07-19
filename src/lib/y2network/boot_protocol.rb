@@ -21,8 +21,6 @@ require "yast"
 
 module Y2Network
   # This class represents the boot protocols which are supported (not all by all backends).
-  #
-  # Constants may be defined using the {define_protocol} method.
   class BootProtocol
     class << self
       # Returns all the existing protocols
