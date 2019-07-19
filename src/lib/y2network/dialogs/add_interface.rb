@@ -63,10 +63,12 @@ module Y2Network
         builder
       end
 
+      # no back button for add dialog
       def back_button
         ""
       end
 
+      # as it is a sub dialog it can only cancel and cannot abort
       def abort_button
         Yast::Label.CancelButton
       end

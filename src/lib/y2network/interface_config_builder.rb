@@ -64,14 +64,22 @@ module Y2Network
       Yast::LanItems.operation == :add
     end
 
+    # changes internal config keys.
+    # @note always prefer specialized method if available
     def []=(key, value)
       @config[key] = value
     end
 
+    # gets internal config keys.
+    # @note always prefer specialized method if available
     def [](key)
       @config[key]
     end
 
+    # saves builder content to backend
+    # @ TODO now still LanItems actively query config attribute and write it
+    #   down, so here mainly workarounds, but ideally this save should change
+    #   completely backend
     def save
       Yast::LanItems.Items[Yast::LanItems.current]["ifcfg"] = name
       if !driver.empty?
@@ -94,29 +102,36 @@ module Y2Network
 
     # how many device names is proposed
     NEW_DEVICES_COUNT = 10
-    # Propose bunch of possible names for interface
+    # Proposes bunch of possible names for interface
     # do not modify anything
     # @return [Array<String>]
     def proposed_names
       Yast::LanItems.new_type_devices(type.short_name, NEW_DEVICES_COUNT)
     end
 
+    # checks if passed name is valid as interface name
+    # TODO: looks sysconfig specific
     def valid_name?(name)
       !!(name =~ /^[[:alnum:]._:-]{1,15}\z/)
     end
 
+    # checks if interface name already exists
     def name_exists?(name)
       Yast::NetworkInterfaces.List("").include?(name)
     end
 
+    # gets valid characters that can be used in interface name
+    # TODO: looks sysconfig specific
     def name_valid_characters
       Yast::NetworkInterfaces.ValidCharsIfcfg
     end
 
+    # gets a list of available kernel modules for the interface
     def kernel_modules
       Yast::LanItems.GetItemModules("")
     end
 
+    # gets currently assigned firewall zone
     def firewall_zone
       return @firewall_zone if @firewall_zone
 
@@ -125,28 +140,37 @@ module Y2Network
       @firewall_zone = firewall_interface.zone && firewall_interface.zone.name
     end
 
+    # sets assigned firewall zone
     def firewall_zone=(value)
       @firewall_zone = value
     end
 
+    # gets currently assigned kernel module
     def driver
       @driver ||= Yast::Ops.get_string(Yast::LanItems.getCurrentItem, ["udev", "driver"], "")
     end
 
+    # sets kernel module for interface
     def driver=(value)
       @driver = value
     end
 
+    # gets specific options for kernel driver
     def driver_options
       target_driver = @driver
       target_driver = hwinfo.module if target_driver.empty?
       @driver_options ||= Yast::LanItems.driver_options[target_driver] || ""
     end
 
+    # sets specific options for kernel driver
     def driver_options=(value)
       @driver_options = value
     end
 
+    # gets aliases for interface
+    # @return [Array<Hash>] hash values are `:label` for alias label,
+    #   `:ip` for ip address, `:mask` for netmask and `:prefixlen` for prefix.
+    #   Only one of `:mask` and `:prefixlen` is set.
     def aliases
       @aliases ||= Yast::LanItems.aliases.each_value.map do |data|
         {
@@ -158,10 +182,13 @@ module Y2Network
       end
     end
 
+    # sets aliases for interface
+    # @param value [Array<Hash>] see #aliases for hash values
     def aliases=(value)
       @aliases = value
     end
 
+    # gets interface name that will be assigned by udev
     def udev_name
       # cannot cache as EditNicName dialog can change it
       Yast::LanItems.current_udev_name

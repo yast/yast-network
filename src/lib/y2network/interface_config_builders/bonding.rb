@@ -19,7 +19,9 @@ module Y2Network
         interfaces.all.select { |i| bondable?(i) }
       end
 
+      # @return [String] options for bonding
       attr_writer :bond_options
+      # current options for bonding
       def bond_options
         return @bond_options if @bond_options
 
@@ -30,6 +32,7 @@ module Y2Network
         @bond_options
       end
 
+      # (see Y2Network::InterfaceConfigBuilder#save)
       def save
         super
 
