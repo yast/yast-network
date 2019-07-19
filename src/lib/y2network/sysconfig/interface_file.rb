@@ -43,7 +43,7 @@ module Y2Network
     #
     # @example Reading multivalued variables
     #   file = Y2Network::Sysconfig::InterfaceFile.find("wlan0")
-    #   file.ipaddrs #=> { default: #<IPAddr: ...>, "EXTRA" => #<IPAddr: ...>, "ALT" => #<IPAddr: ...> }
+    #   file.ipaddrs #=> { default: #<IPAddr: ...>, "_EXTRA" => #<IPAddr: ...>, "_ALT" => #<IPAddr: ...> }
     class InterfaceFile
       # Auxiliar class to hold variables definition information
       Variable = Struct.new(:name, :type, :collection?)
@@ -311,27 +311,25 @@ module Y2Network
       # For instance, this set of IPADDR_* keys:
       #
       #   IPADDR='192.168.122.1'
-      #   IPADDR_SEC='192.168.122.2'
+      #   IPADDR0='192.168.122.2'
       #
       # will be represented like:
       #
-      #  { :default => "192.168.122.1", "SEC" => "192.168.122.2" }
+      #  { :default => "192.168.122.1", "0" => "192.168.122.2" }
       #
       # @param key [Symbol] Key base name (without the suffix)
       # @param type [Symbol] Type to convert the values to
       # @return [Hash<String, Object>]
-      # TODO: simplify
       def fetch_collection(key, type)
         collection_keys(key).each_with_object({}) do |k, h|
-          index = key == k ? :default : k.sub(prefix, "")
+          index = key == k ? :default : k.sub(key, "")
           h[index] = fetch_scalar(k, type)
         end
       end
 
       def collection_keys(key)
-        prefix = "#{key}_"
         collection_keys = defined_variables.select do |k|
-          k == key || k.start_with?(prefix)
+          k == key || k.start_with?(key)
         end
         other_keys = self.class.variables.keys - [key]
         collection_keys - other_keys

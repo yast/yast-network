@@ -68,8 +68,8 @@ describe Y2Network::Sysconfig::InterfaceFile do
 
       it "returns a hash with IP addresses indexed by their suffixes" do
         expect(file.ipaddrs).to eq(
-          "0" => Y2Network::IPAddress.from_string("192.168.123.1/24"),
-          "1" => Y2Network::IPAddress.from_string("10.0.0.1"),
+          "_0" => Y2Network::IPAddress.from_string("192.168.123.1/24"),
+          "_1" => Y2Network::IPAddress.from_string("10.0.0.1"),
         )
       end
     end
@@ -125,7 +125,7 @@ describe Y2Network::Sysconfig::InterfaceFile do
     let(:interface_name) { "wlan2" }
 
     it "returns the list of keys" do
-      expect(file.wireless_keys).to eq(default: "0-1-2-3-4-5", "1" => "s:password")
+      expect(file.wireless_keys).to eq("_0" => "0-1-2-3-4-5", "_1" => "s:password")
     end
   end
 
@@ -173,14 +173,14 @@ describe Y2Network::Sysconfig::InterfaceFile do
   end
 
   describe "#clean" do
-    subject(:file) { described_class.new("eth0") }
+    let(:interface_name) { "eth1" }
 
     it "removes all known values from the file" do
       file.clean
       file.save
 
       content = file_content(scr_root, file)
-      expect(content).to include("BROADCAST=''")
+      expect(content).to match("IPADDR_0=''")
     end
   end
 end
