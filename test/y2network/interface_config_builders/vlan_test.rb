@@ -4,6 +4,7 @@ require_relative "../../test_helper"
 
 require "yast"
 require "y2network/interface_config_builders/vlan"
+require "y2network/interface_type"
 
 describe Y2Network::InterfaceConfigBuilders::Vlan do
   subject(:config_builder) do
@@ -13,8 +14,8 @@ describe Y2Network::InterfaceConfigBuilders::Vlan do
   end
 
   describe "#type" do
-    it "returns 'vlan'" do
-      expect(subject.type).to eq "vlan"
+    it "returns vlan type" do
+      expect(subject.type).to eq Y2Network::InterfaceType::VLAN
     end
   end
 

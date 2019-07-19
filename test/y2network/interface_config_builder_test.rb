@@ -7,8 +7,7 @@ require "y2network/interface_config_builder"
 
 describe Y2Network::InterfaceConfigBuilder do
   subject(:config_builder) do
-    res = Y2Network::InterfaceConfigBuilder.new
-    res.type = "eth"
+    res = Y2Network::InterfaceConfigBuilder.for("eth")
     res.name = "eth0"
     res
   end
@@ -16,17 +15,17 @@ describe Y2Network::InterfaceConfigBuilder do
   describe ".for" do
     context "specialized class for given type exists" do
       it "returns new instance of that class" do
-        expect(described_class.for("ib").class.to_s).to eq "Y2Network::InterfaceConfigBuilders::Ib"
+        expect(described_class.for("ib").class.to_s).to eq "Y2Network::InterfaceConfigBuilders::Infiniband"
       end
     end
 
     context "specialized class for given type does NOT exist" do
       it "returns instance of InterfaceConfigBuilder" do
-        expect(described_class.for("generic-device").class).to eq described_class
+        expect(described_class.for("eth").class).to eq described_class
       end
 
-      it "sets type to passed type" do
-        expect(described_class.for("dummy").type).to eq "dummy"
+      it "sets type to passed type as InterfaceType" do
+        expect(described_class.for("dummy").type).to eq Y2Network::InterfaceType::DUMMY
       end
     end
   end

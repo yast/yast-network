@@ -4,11 +4,11 @@ require "y2network/interface_config_builder"
 
 module Y2Network
   module InterfaceConfigBuilders
-    class Bond < InterfaceConfigBuilder
+    class Bonding < InterfaceConfigBuilder
       include Yast::Logger
 
       def initialize
-        super(type: "bond")
+        super(type: InterfaceType::BONDING)
 
         # fill mandatory bond option
         @config["BOND_SLAVES"] = []

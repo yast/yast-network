@@ -20,7 +20,7 @@
 require "y2network/interface"
 
 module Y2Network
-  # This class represents an interface which does not exists in the system
+  # A physical interface that is not plugged in.
   class FakeInterface < Interface
     class << self
       # Build connection

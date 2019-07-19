@@ -24,11 +24,7 @@ require "y2network/widgets/interface_name"
 require "y2network/interface_config_builder"
 
 describe Y2Network::Widgets::InterfaceName do
-  let(:builder) do
-    res = Y2Network::InterfaceConfigBuilder.new
-    res.type = "eth"
-    res
-  end
+  let(:builder) { Y2Network::InterfaceConfigBuilder.for("eth") }
   subject { described_class.new(builder) }
 
   include_examples "CWM::ComboBox"

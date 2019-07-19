@@ -5,7 +5,7 @@ module Y2Network
   module InterfaceConfigBuilders
     class Dummy < InterfaceConfigBuilder
       def initialize
-        super(type: "dummy")
+        super(type: InterfaceType::DUMMY)
       end
 
       # (see Y2Network::InterfaceConfigBuilder#save)

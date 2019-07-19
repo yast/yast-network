@@ -6,11 +6,11 @@ Yast.import "NetworkInterfaces"
 
 module Y2Network
   module InterfaceConfigBuilders
-    class Br < InterfaceConfigBuilder
+    class Bridge < InterfaceConfigBuilder
       include Yast::Logger
 
       def initialize
-        super(type: "br")
+        super(type: InterfaceType::BRIDGE)
       end
 
       # Checks if any of given device is already configured and need adaptation for bridge
@@ -32,7 +32,12 @@ module Y2Network
         Config.find(:yast).interfaces
       end
 
-      NONBRIDGEABLE_TYPES = ["br", "tun", "usb", "wlan"].freeze
+      NONBRIDGEABLE_TYPES = [
+        InterfaceType::BRIDGE,
+        InterfaceType::TUN,
+        InterfaceType::USB,
+        InterfaceType::WIRELESS
+      ].freeze
       NONBRIDGEABLE_STARTMODE = ["nfsroot", "ifplugd"].freeze
 
       # Checks whether an interface can be bridged in particular bridge
@@ -57,8 +62,8 @@ module Y2Network
         end
 
         # exclude interfaces of type unusable for bridge
-        if NONBRIDGEABLE_TYPES.include?(iface.type.short_name)
-          log.debug("Excluding (#{iface.name}) - is #{iface.type.short_name}")
+        if NONBRIDGEABLE_TYPES.include?(iface.type)
+          log.debug("Excluding (#{iface.name}) - is #{iface.type.name}")
           return false
         end
 

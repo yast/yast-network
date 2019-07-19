@@ -523,7 +523,7 @@ module Yast
       ProgressNextStage(_("Writing routing configuration..."))
       orig = Progress.set(false)
 
-      yast_config.write
+      yast_config.write(original: system_config)
       Progress.set(orig)
       Builtins.sleep(sl)
 
