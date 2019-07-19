@@ -40,7 +40,7 @@ module Y2Network
       #
       # @return [Array<InterfaceType>] Interface types
       def all
-        @types ||= []
+        @types ||= InterfaceType.constants.map { |c| InterfaceType.const_get(c) }
       end
 
       # Returns the interface type with a given short name
@@ -87,21 +87,34 @@ module Y2Network
       name.downcase
     end
 
-    # Define types constants
-    define_type N_("Ethernet"), "eth"
-    define_type N_("Wireless"), "wlan"
-    define_type N_("Infiniband"), "ib"
-    define_type N_("Bonding"), "bond"
-    define_type N_("Bridge"), "br"
-    define_type N_("Dummy"), "dummy"
-    define_type N_("VLAN"), "vlan"
-    define_type N_("TUN"), "tun"
-    define_type N_("TAP"), "tap"
-    define_type N_("USB"), "usb"
-    # s390
-    define_type N_("QETH"), "qeth"
-    define_type N_("LCS"), "lcs"
-    define_type N_("HiperSockets"), "hsi"
-    define_type N_("FICON"), "ficon"
+    # Ethernet card, integrated or attached
+    ETHERNET = new(N_("Ethernet"), "eth")
+    # Wireless card, integrated or attached
+    WIRELESS = new(N_("Wireless"), "wlan")
+    # Infiniband card
+    INFINIBAND = new(N_("Infiniband"), "ib")
+    # Bonding device
+    BONDING = new(N_("Bonding"), "bond")
+    # bridge device
+    BRIDGE = new(N_("Bridge"), "br")
+    # virtual dummy device provided by dummy kernel module
+    DUMMY = new(N_("Dummy"), "dummy")
+    # Virtual LAN
+    VLAN = new(N_("VLAN"), "vlan")
+    # TUN virtual device provided by kernel, operates on layer3 carrying IP packagets
+    TUN = new(N_("TUN"), "tun")
+    # TAP virtual device provided by kernel, operates on layer2 carrying Ethernet frames
+    TAP = new(N_("TAP"), "tap")
+    # ethernet over usb device provided by usbnet kernel module. Do not confuse
+    # with ethernet card attached to USB slot as it is common ETHERNET type.
+    USB = new(N_("USB"), "usb")
+    # device using qeth device driver for s390. Can operate on layer2 or layer3.
+    QETH = new(N_("QETH"), "qeth")
+    # LAN-Channel-Station (LCS) network devices. S390 specific.
+    LCS = new(N_("LCS"), "lcs")
+    # HiperSockets s390 network device
+    HIPERSOCKETS = new(N_("HiperSockets"), "hsi")
+    # FICON-attached direct access storage devices. s390 specific
+    FICON = new(N_("FICON"), "ficon")
   end
 end
