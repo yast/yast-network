@@ -61,9 +61,6 @@ Requires:       yast2-xml
 # testsuite
 BuildRequires:  rubygem(%rb_default_ruby_abi:rspec)
 
-# support for reading Profile etc.
-BuildRequires:  autoyast2-installation
-
 # carrier detection
 Conflicts:      yast2-core < 2.10.6
 
