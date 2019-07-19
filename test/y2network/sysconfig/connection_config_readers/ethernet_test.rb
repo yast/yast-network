@@ -29,7 +29,8 @@ describe Y2Network::Sysconfig::ConnectionConfigReaders::Ethernet do
   let(:file) do
     instance_double(
       Y2Network::Sysconfig::InterfaceFile,
-      name:       "eth0",
+      interface:  "eth0",
+      name:       "Ethernet Card 0",
       bootproto:  :static,
       ip_address: address
     )

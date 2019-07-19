@@ -17,32 +17,27 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/connection_config/ethernet"
-
 module Y2Network
   module Sysconfig
-    module ConnectionConfigReaders
-      # This class is able to build a ConnectionConfig::Ethernet object given a
-      # Sysconfig::InterfaceFile object.
+    module ConnectionConfigWriters
+      # This class is responsible for writing the information from a ConnectionConfig::Ethernet
+      # object to the underlying system.
       class Ethernet
         # @return [Y2Network::Sysconfig::InterfaceFile]
         attr_reader :file
 
-        # Constructor
-        #
-        # @param file [Y2Network::Sysconfig::InterfaceFile] File to get interface configuration from
         def initialize(file)
           @file = file
         end
 
-        # @return [Y2Network::ConnectionConfig::Ethernet]
-        def connection_config
-          Y2Network::ConnectionConfig::Ethernet.new.tap do |conn|
-            conn.bootproto = file.bootproto
-            conn.description = file.name
-            conn.interface = file.interface
-            conn.ip_address = file.ip_address
-          end
+        # Writes connection information to the interface configuration file
+        #
+        # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
+        def write(conn)
+          file.bootproto = conn.bootproto
+          file.ipaddr = conn.ip_address
+          file.name = conn.description
+          file.startmode = conn.startmode
         end
       end
     end

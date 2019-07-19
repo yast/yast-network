@@ -19,7 +19,7 @@
 
 require "yast"
 require "pathname"
-require "ipaddr"
+require "y2network/ip_address"
 
 module Y2Network
   module Sysconfig
@@ -35,22 +35,82 @@ module Y2Network
 
         # Finds the ifcfg-* file for a given interface
         #
-        # @param name [String] Interface name
+        # @param interface [String] Interface name
         # @return [Sysconfig::InterfaceFile,nil] Sysconfig
-        def find(name)
-          return nil unless Yast::FileUtils.Exists(SYSCONFIG_NETWORK_DIR.join("ifcfg-#{name}").to_s)
-          new(name)
+        def find(interface)
+          return nil unless Yast::FileUtils.Exists(SYSCONFIG_NETWORK_DIR.join("ifcfg-#{interface}").to_s)
+          new(interface)
         end
 
-        def define_parameter(name, type = :string)
-          define_method name do
-            value = fetch(name.to_s.upcase)
+        # Defines a parameter
+        #
+        # This method adds a pair of methods to get and set the parameter's value.
+        #
+        # @param param_name [Symbol] Parameter name
+        # @param type       [Symbol] Type to be used (:string, :integer, :symbol, :ipaddr)
+        def define_parameter(param_name, type = :string)
+          params << param_name
+
+          define_method param_name do
+            return @values[param_name] if @values.key?(param_name)
+            value = fetch(param_name.to_s.upcase)
             send("value_as_#{type}", value)
           end
+
+          define_method "#{param_name}=" do |value|
+            # The `value` should be an object which responds to #to_s so its value can be written to
+            # the ifcfg file.
+            @values[param_name] = value
+          end
+        end
+
+        # Defines an array parameter
+        #
+        # This method adds a pair of methods to get and set the parameter's values.
+        #
+        # @param param_name [Symbol] Parameter name
+        # @param limit      [Integer] Maximum array size
+        # @param type       [Symbol] Type to be used (:string, :integer, :symbol, :ipaddr)
+        def define_array_parameter(param_name, limit, type = :string)
+          params << param_name
+
+          define_method "#{param_name}s" do
+            return @values[param_name] if @values.key?(param_name)
+            key = param_name.to_s.upcase
+            values = [fetch(key)]
+            values += Array.new(limit) do |idx|
+              value = fetch("#{key}_#{idx}")
+              next if value.nil?
+              send("value_as_#{type}", value)
+            end
+            values.compact
+          end
+
+          define_method "#{param_name}s=" do |value|
+            @values[param_name] = value
+          end
+        end
+
+        # Known configuration attributes/parameters
+        #
+        # A parameter is defined by using {define_parameter} or {define_array_parameter} methods.
+        #
+        # @return [Array<Symbol>]
+        def params
+          @params ||= []
         end
       end
 
-      attr_reader :name
+      # @return [String] Interface's name
+      attr_reader :interface
+
+      # !@attribute [r] ipaddr
+      #   return [Y2Network::IPAddress] IP address
+      define_parameter(:ipaddr, :ipaddr)
+
+      # !@attribute [r] name
+      #   return [String] Interface's description (e.g., "Ethernet Card 0")
+      define_parameter(:name, :string)
 
       # !@attribute [r] bootproto
       #   return [Symbol] Set up protocol (:static, :dhcp, :dhcp4, :dhcp6, :autoip, :dhcp+autoip,
@@ -64,6 +124,11 @@ module Y2Network
       # !@attribute [r] wireless_key_length
       #   @return [Integer] Length in bits for all keys used
       define_parameter(:wireless_key_length, :integer)
+
+      # Number of supported keys
+      SUPPORTED_KEYS = 4
+
+      define_array_parameter(:wireless_key, SUPPORTED_KEYS, :string)
 
       # !@attribute [r] wireless_default_key
       #   @return [Integer] Index of the default key
@@ -120,9 +185,19 @@ module Y2Network
 
       # Constructor
       #
-      # @param name [String] Interface name
-      def initialize(name)
-        @name = name
+      # @param interface [String] Interface interface
+      def initialize(interface)
+        @interface = interface
+        @values = {}
+      end
+
+      SYSCONFIG_NETWORK_PATH = Pathname.new("/etc").join("sysconfig", "network").freeze
+
+      # Returns the file path
+      #
+      # @return [Pathname]
+      def path
+        SYSCONFIG_NETWORK_PATH.join("ifcfg-#{interface}")
       end
 
       # Returns the IP address if defined
@@ -130,28 +205,32 @@ module Y2Network
       # @return [IPAddr,nil] IP address or nil if it is not defined
       def ip_address
         str = fetch("IPADDR")
-        str.nil? || str.empty? ? nil : IPAddr.new(str)
+        str.nil? || str.empty? ? nil : IPAddress.new(str)
       end
-
-      # @return [Integer] Number of supported keys
-      SUPPORTED_KEYS = 4
-
-      # List of wireless keys
-      #
-      # @return [Array<String>] Wireless keys
-      def wireless_keys
-        keys = [fetch("WIRELESS_KEY")]
-        keys += Array.new(SUPPORTED_KEYS) { |i| fetch("WIRELESS_KEY_#{i}") }
-        keys.compact
-      end
+      alias_method :ip_address, :ipaddr
 
       # Fetches a key
       #
       # @param key [String] Interface key
       # @return [Object] Value for the given key
       def fetch(key)
-        path = Yast::Path.new(".network.value.\"#{name}\".#{key}")
+        path = Yast::Path.new(".network.value.\"#{interface}\".#{key}")
         Yast::SCR.Read(path)
+      end
+
+      # Writes the changes to the file
+      #
+      # @note Writes only changed values, keeping the rest as they are.
+      def save
+        @values.each do |key, value|
+          normalized_key = key.upcase
+          if value.is_a?(Array)
+            write_array(normalized_key, value)
+          else
+            write(normalized_key, value)
+          end
+        end
+        Yast::SCR.Write(Yast::Path.new(".network"), nil)
       end
 
       # Determines the interface's type
@@ -161,6 +240,13 @@ module Y2Network
       # @return [String] Interface's type depending on the file values
       def type
         "eth"
+      end
+
+      # Empties all known values
+      #
+      # This idea is to use this method to clear all unneeded values from interface files.
+      def clean
+        @values = self.class.params.each_with_object({}) { |e, h| h[e] = nil }
       end
 
     private
@@ -187,6 +273,34 @@ module Y2Network
       # @return [Symbol,nil]
       def value_as_symbol(value)
         value.nil? || value.empty? ? nil : value.to_sym
+      end
+
+      # Converts the value into a IPAddress (or nil if empty)
+      #
+      # @param [String] value
+      # @return [Y2Network::IPAddress,nil]
+      def value_as_ipaddr(value)
+        value.nil? || value.empty? ? nil : Y2Network::IPAddress.from_string(value)
+      end
+
+      # Writes an array as a value for a given key
+      #
+      # @param key    [Symbol] Key
+      # @param values [Array<#to_s>] Values to write
+      def write_array(key, values)
+        values.each_with_index do |value, idx|
+          write("#{key}_#{idx}", value)
+        end
+      end
+
+      # Writes the value for a given key
+      #
+      # @param key   [Symbol] Key
+      # @param value [#to_s] Value to write
+      def write(key, value)
+        raw_value = value ? value.to_s : nil
+        path = Yast::Path.new(".network.value.\"#{interface}\".#{key}")
+        Yast::SCR.Write(path, raw_value)
       end
     end
   end

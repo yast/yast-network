@@ -21,6 +21,7 @@ require "yast"
 require "y2network/sysconfig_paths"
 require "y2network/sysconfig/routes_file"
 require "y2network/sysconfig/dns_writer"
+require "y2network/sysconfig/connection_config_writer"
 
 module Y2Network
   module Sysconfig
@@ -45,6 +46,7 @@ module Y2Network
         file.save
 
         write_dns_settings(config, old_config)
+        write_connections(config.connections)
       end
 
     private
@@ -164,6 +166,16 @@ module Y2Network
         old_dns = old_config.dns if old_config
         writer = Y2Network::Sysconfig::DNSWriter.new
         writer.write(config.dns, old_dns)
+      end
+
+      # Writes connections configuration
+      #
+      # @todo Handle old connections (removing those that are needed, etc.)
+      #
+      # @param conns [Array<Y2Network::ConnectionConfig::Base>] Connections to write
+      def write_connections(conns)
+        writer = Y2Network::Sysconfig::ConnectionConfigWriter.new
+        conns.each { |c| writer.write(c) }
       end
     end
   end
