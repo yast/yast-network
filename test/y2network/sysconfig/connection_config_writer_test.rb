@@ -20,7 +20,7 @@
 require_relative "../../test_helper"
 
 require "y2network/sysconfig/connection_config_writer"
-require "y2network/sysconfig/connection_config_writers/eth"
+require "y2network/sysconfig/connection_config_writers/ethernet"
 require "y2network/connection_config/ethernet"
 require "y2network/interface_type"
 
@@ -30,7 +30,7 @@ describe Y2Network::Sysconfig::ConnectionConfigWriter do
   describe "#write" do
     let(:handler) do
       instance_double(
-        Y2Network::Sysconfig::ConnectionConfigWriters::Eth,
+        Y2Network::Sysconfig::ConnectionConfigWriters::Ethernet,
         write: nil
       )
     end
@@ -51,7 +51,7 @@ describe Y2Network::Sysconfig::ConnectionConfigWriter do
 
     before do
       allow(writer).to receive(:require).and_call_original
-      allow(Y2Network::Sysconfig::ConnectionConfigWriters::Eth).to receive(:new)
+      allow(Y2Network::Sysconfig::ConnectionConfigWriters::Ethernet).to receive(:new)
         .and_return(handler)
       allow(Y2Network::Sysconfig::InterfaceFile).to receive(:new).and_return(file)
     end

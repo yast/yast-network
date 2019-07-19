@@ -22,7 +22,7 @@ module Y2Network
     module ConnectionConfigWriters
       # This class is responsible for writing the information from a ConnectionConfig::Ethernet
       # object to the underlying system.
-      class Eth
+      class Ethernet
         # @return [Y2Network::Sysconfig::InterfaceFile]
         attr_reader :file
 

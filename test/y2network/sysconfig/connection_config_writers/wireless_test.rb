@@ -18,11 +18,11 @@
 # find current contact information at www.suse.com.
 
 require_relative "../../../test_helper"
-require "y2network/sysconfig/connection_config_writers/wlan"
+require "y2network/sysconfig/connection_config_writers/wireless"
 require "y2network/sysconfig/interface_file"
 require "y2network/connection_config/wireless"
 
-describe Y2Network::Sysconfig::ConnectionConfigWriters::Wlan do
+describe Y2Network::Sysconfig::ConnectionConfigWriters::Wireless do
   subject(:handler) { described_class.new(file) }
 
   let(:file) { Y2Network::Sysconfig::InterfaceFile.new("wlan0") }

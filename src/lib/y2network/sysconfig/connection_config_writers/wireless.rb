@@ -21,7 +21,7 @@ module Y2Network
     module ConnectionConfigWriters
       # This class is responsible for writing the information from a ConnectionConfig::Wireless
       # object to the underlying system.
-      class Wlan
+      class Wireless
         # @return [Y2Network::Sysconfig::InterfaceFile]
         attr_reader :file
 

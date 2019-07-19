@@ -29,7 +29,7 @@ module Y2Network
       # @param conn [Y2Network::ConnectionConfig::Base] Connection configuration to write
       def write(conn)
         file = Y2Network::Sysconfig::InterfaceFile.new(conn.interface)
-        handler_class = find_handler_class(conn.type.short_name)
+        handler_class = find_handler_class(conn.type)
         return nil if handler_class.nil?
         file.clean
         handler_class.new(file).write(conn)
@@ -40,11 +40,11 @@ module Y2Network
 
       # Returns the class to handle a given interface type
       #
-      # @param type [Symbol]
+      # @param type [Y2Network::InterfaceType] Interface type
       # @return [Class] A class which belongs to the ConnectionConfigWriters module
       def find_handler_class(type)
-        require "y2network/sysconfig/connection_config_writers/#{type}"
-        ConnectionConfigWriters.const_get(type.to_s.capitalize)
+        require "y2network/sysconfig/connection_config_writers/#{type.file_name}"
+        ConnectionConfigWriters.const_get(type.class_name)
       rescue LoadError, NameError => e
         log.info "Unknown connection type: '#{type}'. " \
                  "Connection handler could not be loaded: #{e.message}"

@@ -19,10 +19,11 @@
 
 require_relative "../../../test_helper"
 
-require "y2network/sysconfig/connection_config_writers/eth"
+require "y2network/sysconfig/connection_config_writers/ethernet"
 require "y2network/sysconfig/interface_file"
+require "y2network/connection_config/ethernet"
 
-describe Y2Network::Sysconfig::ConnectionConfigWriters::Eth do
+describe Y2Network::Sysconfig::ConnectionConfigWriters::Ethernet do
   subject(:writer) { described_class.new(file) }
 
   let(:conn) do
