@@ -46,6 +46,7 @@ module Y2Network
         file.save
 
         write_dns_settings(config, old_config)
+        write_connections(config.connections)
       end
 
     private
@@ -78,8 +79,7 @@ module Y2Network
           file.remove
         end
 
-        write_dns_settings(config, old_config)
-        write_connections(config.connections)
+        nil
       end
 
       # Writes ip forwarding setup
