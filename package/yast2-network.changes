@@ -1,7 +1,7 @@
 -------------------------------------------------------------------
 Fri Jul 19 08:10:14 UTC 2019 - Josef Reidinger <jreidinger@suse.com>
 
-- avoid dependency on yast2-installation
+- avoid dependency on autoyast2-installation
 - 4.2.10
 
 -------------------------------------------------------------------
