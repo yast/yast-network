@@ -65,7 +65,7 @@ describe Yast::LanItems do
     # for selecting bridgable devices but imports interfaces
     # from LanItems internally
     let(:config) { Y2Network::Config.new(source: :test) }
-    let(:builder) { Y2Network::InterfaceConfigBuilder.for("bond") }
+    let(:builder) { Y2Network::InterfaceConfigBuilder.for(Y2Network::InterfaceType::BONDING) }
 
     before do
       allow(Y2Network::Config)

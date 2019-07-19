@@ -24,7 +24,7 @@ require "y2network/widgets/bridge_slaves_tab"
 require "y2network/interface_config_builder"
 
 describe Y2Network::Widgets::BridgeSlavesTab do
-  subject { described_class.new(Y2Network::InterfaceConfigBuilder.new) }
+  subject { described_class.new(Y2Network::InterfaceConfigBuilder.for("br")) }
 
   include_examples "CWM::Tab"
 end

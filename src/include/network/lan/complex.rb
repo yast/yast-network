@@ -535,9 +535,7 @@ module Yast
       true
     end
 
-    def MainDialog(init_tab, builder:)
-      @builder = builder
-
+    def MainDialog(init_tab)
       caption = _("Network Settings")
       widget_descr = {
         "tab" => CWMTab.CreateWidget(
@@ -587,8 +585,6 @@ module Yast
         ret = CWM.Run(w, {})
         break if input_done?(ret)
       end
-
-      @builder = nil
 
       ret
     end

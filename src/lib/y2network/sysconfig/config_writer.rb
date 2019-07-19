@@ -38,18 +38,7 @@ module Y2Network
         return unless config.routing
 
         write_ip_forwarding(config.routing)
-
-        # Write ifroute files
-        config.interfaces.each do |dev|
-          routes = find_routes_for(dev, config.routing.routes)
-          file = routes_file_for(dev)
-
-          # Remove ifroutes-* if empty
-          file.remove if routes.empty?
-
-          file.routes = routes
-          file.save
-        end
+        write_interface_changes(config, old_config)
 
         # update /etc/sysconfig/network/routes file
         file = routes_file_for(nil)
@@ -57,12 +46,41 @@ module Y2Network
         file.save
 
         write_dns_settings(config, old_config)
-        write_connections(config.connections)
       end
 
     private
 
       include SysconfigPaths
+
+      # Writes changes per interface
+      #
+      # @param config     [Y2Network::Config] current configuration for writing
+      # @param old_config [Y2Network::Config, nil] original configuration used
+      #                   for detecting changes. When nil, no actions related to
+      #                   configuration changes are processed.
+      def write_interface_changes(config, old_config)
+        # Write ifroute files
+        config.interfaces.each do |dev|
+          routes = find_routes_for(dev, config.routing.routes)
+          file = routes_file_for(dev)
+
+          # Remove ifroutes-* if empty or interface is not configured
+          file.remove if routes.empty? || !dev.configured
+
+          file.routes = routes
+          file.save
+        end
+
+        # Actions needed for removed interfaces
+        removed_ifaces = old_config ? old_config.interfaces.to_a - config.interfaces.to_a : []
+        removed_ifaces.each do |iface|
+          file = routes_file_for(iface)
+          file.remove
+        end
+
+        write_dns_settings(config, old_config)
+        write_connections(config.connections)
+      end
 
       # Writes ip forwarding setup
       #

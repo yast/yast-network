@@ -21,9 +21,45 @@ require_relative "../../test_helper"
 require "cwm/rspec"
 
 require "y2network/widgets/ifplugd_priority"
+require "y2network/interface_config_builder"
 
 describe Y2Network::Widgets::IfplugdPriority do
-  subject { described_class.new({}) }
+  let(:builder) do
+    res = Y2Network::InterfaceConfigBuilder.for("eth")
+    res["IFPLUGD_PRIORITY"] = "50"
+    res
+  end
+  subject { described_class.new(builder) }
 
   include_examples "CWM::IntField"
+
+  describe "#minimum" do
+    it "returns 0" do
+      expect(subject.minimum).to eq 0
+    end
+  end
+
+  describe "#maximum" do
+    it "returns 100" do
+      expect(subject.maximum).to eq 100
+    end
+  end
+
+  describe "#init" do
+    it "sets widget value to IFPLUGD_PRIORITY as integer" do
+      expect(subject).to receive(:value=).with(50)
+
+      subject.init
+    end
+  end
+
+  describe "#store" do
+    it "sets IFPLUGD_PRIORITY according to widget value as string" do
+      expect(subject).to receive(:value).and_return(20)
+
+      subject.store
+
+      expect(builder["IFPLUGD_PRIORITY"]).to eq "20"
+    end
+  end
 end

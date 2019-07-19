@@ -11,10 +11,11 @@ Yast.import "Label"
 
 module Y2Network
   module Dialogs
-    # Dialog to Edit Interface.
+    # Dialog to Edit Interface. Content of the dialog heavily depends on the interface type and
+    # change of type is not allowed after dialog creation.
     class EditInterface < CWM::Dialog
       # @param settings [InterfaceBuilder] object holding interface configuration
-      #   modified by dialog.
+      #   modified by the dialog.
       def initialize(settings)
         @settings = settings
 
@@ -47,10 +48,13 @@ module Y2Network
         VBox(CWM::Tabs.new(*tabs))
       end
 
+      # abort is just cancel as this is a sub dialog
       def abort_button
         Yast::Label.CancelButton
       end
 
+      # removes back button when editing device, but keep it when this dialog follows adding
+      # new interface
       def back_button
         # TODO: decide operation based on builder
         @settings.newly_added? ? Yast::Label.BackButton : ""

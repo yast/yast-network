@@ -159,4 +159,144 @@ describe Y2Network::Widgets::BootProtocol do
       end
     end
   end
+
+  describe "#store" do
+    before do
+      allow(subject).to receive(:value).and_return(:"bootproto_#{value}")
+    end
+
+    context "none configuration selected" do
+      let(:value) { "none" }
+
+      it "sets bootproto to ibft if ibft is selected" do
+        allow(Yast::UI).to receive(:QueryWidget).with(Id(:bootproto_ibft), :Value).and_return(true)
+
+        subject.store
+
+        expect(builder["BOOTPROTO"]).to eq "ibft"
+      end
+
+      it "sets bootproto to none if ibft is not selected" do
+        allow(Yast::UI).to receive(:QueryWidget).with(Id(:bootproto_ibft), :Value).and_return(false)
+
+        subject.store
+
+        expect(builder["BOOTPROTO"]).to eq "none"
+      end
+    end
+
+    context "static configuration selected" do
+      let(:value) { "static" }
+
+      before do
+        allow(Yast::UI).to receive(:QueryWidget).and_return("")
+      end
+
+      it "sets bootproto to static" do
+        subject.store
+
+        expect(builder["BOOTPROTO"]).to eq "static"
+      end
+
+      it "sets ipaddr to value of ip address widget" do
+        allow(Yast::UI).to receive(:QueryWidget).with(:bootproto_ipaddr, :Value).and_return("10.100.0.1")
+
+        subject.store
+
+        expect(builder["IPADDR"]).to eq "10.100.0.1"
+      end
+
+      it "sets hostname to value of hostname widget" do
+        allow(Yast::UI).to receive(:QueryWidget).with(:bootproto_hostname, :Value).and_return("test.suse.cz")
+
+        subject.store
+
+        expect(builder["HOSTNAME"]).to eq "test.suse.cz"
+      end
+
+      it "sets prefixlen when value of netmast start with '/'" do
+        allow(Yast::UI).to receive(:QueryWidget).with(:bootproto_netmask, :Value).and_return("/24")
+
+        subject.store
+
+        expect(builder["PREFIXLEN"]).to eq "24"
+      end
+
+      it "sets prefixlen for ipv6" do
+        allow(Yast::UI).to receive(:QueryWidget).with(:bootproto_netmask, :Value).and_return("124")
+
+        subject.store
+
+        expect(builder["PREFIXLEN"]).to eq "124"
+      end
+
+      it "sets netmask for ipv4 netmask value" do
+        allow(Yast::UI).to receive(:QueryWidget).with(:bootproto_netmask, :Value).and_return("255.255.0.0")
+
+        subject.store
+
+        expect(builder["NETMASK"]).to eq "255.255.0.0"
+      end
+    end
+
+    context "dynamic configuration selected" do
+      let(:value) { "dynamic" }
+
+      before do
+        allow(Yast::UI).to receive(:QueryWidget).with(:bootproto_dyn, :Value)
+          .and_return(:bootproto_auto)
+      end
+
+      it "sets bootproto to dhcp when dhcp for ipv4 and ipv6 is selected" do
+        allow(Yast::UI).to receive(:QueryWidget).with(:bootproto_dyn, :Value)
+          .and_return(:bootproto_dhcp)
+        allow(Yast::UI).to receive(:QueryWidget).with(:bootproto_dhcp_mode, :Value)
+          .and_return(:bootproto_dhcp_both)
+
+        subject.store
+
+        expect(builder["BOOTPROTO"]).to eq "dhcp"
+      end
+
+      it "sets bootproto to dhcp4 when dhcp for ipv4 only is selected" do
+        allow(Yast::UI).to receive(:QueryWidget).with(:bootproto_dyn, :Value)
+          .and_return(:bootproto_dhcp)
+        allow(Yast::UI).to receive(:QueryWidget).with(:bootproto_dhcp_mode, :Value)
+          .and_return(:bootproto_dhcp_v4)
+
+        subject.store
+
+        expect(builder["BOOTPROTO"]).to eq "dhcp4"
+      end
+
+      it "sets bootproto to dhcp6 when dhcp for ipv6 only is selected" do
+        allow(Yast::UI).to receive(:QueryWidget).with(:bootproto_dyn, :Value)
+          .and_return(:bootproto_dhcp)
+        allow(Yast::UI).to receive(:QueryWidget).with(:bootproto_dhcp_mode, :Value)
+          .and_return(:bootproto_dhcp_v6)
+
+        subject.store
+
+        expect(builder["BOOTPROTO"]).to eq "dhcp6"
+      end
+
+      it "sets bootproto to dhcp+autoip when dhcp and zeroconf is selected" do
+        allow(Yast::UI).to receive(:QueryWidget).with(:bootproto_dyn, :Value)
+          .and_return(:bootproto_dhcp_auto)
+
+        subject.store
+
+        expect(builder["BOOTPROTO"]).to eq "dhcp+autoip"
+      end
+
+      it "sets bootproto to autoip when zeroconf is selected" do
+        allow(Yast::UI).to receive(:QueryWidget).with(:bootproto_dyn, :Value)
+          .and_return(:bootproto_auto)
+
+        subject.store
+
+        expect(builder["BOOTPROTO"]).to eq "autoip"
+      end
+    end
+  end
 end

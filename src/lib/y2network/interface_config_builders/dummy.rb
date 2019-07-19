@@ -5,19 +5,18 @@ module Y2Network
   module InterfaceConfigBuilders
     class Dummy < InterfaceConfigBuilder
       def initialize
-        super(type: "dummy")
+        super(type: InterfaceType::DUMMY)
       end
 
-      # It does all operations needed for sucessfull configuration export.
+      # (see Y2Network::InterfaceConfigBuilder#save)
       #
       # In case of config builder for dummy interface type it gurantees that
       # the interface will be recognized as dummy one by the backend properly.
+      # @return [void]
       def save
         super
 
         @config["INTERFACETYPE"] = "dummy"
-
-        nil
       end
     end
   end

@@ -17,20 +17,23 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require_relative "../../test_helper"
-require "cwm/rspec"
+require "y2network/connection_config/base"
 
-require "y2network/widgets/general_tab"
-require "y2network/interface_config_builder"
+module Y2Network
+  module ConnectionConfig
+    # Configuration for bonding connections
+    #
+    # @see https://www.kernel.org/doc/Documentation/networking/bonding.txt
+    class Bonding < Base
+      # @return [Array<Interface>]
+      attr_accessor :slaves
+      # @return [String] bond driver options
+      attr_accessor :options
 
-describe Y2Network::Widgets::GeneralTab do
-  let(:builder) do
-    res = Y2Network::InterfaceConfigBuilder.for("eth")
-    res.name = "eth0"
-    res
+      def initialize
+        @slaves = []
+        @options = ""
+      end
+    end
   end
-
-  subject { described_class.new(builder) }
-
-  include_examples "CWM::Tab"
 end

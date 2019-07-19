@@ -3,18 +3,18 @@
 require_relative "../../test_helper"
 
 require "yast"
-require "y2network/interface_config_builders/ib"
+require "y2network/interface_config_builders/infiniband"
 
-describe Y2Network::InterfaceConfigBuilders::Ib do
+describe Y2Network::InterfaceConfigBuilders::Infiniband do
   subject(:config_builder) do
-    res = Y2Network::InterfaceConfigBuilders::Ib.new
+    res = Y2Network::InterfaceConfigBuilders::Infiniband.new
     res.name = "ib0"
     res
   end
 
   describe "#type" do
-    it "returns 'ib'" do
-      expect(subject.type).to eq "ib"
+    it "returns infiniband interface type" do
+      expect(subject.type).to eq Y2Network::InterfaceType::INFINIBAND
     end
   end
 

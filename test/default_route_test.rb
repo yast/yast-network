@@ -3,6 +3,7 @@
 require_relative "test_helper"
 
 require "network/install_inf_convertor"
+require "y2network/interface_config_builder"
 
 describe "Yast::LanItemsClass" do
   subject { Yast::LanItems }
@@ -101,9 +102,8 @@ describe "Yast::LanItemsClass" do
     subject.Read
     subject.current = 0
 
-    builder = Y2Network::InterfaceConfigBuilder.new
+    builder = Y2Network::InterfaceConfigBuilder.for("eth")
     builder.name = subject.GetCurrentName()
-    builder.type = subject.GetCurrentType()
     subject.SetItem(builder: builder)
 
     subject.Commit(builder)

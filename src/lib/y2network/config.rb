@@ -101,9 +101,14 @@ module Y2Network
 
     # Writes the configuration into the YaST modules
     #
+    # Writes only changes agains original configuration if the original configuration
+    # is provided
+    #
+    # @param original [Y2Network::Config] configuration used for detecting changes
+    #
     # @see Y2Network::ConfigWriter
-    def write
-      Y2Network::ConfigWriter.for(source).write(self)
+    def write(original: nil)
+      Y2Network::ConfigWriter.for(source).write(self, original)
     end
 
     # Returns a deep-copy of the configuration

@@ -1,6 +1,8 @@
 require "yast"
 require "cwm/custom_widget"
 
+require "y2network/interface_type"
+
 Yast.import "DNS"
 Yast.import "Hostname"
 Yast.import "IP"
@@ -87,7 +89,7 @@ module Y2Network
 
       def ibft_available?
         # IBFT only for eth, is it correct?
-        @settings["IFCFGTYPE"] == "eth"
+        @settings.type == Y2Network::InterfaceType::ETHERNET
       end
 
       def init

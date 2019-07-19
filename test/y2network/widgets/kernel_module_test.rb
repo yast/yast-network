@@ -25,9 +25,7 @@ require "y2network/interface_config_builder"
 
 describe Y2Network::Widgets::KernelModule do
   let(:builder) do
-    res = Y2Network::InterfaceConfigBuilder.new
-    res.type = "eth"
-    res
+    Y2Network::InterfaceConfigBuilder.for("eth")
   end
   subject { described_class.new(builder) }
 

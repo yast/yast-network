@@ -24,7 +24,7 @@ module Y2Network
     module ConnectionConfigReaders
       # This class is able to build a ConnectionConfig::Ethernet object given a
       # Sysconfig::InterfaceFile object.
-      class Eth
+      class Ethernet
         # @return [Y2Network::Sysconfig::InterfaceFile]
         attr_reader :file
 

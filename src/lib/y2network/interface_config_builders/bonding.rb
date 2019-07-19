@@ -4,11 +4,11 @@ require "y2network/interface_config_builder"
 
 module Y2Network
   module InterfaceConfigBuilders
-    class Bond < InterfaceConfigBuilder
+    class Bonding < InterfaceConfigBuilder
       include Yast::Logger
 
       def initialize
-        super(type: "bond")
+        super(type: InterfaceType::BONDING)
 
         # fill mandatory bond option
         @config["BOND_SLAVES"] = []
@@ -19,10 +19,25 @@ module Y2Network
         interfaces.all.select { |i| bondable?(i) }
       end
 
+      # @return [String] options for bonding
+      attr_writer :bond_options
+      # current options for bonding
+      def bond_options
+        return @bond_options if @bond_options
+
+        @bond_options = Yast::LanItems.bond_option
+        if @bond_options.nil? || @bond_options.empty?
+          @bond_options = @config["BONDING_MODULE_OPTS"]
+        end
+        @bond_options
+      end
+
+      # (see Y2Network::InterfaceConfigBuilder#save)
       def save
         super
 
         Yast::LanItems.bond_slaves = @config["BOND_SLAVES"]
+        Yast::LanItems.bond_option = bond_options
       end
 
     private

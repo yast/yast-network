@@ -5,11 +5,12 @@ Yast.import "LanItems"
 
 module Y2Network
   module InterfaceConfigBuilders
-    class Ib < InterfaceConfigBuilder
+    class Infiniband < InterfaceConfigBuilder
       def initialize
-        super(type: "ib")
+        super(type: InterfaceType::INFINIBAND)
       end
 
+      # @return [String] ipoib mode configuration
       attr_writer :ipoib_mode
 
       # Returns current value of infiniband mode
@@ -23,7 +24,7 @@ module Y2Network
         end
       end
 
-      # It does all operations needed for sucessfull configuration export.
+      # (see Y2Network::InterfaceConfigBuilder#save)
       #
       # In case of config builder for Ib interface type it sets infiniband's
       # mode to reasonable default when not set explicitly.
