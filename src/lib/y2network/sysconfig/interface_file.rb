@@ -371,14 +371,25 @@ module Y2Network
 
       # Writes an array as a value for a given key
       #
-      # @param key    [Symbol] Key
+      # @param key    [String] Key
       # @param values [Array<#to_s>] Values to write
+      # @see #clean_collection
       def write_collection(key, values)
-        # clean old values
+        clean_collection(key)
         values.each do |suffix, value|
           write_key = suffix == :default ? key : "#{key}_#{suffix}"
           write_scalar(write_key, value)
         end
+      end
+
+      # Cleans all values from a collection
+      #
+      # @todo There is no way to remove elements from the configuration file so we are setting them
+      #   to blank. However, using CFA might be an alternative.
+      #
+      # @param key [String] Key
+      def clean_collection(key)
+        collection_keys(key).each { |k| write_scalar(k, "") }
       end
 
       # Writes the value for a given key
