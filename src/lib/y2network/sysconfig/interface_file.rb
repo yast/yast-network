@@ -125,7 +125,7 @@ module Y2Network
       #   @return [Integer] Length in bits for all keys used
       define_parameter(:wireless_key_length, :integer)
 
-      # @return [Integer] Number of supported keys
+      # Number of supported keys
       SUPPORTED_KEYS = 4
 
       define_array_parameter(:wireless_key, SUPPORTED_KEYS, :string)
