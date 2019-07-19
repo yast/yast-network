@@ -41,5 +41,9 @@ module Y2Network
       require "y2network/startmodes"
       Startmodes.constants.map { |c| Startmodes.const_get(c).new }
     end
+
+    def ==(other)
+      name == other.name
+    end
   end
 end

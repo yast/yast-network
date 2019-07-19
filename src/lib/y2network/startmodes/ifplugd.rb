@@ -36,6 +36,10 @@ module Y2Network
       def to_human_string
         _("On Cable Connection")
       end
+
+      def ==(other)
+        name == other.name && priority == other.priority
+      end
     end
   end
 end
