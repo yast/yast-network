@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Jul 19 08:10:14 UTC 2019 - Josef Reidinger <jreidinger@suse.com>
+
+- avoid dependency on autoyast2-installation
+- 4.2.10
+
+-------------------------------------------------------------------
 Wed Jul 17 10:30:31 UTC 2019 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
 
 - Revamp UI internals, adding new widgets, sequences and
