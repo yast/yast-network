@@ -53,8 +53,8 @@ module Y2Network
         Yast::Label.CancelButton
       end
 
-      # removes back button when editing device, but keep it when this dialog is
-      # followed by add followed add
+      # removes back button when editing device, but keep it when this dialog follows adding
+      # new interface
       def back_button
         # TODO: decide operation based on builder
         @settings.newly_added? ? Yast::Label.BackButton : ""
