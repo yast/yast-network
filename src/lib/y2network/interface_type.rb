@@ -60,6 +60,8 @@ module Y2Network
     # Constructor
     #
     # @param name [String] Type name
+    # @param short_name [String] short name as is used for prefixing of
+    #   interface name (e.g. bond, eth or wlan)
     def initialize(name, short_name)
       textdomain "network"
       @name = name
