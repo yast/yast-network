@@ -27,13 +27,13 @@ module Y2Network
       def contents
         type = @settings.type
 
-        drvtype = driver_type(type)
+        drvtype = driver_type(type.short_name)
         # TODO: check if this kind of device is still valid and used
         is_ptp = drvtype == "ctc" || drvtype == "iucv"
         # TODO: dynamic for dummy. or add dummy from outside?
         no_dhcp =
           is_ptp ||
-          type == "dummy"
+          type.dummy?
 
         address_p2p_contents = Frame(
           "", # labelless frame
@@ -61,10 +61,10 @@ module Y2Network
         end
 
         label = HBox(
-          type == "vlan" ? VBox(HBox(VlanInterface.new(@settings), VlanID.new(@settings))) : Empty()
+          type.vlan? ? VBox(HBox(VlanInterface.new(@settings), VlanID.new(@settings))) : Empty()
         )
 
-        address_contents = if ["tun", "tap"].include?(type)
+        address_contents = if type.tun? || type.tap?
           # TODO: move it to own tab or general as it does not fit here
           VBox(Left(label), Tunnel.new(@settings))
         else

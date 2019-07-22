@@ -330,7 +330,7 @@ module Yast
         # in related sysconfig scripts or makes no sence for slaves (e.g. ip configuration).
         builder["NETMASK"] = ""
         builder["BOOTPROTO"] = "none"
-        case master_builder.type
+        case master_builder.type.short_name
         when "bond"
           LanItems.startmode = "hotplug"
           # If there is already a rule based on the bus_id, do not update it.

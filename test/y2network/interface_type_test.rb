@@ -35,4 +35,18 @@ describe Y2Network::InterfaceType do
       expect(described_class.all.first).to be_a described_class
     end
   end
+
+  describe "#<name>?" do
+    it "returns true if name is same as in method name" do
+      expect(ethernet.ethernet?).to eq true
+      expect(ethernet.wireless?).to eq false
+    end
+  end
+
+  describe "#<shortname>?" do
+    it "returns true if short_name is same as in method name" do
+      expect(ethernet.eth?).to eq true
+      expect(ethernet.wlan?).to eq false
+    end
+  end
 end

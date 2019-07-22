@@ -49,7 +49,7 @@ module Y2Network
 
     # @return [String] Device name (eth0, wlan0, etc.)
     attr_accessor :name
-    # @return [String] type of @see Y2Network::Interface which is intended to be build (e.g. "eth")
+    # @return [Y2Network::InterfaceType] type of @see Y2Network::Interface which is intended to be build
     attr_accessor :type
 
     # Constructor

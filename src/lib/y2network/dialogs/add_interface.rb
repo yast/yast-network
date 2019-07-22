@@ -11,7 +11,7 @@ module Y2Network
     # Dialog which starts new device creation
     class AddInterface < CWM::Dialog
       def initialize(default: nil)
-        @type_widget = Widgets::InterfaceType.new(default: default)
+        @type_widget = Widgets::InterfaceType.new(default: default ? default.short_name : nil)
       end
 
       def contents

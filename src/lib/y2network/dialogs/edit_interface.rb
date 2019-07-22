@@ -31,7 +31,7 @@ module Y2Network
         addr_tab = Widgets::AddressTab.new(@settings)
         addr_tab.initial = true
 
-        tabs = case @settings.type
+        tabs = case @settings.type.short_name
         when "vlan"
           [Widgets::GeneralTab.new(@settings), addr_tab]
         when "tun", "tap"
