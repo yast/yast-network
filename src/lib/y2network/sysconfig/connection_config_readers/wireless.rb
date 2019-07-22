@@ -51,7 +51,7 @@ module Y2Network
           end
         end
 
-        private
+      private
 
         # Max number of wireless keys
         MAX_WIRELESS_KEYS = 4

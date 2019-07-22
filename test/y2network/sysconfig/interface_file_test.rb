@@ -22,7 +22,7 @@ require "y2network/sysconfig/interface_file"
 require "tmpdir"
 
 describe Y2Network::Sysconfig::InterfaceFile do
-  subject(:file) { described_class.new(interface_name).tap { |f| f.load } }
+  subject(:file) { described_class.new(interface_name).tap(&:load) }
 
   let(:interface_name) { "eth0" }
 
@@ -69,7 +69,7 @@ describe Y2Network::Sysconfig::InterfaceFile do
       it "returns a hash with IP addresses indexed by their suffixes" do
         expect(file.ipaddrs).to eq(
           "_0" => Y2Network::IPAddress.from_string("192.168.123.1/24"),
-          "_1" => Y2Network::IPAddress.from_string("10.0.0.1"),
+          "_1" => Y2Network::IPAddress.from_string("10.0.0.1")
         )
       end
     end
@@ -87,7 +87,7 @@ describe Y2Network::Sysconfig::InterfaceFile do
     let(:interface_name) { "eth2" }
 
     it "sets the bootproto" do
-      addresses = { default: Y2Network::IPAddress.from_string("10.0.0.1")}
+      addresses = { default: Y2Network::IPAddress.from_string("10.0.0.1") }
       expect { file.ipaddrs = addresses }
         .to change { file.ipaddrs }.from({}).to(addresses)
     end
