@@ -47,7 +47,7 @@ describe Y2Network::Sysconfig::ConnectionConfigReaders::Wireless do
         interface:             "wlan0",
         name:                  "Wireless Card 0",
         bootproto:             "static",
-        startmode:            "auto",
+        startmode:             "auto",
         ip_address:            address,
         wireless_auth_mode:    "eap",
         wireless_eap_mode:     "PEAP",
@@ -160,7 +160,7 @@ describe Y2Network::Sysconfig::ConnectionConfigReaders::Wireless do
         wireless_auth_mode: :open,
         wireless_mode:      :managed,
         bootproto:          "static",
-        startmode:          "auto",
+        startmode:          "auto"
       ).as_null_object
     end
 
