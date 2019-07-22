@@ -29,6 +29,8 @@ module Y2Network
       attr_accessor :remote_address
       # @return [IPAddress,nil] Broadcast address
       attr_accessor :broadcast
+      # @return [Symbol,String] ID (needed for sysconfig backend in order to write suffixes in
+      attr_accessor :id
 
       # Constructor
       #
