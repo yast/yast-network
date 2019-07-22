@@ -45,7 +45,6 @@ module Y2Network
             Y2Network::ConnectionConfig::IPConfig.new(
               ip,
               id:             id,
-              scope:          file.scopes[id],
               label:          file.labels[id],
               remote_address: file.remote_ipaddrs[id],
               broadcast:      file.broadcasts[id]

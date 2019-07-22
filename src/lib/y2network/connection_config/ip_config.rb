@@ -21,8 +21,6 @@ module Y2Network
     class IPConfig
       # @return [IPAddress] IP address
       attr_accessor :address
-      # @return [Symbol] Address scope (:global, :site, :link or :host)
-      attr_accessor :scope
       # @return [String,nil] Address label
       attr_accessor :label
       # @return [IPAddress,nil] Remote IP address of a point to point connection
@@ -37,14 +35,12 @@ module Y2Network
       # @param address [IPAddress]
       # @param id      [Symbol,String] ID (needed for sysconfig backend in order to write suffixes in
       #   ifcfg-* files)
-      # @param scope   [Symbol]
       # @param label   [String,nil]
       # @param remote_address [IPaddress,nil]
       # @param broadcast [IPaddress,nil]
-      def initialize(address, id: nil, scope: nil, label: nil, remote_address: nil, broadcast: nil)
+      def initialize(address, id: nil, label: nil, remote_address: nil, broadcast: nil)
         @address = address
         @id = id || :default
-        @scope = scope || :global
         @label = label
         @remote_address = remote_address
         @broadcast = broadcast

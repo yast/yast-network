@@ -143,10 +143,6 @@ module Y2Network
       #   @return [Symbol] When the interface should be set up (:manual, :auto, :hotplug, :nfsroot, :off)
       define_variable(:startmode, :symbol)
 
-      # !@attribute [r] scopes
-      #   @return [Hash] Scopes of the area where addresses are valid (:global, :site, :link, :host)
-      define_collection_parameter(:scope, :symbol)
-
       # !@attribute [r] labels
       #   @return [Hash] Label to assign to the address
       define_collection_parameter(:label, :symbol)
