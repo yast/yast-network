@@ -97,19 +97,10 @@ module Yast
               HSpacing(2),
               VBox(
                 VSpacing(1),
-                HBox(
-                  # TextEntry label
-                  InputField(
-                    Id(:qeth_portname),
-                    Opt(:hstretch),
-                    _("&Port Name"),
-                    LanItems.qeth_portname
-                  ),
-                  ComboBox(
-                    Id(:qeth_portnumber),
-                    _("Port Number"),
-                    [Item(Id("0"), "0", true), Item(Id("1"), "1")]
-                  )
+                ComboBox(
+                  Id(:qeth_portnumber),
+                  _("Port Number"),
+                  [Item(Id("0"), "0", true), Item(Id("1"), "1")]
                 ),
                 VSpacing(1),
                 # TextEntry label
@@ -165,12 +156,8 @@ module Yast
           ),
           HSpacing(6)
         )
-        # S/390 dialog help: QETH Port name
+        # S/390 dialog help: QETH Options
         helptext = _(
-          "<p>Enter the <b>Port Name</b> for this interface (case-sensitive).</p>"
-        ) +
-          # S/390 dialog help: QETH Options
-          _(
             "<p>Enter any additional <b>Options</b> for this interface (separated by spaces).</p>"
           ) +
           _(
@@ -352,7 +339,7 @@ module Yast
 
       id = case builder.type.short_name
       when "hsi"  then :qeth_options
-      when "qeth" then :qeth_portname
+      when "qeth" then :qeth_options
       when "iucv" then :iucv_user
       else             :chan_mode
       end
@@ -414,8 +401,6 @@ module Yast
             LanItems.qeth_portnumber = Convert.to_string(
               UI.QueryWidget(Id(:qeth_portnumber), :Value)
             )
-            LanItems.qeth_portname = Convert.to_string(
-              UI.QueryWidget(Id(:qeth_portname), :Value)
             )
           end
           read = Convert.to_string(UI.QueryWidget(Id(:qeth_chan_read), :Value))

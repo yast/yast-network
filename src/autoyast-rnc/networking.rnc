@@ -100,6 +100,7 @@ device =
     element type { text }? &
     element layer2 { BOOLEAN}? &
     element chanids { text }? &
+    # ignored, present for backward compatibility
     element portname { text }? &
     element protocol { text }? &
     element router { text }?
