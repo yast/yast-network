@@ -26,11 +26,14 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Wireless do
   subject(:handler) { described_class.new(file) }
 
   let(:file) { Y2Network::Sysconfig::InterfaceFile.new("wlan0") }
+
   let(:conn) do
     Y2Network::ConnectionConfig::Wireless.new.tap do |conn|
+      conn.interface = "wlan0"
+      conn.description = "Wireless Card 0"
       conn.startmode = :auto
       conn.bootproto = :static
-      conn.ip_address = address
+      conn.ip_configs = ip_configs
       conn.mode = "managed"
       conn.essid = "example_essid"
       conn.auth_mode = :open
@@ -38,19 +41,38 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Wireless do
       conn.ap_scanmode = "1"
     end
   end
-  let(:address) { IPAddr.new("192.168.122.100") }
+
+  let(:ip_configs) do
+    [
+      Y2Network::ConnectionConfig::IPConfig.new(
+        address: "192.168.122.1/24", id: :default,
+        broadcast: Y2Network::IPAddress.from_string("192.168.122.255")
+      ),
+      Y2Network::ConnectionConfig::IPConfig.new(address: Y2Network::IPAddress.from_string("10.0.0.1/8"),
+        id: "_0", label: "my-label", remote_address: Y2Network::IPAddress.from_string("10.0.0.2"))
+    ]
+  end
 
   it "sets relevant attributes" do
     handler.write(conn)
     expect(file).to have_attributes(
       startmode:            :auto,
       bootproto:            :static,
-      ipaddr:               address,
       wireless_mode:        conn.mode,
       wireless_essid:       conn.essid,
       wireless_auth_mode:   :open,
       wireless_ap:          conn.ap,
       wireless_ap_scanmode: conn.ap_scanmode
+    )
+  end
+
+  it "sets IP configuration attributes" do
+    handler.write(conn)
+    expect(file).to have_attributes(
+      ipaddrs:        { default: ip_configs[0].address, "_0" => ip_configs[1].address },
+      broadcasts:     { default: ip_configs[0].broadcast, "_0" => nil },
+      remote_ipaddrs: { default: nil, "_0" => ip_configs[1].remote_address },
+      labels:         { default: nil, "_0" => "my-label" }
     )
   end
 
