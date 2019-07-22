@@ -90,7 +90,7 @@ module Y2Network
         #
         # @param param_name [Symbol] Parameter name
         # @param type       [Symbol] Array elements type (:string, :integer, :symbol, :ipaddr)
-        def define_collection_parameter(param_name, type = :string)
+        def define_collection_variable(param_name, type = :string)
           name = variable_name(param_name)
           variables[name] = Variable.new(name, type, true)
 
@@ -105,7 +105,7 @@ module Y2Network
 
         # Known configuration variables
         #
-        # A variable is defined by using {define_variable} or {define_collection_parameter} methods.
+        # A variable is defined by using {define_variable} or {define_collection_variable} methods.
         #
         # @return [Array<Symbol>]
         def variables
@@ -128,7 +128,7 @@ module Y2Network
 
       # !@attribute [r] ipaddr
       #   @return [Y2Network::IPAddress] IP address
-      define_collection_parameter(:ipaddr, :ipaddr)
+      define_collection_variable(:ipaddr, :ipaddr)
 
       # !@attribute [r] name
       #   @return [String] Interface's description (e.g., "Ethernet Card 0")
@@ -147,11 +147,11 @@ module Y2Network
 
       # !@attribute [r] labels
       #   @return [Hash] Label to assign to the address
-      define_collection_parameter(:label, :symbol)
+      define_collection_variable(:label, :symbol)
 
       # !@attribute [r] remote_ipaddrs
       #   @return [Hash] Remote IP address of a point to point connection
-      define_collection_parameter(:remote_ipaddr, :ipaddr)
+      define_collection_variable(:remote_ipaddr, :ipaddr)
 
       # !@attribute [r] ifplugd_priority
       #   return [Integer] when startmode is set to ifplugd this defines its priority. Not handled
@@ -160,22 +160,22 @@ module Y2Network
 
       # !@attribute [r] broadcasts
       #   @return [Hash] Broadcasts addresses
-      define_collection_parameter(:broadcast, :ipaddr)
+      define_collection_variable(:broadcast, :ipaddr)
 
       # !@attribute [r] prefixlens
       #   @return [Hash] Prefixes lengths
-      define_collection_parameter(:prefixlen, :ipaddr)
+      define_collection_variable(:prefixlen, :ipaddr)
 
       # !@attribute [r] netmasks
       #   @return [Hash] Netmasks
-      define_collection_parameter(:netmask, :ipaddr)
+      define_collection_variable(:netmask, :ipaddr)
       # !@attribute [r] wireless_key_length
       #   @return [Integer] Length in bits for all keys used
       define_variable(:wireless_key_length, :integer)
 
       # !@attribute [r] wireless_keys
       #   @return [Array<String>] List of wireless keys
-      define_collection_parameter(:wireless_key, :string)
+      define_collection_variable(:wireless_key, :string)
 
       # !@attribute [r] wireless_default_key
       #   @return [Integer] Index of the default key
