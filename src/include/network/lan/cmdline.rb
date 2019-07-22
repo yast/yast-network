@@ -300,7 +300,7 @@ module Yast
     def update_builder_from_options!(builder, options)
       case builder.type.short_name
       when "bond"
-        builder["BOND_SLAVES"] = options.fetch("slaves", "").split(" ")
+        builder.slaves = options.fetch("slaves", "").split(" ")
       when "vlan"
         builder["ETHERDEVICE"] = options.fetch("ethdevice", "")
       when "br"

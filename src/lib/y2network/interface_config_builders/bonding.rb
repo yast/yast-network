@@ -11,7 +11,7 @@ module Y2Network
         super(type: InterfaceType::BONDING)
 
         # fill mandatory bond option
-        @config["BOND_SLAVES"] = []
+        @slaves = []
       end
 
       # @return [Array<Interface>] list of interfaces usable for the bond device
@@ -32,11 +32,19 @@ module Y2Network
         @bond_options
       end
 
+      def slaves
+        @slaves
+      end
+
+      def slaves=(value)
+        @slaves = value
+      end
+
       # (see Y2Network::InterfaceConfigBuilder#save)
       def save
         super
 
-        Yast::LanItems.bond_slaves = @config["BOND_SLAVES"]
+        Yast::LanItems.bond_slaves = @slaves
         Yast::LanItems.bond_option = bond_options
       end
 

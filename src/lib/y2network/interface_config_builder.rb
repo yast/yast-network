@@ -342,7 +342,7 @@ module Y2Network
       return true if !Yast::Arch.is_laptop
       return true if Yast::NetworkService.is_network_manager
       # virtual devices cannot expect any event from ifplugd
-      return true if ["bond", "vlan", "br"].include? type
+      return true if ["bond", "vlan", "br"].include? type.short_name
 
       false
     end
