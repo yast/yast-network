@@ -21,6 +21,11 @@ require "yast"
 
 module Y2Network
   # This class represents the interface types which are supported.
+  # Class have helpers to check if given type is what needed. It check name and also short name:
+  # @example check for ethernet cards
+  #    type.ethernet?
+  # @example check for wifi
+  #    type.wlan?
   class InterfaceType
     extend Yast::I18n
     include Yast::I18n
@@ -77,6 +82,27 @@ module Y2Network
     # @return [String]
     def file_name
       name.downcase
+    end
+
+    def respond_to_missing?(method_name, _include_private = false)
+      return false unless method_name.to_s.end_with?("?")
+
+      target_name = method_name.to_s[0..-2]
+      InterfaceType.all.any? do |type|
+        type.name.downcase == target_name ||
+          type.short_name == target_name
+      end
+    end
+
+    def method_missing(method_name, *arguments, &block)
+      return super unless respond_to_missing?(method_name)
+
+      if !arguments.empty?
+        raise ArgumentError, "no params are accepted for method #{method_name}"
+      end
+
+      target_name = method_name.to_s[0..-2]
+      [name.downcase, short_name].include?(target_name)
     end
 
     # Ethernet card, integrated or attached

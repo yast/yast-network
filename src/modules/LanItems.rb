@@ -1747,7 +1747,7 @@ module Yast
       newdev = setup_dhclient_options(newdev)
 
       # FIXME: network-ng currently works for eth only
-      case builder.type
+      case builder.type.short_name
       when "bond"
         # we need current slaves - when some of them is not used anymore we need to
         # configure it for deletion from ifcfg (SCR expects special value nil)
@@ -1835,7 +1835,7 @@ module Yast
         newdev["WIRELESS_POWER"] = @wl_power ? "yes" : "no"
       end
 
-      if DriverType(builder.type) == "ctc"
+      if DriverType(builder.type.short_name) == "ctc"
         if Ops.get(NetworkConfig.Config, "WAIT_FOR_INTERFACES").nil? ||
             Ops.less_than(
               Ops.get_integer(NetworkConfig.Config, "WAIT_FOR_INTERFACES", 0),

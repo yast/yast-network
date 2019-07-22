@@ -298,7 +298,7 @@ module Yast
     # @param builder [Y2Network::InterfaceConfigBuilder]
     # @param options [Hash{String => String}] action options
     def update_builder_from_options!(builder, options)
-      case builder.type
+      case builder.type.short_name
       when "bond"
         builder["BOND_SLAVES"] = options.fetch("slaves", "").split(" ")
       when "vlan"

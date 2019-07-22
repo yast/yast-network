@@ -76,12 +76,12 @@ module Yast
       # S/390 dialog caption
       caption = _("S/390 Network Card Configuration")
 
-      drvtype = DriverType(builder.type)
+      drvtype = DriverType(builder.type.short_name)
 
       helptext = ""
       contents = Empty()
 
-      if Builtins.contains(["qeth", "hsi"], builder.type)
+      if Builtins.contains(["qeth", "hsi"], builder.type.short_name)
         # CHANIDS
         tmp_list = Builtins.splitstring(LanItems.qeth_chanids, " ")
         chanids_map = {
@@ -351,7 +351,7 @@ module Yast
         )
       end
 
-      id = case builder.type
+      id = case builder.type.short_name
       when "hsi"  then :qeth_options
       when "qeth" then :qeth_portname
       when "iucv" then :iucv_user
@@ -376,7 +376,7 @@ module Yast
         when :back
           break
         when :next
-          if builder.type == "iucv"
+          if builder.type.short_name == "iucv"
             LanItems.device = Ops.add(
               "id-",
               Convert.to_string(UI.QueryWidget(Id(:iucv_user), :Value))
@@ -386,12 +386,12 @@ module Yast
             )
           end
 
-          if builder.type == "ctc"
+          if builder.type.short_name == "ctc"
             LanItems.chan_mode = Convert.to_string(
               UI.QueryWidget(Id(:chan_mode), :Value)
             )
           end
-          if builder.type == "lcs"
+          if builder.type.short_name == "lcs"
             LanItems.lcs_timeout = Convert.to_string(
               UI.QueryWidget(Id(:lcs_timeout), :Value)
             )
@@ -399,7 +399,7 @@ module Yast
               UI.QueryWidget(Id(:chan_mode), :Value)
             )
           end
-          if builder.type == "qeth" || builder.type == "hsi"
+          if builder.type.short_name == "qeth" || builder.type.short_name == "hsi"
             LanItems.qeth_options = Convert.to_string(
               UI.QueryWidget(Id(:qeth_options), :Value)
             )

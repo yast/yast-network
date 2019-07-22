@@ -106,7 +106,7 @@ module Yast
       # rollback if changes are canceled, as still some widgets edit LanItems directly
       LanItems.Rollback if ret != :next
       # proceed with WLAN settings if appropriate, #42420
-      ret = :wire if ret == :next && builder.type == "wlan"
+      ret = :wire if ret == :next && builder.type.wireless?
 
       log.info "AddressDialog res: #{ret.inspect}"
       ret

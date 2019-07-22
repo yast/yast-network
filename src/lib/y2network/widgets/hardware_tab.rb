@@ -47,7 +47,7 @@ module Y2Network
       end
 
       def eth?
-        @settings.type == "eth"
+        @settings.type.ethernet?
       end
     end
   end
