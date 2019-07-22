@@ -17,36 +17,28 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/sysconfig/connection_config_readers/base"
-require "y2network/connection_config/bonding"
-
 module Y2Network
   module Sysconfig
-    module ConnectionConfigReaders
-      # This class is able to build a ConnectionConfig::Bonding object given a
-      # SysconfigInterfaceFile object.
-      class Bonding < Base
+    module ConnectionConfigWriters
+      # This class is responsible for writing the information from a ConnectionConfig::Dummy
+      # object to the underlying system.
+      class Dummy
         # @return [Y2Network::Sysconfig::InterfaceFile]
         attr_reader :file
 
-        # Constructor
-        #
-        # @param file [Y2Network::Sysconfig::InterfaceFile] File to get
-        #   interface configuration from
         def initialize(file)
           @file = file
         end
 
-        # @return [Y2Network::ConnectionConfig::Bonding]
-        def connection_config
-          Y2Network::ConnectionConfig::Bonding.new.tap do |conn|
-            conn.interface = file.interface
-            conn.description = file.name
-            conn.bootproto = file.bootproto
-            conn.ip_configs = ip_configs
-            conn.slaves = file.bonding_slaves
-            conn.options = file.bonding_module_opts
-          end
+        # Writes connection information to the interface configuration file
+        #
+        # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
+        def write(conn)
+          file.bootproto = conn.bootproto
+          file.ipaddr = conn.ip_address
+          file.name = conn.description
+          file.startmode = conn.startmode
+          file.interfacetype = conn.interface.type.to_s
         end
       end
     end

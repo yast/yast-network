@@ -20,6 +20,7 @@
 require "yast"
 require "pathname"
 require "y2network/ip_address"
+require "y2network/interface_type"
 
 module Y2Network
   module Sysconfig
@@ -135,6 +136,10 @@ module Y2Network
       #   @return [String] Interface's description (e.g., "Ethernet Card 0")
       define_variable(:name, :string)
 
+      # !@attribute [r] interfacetype
+      #   @return [String] Forced Interface's type (e.g., "dummy")
+      define_variable(:interfacetype, :string)
+
       # !@attribute [r] bootproto
       #   return [String] Set up protocol (static, dhcp, dhcp4, dhcp6, autoip, dhcp+autoip,
       #                   auto6, 6to4, none)
@@ -236,39 +241,32 @@ module Y2Network
 
       # @!attribute [r] ipoib_mode
       #   @return [String] IPOIB mode ("connected" or "datagram")
-      define_parameter(:ipoib_mode)
+      define_variable(:ipoib_mode)
 
       ## BONDING
 
-      # @return [Integer] Number of bonding slaves supported
-      MAX_BONDS = 10
-
-      # List of bonding slaves
-      #
-      # @return [Array<String>] Bonding slaves
-      def bonding_slaves
-        keys = Array.new(MAX_BONDS) { |i| fetch("BONDING_SLAVE#{i}") }
-        keys.compact
-      end
+      # @!attribute [r] bonding slaves
+      #   @return [Array<String>] Bonding slaves
+      define_collection_parameter(:bonding_slave)
 
       # @!attribute [r] bonding_module_opts
       #   @return [String] options for the bonding module ('mode=active-backup
       #                     miimon=100')
-      define_parameter(:bonding_module_opts)
+      define_variable(:bonding_module_opts)
 
       ## BRIDGE
 
       # @!attribute [r] bridge_ports
       #   @return [String] interfaces members of the bridge
-      define_parameter(:bridge_ports)
+      define_variable(:bridge_ports)
 
       # @!attribute [r] bridge_stp
       #   @return [String] Spanning Tree Protocol ("off" or "on")
-      define_parameter(:bridge_stp)
+      define_variable(:bridge_stp)
 
       # @!attribute [r] bridge_forwarddelay
       #   @return [Integer]
-      define_parameter(:bridge_forwarddelay, :integer)
+      define_variable(:bridge_forwarddelay, :integer)
 
       # Constructor
       #
@@ -317,7 +315,10 @@ module Y2Network
       #
       # @return [String] Interface's type depending on the file values
       def type
-        "eth"
+        return InterfaceType::DUMMY if @values["INTERFACETYPE"] == "dummy"
+        return InterfaceType::BONDING if defined_variables.any? { |k| k.start_with?("BOND") }
+        return InterfaceType::BRIDGE if defined_variables.any? { |k| k.start_with?("BRIDGE") }
+        return InterfaceType::ETHERNET
       end
 
       # Empties all known values

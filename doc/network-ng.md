@@ -61,7 +61,12 @@ The sysconfig backend support is composed by these files:
     ├── config_writer.rb <- WRITER
     ├── connection_config_reader.rb
     ├── connection_config_readers
+    │   ├── bonding.rb
+    │   ├── bridge.rb
+    │   ├── dummy.rb
     │   ├── ethernet.rb
+    │   ├── infiniband.rb
+    │   ├── vlan.rb
     │   ├── wireless.rb
     │   └── ...
     ├── connection_config_writer.rb
