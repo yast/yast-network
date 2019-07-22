@@ -49,6 +49,11 @@ module Y2Network
       # @return [String] Connection's description (e.g., "Ethernet Card 0")
       attr_accessor :description
 
+      # Constructor
+      def initialize
+        @ip_configs = []
+      end
+
       # Returns the connection type
       #
       # Any subclass could define this method is the default
