@@ -28,6 +28,7 @@ require "network/install_inf_convertor"
 require "network/wicked"
 require "network/lan_items_summary"
 require "y2network/config"
+require "y2network/boot_protocol"
 
 require "shellwords"
 
@@ -1396,14 +1397,18 @@ module Yast
     # from DHCP (v4, v6 or both)
     # @return true if it is
     def isCurrentDHCP
-      Builtins.regexpmatch(@bootproto, "dhcp[46]?")
+      return false unless @bootproto
+
+      Y2Network::BootProtocol.from_name(@bootproto).dhcp?
     end
 
     # Checks whether given device configuration is set to use a dhcp bootproto
     #
     # ideally should replace @see isCurrentDHCP
     def dhcp?(devmap)
-      ["dhcp4", "dhcp6", "dhcp", "dhcp+autoip"].include?(devmap["BOOTPROTO"])
+      return false unless devmap["BOOTPROTO"]
+
+      Y2Network::BootProtocol.from_name(devmap["BOOTPROTO"]).dhcp?
     end
 
     def GetItemDescription

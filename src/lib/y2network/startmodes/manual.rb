@@ -17,22 +17,25 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require_relative "../test_helper"
+require "y2network/startmode"
 
-describe Y2Network::InterfaceType do
-  subject(:ethernet) { described_class.from_short_name("eth") }
+module Y2Network
+  module Startmodes
+    # Manual startmode
+    #
+    # Interface will be set up if ip is called manually
+    class Manual < Startmode
+      include Yast::I18n
 
-  describe ".from_short_name" do
-    it "returns the type for a given shortname" do
-      type = described_class.from_short_name("wlan")
-      expect(type).to be(Y2Network::InterfaceType::WIRELESS)
-    end
-  end
+      def initialize
+        textdomain "network"
 
-  describe ".all" do
-    it "returns all known interface types" do
-      expect(described_class.all).to_not be_empty
-      expect(described_class.all.first).to be_a described_class
+        super("manual")
+      end
+
+      def to_human_string
+        _("Manually")
+      end
     end
   end
 end

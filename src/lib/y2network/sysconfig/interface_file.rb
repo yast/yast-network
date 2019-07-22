@@ -113,13 +113,20 @@ module Y2Network
       define_parameter(:name, :string)
 
       # !@attribute [r] bootproto
-      #   return [Symbol] Set up protocol (:static, :dhcp, :dhcp4, :dhcp6, :autoip, :dhcp+autoip,
-      #                   :auto6, :6to4, :none)
-      define_parameter(:bootproto, :symbol)
+      #   return [String] Set up protocol (static, dhcp, dhcp4, dhcp6, autoip, dhcp+autoip,
+      #                   auto6, 6to4, none)
+      define_parameter(:bootproto)
 
       # !@attribute [r] bootproto
-      #   return [Symbol] When the interface should be set up (:manual, :auto, :hotplug, :nfsroot, :off)
-      define_parameter(:startmode, :symbol)
+      #   return [String] When the interface should be set up (manual, auto, hotplug, nfsroot, off,
+      #     and ifplugd which is not handled by wicked, but by ifplugd daemon and is not mentioned
+      #     in man page)
+      define_parameter(:startmode)
+
+      # !@attribute [r] ifplugd_priority
+      #   return [Integer] when startmode is set to ifplugd this defines its priority. Not handled
+      #   by wicked, but own daemon. Not documented in man page.
+      define_parameter(:ifplugd_priority, :symbol)
 
       # !@attribute [r] wireless_key_length
       #   @return [Integer] Length in bits for all keys used

@@ -20,6 +20,8 @@
 require_relative "../../../test_helper"
 
 require "y2network/sysconfig/connection_config_writers/ethernet"
+require "y2network/boot_protocol"
+require "y2network/startmode"
 require "y2network/sysconfig/interface_file"
 require "y2network/connection_config/ethernet"
 
@@ -31,9 +33,9 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Ethernet do
       Y2Network::ConnectionConfig::Ethernet,
       interface:   "eth0",
       description: "Ethernet Card 0",
-      bootproto:   :static,
+      bootproto:   Y2Network::BootProtocol::STATIC,
       ip_address:  IPAddr.new("192.168.122.1"),
-      startmode:   :auto
+      startmode:   Y2Network::Startmode.create("auto")
     )
   end
   let(:file) { instance_double(Y2Network::Sysconfig::InterfaceFile) }
@@ -45,9 +47,9 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Ethernet do
   describe "#write" do
     it "updates ethernet related properties" do
       expect(file).to receive(:name=).with(conn.description)
-      expect(file).to receive(:bootproto=).with(conn.bootproto)
+      expect(file).to receive(:bootproto=).with("static")
       expect(file).to receive(:ipaddr=).with(conn.ip_address)
-      expect(file).to receive(:startmode=).with(conn.startmode)
+      expect(file).to receive(:startmode=).with("auto")
       writer.write(conn)
     end
   end

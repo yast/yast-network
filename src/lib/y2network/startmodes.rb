@@ -1,0 +1,6 @@
+require "y2network/startmodes/auto"
+require "y2network/startmodes/hotplug"
+require "y2network/startmodes/ifplugd"
+require "y2network/startmodes/manual"
+require "y2network/startmodes/nfsroot"
+require "y2network/startmodes/off"

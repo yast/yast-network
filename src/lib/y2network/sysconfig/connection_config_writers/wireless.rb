@@ -33,10 +33,11 @@ module Y2Network
         #
         # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
         def write(conn)
-          file.bootproto = conn.bootproto
+          file.bootproto = conn.bootproto.name
           file.ipaddr = conn.ip_address
           file.name = conn.description
-          file.startmode = conn.startmode
+          file.startmode = conn.startmode.to_s
+          file.ifplugd_priority = conn.startmode.priority if conn.startmode.name == "ifplugd"
           file.wireless_ap = conn.ap
           file.wireless_ap_scanmode = conn.ap_scanmode
           file.wireless_essid = conn.essid
