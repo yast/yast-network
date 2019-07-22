@@ -43,8 +43,8 @@ module Y2Network
             prefix = file.prefixlens[id]
             ip.prefix = prefix if prefix
             Y2Network::ConnectionConfig::IPConfig.new(
+              ip,
               id:             id,
-              address:        ip,
               scope:          file.scopes[id],
               label:          file.labels[id],
               remote_address: file.remote_ipaddrs[id],

@@ -41,7 +41,7 @@ module Y2Network
       # @param label   [String,nil]
       # @param remote_address [IPaddress,nil]
       # @param broadcast [IPaddress,nil]
-      def initialize(address:, id: nil, scope: nil, label: nil, remote_address: nil, broadcast: nil)
+      def initialize(address, id: nil, scope: nil, label: nil, remote_address: nil, broadcast: nil)
         @address = address
         @id = id || :default
         @scope = scope || :global

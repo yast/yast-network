@@ -46,11 +46,13 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Ethernet do
   let(:ip_configs) do
     [
       Y2Network::ConnectionConfig::IPConfig.new(
-        address: "192.168.122.1/24", id: :default,
-        broadcast: Y2Network::IPAddress.from_string("192.168.122.255")
+        Y2Network::IPAddress.from_string("192.168.122.1/24"), id:        :default,
+                                                              broadcast: Y2Network::IPAddress.from_string("192.168.122.255")
       ),
-      Y2Network::ConnectionConfig::IPConfig.new(address: Y2Network::IPAddress.from_string("10.0.0.1/8"),
-        id: "_0", label: "my-label", remote_address: Y2Network::IPAddress.from_string("10.0.0.2"))
+      Y2Network::ConnectionConfig::IPConfig.new(
+        Y2Network::IPAddress.from_string("10.0.0.1/8"), id: "_0",
+        label: "my-label", remote_address: Y2Network::IPAddress.from_string("10.0.0.2")
+      )
     ]
   end
 
