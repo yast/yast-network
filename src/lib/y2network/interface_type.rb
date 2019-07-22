@@ -21,6 +21,11 @@ require "yast"
 
 module Y2Network
   # This class represents the interface types which are supported.
+  # Class have helpers to check if given type is what needed. It check name and also short name:
+  # @example check for ethernet cards
+  #    type.ethernet?
+  # @example check for wifi
+  #    type.wlan?
   class InterfaceType
     extend Yast::I18n
     include Yast::I18n
