@@ -112,6 +112,8 @@ module Y2Network
           @variables ||= {}
         end
 
+      private
+
         # Parameter name to internal variable name
         #
         # @param param_name [Symbol]
