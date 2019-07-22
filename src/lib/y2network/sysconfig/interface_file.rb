@@ -318,7 +318,9 @@ module Y2Network
         return InterfaceType::DUMMY if @values["INTERFACETYPE"] == "dummy"
         return InterfaceType::BONDING if defined_variables.any? { |k| k.start_with?("BOND") }
         return InterfaceType::BRIDGE if defined_variables.any? { |k| k.start_with?("BRIDGE") }
-        return InterfaceType::ETHERNET
+        return InterfaceType::WIRELESS if defined_variables.any? { |k| k.start_with?("WIRELESS") }
+
+        InterfaceType::ETHERNET
       end
 
       # Empties all known values
