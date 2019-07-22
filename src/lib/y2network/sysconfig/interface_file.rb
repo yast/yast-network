@@ -237,6 +237,16 @@ module Y2Network
       #   @return [String] Network ID
       define_variable(:wireless_nwid)
 
+      ## VLAN
+
+      # !@attribute [r] etherdevice
+      #   @return [String] Real device for the virtual LAN
+      define_variable(:etherdevice, :string)
+
+      # !@attribute [r] vlan_id
+      #   @return [String] VLAN ID
+      define_variable(:vlan_id, :integer)
+
       ## INFINIBAND
 
       # @!attribute [r] ipoib_mode
@@ -319,6 +329,8 @@ module Y2Network
         return InterfaceType::BONDING if defined_variables.any? { |k| k.start_with?("BOND") }
         return InterfaceType::BRIDGE if defined_variables.any? { |k| k.start_with?("BRIDGE") }
         return InterfaceType::WIRELESS if defined_variables.any? { |k| k.start_with?("WIRELESS") }
+        return InterfaceType::VLAN if defined_variables.include? ("ETHERDEVICE")
+        return InterfaceType::INFINIBAND if defined_variables.include? ("IPOIB_MODE")
 
         InterfaceType::ETHERNET
       end

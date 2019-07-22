@@ -31,6 +31,8 @@ module Y2Network
       # no specific interface then it could be activated by the first available
       # device.
       #
+      # @return [String] Connection name
+      attr_accessor :name
       # #FIXME: Maybe it could be a matcher instead of an Interface, or just a
       # the interface name by now.
       #

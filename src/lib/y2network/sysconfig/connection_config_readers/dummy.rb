@@ -29,6 +29,7 @@ module Y2Network
         # @return [Y2Network::ConnectionConfig::Dummy]
         def connection_config
           Y2Network::ConnectionConfig::Dummy.new.tap do |conn|
+            conn.name = file.interface
             conn.bootproto = file.bootproto
             conn.description = file.name
             conn.interface = file.interface

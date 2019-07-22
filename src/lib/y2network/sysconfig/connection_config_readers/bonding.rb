@@ -40,6 +40,7 @@ module Y2Network
         # @return [Y2Network::ConnectionConfig::Bonding]
         def connection_config
           Y2Network::ConnectionConfig::Bonding.new.tap do |conn|
+            conn.name = file.interface
             conn.interface = file.interface
             conn.description = file.name
             conn.bootproto = file.bootproto

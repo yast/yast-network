@@ -17,14 +17,15 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/connection_config/bridge"
+require "y2network/sysconfig/connection_config_readers/base"
+require "y2network/connection_config/infiniband"
 
 module Y2Network
   module Sysconfig
     module ConnectionConfigReaders
-      # This class is able to build a ConnectionConfig::Bridge object given a
+      # This class is able to build a ConnectionConfig::Infiniband object given a
       # SysconfigInterfaceFile object.
-      class Bridge
+      class Infiniband < Base
         # @return [Y2Network::Sysconfig::InterfaceFile]
         attr_reader :file
 
@@ -36,16 +37,15 @@ module Y2Network
           @file = file
         end
 
-        # @return [Y2Network::ConnectionConfig::Bridge]
+        # @return [Y2Network::ConnectionConfig::Infiniband]
         def connection_config
-          Y2Network::ConnectionConfig::Bridge.new.tap do |conn|
+          Y2Network::ConnectionConfig::Infiniband.new.tap do |conn|
             conn.name = file.interface
             conn.interface = file.interface
+            conn.description = file.name
             conn.bootproto = file.bootproto
-            conn.ip_address = file.ip_address
-            conn.ports = file.bridge_ports.split(" ")
-            conn.stp = file.bridge_stp
-            conn.forward_delay = file.bridge_forwarddelay
+            conn.ipoib_mode = file.ipoib_mode
+            conn.ip_configs = ip_configs
           end
         end
       end
