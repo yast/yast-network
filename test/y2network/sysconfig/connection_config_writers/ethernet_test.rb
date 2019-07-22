@@ -22,9 +22,37 @@ require_relative "../../../test_helper"
 require "y2network/sysconfig/connection_config_writers/ethernet"
 require "y2network/sysconfig/interface_file"
 require "y2network/connection_config/ethernet"
+require "y2network/connection_config/ip_config"
 
 describe Y2Network::Sysconfig::ConnectionConfigWriters::Ethernet do
-  subject(:writer) { described_class.new(file) }
+  subject(:handler) { described_class.new(file) }
+
+  def file_content(scr_root, file)
+    path = File.join(scr_root, file.path.to_s)
+    File.read(path)
+  end
+
+  let(:scr_root) { Dir.mktmpdir }
+
+  around do |example|
+    begin
+      FileUtils.cp_r(File.join(DATA_PATH, "scr_read", "etc"), scr_root)
+      change_scr_root(scr_root, &example)
+    ensure
+      FileUtils.remove_entry(scr_root)
+    end
+  end
+
+  let(:ip_configs) do
+    [
+      Y2Network::ConnectionConfig::IPConfig.new(
+        address: "192.168.122.1/24", id: :default,
+        broadcast: Y2Network::IPAddress.from_string("192.168.122.255")
+      ),
+      Y2Network::ConnectionConfig::IPConfig.new(address: Y2Network::IPAddress.from_string("10.0.0.1/8"),
+        id: "_0", label: "my-label", remote_address: Y2Network::IPAddress.from_string("10.0.0.2"))
+    ]
+  end
 
   let(:conn) do
     instance_double(
@@ -32,23 +60,31 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Ethernet do
       interface:   "eth0",
       description: "Ethernet Card 0",
       bootproto:   :static,
-      ip_address:  IPAddr.new("192.168.122.1"),
+      ip_configs:  ip_configs,
       startmode:   :auto
     )
   end
-  let(:file) { instance_double(Y2Network::Sysconfig::InterfaceFile) }
 
-  before do
-    allow(Y2Network::Sysconfig::InterfaceFile).to receive(:new).and_return(file)
-  end
+  let(:file) { Y2Network::Sysconfig::InterfaceFile.find(conn.interface) }
 
   describe "#write" do
-    it "updates ethernet related properties" do
-      expect(file).to receive(:name=).with(conn.description)
-      expect(file).to receive(:bootproto=).with(conn.bootproto)
-      expect(file).to receive(:ipaddr=).with(conn.ip_address)
-      expect(file).to receive(:startmode=).with(conn.startmode)
-      writer.write(conn)
+    it "updates common properties" do
+      handler.write(conn)
+      expect(file).to have_attributes(
+        name:      conn.description,
+        bootproto: :static,
+        startmode: :auto
+      )
+    end
+
+    it "sets IP configuration attributes" do
+      handler.write(conn)
+      expect(file).to have_attributes(
+        ipaddrs:        { default: ip_configs[0].address, "_0" => ip_configs[1].address },
+        broadcasts:     { default: ip_configs[0].broadcast, "_0" => nil },
+        remote_ipaddrs: { default: nil, "_0" => ip_configs[1].remote_address },
+        labels:         { default: nil, "_0" => "my-label" }
+      )
     end
   end
 end

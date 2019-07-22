@@ -17,22 +17,34 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/sysconfig/connection_config_writers/base"
+require "y2network/connection_config/ip_config"
 
 module Y2Network
   module Sysconfig
     module ConnectionConfigWriters
-      # This class is responsible for writing the information from a ConnectionConfig::Ethernet
-      # object to the underlying system.
-      class Ethernet < Base
-        # Writes connection information to the interface configuration file
+      class Base
+        # @return [Y2Network::Sysconfig::InterfaceFile] Interface's configuration file
+        attr_reader :file
+
+        # Constructor
         #
-        # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
-        def write(conn)
-          file.bootproto = conn.bootproto
-          file.name = conn.description
-          file.startmode = conn.startmode
-          write_ip_configs(conn.ip_configs)
+        # @param file [Y2Network::Sysconfig::InterfaceFile] Interface's configuration file
+        def initialize(file)
+          @file = file
+        end
+
+      private
+
+        # Write IP configuration
+        #
+        # @param ip_configs [Array<Y2Network::ConnectionConfig::IPConfig>] IPs configuration
+        def write_ip_configs(ip_configs)
+          ip_configs.each do |ip_config|
+            file.ipaddrs[ip_config.id] = ip_config.address
+            file.labels[ip_config.id] = ip_config.label
+            file.remote_ipaddrs[ip_config.id] = ip_config.remote_address
+            file.broadcasts.merge!(ip_config.id => ip_config.broadcast)
+          end
         end
       end
     end
