@@ -96,28 +96,28 @@ describe Y2Network::Sysconfig::InterfaceFile do
   describe "#bootproto" do
     let(:bootproto) { "static" }
 
-    it "returns the bootproto as a symbol" do
-      expect(file.bootproto).to eq(:static)
+    it "returns the bootproto as a string" do
+      expect(file.bootproto).to eq("static")
     end
   end
 
   describe "#bootproto=" do
     it "sets the bootproto" do
-      expect { file.bootproto = :dhcp }.to change { file.bootproto }.from(:static).to(:dhcp)
+      expect { file.bootproto = "dhcp" }.to change { file.bootproto }.from("static").to("dhcp")
     end
   end
 
   describe "#startmode" do
     let(:startmode) { "auto" }
 
-    it "returns the startmode as a symbol" do
-      expect(file.startmode).to eq(:auto)
+    it "returns the startmode as a string" do
+      expect(file.startmode).to eq("auto")
     end
   end
 
   describe "#startmode=" do
     it "sets the startmode" do
-      expect { file.startmode = :manual }.to change { file.startmode }.from(:auto).to(:manual)
+      expect { file.startmode = "manual" }.to change { file.startmode }.from("auto").to("manual")
     end
   end
 

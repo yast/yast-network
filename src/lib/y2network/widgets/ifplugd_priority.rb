@@ -35,11 +35,11 @@ module Y2Network
       end
 
       def init
-        self.value = @config["IFPLUGD_PRIORITY"].to_i
+        self.value = @config.ifplugd_priority
       end
 
       def store
-        @config["IFPLUGD_PRIORITY"] = value.to_s
+        @config.ifplugd_priority = value.to_i
       end
     end
   end

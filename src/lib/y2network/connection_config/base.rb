@@ -36,16 +36,14 @@ module Y2Network
       #
       # @return [Interface, nil]
       attr_accessor :interface
-      # @return [Symbol] Choose when the interface should be set up (manual, auto, nfsroot, hotplug,
-      #   off)
-      attr_accessor :startmode
-      # @return [Symbol] Bootproto (static, dhcp, ,dhcp4, dhcp6, autoip,
-      #   dhcp+autoip, auto6, 6to4, none)
+      # @return [BootProtocol] Bootproto
       attr_accessor :bootproto
       # @return [Array<IPConfig>]
       attr_accessor :ip_configs
       # @return [Integer, nil]
       attr_accessor :mtu
+      # @return [Startmode, nil]
+      attr_accessor :startmode
       # @return [String] Connection's description (e.g., "Ethernet Card 0")
       attr_accessor :description
 

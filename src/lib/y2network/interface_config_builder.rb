@@ -18,7 +18,9 @@
 # find current contact information at www.suse.com.
 require "yast"
 
+require "y2network/connection_config/base"
 require "y2network/hwinfo"
+require "y2network/startmode"
 require "y2firewall/firewalld"
 require "y2firewall/firewalld/interface"
 
@@ -47,7 +49,7 @@ module Y2Network
 
     # @return [String] Device name (eth0, wlan0, etc.)
     attr_accessor :name
-    # @return [String] type of @see Y2Network::Interface which is intended to be build (e.g. "eth")
+    # @return [Y2Network::InterfaceType] type of @see Y2Network::Interface which is intended to be build
     attr_accessor :type
 
     # Constructor
@@ -58,6 +60,8 @@ module Y2Network
       @type = type
       @config = init_device_config({})
       @s390_config = init_device_s390_config({})
+      # TODO: create specialized connection for type
+      @connection_config = ConnectionConfig::Base.new
     end
 
     def newly_added?
@@ -143,6 +147,37 @@ module Y2Network
     # sets assigned firewall zone
     def firewall_zone=(value)
       @firewall_zone = value
+    end
+
+    # @return [Startmode]
+    def startmode
+      # in future use only @connection_config and just delegate method
+      startmode = Startmode.create(@config["STARTMODE"])
+      startmode.priority = @config["IFPLUGD_PRIORITY"] if startmode.name == "ifplugd"
+      startmode
+    end
+
+    # @param [String] name startmode name used to create Startmode object
+    def startmode=(name)
+      mode = Startmode.create(name)
+      # assign only if it is not already this value. This helps with ordering of ifplugd_priority
+      @connection_config.startmode = mode if @connection_config.startmode.name != mode.name
+      @config["STARTMODE"] = mode.name
+    end
+
+    # @param [Integer] value priority value
+    def ifplugd_priority=(value)
+      @config["IFPLUGD_PRIORITY"] = value.to_s
+      if !@connection_config.startmode || @connection_config.startmode.name != "ifplugd"
+        @connection_config.startmode = Startmode.create("ifplugd")
+      end
+      @connection_config.startmode.priority = value.to_i
+    end
+
+    # @return [Integer]
+    def ifplugd_priority
+      # in future use only @connection_config and just delegate method
+      @config["IFPLUGD_PRIORITY"].to_i
     end
 
     # gets currently assigned kernel module

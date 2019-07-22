@@ -20,6 +20,8 @@
 require_relative "../../../test_helper"
 require "y2network/sysconfig/connection_config_writers/wireless"
 require "y2network/sysconfig/interface_file"
+require "y2network/boot_protocol"
+require "y2network/startmode"
 require "y2network/connection_config/wireless"
 
 describe Y2Network::Sysconfig::ConnectionConfigWriters::Wireless do
@@ -31,8 +33,8 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Wireless do
     Y2Network::ConnectionConfig::Wireless.new.tap do |conn|
       conn.interface = "wlan0"
       conn.description = "Wireless Card 0"
-      conn.startmode = :auto
-      conn.bootproto = :static
+      conn.startmode = Y2Network::Startmode.create("auto")
+      conn.bootproto = Y2Network::BootProtocol::STATIC
       conn.ip_configs = ip_configs
       conn.mode = "managed"
       conn.essid = "example_essid"
@@ -58,8 +60,8 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Wireless do
   it "sets relevant attributes" do
     handler.write(conn)
     expect(file).to have_attributes(
-      startmode:            :auto,
-      bootproto:            :static,
+      startmode:            "auto",
+      bootproto:            "static",
       wireless_mode:        conn.mode,
       wireless_essid:       conn.essid,
       wireless_auth_mode:   :open,
@@ -81,6 +83,10 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Wireless do
   context "WPA-EAP network configuration" do
     let(:conn) do
       Y2Network::ConnectionConfig::Wireless.new.tap do |conn|
+        conn.startmode = Y2Network::Startmode.create("auto")
+        conn.bootproto = Y2Network::BootProtocol::STATIC
+        conn.mode = "managed"
+        conn.essid = "example_essid"
         conn.auth_mode = "eap"
         conn.eap_mode = "PEAP"
         conn.essid = "example_essid"
@@ -102,6 +108,9 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Wireless do
   context "WPA-PSK network configuration" do
     let(:conn) do
       Y2Network::ConnectionConfig::Wireless.new.tap do |conn|
+        conn.startmode = Y2Network::Startmode.create("auto")
+        conn.bootproto = Y2Network::BootProtocol::STATIC
+        conn.mode = "managed"
         conn.auth_mode = "psk"
         conn.wpa_psk = "example_psk"
       end
@@ -119,6 +128,9 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Wireless do
   context "WEP network configuration" do
     let(:conn) do
       Y2Network::ConnectionConfig::Wireless.new.tap do |conn|
+        conn.startmode = Y2Network::Startmode.create("auto")
+        conn.bootproto = Y2Network::BootProtocol::STATIC
+        conn.mode = "managed"
         conn.auth_mode = "shared"
         conn.keys = ["123456", "abcdef"]
         conn.key_length = 128

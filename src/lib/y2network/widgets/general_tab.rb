@@ -42,8 +42,8 @@ module Y2Network
                 VSpacing(0.4),
                 Frame(_("Firewall Zone"), HBox(FirewallZone.new(@settings), HStretch())),
                 VSpacing(0.4),
-                type == "ib" ? HBox(IPoIBMode.new(@settings)) : Empty(),
-                type == "ib" ? VSpacing(0.4) : Empty(),
+                type.infiniband? ? HBox(IPoIBMode.new(@settings)) : Empty(),
+                type.infiniband? ? VSpacing(0.4) : Empty(),
                 Frame(
                   _("Maximum Transfer Unit (MTU)"),
                   HBox(MTU.new(@settings), HStretch())

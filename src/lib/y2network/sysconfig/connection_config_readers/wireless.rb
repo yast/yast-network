@@ -19,6 +19,8 @@
 
 require "y2network/sysconfig/connection_config_readers/base"
 require "y2network/connection_config/wireless"
+require "y2network/boot_protocol"
+require "y2network/startmode"
 
 module Y2Network
   module Sysconfig
@@ -34,7 +36,7 @@ module Y2Network
             conn.ap = file.wireless_ap
             conn.ap_scanmode = file.wireless_ap_scanmode
             conn.auth_mode = file.wireless_auth_mode
-            conn.bootproto = file.bootproto
+            conn.bootproto = BootProtocol.from_name(file.bootproto || "static")
             conn.default_key = file.wireless_default_key
             conn.description = file.name
             conn.eap_auth = file.wireless_eap_auth
@@ -46,6 +48,8 @@ module Y2Network
             conn.keys = wireless_keys
             conn.mode = file.wireless_mode
             conn.nwid = file.wireless_nwid
+            conn.startmode = Startmode.create(file.startmode || "manual")
+            conn.startmode.priority = file.ifplugd_priority if conn.startmode.name == "ifplugd"
             conn.wpa_password = file.wireless_wpa_password
             conn.wpa_psk = file.wireless_wpa_psk
           end

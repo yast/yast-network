@@ -89,7 +89,7 @@ module Y2Network
 
       def ibft_available?
         # IBFT only for eth, is it correct?
-        @settings.type == Y2Network::InterfaceType::ETHERNET
+        @settings.type.ethernet?
       end
 
       def init

@@ -135,13 +135,15 @@ module Y2Network
       define_variable(:name, :string)
 
       # !@attribute [r] bootproto
-      #   @return [Symbol] Set up protocol (:static, :dhcp, :dhcp4, :dhcp6, :autoip, :dhcp+autoip,
-      #                   :auto6, :6to4, :none)
-      define_variable(:bootproto, :symbol)
+      #   return [String] Set up protocol (static, dhcp, dhcp4, dhcp6, autoip, dhcp+autoip,
+      #                   auto6, 6to4, none)
+      define_variable(:bootproto)
 
       # !@attribute [r] bootproto
-      #   @return [Symbol] When the interface should be set up (:manual, :auto, :hotplug, :nfsroot, :off)
-      define_variable(:startmode, :symbol)
+      #   return [String] When the interface should be set up (manual, auto, hotplug, nfsroot, off,
+      #     and ifplugd which is not handled by wicked, but by ifplugd daemon and is not mentioned
+      #     in man page)
+      define_variable(:startmode)
 
       # !@attribute [r] labels
       #   @return [Hash] Label to assign to the address
@@ -150,6 +152,11 @@ module Y2Network
       # !@attribute [r] remote_ipaddrs
       #   @return [Hash] Remote IP address of a point to point connection
       define_collection_parameter(:remote_ipaddr, :ipaddr)
+
+      # !@attribute [r] ifplugd_priority
+      #   return [Integer] when startmode is set to ifplugd this defines its priority. Not handled
+      #   by wicked, but own daemon. Not documented in man page.
+      define_variable(:ifplugd_priority, :symbol)
 
       # !@attribute [r] broadcasts
       #   @return [Hash] Broadcasts addresses

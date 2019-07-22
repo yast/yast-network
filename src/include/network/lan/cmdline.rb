@@ -29,6 +29,7 @@
 
 require "shellwords"
 require "y2network/interface_config_builder"
+require "y2network/boot_protocol"
 
 module Yast
   module NetworkLanCmdlineInclude
@@ -271,7 +272,7 @@ module Yast
     # @param builder [Y2Network::InterfaceConfigBuilder]
     # @return [Boolean] true when the options are valid; false otherwise
     def validate_config(builder)
-      unless ["none", "static", "dhcp"].include? builder["BOOTPROTO"]
+      if Y2Network::BootProtocol.all.none? { |bp| bp.name == builder["BOOTPROTO"] }
         Report.Error(_("Impossible value for bootproto."))
         return false
       end
@@ -297,7 +298,7 @@ module Yast
     # @param builder [Y2Network::InterfaceConfigBuilder]
     # @param options [Hash{String => String}] action options
     def update_builder_from_options!(builder, options)
-      case builder.type
+      case builder.type.short_name
       when "bond"
         builder["BOND_SLAVES"] = options.fetch("slaves", "").split(" ")
       when "vlan"

@@ -19,6 +19,8 @@
 
 require "y2network/sysconfig/connection_config_readers/base"
 require "y2network/connection_config/ethernet"
+require "y2network/boot_protocol"
+require "y2network/startmode"
 
 module Y2Network
   module Sysconfig
@@ -29,10 +31,13 @@ module Y2Network
         # @return [Y2Network::ConnectionConfig::Ethernet]
         def connection_config
           Y2Network::ConnectionConfig::Ethernet.new.tap do |conn|
-            conn.bootproto = file.bootproto
+            # for defauls see man ifcfg
+            conn.bootproto = BootProtocol.from_name(file.bootproto || "static")
             conn.description = file.name
             conn.interface = file.interface
             conn.ip_configs = ip_configs
+            conn.startmode = Startmode.create(file.startmode || "manual")
+            conn.startmode.priority = file.ifplugd_priority if conn.startmode.name == "ifplugd"
           end
         end
       end

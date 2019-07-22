@@ -20,6 +20,8 @@
 require_relative "../../../test_helper"
 
 require "y2network/sysconfig/connection_config_writers/ethernet"
+require "y2network/boot_protocol"
+require "y2network/startmode"
 require "y2network/sysconfig/interface_file"
 require "y2network/connection_config/ethernet"
 require "y2network/connection_config/ip_config"
@@ -61,9 +63,9 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Ethernet do
       Y2Network::ConnectionConfig::Ethernet,
       interface:   "eth0",
       description: "Ethernet Card 0",
-      bootproto:   :static,
+      bootproto:   Y2Network::BootProtocol::STATIC,
       ip_configs:  ip_configs,
-      startmode:   :auto
+      startmode:   Y2Network::Startmode.create("auto")
     )
   end
 
@@ -74,8 +76,8 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Ethernet do
       handler.write(conn)
       expect(file).to have_attributes(
         name:      conn.description,
-        bootproto: :static,
-        startmode: :auto
+        bootproto: "static",
+        startmode: "auto"
       )
     end
 

@@ -28,6 +28,7 @@ require "network/install_inf_convertor"
 require "network/wicked"
 require "network/lan_items_summary"
 require "y2network/config"
+require "y2network/boot_protocol"
 
 require "shellwords"
 
@@ -1396,14 +1397,18 @@ module Yast
     # from DHCP (v4, v6 or both)
     # @return true if it is
     def isCurrentDHCP
-      Builtins.regexpmatch(@bootproto, "dhcp[46]?")
+      return false unless @bootproto
+
+      Y2Network::BootProtocol.from_name(@bootproto).dhcp?
     end
 
     # Checks whether given device configuration is set to use a dhcp bootproto
     #
     # ideally should replace @see isCurrentDHCP
     def dhcp?(devmap)
-      ["dhcp4", "dhcp6", "dhcp", "dhcp+autoip"].include?(devmap["BOOTPROTO"])
+      return false unless devmap["BOOTPROTO"]
+
+      Y2Network::BootProtocol.from_name(devmap["BOOTPROTO"]).dhcp?
     end
 
     def GetItemDescription
@@ -1742,7 +1747,7 @@ module Yast
       newdev = setup_dhclient_options(newdev)
 
       # FIXME: network-ng currently works for eth only
-      case builder.type
+      case builder.type.short_name
       when "bond"
         # we need current slaves - when some of them is not used anymore we need to
         # configure it for deletion from ifcfg (SCR expects special value nil)
@@ -1830,7 +1835,7 @@ module Yast
         newdev["WIRELESS_POWER"] = @wl_power ? "yes" : "no"
       end
 
-      if DriverType(builder.type) == "ctc"
+      if DriverType(builder.type.short_name) == "ctc"
         if Ops.get(NetworkConfig.Config, "WAIT_FOR_INTERFACES").nil? ||
             Ops.less_than(
               Ops.get_integer(NetworkConfig.Config, "WAIT_FOR_INTERFACES", 0),

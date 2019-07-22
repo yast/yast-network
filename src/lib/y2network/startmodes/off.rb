@@ -17,24 +17,24 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/sysconfig/connection_config_writers/base"
+require "y2network/startmode"
 
 module Y2Network
-  module Sysconfig
-    module ConnectionConfigWriters
-      # This class is responsible for writing the information from a ConnectionConfig::Ethernet
-      # object to the underlying system.
-      class Ethernet < Base
-        # Writes connection information to the interface configuration file
-        #
-        # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
-        def write(conn)
-          file.bootproto = conn.bootproto.name
-          file.name = conn.description
-          file.startmode = conn.startmode.to_s
-          file.ifplugd_priority = conn.startmode.priority if conn.startmode.name == "ifplugd"
-          write_ip_configs(conn.ip_configs)
-        end
+  module Startmodes
+    # disabled startmode
+    #
+    # Interface will never be activated.
+    class Off < Startmode
+      include Yast::I18n
+
+      def initialize
+        textdomain "network"
+
+        super("off")
+      end
+
+      def to_human_string
+        _("Never")
       end
     end
   end

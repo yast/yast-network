@@ -19,34 +19,33 @@
 
 require_relative "../test_helper"
 
-describe Y2Network::InterfaceType do
-  subject(:ethernet) { described_class.from_short_name("eth") }
+require "y2network/boot_protocol"
 
-  describe ".from_short_name" do
-    it "returns the type for a given shortname" do
-      type = described_class.from_short_name("wlan")
-      expect(type).to be(Y2Network::InterfaceType::WIRELESS)
-    end
-  end
+describe Y2Network::BootProtocol do
+  subject { described_class.new("dhcp") }
 
   describe ".all" do
-    it "returns all known interface types" do
+    it "returns all known boot protocols" do
       expect(described_class.all).to_not be_empty
-      expect(described_class.all.first).to be_a described_class
+      expect(described_class.all.first).to be_a(described_class)
     end
   end
 
-  describe "#<name>?" do
-    it "returns true if name is same as in method name" do
-      expect(ethernet.ethernet?).to eq true
-      expect(ethernet.wireless?).to eq false
+  describe ".from_name" do
+    it "returns boot protocol with given name" do
+      expect(described_class.from_name("dhcp4")).to eq Y2Network::BootProtocol::DHCP4
+    end
+
+    it "returns nil if given name not found" do
+      expect(described_class.from_name("dhcp8")).to eq nil
     end
   end
 
-  describe "#<shortname>?" do
-    it "returns true if short_name is same as in method name" do
-      expect(ethernet.eth?).to eq true
-      expect(ethernet.wlan?).to eq false
+  describe "#dhcp?" do
+    it "returns true if protocol at least partially is read from dhcp" do
+      expect(Y2Network::BootProtocol::DHCP4.dhcp?).to eq true
+      expect(Y2Network::BootProtocol::DHCP_AUTOIP.dhcp?).to eq true
+      expect(Y2Network::BootProtocol::STATIC.dhcp?).to eq false
     end
   end
 end
