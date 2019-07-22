@@ -130,7 +130,7 @@ describe Y2Network::Sysconfig::InterfaceFile do
   end
 
   describe "#wireless_keys=" do
-    let(:keys) { { default: "123456", "1" => "abcdef" } }
+    let(:keys) { { default: "123456", "_1" => "abcdef" } }
 
     it "sets the wireless keys" do
       expect { file.wireless_keys = keys }.to change { file.wireless_keys }.to(keys)
@@ -152,7 +152,7 @@ describe Y2Network::Sysconfig::InterfaceFile do
 
     describe "when multiple wireless keys are specified" do
       it "writes indexes keys" do
-        file.wireless_keys = { :default => "123456", "1" => "abcdef" }
+        file.wireless_keys = { :default => "123456", "_1" => "abcdef" }
         file.save
 
         content = file_content(scr_root, file)
