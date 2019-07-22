@@ -21,6 +21,9 @@ require "y2network/startmode"
 
 module Y2Network
   module Startmodes
+    # disabled startmode
+    #
+    # Interface will never be activated.
     class Off < Startmode
       include Yast::I18n
 

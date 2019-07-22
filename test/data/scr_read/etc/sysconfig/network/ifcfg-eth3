@@ -1,0 +1,6 @@
+BOOTPROTO=''
+BROADCAST=''
+MTU=''
+IPADDR=''
+NAME='Ethernet Card 0'
+STARTMODE='auto'

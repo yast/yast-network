@@ -21,6 +21,14 @@ require "y2network/startmode"
 
 module Y2Network
   module Startmodes
+    # ifplugd startmode with additional attribute for priority.
+    #
+    # Boot of interface is managed by ifplugd daemon and not wicked. So it cannot be found in
+    # ifcfg man page.
+    # Ifplugd is a daemon which will automatically configure your ethernet device when a cable
+    # is plugged in and automatically unconfigure it if the cable is pulled. This is useful on
+    # laptops with on-board network adapters, since it will only configure the interface when a
+    # cable is really connected.
     class Ifplugd < Startmode
       include Yast::I18n
       attr_accessor :priority

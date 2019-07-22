@@ -20,6 +20,7 @@
 require_relative "../../../test_helper"
 require "y2network/sysconfig/connection_config_readers/ethernet"
 require "y2network/sysconfig/interface_file"
+require "y2network/boot_protocol"
 
 describe Y2Network::Sysconfig::ConnectionConfigReaders::Ethernet do
   subject(:handler) { described_class.new(file) }
@@ -29,9 +30,11 @@ describe Y2Network::Sysconfig::ConnectionConfigReaders::Ethernet do
   let(:file) do
     instance_double(
       Y2Network::Sysconfig::InterfaceFile,
-      name:       "eth0",
-      bootproto:  :static,
-      ip_address: address
+      interface:  "eth0",
+      name:       "Ethernet Card 0",
+      bootproto:  "static",
+      ip_address: address,
+      startmode:  "auto"
     )
   end
 
@@ -39,7 +42,7 @@ describe Y2Network::Sysconfig::ConnectionConfigReaders::Ethernet do
     it "returns an ethernet connection config object" do
       eth = handler.connection_config
       expect(eth.interface).to eq("eth0")
-      expect(eth.bootproto).to eq(:static)
+      expect(eth.bootproto).to eq(Y2Network::BootProtocol::STATIC)
       expect(eth.ip_address).to eq(address)
     end
   end

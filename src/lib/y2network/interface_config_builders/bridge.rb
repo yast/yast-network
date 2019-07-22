@@ -13,6 +13,7 @@ module Y2Network
         super(type: InterfaceType::BRIDGE)
       end
 
+      # Checks if any of given device is already configured and need adaptation for bridge
       def already_configured?(devices)
         devices.any? do |device|
           next false if Yast::NetworkInterfaces.devmap(device).nil?

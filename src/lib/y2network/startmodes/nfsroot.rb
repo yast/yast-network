@@ -21,6 +21,12 @@ require "y2network/startmode"
 
 module Y2Network
   module Startmodes
+    # NFS root startmode
+    #
+    # Nearly like auto, but interfaces with this startmode will be not shut down by default.
+    # Use this mode when you use a root filesystem via network or want to avoid interface shutdown.
+    # To force a  nfsroot  interface down, use either
+    # `wicked ifdown --force device-down <interface>` or `ifdown <interface> -o force`.
     class Nfsroot < Startmode
       include Yast::I18n
 

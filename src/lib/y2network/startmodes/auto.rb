@@ -21,6 +21,13 @@ require "y2network/startmode"
 
 module Y2Network
   module Startmodes
+    # Auto start mode
+    #
+    # Interface  will  be  set  up  as  soon as it is available (and service network was started).
+    # This either happens at boot time when network is starting or via hotplug when a interface
+    # is added to the system (by adding a device or loading a driver).
+    # To be backward compliant onboot, on and boot are aliases for auto.
+    # TODO: when reading use that aliases
     class Auto < Startmode
       include Yast::I18n
 

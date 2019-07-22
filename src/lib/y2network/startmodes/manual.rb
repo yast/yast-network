@@ -21,6 +21,9 @@ require "y2network/startmode"
 
 module Y2Network
   module Startmodes
+    # Manual startmode
+    #
+    # Interface will be set up if ip is called manually
     class Manual < Startmode
       include Yast::I18n
 

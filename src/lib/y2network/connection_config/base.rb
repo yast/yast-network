@@ -46,6 +46,8 @@ module Y2Network
       attr_accessor :mtu
       # @return [Startmode, nil]
       attr_accessor :startmode
+      # @return [String] Connection's description (e.g., "Ethernet Card 0")
+      attr_accessor :description
 
       # Returns the connection type
       #

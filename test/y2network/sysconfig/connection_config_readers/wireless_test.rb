@@ -29,9 +29,10 @@ describe Y2Network::Sysconfig::ConnectionConfigReaders::Wireless do
   let(:file) do
     instance_double(
       Y2Network::Sysconfig::InterfaceFile,
-      name:                 "wlan0",
-      startmode:            :auto,
-      bootproto:            :static,
+      interface:            "wlan0",
+      name:                 "Wireless Card 0",
+      startmode:            "auto",
+      bootproto:            "static",
       ip_address:           address,
       wireless_keys:        ["0-1-2-3-4-5", "s:password"],
       wireless_default_key: 1,
@@ -43,8 +44,10 @@ describe Y2Network::Sysconfig::ConnectionConfigReaders::Wireless do
     let(:file) do
       instance_double(
         Y2Network::Sysconfig::InterfaceFile,
-        name:                  "wlan0",
-        bootproto:             :static,
+        interface:             "wlan0",
+        name:                  "Wireless Card 0",
+        bootproto:             "static",
+        startmode:            "auto",
         ip_address:            address,
         wireless_auth_mode:    "eap",
         wireless_eap_mode:     "PEAP",
@@ -88,8 +91,10 @@ describe Y2Network::Sysconfig::ConnectionConfigReaders::Wireless do
     let(:file) do
       instance_double(
         Y2Network::Sysconfig::InterfaceFile,
-        name:               "wlan0",
-        bootproto:          :static,
+        interface:          "wlan0",
+        name:               "Wireless Card 0",
+        bootproto:          "static",
+        startmode:          "auto",
         wireless_ap:        "00:11:22:33:44:55",
         wireless_auth_mode: "psk",
         wireless_wpa_psk:   "example_psk"
@@ -116,8 +121,10 @@ describe Y2Network::Sysconfig::ConnectionConfigReaders::Wireless do
     let(:file) do
       instance_double(
         Y2Network::Sysconfig::InterfaceFile,
-        name:                 "wlan0",
-        bootproto:            :static,
+        interface:            "wlan0",
+        name:                 "Wireless Card 0",
+        bootproto:            "static",
+        startmode:            "auto",
         ip_address:           address,
         wireless_auth_mode:   "shared",
         wireless_essid:       "example_ssid",
@@ -148,9 +155,12 @@ describe Y2Network::Sysconfig::ConnectionConfigReaders::Wireless do
     let(:file) do
       instance_double(
         Y2Network::Sysconfig::InterfaceFile,
-        name:               "wlan0",
+        interface:          "wlan0",
+        name:               "Wireless Card 0",
         wireless_auth_mode: :open,
-        wireless_mode:      :managed
+        wireless_mode:      :managed,
+        bootproto:          "static",
+        startmode:          "auto",
       ).as_null_object
     end
 
