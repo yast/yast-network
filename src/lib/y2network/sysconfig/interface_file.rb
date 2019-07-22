@@ -230,7 +230,9 @@ module Y2Network
       # @param interface [String] Interface interface
       def initialize(interface)
         @interface = interface
-        @values = {}
+        @values = collection_variables.each_with_object({}) do |variable, hash|
+          hash[variable.name] = {}
+        end
       end
 
       SYSCONFIG_NETWORK_PATH = Pathname.new("/etc").join("sysconfig", "network").freeze
@@ -375,7 +377,7 @@ module Y2Network
       def write_collection(key, values)
         clean_collection(key)
         values.each do |suffix, value|
-          write_key = suffix == :default ? key : "#{key}_#{suffix}"
+          write_key = suffix == :default ? key : "#{key}#{suffix}"
           write_scalar(write_key, value)
         end
       end
@@ -398,6 +400,13 @@ module Y2Network
         raw_value = value ? value.to_s : nil
         path = Yast::Path.new(".network.value.\"#{interface}\".#{key}")
         Yast::SCR.Write(path, raw_value)
+      end
+
+      # Returns the variables which are collections
+      #
+      # @return [Array<Variable>] List of collection variables
+      def collection_variables
+        self.class.variables.values.select(&:collection?)
       end
     end
   end
