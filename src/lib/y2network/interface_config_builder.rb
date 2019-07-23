@@ -240,6 +240,16 @@ module Y2Network
       @config["ETHTOOL_OPTIONS"] = value
     end
 
+    # @return [String]
+    def ip_address
+      @config["IPADDR"]
+    end
+
+    # @param [String] value
+    def ip_address=(value)
+      @config["IPADDR"] = value
+    end
+
     # Provides stored configuration in sysconfig format
     #
     # @return [Hash<String, String>] where key is sysconfig option and value is the option's value

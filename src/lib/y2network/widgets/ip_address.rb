@@ -27,11 +27,11 @@ module Y2Network
       end
 
       def init
-        self.value = @settings["IPADDR"]
+        self.value = @settings.ip_address
       end
 
       def store
-        @settings["IPADDR"] = value
+        @settings.ip_address = value
       end
 
       def validate
