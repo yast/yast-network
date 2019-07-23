@@ -28,34 +28,30 @@ module Y2Network
       # This class is able to build a ConnectionConfig::Wireless object given a
       # Sysconfig::InterfaceFile object.
       class Wireless < Base
-        # Returns a wireless connection configuration
-        #
-        # @return [ConnectionConfig::Wireless]
-        def connection_config
-          Y2Network::ConnectionConfig::Wireless.new.tap do |conn|
-            conn.ap = file.wireless_ap
-            conn.ap_scanmode = file.wireless_ap_scanmode
-            conn.auth_mode = file.wireless_auth_mode
-            conn.bootproto = BootProtocol.from_name(file.bootproto || "static")
-            conn.default_key = file.wireless_default_key
-            conn.description = file.name
-            conn.eap_auth = file.wireless_eap_auth
-            conn.eap_mode = file.wireless_eap_mode
-            conn.essid = file.wireless_essid
-            conn.interface = file.interface
-            conn.ip_configs = ip_configs
-            conn.key_length = file.wireless_key_length
-            conn.keys = wireless_keys
-            conn.mode = file.wireless_mode
-            conn.nwid = file.wireless_nwid
-            conn.startmode = Startmode.create(file.startmode || "manual")
-            conn.startmode.priority = file.ifplugd_priority if conn.startmode.name == "ifplugd"
-            conn.wpa_password = file.wireless_wpa_password
-            conn.wpa_psk = file.wireless_wpa_psk
-          end
+      private
+
+        # @return [Y2Network::ConnectionConfig::Ethernet]
+        # @see Y2Network::Sysconfig::ConnectionConfigReaders::Base#connection_class
+        def connection_class
+          Y2Network::ConnectionConfig::Wireless
         end
 
-      private
+        # @see Y2Network::Sysconfig::ConnectionConfigReaders::Base#update_connection_config
+        def update_connection_config(conn)
+          conn.ap = file.wireless_ap
+          conn.ap_scanmode = file.wireless_ap_scanmode
+          conn.auth_mode = file.wireless_auth_mode
+          conn.default_key = file.wireless_default_key
+          conn.eap_auth = file.wireless_eap_auth
+          conn.eap_mode = file.wireless_eap_mode
+          conn.essid = file.wireless_essid
+          conn.key_length = file.wireless_key_length
+          conn.keys = wireless_keys
+          conn.mode = file.wireless_mode
+          conn.nwid = file.wireless_nwid
+          conn.wpa_password = file.wireless_wpa_password
+          conn.wpa_psk = file.wireless_wpa_psk
+        end
 
         # Max number of wireless keys
         MAX_WIRELESS_KEYS = 4

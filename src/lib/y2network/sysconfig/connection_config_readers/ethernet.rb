@@ -28,17 +28,16 @@ module Y2Network
       # This class is able to build a ConnectionConfig::Ethernet object given a
       # Sysconfig::InterfaceFile object.
       class Ethernet < Base
+      private
+
         # @return [Y2Network::ConnectionConfig::Ethernet]
-        def connection_config
-          Y2Network::ConnectionConfig::Ethernet.new.tap do |conn|
-            # for defauls see man ifcfg
-            conn.bootproto = BootProtocol.from_name(file.bootproto || "static")
-            conn.description = file.name
-            conn.interface = file.interface
-            conn.ip_configs = ip_configs
-            conn.startmode = Startmode.create(file.startmode || "manual")
-            conn.startmode.priority = file.ifplugd_priority if conn.startmode.name == "ifplugd"
-          end
+        # @see Y2Network::Sysconfig::ConnectionConfigReaders::Base#connection_class
+        def connection_class
+          Y2Network::ConnectionConfig::Ethernet
+        end
+
+        # @see Y2Network::Sysconfig::ConnectionConfigReaders::Base#update_connection_config
+        def update_connection_config(_conn)
         end
       end
     end

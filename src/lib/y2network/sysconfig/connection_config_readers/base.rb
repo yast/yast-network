@@ -23,7 +23,10 @@ require "y2network/ip_address"
 module Y2Network
   module Sysconfig
     module ConnectionConfigReaders
-      # This is the base class for connection config readers
+      # This is the base class for connection config readers.
+      #
+      # The derived classes should implement {#connection_class} and {#add_connection_settings}
+      # methods.
       class Base
         # @return [Y2Network::Sysconfig::InterfaceFile] Interface's configuration file
         attr_reader :file
@@ -35,7 +38,40 @@ module Y2Network
           @file = file
         end
 
+        # Builds a connection configuration object
+        #
+        # @return [Y2Network::ConnectionConfig::Base]
+        def connection_config
+          connection_class.new.tap do |conn|
+            conn.bootproto = BootProtocol.from_name(file.bootproto || "static")
+            conn.description = file.name
+            conn.interface = file.interface
+            conn.ip_configs = ip_configs
+            conn.startmode = Startmode.create(file.startmode || "manual")
+            conn.startmode.priority = file.ifplugd_priority if conn.startmode.name == "ifplugd"
+            update_connection_config(conn)
+          end
+        end
+
       private
+
+        # Returns the class of the connection configuration
+        #
+        # @note This method should be redefined by derived classes.
+        #
+        # @return [Class]
+        def connection_class
+          raise NotImplementedError
+        end
+
+        # Sets connection config settings from the given file
+        #
+        # @note This method should be redefined by derived classes.
+        #
+        # @param _conn [Y2Network::ConnectionConfig::Base]
+        def update_connection_config(_conn)
+          raise NotImplementedError
+        end
 
         # Returns the IPs configuration from the file
         #

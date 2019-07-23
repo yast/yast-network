@@ -25,15 +25,10 @@ module Y2Network
       # This class is responsible for writing the information from a ConnectionConfig::Ethernet
       # object to the underlying system.
       class Ethernet < Base
-        # Writes connection information to the interface configuration file
-        #
-        # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
-        def write(conn)
-          file.bootproto = conn.bootproto.name
-          file.name = conn.description
-          file.startmode = conn.startmode.to_s
-          file.ifplugd_priority = conn.startmode.priority if conn.startmode.name == "ifplugd"
-          write_ip_configs(conn.ip_configs)
+      private
+
+        # @see Y2Network::ConnectionConfigWriters::Base#update_file
+        def update_file(_conn)
         end
       end
     end

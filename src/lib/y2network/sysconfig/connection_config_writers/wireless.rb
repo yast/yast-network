@@ -25,25 +25,17 @@ module Y2Network
       # This class is responsible for writing the information from a ConnectionConfig::Wireless
       # object to the underlying system.
       class Wireless < Base
-        # Writes connection information to the interface configuration file
-        #
-        # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
-        def write(conn)
-          file.bootproto = conn.bootproto.name
-          file.name = conn.description
-          file.startmode = conn.startmode.to_s
-          file.ifplugd_priority = conn.startmode.priority if conn.startmode.name == "ifplugd"
+      private
+
+        # @see Y2Network::ConnectionConfigWriters::Base#update_file
+        def update_file(conn)
           file.wireless_ap = conn.ap
           file.wireless_ap_scanmode = conn.ap_scanmode
           file.wireless_essid = conn.essid
           file.wireless_mode = conn.mode
           file.wireless_nwid = conn.nwid
           write_auth_settings(conn) if conn.auth_mode
-          write_ip_configs(conn.ip_configs)
-          file
         end
-
-      private
 
         # Writes authentication settings
         #

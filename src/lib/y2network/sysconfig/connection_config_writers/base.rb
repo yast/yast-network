@@ -33,7 +33,37 @@ module Y2Network
           @file = file
         end
 
+        # Writes connection information to the interface configuration file
+        #
+        # @param conn [Y2Network::ConnectionConfig::Base] Connection to take settings from
+        def write(conn)
+          file.bootproto = conn.bootproto.name
+          file.name = conn.description
+          file.startmode = conn.startmode.to_s
+          file.ifplugd_priority = conn.startmode.priority if conn.startmode.name == "ifplugd"
+          write_ip_configs(conn.ip_configs)
+          update_file(conn)
+        end
+
       private
+
+        # Returns the class of the connection configuration
+        #
+        # @note This method should be redefined by derived classes.
+        #
+        # @return [Class]
+        def connection_class
+          raise NotImplementedError
+        end
+
+        # Sets file values from the given connection configuration
+        #
+        # @note This method should be redefined by derived classes.
+        #
+        # @param _conn [Y2Network::ConnectionConfig::Base]
+        def update_file(_conn)
+          raise NotImplementedError
+        end
 
         # Write IP configuration
         #
