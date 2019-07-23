@@ -270,6 +270,17 @@ module Y2Network
       end
     end
 
+    # sets remote ip for ptp connections
+    # @return [String]
+    def remote_ip
+      @config["REMOTEIP"]
+    end
+
+    # @param [String] value
+    def remote_ip=(value)
+      @config["REMOTEIP"] = value
+    end
+
     # Gets Maximum Transition Unit
     # @return [String]
     def mtu
