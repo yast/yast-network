@@ -64,6 +64,7 @@ module Y2Network
         # @param netmask [String,nil] Netmask
         def build_ip(ip, prefix, netmask)
           ipaddr = ip.clone
+          return ipaddr if ip.prefix?
           ipaddr.netmask = netmask if netmask
           ipaddr.prefix = prefix if prefix
           ipaddr
