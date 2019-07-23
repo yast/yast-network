@@ -293,6 +293,16 @@ module Y2Network
       @config["MTU"] = value
     end
 
+    # @return [Array(2)<String,String>] user and group of tunnel
+    def tunnel_user_group
+      [@config["TUNNEL_SET_OWNER"], @config["TUNNEL_SET_GROUP"]]
+    end
+
+    def assign_tunnel_user_group(user, group)
+      @config["TUNNEL_SET_OWNER"] = user
+      @config["TUNNEL_SET_GROUP"] = group
+    end
+
     # Provides stored configuration in sysconfig format
     #
     # @return [Hash<String, String>] where key is sysconfig option and value is the option's value
