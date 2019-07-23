@@ -68,7 +68,7 @@ module Yast
       log.info "ShowAndRun: #{ret}"
 
       if ret != :back && ret != :abort
-        bootproto = builder["BOOTPROTO"]
+        bootproto = builder.boot_protocol
         ipaddr = builder["IPADDR"]
 
         # IP is mandatory for static configuration. Makes no sense to write static

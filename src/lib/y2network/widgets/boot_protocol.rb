@@ -1,7 +1,7 @@
 require "yast"
 require "cwm/custom_widget"
 
-require "y2network/interface_type"
+require "y2network/boot_protocol"
 
 Yast.import "DNS"
 Yast.import "Hostname"
@@ -100,8 +100,8 @@ module Y2Network
           )
         end
 
-        case @settings["BOOTPROTO"]
-        when "static"
+        case @settings.boot_protocol
+        when Y2Network::BootProtocol::STATIC
           Yast::UI.ChangeWidget(Id(:bootproto), :CurrentButton, :bootproto_static)
           Yast::UI.ChangeWidget(
             Id(:bootproto_ipaddr),
@@ -126,27 +126,27 @@ module Y2Network
             :Value,
             @settings["HOSTNAME"]
           )
-        when "dhcp"
+        when Y2Network::BootProtocol::DHCP
           Yast::UI.ChangeWidget(Id(:bootproto), :CurrentButton, :bootproto_dynamic)
           Yast::UI.ChangeWidget(Id(:bootproto_dhcp_mode), :Value, :bootproto_dhcp_both)
           Yast::UI.ChangeWidget(Id(:bootproto_dyn), :Value, :bootproto_dhcp)
-        when "dhcp4"
+        when Y2Network::BootProtocol::DHCP4
           Yast::UI.ChangeWidget(Id(:bootproto), :CurrentButton, :bootproto_dynamic)
           Yast::UI.ChangeWidget(Id(:bootproto_dhcp_mode), :Value, :bootproto_dhcp_v4)
           Yast::UI.ChangeWidget(Id(:bootproto_dyn), :Value, :bootproto_dhcp)
-        when "dhcp6"
+        when Y2Network::BootProtocol::DHCP6
           Yast::UI.ChangeWidget(Id(:bootproto), :CurrentButton, :bootproto_dynamic)
           Yast::UI.ChangeWidget(Id(:bootproto_dhcp_mode), :Value, :bootproto_dhcp_v6)
           Yast::UI.ChangeWidget(Id(:bootproto_dyn), :Value, :bootproto_dhcp)
-        when "dhcp+autoip"
+        when Y2Network::BootProtocol::DHCP_AUTOIP
           Yast::UI.ChangeWidget(Id(:bootproto), :CurrentButton, :bootproto_dynamic)
           Yast::UI.ChangeWidget(Id(:bootproto_dyn), :Value, :bootproto_dhcp_auto)
-        when "autoip"
+        when Y2Network::BootProtocol::AUTOIP
           Yast::UI.ChangeWidget(Id(:bootproto), :CurrentButton, :bootproto_dynamic)
           Yast::UI.ChangeWidget(Id(:bootproto_dyn), :Value, :bootproto_auto)
-        when "none"
+        when Y2Network::BootProtocol::NONE
           Yast::UI.ChangeWidget(Id(:bootproto), :CurrentButton, :bootproto_none)
-        when "ibft"
+        when Y2Network::BootProtocol::IBFT
           Yast::UI.ChangeWidget(Id(:bootproto), :CurrentButton, :bootproto_none)
           Yast::UI.ChangeWidget(Id(:bootproto_ibft), :Value, true)
         end
@@ -193,9 +193,9 @@ module Y2Network
           if ibft_available?
             bootproto = Yast::UI.QueryWidget(Id(:bootproto_ibft), :Value) ? "ibft" : "none"
           end
-          @settings["BOOTPROTO"] = bootproto
+          @settings.boot_protocol = bootproto
         when :bootproto_static
-          @settings["BOOTPROTO"] = "static"
+          @settings.boot_protocol = "static"
           @settings["IPADDR"] = Yast::UI.QueryWidget(:bootproto_ipaddr, :Value)
           mask = Yast::UI.QueryWidget(:bootproto_netmask, :Value)
           if mask.start_with?("/")
@@ -210,18 +210,18 @@ module Y2Network
           when :bootproto_dhcp
             case Yast::UI.QueryWidget(:bootproto_dhcp_mode, :Value)
             when :bootproto_dhcp_both
-              @settings["BOOTPROTO"] = "dhcp"
+              @settings.boot_protocol = "dhcp"
             when :bootproto_dhcp_v4
-              @settings["BOOTPROTO"] = "dhcp4"
+              @settings.boot_protocol = "dhcp4"
             when :bootproto_dhcp_v6
-              @settings["BOOTPROTO"] = "dhcp6"
+              @settings.boot_protocol = "dhcp6"
             else
               raise "Unexpected dhcp mode value #{Yast::UI.QueryWidget(:bootproto_dhcp_mode, :Value).inspect}"
             end
           when :bootproto_dhcp_auto
-            @settings["BOOTPROTO"] = "dhcp+autoip"
+            @settings.boot_protocol = "dhcp+autoip"
           when :bootproto_auto
-            @settings["BOOTPROTO"] = "autoip"
+            @settings.boot_protocol = "autoip"
           else
             raise "Unexpected dynamic mode value #{Yast::UI.QueryWidget(:bootproto_dyn, :Value).inspect}"
           end

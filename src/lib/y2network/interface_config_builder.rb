@@ -21,6 +21,7 @@ require "yast"
 require "y2network/connection_config/base"
 require "y2network/hwinfo"
 require "y2network/startmode"
+require "y2network/boot_protocol"
 require "y2firewall/firewalld"
 require "y2firewall/firewalld/interface"
 
@@ -148,6 +149,17 @@ module Y2Network
     # sets assigned firewall zone
     def firewall_zone=(value)
       @firewall_zone = value
+    end
+
+    # @return [Y2Network::BootProtocol]
+    def boot_protocol
+      Y2Network::BootProtocol.from_name(@config["BOOTPROTO"])
+    end
+
+    # @param[String, Y2Network::BootProtocol]
+    def boot_protocol=(value)
+      value = value.name if value.is_a?(Y2Network::BootProtocol)
+      @config["BOOTPROTO"] = value
     end
 
     # @return [Startmode]
