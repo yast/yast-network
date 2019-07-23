@@ -75,6 +75,13 @@ module Y2Network
       host? ? @address.to_s : "#{@address}/#{@prefix}"
     end
 
+    # Sets the prefix from a netmask
+    #
+    # @param netmask [String] String representation of the netmask
+    def netmask=(netmask)
+      self.prefix = IPAddr.new("#{netmask}/#{netmask}").prefix
+    end
+
     # Determines whether two addresses are equivalent
     #
     # @param other [IPAddress] The address to compare with

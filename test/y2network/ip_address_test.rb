@@ -21,6 +21,8 @@ require_relative "../test_helper"
 require "y2network/ip_address"
 
 describe Y2Network::IPAddress do
+  subject(:ip) { described_class.new("192.168.122.1", 24) }
+
   describe ".from_string" do
     context "when a string representing an IPv4 is given" do
       let(:ip_address) { "192.168.122.1/24" }
@@ -76,6 +78,18 @@ describe Y2Network::IPAddress do
       it "omits the prefix" do
         expect(ip.to_s).to eq("192.168.122.1")
       end
+    end
+  end
+
+  describe "#prefix=" do
+    it "sets the address prefix" do
+      expect { ip.prefix = 32 }.to change { ip.prefix }.from(24).to(32)
+    end
+  end
+
+  describe "#netmask=" do
+    it "sets the address prefix" do
+      expect { ip.netmask = "255.255.255.255" }.to change { ip.prefix }.from(24).to(32)
     end
   end
 

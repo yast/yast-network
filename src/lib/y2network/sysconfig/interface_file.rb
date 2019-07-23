@@ -164,7 +164,7 @@ module Y2Network
 
       # !@attribute [r] prefixlens
       #   @return [Hash] Prefixes lengths
-      define_collection_variable(:prefixlen, :ipaddr)
+      define_collection_variable(:prefixlen, :integer)
 
       # !@attribute [r] netmasks
       #   @return [Hash] Netmasks
