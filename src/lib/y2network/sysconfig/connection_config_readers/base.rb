@@ -18,6 +18,7 @@
 # find current contact information at www.suse.com.
 
 require "y2network/connection_config/ip_config"
+require "y2network/ip_address"
 
 module Y2Network
   module Sysconfig
@@ -34,22 +35,38 @@ module Y2Network
           @file = file
         end
 
+      private
+
         # Returns the IPs configuration from the file
         #
         # @return [Array<Y2Network::ConnectionConfig::IPAdress>] IP addresses configuration
         # @see Y2Network::ConnectionConfig::IPConfig
         def ip_configs
           file.ipaddrs.map do |id, ip|
-            prefix = file.prefixlens[id]
-            ip.prefix = prefix if prefix
+            next unless ip.is_a?(Y2Network::IPAddress)
+            ip_address = build_ip(ip, file.prefixlens[id], file.netmasks[id])
             Y2Network::ConnectionConfig::IPConfig.new(
-              ip,
+              ip_address,
               id:             id,
               label:          file.labels[id],
               remote_address: file.remote_ipaddrs[id],
               broadcast:      file.broadcasts[id]
             )
           end
+        end
+
+        # Builds an IP address
+        #
+        # It takes an IP address and, optionally, a prefix or a netmask.
+        #
+        # @param ip      [Y2Network::IPAddress] IP address
+        # @param prefix  [Integer,nil] Address prefix
+        # @param netmask [String,nil] Netmask
+        def build_ip(ip, prefix, netmask)
+          ipaddr = ip.clone
+          ipaddr.netmask = netmask if netmask
+          ipaddr.prefix = prefix if prefix
+          ipaddr
         end
       end
     end

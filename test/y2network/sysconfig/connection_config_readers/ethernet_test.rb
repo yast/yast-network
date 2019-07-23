@@ -31,8 +31,9 @@ describe Y2Network::Sysconfig::ConnectionConfigReaders::Ethernet do
     change_scr_root(scr_root, &example)
   end
 
+  let(:interface_name) { "eth0" }
   let(:file) do
-    Y2Network::Sysconfig::InterfaceFile.find("eth0").tap(&:load)
+    Y2Network::Sysconfig::InterfaceFile.find(interface_name).tap(&:load)
   end
 
   describe "#connection_config" do
@@ -41,6 +42,24 @@ describe Y2Network::Sysconfig::ConnectionConfigReaders::Ethernet do
       expect(eth.interface).to eq("eth0")
       expect(eth.ip_configs.map(&:address)).to eq([Y2Network::IPAddress.from_string("192.168.123.1/24")])
       expect(eth.bootproto).to eq(Y2Network::BootProtocol::STATIC)
+    end
+
+    context "when prefixlen is specified" do
+      let(:interface_name) { "eth2" }
+
+      it "uses the prefixlen as the address prefix" do
+        eth = handler.connection_config
+        expect(eth.ip_configs.map(&:address)).to eq([Y2Network::IPAddress.from_string("172.16.0.1/12")])
+      end
+    end
+
+    context "when netmask is specified" do
+      let(:interface_name) { "eth3" }
+
+      it "uses the netmask to set the address prefix" do
+        eth = handler.connection_config
+        expect(eth.ip_configs.map(&:address)).to eq([Y2Network::IPAddress.from_string("10.0.0.1/8")])
+      end
     end
   end
 end

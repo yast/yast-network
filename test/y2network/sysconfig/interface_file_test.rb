@@ -75,7 +75,7 @@ describe Y2Network::Sysconfig::InterfaceFile do
     end
 
     context "when the IP address is missing" do
-      let(:interface_name) { "eth2" }
+      let(:interface_name) { "eth4" }
 
       it "returns an empty hash" do
         expect(file.ipaddrs).to be_empty
@@ -84,7 +84,7 @@ describe Y2Network::Sysconfig::InterfaceFile do
   end
 
   describe "#ipaddrs=" do
-    let(:interface_name) { "eth2" }
+    let(:interface_name) { "eth4" }
 
     it "sets the bootproto" do
       addresses = { default: Y2Network::IPAddress.from_string("10.0.0.1") }

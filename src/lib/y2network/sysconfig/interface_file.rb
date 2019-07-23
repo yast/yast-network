@@ -168,7 +168,8 @@ module Y2Network
 
       # !@attribute [r] netmasks
       #   @return [Hash] Netmasks
-      define_collection_variable(:netmask, :ipaddr)
+      define_collection_variable(:netmask)
+
       # !@attribute [r] wireless_key_length
       #   @return [Integer] Length in bits for all keys used
       define_variable(:wireless_key_length, :integer)
