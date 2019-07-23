@@ -11,6 +11,7 @@ module Y2Network
     class BridgePorts < CWM::MultiSelectionBox
       include SlaveItems
 
+      # @param [Y2Network::InterfaceConfigBuilders::Bridge] settings
       def initialize(settings)
         textdomain "network"
         @settings = settings
@@ -27,7 +28,7 @@ module Y2Network
 
       # Default function to init the value of slave devices box for bridging.
       def init
-        br_ports = @settings["BRIDGE_PORTS"].split
+        br_ports = @settings.ports
         items = slave_items_from(
           @settings.bridgeable_interfaces.map(&:name),
           br_ports
@@ -39,8 +40,7 @@ module Y2Network
 
       # Default function to store the value of slave devices box.
       def store
-        # TODO: fix it in builder to use array and not space separated string
-        @settings["BRIDGE_PORTS"] = value.join(" ")
+        @settings.ports = value
       end
 
       # Validates created bridge. Currently just prevent the user to create a
