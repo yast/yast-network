@@ -70,18 +70,6 @@ module Y2Network
       Yast::LanItems.operation == :add
     end
 
-    # changes internal config keys.
-    # @note always prefer specialized method if available
-    def []=(key, value)
-      @config[key] = value
-    end
-
-    # gets internal config keys.
-    # @note always prefer specialized method if available
-    def [](key)
-      @config[key]
-    end
-
     # saves builder content to backend
     # @ TODO now still LanItems actively query config attribute and write it
     #   down, so here mainly workarounds, but ideally this save should change

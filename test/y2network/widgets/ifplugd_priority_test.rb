@@ -26,7 +26,7 @@ require "y2network/interface_config_builder"
 describe Y2Network::Widgets::IfplugdPriority do
   let(:builder) do
     res = Y2Network::InterfaceConfigBuilder.for("eth")
-    res["IFPLUGD_PRIORITY"] = "50"
+    res.ifplugd_priority = 50
     res
   end
   subject { described_class.new(builder) }
@@ -59,7 +59,7 @@ describe Y2Network::Widgets::IfplugdPriority do
 
       subject.store
 
-      expect(builder["IFPLUGD_PRIORITY"]).to eq "20"
+      expect(builder.ifplugd_priority).to eq 20
     end
   end
 end
