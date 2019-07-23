@@ -26,6 +26,7 @@ require "y2firewall/firewalld/interface"
 
 Yast.import "LanItems"
 Yast.import "NetworkInterfaces"
+Yast.import "Netmask"
 
 module Y2Network
   # Collects data from the UI until we have enough of it to create a {Y2Network::Interface}.
@@ -248,6 +249,25 @@ module Y2Network
     # @param [String] value
     def ip_address=(value)
       @config["IPADDR"] = value
+    end
+
+    # @return [String] returns prefix or netmask. prefix in format "/<prefix>"
+    def subnet_prefix
+      if @config["PREFIXLEN"] && !@config["PREFIXLEN"].empty?
+        "/#{@config["PREFIXLEN"]}"
+      else
+        @config["NETMASK"] || ""
+      end
+    end
+
+    # @param [String] value prefix or netmask is accepted. prefix in format "/<prefix>"
+    def subnet_prefix=(value)
+      if value.start_with?("/")
+        @settings["PREFIXLEN"] = value[1..-1]
+      else
+        param = Yast::Netmask.Check6(value) ? "PREFIXLEN" : "NETMASK"
+        @settings[param] = value
+      end
     end
 
     # Gets Maximum Transition Unit
