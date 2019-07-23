@@ -11,10 +11,22 @@ module Y2Network
         super(type: InterfaceType::VLAN)
       end
 
+      # @return [Integer]
+      def vlan_id
+        (@config["VLAN_ID"] || "0").to_i
+      end
+
+      # @param [Integer] value
+      def vlan_id=(value)
+        @config["VLAN_ID"] = value.to_s
+      end
+
+      # @return [String]
       def etherdevice
         @config["ETHERDEVICE"]
       end
 
+      # @param [String] value
       def etherdevice=(value)
         @config["ETHERDEVICE"] = value
       end

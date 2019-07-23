@@ -23,7 +23,6 @@ module Y2Network
       end
 
       def init
-        # TODO: get it from settings
         self.value = @settings.udev_name
       end
 

@@ -19,11 +19,11 @@ module Y2Network
       end
 
       def init
-        self.value = (@config["VLAN_ID"] || "0").to_i
+        self.value = @config.vlan_id
       end
 
       def store
-        @config["VLAN_ID"] = value.to_s
+        @config.vlan_id = value.to_s
       end
 
       def minimum
