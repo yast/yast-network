@@ -50,15 +50,6 @@ module Y2Network
 
       private
 
-        # Returns the class of the connection configuration
-        #
-        # @note This method should be redefined by derived classes.
-        #
-        # @return [Class]
-        def connection_class
-          raise NotImplementedError
-        end
-
         # Sets file values from the given connection configuration
         #
         # @note This method should be redefined by derived classes.

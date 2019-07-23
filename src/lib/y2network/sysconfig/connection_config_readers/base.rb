@@ -25,7 +25,7 @@ module Y2Network
     module ConnectionConfigReaders
       # This is the base class for connection config readers.
       #
-      # The derived classes should implement {#connection_class} and {#update_connection_config}
+      # The derived classes should implement {#update_connection_config} method.
       # methods.
       class Base
         # @return [Y2Network::Sysconfig::InterfaceFile] Interface's configuration file
@@ -57,11 +57,10 @@ module Y2Network
 
         # Returns the class of the connection configuration
         #
-        # @note This method should be redefined by derived classes.
-        #
         # @return [Class]
         def connection_class
-          raise NotImplementedError
+          self.class.to_s[/::([^:]+)$/, 1]
+          Y2Network::ConnectionConfig.const_get(class_name)
         end
 
         # Sets connection config settings from the given file
@@ -89,6 +88,7 @@ module Y2Network
               broadcast:      file.broadcasts[id]
             )
           end
+          # The one without suffix comes first.
           configs.sort_by { |c| c.id.nil? ? -1 : 0 }
         end
 
