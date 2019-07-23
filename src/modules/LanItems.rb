@@ -1970,7 +1970,7 @@ module Yast
       nil
     end
 
-    PROPOSED_PPPOE_MTU = "1492" # suggested value for PPPoE
+    PROPOSED_PPPOE_MTU = "1492".freeze # suggested value for PPPoE
     # A default configuration for device when installer needs to configure it
     def ProposeItem(item_id)
       Builtins.y2milestone("Propose configuration for %1", GetDeviceName(item_id))
