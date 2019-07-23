@@ -272,19 +272,19 @@ module Yast
     # @param builder [Y2Network::InterfaceConfigBuilder]
     # @return [Boolean] true when the options are valid; false otherwise
     def validate_config(builder)
-      if Y2Network::BootProtocol.all.none? { |bp| bp.name == builder["BOOTPROTO"] }
+      if builder.boot_protocol.nil?
         Report.Error(_("Impossible value for bootproto."))
         return false
       end
 
-      if builder["BOOTPROTO"] == "static" && builder["IPADDR"].empty?
+      if builder.boot_protocol.name == "static" && builder["IPADDR"].empty?
         Report.Error(
           _("For static configuration, the \"ip\" option is needed.")
         )
         return false
       end
 
-      unless ["auto", "ifplugd", "nfsroot"].include? builder["STARTMODE"]
+      unless ["auto", "ifplugd", "nfsroot"].include?(builder.startmode.name)
         Report.Error(_("Impossible value for startmode."))
         return false
       end
@@ -302,14 +302,14 @@ module Yast
       when "bond"
         builder.slaves = options.fetch("slaves", "").split(" ")
       when "vlan"
-        builder["ETHERDEVICE"] = options.fetch("ethdevice", "")
+        builder.etherdevice = options.fetch("ethdevice", "")
       when "br"
-        builder["BRIDGE_PORTS"] = options.fetch("bridge_ports", "")
+        builder.ports = options.fetch("bridge_ports", "")
       end
 
       default_bootproto = options.keys.include?("ip") ? "static" : "none"
-      builder["BOOTPROTO"] = options.fetch("bootproto", default_bootproto)
-      if builder["BOOTPROTO"] == "static"
+      builder.boot_protocol = options.fetch("bootproto", default_bootproto)
+      if builder.boot_protocol.name == "static"
         builder["IPADDR"] = options.fetch("ip", "")
         builder["PREFIX"] = options.fetch("prefix", "")
         builder["NETMASK"] = options.fetch("netmask", "255.255.255.0") if builder["PREFIX"].empty?
@@ -317,7 +317,7 @@ module Yast
         builder["IPADDR"] = ""
         builder["NETMASK"] = ""
       end
-      builder["STARTMODE"] = options.fetch("startmode", "auto")
+      builder.startmode = options.fetch("startmode", "auto")
     end
   end
 end

@@ -1978,15 +1978,15 @@ module Yast
       type = Items().fetch(item_id, {}).fetch("hwinfo", {})[type]
       builder = Y2Network::InterfaceConfigBuilder.for(type)
 
-      builder["MTU"] = "1492" if Arch.s390 && Builtins.contains(["lcs", "eth"], type)
+      builder.mtu = "1492" if Arch.s390 && Builtins.contains(["lcs", "eth"], type)
       builder["IPADDR"] = ""
       builder["NETMASK"] = ""
-      builder["BOOTPROTO"] = "dhcp"
+      builder.boot_protocol = Y2Network::BootProtocol::DHCP
 
       # see bsc#176804
       devicegraph = Y2Storage::StorageManager.instance.staging
       if devicegraph.filesystem_in_network?("/")
-        builder["STARTMODE"] = "nfsroot"
+        builder.startmode = "nfsroot"
         Builtins.y2milestone("startmode nfsroot")
       end
 

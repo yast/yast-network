@@ -170,9 +170,10 @@ module Y2Network
       startmode
     end
 
-    # @param [String] name startmode name used to create Startmode object
+    # @param [String,Y2Network::Startmode] name startmode name used to create Startmode object
+    #   or object itself
     def startmode=(name)
-      mode = Startmode.create(name)
+      mode = name.is_a?(Startmode) ? name : Startmode.create(name)
       # assign only if it is not already this value. This helps with ordering of ifplugd_priority
       @connection_config.startmode = mode if @connection_config.startmode.name != mode.name
       @config["STARTMODE"] = mode.name

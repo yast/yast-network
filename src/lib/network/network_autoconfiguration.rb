@@ -141,8 +141,8 @@ module Yast
         current["ifcfg"] = card
       end
 
-      builder["BOOTPROTO"] = "dhcp"
-      builder["STARTMODE"] = "auto"
+      builder.boot_protocol = "dhcp"
+      builder.startmode = "auto"
 
       LanItems.Commit(builder)
     end
