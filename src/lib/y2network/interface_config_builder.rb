@@ -229,6 +229,17 @@ module Y2Network
       Yast::LanItems.current_udev_name
     end
 
+    # TODO: eth only?
+    # @return [String]
+    def ethtool_options
+      @config["ETHTOOL_OPTIONS"]
+    end
+
+    # @param [String] value
+    def ethtool_options=(value)
+      @config["ETHTOOL_OPTIONS"] = value
+    end
+
     # Provides stored configuration in sysconfig format
     #
     # @return [Hash<String, String>] where key is sysconfig option and value is the option's value
