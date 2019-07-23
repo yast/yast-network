@@ -25,7 +25,7 @@ module Y2Network
     module ConnectionConfigReaders
       # This is the base class for connection config readers.
       #
-      # The derived classes should implement {#connection_class} and {#add_connection_settings}
+      # The derived classes should implement {#connection_class} and {#update_connection_config}
       # methods.
       class Base
         # @return [Y2Network::Sysconfig::InterfaceFile] Interface's configuration file

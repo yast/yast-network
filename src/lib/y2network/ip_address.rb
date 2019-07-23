@@ -36,6 +36,10 @@ module Y2Network
   # @example IPAddress behaviour
   #   ip = IPAddress.new("192.168.122.1/24")
   #   ip.to_s #=> "192.168.122.1/24"
+  #
+  # @example IPAddress with no prefix
+  #   ip = IPAddress.new("192.168.122.1")
+  #   ip.to_s #=> "192.168.122.1"
   class IPAddress
     extend Forwardable
 

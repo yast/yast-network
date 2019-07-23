@@ -22,6 +22,9 @@ require "y2network/connection_config/ip_config"
 module Y2Network
   module Sysconfig
     module ConnectionConfigWriters
+      # This is the base class for connection config writers.
+      #
+      # The derived classes should implement {#update_file} method.
       class Base
         # @return [Y2Network::Sysconfig::InterfaceFile] Interface's configuration file
         attr_reader :file
