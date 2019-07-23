@@ -106,25 +106,17 @@ module Y2Network
           Yast::UI.ChangeWidget(
             Id(:bootproto_ipaddr),
             :Value,
-            @settings["IPADDR"] || ""
+            @settings.ip_address
           )
-          if @settings["PREFIXLEN"] && !@settings["PREFIXLEN"].empty?
-            Yast::UI.ChangeWidget(
-              Id(:bootproto_netmask),
-              :Value,
-              "/#{@settings["PREFIXLEN"]}"
-            )
-          else
-            Yast::UI.ChangeWidget(
-              Id(:bootproto_netmask),
-              :Value,
-              @settings["NETMASK"] || ""
-            )
-          end
+          Yast::UI.ChangeWidget(
+            Id(:bootproto_netmask),
+            :Value,
+            @settings.subnet_prefix
+          )
           Yast::UI.ChangeWidget(
             Id(:bootproto_hostname),
             :Value,
-            @settings["HOSTNAME"]
+            @settings.hostname
           )
         when Y2Network::BootProtocol::DHCP
           Yast::UI.ChangeWidget(Id(:bootproto), :CurrentButton, :bootproto_dynamic)
@@ -186,7 +178,8 @@ module Y2Network
 
       def store
         # FIXME: this value reset should be in backend in general not Yast::UI responsibility
-        @settings["IPADDR"] = @settings["NETMASK"] = @settings["PREFIXLEN"] = ""
+        @settings.ip_address = ""
+        @settings.subnet_prefix = ""
         case value
         when :bootproto_none
           bootproto = "none"
@@ -196,15 +189,9 @@ module Y2Network
           @settings.boot_protocol = bootproto
         when :bootproto_static
           @settings.boot_protocol = "static"
-          @settings["IPADDR"] = Yast::UI.QueryWidget(:bootproto_ipaddr, :Value)
-          mask = Yast::UI.QueryWidget(:bootproto_netmask, :Value)
-          if mask.start_with?("/")
-            @settings["PREFIXLEN"] = mask[1..-1]
-          else
-            param = Yast::Netmask.Check6(mask) ? "PREFIXLEN" : "NETMASK"
-            @settings[param] = mask
-          end
-          @settings["HOSTNAME"] = Yast::UI.QueryWidget(:bootproto_hostname, :Value)
+          @settings.ip_address = Yast::UI.QueryWidget(:bootproto_ipaddr, :Value)
+          @settings.subnet_prefix = Yast::UI.QueryWidget(:bootproto_netmask, :Value)
+          @settings.hostname = Yast::UI.QueryWidget(:bootproto_hostname, :Value)
         when :bootproto_dynamic
           case Yast::UI.QueryWidget(:bootproto_dyn, :Value)
           when :bootproto_dhcp

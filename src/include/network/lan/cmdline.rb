@@ -277,14 +277,14 @@ module Yast
         return false
       end
 
-      if builder.boot_protocol.name == "static" && builder["IPADDR"].empty?
+      if builder.boot_protocol.name == "static" && builder.ip_address.empty?
         Report.Error(
           _("For static configuration, the \"ip\" option is needed.")
         )
         return false
       end
 
-      unless ["auto", "ifplugd", "nfsroot"].include?(builder.startmode.name)
+      unless builder.startmode
         Report.Error(_("Impossible value for startmode."))
         return false
       end
@@ -310,12 +310,11 @@ module Yast
       default_bootproto = options.keys.include?("ip") ? "static" : "none"
       builder.boot_protocol = options.fetch("bootproto", default_bootproto)
       if builder.boot_protocol.name == "static"
-        builder["IPADDR"] = options.fetch("ip", "")
-        builder["PREFIX"] = options.fetch("prefix", "")
-        builder["NETMASK"] = options.fetch("netmask", "255.255.255.0") if builder["PREFIX"].empty?
+        builder.ip_address = options.fetch("ip", "")
+        builder.subnet_prefix = options.fetch("prefix", options.fetch("netmask", "255.255.255.0"))
       else
-        builder["IPADDR"] = ""
-        builder["NETMASK"] = ""
+        builder.ip_address = ""
+        builder.subnet_prefix = ""
       end
       builder.startmode = options.fetch("startmode", "auto")
     end

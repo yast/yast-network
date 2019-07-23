@@ -166,6 +166,8 @@ module Y2Network
     def startmode
       # in future use only @connection_config and just delegate method
       startmode = Startmode.create(@config["STARTMODE"])
+      return nil unless startmode
+
       startmode.priority = @config["IFPLUGD_PRIORITY"] if startmode.name == "ifplugd"
       startmode
     end
@@ -174,8 +176,15 @@ module Y2Network
     #   or object itself
     def startmode=(name)
       mode = name.is_a?(Startmode) ? name : Startmode.create(name)
+      if !mode # invalid startmode e.g. in CLI
+        @config["STARTMODE"] = ""
+        return
+      end
+
       # assign only if it is not already this value. This helps with ordering of ifplugd_priority
-      @connection_config.startmode = mode if @connection_config.startmode.name != mode.name
+      if !@connection_config.startmode || @connection_config.startmode.name != mode.name
+        @connection_config.startmode = mode
+      end
       @config["STARTMODE"] = mode.name
     end
 
@@ -275,12 +284,27 @@ module Y2Network
 
     # @param [String] value prefix or netmask is accepted. prefix in format "/<prefix>"
     def subnet_prefix=(value)
-      if value.start_with?("/")
-        @settings["PREFIXLEN"] = value[1..-1]
+      if value.empty?
+        @config["PREFIXLEN"] = ""
+        @config["NETMASK"] = ""
+      elsif value.start_with?("/")
+        @config["PREFIXLEN"] = value[1..-1]
+      elsif value.size < 3 # one or two digits can be only prefixlen
+        @config["PREFIXLEN"] = value
       else
         param = Yast::Netmask.Check6(value) ? "PREFIXLEN" : "NETMASK"
-        @settings[param] = value
+        @config[param] = value
       end
+    end
+
+    # @return [String]
+    def hostname
+      @config["HOSTNAME"]
+    end
+
+    # @param [String] value
+    def hostname=(value)
+      @config["HOSTNAME"] = value
     end
 
     # sets remote ip for ptp connections

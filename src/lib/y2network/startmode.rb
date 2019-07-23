@@ -17,11 +17,15 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
+require "yast"
+
 module Y2Network
   # Base class for startmode. It allows to create new one according to name or anlist all.
   # Its child have to define `to_human_string` method and possibly its own specialized attributes.
   # TODO: as backends differs, we probably also need to have flag there to which backends mode exists
   class Startmode
+    include Yast::Logger
+
     attr_reader :name
     alias_method :to_s, :name
 
@@ -34,6 +38,9 @@ module Y2Network
       # avoid circular dependencies
       require "y2network/startmodes"
       Startmodes.const_get(name.capitalize).new
+    rescue NameError => e
+      log.error "Invalid startmode #{e.inspect}"
+      nil
     end
 
     def self.all
