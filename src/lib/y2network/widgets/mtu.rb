@@ -34,16 +34,16 @@ module Y2Network
       end
 
       def items
-        @settings["IFCFGTYPE"] == "ib" ? ipoib_items : default_items
+        @settings.type.infiniband? ? ipoib_items : default_items
       end
 
       def init
         change_items(items)
-        self.value = @settings["MTU"]
+        self.value = @settings.mtu
       end
 
       def store
-        @settings["MTU"] = value
+        @settings.mtu = value
       end
     end
   end

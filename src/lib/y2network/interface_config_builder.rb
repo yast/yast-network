@@ -250,6 +250,18 @@ module Y2Network
       @config["IPADDR"] = value
     end
 
+    # Gets Maximum Transition Unit
+    # @return [String]
+    def mtu
+      @config["MTU"]
+    end
+
+    # Sets Maximum Transition Unit
+    # @param [String] value
+    def mtu=(value)
+      @config["MTU"] = value
+    end
+
     # Provides stored configuration in sysconfig format
     #
     # @return [Hash<String, String>] where key is sysconfig option and value is the option's value

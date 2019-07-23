@@ -21,9 +21,11 @@ require_relative "../../test_helper"
 require "cwm/rspec"
 
 require "y2network/widgets/bond_options"
+require "y2network/interface_config_builder"
 
 describe Y2Network::Widgets::BondOptions do
-  subject { described_class.new({}) }
+  let(:builder) { Y2Network::InterfaceConfigBuilder.for("bond") }
+  subject { described_class.new(builder) }
 
   include_examples "CWM::ComboBox"
 end
