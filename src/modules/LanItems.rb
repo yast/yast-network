@@ -1970,6 +1970,7 @@ module Yast
       nil
     end
 
+    PROPOSED_PPPOE_MTU = "1492" # suggested value for PPPoE
     # A default configuration for device when installer needs to configure it
     def ProposeItem(item_id)
       Builtins.y2milestone("Propose configuration for %1", GetDeviceName(item_id))
@@ -1978,7 +1979,7 @@ module Yast
       type = Items().fetch(item_id, {}).fetch("hwinfo", {})[type]
       builder = Y2Network::InterfaceConfigBuilder.for(type)
 
-      builder.mtu = "1492" if Arch.s390 && Builtins.contains(["lcs", "eth"], type)
+      builder.mtu = PROPOSED_PPPOE_MTU if Arch.s390 && Builtins.contains(["lcs", "eth"], type)
       builder.ip_address = ""
       builder.subnet_prefix = ""
       builder.boot_protocol = Y2Network::BootProtocol::DHCP
