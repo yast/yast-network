@@ -27,20 +27,20 @@ module Y2Network
       attr_accessor :remote_address
       # @return [IPAddress,nil] Broadcast address
       attr_accessor :broadcast
-      # @return [Symbol,String] ID (needed for sysconfig backend in order to write suffixes in
+      # @return [String,nil] ID (needed for sysconfig backend in order to write suffixes in
       attr_accessor :id
 
       # Constructor
       #
       # @param address [IPAddress]
-      # @param id      [Symbol,String] ID (needed for sysconfig backend in order to write suffixes in
+      # @param id      [String] ID (needed for sysconfig backend in order to write suffixes in
       #   ifcfg-* files)
       # @param label   [String,nil]
       # @param remote_address [IPaddress,nil]
       # @param broadcast [IPaddress,nil]
       def initialize(address, id: nil, label: nil, remote_address: nil, broadcast: nil)
         @address = address
-        @id = id || :default
+        @id = id
         @label = label
         @remote_address = remote_address
         @broadcast = broadcast

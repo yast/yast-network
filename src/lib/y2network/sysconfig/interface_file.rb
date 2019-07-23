@@ -330,7 +330,7 @@ module Y2Network
       # @return [Hash<String, Object>]
       def fetch_collection(key, type)
         collection_keys(key).each_with_object({}) do |k, h|
-          index = key == k ? :default : k.sub(key, "")
+          index = k.sub(key, "")
           h[index] = fetch_scalar(k, type)
         end
       end

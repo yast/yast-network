@@ -59,7 +59,7 @@ describe Y2Network::Sysconfig::InterfaceFile do
   describe "#ipaddrs" do
     it "returns the IP addresses" do
       expect(file.ipaddrs).to eq(
-        default: Y2Network::IPAddress.from_string("192.168.123.1/24")
+        "" => Y2Network::IPAddress.from_string("192.168.123.1/24")
       )
     end
 
@@ -152,7 +152,7 @@ describe Y2Network::Sysconfig::InterfaceFile do
 
     describe "when multiple wireless keys are specified" do
       it "writes indexes keys" do
-        file.wireless_keys = { :default => "123456", "_1" => "abcdef" }
+        file.wireless_keys = { "" => "123456", "_1" => "abcdef" }
         file.save
 
         content = file_content(scr_root, file)

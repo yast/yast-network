@@ -78,7 +78,7 @@ module Y2Network
         # @return [Array<Y2Network::ConnectionConfig::IPAdress>] IP addresses configuration
         # @see Y2Network::ConnectionConfig::IPConfig
         def ip_configs
-          file.ipaddrs.map do |id, ip|
+          configs = file.ipaddrs.map do |id, ip|
             next unless ip.is_a?(Y2Network::IPAddress)
             ip_address = build_ip(ip, file.prefixlens[id], file.netmasks[id])
             Y2Network::ConnectionConfig::IPConfig.new(
@@ -89,6 +89,7 @@ module Y2Network
               broadcast:      file.broadcasts[id]
             )
           end
+          configs.sort_by { |c| c.id.nil? ? -1 : 0 }
         end
 
         # Builds an IP address

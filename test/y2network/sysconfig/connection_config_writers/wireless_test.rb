@@ -47,12 +47,12 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Wireless do
   let(:ip_configs) do
     [
       Y2Network::ConnectionConfig::IPConfig.new(
-        Y2Network::IPAddress.from_string("192.168.122.1/24"), id:        :default,
-                                                              broadcast: Y2Network::IPAddress.from_string("192.168.122.255")
+        Y2Network::IPAddress.from_string("192.168.122.1/24"),
+        id: "", broadcast: Y2Network::IPAddress.from_string("192.168.122.255")
       ),
       Y2Network::ConnectionConfig::IPConfig.new(
-        Y2Network::IPAddress.from_string("10.0.0.1/8"), id: "_0",
-        label: "my-label", remote_address: Y2Network::IPAddress.from_string("10.0.0.2")
+        Y2Network::IPAddress.from_string("10.0.0.1/8"),
+        id: "_0", label: "my-label", remote_address: Y2Network::IPAddress.from_string("10.0.0.2")
       )
     ]
   end
@@ -73,10 +73,10 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Wireless do
   it "sets IP configuration attributes" do
     handler.write(conn)
     expect(file).to have_attributes(
-      ipaddrs:        { default: ip_configs[0].address, "_0" => ip_configs[1].address },
-      broadcasts:     { default: ip_configs[0].broadcast, "_0" => nil },
-      remote_ipaddrs: { default: nil, "_0" => ip_configs[1].remote_address },
-      labels:         { default: nil, "_0" => "my-label" }
+      ipaddrs:        { "" => ip_configs[0].address, "_0" => ip_configs[1].address },
+      broadcasts:     { "" => ip_configs[0].broadcast, "_0" => nil },
+      remote_ipaddrs: { "" => nil, "_0" => ip_configs[1].remote_address },
+      labels:         { "" => nil, "_0" => "my-label" }
     )
   end
 
