@@ -80,6 +80,13 @@ module Y2Network
       self.prefix = IPAddr.new("#{netmask}/#{netmask}").prefix
     end
 
+    # Sets the address from the string
+    #
+    # @param value [String] String representation of the address
+    def address=(value)
+      @address = IPAddr.new(value)
+    end
+
     # Determines whether two addresses are equivalent
     #
     # @param other [IPAddress] The address to compare with

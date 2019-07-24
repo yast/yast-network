@@ -19,9 +19,11 @@
 require "yast"
 
 require "y2network/connection_config/base"
+require "y2network/connection_config/ip_config"
 require "y2network/hwinfo"
 require "y2network/startmode"
 require "y2network/boot_protocol"
+require "y2network/ip_address"
 require "y2firewall/firewalld"
 require "y2firewall/firewalld/interface"
 
@@ -58,12 +60,17 @@ module Y2Network
     #
     # Load with reasonable defaults
     # @param type [Y2Network::InterfaceType] type of device
-    def initialize(type:)
+    # @param config [Y2Network::ConnectionConfig::Base, nil] existing configuration of device or nil
+    #   for newly created
+    def initialize(type:, config: nil)
       @type = type
       @config = init_device_config({})
       @s390_config = init_device_s390_config({})
+      # TODO: also config need to store it, as newly added can be later
+      # edited with option for not yet created interface
+      @newly_added = config.nil?
       # TODO: create specialized connection for type
-      @connection_config = ConnectionConfig::Base.new
+      @connection_config = config || ConnectionConfig::Base.new
     end
 
     def newly_added?
@@ -148,6 +155,7 @@ module Y2Network
     def boot_protocol=(value)
       value = value.name if value.is_a?(Y2Network::BootProtocol)
       @config["BOOTPROTO"] = value
+      @connection_config.bootproto = Y2Network::BootProtocol.from_name(value)
     end
 
     # @return [Startmode]
@@ -232,6 +240,23 @@ module Y2Network
     # @param value [Array<Hash>] see #aliases for hash values
     def aliases=(value)
       @aliases = value
+
+      # connection config
+      # keep only default as aliases does not handle default ip config
+      @connection_config.ip_configs.delete_if { |c| c.id != "" }
+      value.each_with_index do |h, i|
+        ip_addr = IPAddress.from_string(h[:ip])
+        if h[:prefixlen] && !h[:prefixlen].empty?
+          ip_addr.prefix = h[:prefixlen].delete("/").to_i
+        elsif h[:mask] && !h[:mask].empty?
+          ip.netmask = h[:mask]
+        end
+        @connection_config.ip_configs << ConnectionConfig::IPConfig.new(
+          ip_addr,
+          label: h[:label],
+          id:    "_#{i}" # TODO: remember original prefixes
+        )
+      end
     end
 
     # gets interface name that will be assigned by udev
@@ -259,6 +284,14 @@ module Y2Network
     # @param [String] value
     def ip_address=(value)
       @config["IPADDR"] = value
+
+      # connection_config
+      if value.nil? || value.empty?
+        # in such case remove default config
+        @connection_config.ip_configs.delete_if { |c| c.id == "" }
+      else
+        ip_config_default.address.address = value
+      end
     end
 
     # @return [String] returns prefix or netmask. prefix in format "/<prefix>"
@@ -275,13 +308,21 @@ module Y2Network
       if value.empty?
         @config["PREFIXLEN"] = ""
         @config["NETMASK"] = ""
+        ip_config_default.address.prefix = nil
       elsif value.start_with?("/")
         @config["PREFIXLEN"] = value[1..-1]
+        ip_config_default.address.prefix = value[1..-1].to_i
       elsif value.size < 3 # one or two digits can be only prefixlen
         @config["PREFIXLEN"] = value
+        ip_config_default.address.prefix = value.to_i
       else
         param = Yast::Netmask.Check6(value) ? "PREFIXLEN" : "NETMASK"
         @config[param] = value
+        if param == "PREFIXLEN"
+          ip_config_default.address.prefix = value.to_i
+        else
+          ip_config_default.address.netmask = value
+        end
       end
     end
 
@@ -304,6 +345,7 @@ module Y2Network
     # @param [String] value
     def remote_ip=(value)
       @config["REMOTEIP"] = value
+      ip_config_default.remote_address = IPAddress.from_string(value)
     end
 
     # Gets Maximum Transition Unit
@@ -316,6 +358,8 @@ module Y2Network
     # @param [String] value
     def mtu=(value)
       @config["MTU"] = value
+
+      @connection_config.mtu = value.to_i
     end
 
     # @return [Array(2)<String,String>] user and group of tunnel
@@ -474,6 +518,15 @@ module Y2Network
       aliases_to_delete.each_pair do |a, v|
         Yast::NetworkInterfaces.DeleteAlias(Yast::NetworkInterfaces.Name, a) if v
       end
+    end
+
+    def ip_config_default
+      default = @connection_config.ip_configs.find { |c| c.id == "" }
+      if !default
+        default = ConnectionConfig::IPConfig.new(IPAddress.new("0.0.0.0")) # fake ip as it will be replaced soon
+        @connection_config.ip_configs << default
+      end
+      default
     end
   end
 end
