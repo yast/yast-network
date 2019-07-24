@@ -42,8 +42,8 @@ describe Y2Network::InterfacesCollection do
       let(:eth0_hwinfo) { double("hwinfo", name: "eth0") }
 
       before do
-        allow(wlan0).to receive(:hwinfo).and_return(wlan0_hwinfo)
-        allow(eth0).to receive(:hwinfo).and_return(eth0_hwinfo)
+        allow(wlan0).to receive(:hardware).and_return(wlan0_hwinfo)
+        allow(eth0).to receive(:hardware).and_return(eth0_hwinfo)
       end
 
       it "returns the interface with the given name" do
