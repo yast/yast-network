@@ -18,7 +18,6 @@
 # find current contact information at www.suse.com.
 
 require "y2network/sysconfig/connection_config_readers/base"
-require "y2network/connection_config/wireless"
 
 module Y2Network
   module Sysconfig
