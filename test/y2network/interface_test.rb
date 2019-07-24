@@ -41,4 +41,16 @@ describe Y2Network::Interface do
       end
     end
   end
+
+  describe "#modules_names" do
+    let(:hwinfo) { instance_double(Y2Network::Hwinfo, modules_names: ["virtio_net"]) }
+
+    before do
+      allow(interface).to receive(:hardware).and_return(hwinfo)
+    end
+
+    it "returns modules names from hardware information" do
+      expect(interface.modules_names).to eq(["virtio_net"])
+    end
+  end
 end
