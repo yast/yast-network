@@ -19,6 +19,8 @@
 
 require "y2network/connection_config/ip_config"
 require "y2network/ip_address"
+require "y2network/boot_protocol"
+require "y2network/startmode"
 
 module Y2Network
   module Sysconfig
@@ -59,7 +61,7 @@ module Y2Network
         #
         # @return [Class]
         def connection_class
-          self.class.to_s[/::([^:]+)$/, 1]
+          class_name = self.class.to_s.split("::").last
           Y2Network::ConnectionConfig.const_get(class_name)
         end
 

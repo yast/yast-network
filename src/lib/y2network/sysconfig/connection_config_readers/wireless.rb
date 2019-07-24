@@ -30,12 +30,6 @@ module Y2Network
       class Wireless < Base
       private
 
-        # @return [Y2Network::ConnectionConfig::Ethernet]
-        # @see Y2Network::Sysconfig::ConnectionConfigReaders::Base#connection_class
-        def connection_class
-          Y2Network::ConnectionConfig::Wireless
-        end
-
         # @see Y2Network::Sysconfig::ConnectionConfigReaders::Base#update_connection_config
         def update_connection_config(conn)
           conn.ap = file.wireless_ap

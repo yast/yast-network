@@ -30,12 +30,6 @@ module Y2Network
       class Ethernet < Base
       private
 
-        # @return [Y2Network::ConnectionConfig::Ethernet]
-        # @see Y2Network::Sysconfig::ConnectionConfigReaders::Base#connection_class
-        def connection_class
-          Y2Network::ConnectionConfig::Ethernet
-        end
-
         # @see Y2Network::Sysconfig::ConnectionConfigReaders::Base#update_connection_config
         def update_connection_config(_conn)
         end
