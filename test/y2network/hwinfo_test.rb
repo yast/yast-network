@@ -33,6 +33,22 @@ describe Y2Network::Hwinfo do
     allow(Yast::LanItems).to receive(:Hardware).and_return(hardware)
   end
 
+  describe "#exists?" do
+    context "when the device exists" do
+      it "returns true" do
+        expect(hwinfo.exists?).to eq(true)
+      end
+    end
+
+    context "when the device does not exist" do
+      let(:interface_name) { "missing" }
+
+      it "returns false" do
+        expect(hwinfo.exists?).to eq(false)
+      end
+    end
+  end
+
   describe "#modules_names" do
     it "returns the list of kernel modules names" do
       expect(hwinfo.modules_names).to eq(["virtio_net"])
