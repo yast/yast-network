@@ -49,6 +49,7 @@ module Y2Network
             conn.description = file.name
             conn.interface = file.interface
             conn.ip_configs = ip_configs
+            conn.name = file.interface
             conn.startmode = Startmode.create(file.startmode || "manual")
             conn.startmode.priority = file.ifplugd_priority if conn.startmode.name == "ifplugd"
             update_connection_config(conn)

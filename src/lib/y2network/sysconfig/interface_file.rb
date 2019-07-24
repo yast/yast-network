@@ -20,6 +20,7 @@
 require "yast"
 require "pathname"
 require "y2network/ip_address"
+require "y2network/interface_type"
 
 module Y2Network
   module Sysconfig
@@ -57,6 +58,7 @@ module Y2Network
         # @param interface [String] Interface name
         # @return [Sysconfig::InterfaceFile,nil] Sysconfig
         def find(interface)
+          Yast.import "FileUtils"
           return nil unless Yast::FileUtils.Exists(SYSCONFIG_NETWORK_DIR.join("ifcfg-#{interface}").to_s)
           new(interface)
         end
@@ -133,6 +135,10 @@ module Y2Network
       # !@attribute [r] name
       #   @return [String] Interface's description (e.g., "Ethernet Card 0")
       define_variable(:name, :string)
+
+      # !@attribute [r] interfacetype
+      #   @return [String] Forced Interface's type (e.g., "dummy")
+      define_variable(:interfacetype, :string)
 
       # !@attribute [r] bootproto
       #   return [String] Set up protocol (static, dhcp, dhcp4, dhcp6, autoip, dhcp+autoip,
@@ -278,7 +284,14 @@ module Y2Network
       #
       # @return [String] Interface's type depending on the file values
       def type
-        "eth"
+        return InterfaceType::DUMMY if @values["INTERFACETYPE"] == "dummy"
+        return InterfaceType::BONDING if defined_variables.any? { |k| k.start_with?("BOND") }
+        return InterfaceType::BRIDGE if defined_variables.any? { |k| k.start_with?("BRIDGE") }
+        return InterfaceType::WIRELESS if defined_variables.any? { |k| k.start_with?("WIRELESS") }
+        return InterfaceType::VLAN if defined_variables.include? "ETHERDEVICE"
+        return InterfaceType::INFINIBAND if defined_variables.include? "IPOIB_MODE"
+
+        InterfaceType::ETHERNET
       end
 
       # Empties all known values
