@@ -28,21 +28,11 @@ module Y2Network
       end
 
       def init
-        self.value = if @settings["PREFIXLEN"] && !@settings["PREFIXLEN"].empty?
-          "/#{@settings["PREFIXLEN"]}"
-        else
-          @settings["NETMASK"] || ""
-        end
+        self.value = @settings.subnet_prefix
       end
 
       def store
-        mask = value
-        if mask.start_with?("/")
-          @settings["PREFIXLEN"] = mask[1..-1]
-        else
-          param = Yast::Netmask.Check6(mask) ? "PREFIXLEN" : "NETMASK"
-          @settings[param] = mask
-        end
+        @settings.subnet_prefix = value
       end
 
       def validate

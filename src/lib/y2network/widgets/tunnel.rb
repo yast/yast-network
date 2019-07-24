@@ -26,14 +26,17 @@ module Y2Network
 
       def init
         log.info "init tunnel with #{@settings.inspect}"
+        owner, group = @settings.tunnel_user_group
 
-        Yast::UI.ChangeWidget(:tunnel_owner, :Value, @settings["TUNNEL_SET_OWNER"] || "")
-        Yast::UI.ChangeWidget(:tunnel_group, :Value, @settings["TUNNEL_SET_GROUP"] || "")
+        Yast::UI.ChangeWidget(:tunnel_owner, :Value, owner || "")
+        Yast::UI.ChangeWidget(:tunnel_group, :Value, group || "")
       end
 
       def store
-        @settings["TUNNEL_SET_OWNER"] = Yast::UI.QueryWidget(:tunnel_owner, :Value)
-        @settings["TUNNEL_SET_GROUP"] = Yast::UI.QueryWidget(:tunnel_group, :Value)
+        @settings.assign_tunnel_user_group(
+          Yast::UI.QueryWidget(:tunnel_owner, :Value),
+          Yast::UI.QueryWidget(:tunnel_group, :Value)
+        )
       end
     end
   end

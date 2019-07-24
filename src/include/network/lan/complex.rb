@@ -328,8 +328,8 @@ module Yast
         end
         # clear defaults, some defaults are invalid for slaves and can cause troubles
         # in related sysconfig scripts or makes no sence for slaves (e.g. ip configuration).
-        builder["NETMASK"] = ""
-        builder["BOOTPROTO"] = "none"
+        builder.subnet_prefix = ""
+        builder.boot_protocol = "none"
         case master_builder.type.short_name
         when "bond"
           LanItems.startmode = "hotplug"
@@ -338,7 +338,7 @@ module Yast
             LanItems.update_item_udev_rule!(:bus_id)
           end
         when "br"
-          builder["IPADDR"] = ""
+          builder.ip_address = ""
         else
           raise "Adapting slaves for wrong type #{master_builder.type.inspect}"
         end

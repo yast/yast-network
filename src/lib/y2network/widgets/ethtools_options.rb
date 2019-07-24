@@ -25,11 +25,11 @@ module Y2Network
       end
 
       def init
-        self.value = @settings["ETHTOOL_OPTIONS"]
+        self.value = @settings.ethtool_options
       end
 
       def store
-        @settings["ETHTOOL_OPTIONS"] = value
+        @settings.ethtool_options = value
       end
     end
   end

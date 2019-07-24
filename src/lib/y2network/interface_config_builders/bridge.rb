@@ -26,6 +26,16 @@ module Y2Network
         interfaces.all.select { |i| bridgeable?(i) }
       end
 
+      # @return [Array<String>]
+      def ports
+        @config["BRIDGE_PORTS"].split
+      end
+
+      # @param [Array<String>] value
+      def ports=(value)
+        @config["BRIDGE_PORTS"] = value.join(" ")
+      end
+
     private
 
       def interfaces

@@ -1866,10 +1866,10 @@ module Yast
         Builtins.y2debug("%1", NetworkInterfaces.ConcealSecrets1(newdev))
 
         # configure bridge ports
-        bridge_ports = builder["BRIDGE_PORTS"]
-        if bridge_ports
+        if builder.type.bridge?
+          bridge_ports = builder.ports
           log.info "Configuring bridge ports #{bridge_ports} for: #{ifcfg_name}"
-          bridge_ports.split.each { |bp| configure_as_bridge_port(bp) }
+          bridge_ports.each { |bp| configure_as_bridge_port(bp) }
         end
 
         SetModified()
@@ -1970,6 +1970,7 @@ module Yast
       nil
     end
 
+    PROPOSED_PPPOE_MTU = "1492".freeze # suggested value for PPPoE
     # A default configuration for device when installer needs to configure it
     def ProposeItem(item_id)
       Builtins.y2milestone("Propose configuration for %1", GetDeviceName(item_id))
@@ -1978,15 +1979,15 @@ module Yast
       type = Items().fetch(item_id, {}).fetch("hwinfo", {})[type]
       builder = Y2Network::InterfaceConfigBuilder.for(type)
 
-      builder["MTU"] = "1492" if Arch.s390 && Builtins.contains(["lcs", "eth"], type)
-      builder["IPADDR"] = ""
-      builder["NETMASK"] = ""
-      builder["BOOTPROTO"] = "dhcp"
+      builder.mtu = PROPOSED_PPPOE_MTU if Arch.s390 && Builtins.contains(["lcs", "eth"], type)
+      builder.ip_address = ""
+      builder.subnet_prefix = ""
+      builder.boot_protocol = Y2Network::BootProtocol::DHCP
 
       # see bsc#176804
       devicegraph = Y2Storage::StorageManager.instance.staging
       if devicegraph.filesystem_in_network?("/")
-        builder["STARTMODE"] = "nfsroot"
+        builder.startmode = "nfsroot"
         Builtins.y2milestone("startmode nfsroot")
       end
 

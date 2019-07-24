@@ -21,11 +21,13 @@ require "yast"
 require "y2network/connection_config/base"
 require "y2network/hwinfo"
 require "y2network/startmode"
+require "y2network/boot_protocol"
 require "y2firewall/firewalld"
 require "y2firewall/firewalld/interface"
 
 Yast.import "LanItems"
 Yast.import "NetworkInterfaces"
+Yast.import "Netmask"
 
 module Y2Network
   # Collects data from the UI until we have enough of it to create a {Y2Network::Interface}.
@@ -66,18 +68,6 @@ module Y2Network
 
     def newly_added?
       Yast::LanItems.operation == :add
-    end
-
-    # changes internal config keys.
-    # @note always prefer specialized method if available
-    def []=(key, value)
-      @config[key] = value
-    end
-
-    # gets internal config keys.
-    # @note always prefer specialized method if available
-    def [](key)
-      @config[key]
     end
 
     # saves builder content to backend
@@ -149,19 +139,40 @@ module Y2Network
       @firewall_zone = value
     end
 
+    # @return [Y2Network::BootProtocol]
+    def boot_protocol
+      Y2Network::BootProtocol.from_name(@config["BOOTPROTO"])
+    end
+
+    # @param[String, Y2Network::BootProtocol]
+    def boot_protocol=(value)
+      value = value.name if value.is_a?(Y2Network::BootProtocol)
+      @config["BOOTPROTO"] = value
+    end
+
     # @return [Startmode]
     def startmode
       # in future use only @connection_config and just delegate method
       startmode = Startmode.create(@config["STARTMODE"])
+      return nil unless startmode
+
       startmode.priority = @config["IFPLUGD_PRIORITY"] if startmode.name == "ifplugd"
       startmode
     end
 
-    # @param [String] name startmode name used to create Startmode object
+    # @param [String,Y2Network::Startmode] name startmode name used to create Startmode object
+    #   or object itself
     def startmode=(name)
-      mode = Startmode.create(name)
+      mode = name.is_a?(Startmode) ? name : Startmode.create(name)
+      if !mode # invalid startmode e.g. in CLI
+        @config["STARTMODE"] = ""
+        return
+      end
+
       # assign only if it is not already this value. This helps with ordering of ifplugd_priority
-      @connection_config.startmode = mode if @connection_config.startmode.name != mode.name
+      if !@connection_config.startmode || @connection_config.startmode.name != mode.name
+        @connection_config.startmode = mode
+      end
       @config["STARTMODE"] = mode.name
     end
 
@@ -227,6 +238,94 @@ module Y2Network
     def udev_name
       # cannot cache as EditNicName dialog can change it
       Yast::LanItems.current_udev_name
+    end
+
+    # TODO: eth only?
+    # @return [String]
+    def ethtool_options
+      @config["ETHTOOL_OPTIONS"]
+    end
+
+    # @param [String] value
+    def ethtool_options=(value)
+      @config["ETHTOOL_OPTIONS"] = value
+    end
+
+    # @return [String]
+    def ip_address
+      @config["IPADDR"]
+    end
+
+    # @param [String] value
+    def ip_address=(value)
+      @config["IPADDR"] = value
+    end
+
+    # @return [String] returns prefix or netmask. prefix in format "/<prefix>"
+    def subnet_prefix
+      if @config["PREFIXLEN"] && !@config["PREFIXLEN"].empty?
+        "/#{@config["PREFIXLEN"]}"
+      else
+        @config["NETMASK"] || ""
+      end
+    end
+
+    # @param [String] value prefix or netmask is accepted. prefix in format "/<prefix>"
+    def subnet_prefix=(value)
+      if value.empty?
+        @config["PREFIXLEN"] = ""
+        @config["NETMASK"] = ""
+      elsif value.start_with?("/")
+        @config["PREFIXLEN"] = value[1..-1]
+      elsif value.size < 3 # one or two digits can be only prefixlen
+        @config["PREFIXLEN"] = value
+      else
+        param = Yast::Netmask.Check6(value) ? "PREFIXLEN" : "NETMASK"
+        @config[param] = value
+      end
+    end
+
+    # @return [String]
+    def hostname
+      @config["HOSTNAME"]
+    end
+
+    # @param [String] value
+    def hostname=(value)
+      @config["HOSTNAME"] = value
+    end
+
+    # sets remote ip for ptp connections
+    # @return [String]
+    def remote_ip
+      @config["REMOTEIP"]
+    end
+
+    # @param [String] value
+    def remote_ip=(value)
+      @config["REMOTEIP"] = value
+    end
+
+    # Gets Maximum Transition Unit
+    # @return [String]
+    def mtu
+      @config["MTU"]
+    end
+
+    # Sets Maximum Transition Unit
+    # @param [String] value
+    def mtu=(value)
+      @config["MTU"] = value
+    end
+
+    # @return [Array(2)<String,String>] user and group of tunnel
+    def tunnel_user_group
+      [@config["TUNNEL_SET_OWNER"], @config["TUNNEL_SET_GROUP"]]
+    end
+
+    def assign_tunnel_user_group(user, group)
+      @config["TUNNEL_SET_OWNER"] = user
+      @config["TUNNEL_SET_GROUP"] = group
     end
 
     # Provides stored configuration in sysconfig format
@@ -342,7 +441,7 @@ module Y2Network
       return true if !Yast::Arch.is_laptop
       return true if Yast::NetworkService.is_network_manager
       # virtual devices cannot expect any event from ifplugd
-      return true if ["bond", "vlan", "br"].include? type
+      return true if ["bond", "vlan", "br"].include? type.short_name
 
       false
     end

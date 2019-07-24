@@ -68,15 +68,15 @@ module Yast
       log.info "ShowAndRun: #{ret}"
 
       if ret != :back && ret != :abort
-        bootproto = builder["BOOTPROTO"]
-        ipaddr = builder["IPADDR"]
+        bootproto = builder.boot_protocol
+        ipaddr = builder.ip_address
 
         # IP is mandatory for static configuration. Makes no sense to write static
         # configuration without that.
         return ret if bootproto == "static" && ipaddr.empty?
 
         if bootproto == "static"
-          update_hostname(ipaddr, builder["HOSTNAME"] || "")
+          update_hostname(ipaddr, builder.hostname || "")
         elsif LanItems.isCurrentDHCP && !LanItems.isCurrentHotplug
           # fixed bug #73739 - if dhcp is used, dont set default gw statically
           # but also: reset default gw only if DHCP* is used, this branch covers

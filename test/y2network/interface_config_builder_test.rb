@@ -124,7 +124,7 @@ describe Y2Network::InterfaceConfigBuilder do
           # check for virtual device type is done via Builtins.contains. I don't
           # want to stub it because it requires default stub value definition for
           # other calls of the function. It might have unexpected inpacts.
-          allow(config_builder).to receive(:type) { "bond" }
+          allow(config_builder).to receive(:type).and_return(Y2Network::InterfaceType::BONDING)
 
           result = config_builder.device_sysconfig["STARTMODE"]
           expect(result).to be_eql expected_startmode

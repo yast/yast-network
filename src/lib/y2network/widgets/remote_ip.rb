@@ -25,11 +25,11 @@ module Y2Network
       end
 
       def init
-        self.value = @settings["REMOTEIP"]
+        self.value = @settings.remote_ip
       end
 
       def store
-        @settings["REMOTEIP"] = value
+        @settings.remote_ip = value
       end
 
       def validate
