@@ -96,6 +96,19 @@ module Y2Network
       @hwinfo ? @hwinfo.fetch("name", "") : ""
     end
 
+    # Returns the list of kernel modules
+    #
+    # The list of modules is internally represented as:
+    #
+    #   [[mod1name, mod1args], [mod2name, mod2args]]
+    #
+    # This method only returns the names, omitting the arguments.
+    #
+    # @return [Array<String>]
+    def modules_names
+      drivers[0].fetch("modules", []).map(&:first)
+    end
+
   private
 
     # for textdomain in network/hardware.rb
