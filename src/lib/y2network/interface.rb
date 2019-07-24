@@ -54,6 +54,7 @@ module Y2Network
     # Constructor
     #
     # @param name [String] Interface name (e.g., "eth0")
+    # @param type [InterfaceType] Interface type
     def initialize(name, type: InterfaceType::ETHERNET)
       @name = name
       @description = ""
