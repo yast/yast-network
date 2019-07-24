@@ -22,7 +22,7 @@ require "y2network/sysconfig/interface_file"
 require "tmpdir"
 
 describe Y2Network::Sysconfig::InterfaceFile do
-  subject(:file) { described_class.new(interface_name) }
+  subject(:file) { described_class.new(interface_name).tap(&:load) }
 
   let(:interface_name) { "eth0" }
 
@@ -56,38 +56,40 @@ describe Y2Network::Sysconfig::InterfaceFile do
     end
   end
 
-  describe "#fetch" do
-    it "returns the raw value from the sysconfig file" do
-      expect(file.fetch("IPADDR")).to eq("192.168.123.1/24")
-    end
-  end
-
-  describe "#ip_address" do
-    it "returns the IP address" do
-      expect(file.ip_address).to eq(Y2Network::IPAddress.from_string("192.168.123.1/24"))
+  describe "#ipaddrs" do
+    it "returns the IP addresses" do
+      expect(file.ipaddrs).to eq(
+        "" => Y2Network::IPAddress.from_string("192.168.123.1/24")
+      )
     end
 
-    context "when the IP address is empty" do
+    context "when multiple addresses are defined" do
       let(:interface_name) { "eth1" }
 
-      it "returns nil" do
-        expect(file.ip_address).to be_nil
+      it "returns a hash with IP addresses indexed by their suffixes" do
+        expect(file.ipaddrs).to eq(
+          "_0" => Y2Network::IPAddress.from_string("192.168.123.1/24"),
+          "_1" => Y2Network::IPAddress.from_string("10.0.0.1")
+        )
       end
     end
 
     context "when the IP address is missing" do
-      let(:interface_name) { "eth2" }
+      let(:interface_name) { "eth4" }
 
-      it "returns nil" do
-        expect(file.ip_address).to be_nil
+      it "returns an empty hash" do
+        expect(file.ipaddrs).to be_empty
       end
     end
   end
 
-  describe "#ipaddr=" do
+  describe "#ipaddrs=" do
+    let(:interface_name) { "eth4" }
+
     it "sets the bootproto" do
-      expect { file.ipaddr = Y2Network::IPAddress.from_string("10.0.0.1") }
-        .to change { file.ipaddr }.to(Y2Network::IPAddress.from_string("10.0.0.1"))
+      addresses = { default: Y2Network::IPAddress.from_string("10.0.0.1") }
+      expect { file.ipaddrs = addresses }
+        .to change { file.ipaddrs }.from({}).to(addresses)
     end
   end
 
@@ -120,15 +122,15 @@ describe Y2Network::Sysconfig::InterfaceFile do
   end
 
   describe "#wireless_keys" do
-    subject(:file) { described_class.new("wlan0") }
+    let(:interface_name) { "wlan2" }
 
     it "returns the list of keys" do
-      expect(file.wireless_keys).to eq(["0-1-2-3-4-5", "s:password"])
+      expect(file.wireless_keys).to eq("_0" => "0-1-2-3-4-5", "_1" => "s:password")
     end
   end
 
   describe "#wireless_keys=" do
-    let(:keys) { ["123456", "abcdef"] }
+    let(:keys) { { default: "123456", "_1" => "abcdef" } }
 
     it "sets the wireless keys" do
       expect { file.wireless_keys = keys }.to change { file.wireless_keys }.to(keys)
@@ -139,7 +141,7 @@ describe Y2Network::Sysconfig::InterfaceFile do
     subject(:file) { described_class.new("eth0") }
 
     it "writes the changes to the file" do
-      file.ipaddr = Y2Network::IPAddress.from_string("192.168.122.1/24")
+      file.ipaddrs = { default: Y2Network::IPAddress.from_string("192.168.122.1/24") }
       file.bootproto = :static
       file.save
 
@@ -150,11 +152,11 @@ describe Y2Network::Sysconfig::InterfaceFile do
 
     describe "when multiple wireless keys are specified" do
       it "writes indexes keys" do
-        file.wireless_keys = ["123456", "abcdef"]
+        file.wireless_keys = { "" => "123456", "_1" => "abcdef" }
         file.save
 
         content = file_content(scr_root, file)
-        expect(content).to include("WIRELESS_KEY_0='123456")
+        expect(content).to include("WIRELESS_KEY='123456")
         expect(content).to include("WIRELESS_KEY_1='abcdef")
       end
     end
@@ -171,14 +173,14 @@ describe Y2Network::Sysconfig::InterfaceFile do
   end
 
   describe "#clean" do
-    subject(:file) { described_class.new("eth0") }
+    let(:interface_name) { "eth1" }
 
     it "removes all known values from the file" do
       file.clean
       file.save
 
       content = file_content(scr_root, file)
-      expect(content).to include("BROADCAST=''")
+      expect(content).to match("IPADDR_0=''")
     end
   end
 end

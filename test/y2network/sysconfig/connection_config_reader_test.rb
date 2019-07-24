@@ -62,7 +62,7 @@ describe Y2Network::Sysconfig::ConnectionConfigReader do
 
     context "when the interface type is unknown" do
       let(:interface_file) do
-        instance_double(Y2Network::Sysconfig::InterfaceFile, type: :foo)
+        instance_double(Y2Network::Sysconfig::InterfaceFile, type: :foo).as_null_object
       end
 
       it "raise exception" do

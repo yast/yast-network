@@ -17,37 +17,18 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/connection_config/ethernet"
-require "y2network/boot_protocol"
-require "y2network/startmode"
+require "y2network/sysconfig/connection_config_readers/base"
 
 module Y2Network
   module Sysconfig
     module ConnectionConfigReaders
       # This class is able to build a ConnectionConfig::Ethernet object given a
       # Sysconfig::InterfaceFile object.
-      class Ethernet
-        # @return [Y2Network::Sysconfig::InterfaceFile]
-        attr_reader :file
+      class Ethernet < Base
+      private
 
-        # Constructor
-        #
-        # @param file [Y2Network::Sysconfig::InterfaceFile] File to get interface configuration from
-        def initialize(file)
-          @file = file
-        end
-
-        # @return [Y2Network::ConnectionConfig::Ethernet]
-        def connection_config
-          Y2Network::ConnectionConfig::Ethernet.new.tap do |conn|
-            # for defauls see man ifcfg
-            conn.bootproto = BootProtocol.from_name(file.bootproto || "static")
-            conn.description = file.name
-            conn.interface = file.interface
-            conn.ip_address = file.ip_address
-            conn.startmode = Startmode.create(file.startmode || "manual")
-            conn.startmode.priority = file.ifplugd_priority if conn.startmode.name == "ifplugd"
-          end
+        # @see Y2Network::Sysconfig::ConnectionConfigReaders::Base#update_connection_config
+        def update_connection_config(_conn)
         end
       end
     end

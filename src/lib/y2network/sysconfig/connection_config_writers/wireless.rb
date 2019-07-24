@@ -16,38 +16,26 @@
 #
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
+
+require "y2network/sysconfig/connection_config_writers/base"
+
 module Y2Network
   module Sysconfig
     module ConnectionConfigWriters
       # This class is responsible for writing the information from a ConnectionConfig::Wireless
       # object to the underlying system.
-      class Wireless
-        # @return [Y2Network::Sysconfig::InterfaceFile]
-        attr_reader :file
+      class Wireless < Base
+      private
 
-        def initialize(file)
-          @file = file
-        end
-
-        # Writes connection information to the interface configuration file
-        #
-        # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
-        def write(conn)
-          file.bootproto = conn.bootproto.name
-          file.ipaddr = conn.ip_address
-          file.name = conn.description
-          file.startmode = conn.startmode.to_s
-          file.ifplugd_priority = conn.startmode.priority if conn.startmode.name == "ifplugd"
+        # @see Y2Network::ConnectionConfigWriters::Base#update_file
+        def update_file(conn)
           file.wireless_ap = conn.ap
           file.wireless_ap_scanmode = conn.ap_scanmode
           file.wireless_essid = conn.essid
           file.wireless_mode = conn.mode
           file.wireless_nwid = conn.nwid
           write_auth_settings(conn) if conn.auth_mode
-          file
         end
-
-      private
 
         # Writes authentication settings
         #

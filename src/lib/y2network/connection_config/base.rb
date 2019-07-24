@@ -38,16 +38,19 @@ module Y2Network
       attr_accessor :interface
       # @return [BootProtocol] Bootproto
       attr_accessor :bootproto
-      # @return [IPAddr,nil]
-      attr_accessor :ip_address
-      # @return [Array<IPAddr>]
-      attr_accessor :secondary_ip_addresses
+      # @return [Array<IPConfig>]
+      attr_accessor :ip_configs
       # @return [Integer, nil]
       attr_accessor :mtu
       # @return [Startmode, nil]
       attr_accessor :startmode
       # @return [String] Connection's description (e.g., "Ethernet Card 0")
       attr_accessor :description
+
+      # Constructor
+      def initialize
+        @ip_configs = []
+      end
 
       # Returns the connection type
       #

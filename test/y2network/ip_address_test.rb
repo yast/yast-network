@@ -21,6 +21,8 @@ require_relative "../test_helper"
 require "y2network/ip_address"
 
 describe Y2Network::IPAddress do
+  subject(:ip) { described_class.new("192.168.122.1", 24) }
+
   describe ".from_string" do
     context "when a string representing an IPv4 is given" do
       let(:ip_address) { "192.168.122.1/24" }
@@ -34,10 +36,10 @@ describe Y2Network::IPAddress do
       context "when no prefix is given" do
         let(:ip_address) { "192.168.122.1" }
 
-        it "sets a 32 bits prefix" do
+        it "does not set a prefix" do
           ip = described_class.from_string(ip_address)
           expect(ip.address).to eq(IPAddr.new("192.168.122.1"))
-          expect(ip.prefix).to eq(32)
+          expect(ip.prefix).to be_nil
         end
       end
     end
@@ -54,10 +56,10 @@ describe Y2Network::IPAddress do
       context "when no prefix is given" do
         let(:ip_address) { "2001:db8:1234:ffff:ffff:ffff:ffff:fff1" }
 
-        it "sets a 128 bits prefix" do
+        it "does not set a prefix" do
           ip = described_class.from_string(ip_address)
           expect(ip.address).to eq(IPAddr.new(ip_address))
-          expect(ip.prefix).to eq(128)
+          expect(ip.prefix).to be_nil
         end
       end
     end
@@ -76,6 +78,18 @@ describe Y2Network::IPAddress do
       it "omits the prefix" do
         expect(ip.to_s).to eq("192.168.122.1")
       end
+    end
+  end
+
+  describe "#prefix=" do
+    it "sets the address prefix" do
+      expect { ip.prefix = 32 }.to change { ip.prefix }.from(24).to(32)
+    end
+  end
+
+  describe "#netmask=" do
+    it "sets the address prefix" do
+      expect { ip.netmask = "255.255.255.255" }.to change { ip.prefix }.from(24).to(32)
     end
   end
 
@@ -99,6 +113,22 @@ describe Y2Network::IPAddress do
         expect(described_class.new("192.168.122.1", 24))
           .to_not eq(described_class.new("192.168.122.1", 32))
 
+      end
+    end
+  end
+
+  describe "#prefix?" do
+    context "when a prefix was set" do
+      it "returns true" do
+        expect(ip.prefix?).to eq(true)
+      end
+    end
+
+    context "when a prefix was not set" do
+      subject(:ip) { described_class.new("192.168.122.1") }
+
+      it "returns false" do
+        expect(ip.prefix?).to eq(false)
       end
     end
   end

@@ -1,0 +1,6 @@
+BOOTPROTO='static'
+BROADCAST=''
+NAME='Wireless Adapter 3'
+STARTMODE='auto'
+WIRELESS_AUTH_MODE='open'
+WIRELESS_MODE='Managed'

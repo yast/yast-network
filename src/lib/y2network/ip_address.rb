@@ -36,13 +36,17 @@ module Y2Network
   # @example IPAddress behaviour
   #   ip = IPAddress.new("192.168.122.1/24")
   #   ip.to_s #=> "192.168.122.1/24"
+  #
+  # @example IPAddress with no prefix
+  #   ip = IPAddress.new("192.168.122.1")
+  #   ip.to_s #=> "192.168.122.1"
   class IPAddress
     extend Forwardable
 
     # @return [IPAddr] IP address
     attr_reader :address
     # @return [Integer] Prefix
-    attr_reader :prefix
+    attr_accessor :prefix
 
     def_delegators :@address, :ipv4?, :ipv6?
 
@@ -54,11 +58,6 @@ module Y2Network
       end
     end
 
-    # @return [Integer] IPv4 address default prefix
-    IPV4_DEFAULT_PREFIX = 32
-    # @return [Integer] IPv6 address default prefix
-    IPV6_DEFAULT_PREFIX = 128
-
     # Constructor
     #
     # @param address [String] IP address without the prefix
@@ -67,12 +66,18 @@ module Y2Network
     def initialize(address, prefix = nil)
       @address = IPAddr.new(address)
       @prefix = prefix
-      @prefix ||= @address.ipv4? ? IPV4_DEFAULT_PREFIX : IPV6_DEFAULT_PREFIX
     end
 
     # Returns a string representation of the address
     def to_s
-      host? ? @address.to_s : "#{@address}/#{@prefix}"
+      prefix? ? "#{@address}/#{@prefix}" : @address.to_s
+    end
+
+    # Sets the prefix from a netmask
+    #
+    # @param netmask [String] String representation of the netmask
+    def netmask=(netmask)
+      self.prefix = IPAddr.new("#{netmask}/#{netmask}").prefix
     end
 
     # Determines whether two addresses are equivalent
@@ -85,13 +90,11 @@ module Y2Network
 
     alias_method :eql?, :==
 
-  private
-
-    # Determines whether it is a host address
+    # Determines whether a prefix is defined
     #
     # @return [Boolean]
-    def host?
-      (ipv4? && prefix == IPV4_DEFAULT_PREFIX) || (ipv6? && prefix == IPV6_DEFAULT_PREFIX)
+    def prefix?
+      !!@prefix
     end
   end
 end

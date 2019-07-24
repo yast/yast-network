@@ -28,11 +28,14 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Wireless do
   subject(:handler) { described_class.new(file) }
 
   let(:file) { Y2Network::Sysconfig::InterfaceFile.new("wlan0") }
+
   let(:conn) do
     Y2Network::ConnectionConfig::Wireless.new.tap do |conn|
+      conn.interface = "wlan0"
+      conn.description = "Wireless Card 0"
       conn.startmode = Y2Network::Startmode.create("auto")
       conn.bootproto = Y2Network::BootProtocol::STATIC
-      conn.ip_address = address
+      conn.ip_configs = ip_configs
       conn.mode = "managed"
       conn.essid = "example_essid"
       conn.auth_mode = :open
@@ -40,14 +43,25 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Wireless do
       conn.ap_scanmode = "1"
     end
   end
-  let(:address) { IPAddr.new("192.168.122.100") }
+
+  let(:ip_configs) do
+    [
+      Y2Network::ConnectionConfig::IPConfig.new(
+        Y2Network::IPAddress.from_string("192.168.122.1/24"),
+        id: "", broadcast: Y2Network::IPAddress.from_string("192.168.122.255")
+      ),
+      Y2Network::ConnectionConfig::IPConfig.new(
+        Y2Network::IPAddress.from_string("10.0.0.1/8"),
+        id: "_0", label: "my-label", remote_address: Y2Network::IPAddress.from_string("10.0.0.2")
+      )
+    ]
+  end
 
   it "sets relevant attributes" do
     handler.write(conn)
     expect(file).to have_attributes(
       startmode:            "auto",
       bootproto:            "static",
-      ipaddr:               address,
       wireless_mode:        conn.mode,
       wireless_essid:       conn.essid,
       wireless_auth_mode:   :open,
@@ -56,12 +70,21 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Wireless do
     )
   end
 
+  it "sets IP configuration attributes" do
+    handler.write(conn)
+    expect(file).to have_attributes(
+      ipaddrs:        { "" => ip_configs[0].address, "_0" => ip_configs[1].address },
+      broadcasts:     { "" => ip_configs[0].broadcast, "_0" => nil },
+      remote_ipaddrs: { "" => nil, "_0" => ip_configs[1].remote_address },
+      labels:         { "" => nil, "_0" => "my-label" }
+    )
+  end
+
   context "WPA-EAP network configuration" do
     let(:conn) do
       Y2Network::ConnectionConfig::Wireless.new.tap do |conn|
         conn.startmode = Y2Network::Startmode.create("auto")
         conn.bootproto = Y2Network::BootProtocol::STATIC
-        conn.ip_address = address
         conn.mode = "managed"
         conn.essid = "example_essid"
         conn.auth_mode = "eap"
@@ -87,7 +110,6 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Wireless do
       Y2Network::ConnectionConfig::Wireless.new.tap do |conn|
         conn.startmode = Y2Network::Startmode.create("auto")
         conn.bootproto = Y2Network::BootProtocol::STATIC
-        conn.ip_address = address
         conn.mode = "managed"
         conn.auth_mode = "psk"
         conn.wpa_psk = "example_psk"
@@ -108,7 +130,6 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Wireless do
       Y2Network::ConnectionConfig::Wireless.new.tap do |conn|
         conn.startmode = Y2Network::Startmode.create("auto")
         conn.bootproto = Y2Network::BootProtocol::STATIC
-        conn.ip_address = address
         conn.mode = "managed"
         conn.auth_mode = "shared"
         conn.keys = ["123456", "abcdef"]
