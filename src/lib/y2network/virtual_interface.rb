@@ -22,5 +22,14 @@ require "y2network/interface"
 module Y2Network
   # Virtual Interface Class (veth, bond, bridge, vlan, dummy...)
   class VirtualInterface < Interface
+    # Build connection
+    #
+    # @todo Would be possible to get the name from the connection?
+    #
+    # @param conn [ConnectionConfig] Connection configuration related to the
+    #   network interface
+    def self.from_connection(name, conn)
+      new(conn.interface, type: conn.type)
+    end
   end
 end

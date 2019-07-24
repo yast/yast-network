@@ -21,8 +21,25 @@ require "y2network/connection_config/base"
 
 module Y2Network
   module ConnectionConfig
-    # Configuration for TUN connections
+    # Configuration for TUN/TAP connections
     class Tun < Base
+      # @return [String] tunnel mode ('tun' or 'tap')
+      attr_accessor :mode
+
+      # @return [String] tunnel owner (name or UID)
+      attr_accessor :owner
+      # @return [String] tunnel group (name or GID)
+      attr_accessor :group
+
+      def initialize
+        @mode = "tun"
+        @owner = ""
+        @group = ""
+      end
+
+      def virtual?
+        true
+      end
     end
   end
 end

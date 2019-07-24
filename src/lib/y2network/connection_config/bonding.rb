@@ -18,6 +18,7 @@
 # find current contact information at www.suse.com.
 
 require "y2network/connection_config/base"
+require "y2network/fake_interface"
 
 module Y2Network
   module ConnectionConfig
@@ -33,6 +34,31 @@ module Y2Network
       def initialize
         @slaves = []
         @options = ""
+      end
+
+      # @see Y2Network::InterfacesCollection
+      #
+      # @param interfaces [Y2Network::InterfacesCollection]
+      def update_interfaces!(interfaces)
+        return if slaves.empty?
+        new_slaves = []
+
+        slaves.each do |index, slave|
+          alternative = interfaces.by_name(slave)
+          unless alternative
+            alternative = Y2Network::FakeInterface.new(slave)
+            interfaces << alternative
+          end
+          slaves[index] = alternative
+        end
+
+        slaves = new_slaves
+
+        nil
+      end
+
+      def virtual?
+        true
       end
     end
   end

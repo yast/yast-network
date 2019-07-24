@@ -18,7 +18,6 @@
 # find current contact information at www.suse.com.
 
 require "y2network/sysconfig/connection_config_readers/base"
-require "y2network/connection_config/infiniband"
 
 module Y2Network
   module Sysconfig
@@ -26,27 +25,11 @@ module Y2Network
       # This class is able to build a ConnectionConfig::Infiniband object given a
       # SysconfigInterfaceFile object.
       class Infiniband < Base
-        # @return [Y2Network::Sysconfig::InterfaceFile]
-        attr_reader :file
+      private
 
-        # Constructor
-        #
-        # @param file [Y2Network::Sysconfig::InterfaceFile] File to get
-        #   interface configuration from
-        def initialize(file)
-          @file = file
-        end
-
-        # @return [Y2Network::ConnectionConfig::Infiniband]
-        def connection_config
-          Y2Network::ConnectionConfig::Infiniband.new.tap do |conn|
-            conn.name = file.interface
-            conn.interface = file.interface
-            conn.description = file.name
-            conn.bootproto = file.bootproto
-            conn.ipoib_mode = file.ipoib_mode
-            conn.ip_configs = ip_configs
-          end
+        # @see Y2Network::Sysconfig::ConnectionConfigReaders::Base#update_connection_config
+        def update_connection_config(conn)
+          conn.ipoib_mode = file.ipoib_mode
         end
       end
     end

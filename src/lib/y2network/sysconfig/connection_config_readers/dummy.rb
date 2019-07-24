@@ -18,24 +18,13 @@
 # find current contact information at www.suse.com.
 
 require "y2network/sysconfig/connection_config_readers/base"
-require "y2network/connection_config/dummy"
 
 module Y2Network
   module Sysconfig
     module ConnectionConfigReaders
       # This class is able to build a ConnectionConfig::Dummy object given a
       # Sysconfig::InterfaceFile object.
-      class Dummy < Base
-        # @return [Y2Network::ConnectionConfig::Dummy]
-        def connection_config
-          Y2Network::ConnectionConfig::Dummy.new.tap do |conn|
-            conn.name = file.interface
-            conn.bootproto = file.bootproto
-            conn.description = file.name
-            conn.interface = file.interface
-            conn.ip_configs = ip_configs
-          end
-        end
+      class Dummy < Ethernet
       end
     end
   end

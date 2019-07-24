@@ -17,33 +17,25 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/connection_config/base"
+require "y2network/sysconfig/connection_config_writers/base"
 
 module Y2Network
-  module ConnectionConfig
-    # Configuration for vlan connections
-    class Vlan < Base
-      # @return [Interface, nil]
-      attr_accessor :etherdevice
-      # @return [Integer, nil]
-      attr_accessor :vlan_id
-    end
+  module Sysconfig
+    module ConnectionConfigWriters
+      # This class is responsible for writing the information from a ConnectionConfig::Bonding
+      # object to the underlying system.
+      class Bonding < Base
 
-    def update_interfaces!(interfaces)
-      return unless etherdevice
+      private
 
-      alternative = interfaces.by_name(etherdevice)
-      unless alternative
-        alternative = Y2Network::FakeInterface.new(slave)
-        interfaces << alternative
+        # @see Y2Network::ConnectionConfigWriters::Base#update_file
+        # @param conn [Y2Network::ConnectionConfig::Bonding] Configuration to write
+        def update_file(conn)
+          # FIXME:
+          file.bonding_slaves = conn.slaves
+          file.bonding_module_opts = conn.options
+        end
       end
-
-      etherdevice = alternative
-
-      nil
-    end
-    def virtual?
-      true
     end
   end
 end

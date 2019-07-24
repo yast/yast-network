@@ -26,28 +26,11 @@ module Y2Network
       # This class is able to build a ConnectionConfig::Vlan object given a
       # SysconfigInterfaceFile object.
       class Vlan < Base
-        # @return [Y2Network::Sysconfig::InterfaceFile]
-        attr_reader :file
+      private
 
-        # Constructor
-        #
-        # @param file [Y2Network::Sysconfig::InterfaceFile] File to get
-        #   interface configuration from
-        def initialize(file)
-          @file = file
-        end
-
-        # @return [Y2Network::ConnectionConfig::Vlan]
-        def connection_config
-          Y2Network::ConnectionConfig::Vlan.new.tap do |conn|
-            conn.name = file.interface
-            conn.interface = file.interface
-            conn.description = file.name
-            conn.bootproto = file.bootproto
-            conn.etherdevice = file.etherdevice
-            conn.vlan_id = file.vlan_id
-            conn.ip_configs = ip_configs
-          end
+        def update_connection_config(conn)
+           conn.etherdevice = file.etherdevice
+           conn.vlan_id = file.vlan_id
         end
       end
     end

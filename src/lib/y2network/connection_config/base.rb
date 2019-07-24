@@ -33,10 +33,10 @@ module Y2Network
       #
       # @return [String] Connection name
       attr_accessor :name
-      # #FIXME: Maybe it could be a matcher instead of an Interface, or just a
+      # #FIXME: Maybe it could be a matcher instead of an Interface or just
       # the interface name by now.
       #
-      # @return [Interface, nil]
+      # @return [Interface, String, nil]
       attr_accessor :interface
       # @return [BootProtocol] Bootproto
       attr_accessor :bootproto
@@ -63,6 +63,15 @@ module Y2Network
       def type
         const_name = self.class.name.split("::").last.upcase
         InterfaceType.const_get(const_name)
+      end
+
+      # @param interfaces [Y2Network::InterfacesCollection]
+      def update_interfaces!(interfaces)
+        nil
+      end
+
+      def virtual?
+        false
       end
     end
   end

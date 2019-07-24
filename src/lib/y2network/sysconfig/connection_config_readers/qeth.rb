@@ -17,33 +17,15 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/connection_config/base"
+require "y2network/sysconfig/connection_config_readers/base"
 
 module Y2Network
-  module ConnectionConfig
-    # Configuration for vlan connections
-    class Vlan < Base
-      # @return [Interface, nil]
-      attr_accessor :etherdevice
-      # @return [Integer, nil]
-      attr_accessor :vlan_id
-    end
-
-    def update_interfaces!(interfaces)
-      return unless etherdevice
-
-      alternative = interfaces.by_name(etherdevice)
-      unless alternative
-        alternative = Y2Network::FakeInterface.new(slave)
-        interfaces << alternative
+  module Sysconfig
+    module ConnectionConfigReaders
+      # This class is able to build a ConnectionConfig::Qeth object given a
+      # Sysconfig::InterfaceFile object.
+      class Qeth < Ethernet
       end
-
-      etherdevice = alternative
-
-      nil
-    end
-    def virtual?
-      true
     end
   end
 end

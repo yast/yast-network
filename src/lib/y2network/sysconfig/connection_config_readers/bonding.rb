@@ -18,7 +18,6 @@
 # find current contact information at www.suse.com.
 
 require "y2network/sysconfig/connection_config_readers/base"
-require "y2network/connection_config/bonding"
 
 module Y2Network
   module Sysconfig
@@ -26,28 +25,12 @@ module Y2Network
       # This class is able to build a ConnectionConfig::Bonding object given a
       # SysconfigInterfaceFile object.
       class Bonding < Base
-        # @return [Y2Network::Sysconfig::InterfaceFile]
-        attr_reader :file
+      private
 
-        # Constructor
-        #
-        # @param file [Y2Network::Sysconfig::InterfaceFile] File to get
-        #   interface configuration from
-        def initialize(file)
-          @file = file
-        end
-
-        # @return [Y2Network::ConnectionConfig::Bonding]
-        def connection_config
-          Y2Network::ConnectionConfig::Bonding.new.tap do |conn|
-            conn.name = file.interface
-            conn.interface = file.interface
-            conn.description = file.name
-            conn.bootproto = file.bootproto
-            conn.ip_configs = ip_configs
-            conn.slaves = file.bonding_slaves
-            conn.options = file.bonding_module_opts
-          end
+        # @see Y2Network::Sysconfig::ConnectionConfigReaders::Base#update_connection_config
+        def update_connection_config(conn)
+          conn.slaves = file.bonding_slaves
+          conn.options = file.bonding_module_opts
         end
       end
     end

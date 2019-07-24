@@ -17,12 +17,15 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/connection_config/base"
+require "y2network/sysconfig/connection_config_readers/base"
 
 module Y2Network
-  module ConnectionConfig
-    # Configuration for TAP connections
-    class Tap < Base
+  module Sysconfig
+    module ConnectionConfigReaders
+      # This class is able to build a ConnectionConfig::Hsi object given a
+      # Sysconfig::InterfaceFile object.
+      class Hsi < Ethernet
+      end
     end
   end
 end

@@ -37,6 +37,10 @@ module Y2Network
         @stp = false
         @forward_delay = 0
       end
+
+      def virtual?
+        true
+      end
     end
   end
 end

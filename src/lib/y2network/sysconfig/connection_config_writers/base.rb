@@ -41,7 +41,7 @@ module Y2Network
         # @param conn [Y2Network::ConnectionConfig::Base] Connection to take settings from
         def write(conn)
           file.bootproto = conn.bootproto.name
-          file.name = conn.description
+          file.name = conn.name
           file.startmode = conn.startmode.to_s
           file.ifplugd_priority = conn.startmode.priority if conn.startmode.name == "ifplugd"
           write_ip_configs(conn.ip_configs)

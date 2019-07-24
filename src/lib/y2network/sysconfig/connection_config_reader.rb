@@ -60,6 +60,13 @@ module Y2Network
                  "Connection handler could not be loaded: #{e.message}"
         nil
       end
+
+      # @param connection [Y2Network::ConnectionConfig]
+      # @param interfaces [Array<Y2Network::Interface>] list of configured interfaces
+      # @return [Boolean]
+      def update_interfaces!(connection, interfaces)
+        true
+      end
     end
   end
 end

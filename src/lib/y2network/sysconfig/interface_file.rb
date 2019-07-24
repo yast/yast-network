@@ -257,7 +257,7 @@ module Y2Network
 
       # @!attribute [r] bonding slaves
       #   @return [Array<String>] Bonding slaves
-      define_collection_parameter(:bonding_slave)
+      define_collection_variable(:bonding_slave)
 
       # @!attribute [r] bonding_module_opts
       #   @return [String] options for the bonding module ('mode=active-backup
@@ -277,6 +277,21 @@ module Y2Network
       # @!attribute [r] bridge_forwarddelay
       #   @return [Integer]
       define_variable(:bridge_forwarddelay, :integer)
+
+      ## TUN / TAP
+
+      # @!attribute [r] tunnel
+      #   @return [String] tunnel protocol ("sit", "gre", "ipip", "tun", "tap")
+      define_variable(:tunnel)
+
+      # @!attribute [r] tunnel_set_owner
+      #   @return [String] tunnel owner
+      define_variable(:tunnel_set_owner)
+
+      # @!attribute [r] tunnel_set_group
+      #   @return [String] tunnel group
+      define_variable(:tunnel_set_group)
+
 
       # Constructor
       #
@@ -390,7 +405,7 @@ module Y2Network
       end
 
       def collection_keys(key)
-        collection_keys = defined_variables.select do |k|
+        collection_keys = (defined_variables || []).select do |k|
           k == key || k.start_with?(key)
         end
         other_keys = self.class.variables.keys - [key]
