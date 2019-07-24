@@ -62,6 +62,8 @@ module Y2Network
         # @return [Class]
         def connection_class
           class_name = self.class.to_s.split("::").last
+          file_name = class_name.gsub(/(\w)([A-Z])/, "\\1_\\2").downcase
+          require "y2network/connection_config/#{file_name}"
           Y2Network::ConnectionConfig.const_get(class_name)
         end
 

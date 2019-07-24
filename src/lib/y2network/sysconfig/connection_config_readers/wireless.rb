@@ -19,8 +19,6 @@
 
 require "y2network/sysconfig/connection_config_readers/base"
 require "y2network/connection_config/wireless"
-require "y2network/boot_protocol"
-require "y2network/startmode"
 
 module Y2Network
   module Sysconfig
