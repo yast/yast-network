@@ -238,6 +238,12 @@ module Y2Network
       #   @return [String] Network ID
       define_variable(:wireless_nwid)
 
+      ## INFINIBAND
+
+      # @!attribute [r] ipoib_mode
+      #   @return [String] IPOIB mode ("connected" or "datagram")
+      define_variable(:ipoib_mode)
+
       # Constructor
       #
       # @param interface [String] Interface interface
