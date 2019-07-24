@@ -18,18 +18,11 @@
 # find current contact information at www.suse.com.
 
 require "y2network/interface"
-require "y2network/hwinfo"
 
 module Y2Network
   # Physical interface class (ethernet, wireless, infiniband...)
   class PhysicalInterface < Interface
-    attr_writer :hwinfo
     # @return [String]
     attr_accessor :ethtool_options
-
-    # @return [Hwinfo]
-    def hwinfo
-      @hwinfo ||= Hwinfo.new({})
-    end
   end
 end
