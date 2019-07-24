@@ -22,6 +22,8 @@ require "pathname"
 require "y2network/ip_address"
 require "y2network/interface_type"
 
+Yast.import "FileUtils"
+
 module Y2Network
   module Sysconfig
     # This class represents a sysconfig file containing an interface configuration
@@ -58,7 +60,6 @@ module Y2Network
         # @param interface [String] Interface name
         # @return [Sysconfig::InterfaceFile,nil] Sysconfig
         def find(interface)
-          Yast.import "FileUtils"
           return nil unless Yast::FileUtils.Exists(SYSCONFIG_NETWORK_DIR.join("ifcfg-#{interface}").to_s)
           new(interface)
         end
@@ -282,7 +283,7 @@ module Y2Network
       #
       # @todo Borrow logic from https://github.com/yast/yast-yast2/blob/6f7a789d00cd03adf62e00da34720f326f0e0633/library/network/src/modules/NetworkInterfaces.rb#L291
       #
-      # @return [String] Interface's type depending on the file values
+      # @return [Y2Network::InterfaceType] Interface's type depending on the file values
       def type
         return InterfaceType::DUMMY if @values["INTERFACETYPE"] == "dummy"
         return InterfaceType::BONDING if defined_variables.any? { |k| k.start_with?("BOND") }

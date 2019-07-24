@@ -29,6 +29,8 @@ module Y2Network
 
         # @see Y2Network::ConnectionConfigWriters::Base#update_file
         def update_file(_conn)
+          # Force the interfacetype otherwise there is no way to infer the type
+          # from the file values (bsc#1129552)
           file.interfacetype = "dummy"
         end
       end
