@@ -22,6 +22,7 @@ require_relative "../../../test_helper"
 require "y2network/sysconfig/connection_config_writers/infiniband"
 require "y2network/startmode"
 require "y2network/boot_protocol"
+require "y2network/ipoib_mode"
 require "y2network/connection_config/infiniband"
 require "y2network/connection_config/ip_config"
 
@@ -58,7 +59,7 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Infiniband do
       name:        "ib0",
       interface:   "ib0",
       description: "",
-      ipoib_mode:  "datagram",
+      ipoib_mode:  Y2Network::IpoibMode::CONNECTED,
       ip_configs:  ip_configs,
       startmode:   Y2Network::Startmode.create("auto"),
       bootproto:   Y2Network::BootProtocol::STATIC
@@ -71,7 +72,7 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Infiniband do
     it "writes the 'ipoib_mode' attribute" do
       handler.write(conn)
       expect(file).to have_attributes(
-        ipoib_mode: "datagram"
+        ipoib_mode: "connected"
       )
     end
   end

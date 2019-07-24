@@ -29,7 +29,7 @@ module Y2Network
 
         # @see Y2Network::ConnectionConfigWriters::Base#update_file
         def update_file(conn)
-          file.ipoib_mode = conn.ipoib_mode
+          file.ipoib_mode = conn.ipoib_mode.name
         end
       end
     end

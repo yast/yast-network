@@ -25,13 +25,8 @@ module Y2Network
     #
     # @see https://www.kernel.org/doc/Documentation/infiniband/ipoib.txt
     class Infiniband < Base
-      # @return [String] transport mode ("datagram" or "connected")
+      # @return [IpoibMode] transport mode
       attr_accessor :ipoib_mode
-
-      # Constructor
-      def initialize
-        @ipoib_mode = ""
-      end
     end
   end
 end

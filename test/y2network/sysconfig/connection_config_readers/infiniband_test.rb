@@ -41,7 +41,7 @@ describe Y2Network::Sysconfig::ConnectionConfigReaders::Infiniband do
     it "returns a infiniband connection config object" do
       infiniband_conn = handler.connection_config
       expect(infiniband_conn.interface).to eq("ib0")
-      expect(infiniband_conn.ipoib_mode).to eq("datagram")
+      expect(infiniband_conn.ipoib_mode).to eq(Y2Network::IpoibMode::DATAGRAM)
       expect(infiniband_conn.ip_configs.map(&:address)).to eq([ip_address])
       expect(infiniband_conn.bootproto).to eq(Y2Network::BootProtocol::STATIC)
     end

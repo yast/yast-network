@@ -18,6 +18,7 @@
 # find current contact information at www.suse.com.
 
 require "y2network/sysconfig/connection_config_readers/base"
+require "y2network/ipoib_mode"
 
 module Y2Network
   module Sysconfig
@@ -29,7 +30,7 @@ module Y2Network
 
         # @see Y2Network::Sysconfig::ConnectionConfigReaders::Base#update_connection_config
         def update_connection_config(conn)
-          conn.ipoib_mode = file.ipoib_mode
+          conn.ipoib_mode = IpoibMode.from_name(file.ipoib_mode.to_s)
         end
       end
     end
