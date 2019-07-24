@@ -60,13 +60,13 @@ module Y2Network
     #
     # Load with reasonable defaults
     # @param type [Y2Network::InterfaceType] type of device
-    # @param config [Y2Network::ConnectionConfig::Base] existing configuration of device or nil for
-    #   newly created
+    # @param config [Y2Network::ConnectionConfig::Base, nil] existing configuration of device or nil
+    #   for newly created
     def initialize(type:, config: nil)
       @type = type
       @config = init_device_config({})
       @s390_config = init_device_s390_config({})
-      # TODO: also config need to store it, as newly added can be later4
+      # TODO: also config need to store it, as newly added can be later
       # edited with option for not yet created interface
       @newly_added = config.nil?
       # TODO: create specialized connection for type
