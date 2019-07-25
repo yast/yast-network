@@ -30,8 +30,10 @@ Yast.import "NetworkInterfaces"
 Yast.import "Netmask"
 
 module Y2Network
-  # Collects data from the UI until we have enough of it to create a {Y2Network::Interface}.
-  # {Yast::LanItemsClass#Commit Yast::LanItems.Commit(builder)} uses it.
+  # Collects data from the UI until we have enough of it to create a
+  # {Y2Network::ConnectionConfig::Base} object.
+  #
+  # {Yast::LanItemsClass#Commit Yast::LanItems.Commit(builder)} use it.
   class InterfaceConfigBuilder
     include Yast::Logger
 
