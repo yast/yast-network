@@ -22,6 +22,17 @@ require "y2network/hwinfo"
 
 module Y2Network
   # Network interface.
+  #
+  # It represents network interfaces, no matter whether they are physical or virtual ones. This
+  # class (including its subclasses) are basically responsible for holding the hardware
+  # configuration (see {Hwinfo}), including naming and driver information.
+  #
+  # Logical configuration, like TCP/IP or WIFI settings, are handled through
+  # Y2Network::ConnectionConfig::Base classes.
+  #
+  # @see Y2Network::PhysicalInterface
+  # @see Y2Network::VirtualInterface
+  # @see Y2Network::FakeInterface
   class Interface
     # @return [String] Device name ('eth0', 'wlan0', etc.)
     attr_accessor :name
@@ -36,7 +47,7 @@ module Y2Network
 
     # Shortcuts for accessing interfaces' ifcfg options
     #
-    # TODO: this makes Interface class tighly couplet to netconfig backend
+    # TODO: this makes Interface class tighly coupled with netconfig (sysconfig) backend
     # once we have generic layer for accessing backends these methods has to be replaced
     ["STARTMODE", "BOOTPROTO"].each do |ifcfg_option|
       method_name = ifcfg_option.downcase

@@ -23,9 +23,9 @@ module Y2Network
   module ConnectionConfig
     # This class is reponsible of a connection configuration
     #
-    # It holds a configuration (IP addresses, MTU, etc.) that can be applied to an interface. By
-    # comparison, it is the equivalent of the "Connection" concept in NetworkManager.  When it comes
-    # to sysconfig, a "ConnectionConfig" is defined using a "ifcfg-*" file.
+    # It holds a configuration (IP addresses, MTU, WIFI settings, etc.) that can be applied to an
+    # interface. By comparison, it is the equivalent of the "Connection" concept in NetworkManager.
+    # When it comes to sysconfig, a "ConnectionConfig" is defined using a "ifcfg-*" file.
     class Base
       # A connection could belongs to a specific interface or not. In case of
       # no specific interface then it could be activated by the first available
