@@ -21,13 +21,13 @@ require "y2network/interfaces/virtual_interface"
 
 module Y2Network
   module Interfaces
-    class BrInterface < VirtualInterface
-      # Returns list of interfaces enslaved in the bridge interface
+    class Bonding < VirtualInterface
+      # Returns list of interfaces enslaved in the bond interface
       #
-      # @return [Y2Network::InterfacesCollection] interfaces enslaved in the bridge
+      # @return [Y2Network::InterfacesCollection] interfaces enslaved in the bond
       # TODO: reading from backend should be handled elsewhere
       def slaves
-        @slaves ||= bridge_slaves(name).map do |iface|
+        @slaves ||= bond_slaves(name).map do |iface|
           type = Yast::NetworkInterfaces.GetType(iface)
           Y2Network::Interface.for(iface, InterfaceType.from_short_name(type))
         end
@@ -37,13 +37,14 @@ module Y2Network
 
     private
 
-      # Creates list of devices enslaved in the bridge device.
+      # Creates list of devices enslaved in the bond device.
       #
-      # @param bridge_iface [String] a name of an interface of bridge type
-      # @return list of names of interfaces enslaved in the bridge_iface
-      def bridge_slaves(bridge_iface)
-        bridge_map = Yast::NetworkInterfaces.FilterDevices("netcard").fetch("br", {}).fetch(bridge_iface, {})
-        bridge_map["BRIDGE_PORTS"].to_s.split
+      # @param bond_iface [String] a name of an interface of bond type
+      # @return list of names of interfaces enslaved in the bond_iface
+      def bond_slaves(bond_iface)
+        bond_map = Yast::NetworkInterfaces::FilterDevices("netcard").fetch("bond", {}).fetch(bond_iface, {})
+
+        bond_map.select { |k, _| k.start_with?("BONDING_SLAVE") }.values
       end
     end
   end

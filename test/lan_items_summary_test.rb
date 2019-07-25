@@ -2,7 +2,7 @@
 
 require_relative "test_helper"
 require "network/lan_items_summary"
-require "y2network/interfaces/br_interface"
+require "y2network/interfaces/bridge"
 
 Yast.import "LanItems"
 
@@ -66,7 +66,7 @@ describe Yast::LanItemsSummary do
     let(:slaves_collection) { instance_double(Y2Network::InterfacesCollection, to_a: [eth1]) }
     let(:br0) do
       instance_double(
-        Y2Network::Interfaces::BrInterface,
+        Y2Network::Interfaces::Bridge,
         name:   "br0",
         type:   Y2Network::InterfaceType::BRIDGE,
         slaves: slaves_collection

@@ -57,11 +57,17 @@ module Y2Network
     # Creates an instance of interface class based on the given interface type
     #
     # @param name [String] interface name (eth0, ...)
-    # @param type [Y2Network::InterfaceType] interface type (InterfaceType::ETHERNET, ...)
+    # @param type [Y2Network::InterfaceType, String] interface type (InterfaceType::ETHERNET, ...)
+    #                                                or its short name as a string
     def self.for(name, type)
-      type_name = type.short_name
-      require "y2network/interfaces/#{type_name}_interface"
-      Interfaces.const_get(type_name.to_s.capitalize + "Interface").new(name, type: type)
+      if type.is_a?(String)
+        type = InterfaceType.from_short_name(type)
+
+        raise ArgumentError, "Uknown type name: #{type}" if type.nil?
+      end
+
+      require "y2network/interfaces/#{type.file_name}"
+      Interfaces.const_get(type.class_name).new(name, type: type)
     rescue LoadError => e
       log.info "Specialed interface class for #{type.short_name} not found. Fallbacking to default. #{e.inspect}"
       new(name, type: type)
