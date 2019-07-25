@@ -51,9 +51,9 @@ describe Y2Network::Hwinfo do
 
   describe "#drivers" do
     it "returns the list of kernel modules names" do
-      expect(hwinfo.drivers).to eq([
-        Y2Network::Driver.new("virtio_net", "")
-      ])
+      expect(hwinfo.drivers).to eq(
+        [Y2Network::Driver.new("virtio_net", "")]
+      )
     end
   end
 end
