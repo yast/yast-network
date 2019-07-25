@@ -69,7 +69,7 @@ module Y2Network
       require "y2network/interfaces/#{type.file_name}"
       Interfaces.const_get(type.class_name).new(name, type: type)
     rescue LoadError => e
-      log.info "Specialed interface class for #{type.short_name} not found. Fallbacking to default. #{e.inspect}"
+      log.info "Specialized interface class for #{type.short_name} not found. Fallbacking to default. #{e.inspect}"
       new(name, type: type)
     end
 

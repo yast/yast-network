@@ -2330,7 +2330,7 @@ module Yast
         desc = _("Bridge Ports")
       end
 
-      format("%s: %s", desc, slaves.join(" "))
+      format("%s: %s", desc, slaves.map(&:name).join(" "))
     end
 
     # Check if the given interface is enslaved in a bond or in a bridge
