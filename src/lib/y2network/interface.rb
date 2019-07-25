@@ -87,10 +87,10 @@ module Y2Network
 
     # Returns the list of kernel modules
     #
-    # @return [Array<String>]
-    # @see Hwinfo#modules_names
-    def modules_names
-      hardware.modules_names
+    # @return [Array<Driver>]
+    # @see Hwinfo#drivers
+    def drivers
+      hardware.drivers
     end
 
   private

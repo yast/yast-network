@@ -18,6 +18,7 @@
 # find current contact information at www.suse.com.
 
 require "yast"
+require "y2network/driver"
 
 module Y2Network
   # Stores useful (from networking POV) items of hwinfo for an interface
@@ -69,7 +70,6 @@ module Y2Network
       { name: "busid", default: "" },
       { name: "link", default: false },
       { name: "driver", default: "" },
-      { name: "drivers", default: [] },
       { name: "module", default: nil },
       { name: "requires", default: [] },
       { name: "hotplug", default: false },
@@ -104,9 +104,11 @@ module Y2Network
     #
     # This method only returns the names, omitting the arguments.
     #
-    # @return [Array<String>]
-    def modules_names
-      drivers[0].fetch("modules", []).map(&:first)
+    # @return [Array<Driver>] List of drivers
+    def drivers
+      drivers_list = @hwinfo.fetch("drivers", [])
+      modules = drivers_list[0].fetch("modules", [])
+      modules.map { |m| Driver.new(*m) }
     end
 
   private
