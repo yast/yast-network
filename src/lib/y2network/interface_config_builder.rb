@@ -236,7 +236,9 @@ module Y2Network
     #   `:ip` for ip address, `:mask` for netmask and `:prefixlen` for prefix.
     #   Only one of `:mask` and `:prefixlen` is set.
     def aliases
-      @aliases ||= Yast::LanItems.aliases.each_value.map do |data|
+      return @aliases if @aliases
+
+      old_aliases = Yast::LanItems.aliases.each_value.map do |data|
         {
           label:     data["LABEL"] || "",
           ip:        data["IPADDR"] || "",
@@ -244,6 +246,16 @@ module Y2Network
           prefixlen: data["PREFIXLEN"] || ""
         }
       end
+
+      new_aliases = @connection_config.ip_configs.select{ |c| c.id != "" }.map do |data|
+        {
+          label:     data.label
+          ip:        data.address.address
+          prefixlen: data.address.prefix
+          # NOTE: new API does not have netmask at all, we need to adapt UI to clearly mention only prefix
+        }
+      end
+      select_backend(old_aliases, new_aliases)
     end
 
     # sets aliases for interface
@@ -288,7 +300,15 @@ module Y2Network
 
     # @return [String]
     def ip_address
-      @config["IPADDR"]
+      old = @config["IPADDR"]
+
+      default = @connection_config.ip_configs.find{ |c| c.id == "" }
+      new_ = if default
+        default.address.address
+      else
+        ""
+      end
+      select_backend(old, new_)
     end
 
     # @param [String] value
@@ -306,11 +326,18 @@ module Y2Network
 
     # @return [String] returns prefix or netmask. prefix in format "/<prefix>"
     def subnet_prefix
-      if @config["PREFIXLEN"] && !@config["PREFIXLEN"].empty?
+      old = if @config["PREFIXLEN"] && !@config["PREFIXLEN"].empty?
         "/#{@config["PREFIXLEN"]}"
       else
         @config["NETMASK"] || ""
       end
+      default = @connection_config.ip_configs.find{ |c| c.id == "" }
+      new_ = if default
+        "/" + default.address.prefix.to_s
+      else
+        ""
+      end
+      select_backend(old, new_)
     end
 
     # @param [String] value prefix or netmask is accepted. prefix in format "/<prefix>"
@@ -349,7 +376,15 @@ module Y2Network
     # sets remote ip for ptp connections
     # @return [String]
     def remote_ip
-      @config["REMOTEIP"]
+      old = @config["REMOTEIP"]
+      default = @connection_config.ip_configs.find{ |c| c.id == "" }
+      new_ = if default
+        default.remote_address.to_s
+      else
+        ""
+      end
+
+      select_backend(old, new_)
     end
 
     # @param [String] value
@@ -361,7 +396,10 @@ module Y2Network
     # Gets Maximum Transition Unit
     # @return [String]
     def mtu
-      @config["MTU"]
+      select_backend(
+        @config["MTU"],
+        @connection_config.mtu.to_s
+      )
     end
 
     # Sets Maximum Transition Unit
