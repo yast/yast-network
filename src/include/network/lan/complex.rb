@@ -306,12 +306,15 @@ module Yast
     # Automatically configures slaves when user enslaves them into a bond or bridge device
     def UpdateSlaves
       current = LanItems.current
-      master_builder = Y2Network::InterfaceConfigBuilder.for(LanItems.GetCurrentType())
+      config = Lan.yast_config.copy
+      connection_config = config.connections.find { |c| c.name == LanItems.GetCurrentName }
+      master_builder = Y2Network::InterfaceConfigBuilder.for(LanItems.GetCurrentType(), config: connection_config)
       master_builder.name = LanItems.GetCurrentName()
 
       Lan.autoconf_slaves.each do |dev|
         if LanItems.FindAndSelect(dev)
-          builder = Y2Network::InterfaceConfigBuilder.for(LanItems.GetCurrentType())
+          connection_config = config.connections.find { |c| c.name == LanItems.GetCurrentName }
+          builder = Y2Network::InterfaceConfigBuilder.for(LanItems.GetCurrentType(), config: connection_config)
           builder.name = LanItems.GetCurrentName()
           LanItems.SetItem(builder: builder)
         else
@@ -407,8 +410,9 @@ module Yast
           return :redraw
         when :edit
           if LanItems.IsCurrentConfigured
-
-            builder = Y2Network::InterfaceConfigBuilder.for(LanItems.GetCurrentType())
+            config = Lan.yast_config.copy
+            connection_config = config.connections.find { |c| c.name == LanItems.GetCurrentName }
+            builder = Y2Network::InterfaceConfigBuilder.for(LanItems.GetCurrentType(), config: connection_config)
             builder.name = LanItems.GetCurrentName()
             LanItems.SetItem(builder: builder)
 

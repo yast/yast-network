@@ -11,6 +11,10 @@ end
 describe "NetworkLanCmdlineInclude" do
   subject { DummyClass.new }
 
+  before do
+    allow(Yast::Lan).to receive(:yast_config).and_return(Y2Network::Config.new(source: :fake))
+  end
+
   describe "#ShowHandler" do
     it "creates plain text from formatted html" do
       richtext = "test<br><ul><li>item1</li><li>item2</li></ul>"

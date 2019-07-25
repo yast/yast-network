@@ -6,8 +6,8 @@ Yast.import "LanItems"
 module Y2Network
   module InterfaceConfigBuilders
     class Infiniband < InterfaceConfigBuilder
-      def initialize
-        super(type: InterfaceType::INFINIBAND)
+      def initialize(config: nil)
+        super(type: InterfaceType::INFINIBAND, config: config)
       end
 
       # @return [String] ipoib mode configuration

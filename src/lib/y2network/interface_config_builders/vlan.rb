@@ -7,8 +7,8 @@ Yast.import "NetworkInterfaces"
 module Y2Network
   module InterfaceConfigBuilders
     class Vlan < InterfaceConfigBuilder
-      def initialize
-        super(type: InterfaceType::VLAN)
+      def initialize(config: nil)
+        super(type: InterfaceType::VLAN, config: config)
       end
 
       # @return [Integer]

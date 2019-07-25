@@ -40,15 +40,17 @@ module Y2Network
     # Load fresh instance of interface config builder for given type.
     # It can be specialized type or generic, depending if specialized is needed.
     # @param type [Y2Network::InterfaceType,String] type of device or its short name
-    def self.for(type)
+    # @param config [Y2Network::ConnectionConfig::Base, nil] existing configuration of device or nil
+    #   for newly created
+    def self.for(type, config: nil)
       if !type.is_a?(InterfaceType)
         type = InterfaceType.from_short_name(type) or raise "Unknown type #{type.inspect}"
       end
       require "y2network/interface_config_builders/#{type.file_name}"
-      InterfaceConfigBuilders.const_get(type.class_name).new
+      InterfaceConfigBuilders.const_get(type.class_name).new(config: config)
     rescue LoadError => e
       log.info "Specialed builder for #{type} not found. Fallbacking to default. #{e.inspect}"
-      new(type: type)
+      new(type: type, config: config)
     end
 
     # @return [String] Device name (eth0, wlan0, etc.)
@@ -247,10 +249,10 @@ module Y2Network
         }
       end
 
-      new_aliases = @connection_config.ip_configs.select{ |c| c.id != "" }.map do |data|
+      new_aliases = @connection_config.ip_configs.select { |c| c.id != "" }.map do |data|
         {
-          label:     data.label
-          ip:        data.address.address
+          label:     data.label,
+          ip:        data.address.address,
           prefixlen: data.address.prefix
           # NOTE: new API does not have netmask at all, we need to adapt UI to clearly mention only prefix
         }
@@ -302,7 +304,7 @@ module Y2Network
     def ip_address
       old = @config["IPADDR"]
 
-      default = @connection_config.ip_configs.find{ |c| c.id == "" }
+      default = @connection_config.ip_configs.find { |c| c.id == "" }
       new_ = if default
         default.address.address
       else
@@ -331,7 +333,7 @@ module Y2Network
       else
         @config["NETMASK"] || ""
       end
-      default = @connection_config.ip_configs.find{ |c| c.id == "" }
+      default = @connection_config.ip_configs.find { |c| c.id == "" }
       new_ = if default
         "/" + default.address.prefix.to_s
       else
@@ -377,7 +379,7 @@ module Y2Network
     # @return [String]
     def remote_ip
       old = @config["REMOTEIP"]
-      default = @connection_config.ip_configs.find{ |c| c.id == "" }
+      default = @connection_config.ip_configs.find { |c| c.id == "" }
       new_ = if default
         default.remote_address.to_s
       else
