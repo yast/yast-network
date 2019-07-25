@@ -17,19 +17,23 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/interface"
+require "y2network/sysconfig/connection_config_writers/base"
 
 module Y2Network
-  # Virtual Interface Class (veth, bond, bridge, vlan, dummy...)
-  class VirtualInterface < Interface
-    # Build connection
-    #
-    # @todo Would be possible to get the name from the connection?
-    #
-    # @param conn [ConnectionConfig] Connection configuration related to the
-    #   network interface
-    def self.from_connection(name, conn)
-      new(name, type: conn.type)
+  module Sysconfig
+    module ConnectionConfigWriters
+      # This class is responsible for writing the information from a ConnectionConfig::Vlan
+      # object to the underlying system.
+      class Vlan < Base
+      private
+
+        # @see Y2Network::ConnectionConfigWriters::Base#update_file
+        # @param conn [Y2Network::ConnectionConfig::Vlan] Configuration to write
+        def update_file(conn)
+          file.vlan_id = conn.vlan_id
+          file.etherdevice = conn.etherdevice ? conn.etherdevice.name : nil
+        end
+      end
     end
   end
 end

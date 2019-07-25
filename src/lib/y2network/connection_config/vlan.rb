@@ -17,19 +17,35 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/interface"
+require "y2network/connection_config/base"
 
 module Y2Network
-  # Virtual Interface Class (veth, bond, bridge, vlan, dummy...)
-  class VirtualInterface < Interface
-    # Build connection
-    #
-    # @todo Would be possible to get the name from the connection?
-    #
-    # @param conn [ConnectionConfig] Connection configuration related to the
-    #   network interface
-    def self.from_connection(name, conn)
-      new(name, type: conn.type)
+  module ConnectionConfig
+    # Configuration for vlan connections
+    class Vlan < Base
+      # @return [Interface, nil]
+      attr_accessor :etherdevice
+      # @return [Integer, nil]
+      attr_accessor :vlan_id
+
+      # Replace the name of the etherdevice by a real Y2Network::Interface
+      #
+      # @see Y2Network::InterfacesCollection
+      #
+      # @param interfaces [Y2Network::InterfacesCollection]
+      def link_related_interfaces(interfaces)
+        return unless etherdevice
+        interface = interfaces.by_name(etherdevice)
+        self.etherdevice = interface if interface
+      end
+
+      def related_interfaces
+        [etherdevice].compact
+      end
+
+      def virtual?
+        true
+      end
     end
   end
 end

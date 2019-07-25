@@ -64,6 +64,13 @@ module Y2Network
         const_name = self.class.name.split("::").last.upcase
         InterfaceType.const_get(const_name)
       end
+
+      # Whether a connection needs a virtual device associated or not.
+      #
+      # @return [Boolean]
+      def virtual?
+        false
+      end
     end
   end
 end

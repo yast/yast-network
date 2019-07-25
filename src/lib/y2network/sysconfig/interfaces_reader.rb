@@ -47,6 +47,8 @@ module Y2Network
         return @config if @config
         find_physical_interfaces
         find_connections
+        find_fake_interfaces
+        link_related_interfaces
         @config = { interfaces: @interfaces, connections: @connections }
       end
 
@@ -66,6 +68,23 @@ module Y2Network
       end
 
     private
+
+      def link_related_interfaces
+        @connections.each do |conn|
+          next unless conn.respond_to? :related_interfaces
+          conn.link_related_interfaces(@interfaces)
+        end
+      end
+
+      def find_fake_interfaces
+        @connections.each do |conn|
+          next unless conn.respond_to? :related_interfaces
+          conn.related_interfaces.each do |name|
+            next if @interfaces.by_name(name)
+            @interfaces << Y2Network::FakeInterface.new(name)
+          end
+        end
+      end
 
       # Finds the physical interfaces
       #
@@ -88,7 +107,7 @@ module Y2Network
               interface ? interface.type : nil
             )
             next unless connection
-            add_fake_interface(name, connection) if interface.nil?
+            add_interface(name, connection) if interface.nil?
             conns << connection
           end
       end
@@ -129,7 +148,7 @@ module Y2Network
         files.reject { |f| IGNORE_IFCFG_REGEX =~ f || f == "lo" }
       end
 
-      # Adds a fake interface for a given connection
+      # Adds a fake or virtual interface for a given connection
       #
       # It may happen that a configured interface is not plugged
       # while reading the configuration. In such situations, a fake one
@@ -138,9 +157,9 @@ module Y2Network
       # @param name [String] Interface name
       # @param conn [ConnectionConfig] Connection configuration related to the
       #   network interface
-      def add_fake_interface(name, conn)
-        new_interface = Y2Network::FakeInterface.from_connection(name, conn)
-        @interfaces << new_interface
+      def add_interface(name, conn)
+        interface_class = conn.virtual? ? VirtualInterface : FakeInterface
+        @interfaces << interface_class.from_connection(name, conn)
       end
     end
   end
