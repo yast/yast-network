@@ -47,8 +47,6 @@ module Y2Network
         return @config if @config
         find_physical_interfaces
         find_connections
-        find_fake_interfaces
-        link_related_interfaces
         @config = { interfaces: @interfaces, connections: @connections }
       end
 
@@ -68,23 +66,6 @@ module Y2Network
       end
 
     private
-
-      def link_related_interfaces
-        @connections.each do |conn|
-          next unless conn.respond_to? :related_interfaces
-          conn.link_related_interfaces(@interfaces)
-        end
-      end
-
-      def find_fake_interfaces
-        @connections.each do |conn|
-          next unless conn.respond_to? :related_interfaces
-          conn.related_interfaces.each do |name|
-            next if @interfaces.by_name(name)
-            @interfaces << Y2Network::FakeInterface.new(name)
-          end
-        end
-      end
 
       # Finds the physical interfaces
       #

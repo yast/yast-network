@@ -40,7 +40,7 @@ describe Y2Network::Sysconfig::ConnectionConfigReaders::Vlan do
       vlan_conn = handler.connection_config
       expect(vlan_conn.interface).to eq("eth0.100")
       expect(vlan_conn.vlan_id).to eq(100)
-      expect(vlan_conn.etherdevice).to eq("eth0")
+      expect(vlan_conn.parent_device).to eq("eth0")
       expect(vlan_conn.bootproto).to eq(Y2Network::BootProtocol::STATIC)
     end
   end

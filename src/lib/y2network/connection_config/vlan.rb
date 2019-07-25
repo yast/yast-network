@@ -23,26 +23,15 @@ module Y2Network
   module ConnectionConfig
     # Configuration for vlan connections
     class Vlan < Base
-      # @return [Interface, nil]
-      attr_accessor :etherdevice
+      # FIXME: By now it will be just the interface name although in NM it
+      #   could be a ifname, UUID or even a MAC address.
+      #
+      # @return [String] the real interface associated with the vlan
+      attr_accessor :parent_device
       # @return [Integer, nil]
       attr_accessor :vlan_id
 
-      # Replace the name of the etherdevice by a real Y2Network::Interface
-      #
-      # @see Y2Network::InterfacesCollection
-      #
-      # @param interfaces [Y2Network::InterfacesCollection]
-      def link_related_interfaces(interfaces)
-        return unless etherdevice
-        interface = interfaces.by_name(etherdevice)
-        self.etherdevice = interface if interface
-      end
-
-      def related_interfaces
-        [etherdevice].compact
-      end
-
+      # @see Y2Network::ConnectionConfig::Base#virtual?
       def virtual?
         true
       end

@@ -45,26 +45,24 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Vlan do
     end
   end
 
-  let(:eth0) { Y2Network::FakeInterface.new("eth0") }
-
   let(:conn) do
     instance_double(
       Y2Network::ConnectionConfig::Vlan,
-      name:        "eth0.100",
-      interface:   "eth0.100",
-      description: "",
-      etherdevice: eth0,
-      vlan_id:     100,
-      ip_configs:  [],
-      startmode:   Y2Network::Startmode.create("auto"),
-      bootproto:   Y2Network::BootProtocol::DHCP
+      name:          "eth0.100",
+      interface:     "eth0.100",
+      description:   "",
+      parent_device: "eth0",
+      vlan_id:       100,
+      ip_configs:    [],
+      startmode:     Y2Network::Startmode.create("auto"),
+      bootproto:     Y2Network::BootProtocol::DHCP
     )
   end
 
   let(:file) { Y2Network::Sysconfig::InterfaceFile.new(conn.name) }
 
   describe "#write" do
-    it "writes the 'etherdevice' and the 'vlan_id'" do
+    it "writes the 'etherdevice' and the 'vlan_id' attributes" do
       handler.write(conn)
       expect(file).to have_attributes(
         etherdevice: "eth0",

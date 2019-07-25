@@ -33,10 +33,10 @@ module Y2Network
       #
       # @return [String] Connection name
       attr_accessor :name
-      # #FIXME: Maybe it could be a matcher instead of an Interface or just
-      # the interface name by now.
+      # #FIXME: Maybe in the future it could be a matcher. By now we will use
+      #   the interface name
       #
-      # @return [Interface, nil]
+      # @return [String, nil]
       attr_accessor :interface
       # @return [BootProtocol] Bootproto
       attr_accessor :bootproto

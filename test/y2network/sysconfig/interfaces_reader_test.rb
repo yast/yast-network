@@ -60,9 +60,19 @@ describe Y2Network::Sysconfig::InterfacesReader do
     context "when a connection for a not existing device is found" do
       let(:configured_interfaces) { ["lo", "eth0", "eth1"] }
 
-      it "creates a fake interface" do
-        eth1 = reader.interfaces.by_name("eth1")
-        expect(eth1).to_not be_nil
+      context "and it is a virtual connection" do
+        it "creates a virtual interface" do
+          vlan = reader.interfaces.by_name("eth0.100")
+          expect(vlan).to_not be_nil
+          expect(vlan).to be_a Y2Network::VirtualInterface
+        end
+      end
+
+      context "and it is not a virtual connection" do
+        it "creates a fake interface" do
+          eth1 = reader.interfaces.by_name("eth1")
+          expect(eth1).to be_a Y2Network::FakeInterface
+        end
       end
     end
   end

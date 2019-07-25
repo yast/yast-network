@@ -29,7 +29,7 @@ module Y2Network
       private
 
         def update_connection_config(conn)
-          conn.etherdevice = file.etherdevice
+          conn.parent_device = file.etherdevice
           conn.vlan_id = file.vlan_id
         end
       end

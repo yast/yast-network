@@ -31,7 +31,7 @@ module Y2Network
         # @param conn [Y2Network::ConnectionConfig::Vlan] Configuration to write
         def update_file(conn)
           file.vlan_id = conn.vlan_id
-          file.etherdevice = conn.etherdevice ? conn.etherdevice.name : nil
+          file.etherdevice = conn.parent_device
         end
       end
     end
