@@ -148,7 +148,10 @@ module Y2Network
 
     # @return [Y2Network::BootProtocol]
     def boot_protocol
-      Y2Network::BootProtocol.from_name(@config["BOOTPROTO"])
+      select_backend(
+        Y2Network::BootProtocol.from_name(@config["BOOTPROTO"]),
+        @connection_config.bootproto
+      )
     end
 
     # @param[String, Y2Network::BootProtocol]
@@ -165,7 +168,10 @@ module Y2Network
       return nil unless startmode
 
       startmode.priority = @config["IFPLUGD_PRIORITY"] if startmode.name == "ifplugd"
-      startmode
+      select_backend(
+        startmode,
+        @connection_config.startmode
+      )
     end
 
     # @param [String,Y2Network::Startmode] name startmode name used to create Startmode object
@@ -196,7 +202,11 @@ module Y2Network
     # @return [Integer]
     def ifplugd_priority
       # in future use only @connection_config and just delegate method
-      @config["IFPLUGD_PRIORITY"].to_i
+      startmode = @connection_config.startmode
+      select_backend(
+        @config["IFPLUGD_PRIORITY"].to_i,
+        startmode.name == "ifplugd" ? startmode.priority : 0
+      )
     end
 
     # gets currently assigned kernel module
@@ -527,6 +537,14 @@ module Y2Network
         @connection_config.ip_configs << default
       end
       default
+    end
+
+    # method that allows easy change of backend for providing data
+    # it also logs error if result differs
+    def select_backend(old, new)
+      log.error "Different value in backends. Old: #{old.inspect} New: #{new.inspect}"
+
+      old
     end
   end
 end
