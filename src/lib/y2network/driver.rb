@@ -17,12 +17,31 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/interface"
-
 module Y2Network
-  # Physical interface class (ethernet, wireless, infiniband...)
-  class PhysicalInterface < Interface
-    # @return [String]
-    attr_accessor :ethtool_options
+  # This class represents a driver for an interface
+  #
+  # It is composed of a kernel module name and a string representing the module options
+  class Driver
+    # @return [String] Kernel module name
+    attr_accessor :name
+    # @return [String] Kernel module parameters
+    attr_accessor :params
+
+    def initialize(name, params = "")
+      @name = name
+      @params = params
+    end
+
+    # Determines whether two interfaces are equal
+    #
+    # @param other [Driver] Driver to compare with
+    # @return [Boolean]
+    def ==(other)
+      name == other.name && params == other.params
+    end
+
+    # eql? (hash key equality) should alias ==, see also
+    # https://ruby-doc.org/core-2.3.3/Object.html#method-i-eql-3F
+    alias_method :eql?, :==
   end
 end

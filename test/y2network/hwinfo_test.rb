@@ -16,42 +16,44 @@
 #
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
-require_relative "../test_helper"
-require "y2network/interface"
 
-describe Y2Network::Interface do
-  subject(:interface) do
-    described_class.new("eth0")
+require_relative "../test_helper"
+require "y2network/hwinfo"
+
+describe Y2Network::Hwinfo do
+  subject(:hwinfo) { described_class.new(name: interface_name) }
+
+  let(:hardware) do
+    YAML.load_file(File.join(DATA_PATH, "hardware.yml"))
   end
 
-  describe "#==" do
-    context "given two interfaces with the same name" do
-      let(:other) { Y2Network::Interface.new(interface.name) }
+  let(:interface_name) { "enp1s0" }
 
+  before do
+    allow(Yast::LanItems).to receive(:Hardware).and_return(hardware)
+  end
+
+  describe "#exists?" do
+    context "when the device exists" do
       it "returns true" do
-        expect(interface).to eq(other)
+        expect(hwinfo.exists?).to eq(true)
       end
     end
 
-    context "given two interfaces with a different name" do
-      let(:other) { Y2Network::Interface.new("eth1") }
+    context "when the device does not exist" do
+      let(:interface_name) { "missing" }
 
       it "returns false" do
-        expect(interface).to_not eq(other)
+        expect(hwinfo.exists?).to eq(false)
       end
     end
   end
 
-  describe "#modules_names" do
-    let(:driver) { instance_double(Y2Network::Driver) }
-    let(:hwinfo) { instance_double(Y2Network::Hwinfo, drivers: [driver]) }
-
-    before do
-      allow(interface).to receive(:hardware).and_return(hwinfo)
-    end
-
-    it "returns modules names from hardware information" do
-      expect(interface.drivers).to eq([driver])
+  describe "#drivers" do
+    it "returns the list of kernel modules names" do
+      expect(hwinfo.drivers).to eq(
+        [Y2Network::Driver.new("virtio_net", "")]
+      )
     end
   end
 end

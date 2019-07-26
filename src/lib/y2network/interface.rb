@@ -54,6 +54,7 @@ module Y2Network
     # Constructor
     #
     # @param name [String] Interface name (e.g., "eth0")
+    # @param type [InterfaceType] Interface type
     def initialize(name, type: InterfaceType::ETHERNET)
       @name = name
       @description = ""
@@ -82,6 +83,14 @@ module Y2Network
     # @return [Hash<String, String>] option, value hash map
     def config
       system_config(name)
+    end
+
+    # Returns the list of kernel modules
+    #
+    # @return [Array<Driver>]
+    # @see Hwinfo#drivers
+    def drivers
+      hardware.drivers
     end
 
   private

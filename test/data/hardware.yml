@@ -1,0 +1,30 @@
+---
+- name: Ethernet Card 0
+  type: eth
+  udi: ''
+  sysfs_id: "/devices/pci0000:00/0000:00:02.0/0000:01:00.0/virtio0"
+  dev_name: enp1s0
+  requires: []
+  modalias: virtio:d00000001v00001AF4
+  unique: Ds1o.VIRhsc57kTD
+  driver: virtio_net
+  num: 0
+  drivers:
+  - active: true
+    modprobe: true
+    modules:
+    - - virtio_net
+      - ''
+  active: true
+  module: virtio_net
+  options: ''
+  bus: Virtio
+  busid: virtio0
+  parent_busid: '0000:01:00.0'
+  mac: 52:54:00:68:54:fb
+  permanent_mac: 52:54:00:68:54:fb
+  link: true
+  wl_channels: 
+  wl_bitrates: 
+  wl_auth_modes: 
+  wl_enc_modes: 
