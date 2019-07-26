@@ -7,8 +7,8 @@ module Y2Network
     class Bonding < InterfaceConfigBuilder
       include Yast::Logger
 
-      def initialize
-        super(type: InterfaceType::BONDING)
+      def initialize(config: nil)
+        super(type: InterfaceType::BONDING, config: config)
 
         # fill mandatory bond option
         @slaves = []

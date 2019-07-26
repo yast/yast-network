@@ -213,7 +213,10 @@ module Yast
       return false if validateId(options, config) == false
 
       LanItems.current = getItem(options, config)
-      builder = Y2Network::InterfaceConfigBuilder.for(LanItems.GetCurrentType())
+
+      config = Lan.yast_config.copy
+      connection_config = config.connections.find { |c| c.name == LanItems.GetCurrentName }
+      builder = Y2Network::InterfaceConfigBuilder.for(LanItems.GetCurrentType(), config: connection_config)
       builder.name = LanItems.GetCurrentName()
       LanItems.SetItem(builder: builder)
       update_builder_from_options!(builder, options)

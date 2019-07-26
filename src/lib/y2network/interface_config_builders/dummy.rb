@@ -4,8 +4,8 @@ require "y2network/interface_config_builder"
 module Y2Network
   module InterfaceConfigBuilders
     class Dummy < InterfaceConfigBuilder
-      def initialize
-        super(type: InterfaceType::DUMMY)
+      def initialize(config: nil)
+        super(type: InterfaceType::DUMMY, config: config)
       end
 
       # (see Y2Network::InterfaceConfigBuilder#save)

@@ -42,15 +42,17 @@ module Y2Network
     # Load fresh instance of interface config builder for given type.
     # It can be specialized type or generic, depending if specialized is needed.
     # @param type [Y2Network::InterfaceType,String] type of device or its short name
-    def self.for(type)
+    # @param config [Y2Network::ConnectionConfig::Base, nil] existing configuration of device or nil
+    #   for newly created
+    def self.for(type, config: nil)
       if !type.is_a?(InterfaceType)
         type = InterfaceType.from_short_name(type) or raise "Unknown type #{type.inspect}"
       end
       require "y2network/interface_config_builders/#{type.file_name}"
-      InterfaceConfigBuilders.const_get(type.class_name).new
+      InterfaceConfigBuilders.const_get(type.class_name).new(config: config)
     rescue LoadError => e
       log.info "Specialed builder for #{type} not found. Fallbacking to default. #{e.inspect}"
-      new(type: type)
+      new(type: type, config: config)
     end
 
     # @return [String] Device name (eth0, wlan0, etc.)
@@ -150,7 +152,10 @@ module Y2Network
 
     # @return [Y2Network::BootProtocol]
     def boot_protocol
-      Y2Network::BootProtocol.from_name(@config["BOOTPROTO"])
+      select_backend(
+        Y2Network::BootProtocol.from_name(@config["BOOTPROTO"]),
+        @connection_config.bootproto
+      )
     end
 
     # @param[String, Y2Network::BootProtocol]
@@ -167,7 +172,10 @@ module Y2Network
       return nil unless startmode
 
       startmode.priority = @config["IFPLUGD_PRIORITY"] if startmode.name == "ifplugd"
-      startmode
+      select_backend(
+        startmode,
+        @connection_config.startmode
+      )
     end
 
     # @param [String,Y2Network::Startmode] name startmode name used to create Startmode object
@@ -198,7 +206,11 @@ module Y2Network
     # @return [Integer]
     def ifplugd_priority
       # in future use only @connection_config and just delegate method
-      @config["IFPLUGD_PRIORITY"].to_i
+      startmode = @connection_config.startmode
+      select_backend(
+        @config["IFPLUGD_PRIORITY"].to_i,
+        startmode.name == "ifplugd" ? startmode.priority : 0
+      )
     end
 
     # gets currently assigned kernel module
@@ -228,7 +240,9 @@ module Y2Network
     #   `:ip` for ip address, `:mask` for netmask and `:prefixlen` for prefix.
     #   Only one of `:mask` and `:prefixlen` is set.
     def aliases
-      @aliases ||= Yast::LanItems.aliases.each_value.map do |data|
+      return @aliases if @aliases
+
+      old_aliases = Yast::LanItems.aliases.each_value.map do |data|
         {
           label:     data["LABEL"] || "",
           ip:        data["IPADDR"] || "",
@@ -236,6 +250,16 @@ module Y2Network
           prefixlen: data["PREFIXLEN"] || ""
         }
       end
+
+      new_aliases = @connection_config.ip_configs.select { |c| c.id != "" }.map do |data|
+        {
+          label:     data.label,
+          ip:        data.address.address,
+          prefixlen: data.address.prefix
+          # NOTE: new API does not have netmask at all, we need to adapt UI to clearly mention only prefix
+        }
+      end
+      select_backend(old_aliases, new_aliases)
     end
 
     # sets aliases for interface
@@ -280,7 +304,15 @@ module Y2Network
 
     # @return [String]
     def ip_address
-      @config["IPADDR"]
+      old = @config["IPADDR"]
+
+      default = @connection_config.ip_configs.find { |c| c.id == "" }
+      new_ = if default
+        default.address.address
+      else
+        ""
+      end
+      select_backend(old, new_)
     end
 
     # @param [String] value
@@ -298,11 +330,18 @@ module Y2Network
 
     # @return [String] returns prefix or netmask. prefix in format "/<prefix>"
     def subnet_prefix
-      if @config["PREFIXLEN"] && !@config["PREFIXLEN"].empty?
+      old = if @config["PREFIXLEN"] && !@config["PREFIXLEN"].empty?
         "/#{@config["PREFIXLEN"]}"
       else
         @config["NETMASK"] || ""
       end
+      default = @connection_config.ip_configs.find { |c| c.id == "" }
+      new_ = if default
+        "/" + default.address.prefix.to_s
+      else
+        ""
+      end
+      select_backend(old, new_)
     end
 
     # @param [String] value prefix or netmask is accepted. prefix in format "/<prefix>"
@@ -341,7 +380,15 @@ module Y2Network
     # sets remote ip for ptp connections
     # @return [String]
     def remote_ip
-      @config["REMOTEIP"]
+      old = @config["REMOTEIP"]
+      default = @connection_config.ip_configs.find { |c| c.id == "" }
+      new_ = if default
+        default.remote_address.to_s
+      else
+        ""
+      end
+
+      select_backend(old, new_)
     end
 
     # @param [String] value
@@ -353,7 +400,10 @@ module Y2Network
     # Gets Maximum Transition Unit
     # @return [String]
     def mtu
-      @config["MTU"]
+      select_backend(
+        @config["MTU"],
+        @connection_config.mtu.to_s
+      )
     end
 
     # Sets Maximum Transition Unit
@@ -529,6 +579,15 @@ module Y2Network
         @connection_config.ip_configs << default
       end
       default
+    end
+
+    # method that allows easy change of backend for providing data
+    # it also logs error if result differs
+    # TODO: Only temporary method for testing switch of backends. Remove it from production
+    def select_backend(old, new)
+      log.error "Different value in backends. Old: #{old.inspect} New: #{new.inspect}" if new != old
+
+      old
     end
   end
 end

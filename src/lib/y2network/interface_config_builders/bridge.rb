@@ -9,8 +9,8 @@ module Y2Network
     class Bridge < InterfaceConfigBuilder
       include Yast::Logger
 
-      def initialize
-        super(type: InterfaceType::BRIDGE)
+      def initialize(config: nil)
+        super(type: InterfaceType::BRIDGE, config: config)
       end
 
       # Checks if any of given device is already configured and need adaptation for bridge
