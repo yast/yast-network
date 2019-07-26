@@ -581,8 +581,9 @@ module Y2Network
 
     # method that allows easy change of backend for providing data
     # it also logs error if result differs
+    # TODO: Only temporary method for testing switch of backends. Remove it from production
     def select_backend(old, new)
-      log.error "Different value in backends. Old: #{old.inspect} New: #{new.inspect}"
+      log.error "Different value in backends. Old: #{old.inspect} New: #{new.inspect}" if new != old
 
       old
     end

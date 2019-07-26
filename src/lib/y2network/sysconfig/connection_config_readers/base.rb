@@ -94,7 +94,7 @@ module Y2Network
             )
           end
           # The one without suffix comes first.
-          configs.sort_by { |c| c.id.nil? ? -1 : 0 }
+          configs.compact.sort_by { |c| c.id.nil? ? -1 : 0 }
         end
 
         # Builds an IP address

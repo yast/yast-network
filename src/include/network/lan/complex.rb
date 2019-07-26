@@ -305,9 +305,13 @@ module Yast
 
     # Automatically configures slaves when user enslaves them into a bond or bridge device
     def UpdateSlaves
+      # TODO: sometimes it is called when no device is selected and then it crashes
+      return if LanItems.GetCurrentName.nil? || LanItems.GetCurrentName.empty?
+
       current = LanItems.current
       config = Lan.yast_config.copy
       connection_config = config.connections.find { |c| c.name == LanItems.GetCurrentName }
+      Yast.y2milestone("update slaves for #{current}:#{LanItems.GetCurrentName}:#{LanItems.GetCurrentType}")
       master_builder = Y2Network::InterfaceConfigBuilder.for(LanItems.GetCurrentType(), config: connection_config)
       master_builder.name = LanItems.GetCurrentName()
 
