@@ -28,7 +28,8 @@ module Y2Network
   # configuration (see {Hwinfo}), including naming and driver information.
   #
   # Logical configuration, like TCP/IP or WIFI settings, are handled through
-  # Y2Network::ConnectionConfig::Base classes.
+  # Y2Network::ConnectionConfig::Base classes. Actually, relationships with other interfaces (like
+  # bonding slaves) are kept in those configuration objects too.
   #
   # @see Y2Network::PhysicalInterface
   # @see Y2Network::VirtualInterface
