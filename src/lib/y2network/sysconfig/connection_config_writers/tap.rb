@@ -17,20 +17,21 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/sysconfig/connection_config_writers/tun"
+require "y2network/sysconfig/connection_config_writers/base"
 
 module Y2Network
   module Sysconfig
     module ConnectionConfigWriters
       # This class is responsible for writing the information from a ConnectionConfig::Tap
       # object to the underlying system.
-      class Tap < Tun
+      class Tap < Base
       private
 
         # @see Y2Network::ConnectionConfigWriters::Base#update_file
         def update_file(conn)
-          super
           file.tunnel = "tap"
+          file.tunnel_set_owner = conn.owner
+          file.tunnel_set_group = conn.group
         end
       end
     end

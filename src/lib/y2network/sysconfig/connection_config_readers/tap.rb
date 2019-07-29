@@ -17,14 +17,22 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/sysconfig/connection_config_readers/tun"
+require "y2network/sysconfig/connection_config_readers/base"
 
 module Y2Network
   module Sysconfig
     module ConnectionConfigReaders
       # This class is able to build a ConnectionConfig::Tap object given a
       # Sysconfig::InterfaceFile object.
-      class Tap < Tun
+      class Tap < Base
+      private
+
+        # @param conn [Y2Network::ConnectionConfig::Tap]
+        # @see Y2Network::Sysconfig::ConnectionConfigReaders::Base#update_connection_config
+        def update_connection_config(conn)
+          conn.owner = file.tunnel_set_owner
+          conn.group = file.tunnel_set_group
+        end
       end
     end
   end

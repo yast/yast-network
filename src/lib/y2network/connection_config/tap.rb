@@ -17,12 +17,25 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/connection_config/tun"
+require "y2network/connection_config/base"
 
 module Y2Network
   module ConnectionConfig
     # Configuration for TAP connections
-    class Tap < Tun
+    class Tap < Base
+      # @return [String] tunnel owner (name or UID)
+      attr_accessor :owner
+      # @return [String] tunnel group (name or GID)
+      attr_accessor :group
+
+      def initialize
+        @owner = ""
+        @group = ""
+      end
+
+      def virtual?
+        true
+      end
     end
   end
 end
