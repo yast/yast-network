@@ -761,8 +761,9 @@ describe "LanItems renaming methods" do
     end
     let(:eth0) { Y2Network::Interface.new("eth0") }
     let(:br0) { Y2Network::Interface.new("br0") }
+    let(:interfaces) { Y2Network::InterfacesCollection.new([eth0, br0]) }
     let(:yast_config) do
-      instance_double(Y2Network::Config, interfaces: [eth0, br0], routing: routing)
+      instance_double(Y2Network::Config, interfaces: interfaces, routing: routing)
     end
 
     before do

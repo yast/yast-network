@@ -9,6 +9,7 @@ require "y2network/routing_table"
 require "y2network/route"
 
 Yast.import "NetworkInterfaces"
+Yast.import "Lan"
 
 # @return one item for a .probe.netcard list
 def probe_netcard_factory(num)
@@ -47,6 +48,14 @@ def probe_netcard_factory(num)
 end
 
 describe Yast::NetworkAutoconfiguration do
+  let(:yast_config) { Y2Network::Config.new(source: :sysconfig) }
+  let(:system_config) { yast_config.copy }
+
+  before do
+    Yast::Lan.add_config(:yast, yast_config)
+    Yast::Lan.add_config(:system, system_config)
+  end
+
   describe "it sets DHCLIENT_SET_DEFAULT_ROUTE properly" do
     let(:instance) { Yast::NetworkAutoconfiguration.instance }
     let(:network_interfaces) { double("NetworkInterfaces") }
@@ -198,10 +207,10 @@ describe Yast::NetworkAutoconfiguration do
     end
     let(:eth0) { Y2Network::Interface.new("eth0") }
     let(:br0) { Y2Network::Interface.new("br0") }
+    let(:interfaces) { Y2Network::InterfacesCollection.new([eth0, br0]) }
     let(:yast_config) do
-      Y2Network::Config.new(interfaces: [eth0, br0], routing: routing, source: :testing)
+      Y2Network::Config.new(interfaces: interfaces, routing: routing, source: :testing)
     end
-    let(:system_config) { yast_config.copy }
     let(:instance) { Yast::NetworkAutoconfiguration.instance }
     let(:proposal) { false }
     let(:eth0_profile) do
@@ -231,8 +240,10 @@ describe Yast::NetworkAutoconfiguration do
       allow(Yast::LanItems).to receive(:Read)
       allow(yast_config).to receive(:write)
       allow(Yast::Lan).to receive(:connected_and_bridgeable?).and_return(true)
-      Yast::Lan.Import("devices" => { "eth" => { "eth0" => eth0_profile } },
-                       "routing" => { "routes" => routes_profile })
+      Yast::Lan.Import(
+        "devices" => { "eth" => { "eth0" => eth0_profile } },
+        "routing" => { "routes" => routes_profile }
+      )
     end
 
     context "when the proposal is not required" do
