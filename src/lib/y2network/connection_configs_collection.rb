@@ -52,5 +52,15 @@ module Y2Network
     def by_name(name)
       connection_configs.find { |c| c.name == name }
     end
+
+    # Updates a connection configuration
+    #
+    # @note It uses the name to do the matching.
+    #
+    # @param connection_config [ConnectionConfig::Base] New connection configuration object
+    def update(connection_config)
+      idx = connection_configs.find_index { |c| c.name == connection_config.name }
+      connection_configs[idx] = connection_config if idx
+    end
   end
 end

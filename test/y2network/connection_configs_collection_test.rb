@@ -40,4 +40,13 @@ describe Y2Network::ConnectionConfigsCollection do
       end
     end
   end
+
+  describe "#update" do
+    let(:eth0_1) { Y2Network::ConnectionConfig::Ethernet.new.tap { |c| c.name = "eth0" } }
+
+    it "replaces the connection configuration having the same name with the given object" do
+      collection.update(eth0_1)
+      expect(collection.by_name("eth0")).to be(eth0_1)
+    end
+  end
 end
