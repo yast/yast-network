@@ -24,6 +24,8 @@ require "y2network/virtual_interface"
 require "y2network/physical_interface"
 require "y2network/fake_interface"
 require "y2network/sysconfig/connection_config_reader"
+require "y2network/interfaces_collection"
+require "y2network/connection_configs_collection"
 
 Yast.import "LanItems"
 Yast.import "NetworkInterfaces"
@@ -81,7 +83,7 @@ module Y2Network
       # Finds the connections configurations
       def find_connections
         @connections ||=
-          configured_devices.each_with_object([]) do |name, conns|
+          configured_devices.each_with_object(ConnectionConfigsCollection.new([])) do |name, conns|
             interface = @interfaces.by_name(name)
             connection = ConnectionConfigReader.new.read(
               name,

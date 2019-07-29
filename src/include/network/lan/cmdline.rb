@@ -215,7 +215,7 @@ module Yast
       LanItems.current = getItem(options, config)
 
       config = Lan.yast_config.copy
-      connection_config = config.connections.find { |c| c.name == LanItems.GetCurrentName }
+      connection_config = config.connections.by_name(LanItems.GetCurrentName)
       builder = Y2Network::InterfaceConfigBuilder.for(LanItems.GetCurrentType(), config: connection_config)
       builder.name = LanItems.GetCurrentName()
       LanItems.SetItem(builder: builder)
