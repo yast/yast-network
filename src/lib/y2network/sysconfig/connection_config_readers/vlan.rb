@@ -28,6 +28,8 @@ module Y2Network
       class Vlan < Base
       private
 
+        # @param conn [Y2Network::ConnectionConfig::Vlan]
+        # @see Y2Network::Sysconfig::ConnectionConfigReaders::Base#update_connection_config
         def update_connection_config(conn)
           conn.parent_device = file.etherdevice
           conn.vlan_id = file.vlan_id

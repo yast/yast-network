@@ -17,23 +17,16 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/sysconfig/connection_config_readers/base"
-require "y2network/ipoib_mode"
+require_relative "../../test_helper"
+require "y2network/connection_config/tun"
+require "y2network/interface_type"
 
-module Y2Network
-  module Sysconfig
-    module ConnectionConfigReaders
-      # This class is able to build a ConnectionConfig::Infiniband object given a
-      # SysconfigInterfaceFile object.
-      class Infiniband < Base
-      private
+describe Y2Network::ConnectionConfig::Tun do
+  subject(:config) { described_class.new }
 
-        # @param conn [Y2Network::ConnectionConfig::Infiniband]
-        # @see Y2Network::Sysconfig::ConnectionConfigReaders::Base#update_connection_config
-        def update_connection_config(conn)
-          conn.ipoib_mode = IpoibMode.from_name(file.ipoib_mode.to_s)
-        end
-      end
+  describe "#type" do
+    it "returns 'tun'" do
+      expect(config.type).to eq(Y2Network::InterfaceType::TUN)
     end
   end
 end

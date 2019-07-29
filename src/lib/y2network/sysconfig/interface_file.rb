@@ -272,6 +272,20 @@ module Y2Network
       #   @return [Integer]
       define_variable(:bridge_forwarddelay, :integer)
 
+      ## TUN / TAP
+
+      # @!attribute [r] tunnel
+      #   @return [String] tunnel protocol ("sit", "gre", "ipip", "tun", "tap")
+      define_variable(:tunnel)
+
+      # @!attribute [r] tunnel_set_owner
+      #   @return [String] tunnel owner
+      define_variable(:tunnel_set_owner)
+
+      # @!attribute [r] tunnel_set_group
+      #   @return [String] tunnel group
+      define_variable(:tunnel_set_group)
+
       # Constructor
       #
       # @param interface [String] Interface interface
@@ -319,14 +333,7 @@ module Y2Network
       #
       # @return [Y2Network::InterfaceType] Interface's type depending on the file values
       def type
-        return InterfaceType::DUMMY if interfacetype == "dummy"
-        return InterfaceType::BRIDGE if bridge == "yes"
-        return InterfaceType::BONDING if defined_variables.any? { |k| k.start_with?("BOND") }
-        return InterfaceType::WIRELESS if defined_variables.any? { |k| k.start_with?("WIRELESS") }
-        return InterfaceType::VLAN if defined_variables.include? "ETHERDEVICE"
-        return InterfaceType::INFINIBAND if defined_variables.include? "IPOIB_MODE"
-
-        InterfaceType::ETHERNET
+        type_from_keys || type_from_values || InterfaceType::ETHERNET
       end
 
       # Empties all known values
@@ -341,6 +348,26 @@ module Y2Network
       end
 
     private
+
+      # Determine the Interface type based on specific values
+      #
+      # @return [Y2Network::InterfaceType, nil]
+      def type_from_values
+        return InterfaceType::DUMMY if interfacetype == "dummy"
+        return InterfaceType::BRIDGE if bridge == "yes"
+        return InterfaceType::TUN if @values["TUNNEL"] == "tun"
+        return InterfaceType::TAP if @values["TUNNEL"] == "tap"
+      end
+
+      # Determine the Interface type based on defined variables
+      #
+      # @return [Y2Network::InterfaceType, nil]
+      def type_from_keys
+        return InterfaceType::BONDING if defined_variables.any? { |k| k.start_with?("BOND") }
+        return InterfaceType::WIRELESS if defined_variables.any? { |k| k.start_with?("WIRELESS") }
+        return InterfaceType::VLAN if defined_variables.include? "ETHERDEVICE"
+        return InterfaceType::INFINIBAND if defined_variables.include? "IPOIB_MODE"
+      end
 
       # Returns a list of those keys that have a value
       #
