@@ -310,14 +310,14 @@ module Yast
 
       current = LanItems.current
       config = Lan.yast_config.copy
-      connection_config = config.connections.find { |c| c.name == LanItems.GetCurrentName }
+      connection_config = config.connections.by_name(LanItems.GetCurrentName)
       Yast.y2milestone("update slaves for #{current}:#{LanItems.GetCurrentName}:#{LanItems.GetCurrentType}")
       master_builder = Y2Network::InterfaceConfigBuilder.for(LanItems.GetCurrentType(), config: connection_config)
       master_builder.name = LanItems.GetCurrentName()
 
       Lan.autoconf_slaves.each do |dev|
         if LanItems.FindAndSelect(dev)
-          connection_config = config.connections.find { |c| c.name == LanItems.GetCurrentName }
+          connection_config = config.connections.by_name(LanItems.GetCurrentName)
           builder = Y2Network::InterfaceConfigBuilder.for(LanItems.GetCurrentType(), config: connection_config)
           builder.name = LanItems.GetCurrentName()
           LanItems.SetItem(builder: builder)
@@ -415,7 +415,7 @@ module Yast
         when :edit
           if LanItems.IsCurrentConfigured
             config = Lan.yast_config.copy
-            connection_config = config.connections.find { |c| c.name == LanItems.GetCurrentName }
+            connection_config = config.connections.by_name(LanItems.GetCurrentName)
             builder = Y2Network::InterfaceConfigBuilder.for(LanItems.GetCurrentType(), config: connection_config)
             builder.name = LanItems.GetCurrentName()
             LanItems.SetItem(builder: builder)
