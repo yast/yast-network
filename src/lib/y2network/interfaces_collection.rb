@@ -17,31 +17,28 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
+require "yast"
 require "y2network/interface"
 require "forwardable"
 
 module Y2Network
-  # A container for network devices. In the end should implement methods for mass operations over
-  # network interfaces like old LanItems::find_dhcp_ifaces.
+  # A container for network devices.
   #
-  # @example Create a new collection
-  #   eth0 = Y2Network::Interface.new("eth0")
-  #   collection = Y2Network::InterfacesCollection.new(eth0)
+  # Objects of this class are able to keep a list of interfaces and perform simple queries
+  # on such a list. In the end should implement methods for mass operations over network
+  # interfaces like old LanItems::find_dhcp_ifaces.
+  #
+  # @example Finding an interface by its name
+  #   interfaces = Y2Network::InterfacesCollection.new([eth0, wlan0])
+  #   interfaces.by_name("wlan0") # => wlan0
   #
   # @example Find an interface using its name
   #   iface = collection.by_name("eth0") #=> #<Y2Network::Interface:0x...>
+  #
+  # @example FIXME (not implemented yet). For the future, we are aiming at this kind of API.
+  #   interfaces = Y2Network::InterfacesCollection.new([eth0, wlan0])
+  #   interfaces.of_type(:eth).to_a # => [eth0]
   class InterfacesCollection
-    # Objects of this class are able to keep a list of interfaces and perform simple queries
-    # on such a list.
-    #
-    # @example Finding an interface by its name
-    #   interfaces = Y2Network::InterfacesCollection.new([eth0, wlan0])
-    #   interfaces.by_name("wlan0") # => wlan0
-    #
-    # @example FIXME (not implemented yet). For the future, we are aiming at this kind of API.
-    #   interfaces = Y2Network::InterfacesCollection.new([eth0, wlan0])
-    #   interfaces.of_type(:eth).to_a # => [eth0]
-
     extend Forwardable
     include Yast::Logger
 
@@ -60,7 +57,7 @@ module Y2Network
 
     # Returns an interface with the given name if present
     #
-    # @todo It uses the hardware's name as a fallback if interface's name is not set
+    # @note It uses the hardware's name as a fallback if interface's name is not set
     #
     # @param name [String] interface name ("eth0", "br1", ...)
     # @return [Interface,nil] Interface with the given name or nil if not found
