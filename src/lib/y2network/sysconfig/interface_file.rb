@@ -244,6 +244,16 @@ module Y2Network
       #   @return [String] IPOIB mode ("connected" or "datagram")
       define_variable(:ipoib_mode)
 
+      ## VLAN
+
+      # !@attribute [r] etherdevice
+      #   @return [String] Real device for the virtual LAN
+      define_variable(:etherdevice)
+
+      # !@attribute [r] vlan_id
+      #   @return [String] VLAN ID
+      define_variable(:vlan_id, :integer)
+
       # Constructor
       #
       # @param interface [String] Interface interface
