@@ -55,6 +55,11 @@ describe Y2Network::InterfaceConfigBuilder do
       expect(Yast::LanItems.driver_options["e1000e"]).to eq "test"
     end
 
+    it "saves connection config" do
+      expect(config.connections).to receive(:update).with(Y2Network::ConnectionConfig::Base)
+      subject.save
+    end
+
     it "stores aliases" do
       # Avoid deleting old aliases as it can break other tests, due to singleton NetworkInterfaces
       allow(Yast::NetworkInterfaces).to receive(:DeleteAlias)

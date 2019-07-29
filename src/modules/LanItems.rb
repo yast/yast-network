@@ -737,8 +737,9 @@ module Yast
 
       LanItems.WriteUdevRules if !Stage.cont && InstallInfConvertor.instance.AllowUdevModify
 
+      # FIXME: remove this code
       # FIXME: hack: no "netcard" filter as biosdevname names it diferently (bnc#712232)
-      NetworkInterfaces.Write("")
+      # NetworkInterfaces.Write("")
     end
 
     # Exports configuration for use in AY profile
