@@ -42,6 +42,7 @@ describe Y2Network::Sysconfig::ConnectionConfigReaders::Tap do
       expect(tap_conn.interface).to eq("tap0")
       expect(tap_conn.type).to eq(Y2Network::InterfaceType::TAP)
       expect(tap_conn.owner).to eq("nobody")
+      expect(tap_conn.bootproto).to eq(Y2Network::BootProtocol::STATIC)
     end
   end
 end

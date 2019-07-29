@@ -349,17 +349,18 @@ module Y2Network
 
     private
 
-      # Determine the Interface type based on specific values
+      # Determines the Interface type based on specific values
       #
       # @return [Y2Network::InterfaceType, nil]
       def type_from_values
         return InterfaceType::DUMMY if interfacetype == "dummy"
         return InterfaceType::BRIDGE if bridge == "yes"
-        return InterfaceType::TUN if @values["TUNNEL"] == "tun"
-        return InterfaceType::TAP if @values["TUNNEL"] == "tap"
+        # TODO: Add support for ip-tunnels
+        return InterfaceType::TUN if tunnel == "tun"
+        return InterfaceType::TAP if tunnel == "tap"
       end
 
-      # Determine the Interface type based on defined variables
+      # Determines the Interface type based on defined variables
       #
       # @return [Y2Network::InterfaceType, nil]
       def type_from_keys
