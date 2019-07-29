@@ -254,6 +254,24 @@ module Y2Network
       #   @return [String] VLAN ID
       define_variable(:vlan_id, :integer)
 
+      ## BRIDGE
+
+      # @!attribute [r] bridge
+      #   @return [String] whether the interface is a bridge or not
+      define_variable(:bridge)
+
+      # @!attribute [r] bridge_ports
+      #   @return [String] interfaces members of the bridge
+      define_variable(:bridge_ports)
+
+      # @!attribute [r] bridge_stp
+      #   @return [String] Spanning Tree Protocol ("off" or "on")
+      define_variable(:bridge_stp)
+
+      # @!attribute [r] bridge_forwarddelay
+      #   @return [Integer]
+      define_variable(:bridge_forwarddelay, :integer)
+
       # Constructor
       #
       # @param interface [String] Interface interface
@@ -301,9 +319,9 @@ module Y2Network
       #
       # @return [Y2Network::InterfaceType] Interface's type depending on the file values
       def type
-        return InterfaceType::DUMMY if @values["INTERFACETYPE"] == "dummy"
+        return InterfaceType::DUMMY if interfacetype == "dummy"
+        return InterfaceType::BRIDGE if bridge == "yes"
         return InterfaceType::BONDING if defined_variables.any? { |k| k.start_with?("BOND") }
-        return InterfaceType::BRIDGE if defined_variables.any? { |k| k.start_with?("BRIDGE") }
         return InterfaceType::WIRELESS if defined_variables.any? { |k| k.start_with?("WIRELESS") }
         return InterfaceType::VLAN if defined_variables.include? "ETHERDEVICE"
         return InterfaceType::INFINIBAND if defined_variables.include? "IPOIB_MODE"
