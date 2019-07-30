@@ -44,7 +44,7 @@ module Y2Network
           file.name = conn.description
           file.startmode = conn.startmode.to_s
           file.ifplugd_priority = conn.startmode.priority if conn.startmode.name == "ifplugd"
-          write_ip_configs(conn.ip_configs)
+          write_all_ips(conn.all_ips)
           update_file(conn)
         end
 
@@ -61,9 +61,9 @@ module Y2Network
 
         # Write IP configuration
         #
-        # @param ip_configs [Array<Y2Network::ConnectionConfig::IPConfig>] IPs configuration
-        def write_ip_configs(ip_configs)
-          ip_configs.each do |ip_config|
+        # @param all_ips [Array<Y2Network::ConnectionConfig::IPConfig>] IPs configuration
+        def write_all_ips(all_ips)
+          all_ips.each do |ip_config|
             file.ipaddrs[ip_config.id] = ip_config.address
             file.labels[ip_config.id] = ip_config.label
             file.remote_ipaddrs[ip_config.id] = ip_config.remote_address

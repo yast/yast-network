@@ -81,7 +81,7 @@ module Y2Network
       # Returns all IP configurations
       #
       # @return [Array<IPConfig>]
-      def ip_configs
+      def all_ips
         ([ip] + ip_aliases).compact
       end
     end

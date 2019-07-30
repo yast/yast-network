@@ -37,7 +37,7 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Vlan do
       description:   "",
       parent_device: "eth0",
       vlan_id:       100,
-      ip_configs:    [],
+      all_ips:       [],
       startmode:     Y2Network::Startmode.create("auto"),
       bootproto:     Y2Network::BootProtocol::DHCP
     )

@@ -50,7 +50,7 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Dummy do
       interface:   "dummy1",
       description: "",
       bootproto:   Y2Network::BootProtocol::STATIC,
-      ip_configs:  [ip],
+      all_ips:     [ip],
       startmode:   Y2Network::Startmode.create("auto")
     )
   end

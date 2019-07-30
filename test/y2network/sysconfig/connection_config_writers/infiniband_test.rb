@@ -51,7 +51,7 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Infiniband do
       interface:   "ib0",
       description: "",
       ipoib_mode:  Y2Network::IpoibMode::CONNECTED,
-      ip_configs:  [ip],
+      all_ips:     [ip],
       startmode:   Y2Network::Startmode.create("auto"),
       bootproto:   Y2Network::BootProtocol::STATIC
     )
