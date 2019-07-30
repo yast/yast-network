@@ -17,21 +17,21 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/sysconfig/connection_config_readers/base"
-require "y2network/ipoib_mode"
+require "y2network/sysconfig/connection_config_writers/base"
 
 module Y2Network
   module Sysconfig
-    module ConnectionConfigReaders
-      # This class is able to build a ConnectionConfig::Infiniband object given a
-      # SysconfigInterfaceFile object.
-      class Infiniband < Base
+    module ConnectionConfigWriters
+      # This class is responsible for writing the information from a ConnectionConfig::Tap
+      # object to the underlying system.
+      class Tap < Base
       private
 
-        # @param conn [Y2Network::ConnectionConfig::Infiniband]
-        # @see Y2Network::Sysconfig::ConnectionConfigReaders::Base#update_connection_config
-        def update_connection_config(conn)
-          conn.ipoib_mode = IpoibMode.from_name(file.ipoib_mode.to_s)
+        # @see Y2Network::ConnectionConfigWriters::Base#update_file
+        def update_file(conn)
+          file.tunnel = "tap"
+          file.tunnel_set_owner = conn.owner
+          file.tunnel_set_group = conn.group
         end
       end
     end

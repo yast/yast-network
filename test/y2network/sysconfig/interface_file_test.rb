@@ -183,4 +183,14 @@ describe Y2Network::Sysconfig::InterfaceFile do
       expect(content).to match("IPADDR_0=''")
     end
   end
+
+  describe "#type" do
+    it "determines the interface type from the attributes" do
+      file.interfacetype = "dummy"
+      expect(file.type.short_name).to eql("dummy")
+      file.interfacetype = nil
+      file.tunnel = "tap"
+      expect(file.type.short_name).to eql("tap")
+    end
+  end
 end

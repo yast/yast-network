@@ -1,0 +1,5 @@
+STARTMODE='manual'
+BOOTPROTO='static'
+TUNNEL='tun'
+TUNNEL_SET_OWNER='nobody'
+TUNNEL_SET_GROUP='nobody'
