@@ -80,7 +80,6 @@ describe Y2Network::ConnectionConfigsCollection do
       end
     end
 
-
     context "when a connection configuration having the same name does not exists" do
       let(:wlan1) { Y2Network::ConnectionConfig::Wireless.new.tap { |c| c.name = "wlan1" } }
 
