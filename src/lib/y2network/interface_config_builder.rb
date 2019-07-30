@@ -308,7 +308,8 @@ module Y2Network
     def ip_address
       old = @config["IPADDR"]
 
-      default = @connection_config.ip_configs.find { |c| c.id == "" }
+      # FIXME: workaround to remove when primary ip config is separated from the rest
+      default = (@connection_config.ip_configs || []).find { |c| c.id == "" }
       new_ = if default
         default.address.address
       else
@@ -337,7 +338,7 @@ module Y2Network
       else
         @config["NETMASK"] || ""
       end
-      default = @connection_config.ip_configs.find { |c| c.id == "" }
+      default = (@connection_config.ip_configs || []).find { |c| c.id == "" }
       new_ = if default
         "/" + default.address.prefix.to_s
       else
