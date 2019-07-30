@@ -328,7 +328,7 @@ module Y2Network
       #
       # @return [Array<String>] name of keys that are included in the file
       def defined_variables
-        @defined_variables ||= Yast::SCR.Dir(Yast::Path.new(".network.value.\"#{interface}\""))
+        @defined_variables ||= Yast::SCR.Dir(Yast::Path.new(".network.value.\"#{interface}\"")) || []
       end
 
       # Fetches the value for a given key

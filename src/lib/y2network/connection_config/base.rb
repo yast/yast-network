@@ -18,6 +18,8 @@
 # find current contact information at www.suse.com.
 
 require "y2network/interface_type"
+require "y2network/boot_protocol"
+require "y2network/startmode"
 
 module Y2Network
   module ConnectionConfig
@@ -52,6 +54,8 @@ module Y2Network
       # Constructor
       def initialize
         @ip_configs = []
+        @bootproto = BootProtocol::STATIC
+        @startmode = Startmode.create("manual")
       end
 
       # Returns the connection type
