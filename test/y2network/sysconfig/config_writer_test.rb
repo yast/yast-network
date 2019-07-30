@@ -40,13 +40,13 @@ describe Y2Network::Sysconfig::ConfigWriter do
       )
     end
     let(:old_config) { instance_double(Y2Network::Config, dns: double("dns"), interfaces: nil) }
-    let(:ip_config) { Y2Network::ConnectionConfig::IPConfig.new(address: IPAddr.new("192.168.122.2")) }
+    let(:ip) { Y2Network::ConnectionConfig::IPConfig.new(address: IPAddr.new("192.168.122.2")) }
     let(:eth0) { Y2Network::Interface.new("eth0") }
     let(:eth0_conn) do
       Y2Network::ConnectionConfig::Ethernet.new.tap do |conn|
         conn.interface = "eth0"
         conn.bootproto = :static
-        conn.ip_configs = [ip_config]
+        conn.ip = ip
       end
     end
     let(:route) do

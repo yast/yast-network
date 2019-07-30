@@ -35,7 +35,8 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Wireless do
       conn.description = "Wireless Card 0"
       conn.startmode = Y2Network::Startmode.create("auto")
       conn.bootproto = Y2Network::BootProtocol::STATIC
-      conn.ip_configs = ip_configs
+      conn.ip = ip
+      conn.ip_aliases = [ip_alias]
       conn.mode = "managed"
       conn.essid = "example_essid"
       conn.auth_mode = :open
@@ -44,17 +45,18 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Wireless do
     end
   end
 
-  let(:ip_configs) do
-    [
-      Y2Network::ConnectionConfig::IPConfig.new(
-        Y2Network::IPAddress.from_string("192.168.122.1/24"),
-        id: "", broadcast: Y2Network::IPAddress.from_string("192.168.122.255")
-      ),
-      Y2Network::ConnectionConfig::IPConfig.new(
-        Y2Network::IPAddress.from_string("10.0.0.1/8"),
-        id: "_0", label: "my-label", remote_address: Y2Network::IPAddress.from_string("10.0.0.2")
-      )
-    ]
+  let(:ip) do
+    Y2Network::ConnectionConfig::IPConfig.new(
+      Y2Network::IPAddress.from_string("192.168.122.1/24"),
+      id: "", broadcast: Y2Network::IPAddress.from_string("192.168.122.255")
+    )
+  end
+
+  let(:ip_alias) do
+    Y2Network::ConnectionConfig::IPConfig.new(
+      Y2Network::IPAddress.from_string("10.0.0.1/8"),
+      id: "_0", label: "my-label", remote_address: Y2Network::IPAddress.from_string("10.0.0.2")
+    )
   end
 
   it "sets relevant attributes" do
@@ -73,9 +75,9 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Wireless do
   it "sets IP configuration attributes" do
     handler.write(conn)
     expect(file).to have_attributes(
-      ipaddrs:        { "" => ip_configs[0].address, "_0" => ip_configs[1].address },
-      broadcasts:     { "" => ip_configs[0].broadcast, "_0" => nil },
-      remote_ipaddrs: { "" => nil, "_0" => ip_configs[1].remote_address },
+      ipaddrs:        { "" => ip.address, "_0" => ip_alias.address },
+      broadcasts:     { "" => ip.broadcast, "_0" => nil },
+      remote_ipaddrs: { "" => nil, "_0" => ip_alias.remote_address },
       labels:         { "" => nil, "_0" => "my-label" }
     )
   end

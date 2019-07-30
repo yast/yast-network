@@ -48,7 +48,8 @@ module Y2Network
             conn.bootproto = BootProtocol.from_name(file.bootproto || "static")
             conn.description = file.name
             conn.interface = file.interface
-            conn.ip_configs = ip_configs
+            conn.ip = ip_configs.find { |i| i.id.empty? }
+            conn.ip_aliases = ip_configs.reject { |i| i.id.empty? }
             conn.name = file.interface
             conn.startmode = Startmode.create(file.startmode || "manual")
             conn.startmode.priority = file.ifplugd_priority if conn.startmode.name == "ifplugd"
@@ -82,7 +83,7 @@ module Y2Network
         # @return [Array<Y2Network::ConnectionConfig::IPAdress>] IP addresses configuration
         # @see Y2Network::ConnectionConfig::IPConfig
         def ip_configs
-          configs = file.ipaddrs.map do |id, ip|
+          @ip_configs ||= configs = file.ipaddrs.map do |id, ip|
             next unless ip.is_a?(Y2Network::IPAddress)
             ip_address = build_ip(ip, file.prefixlens[id], file.netmasks[id])
             Y2Network::ConnectionConfig::IPConfig.new(
@@ -93,8 +94,6 @@ module Y2Network
               broadcast:      file.broadcasts[id]
             )
           end
-          # The one without suffix comes first.
-          configs.compact.sort_by { |c| c.id.nil? ? -1 : 0 }
         end
 
         # Builds an IP address

@@ -40,12 +40,8 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Infiniband do
     end
   end
 
-  let(:ip_configs) do
-    [
-      Y2Network::ConnectionConfig::IPConfig.new(
-        Y2Network::IPAddress.from_string("192.168.20.1/24")
-      )
-    ]
+  let(:ip) do
+    Y2Network::ConnectionConfig::IPConfig.new(Y2Network::IPAddress.from_string("192.168.20.1/24"))
   end
 
   let(:conn) do
@@ -55,7 +51,7 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Infiniband do
       interface:   "ib0",
       description: "",
       ipoib_mode:  Y2Network::IpoibMode::CONNECTED,
-      ip_configs:  ip_configs,
+      ip_configs:  [ip],
       startmode:   Y2Network::Startmode.create("auto"),
       bootproto:   Y2Network::BootProtocol::STATIC
     )
