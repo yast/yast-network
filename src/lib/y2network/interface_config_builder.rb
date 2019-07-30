@@ -92,7 +92,7 @@ module Y2Network
         Yast::LanItems.driver_options[driver] = driver_options
       end
 
-      Yast::Lan.yast_config.connections.update(@connection_config)
+      Yast::Lan.yast_config.connections.add_or_update(@connection_config)
 
       # create new instance as name can change
       firewall_interface = Y2Firewall::Firewalld::Interface.new(name)

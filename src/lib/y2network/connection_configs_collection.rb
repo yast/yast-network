@@ -36,7 +36,7 @@ module Y2Network
     attr_reader :connection_configs
     alias_method :to_a, :connection_configs
 
-    def_delegators :@connection_configs, :each, :push, :<<, :reject!, :map, :flat_map, :any?
+    def_delegators :@connection_configs, :each, :push, :<<, :reject!, :map, :flat_map, :any?, :size
 
     # Constructor
     #
@@ -53,14 +53,28 @@ module Y2Network
       connection_configs.find { |c| c.name == name }
     end
 
-    # Updates a connection configuration
+    # Adds or updates a connection configuration
     #
     # @note It uses the name to do the matching.
     #
     # @param connection_config [ConnectionConfig::Base] New connection configuration object
-    def update(connection_config)
+    def add_or_update(connection_config)
       idx = connection_configs.find_index { |c| c.name == connection_config.name }
-      connection_configs[idx] = connection_config if idx
+      if idx
+        connection_configs[idx] = connection_config
+      else
+        connection_configs << connection_config
+      end
+    end
+
+    # Removes a connection configuration
+    #
+    # @note It uses the name to do the matching.
+    #
+    # @param connection_config [ConnectionConfig::Base,String] Connection configuration object or name
+    def remove(connection_config)
+      name = connection_config.respond_to?(:name) ? connection_config.name : connection_config
+      connection_configs.reject! { |c| c.name == name }
     end
   end
 end

@@ -56,7 +56,7 @@ describe Y2Network::InterfaceConfigBuilder do
     end
 
     it "saves connection config" do
-      expect(config.connections).to receive(:update).with(Y2Network::ConnectionConfig::Base)
+      expect(config.connections).to receive(:add_or_update).with(Y2Network::ConnectionConfig::Base)
       subject.save
     end
 
