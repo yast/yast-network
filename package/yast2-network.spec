@@ -17,7 +17,7 @@
 
 
 Name:           yast2-network
-Version:        4.2.10
+Version:        4.2.11
 Release:        0
 Summary:        YaST2 - Network Configuration
 License:        GPL-2.0-only
@@ -57,6 +57,7 @@ Requires:       augeas-lenses
 Requires:       hwinfo         >= 21.35
 Requires:       yast2-ruby-bindings >= 1.0.0
 Requires:       yast2-xml
+Requires:       hostname
 
 # testsuite
 BuildRequires:  rubygem(%rb_default_ruby_abi:rspec)
