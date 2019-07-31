@@ -37,11 +37,7 @@ module Y2Network
         #
         # @return [Array<String>] bonding slaves defined in the file
         def slaves
-          return [] unless file.bonding_slaves
-
-          file.bonding_slaves.map do |_id, name|
-            name
-          end
+          (file.bonding_slaves || {}).values
         end
       end
     end

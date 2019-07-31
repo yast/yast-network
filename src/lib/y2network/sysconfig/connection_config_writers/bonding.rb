@@ -39,9 +39,7 @@ module Y2Network
         #
         # @return [Hash<Integer, String>] indexed bonding slaves
         def file_slaves(conn)
-          {}.tap do |h|
-            conn.slaves.each_with_index { |name, i| h[i] = name }
-          end
+          conn.slaves.each_with_index.with_object({}) { |(name, i), h| h[i] = name }
         end
       end
     end
