@@ -83,10 +83,10 @@ module Y2Network
         # @return [Array<Y2Network::ConnectionConfig::IPAdress>] IP addresses configuration
         # @see Y2Network::ConnectionConfig::IPConfig
         def all_ips
-          @all_ips ||= file.ipaddrs.map do |id, ip|
+          @all_ips ||= file.ipaddrs.each_with_object([]) do |(id, ip), all|
             next unless ip.is_a?(Y2Network::IPAddress)
             ip_address = build_ip(ip, file.prefixlens[id], file.netmasks[id])
-            Y2Network::ConnectionConfig::IPConfig.new(
+            all << Y2Network::ConnectionConfig::IPConfig.new(
               ip_address,
               id:             id,
               label:          file.labels[id],

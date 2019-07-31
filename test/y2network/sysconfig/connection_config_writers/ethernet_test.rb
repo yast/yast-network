@@ -57,15 +57,15 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Ethernet do
   let(:all_ips) { [ip, ip_alias] }
 
   let(:conn) do
-    instance_double(
-      Y2Network::ConnectionConfig::Ethernet,
-      name:        "eth0",
-      interface:   "eth0",
-      description: "Ethernet Card 0",
-      bootproto:   Y2Network::BootProtocol::STATIC,
-      all_ips:     all_ips,
-      startmode:   Y2Network::Startmode.create("auto")
-    )
+    Y2Network::ConnectionConfig::Ethernet.new.tap do |c|
+      c.name = "eth0"
+      c.interface = "eth0"
+      c.description = "Ethernet Card 0"
+      c.bootproto = Y2Network::BootProtocol::STATIC
+      c.ip = ip
+      c.ip_aliases = [ip_alias]
+      c.startmode = Y2Network::Startmode.create("auto")
+    end
   end
 
   let(:file) { Y2Network::Sysconfig::InterfaceFile.find(conn.interface) }
@@ -88,6 +88,18 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Ethernet do
         remote_ipaddrs: { "" => nil, "_0" => ip_alias.remote_address },
         labels:         { "" => nil, "_0" => "my-label" }
       )
+    end
+
+    context "when using dhcp" do
+      before do
+        conn.bootproto = Y2Network::BootProtocol::DHCP
+      end
+
+      it "only writes ip aliases" do
+        handler.write(conn)
+        expect(file.ipaddrs[""]).to be_nil
+        expect(file.ipaddrs["_0"]).to eq(ip_alias.address)
+      end
     end
   end
 end

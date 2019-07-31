@@ -44,7 +44,7 @@ module Y2Network
           file.name = conn.description
           file.startmode = conn.startmode.to_s
           file.ifplugd_priority = conn.startmode.priority if conn.startmode.name == "ifplugd"
-          write_all_ips(conn.all_ips)
+          add_ips(conn)
           update_file(conn)
         end
 
@@ -59,16 +59,24 @@ module Y2Network
           raise NotImplementedError
         end
 
-        # Write IP configuration
+        # Adds IP addresses
         #
-        # @param all_ips [Array<Y2Network::ConnectionConfig::IPConfig>] IPs configuration
-        def write_all_ips(all_ips)
-          all_ips.each do |ip_config|
-            file.ipaddrs[ip_config.id] = ip_config.address
-            file.labels[ip_config.id] = ip_config.label
-            file.remote_ipaddrs[ip_config.id] = ip_config.remote_address
-            file.broadcasts.merge!(ip_config.id => ip_config.broadcast)
-          end
+        # @param conn [Y2Network::ConnectionConfig::Base] Connection to take settings from
+        def add_ips(conn)
+          file.ipaddrs.clear
+          ips_to_add = conn.ip_aliases.clone
+          ips_to_add << conn.ip if conn.ip && !conn.bootproto.dhcp?
+          ips_to_add.each { |i| add_ip(i) }
+        end
+
+        # Adds a single IP to the file
+        #
+        # @param ip [Y2Network::IPAddress] IP address to add
+        def add_ip(ip)
+          file.ipaddrs[ip.id] = ip.address
+          file.labels[ip.id] = ip.label
+          file.remote_ipaddrs[ip.id] = ip.remote_address
+          file.broadcasts[ip.id] = ip.broadcast
         end
       end
     end
