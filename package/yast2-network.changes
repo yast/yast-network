@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Jul 30 11:14:04 UTC 2019 - Dominique Leuenberger <dimstar@opensuse.org>
+
+- Requires hostname: there are many places where the module calls
+  /bin/hostname (boo#1142595).
+- 4.2.11
+
+-------------------------------------------------------------------
 Fri Jul 19 08:10:14 UTC 2019 - Josef Reidinger <jreidinger@suse.com>
 
 - avoid dependency on autoyast2-installation
