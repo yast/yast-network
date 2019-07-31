@@ -9,7 +9,6 @@ require "y2network/routing_table"
 require "y2network/route"
 
 Yast.import "NetworkInterfaces"
-Yast.import "Lan"
 
 # @return one item for a .probe.netcard list
 def probe_netcard_factory(num)
@@ -52,8 +51,8 @@ describe Yast::NetworkAutoconfiguration do
   let(:system_config) { yast_config.copy }
 
   before do
-    Yast::Lan.add_config(:yast, yast_config)
-    Yast::Lan.add_config(:system, system_config)
+    Y2Network::Config.add(:yast, yast_config)
+    Y2Network::Config.add(:system, system_config)
   end
 
   describe "it sets DHCLIENT_SET_DEFAULT_ROUTE properly" do
