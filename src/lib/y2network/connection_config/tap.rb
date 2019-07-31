@@ -29,6 +29,7 @@ module Y2Network
       attr_accessor :group
 
       def initialize
+        super()
         @owner = ""
         @group = ""
       end

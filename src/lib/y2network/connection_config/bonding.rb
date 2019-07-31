@@ -31,6 +31,7 @@ module Y2Network
       attr_accessor :options
 
       def initialize
+        super()
         @slaves = []
         @options = ""
       end

@@ -33,6 +33,7 @@ module Y2Network
       attr_accessor :forward_delay
 
       def initialize
+        super()
         @ports = []
         @stp = false
         @forward_delay = 0
