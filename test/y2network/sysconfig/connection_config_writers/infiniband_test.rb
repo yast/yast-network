@@ -45,16 +45,15 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Infiniband do
   end
 
   let(:conn) do
-    instance_double(
-      Y2Network::ConnectionConfig::Infiniband,
-      name:        "ib0",
-      interface:   "ib0",
-      description: "",
-      ipoib_mode:  Y2Network::IpoibMode::CONNECTED,
-      all_ips:     [ip],
-      startmode:   Y2Network::Startmode.create("auto"),
-      bootproto:   Y2Network::BootProtocol::STATIC
-    )
+    Y2Network::ConnectionConfig::Infiniband.new.tap do |c|
+      c.name = "ib0"
+      c.interface = "ib0"
+      c.description = ""
+      c.ipoib_mode =  Y2Network::IpoibMode::CONNECTED
+      c.ip = ip
+      c.startmode = Y2Network::Startmode.create("auto")
+      c.bootproto = Y2Network::BootProtocol::STATIC
+    end
   end
 
   let(:file) { Y2Network::Sysconfig::InterfaceFile.new(conn.name) }
