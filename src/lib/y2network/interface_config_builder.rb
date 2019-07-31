@@ -91,6 +91,7 @@ module Y2Network
         Yast::LanItems.driver_options[driver] = driver_options
       end
 
+      @connection_config.name = name
       @connection_config.interface = name
       Yast::Lan.yast_config.connections.add_or_update(@connection_config)
 
@@ -261,28 +262,13 @@ module Y2Network
           # NOTE: new API does not have netmask at all, we need to adapt UI to clearly mention only prefix
         }
       end
-      select_backend(old_aliases, new_aliases)
+      @aliases = select_backend(old_aliases, new_aliases)
     end
 
     # sets aliases for interface
     # @param value [Array<Hash>] see #aliases for hash values
     def aliases=(value)
       @aliases = value
-
-      @connection_config.ip_aliases.clear
-      value.each_with_index do |h, i|
-        ip_addr = IPAddress.from_string(h[:ip])
-        if h[:prefixlen] && !h[:prefixlen].empty?
-          ip_addr.prefix = h[:prefixlen].delete("/").to_i
-        elsif h[:mask] && !h[:mask].empty?
-          ip.netmask = h[:mask]
-        end
-        @connection_config.ip_aliases << ConnectionConfig::IPConfig.new(
-          ip_addr,
-          label: h[:label],
-          id:    "_#{i}" # TODO: remember original prefixes
-        )
-      end
     end
 
     # gets interface name that will be assigned by udev
@@ -566,6 +552,7 @@ module Y2Network
       aliases_to_delete.each_pair do |a, v|
         Yast::NetworkInterfaces.DeleteAlias(Yast::NetworkInterfaces.Name, a) if v
       end
+      save_aliases_to_connection
     end
 
     def ip_config_default
@@ -590,6 +577,24 @@ module Y2Network
     rescue NameError
       log.error "Could not find a class to handle '#{type.name}' connections"
       ConnectionConfig::Base
+    end
+
+    # Saves aliases to current connection config object
+    def save_aliases_to_connection
+      @connection_config.ip_aliases.clear
+      aliases.each_with_index do |h, i|
+        ip_addr = IPAddress.from_string(h[:ip])
+        if h[:prefixlen] && !h[:prefixlen].empty?
+          ip_addr.prefix = h[:prefixlen].delete("/").to_i
+        elsif h[:mask] && !h[:mask].empty?
+          ip_addr.netmask = h[:mask]
+        end
+        @connection_config.ip_aliases << ConnectionConfig::IPConfig.new(
+          ip_addr,
+          label: h[:label],
+          id:    "_#{i}" # TODO: remember original prefixes
+        )
+      end
     end
   end
 end

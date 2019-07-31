@@ -38,7 +38,7 @@ describe Y2Network::InterfaceConfigBuilder do
     end
   end
 
-  describe ".save" do
+  describe "#save" do
     around do |block|
       Yast::LanItems.AddNew
       # FIXME: workaround for device without reading hwinfo, so udev is not initialized
@@ -60,7 +60,7 @@ describe Y2Network::InterfaceConfigBuilder do
       subject.save
     end
 
-    it "stores aliases" do
+    it "stores aliases (old model)" do
       # Avoid deleting old aliases as it can break other tests, due to singleton NetworkInterfaces
       allow(Yast::NetworkInterfaces).to receive(:DeleteAlias)
       subject.aliases = [{ ip: "10.0.0.0", prefixlen: "24", label: "test", mask: "" }]
@@ -68,6 +68,15 @@ describe Y2Network::InterfaceConfigBuilder do
       expect(Yast::LanItems.aliases).to eq(
         0 => { "IPADDR" => "10.0.0.0", "LABEL" => "test", "PREFIXLEN" => "24", "NETMASK" => "" }
       )
+    end
+
+    it "stores aliases" do
+      subject.aliases = [{ ip: "10.0.0.0", prefixlen: "24", label: "test", mask: "" }]
+      subject.save
+      connection_config = Yast::Lan.yast_config.connections.by_name("eth0")
+      ip_alias = connection_config.ip_aliases.first
+      expect(ip_alias.address).to eq(Y2Network::IPAddress.new("10.0.0.0", 24))
+      expect(ip_alias.label).to eq("test")
     end
   end
 
