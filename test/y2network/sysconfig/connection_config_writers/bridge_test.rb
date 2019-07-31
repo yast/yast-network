@@ -28,22 +28,6 @@ require "y2network/connection_config/bridge"
 describe Y2Network::Sysconfig::ConnectionConfigWriters::Bridge do
   subject(:handler) { described_class.new(file) }
 
-  def file_content(scr_root, file)
-    path = File.join(scr_root, file.path.to_s)
-    File.read(path)
-  end
-
-  let(:scr_root) { Dir.mktmpdir }
-
-  around do |example|
-    begin
-      FileUtils.cp_r(File.join(DATA_PATH, "scr_read", "etc"), scr_root)
-      change_scr_root(scr_root, &example)
-    ensure
-      FileUtils.remove_entry(scr_root)
-    end
-  end
-
   let(:conn) do
     instance_double(
       Y2Network::ConnectionConfig::Bridge,

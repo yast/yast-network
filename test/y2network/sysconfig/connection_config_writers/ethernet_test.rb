@@ -29,11 +29,6 @@ require "y2network/connection_config/ip_config"
 describe Y2Network::Sysconfig::ConnectionConfigWriters::Ethernet do
   subject(:handler) { described_class.new(file) }
 
-  def file_content(scr_root, file)
-    path = File.join(scr_root, file.path.to_s)
-    File.read(path)
-  end
-
   let(:scr_root) { Dir.mktmpdir }
 
   around do |example|
