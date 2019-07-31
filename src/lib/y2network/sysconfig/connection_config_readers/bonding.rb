@@ -17,22 +17,28 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/connection_config/base"
+require "y2network/sysconfig/connection_config_readers/base"
 
 module Y2Network
-  module ConnectionConfig
-    # Configuration for bonding connections
-    #
-    # @see https://www.kernel.org/doc/Documentation/networking/bonding.txt
-    class Bonding < Base
-      # @return [Array<String>]
-      attr_accessor :slaves
-      # @return [String] bond driver options
-      attr_accessor :options
+  module Sysconfig
+    module ConnectionConfigReaders
+      # This class is able to build a ConnectionConfig::Bonding object given a
+      # SysconfigInterfaceFile object.
+      class Bonding < Base
+      private
 
-      def initialize
-        @slaves = []
-        @options = ""
+        # @see Y2Network::Sysconfig::ConnectionConfigReaders::Base#update_connection_config
+        def update_connection_config(conn)
+          conn.slaves = slaves
+          conn.options = file.bonding_module_opts
+        end
+
+        # Convenience method to obtain the bonding slaves defined in the file
+        #
+        # @return [Array<String>] bonding slaves defined in the file
+        def slaves
+          (file.bonding_slaves || {}).values
+        end
       end
     end
   end

@@ -19,27 +19,25 @@
 
 require_relative "../../../test_helper"
 
-require "y2network/sysconfig/connection_config_writers/bridge"
+require "y2network/sysconfig/connection_config_writers/bonding"
 require "y2network/sysconfig/interface_file"
 require "y2network/startmode"
-require "y2network/boot_protocol"
-require "y2network/connection_config/bridge"
+require "y2network/connection_config/bonding"
 
-describe Y2Network::Sysconfig::ConnectionConfigWriters::Bridge do
+describe Y2Network::Sysconfig::ConnectionConfigWriters::Bonding do
   subject(:handler) { described_class.new(file) }
 
   let(:conn) do
     instance_double(
-      Y2Network::ConnectionConfig::Bridge,
-      name:          "br1",
-      interface:     "br1",
-      description:   "",
-      startmode:     Y2Network::Startmode.create("auto"),
-      bootproto:     Y2Network::BootProtocol::DHCP,
-      ip_configs:    [],
-      ports:         ["eth0", "eth1"],
-      stp:           false,
-      forward_delay: 5
+      Y2Network::ConnectionConfig::Bonding,
+      name:        "bond0",
+      interface:   "bond0",
+      description: "",
+      ip_configs:  [],
+      startmode:   Y2Network::Startmode.create("auto"),
+      bootproto:   Y2Network::BootProtocol::DHCP,
+      slaves:      ["eth0", "eth1"],
+      options:     "mode=active-backup miimon=100"
     )
   end
 
@@ -49,19 +47,16 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Bridge do
     it "writes common properties" do
       handler.write(conn)
       expect(file).to have_attributes(
-        name:      conn.description,
         startmode: "auto",
         bootproto: "dhcp"
       )
     end
 
-    it "writes bridge properties" do
+    it "writes bonding properties" do
       handler.write(conn)
       expect(file).to have_attributes(
-        bridge:              "yes",
-        bridge_ports:        "eth0 eth1",
-        bridge_forwarddelay: 5,
-        bridge_stp:          "off"
+        bonding_slaves:      { 0 => "eth0", 1 => "eth1" },
+        bonding_module_opts: "mode=active-backup miimon=100"
       )
     end
   end
