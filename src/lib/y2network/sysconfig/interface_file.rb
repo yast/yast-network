@@ -254,6 +254,17 @@ module Y2Network
       #   @return [String] VLAN ID
       define_variable(:vlan_id, :integer)
 
+      ## BONDING
+
+      # @!attribute [r] bonding_slaves
+      #   @return [Hash] Bonding slaves
+      define_collection_variable(:bonding_slave)
+
+      # @!attribute [r] bonding_module_opts
+      #   @return [String] options for the bonding module ('mode=active-backup
+      #                     miimon=100')
+      define_variable(:bonding_module_opts)
+
       ## BRIDGE
 
       # @!attribute [r] bridge

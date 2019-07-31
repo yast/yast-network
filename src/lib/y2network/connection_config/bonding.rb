@@ -25,7 +25,7 @@ module Y2Network
     #
     # @see https://www.kernel.org/doc/Documentation/networking/bonding.txt
     class Bonding < Base
-      # @return [Array<Interface>]
+      # @return [Array<String>]
       attr_accessor :slaves
       # @return [String] bond driver options
       attr_accessor :options
