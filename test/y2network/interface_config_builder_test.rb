@@ -5,11 +5,19 @@ require_relative "../test_helper"
 require "yast"
 require "y2network/interface_config_builder"
 
+Yast.import "Lan"
+
 describe Y2Network::InterfaceConfigBuilder do
   subject(:config_builder) do
     res = Y2Network::InterfaceConfigBuilder.for("eth")
     res.name = "eth0"
     res
+  end
+
+  let(:config) { Y2Network::Config.new(source: :sysconfig) }
+
+  before do
+    allow(Yast::Lan).to receive(:yast_config).and_return(config)
   end
 
   describe ".for" do
@@ -45,6 +53,11 @@ describe Y2Network::InterfaceConfigBuilder do
       subject.save
       expect(Yast::LanItems.Items[Yast::LanItems.current]["udev"]["driver"]).to eq "e1000e"
       expect(Yast::LanItems.driver_options["e1000e"]).to eq "test"
+    end
+
+    it "saves connection config" do
+      expect(config.connections).to receive(:add_or_update).with(Y2Network::ConnectionConfig::Base)
+      subject.save
     end
 
     it "stores aliases" do

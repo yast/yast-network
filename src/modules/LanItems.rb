@@ -736,9 +736,6 @@ module Yast
       end
 
       LanItems.WriteUdevRules if !Stage.cont && InstallInfConvertor.instance.AllowUdevModify
-
-      # FIXME: hack: no "netcard" filter as biosdevname names it diferently (bnc#712232)
-      NetworkInterfaces.Write("")
     end
 
     # Exports configuration for use in AY profile
@@ -2388,7 +2385,7 @@ module Yast
       return unless config && config.routing
       routing = config.routing
       add_device_to_routing(to)
-      target_interface = config.interfaces.find { |i| i.name == to }
+      target_interface = config.interfaces.by_name(to)
       return unless target_interface
       routing.routes.select { |r| r.interface && r.interface.name == from }
              .each { |r| r.interface = target_interface }

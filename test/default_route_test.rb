@@ -5,8 +5,16 @@ require_relative "test_helper"
 require "network/install_inf_convertor"
 require "y2network/interface_config_builder"
 
+Yast.import "Lan"
+
 describe "Yast::LanItemsClass" do
   subject { Yast::LanItems }
+
+  let(:config) { Y2Network::Config.new(source: :sysconfig) }
+
+  before do
+    allow(Yast::Lan).to receive(:yast_config).and_return(config)
+  end
 
   before do
     Yast.import "LanItems"

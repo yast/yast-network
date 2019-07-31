@@ -18,8 +18,7 @@
 # find current contact information at www.suse.com.
 require "yast"
 
-require "y2network/connection_config/base"
-require "y2network/connection_config/ip_config"
+require "y2network/connection_config"
 require "y2network/hwinfo"
 require "y2network/startmode"
 require "y2network/boot_protocol"
@@ -74,7 +73,7 @@ module Y2Network
       # edited with option for not yet created interface
       @newly_added = config.nil?
       # TODO: create specialized connection for type
-      @connection_config = config || ConnectionConfig::Base.new
+      @connection_config = config || connection_config_klass(type).new
     end
 
     def newly_added?
@@ -91,6 +90,9 @@ module Y2Network
         Yast::LanItems.setDriver(driver)
         Yast::LanItems.driver_options[driver] = driver_options
       end
+
+      @connection_config.interface = name
+      Yast::Lan.yast_config.connections.add_or_update(@connection_config)
 
       # create new instance as name can change
       firewall_interface = Y2Firewall::Firewalld::Interface.new(name)
@@ -306,7 +308,8 @@ module Y2Network
     def ip_address
       old = @config["IPADDR"]
 
-      default = @connection_config.ip_configs.find { |c| c.id == "" }
+      # FIXME: workaround to remove when primary ip config is separated from the rest
+      default = (@connection_config.ip_configs || []).find { |c| c.id == "" }
       new_ = if default
         default.address.address
       else
@@ -335,7 +338,7 @@ module Y2Network
       else
         @config["NETMASK"] || ""
       end
-      default = @connection_config.ip_configs.find { |c| c.id == "" }
+      default = (@connection_config.ip_configs || []).find { |c| c.id == "" }
       new_ = if default
         "/" + default.address.prefix.to_s
       else
@@ -588,6 +591,16 @@ module Y2Network
       log.error "Different value in backends. Old: #{old.inspect} New: #{new.inspect}" if new != old
 
       old
+    end
+
+    # Returns the connection config class for a given type
+    #
+    # @param type [Y2Network::InterfaceType] type of device
+    def connection_config_klass(type)
+      ConnectionConfig.const_get(type.name)
+    rescue NameError
+      log.error "Could not find a class to handle '#{type.name}' connections"
+      ConnectionConfig::Base
     end
   end
 end

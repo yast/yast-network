@@ -12,6 +12,12 @@ describe Y2Network::InterfaceConfigBuilders::Infiniband do
     res
   end
 
+  let(:config) { Y2Network::Config.new(source: :sysconfig) }
+
+  before do
+    allow(Yast::Lan).to receive(:yast_config).and_return(config)
+  end
+
   describe "#type" do
     it "returns infiniband interface type" do
       expect(subject.type).to eq Y2Network::InterfaceType::INFINIBAND

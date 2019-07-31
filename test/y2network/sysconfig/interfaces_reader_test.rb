@@ -80,7 +80,7 @@ describe Y2Network::Sysconfig::InterfacesReader do
   describe "#connections" do
     it "reads ethernet connections" do
       connections = reader.connections
-      conn = connections.find { |i| i.interface == "eth0" }
+      conn = connections.by_name("eth0")
       expect(conn.interface).to eq("eth0")
     end
   end
