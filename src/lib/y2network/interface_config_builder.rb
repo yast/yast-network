@@ -566,7 +566,8 @@ module Y2Network
     def select_backend(old, new)
       log.error "Different value in backends. Old: #{old.inspect} New: #{new.inspect}" if new != old
 
-      old
+      # XXX: to be removed when fully migrated to the new backend
+      ENV["Y2NETWORK_NEW_BACKEND"] == "1" ? new : old
     end
 
     # Returns the connection config class for a given type
