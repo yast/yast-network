@@ -53,6 +53,14 @@ module Y2Network
       connection_configs.find { |c| c.name == name }
     end
 
+    # Returns a connection configuration tied to the given interface
+    #
+    # @param iface [Y2Network::Interface]
+    # @return [ConnectionConfig, nil] Connection config tied to the interface or nil if not found
+    def by_interface(iface)
+      connection_configs.find { |c| c.interface == iface }
+    end
+
     # Adds or updates a connection configuration
     #
     # @note It uses the name to do the matching.
