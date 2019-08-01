@@ -56,6 +56,18 @@ module Y2Network
       [DHCP4, DHCP6, DHCP, DHCP_AUTOIP].include?(self)
     end
 
+    # Determines whether two objects are equivalent
+    #
+    # They are equal when they refer to the same boot protocol (through the name).
+    #
+    # @param other [BootProtocol] Boot protocol to compare with
+    # @return [Boolean]
+    def ==(other)
+      name == other.name
+    end
+
+    alias_method :eql?, :==
+
     # iBFT boot protocol
     IBFT = new("ibft")
     # statically assigned interface properties
