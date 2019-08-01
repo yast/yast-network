@@ -177,6 +177,10 @@ module Y2Network
       #   @return [Hash] Netmasks
       define_collection_variable(:netmask)
 
+      # !@attribute [r] lladdr
+      #   @return [String] Link layer address
+      define_variable(:lladdr)
+
       # !@attribute [r] wireless_key_length
       #   @return [Integer] Length in bits for all keys used
       define_variable(:wireless_key_length, :integer)
