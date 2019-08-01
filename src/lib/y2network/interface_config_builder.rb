@@ -256,9 +256,9 @@ module Y2Network
 
       new_aliases = @connection_config.ip_aliases.map do |data|
         {
-          label:     data.label,
-          ip:        data.address.address,
-          prefixlen: data.address.prefix
+          label:     data.label.to_s,
+          ip:        data.address.address.to_s,
+          prefixlen: data.address.prefix.to_s,
           # NOTE: new API does not have netmask at all, we need to adapt UI to clearly mention only prefix
         }
       end
@@ -294,7 +294,7 @@ module Y2Network
 
       default = @connection_config.ip
       new_ = if default
-        default.address.address
+        default.address.address.to_s
       else
         ""
       end
