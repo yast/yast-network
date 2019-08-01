@@ -42,6 +42,7 @@ module Y2Network
         def write(conn)
           file.bootproto = conn.bootproto.name
           file.name = conn.description
+          file.lladdr = conn.lladdress
           file.startmode = conn.startmode.to_s
           file.ifplugd_priority = conn.startmode.priority if conn.startmode.name == "ifplugd"
           add_ips(conn)

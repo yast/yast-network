@@ -51,6 +51,7 @@ module Y2Network
             conn.ip = all_ips.find { |i| i.id.empty? }
             conn.ip_aliases = all_ips.reject { |i| i.id.empty? }
             conn.name = file.interface
+            conn.lladdress = file.lladdr
             conn.startmode = Startmode.create(file.startmode || "manual")
             conn.startmode.priority = file.ifplugd_priority if conn.startmode.name == "ifplugd"
             update_connection_config(conn)
