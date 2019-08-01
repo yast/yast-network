@@ -131,7 +131,7 @@ module Y2Network
     # LAN-Channel-Station (LCS) network devices. S390 specific.
     LCS = new(N_("LCS"), "lcs")
     # HiperSockets s390 network device
-    HIPERSOCKETS = new(N_("HiperSockets"), "hsi")
+    HSI = new(N_("HSI"), "hsi")
     # FICON-attached direct access storage devices. s390 specific
     FICON = new(N_("FICON"), "ficon")
   end
