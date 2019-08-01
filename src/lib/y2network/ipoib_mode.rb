@@ -51,6 +51,18 @@ module Y2Network
       @name = name
     end
 
+    # Determines whether two objects are equivalent
+    #
+    # They are equal when they refer to the same IPoIB mode (through the name).
+    #
+    # @param other [IpoibMode] IPoIB mode to compare with
+    # @return [Boolean]
+    def ==(other)
+      name == other.name
+    end
+
+    alias_method :eql?, :==
+
     DATAGRAM = new("datagram")
     CONNECTED = new("connected")
     # Not a mode at all but the default value that will be choose by the IB
