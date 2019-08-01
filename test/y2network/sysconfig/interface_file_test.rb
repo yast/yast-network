@@ -180,7 +180,7 @@ describe Y2Network::Sysconfig::InterfaceFile do
       file.save
 
       content = file_content(scr_root, file)
-      expect(content).to match("IPADDR_0=''")
+      expect(content).to_not include("IPADDR_0")
     end
   end
 
