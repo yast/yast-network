@@ -563,11 +563,16 @@ module Y2Network
     # method that allows easy change of backend for providing data
     # it also logs error if result differs
     # TODO: Only temporary method for testing switch of backends. Remove it from production
-    def select_backend(old, new)
-      log.error "Different value in backends. Old: #{old.inspect} New: #{new.inspect}" if new != old
+    #
+    # @param old_value [Object]
+    # @param new_value [Object]
+    def select_backend(old_value, new_value)
+      if new_value != old_value
+        log.error "Different value in backends. Old: #{old_value.inspect} New: #{new_value.inspect}"
+      end
 
       # XXX: to be removed when fully migrated to the new backend
-      ENV["Y2NETWORK_NEW_BACKEND"] == "1" ? new : old
+      ENV["Y2NETWORK_NEW_BACKEND"] == "1" ? new_value : old_value
     end
 
     # Returns the connection config class for a given type
