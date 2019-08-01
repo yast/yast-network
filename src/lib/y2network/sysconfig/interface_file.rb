@@ -482,13 +482,15 @@ module Y2Network
       #
       # @param key [String] Key
       def clean_collection(key)
-        collection_keys(key).each { |k| write_scalar(k, "") }
+        collection_keys(key).each { |k| write_scalar(k, nil) }
       end
 
       # Writes the value for a given key
       #
+      # If the value is set to nil, the key will be removed.
+      #
       # @param key   [Symbol] Key
-      # @param value [#to_s] Value to write
+      # @param value [#to_s,nil] Value to write
       def write_scalar(key, value)
         raw_value = value ? value.to_s : nil
         path = Yast::Path.new(".network.value.\"#{interface}\".#{key}")
