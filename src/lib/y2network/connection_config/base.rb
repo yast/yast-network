@@ -35,11 +35,12 @@ module Y2Network
       #
       # @return [String] Connection name
       attr_accessor :name
-      # #FIXME: Maybe in the future it could be a matcher. By now we will use
-      #   the interface name
-      #
-      # @return [String, nil]
+
+      # @return [String, nil] Interface to apply the configuration to
+      # FIXME: Maybe in the future it could be a matcher. By now we will use
+      #   the interface's name.
       attr_accessor :interface
+
       # @return [BootProtocol] Bootproto
       attr_accessor :bootproto
       # @return [IPConfig] Primary IP configuration
