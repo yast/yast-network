@@ -22,7 +22,7 @@ require_relative "../test_helper"
 require "y2network/boot_protocol"
 
 describe Y2Network::BootProtocol do
-  subject { described_class.new("dhcp") }
+  subject(:protocol) { described_class.new("dhcp") }
 
   describe ".all" do
     it "returns all known boot protocols" do
@@ -46,6 +46,20 @@ describe Y2Network::BootProtocol do
       expect(Y2Network::BootProtocol::DHCP4.dhcp?).to eq true
       expect(Y2Network::BootProtocol::DHCP_AUTOIP.dhcp?).to eq true
       expect(Y2Network::BootProtocol::STATIC.dhcp?).to eq false
+    end
+  end
+
+  describe "#==" do
+    context "when the other object refers to the same boot protocol" do
+      it "returns true" do
+        expect(protocol).to eq(described_class.new("dhcp"))
+      end
+    end
+
+    context "when the other object refers to a different boot protocol" do
+      it "returns false" do
+        expect(protocol).to_not eq(described_class.new("static"))
+      end
     end
   end
 end
