@@ -28,6 +28,7 @@
 #
 require "y2firewall/helpers/interfaces"
 require "y2network/dialogs/edit_interface"
+require "y2network/boot_protocol"
 
 module Yast
   module NetworkLanAddressInclude
@@ -73,9 +74,9 @@ module Yast
 
         # IP is mandatory for static configuration. Makes no sense to write static
         # configuration without that.
-        return ret if bootproto == "static" && ipaddr.empty?
+        return ret if bootproto == Y2Network::BootProtocol::STATIC && ipaddr.empty?
 
-        if bootproto == "static"
+        if bootproto == Y2Network::BootProtocol::STATIC
           update_hostname(ipaddr, builder.hostname || "")
         elsif LanItems.isCurrentDHCP && !LanItems.isCurrentHotplug
           # fixed bug #73739 - if dhcp is used, dont set default gw statically
