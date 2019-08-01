@@ -154,7 +154,7 @@ module Y2Network
 
       # !@attribute [r] labels
       #   @return [Hash] Label to assign to the address
-      define_collection_variable(:label, :symbol)
+      define_collection_variable(:label, :string)
 
       # !@attribute [r] remote_ipaddrs
       #   @return [Hash] Remote IP address of a point to point connection

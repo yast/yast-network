@@ -256,9 +256,9 @@ module Y2Network
 
       new_aliases = @connection_config.ip_aliases.map do |data|
         {
-          label:     data.label,
-          ip:        data.address.address,
-          prefixlen: data.address.prefix
+          label:     data.label.to_s,
+          ip:        data.address.address.to_s,
+          prefixlen: data.address.prefix.to_s,
           # NOTE: new API does not have netmask at all, we need to adapt UI to clearly mention only prefix
         }
       end
@@ -294,7 +294,7 @@ module Y2Network
 
       default = @connection_config.ip
       new_ = if default
-        default.address.address
+        default.address.address.to_s
       else
         ""
       end
@@ -563,10 +563,16 @@ module Y2Network
     # method that allows easy change of backend for providing data
     # it also logs error if result differs
     # TODO: Only temporary method for testing switch of backends. Remove it from production
-    def select_backend(old, new)
-      log.error "Different value in backends. Old: #{old.inspect} New: #{new.inspect}" if new != old
+    #
+    # @param old_value [Object]
+    # @param new_value [Object]
+    def select_backend(old_value, new_value)
+      if new_value != old_value
+        log.error "Different value in backends. Old: #{old_value.inspect} New: #{new_value.inspect}"
+      end
 
-      old
+      # XXX: to be removed when fully migrated to the new backend
+      ENV["Y2NETWORK_NEW_BACKEND"] == "1" ? new_value : old_value
     end
 
     # Returns the connection config class for a given type
