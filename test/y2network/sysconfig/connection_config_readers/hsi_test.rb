@@ -18,35 +18,32 @@
 # find current contact information at www.suse.com.
 
 require_relative "../../../test_helper"
-
-require "y2network/sysconfig/connection_config_writers/qeth"
-require "y2network/startmode"
+require "y2network/sysconfig/connection_config_readers/hsi"
+require "y2network/sysconfig/interface_file"
 require "y2network/boot_protocol"
-require "y2network/connection_config/qeth"
 
-describe Y2Network::Sysconfig::ConnectionConfigWriters::Qeth do
+describe Y2Network::Sysconfig::ConnectionConfigReaders::Hsi do
   subject(:handler) { described_class.new(file) }
 
-  let(:conn) do
-    Y2Network::ConnectionConfig::Qeth.new.tap do |c|
-      c.name        = "eth6"
-      c.interface   = "eth6"
-      c.bootproto   = Y2Network::BootProtocol::STATIC
-      c.lladdress   = "00:06:29:55:2A:04"
-      c.startmode   = Y2Network::Startmode.create("auto")
-    end
+  let(:scr_root) { File.join(DATA_PATH, "scr_read") }
+
+  around do |example|
+    change_scr_root(scr_root, &example)
   end
 
-  let(:file) { Y2Network::Sysconfig::InterfaceFile.new(conn.name) }
+  let(:interface_name) { "hsi0" }
 
-  describe "#write" do
-    it "writes common properties" do
-      handler.write(conn)
-      expect(file).to have_attributes(
-        bootproto: "static",
-        startmode: "auto",
-        lladdr:    "00:06:29:55:2A:04"
-      )
+  let(:file) do
+    Y2Network::Sysconfig::InterfaceFile.find(interface_name).tap(&:load)
+  end
+
+  describe "#connection_config" do
+    it "returns a hsi connection config object" do
+      hsi = handler.connection_config
+      expect(hsi.type).to eql(Y2Network::InterfaceType::HSI)
+      expect(hsi.interface).to eq("hsi0")
+      expect(hsi.ip.address).to eq(Y2Network::IPAddress.from_string("192.168.100.10/24"))
+      expect(hsi.bootproto).to eq(Y2Network::BootProtocol::STATIC)
     end
   end
 end

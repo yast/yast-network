@@ -19,20 +19,19 @@
 
 require_relative "../../../test_helper"
 
-require "y2network/sysconfig/connection_config_writers/qeth"
+require "y2network/sysconfig/connection_config_writers/hsi"
 require "y2network/startmode"
 require "y2network/boot_protocol"
-require "y2network/connection_config/qeth"
+require "y2network/connection_config/hsi"
 
-describe Y2Network::Sysconfig::ConnectionConfigWriters::Qeth do
+describe Y2Network::Sysconfig::ConnectionConfigWriters::Hsi do
   subject(:handler) { described_class.new(file) }
 
   let(:conn) do
-    Y2Network::ConnectionConfig::Qeth.new.tap do |c|
-      c.name        = "eth6"
-      c.interface   = "eth6"
-      c.bootproto   = Y2Network::BootProtocol::STATIC
-      c.lladdress   = "00:06:29:55:2A:04"
+    Y2Network::ConnectionConfig::Hsi.new.tap do |c|
+      c.name        = "hsi1"
+      c.interface   = "hsi1"
+      c.bootproto   = Y2Network::BootProtocol::DHCP
       c.startmode   = Y2Network::Startmode.create("auto")
     end
   end
@@ -43,9 +42,8 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Qeth do
     it "writes common properties" do
       handler.write(conn)
       expect(file).to have_attributes(
-        bootproto: "static",
-        startmode: "auto",
-        lladdr:    "00:06:29:55:2A:04"
+        bootproto: "dhcp",
+        startmode: "auto"
       )
     end
   end
