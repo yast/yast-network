@@ -41,7 +41,7 @@ describe Y2Network::Sysconfig::ConnectionConfigReaders::Dummy do
     it "returns a dummy connection config object" do
       dummy_conn = handler.connection_config
       expect(dummy_conn.interface).to eq("dummy0")
-      expect(dummy_conn.ip_configs.map(&:address)).to eq([ip_address])
+      expect(dummy_conn.ip.address).to eq(ip_address)
       expect(dummy_conn.bootproto).to eq(Y2Network::BootProtocol::STATIC)
     end
   end

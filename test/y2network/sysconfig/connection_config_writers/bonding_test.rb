@@ -28,17 +28,15 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Bonding do
   subject(:handler) { described_class.new(file) }
 
   let(:conn) do
-    instance_double(
-      Y2Network::ConnectionConfig::Bonding,
-      name:        "bond0",
-      interface:   "bond0",
-      description: "",
-      ip_configs:  [],
-      startmode:   Y2Network::Startmode.create("auto"),
-      bootproto:   Y2Network::BootProtocol::DHCP,
-      slaves:      ["eth0", "eth1"],
-      options:     "mode=active-backup miimon=100"
-    )
+    Y2Network::ConnectionConfig::Bonding.new.tap do |c|
+      c.name = "bond0"
+      c.interface = "bond0"
+      c.description = ""
+      c.startmode = Y2Network::Startmode.create("auto")
+      c.bootproto = Y2Network::BootProtocol::DHCP
+      c.slaves = ["eth0", "eth1"]
+      c.options = "mode=active-backup miimon=100"
+    end
   end
 
   let(:file) { Y2Network::Sysconfig::InterfaceFile.new(conn.name) }

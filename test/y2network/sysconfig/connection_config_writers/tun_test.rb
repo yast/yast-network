@@ -45,17 +45,15 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Tun do
   end
 
   let(:conn) do
-    instance_double(
-      Y2Network::ConnectionConfig::Tun,
-      name:        "tun1",
-      interface:   "tun1",
-      owner:       "nobody",
-      group:       "nobody",
-      description: "",
-      bootproto:   Y2Network::BootProtocol::STATIC,
-      ip_configs:  [],
-      startmode:   Y2Network::Startmode.create("auto")
-    )
+    Y2Network::ConnectionConfig::Tun.new.tap do |c|
+      c.name = "tun1"
+      c.interface = "tun1"
+      c.owner = "nobody"
+      c.group = "nobody"
+      c.description = ""
+      c.bootproto = Y2Network::BootProtocol::STATIC
+      c.startmode = Y2Network::Startmode.create("auto")
+    end
   end
 
   let(:file) { Y2Network::Sysconfig::InterfaceFile.new(conn.name) }

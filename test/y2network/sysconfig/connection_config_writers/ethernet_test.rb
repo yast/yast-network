@@ -40,29 +40,32 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Ethernet do
     end
   end
 
-  let(:ip_configs) do
-    [
-      Y2Network::ConnectionConfig::IPConfig.new(
-        Y2Network::IPAddress.from_string("192.168.122.1/24"),
-        id: "", broadcast: Y2Network::IPAddress.from_string("192.168.122.255")
-      ),
-      Y2Network::ConnectionConfig::IPConfig.new(
-        Y2Network::IPAddress.from_string("10.0.0.1/8"),
-        id: "_0", label: "my-label", remote_address: Y2Network::IPAddress.from_string("10.0.0.2")
-      )
-    ]
+  let(:ip) do
+    Y2Network::ConnectionConfig::IPConfig.new(
+      Y2Network::IPAddress.from_string("192.168.122.1/24"),
+      id: "", broadcast: Y2Network::IPAddress.from_string("192.168.122.255")
+    )
   end
 
-  let(:conn) do
-    instance_double(
-      Y2Network::ConnectionConfig::Ethernet,
-      name:        "eth0",
-      interface:   "eth0",
-      description: "Ethernet Card 0",
-      bootproto:   Y2Network::BootProtocol::STATIC,
-      ip_configs:  ip_configs,
-      startmode:   Y2Network::Startmode.create("auto")
+  let(:ip_alias) do
+    Y2Network::ConnectionConfig::IPConfig.new(
+      Y2Network::IPAddress.from_string("10.0.0.1/8"),
+      id: "_0", label: "my-label", remote_address: Y2Network::IPAddress.from_string("10.0.0.2")
     )
+  end
+
+  let(:all_ips) { [ip, ip_alias] }
+
+  let(:conn) do
+    Y2Network::ConnectionConfig::Ethernet.new.tap do |c|
+      c.name = "eth0"
+      c.interface = "eth0"
+      c.description = "Ethernet Card 0"
+      c.bootproto = Y2Network::BootProtocol::STATIC
+      c.ip = ip
+      c.ip_aliases = [ip_alias]
+      c.startmode = Y2Network::Startmode.create("auto")
+    end
   end
 
   let(:file) { Y2Network::Sysconfig::InterfaceFile.find(conn.interface) }
@@ -80,11 +83,23 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Ethernet do
     it "sets IP configuration attributes" do
       handler.write(conn)
       expect(file).to have_attributes(
-        ipaddrs:        { "" => ip_configs[0].address, "_0" => ip_configs[1].address },
-        broadcasts:     { "" => ip_configs[0].broadcast, "_0" => nil },
-        remote_ipaddrs: { "" => nil, "_0" => ip_configs[1].remote_address },
+        ipaddrs:        { "" => ip.address, "_0" => ip_alias.address },
+        broadcasts:     { "" => ip.broadcast, "_0" => nil },
+        remote_ipaddrs: { "" => nil, "_0" => ip_alias.remote_address },
         labels:         { "" => nil, "_0" => "my-label" }
       )
+    end
+
+    context "when using dhcp" do
+      before do
+        conn.bootproto = Y2Network::BootProtocol::DHCP
+      end
+
+      it "only writes ip aliases" do
+        handler.write(conn)
+        expect(file.ipaddrs[""]).to be_nil
+        expect(file.ipaddrs["_0"]).to eq(ip_alias.address)
+      end
     end
   end
 end

@@ -91,6 +91,7 @@ module Y2Network
         Yast::LanItems.driver_options[driver] = driver_options
       end
 
+      @connection_config.name = name
       @connection_config.interface = name
       Yast::Lan.yast_config.connections.add_or_update(@connection_config)
 
@@ -253,7 +254,7 @@ module Y2Network
         }
       end
 
-      new_aliases = @connection_config.ip_configs.select { |c| c.id != "" }.map do |data|
+      new_aliases = @connection_config.ip_aliases.map do |data|
         {
           label:     data.label,
           ip:        data.address.address,
@@ -261,30 +262,13 @@ module Y2Network
           # NOTE: new API does not have netmask at all, we need to adapt UI to clearly mention only prefix
         }
       end
-      select_backend(old_aliases, new_aliases)
+      @aliases = select_backend(old_aliases, new_aliases)
     end
 
     # sets aliases for interface
     # @param value [Array<Hash>] see #aliases for hash values
     def aliases=(value)
       @aliases = value
-
-      # connection config
-      # keep only default as aliases does not handle default ip config
-      @connection_config.ip_configs.delete_if { |c| c.id != "" }
-      value.each_with_index do |h, i|
-        ip_addr = IPAddress.from_string(h[:ip])
-        if h[:prefixlen] && !h[:prefixlen].empty?
-          ip_addr.prefix = h[:prefixlen].delete("/").to_i
-        elsif h[:mask] && !h[:mask].empty?
-          ip.netmask = h[:mask]
-        end
-        @connection_config.ip_configs << ConnectionConfig::IPConfig.new(
-          ip_addr,
-          label: h[:label],
-          id:    "_#{i}" # TODO: remember original prefixes
-        )
-      end
     end
 
     # gets interface name that will be assigned by udev
@@ -308,8 +292,7 @@ module Y2Network
     def ip_address
       old = @config["IPADDR"]
 
-      # FIXME: workaround to remove when primary ip config is separated from the rest
-      default = (@connection_config.ip_configs || []).find { |c| c.id == "" }
+      default = @connection_config.ip
       new_ = if default
         default.address.address
       else
@@ -321,11 +304,8 @@ module Y2Network
     # @param [String] value
     def ip_address=(value)
       @config["IPADDR"] = value
-
-      # connection_config
       if value.nil? || value.empty?
-        # in such case remove default config
-        @connection_config.ip_configs.delete_if { |c| c.id == "" }
+        @connection_config.ip = nil
       else
         ip_config_default.address.address = value
       end
@@ -338,9 +318,8 @@ module Y2Network
       else
         @config["NETMASK"] || ""
       end
-      default = (@connection_config.ip_configs || []).find { |c| c.id == "" }
-      new_ = if default
-        "/" + default.address.prefix.to_s
+      new_ = if @connection_config.ip
+        "/" + @connection_config.ip.address.prefix.to_s
       else
         ""
       end
@@ -384,7 +363,7 @@ module Y2Network
     # @return [String]
     def remote_ip
       old = @config["REMOTEIP"]
-      default = @connection_config.ip_configs.find { |c| c.id == "" }
+      default = @connection_config.ip
       new_ = if default
         default.remote_address.to_s
       else
@@ -573,15 +552,12 @@ module Y2Network
       aliases_to_delete.each_pair do |a, v|
         Yast::NetworkInterfaces.DeleteAlias(Yast::NetworkInterfaces.Name, a) if v
       end
+      save_aliases_to_connection
     end
 
     def ip_config_default
-      default = @connection_config.ip_configs.find { |c| c.id == "" }
-      if !default
-        default = ConnectionConfig::IPConfig.new(IPAddress.new("0.0.0.0")) # fake ip as it will be replaced soon
-        @connection_config.ip_configs << default
-      end
-      default
+      return @connection_config.ip if @connection_config.ip
+      @connection_config.ip = ConnectionConfig::IPConfig.new(IPAddress.new("0.0.0.0"))
     end
 
     # method that allows easy change of backend for providing data
@@ -601,6 +577,24 @@ module Y2Network
     rescue NameError
       log.error "Could not find a class to handle '#{type.name}' connections"
       ConnectionConfig::Base
+    end
+
+    # Saves aliases to current connection config object
+    def save_aliases_to_connection
+      @connection_config.ip_aliases.clear
+      aliases.each_with_index do |h, i|
+        ip_addr = IPAddress.from_string(h[:ip])
+        if h[:prefixlen] && !h[:prefixlen].empty?
+          ip_addr.prefix = h[:prefixlen].delete("/").to_i
+        elsif h[:mask] && !h[:mask].empty?
+          ip_addr.netmask = h[:mask]
+        end
+        @connection_config.ip_aliases << ConnectionConfig::IPConfig.new(
+          ip_addr,
+          label: h[:label],
+          id:    "_#{i}" # TODO: remember original prefixes
+        )
+      end
     end
   end
 end

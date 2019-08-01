@@ -39,24 +39,19 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Dummy do
     end
   end
 
-  let(:ip_configs) do
-    [
-      Y2Network::ConnectionConfig::IPConfig.new(
-        Y2Network::IPAddress.from_string("10.0.0.100/24")
-      )
-    ]
+  let(:ip) do
+    Y2Network::ConnectionConfig::IPConfig.new(Y2Network::IPAddress.from_string("10.0.0.100/24"))
   end
 
   let(:conn) do
-    instance_double(
-      Y2Network::ConnectionConfig::Dummy,
-      name:        "dummy1",
-      interface:   "dummy1",
-      description: "",
-      bootproto:   Y2Network::BootProtocol::STATIC,
-      ip_configs:  ip_configs,
-      startmode:   Y2Network::Startmode.create("auto")
-    )
+    Y2Network::ConnectionConfig::Dummy.new.tap do |c|
+      c.name = "dummy1"
+      c.interface = "dummy1"
+      c.description = ""
+      c.ip = ip
+      c.bootproto = Y2Network::BootProtocol::STATIC
+      c.startmode = Y2Network::Startmode.create("auto")
+    end
   end
 
   let(:file) { Y2Network::Sysconfig::InterfaceFile.new(conn.name) }

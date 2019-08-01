@@ -40,25 +40,20 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Infiniband do
     end
   end
 
-  let(:ip_configs) do
-    [
-      Y2Network::ConnectionConfig::IPConfig.new(
-        Y2Network::IPAddress.from_string("192.168.20.1/24")
-      )
-    ]
+  let(:ip) do
+    Y2Network::ConnectionConfig::IPConfig.new(Y2Network::IPAddress.from_string("192.168.20.1/24"))
   end
 
   let(:conn) do
-    instance_double(
-      Y2Network::ConnectionConfig::Infiniband,
-      name:        "ib0",
-      interface:   "ib0",
-      description: "",
-      ipoib_mode:  Y2Network::IpoibMode::CONNECTED,
-      ip_configs:  ip_configs,
-      startmode:   Y2Network::Startmode.create("auto"),
-      bootproto:   Y2Network::BootProtocol::STATIC
-    )
+    Y2Network::ConnectionConfig::Infiniband.new.tap do |c|
+      c.name = "ib0"
+      c.interface = "ib0"
+      c.description = ""
+      c.ipoib_mode =  Y2Network::IpoibMode::CONNECTED
+      c.ip = ip
+      c.startmode = Y2Network::Startmode.create("auto")
+      c.bootproto = Y2Network::BootProtocol::STATIC
+    end
   end
 
   let(:file) { Y2Network::Sysconfig::InterfaceFile.new(conn.name) }

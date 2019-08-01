@@ -40,7 +40,7 @@ describe Y2Network::Sysconfig::ConnectionConfigReaders::Ethernet do
     it "returns an ethernet connection config object" do
       eth = handler.connection_config
       expect(eth.interface).to eq("eth0")
-      expect(eth.ip_configs.map(&:address)).to eq([Y2Network::IPAddress.from_string("192.168.123.1/24")])
+      expect(eth.ip.address).to eq(Y2Network::IPAddress.from_string("192.168.123.1/24"))
       expect(eth.bootproto).to eq(Y2Network::BootProtocol::STATIC)
     end
 
@@ -49,7 +49,7 @@ describe Y2Network::Sysconfig::ConnectionConfigReaders::Ethernet do
 
       it "uses the prefixlen as the address prefix" do
         eth = handler.connection_config
-        expect(eth.ip_configs.map(&:address)).to eq([Y2Network::IPAddress.from_string("172.16.0.1/12")])
+        expect(eth.ip.address).to eq(Y2Network::IPAddress.from_string("172.16.0.1/12"))
       end
     end
 
@@ -58,7 +58,7 @@ describe Y2Network::Sysconfig::ConnectionConfigReaders::Ethernet do
 
       it "uses the netmask to set the address prefix" do
         eth = handler.connection_config
-        expect(eth.ip_configs.map(&:address)).to eq([Y2Network::IPAddress.from_string("10.0.0.1/8")])
+        expect(eth.ip.address).to eq(Y2Network::IPAddress.from_string("10.0.0.1/8"))
       end
     end
   end

@@ -29,18 +29,16 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Bridge do
   subject(:handler) { described_class.new(file) }
 
   let(:conn) do
-    instance_double(
-      Y2Network::ConnectionConfig::Bridge,
-      name:          "br1",
-      interface:     "br1",
-      description:   "",
-      startmode:     Y2Network::Startmode.create("auto"),
-      bootproto:     Y2Network::BootProtocol::DHCP,
-      ip_configs:    [],
-      ports:         ["eth0", "eth1"],
-      stp:           false,
-      forward_delay: 5
-    )
+    Y2Network::ConnectionConfig::Bridge.new.tap do |c|
+      c.name = "br1"
+      c.interface = "br1"
+      c.description = ""
+      c.startmode = Y2Network::Startmode.create("auto")
+      c.bootproto = Y2Network::BootProtocol::DHCP
+      c.ports = ["eth0", "eth1"]
+      c.stp = false
+      c.forward_delay = 5
+    end
   end
 
   let(:file) { Y2Network::Sysconfig::InterfaceFile.new(conn.name) }

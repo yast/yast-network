@@ -45,17 +45,15 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Tap do
   end
 
   let(:conn) do
-    instance_double(
-      Y2Network::ConnectionConfig::Tap,
-      name:        "tap1",
-      interface:   "tap1",
-      owner:       "nobody",
-      group:       "nobody",
-      description: "",
-      bootproto:   Y2Network::BootProtocol::STATIC,
-      ip_configs:  [],
-      startmode:   Y2Network::Startmode.create("auto")
-    )
+    Y2Network::ConnectionConfig::Tap.new.tap do |c|
+      c.name = "tap1"
+      c.interface = "tap1"
+      c.owner = "nobody"
+      c.group = "nobody"
+      c.description = ""
+      c.bootproto = Y2Network::BootProtocol::STATIC
+      c.startmode = Y2Network::Startmode.create("auto")
+    end
   end
 
   let(:file) { Y2Network::Sysconfig::InterfaceFile.new(conn.name) }

@@ -35,15 +35,18 @@ module Y2Network
       #
       # @return [String] Connection name
       attr_accessor :name
-      # #FIXME: Maybe in the future it could be a matcher. By now we will use
-      #   the interface name
-      #
-      # @return [String, nil]
+
+      # @return [String, nil] Interface to apply the configuration to
+      # FIXME: Maybe in the future it could be a matcher. By now we will use
+      #   the interface's name.
       attr_accessor :interface
+
       # @return [BootProtocol] Bootproto
       attr_accessor :bootproto
-      # @return [Array<IPConfig>]
-      attr_accessor :ip_configs
+      # @return [IPConfig] Primary IP configuration
+      attr_accessor :ip
+      # @return [Array<IPConfig>] Additional IP configurations (also known as 'aliases')
+      attr_accessor :ip_aliases
       # @return [Integer, nil]
       attr_accessor :mtu
       # @return [Startmode, nil]
@@ -53,7 +56,7 @@ module Y2Network
 
       # Constructor
       def initialize
-        @ip_configs = []
+        @ip_aliases = []
         @bootproto = BootProtocol::STATIC
         @startmode = Startmode.create("manual")
       end
@@ -74,6 +77,13 @@ module Y2Network
       # @return [Boolean]
       def virtual?
         false
+      end
+
+      # Returns all IP configurations
+      #
+      # @return [Array<IPConfig>]
+      def all_ips
+        ([ip] + ip_aliases).compact
       end
     end
   end

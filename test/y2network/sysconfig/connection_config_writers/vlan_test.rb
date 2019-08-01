@@ -30,17 +30,15 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Vlan do
   subject(:handler) { described_class.new(file) }
 
   let(:conn) do
-    instance_double(
-      Y2Network::ConnectionConfig::Vlan,
-      name:          "eth0.100",
-      interface:     "eth0.100",
-      description:   "",
-      parent_device: "eth0",
-      vlan_id:       100,
-      ip_configs:    [],
-      startmode:     Y2Network::Startmode.create("auto"),
-      bootproto:     Y2Network::BootProtocol::DHCP
-    )
+    Y2Network::ConnectionConfig::Vlan.new.tap do |c|
+      c.name = "eth0.100"
+      c.interface = "eth0.100"
+      c.description = ""
+      c.parent_device = "eth0"
+      c.vlan_id = 100
+      c.startmode = Y2Network::Startmode.create("auto")
+      c.bootproto = Y2Network::BootProtocol::DHCP
+    end
   end
 
   let(:file) { Y2Network::Sysconfig::InterfaceFile.new(conn.name) }
