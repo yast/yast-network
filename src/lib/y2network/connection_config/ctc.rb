@@ -21,25 +21,14 @@ require "y2network/connection_config/base"
 
 module Y2Network
   module ConnectionConfig
-    # Configuration for qeth connections
-    class Qeth < Base
+    # Configuration for ctc connections
+    class Ctc < Base
       # @return [String] read bus id
       attr_accessor :read_channel
       # @return [String] write bus id
       attr_accessor :write_channel
-      # @return [String] data bus id
-      attr_accessor :data_channel
-      # @return [Boolean] whether layer2 is enabled or not
-      attr_accessor :layer2
-      # @return [Integer] port number
-      attr_accessor :port_number
-
-      # Constructor
-      def initialize
-        super()
-        @layer2 = false
-        @port_number = 0
-      end
+      # @return [Integer] connection protocol
+      attr_accessor :protocol
     end
   end
 end

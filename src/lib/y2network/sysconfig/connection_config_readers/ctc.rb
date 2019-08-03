@@ -17,28 +17,19 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/connection_config/base"
+require "y2network/sysconfig/connection_config_readers/base"
 
 module Y2Network
-  module ConnectionConfig
-    # Configuration for qeth connections
-    class Qeth < Base
-      # @return [String] read bus id
-      attr_accessor :read_channel
-      # @return [String] write bus id
-      attr_accessor :write_channel
-      # @return [String] data bus id
-      attr_accessor :data_channel
-      # @return [Boolean] whether layer2 is enabled or not
-      attr_accessor :layer2
-      # @return [Integer] port number
-      attr_accessor :port_number
+  module Sysconfig
+    module ConnectionConfigReaders
+      # This class is able to build a ConnectionConfig::Ctc object given a
+      # Sysconfig::InterfaceFile object.
+      class Ctc < Base
+      private
 
-      # Constructor
-      def initialize
-        super()
-        @layer2 = false
-        @port_number = 0
+        # @see Y2Network::Sysconfig::ConnectionConfigReaders::Base#update_connection_config
+        def update_connection_config(_conn)
+        end
       end
     end
   end

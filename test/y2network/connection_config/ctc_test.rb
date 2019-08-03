@@ -17,29 +17,14 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/connection_config/base"
+require_relative "../../test_helper"
+require "y2network/connection_config/ctc"
+require "y2network/interface_type"
 
-module Y2Network
-  module ConnectionConfig
-    # Configuration for qeth connections
-    class Qeth < Base
-      # @return [String] read bus id
-      attr_accessor :read_channel
-      # @return [String] write bus id
-      attr_accessor :write_channel
-      # @return [String] data bus id
-      attr_accessor :data_channel
-      # @return [Boolean] whether layer2 is enabled or not
-      attr_accessor :layer2
-      # @return [Integer] port number
-      attr_accessor :port_number
-
-      # Constructor
-      def initialize
-        super()
-        @layer2 = false
-        @port_number = 0
-      end
+describe Y2Network::ConnectionConfig::Ctc do
+  describe "#type" do
+    it "returns 'ctc'" do
+      expect(subject.type).to eq(Y2Network::InterfaceType::CTC)
     end
   end
 end
