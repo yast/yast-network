@@ -1,0 +1,4 @@
+# LCS interface
+STARTMODE='auto'
+BOOTPROTO='static'
+IPADDR='192.168.70.100/24'
