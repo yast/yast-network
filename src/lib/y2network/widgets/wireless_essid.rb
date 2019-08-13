@@ -73,7 +73,7 @@ module Y2Network
       def handle
         networks = essid_list
 
-        Yast2::Feedback.show("Obtaining essid list", "Scanning network") do |f|
+        Yast2::Feedback.show("Obtaining essid list", headline: "Scanning network") do |f|
           networks = essid_list
           log.info("Found networks: #{networks}")
         end
