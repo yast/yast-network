@@ -25,11 +25,6 @@ module Y2Network
       # This class is responsible for writing the information from a ConnectionConfig::Ctc
       # object to the underlying system.
       class Ctc < Base
-      private
-
-        # @see Y2Network::ConnectionConfigWriters::Base#update_file
-        def update_file(_conn)
-        end
       end
     end
   end

@@ -57,7 +57,6 @@ module Y2Network
         #
         # @param _conn [Y2Network::ConnectionConfig::Base]
         def update_file(_conn)
-          raise NotImplementedError
         end
 
         # Adds IP addresses
