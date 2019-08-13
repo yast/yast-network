@@ -50,7 +50,9 @@ module Y2Network
       end
 
       def update_essid_list(networks)
+        old_value = value
         change_items(networks.map {|n| [n, n]})
+        self.value = old_value
       end
 
     private
