@@ -22,9 +22,9 @@ require "y2network/sysconfig/connection_config_readers/base"
 module Y2Network
   module Sysconfig
     module ConnectionConfigReaders
-      # This class is able to build a ConnectionConfig::Qeth object given a
+      # This class is able to build a ConnectionConfig::Lcs object given a
       # Sysconfig::InterfaceFile object.
-      class Qeth < Base
+      class Lcs < Base
       end
     end
   end

@@ -21,11 +21,8 @@ require "y2network/connection_config/base"
 
 module Y2Network
   module ConnectionConfig
-    # Configuration for ctc connections.
-    #
-    # @note The use of this connection is deprecated or not recommended as it
-    #   will not be officially supported in future SLE versions.
-    class Ctc < Base
+    # Configuration for lcs connections
+    class Lcs < Base
       # Most I/O devices on a s390 system are typically driven through the
       # channel I/O mechanism.
       #
@@ -38,8 +35,9 @@ module Y2Network
       #
       # @see https://www.ibm.com/developerworks/linux/linux390/documentation_suse.html
       #
-      # The CTCM device driver requires two I/O subchannels for each interface,
-      # a read subchannel and a write subchannel
+      # The LCS devices drivers requires two I/O subchannels for each interface,
+      # a read subchannel and a write subchannel and is very similar to the
+      # S390 CTC interface.
       #
       # @return [String] read device bus id
       attr_accessor :read_channel
@@ -50,9 +48,23 @@ module Y2Network
       #   1 Enhanced package checking for Linux peers.
       #   3 For compatibility with OS/390 or z/OS peers.
       #   4 For MPC connections to VTAM on traditional mainframe operating systems.
-      # @see https://www.ibm.com/support/knowledgecenter/en/linuxonibm/com.ibm.linux.z.ljdd/ljdd_t_ctcm_wrk_protocol.html
       # @see https://github.com/SUSE/s390-tools/blob/master/ctc_configure#L16
+      #
+      # # FIXME: At lease in linuxrc the protocol is not needed anymore for lcs
+      # interfaces (once replaced ctc_configure by chzdev)
       attr_accessor :protocol
+      # The time the driver wait for a reply issuing a LAN command.
+      #
+      # @return [Integer] lcs lancmd timeout (default 5s)
+      # @see https://www.ibm.com/support/knowledgecenter/en/linuxonibm/com.ibm.linux.z.ljdd/ljdd_t_lcs_wrk_timeout.html
+      attr_accessor :timeout
+
+      # Constructor
+      def initialize
+        super()
+        @protocol = 0
+        @timeout = 5
+      end
     end
   end
 end

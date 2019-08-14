@@ -17,14 +17,14 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/sysconfig/connection_config_readers/base"
+require "y2network/sysconfig/connection_config_writers/base"
 
 module Y2Network
   module Sysconfig
-    module ConnectionConfigReaders
-      # This class is able to build a ConnectionConfig::Qeth object given a
-      # Sysconfig::InterfaceFile object.
-      class Qeth < Base
+    module ConnectionConfigWriters
+      # This class is responsible for writing the information from a ConnectionConfig::Lcs
+      # object to the underlying system.
+      class Lcs < Base
       end
     end
   end

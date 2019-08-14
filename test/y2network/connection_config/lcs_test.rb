@@ -17,15 +17,14 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/sysconfig/connection_config_readers/base"
+require_relative "../../test_helper"
+require "y2network/connection_config/lcs"
+require "y2network/interface_type"
 
-module Y2Network
-  module Sysconfig
-    module ConnectionConfigReaders
-      # This class is able to build a ConnectionConfig::Qeth object given a
-      # Sysconfig::InterfaceFile object.
-      class Qeth < Base
-      end
+describe Y2Network::ConnectionConfig::Lcs do
+  describe "#type" do
+    it "returns 'lcs'" do
+      expect(subject.type).to eq(Y2Network::InterfaceType::LCS)
     end
   end
 end
