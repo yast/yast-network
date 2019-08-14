@@ -55,7 +55,7 @@ module Y2Network
       attr_accessor :protocol
       # The time the driver wait for a reply issuing a LAN command.
       #
-      # @return [Integer] lcs lancmd timeout (default 5sg)
+      # @return [Integer] lcs lancmd timeout (default 5s)
       # @see https://www.ibm.com/support/knowledgecenter/en/linuxonibm/com.ibm.linux.z.ljdd/ljdd_t_lcs_wrk_timeout.html
       attr_accessor :timeout
 
