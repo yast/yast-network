@@ -1,4 +1,7 @@
-require "y2network/widgets/wireless_encryption"
+require "cwm/custom_widget"
+require "cwm/replace_point"
+
+require "y2network/widgets/wireless_password"
 require "y2network/widgets/wireless_auth_mode"
 require "y2network/dialogs/wireless_wep_keys"
 
@@ -12,8 +15,15 @@ module Y2Network
         self.handle_all_events = true
       end
 
+      def init
+        refresh
+      end
+
       def handle(event)
-        # TODO: replace point manipulation
+        return if event["ID"] != auth_mode_widget.widget_id
+
+        refresh
+        nil
       end
 
       def contents
@@ -23,10 +33,7 @@ module Y2Network
             VSpacing(0.5),
             auth_mode_widget,
             VSpacing(0.2),
-            # TODO Replace point to support fully EAP in one widget
-            encryption_widget,
-            VSpacing(0.2),
-            wep_keys_widget,
+            replace_widget,
             VSpacing(0.5)
           )
         )
@@ -34,12 +41,31 @@ module Y2Network
 
     private
 
+      def refresh
+        case auth_mode_widget.value
+        when "no-encryption", "open" then replace_widget.replace(empty_auth_widget)
+        when "sharedkey" then replace_widget.replace(wep_keys_widget)
+        when "wpa-psk" then replace_widget.replace(encryption_widget)
+        when "wpa-eap" then nil # TODO: write it
+        else
+          raise "invalid value #{auth_mode_widget.value.inspect}"
+        end
+      end
+
+      def replace_widget
+        @replace_widget ||= CWM::ReplacePoint.new(id: "wireless_replace_point", widget: empty_auth_widget)
+      end
+
+      def empty_auth_widget
+        @empty_auth ||= CWM::Empty.new("wireless_empty")
+      end
+
       def auth_mode_widget
         @auth_mode_widget ||= Y2Network::Widgets::WirelessAuthMode.new(settings)
       end
 
       def encryption_widget
-        @encryption_widget ||= Y2Network::Widgets::WirelessEncryption.new(settings)
+        @encryption_widget ||= Y2Network::Widgets::WirelessPassword.new(settings)
       end
 
       def wep_keys_widget

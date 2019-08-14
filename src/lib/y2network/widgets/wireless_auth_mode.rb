@@ -24,12 +24,13 @@ module Y2Network
           ["no-encryption", _("No Encryption")],
           ["open", _("WEP - Open")],
           ["sharedkey", _("WEP - Shared Key")],
-          ["wpa-psk", _("WPA-PSK (WPA version 1 or 2)")],
-          ["wpa-eap", _("WPA-EAP (WPA version 1 or 2)")]
+          ["wpa-psk", _("WPA-PSK (\"home\")")],
+          ["wpa-eap", _("WPA-EAP (\"Enterprise\")")]
         ]
       end
 
       def help
+        # TODO: improve help text, mention all options and security problems with WEP
         "<p>WPA-EAP uses a RADIUS server to authenticate users. There\n" \
         "are different methods in EAP to connect to the server and\n" \
         "perform the authentication, namely TLS, TTLS, and PEAP.</p>\n"

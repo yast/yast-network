@@ -64,6 +64,15 @@ module Y2Network
           @connection_config.ap
         )
       end
+
+      def wpa_psk
+        @connection_config.wpa_psk
+      end
+
+      def wpa_psk=(value)
+        # TODO select backend?
+        @connection_config.wpa_psk = value
+      end
     end
   end
 end
