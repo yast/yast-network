@@ -44,7 +44,6 @@ module Y2Network
       def auth_mode=(mode)
         @config["WIRELESS_AUTH_MODE"] = mode
         @connection_config.auth_mode = mode
-        puts @config.inspect
       end
 
       def eap_mode

@@ -181,42 +181,19 @@ module Yast
         "address"     => -> { AddressDialog(builder: builder) },
         "hosts"       => -> { HostsMainDialog(false) },
         "s390"        => -> { S390Dialog(builder: builder) },
-        "wire"        => -> { WirelessDialog() },
-        "expert"      => -> { WirelessExpertDialog() },
-        "keys"        => -> { WirelessKeysDialog() },
-        "eap"         => -> { WirelessWpaEapDialog() },
-        "eap-details" => -> { WirelessWpaEapDetailsDialog() },
         "commit"      => [-> { Commit(builder: builder) }, true]
       }
 
-      ws_start = which == "wire" ? "wire" : "address"
       sequence = {
-        "ws_start"    => ws_start,
+        "ws_start"    => "address",
         "address"     => {
           abort:    :abort,
           next:     "commit",
-          wire:     "wire",
           hosts:    "hosts",
           s390:     "s390",
-          hardware: :hardware
         },
         "s390"        => { abort: :abort, next: "address" },
         "hosts"       => { abort: :abort, next: "address" },
-        "wire"        => {
-          next:   "commit",
-          expert: "expert",
-          keys:   "keys",
-          eap:    "eap",
-          abort:  :abort
-        },
-        "expert"      => { next: "wire", abort: :abort },
-        "keys"        => { next: "wire", abort: :abort },
-        "eap"         => {
-          next:    "commit",
-          details: "eap-details",
-          abort:   :abort
-        },
-        "eap-details" => { next: "eap", abort: :abort },
         "commit"      => { next: :next }
       }
 

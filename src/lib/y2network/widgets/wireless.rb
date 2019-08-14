@@ -1,9 +1,5 @@
 require "y2network/widgets/wireless_essid"
-require "y2network/widgets/wireless_eap"
-require "y2network/widgets/wireless_encryption"
 require "y2network/widgets/wireless_mode"
-require "y2network/widgets/wireless_auth_mode"
-require "y2network/dialogs/wireless_wep_keys"
 require "y2network/dialogs/wireless_expert_settings"
 
 module Y2Network
@@ -13,21 +9,6 @@ module Y2Network
 
       def initialize(settings)
         @settings = settings
-        self.handle_all_events = true
-      end
-
-      def init
-      end
-
-      def handle(event)
-        case event["ID"]
-        when auth_mode_widget.widget_id
-          refresh
-        when mode_widget.widget_id
-          refresh
-        end
-
-        nil
       end
 
       def contents
@@ -46,19 +27,11 @@ module Y2Network
                 # Text entry label
                 essid_widget,
                 VSpacing(0.2),
-                auth_mode_widget,
-                VSpacing(0.2),
-                encryption_widget,
+                expert_settings_widget,
                 VSpacing(0.5)
               ),
               HSpacing(2)
             )
-          ),
-          VSpacing(0.5),
-          HBox(
-            expert_settings_widget,
-            HSpacing(0.5),
-            wep_keys_widget
           ),
           VSpacing(0.5)
         )
@@ -91,20 +64,8 @@ module Y2Network
         @essid_widget ||= Y2Network::Widgets::WirelessEssid.new(settings)
       end
 
-      def auth_mode_widget
-        @auth_mode_widget ||= Y2Network::Widgets::WirelessAuthMode.new(settings)
-      end
-
-      def encryption_widget
-        @encryption_widget ||= Y2Network::Widgets::WirelessEncryption.new(settings)
-      end
-
       def expert_settings_widget
         @expert_settings_widget ||= Y2Network::Widgets::WirelessExpertSettings.new(settings)
-      end
-
-      def wep_keys_widget
-        @wep_keys_widget ||= Y2Network::Widgets::WirelessWepKeys.new(settings)
       end
     end
 
@@ -121,20 +82,6 @@ module Y2Network
         Y2Network::Dialogs::WirelessExpertSettings.new(@settings).run
 
         nil
-      end
-    end
-
-    class WirelessWepKeys < CWM::PushButton
-      def initialize(settings)
-        @settings = settings
-      end
-
-      def label
-        _("&WEP Keys")
-      end
-
-      def handle
-        Y2Network::Dialogs::WirelessWepKeys.run(@settings)
       end
     end
   end
