@@ -26,19 +26,24 @@ module Y2Network
     # @note The use of this connection is deprecated or not recommended as it
     #   will not be officially supported in future SLE versions.
     class Ctc < Base
-      # For CCW devices and CCW group devices, this device ID is the device
-      # bus-ID.
+      # Most I/O devices on a s390 system are typically driven through the
+      # channel I/O mechanism.
+      #
+      # The s390-tools provides a set of commands for working with CCW devices
+      # and CCW group devices, these commands use a device ID which is the
+      # device bus-ID
       #
       # The device bus-ID is of the format 0.<subchannel_set_ID>.<devno>,
       # for example, 0.0.8000.
       #
+      # @see https://www.ibm.com/developerworks/linux/linux390/documentation_suse.html
+      #
       # The CTCM device driver requires two I/O subchannels for each interface,
       # a read subchannel and a write subchannel
       #
-      # @see https://www.ibm.com/developerworks/linux/linux390/index.html
-      # @return [String] read bus id
+      # @return [String] read device bus id
       attr_accessor :read_channel
-      # @return [String] write bus id
+      # @return [String] write device bus id
       attr_accessor :write_channel
       # @return [Integer] connection protocol (0, 1, 3, or 4)
       #   0 Compatibility with peers other than OS/390®.
