@@ -73,6 +73,33 @@ module Y2Network
         # TODO select backend?
         @connection_config.wpa_psk = value
       end
+
+      def wpa_password
+        @connection_config.wpa_password
+      end
+
+      def wpa_password=(value)
+        # TODO select backend?
+        @connection_config.wpa_password = value
+      end
+
+      def wpa_identity
+        @connection_config.wpa_identity
+      end
+
+      def wpa_identity=(value)
+        # TODO select backend?
+        @connection_config.wpa_identity = value
+      end
+
+      def wpa_anonymous_identity
+        @connection_config.wpa_anonymous_identity
+      end
+
+      def wpa_anonymous_identity=(value)
+        # TODO select backend?
+        @connection_config.wpa_anonymous_identity = value
+      end
     end
   end
 end

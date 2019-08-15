@@ -44,7 +44,7 @@ module Y2Network
       # @return [Integer] default WEP key
       attr_accessor :default_key
       # @return [String]
-      attr_accessor :nick
+      attr_accessor :nick # TODO: what it is? identity?
       # @return [String]
       attr_accessor :eap_mode
       # @return [String]
@@ -63,7 +63,11 @@ module Y2Network
       # @return [Integer] (0, 1, 2)
       attr_accessor :ap_scanmode
       # @return [String]
-      attr_accessor :wpa_password
+      attr_accessor :wpa_password # TODO unify psk and password and write correct one depending on mode
+      # @return [String]
+      attr_accessor :wpa_identity
+      # @return [String] initial identity used for creating tunnel
+      attr_accessor :wpa_anonymous_identity
     end
   end
 end

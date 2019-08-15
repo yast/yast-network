@@ -75,7 +75,7 @@ module Y2Network
               "This is generally a good idea, especially if you are a laptop user and may\n" \
               "be disconnected from AC power.</p>\n"
           )
-        end
+      end
 
     private
 

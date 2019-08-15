@@ -9,7 +9,7 @@ module Y2Network
     class WirelessEssid < CWM::CustomWidget
       def initialize(settings)
         @settings = settings
-        textdomain = "network"
+        textdomain "network"
       end
 
       def contents

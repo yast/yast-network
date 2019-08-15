@@ -59,6 +59,8 @@ module Y2Network
         def write_eap_auth_settings(conn)
           file.wireless_eap_mode = conn.eap_mode
           file.wireless_wpa_password = conn.wpa_password
+          file.wireless_wpa_identity = conn.wpa_identity
+          file.wireless_wpa_anonid = conn.wpa_anonymous_identity if conn.eap_mode == "TTLS"
         end
 
         # Writes autentication settings for WPA-PSK networks

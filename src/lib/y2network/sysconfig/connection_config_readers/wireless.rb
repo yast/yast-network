@@ -42,6 +42,8 @@ module Y2Network
           conn.nwid = file.wireless_nwid
           conn.wpa_password = file.wireless_wpa_password
           conn.wpa_psk = file.wireless_wpa_psk
+          conn.wpa_identity = file.wireless_wpa_identity
+          conn.wpa_anonymous_identity = file.wireless_wpa_anonid
         end
 
         # Max number of wireless keys

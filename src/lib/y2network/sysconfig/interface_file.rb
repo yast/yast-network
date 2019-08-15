@@ -210,6 +210,10 @@ module Y2Network
       #  @return [String] Password as configured on the RADIUS server (for WPA-EAP)
       define_variable(:wireless_wpa_password)
 
+      # @!attribute [r] wireless_wpa_anonid
+      #  @return [String] anonymous identity used for initial tunnel (TTLS)
+      define_variable(:wireless_wpa_anonid)
+
       # @!attribute [r] wireless_wpa_driver
       #   @return [String] Driver to be used by the wpa_supplicant program
       define_variable(:wireless_wpa_driver)
@@ -217,6 +221,10 @@ module Y2Network
       # @!attribute [r] wireless_wpa_psk
       #   @return [String] WPA preshared key (for WPA-PSK)
       define_variable(:wireless_wpa_psk)
+
+      # @!attribute [r] wireless_wpa_identity
+      #   @return [String] WPA identify
+      define_variable(:wireless_wpa_identity)
 
       # @!attribute [r] wireless_eap_mode
       #   @return [String] WPA-EAP outer authentication method

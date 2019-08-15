@@ -1,0 +1,162 @@
+require "cwm/custom_widget"
+require "cwm/replace_point"
+
+require "y2network/widgets/wireless_eap_mode"
+
+module Y2Network
+  module Widgets
+    class WirelessEap < CWM::CustomWidget
+      attr_reader :settings
+
+      def initialize(settings)
+        @settings = settings
+        self.handle_all_events = true
+      end
+
+      def init
+        refresh
+      end
+
+      def handle(event)
+        return if event["ID"] != eap_mode.widget_id
+
+        refresh
+        nil
+      end
+
+      def contents
+        VBox(
+          eap_mode,
+          VSpacing(0.2),
+          replace_widget,
+        )
+      end
+
+    private
+
+      def eap_mode
+        @eap_mode ||= WirelessEapMode.new(settings)
+      end
+
+      def replace_widget
+        @replace_widget ||= CWM::ReplacePoint.new(id: "wireless_eap_point", widget: CWM::Empty.new("wireless_eap_empty"))
+      end
+
+      def refresh
+        case eap_mode.value
+        when "TTLS" then replace_widget.replace(ttls_widget)
+        when "PEAP" then replace_widget.replace(peap_widget)
+        when "TLS" then nil # TODO: write it
+        else raise "unknown value #{eap_mode.value.inspect}"
+        end
+      end
+
+      def ttls_widget
+        @ttls_widget ||= EapTtls.new(@settings)
+      end
+
+      def peap_widget
+        @peap_widget ||= EapPeap.new(@settings)
+      end
+    end
+
+    class EapPeap < CWM::CustomWidget
+      attr_reader :settings
+
+      def initialize(settings)
+        @settings = settings
+      end
+
+      def contents
+        VBox(
+          HBox(EapUser.new(@settings), EapPassword.new(@settings))
+        )
+      end
+    end
+
+    class EapTtls < CWM::CustomWidget
+      attr_reader :settings
+
+      def initialize(settings)
+        @settings = settings
+      end
+
+      def contents
+        VBox(
+          HBox(EapUser.new(@settings), EapPassword.new(@settings)),
+          VSpacing(0.5),
+          EapAnonymousUser.new(@settings)
+        )
+      end
+    end
+
+    class EapPassword < CWM::Password
+      def initialize(builder)
+        @builder = builder
+        textdomain "network"
+      end
+
+      def label
+        _("Password")
+      end
+
+      def init
+        self.value = @builder.wpa_password
+      end
+
+      def store
+        @builder.wpa_password = value
+      end
+
+      def help
+        "" # TODO: write it
+      end
+    end
+
+    class EapUser < CWM::InputField
+      def initialize(builder)
+        @builder = builder
+        textdomain "network"
+      end
+
+      def label
+        _("Identity")
+      end
+
+      def init
+        self.value = @builder.wpa_identity
+      end
+
+      def store
+        @builder.wpa_identity = value
+      end
+
+      def help
+        "" # TODO: write it
+      end
+    end
+
+    class EapAnonymousUser < CWM::InputField
+      def initialize(builder)
+        @builder = builder
+        textdomain "network"
+      end
+
+      def label
+       _("&Anonymous Identity")
+      end
+
+      def init
+        self.value = @builder.wpa_anonymous_identity
+      end
+
+      def store
+        @builder.wpa_anonymous_identity = value
+      end
+
+      def help
+        "" # TODO: write it
+      end
+    end
+  end
+end
