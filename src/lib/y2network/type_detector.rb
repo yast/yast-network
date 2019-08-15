@@ -35,6 +35,7 @@ module Y2Network
       end
 
     private
+
       include Yast::Logger
 
       SYS_TYPE_NUMBERS = {
@@ -131,7 +132,7 @@ module Y2Network
       end
 
       # Checks wheter iface type can be recognized by interface configuration
-      def type_by_config(iface)
+      def type_by_config(_iface)
         # this part is backend specific
         raise NotImplementedError
       end

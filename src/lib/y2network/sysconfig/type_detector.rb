@@ -30,10 +30,11 @@ module Y2Network
     class TypeDetector < Y2Network::TypeDetector
       class << self
       private
+
         KEY_TO_TYPE = {
-          "ETHERDEVICE" => InterfaceType::VLAN,
+          "ETHERDEVICE"   => InterfaceType::VLAN,
           "WIRELESS_MODE" => InterfaceType::WIRELESS,
-          "MODEM_DEVICE" => InterfaceType::PPP
+          "MODEM_DEVICE"  => InterfaceType::PPP
         }.freeze
 
         # Checks wheter iface type can be recognized by interface configuration
@@ -99,7 +100,7 @@ module Y2Network
         # @return [Y2Network::InterfaceType, nil] type according to INTERFACETYPE option
         #                                    value if recognized, nil otherwise
         def type_from_interfacetype(devmap)
-          return InterfaceType::from_short_name(devmap["INTERFACETYPE"]) if devmap["INTERFACETYPE"]
+          return InterfaceType.from_short_name(devmap["INTERFACETYPE"]) if devmap["INTERFACETYPE"]
           nil
         end
 
