@@ -99,6 +99,10 @@ module Yast
       let(:stdout) { double }
 
       before do
+        allow(Y2Network::TypeDetector)
+          .to receive(:type_of)
+          .with(/eth[0-9]/)
+          .and_return(Y2Network::InterfaceType::ETHERNET)
         DNS.dhcp_hostname = true
 
         allow(DNS).to receive(:Read)

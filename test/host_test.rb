@@ -33,6 +33,10 @@ describe Yast::Host do
   before do
     allow(Yast::Lan).to receive(:yast_config).and_return(lan_config)
     allow(Yast::SCR).to receive(:Read).with(path(".target.size"), "/etc/hosts").and_return(50)
+    allow(Y2Network::Sysconfig::TypeDetector)
+      .to receive(:type_of)
+      .with(/eth[0-9]/)
+      .and_return(Y2Network::InterfaceType::ETHERNET)
 
     # reset internal caches
     Yast::Host.instance_variable_set(:"@modified", false)

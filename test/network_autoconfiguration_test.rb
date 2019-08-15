@@ -239,6 +239,11 @@ describe Yast::NetworkAutoconfiguration do
       allow(Yast::LanItems).to receive(:Read)
       allow(yast_config).to receive(:write)
       allow(Yast::Lan).to receive(:connected_and_bridgeable?).and_return(true)
+      # FIXME: seems that autoinst config reader is ... not ready yet
+      allow(Y2Network::Sysconfig::TypeDetector)
+        .to receive(:type_of)
+        .with(/eth[0-9]/)
+        .and_return(Y2Network::InterfaceType::ETHERNET)
       Yast::Lan.Import(
         "devices" => { "eth" => { "eth0" => eth0_profile } },
         "routing" => { "routes" => routes_profile }
