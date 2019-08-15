@@ -26,9 +26,9 @@ require "y2network/fake_interface"
 require "y2network/sysconfig/connection_config_reader"
 require "y2network/interfaces_collection"
 require "y2network/connection_configs_collection"
+require "y2network/sysconfig/type_detector"
 
 Yast.import "LanItems"
-Yast.import "NetworkInterfaces"
 
 module Y2Network
   module Sysconfig
@@ -97,11 +97,6 @@ module Y2Network
 
       # Instantiates an interface given a hash containing hardware details
       #
-      # If there is not information about the type, it will rely on NetworkInterfaces#GetTypeFromSysfs.
-      # This responsability could be moved to the PhysicalInterface class.
-      #
-      # @todo Improve detection logic according to NetworkInterfaces#GetTypeFromIfcfgOrName.
-      #
       # @param data [Hash] hardware information
       # @option data [String] "dev_name" Device name ("eth0")
       # @option data [String] "name"     Device description
@@ -109,14 +104,7 @@ module Y2Network
       def build_physical_interface(data)
         Y2Network::PhysicalInterface.new(data["dev_name"]).tap do |iface|
           iface.description = data["name"]
-          type = data["type"] || Yast::NetworkInterfaces.GetTypeFromSysfs(iface.name)
-          iface.type = case type
-          when nil then InterfaceType::ETHERNET
-          when ::String then InterfaceType.from_short_name(type)
-          when InterfaceType then type
-          else
-            raise "Unexpected value in interface type #{type.class.inspect}:#{type.inspect}"
-          end
+          iface.type = TypeDetector.type_of(iface.name)
         end
       end
 
