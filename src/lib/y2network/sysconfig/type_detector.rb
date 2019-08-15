@@ -47,9 +47,19 @@ module Y2Network
             type_by_name(iface)
         end
 
+        # Provides interface's sysconfig configuration
+        #
+        # @return [Hash{String => Object}] parsed configuration
         def devmap(iface)
-          Yast::NetworkInterfaces.Read
-          Yast::NetworkInterfaces.devmap(iface)
+          scr_path = ".network.value.\"#{iface}\""
+          values = Yast::SCR.Dir(Yast::Path.new(scr_path))
+
+          # provide configuration in canonicalized format
+          devmap = Yast::NetworkInterfaces.generate_config(scr_path, values)
+
+          log.info("TypeDetector: #{iface} configuration: #{devmap.inspect}")
+
+          devmap
         end
 
         # Detects interface type according to type specific option
