@@ -4,6 +4,27 @@ module Y2Network
   module Widgets
     class WirelessEapMode < CWM::ComboBox
       def initialize(settings)
+        @settings = settings
+      end
+
+      def init
+        self.value = @settings.eap_mode
+      end
+
+      def label
+        _("EAP &Mode")
+      end
+
+      def opt
+        [:notify]
+      end
+
+      def items
+        [
+          ["PEAP", _("PEAP")],
+          ["TLS", _("TLS")],
+          ["TTLS", _("TTLS")]
+        ]
       end
 
       def help

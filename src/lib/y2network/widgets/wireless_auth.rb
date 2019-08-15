@@ -1,9 +1,10 @@
 require "cwm/custom_widget"
 require "cwm/replace_point"
 
-require "y2network/widgets/wireless_password"
-require "y2network/widgets/wireless_auth_mode"
 require "y2network/dialogs/wireless_wep_keys"
+require "y2network/widgets/wireless_auth_mode"
+require "y2network/widgets/wireless_eap"
+require "y2network/widgets/wireless_password"
 
 module Y2Network
   module Widgets
@@ -46,7 +47,7 @@ module Y2Network
         when "no-encryption", "open" then replace_widget.replace(empty_auth_widget)
         when "sharedkey" then replace_widget.replace(wep_keys_widget)
         when "wpa-psk" then replace_widget.replace(encryption_widget)
-        when "wpa-eap" then nil # TODO: write it
+        when "wpa-eap" then replace_widget.replace(eap_widget)
         else
           raise "invalid value #{auth_mode_widget.value.inspect}"
         end
@@ -61,15 +62,19 @@ module Y2Network
       end
 
       def auth_mode_widget
-        @auth_mode_widget ||= Y2Network::Widgets::WirelessAuthMode.new(settings)
+        @auth_mode_widget ||= WirelessAuthMode.new(settings)
       end
 
       def encryption_widget
-        @encryption_widget ||= Y2Network::Widgets::WirelessPassword.new(settings)
+        @encryption_widget ||= WirelessPassword.new(settings)
       end
 
       def wep_keys_widget
         @wep_keys_widget ||= WirelessWepKeys.new(settings)
+      end
+
+      def eap_widget
+        @eap_widget ||= WirelessEap.new(settings)
       end
 
       class WirelessWepKeys < CWM::PushButton
