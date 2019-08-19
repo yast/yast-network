@@ -45,6 +45,8 @@ module Y2Network
     attr_reader :configured
     # @return [HwInfo]
     attr_reader :hardware
+    # @return [Symbol] Mechanism to rename the interface (nil -no rename-, :bus_id or :mac)
+    attr_accessor :renaming_mechanism
 
     # Shortcuts for accessing interfaces' ifcfg options
     #
