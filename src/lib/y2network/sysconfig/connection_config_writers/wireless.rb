@@ -60,6 +60,7 @@ module Y2Network
           file.wireless_eap_mode = conn.eap_mode
           file.wireless_wpa_password = conn.wpa_password
           file.wireless_wpa_identity = conn.wpa_identity
+          file.wireless_ca_cert = conn.ca_cert
           file.wireless_wpa_anonid = conn.wpa_anonymous_identity if conn.eap_mode == "TTLS"
         end
 

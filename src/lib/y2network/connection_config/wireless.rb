@@ -68,6 +68,8 @@ module Y2Network
       attr_accessor :wpa_identity
       # @return [String] initial identity used for creating tunnel
       attr_accessor :wpa_anonymous_identity
+      # @return [String] ca certificate used to sign server certificate
+      attr_accessor :ca_cert
     end
   end
 end

@@ -40,6 +40,7 @@ module Y2Network
           conn.keys = wireless_keys
           conn.mode = file.wireless_mode
           conn.nwid = file.wireless_nwid
+          conn.ca_cert = file.wireless_ca_cert
           conn.wpa_password = file.wireless_wpa_password
           conn.wpa_psk = file.wireless_wpa_psk
           conn.wpa_identity = file.wireless_wpa_identity

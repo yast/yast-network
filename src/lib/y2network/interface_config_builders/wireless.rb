@@ -100,6 +100,15 @@ module Y2Network
         # TODO select backend?
         @connection_config.wpa_anonymous_identity = value
       end
+
+      def ca_cert
+        @connection_config.ca_cert
+      end
+
+      def ca_cert=(value)
+        # TODO select backend?
+        @connection_config.ca_cert = value
+      end
     end
   end
 end

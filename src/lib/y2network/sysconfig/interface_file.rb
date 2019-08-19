@@ -226,6 +226,10 @@ module Y2Network
       #   @return [String] WPA identify
       define_variable(:wireless_wpa_identity)
 
+      # @!attribute [r] wireless_ca_cert
+      #   @return [String] CA certificate used to sign server certificate
+      define_variable(:wireless_ca_cert)
+
       # @!attribute [r] wireless_eap_mode
       #   @return [String] WPA-EAP outer authentication method
       define_variable(:wireless_eap_mode)

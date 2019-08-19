@@ -2,6 +2,7 @@ require "cwm/custom_widget"
 require "cwm/replace_point"
 
 require "y2network/widgets/wireless_eap_mode"
+require "y2network/widgets/server_ca_path"
 
 module Y2Network
   module Widgets
@@ -46,7 +47,7 @@ module Y2Network
         case eap_mode.value
         when "TTLS" then replace_widget.replace(ttls_widget)
         when "PEAP" then replace_widget.replace(peap_widget)
-        when "TLS" then nil # TODO: write it
+        when "TLS" then replace_widget.replace(tls_widget)
         else raise "unknown value #{eap_mode.value.inspect}"
         end
       end
@@ -57,6 +58,10 @@ module Y2Network
 
       def peap_widget
         @peap_widget ||= EapPeap.new(@settings)
+      end
+
+      def tls_widget
+        @tls_widget ||= EapTls.new(@settings)
       end
     end
 
@@ -69,7 +74,9 @@ module Y2Network
 
       def contents
         VBox(
-          HBox(EapUser.new(@settings), EapPassword.new(@settings))
+          HBox(EapUser.new(@settings), EapPassword.new(@settings)),
+          VSpacing(0.5),
+          ServerCAPath.new(@settings)
         )
       end
     end
@@ -85,7 +92,23 @@ module Y2Network
         VBox(
           HBox(EapUser.new(@settings), EapPassword.new(@settings)),
           VSpacing(0.5),
-          EapAnonymousUser.new(@settings)
+          EapAnonymousUser.new(@settings),
+          VSpacing(0.5),
+          ServerCAPath.new(@settings)
+        )
+      end
+    end
+
+    class EapTls < CWM::CustomWidget
+      attr_reader :settings
+
+      def initialize(settings)
+        @settings = settings
+      end
+
+      def contents
+        VBox(
+          ServerCAPath.new(@settings)
         )
       end
     end
