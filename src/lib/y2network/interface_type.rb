@@ -112,7 +112,7 @@ module Y2Network
     # Infiniband card
     INFINIBAND = new(N_("Infiniband"), "ib")
     # Infiniband card child device. Used in IPoIB (IP-over-InfiniBand)
-    INFINIBANDCHILD = new(N_("Infiniband Child"), "ibchild")
+    INFINIBAND_CHILD = new(N_("Infiniband Child"), "ibchild")
     # Bonding device
     BONDING = new(N_("Bonding"), "bond")
     # bridge device

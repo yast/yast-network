@@ -127,7 +127,7 @@ module Y2Network
         elsif ::File.exist?("#{sys_dir_path}/create_child")
           InterfaceType::INFINIBAND
         else
-          InterfaceType::INFINIBANDCHILD
+          InterfaceType::INFINIBAND_CHILD
         end
       end
 
