@@ -70,6 +70,10 @@ module Y2Network
       attr_accessor :wpa_anonymous_identity
       # @return [String] ca certificate used to sign server certificate
       attr_accessor :ca_cert
+      # @return [String] client certificate used to login for TLS
+      attr_accessor :client_cert
+      # @return [String] client private key used to encrypt for TLS
+      attr_accessor :client_key
     end
   end
 end

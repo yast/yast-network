@@ -3,6 +3,8 @@ require "cwm/replace_point"
 
 require "y2network/widgets/wireless_eap_mode"
 require "y2network/widgets/server_ca_path"
+require "y2network/widgets/client_cert_path"
+require "y2network/widgets/client_key_path"
 
 module Y2Network
   module Widgets
@@ -75,7 +77,6 @@ module Y2Network
       def contents
         VBox(
           HBox(EapUser.new(@settings), EapPassword.new(@settings)),
-          VSpacing(0.5),
           ServerCAPath.new(@settings)
         )
       end
@@ -91,9 +92,7 @@ module Y2Network
       def contents
         VBox(
           HBox(EapUser.new(@settings), EapPassword.new(@settings)),
-          VSpacing(0.5),
           EapAnonymousUser.new(@settings),
-          VSpacing(0.5),
           ServerCAPath.new(@settings)
         )
       end
@@ -108,6 +107,10 @@ module Y2Network
 
       def contents
         VBox(
+          HBox(
+            ClientCertPath.new(@settings),
+            ClientKeyPath.new(@settings)
+          ),
           ServerCAPath.new(@settings)
         )
       end

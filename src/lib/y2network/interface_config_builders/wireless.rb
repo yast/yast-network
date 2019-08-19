@@ -109,6 +109,24 @@ module Y2Network
         # TODO select backend?
         @connection_config.ca_cert = value
       end
+
+      def client_cert
+        @connection_config.client_cert
+      end
+
+      def client_cert=(value)
+        # TODO select backend?
+        @connection_config.client_cert = value
+      end
+
+      def client_key
+        @connection_config.client_key
+      end
+
+      def client_key=(value)
+        # TODO select backend?
+        @connection_config.client_key = value
+      end
     end
   end
 end

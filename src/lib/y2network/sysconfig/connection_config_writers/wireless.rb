@@ -62,6 +62,8 @@ module Y2Network
           file.wireless_wpa_identity = conn.wpa_identity
           file.wireless_ca_cert = conn.ca_cert
           file.wireless_wpa_anonid = conn.wpa_anonymous_identity if conn.eap_mode == "TTLS"
+          file.wireless_client_cert = conn.client_cert if conn.eap_mode == "TLS"
+          file.wireless_client_key = conn.client_key if conn.eap_mode == "TLS"
         end
 
         # Writes autentication settings for WPA-PSK networks
