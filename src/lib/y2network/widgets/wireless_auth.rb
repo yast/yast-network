@@ -17,6 +17,7 @@ module Y2Network
       def initialize(settings)
         @settings = settings
         self.handle_all_events = true
+        textdomain "network"
       end
 
       def init
