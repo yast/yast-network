@@ -20,6 +20,7 @@ require_relative "../../test_helper"
 require "y2network/sysconfig/config_writer"
 require "y2network/config"
 require "y2network/interface"
+require "y2network/interfaces_collection"
 require "y2network/routing"
 require "y2network/route"
 require "y2network/routing_table"
@@ -33,7 +34,7 @@ describe Y2Network::Sysconfig::ConfigWriter do
   describe "#write" do
     let(:config) do
       Y2Network::Config.new(
-        interfaces:  [eth0],
+        interfaces:  Y2Network::InterfacesCollection.new([eth0]),
         connections: [eth0_conn],
         routing:     routing,
         source:      :sysconfig
@@ -83,6 +84,7 @@ describe Y2Network::Sysconfig::ConfigWriter do
 
     let(:dns_writer) { instance_double(Y2Network::Sysconfig::DNSWriter, write: nil) }
     let(:conn_writer) { instance_double(Y2Network::Sysconfig::ConnectionConfigWriter, write: nil) }
+    let(:interfaces_writer)  { instance_double(Y2Network::Sysconfig::InterfacesWriter, write: nil) }
 
     before do
       allow(Y2Network::Sysconfig::RoutesFile).to receive(:new)
@@ -95,6 +97,8 @@ describe Y2Network::Sysconfig::ConfigWriter do
         .and_return(dns_writer)
       allow(Y2Network::Sysconfig::ConnectionConfigWriter).to receive(:new)
         .and_return(conn_writer)
+      allow(Y2Network::Sysconfig::InterfacesWriter).to receive(:new)
+        .and_return(interfaces_writer)
       allow(eth0).to receive(:configured).and_return(true)
     end
 
@@ -197,6 +201,11 @@ describe Y2Network::Sysconfig::ConfigWriter do
     it "writes connections configurations" do
       expect(conn_writer).to receive(:write).with(eth0_conn)
       writer.write(config, old_config)
+    end
+
+    it "writes interfaces configurations" do
+      expect(interfaces_writer).to receive(:write).with(config.interfaces)
+      writer.write(config)
     end
   end
 end
