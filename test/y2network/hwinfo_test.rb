@@ -56,4 +56,30 @@ describe Y2Network::Hwinfo do
       )
     end
   end
+
+  describe "#dev_port" do
+    let(:interface_name) { "enp1s0" }
+
+    before do
+      allow(Yast::SCR).to receive(:Read)
+        .with(Yast::Path.new(".target.string"), "/sys/class_net/#{interface_name}/dev_port")
+        .and_return(raw_dev_port)
+    end
+
+    context "when the dev_port is defined" do
+      let(:raw_dev_port) { "0000:08:00.0" }
+
+      it "returns the dev_port" do
+        expect(hwinfo.dev_port).to eq("0000:08:00.0")
+      end
+    end
+
+    context "when the dev_port is not defined" do
+      let(:raw_dev_port) { "\n" }
+
+      it "returns the dev_port" do
+        expect(hwinfo.dev_port).to be_nil
+      end
+    end
+  end
 end
