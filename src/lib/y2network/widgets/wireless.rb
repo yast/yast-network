@@ -4,9 +4,11 @@ require "y2network/dialogs/wireless_expert_settings"
 
 module Y2Network
   module Widgets
+    # Top level widget for frame with general wireless settings
     class Wireless < CWM::CustomWidget
       attr_reader :settings
 
+      # @param settings [Y2Network::InterfaceConfigBuilder]
       def initialize(settings)
         textdomain "network"
         @settings = settings

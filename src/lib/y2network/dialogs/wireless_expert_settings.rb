@@ -5,6 +5,7 @@ require "y2network/widgets/wireless_expert"
 
 module Y2Network
   module Dialogs
+    # Dialog that shows when expert button is clicked on wireless tab.
     class WirelessExpertSettings < CWM::Dialog
       # @param settings [InterfaceBuilder] object holding interface configuration
       #   modified by the dialog.

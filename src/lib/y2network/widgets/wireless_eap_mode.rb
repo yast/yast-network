@@ -4,6 +4,7 @@ module Y2Network
   module Widgets
     # Widget to select EAP mode.
     class WirelessEapMode < CWM::ComboBox
+      # @param settings [Y2network::InterfaceConfigBuilder]
       def initialize(settings)
         textdomain "network"
         @settings = settings

@@ -2,7 +2,9 @@ require "cwm/common_widgets"
 
 module Y2Network
   module Widgets
+    # Widget for WPA "home" password. It is not used for EAP password.
     class WirelessPassword < CWM::Password
+      # @param builder [Y2network::InterfaceConfigBuilder]
       def initialize(builder)
         textdomain "network"
         @builder = builder

@@ -7,7 +7,9 @@ require "y2network/widgets/wireless_auth"
 
 module Y2Network
   module Widgets
+    # Tab for wireless specific stuff. Useful only for wireless cards
     class WirelessTab < CWM::Tab
+      # @param builder [Y2network::InterfaceConfigBuilder]
       def initialize(builder)
         textdomain "network"
 

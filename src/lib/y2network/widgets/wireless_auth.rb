@@ -8,9 +8,12 @@ require "y2network/widgets/wireless_password"
 
 module Y2Network
   module Widgets
+    # Top level widget for wireless authentication. It changes content dynamically depending
+    # on selected authentication method.
     class WirelessAuth < CWM::CustomWidget
       attr_reader :settings
 
+      # @param settings [Y2network::InterfaceConfigBuilder]
       def initialize(settings)
         @settings = settings
         self.handle_all_events = true
@@ -77,6 +80,7 @@ module Y2Network
         @eap_widget ||= WirelessEap.new(settings)
       end
 
+      # Button for showing WEP Keys dialog
       class WirelessWepKeys < CWM::PushButton
         def initialize(settings)
           @settings = settings

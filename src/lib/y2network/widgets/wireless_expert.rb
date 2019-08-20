@@ -2,7 +2,9 @@ require "cwm/common_widgets"
 
 module Y2Network
   module Widgets
+    # Channel selector widget
     class WirelessChannel < CWM::ComboBox
+      # @param settings [Y2network::InterfaceConfigBuilder]
       def initialize(settings)
         @settings = settings
 
@@ -26,7 +28,9 @@ module Y2Network
       end
     end
 
+    # bit rate selection widget
     class WirelessBitRate < CWM::ComboBox
+      # @param settings [Y2network::InterfaceConfigBuilder]
       def initialize(settings)
         @settings = settings
 
@@ -52,9 +56,12 @@ module Y2Network
       end
     end
 
+    # Widget to select access point if site consist of multiple ones
     class WirelessAccessPoint < CWM::InputField
+      # @param settings [Y2network::InterfaceConfigBuilder]
       def initialize(settings)
         @settings = settings
+        textdomain "network"
       end
 
       def opt
@@ -70,9 +77,12 @@ module Y2Network
       end
     end
 
+    # Widget that enables wifi power management
     class WirelessPowerManagement < CWM::CheckBox
+      # @param settings [Y2network::InterfaceConfigBuilder]
       def initialize(settings)
         @settings = settings
+        textdomain "network"
       end
 
       def label
@@ -84,9 +94,12 @@ module Y2Network
       end
     end
 
+    # widget to set Scan mode
     class WirelessAPScanMode < CWM::IntField
+      # @param settings [Y2network::InterfaceConfigBuilder]
       def initialize(settings)
         @settings = settings
+        textdomain "network"
       end
 
       def opt

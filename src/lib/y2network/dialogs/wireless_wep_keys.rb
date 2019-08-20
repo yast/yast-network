@@ -2,7 +2,9 @@ require "cwm/dialog"
 
 module Y2Network
   module Dialogs
+    # Dialog to manage WEP keys
     class WirelessWepKeys < CWM::Dialog
+      # @param settings [Y2network::InterfaceConfigBuilder]
       def initialize(settings)
         textdomain "network"
         @settings = settings
