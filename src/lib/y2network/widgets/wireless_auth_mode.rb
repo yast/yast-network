@@ -8,6 +8,7 @@ module Y2Network
       end
 
       def init
+        textdomain "network"
         self.value = @settings.auth_mode
       end
 

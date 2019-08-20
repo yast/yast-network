@@ -4,6 +4,7 @@ module Y2Network
   module Dialogs
     class WirelessWepKeys < CWM::Dialog
       def initialize(settings)
+        textdomain "network"
         @settings = settings
       end
 
@@ -19,14 +20,13 @@ module Y2Network
             "The other keys can be used to decrypt data. Usually you have only\n" \
             "one key.</p>"
         ) +
-          # Wireless keys dialog help 2/3
           _(
             "<p><b>Key Length</b> defines the bit length of your WEP keys.\n" \
               "Possible are 64 and 128 bit, sometimes also referred to as 40 and 104 bit.\n" \
               "Some older hardware might not be able to handle 128 bit keys, so if your\n" \
               "wireless LAN connection does not establish, you may need to set this\n" \
               "value to 64.</p>"
-          ) + ""
+          )
       end
 
       def contents
