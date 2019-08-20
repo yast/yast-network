@@ -8,6 +8,8 @@ require "y2network/widgets/client_key_path"
 
 module Y2Network
   module Widgets
+    # High Level widget that allow to select kind of EAP authentication and also dynamically change
+    # its content according to selection
     class WirelessEap < CWM::CustomWidget
       attr_reader :settings
 
@@ -31,7 +33,7 @@ module Y2Network
         VBox(
           eap_mode,
           VSpacing(0.2),
-          replace_widget,
+          replace_widget
         )
       end
 
@@ -67,6 +69,7 @@ module Y2Network
       end
     end
 
+    # High level widget that represent PEAP authentication
     class EapPeap < CWM::CustomWidget
       attr_reader :settings
 
@@ -82,6 +85,7 @@ module Y2Network
       end
     end
 
+    # High level widget that represent TTLS authentication
     class EapTtls < CWM::CustomWidget
       attr_reader :settings
 
@@ -98,6 +102,7 @@ module Y2Network
       end
     end
 
+    # High level widget that represent TLS authentication
     class EapTls < CWM::CustomWidget
       attr_reader :settings
 
@@ -116,6 +121,7 @@ module Y2Network
       end
     end
 
+    # Widget that represent EAP password
     class EapPassword < CWM::Password
       def initialize(builder)
         @builder = builder
@@ -139,6 +145,7 @@ module Y2Network
       end
     end
 
+    # Widget that represent EAP user
     class EapUser < CWM::InputField
       def initialize(builder)
         @builder = builder
@@ -162,6 +169,7 @@ module Y2Network
       end
     end
 
+    # Widget that represent EAP anonymous user that is used for initial connection
     class EapAnonymousUser < CWM::InputField
       def initialize(builder)
         @builder = builder
@@ -169,7 +177,7 @@ module Y2Network
       end
 
       def label
-       _("&Anonymous Identity")
+        _("&Anonymous Identity")
       end
 
       def init

@@ -51,7 +51,7 @@ module Y2Network
 
       def update_essid_list(networks)
         old_value = value
-        change_items(networks.map {|n| [n, n]})
+        change_items(networks.map { |n| [n, n] })
         self.value = old_value
       end
 
@@ -75,7 +75,7 @@ module Y2Network
       def handle
         networks = essid_list
 
-        Yast2::Feedback.show("Obtaining essid list", headline: "Scanning network") do |f|
+        Yast2::Feedback.show("Obtaining essid list", headline: "Scanning network") do |_f|
           networks = essid_list
           log.info("Found networks: #{networks}")
         end

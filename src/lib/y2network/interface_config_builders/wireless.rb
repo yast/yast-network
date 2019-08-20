@@ -70,7 +70,7 @@ module Y2Network
       end
 
       def wpa_psk=(value)
-        # TODO select backend?
+        # TODO: select backend?
         @connection_config.wpa_psk = value
       end
 
@@ -79,7 +79,7 @@ module Y2Network
       end
 
       def wpa_password=(value)
-        # TODO select backend?
+        # TODO: select backend?
         @connection_config.wpa_password = value
       end
 
@@ -88,7 +88,7 @@ module Y2Network
       end
 
       def wpa_identity=(value)
-        # TODO select backend?
+        # TODO: select backend?
         @connection_config.wpa_identity = value
       end
 
@@ -97,7 +97,7 @@ module Y2Network
       end
 
       def wpa_anonymous_identity=(value)
-        # TODO select backend?
+        # TODO: select backend?
         @connection_config.wpa_anonymous_identity = value
       end
 
@@ -106,7 +106,7 @@ module Y2Network
       end
 
       def ca_cert=(value)
-        # TODO select backend?
+        # TODO: select backend?
         @connection_config.ca_cert = value
       end
 
@@ -115,7 +115,7 @@ module Y2Network
       end
 
       def client_cert=(value)
-        # TODO select backend?
+        # TODO: select backend?
         @connection_config.client_cert = value
       end
 
@@ -124,7 +124,7 @@ module Y2Network
       end
 
       def client_key=(value)
-        # TODO select backend?
+        # TODO: select backend?
         @connection_config.client_key = value
       end
     end

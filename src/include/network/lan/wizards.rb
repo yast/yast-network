@@ -175,26 +175,26 @@ module Yast
       Sequencer.Run(aliases, sequence)
     end
 
-    def AddressSequence(which, builder:)
+    def AddressSequence(_which, builder:)
       # TODO: add builder wherever needed
       aliases = {
-        "address"     => -> { AddressDialog(builder: builder) },
-        "hosts"       => -> { HostsMainDialog(false) },
-        "s390"        => -> { S390Dialog(builder: builder) },
-        "commit"      => [-> { Commit(builder: builder) }, true]
+        "address" => -> { AddressDialog(builder: builder) },
+        "hosts"   => -> { HostsMainDialog(false) },
+        "s390"    => -> { S390Dialog(builder: builder) },
+        "commit"  => [-> { Commit(builder: builder) }, true]
       }
 
       sequence = {
-        "ws_start"    => "address",
-        "address"     => {
-          abort:    :abort,
-          next:     "commit",
-          hosts:    "hosts",
-          s390:     "s390",
+        "ws_start" => "address",
+        "address"  => {
+          abort: :abort,
+          next:  "commit",
+          hosts: "hosts",
+          s390:  "s390"
         },
-        "s390"        => { abort: :abort, next: "address" },
-        "hosts"       => { abort: :abort, next: "address" },
-        "commit"      => { next: :next }
+        "s390"     => { abort: :abort, next: "address" },
+        "hosts"    => { abort: :abort, next: "address" },
+        "commit"   => { next: :next }
       }
 
       Sequencer.Run(aliases, sequence)

@@ -42,7 +42,7 @@ module Y2Network
                 VBox(
                   VSpacing(1),
                   # ComboBox label
-                  Left(ComboBox(Id(:length), _("&Key Length"), [64,128])),
+                  Left(ComboBox(Id(:length), _("&Key Length"), [64, 128])),
                   VSpacing(1),
                   Table(
                     Id(:table),
@@ -55,7 +55,7 @@ module Y2Network
                       _("Key"),
                       # Table header label
                       Center(_("Default"))
-                    ),
+                    )
                   ),
                   HBox(
                     # PushButton label

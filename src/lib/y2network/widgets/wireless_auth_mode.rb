@@ -37,7 +37,7 @@ module Y2Network
       end
 
       def store
-        @settings.auth_mode = self.value
+        @settings.auth_mode = value
       end
     end
   end

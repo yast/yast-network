@@ -14,7 +14,7 @@ module Y2Network
       end
 
       def label
-      _("&Channel")
+        _("&Channel")
       end
 
       def opt
@@ -48,11 +48,11 @@ module Y2Network
     private
 
       def bitrates
-        [54,48,36,24,18,12,11,9,6,5.5,2,1]
+        [54, 48, 36, 24, 18, 12, 11, 9, 6, 5.5, 2, 1]
       end
     end
 
-    class WirelessAccessPoint< CWM::InputField
+    class WirelessAccessPoint < CWM::InputField
       def initialize(settings)
         @settings = settings
       end
