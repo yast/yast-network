@@ -12,7 +12,11 @@ module Y2Network
       end
 
       def init
-        disable
+        self.value = @settings.channel
+      end
+
+      def store
+        @settings.channel = value
       end
 
       def label
@@ -24,7 +28,8 @@ module Y2Network
       end
 
       def items
-        1.upto(14).map { |c| [c.to_s, c.to_s] }.prepend(["", _("Automatic")])
+        # FIXME: different protocol has different number of channels, we need to reflect it somehow
+        1.upto(14).map { |c| [c, c.to_s] }.prepend([nil, _("Automatic")])
       end
     end
 
@@ -38,16 +43,26 @@ module Y2Network
       end
 
       def opt
-        [:hstretch]
+        [:hstretch, :editable]
       end
 
       def label
         _("B&it Rate")
       end
 
-      def items
-        bitrates.map { |b| [b.to_s, b.to_s] }.prepend(["", _("Automatic")])
+      def init
+        self.value = @settings.bitrate
       end
+
+      def store
+        @settings.bitrate = value
+      end
+
+      def items
+        bitrates.map { |b| [b.to_f, b.to_s] }.prepend([nil, _("Automatic")])
+      end
+
+    # TODO: help text with units (Mb/s)
 
     private
 

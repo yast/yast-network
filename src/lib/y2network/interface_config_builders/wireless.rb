@@ -1,10 +1,13 @@
 require "yast"
+require "forwardable"
 require "y2network/config"
 require "y2network/interface_config_builder"
 
 module Y2Network
   module InterfaceConfigBuilders
+    # Builder for wireless configuration. Many methods delegated to ConnectionConfig::Wireless
     class Wireless < InterfaceConfigBuilder
+      extend Forwardable
       include Yast::Logger
 
       def initialize(config: nil)
@@ -28,6 +31,11 @@ module Y2Network
           @config["WIRELESS_ESSID"],
           @connection_config.essid
         )
+      end
+
+      def essid=(value)
+        @config["WIRELESS_ESSID"] = value
+        @connection_config.essid = value
       end
 
       def auth_modes
@@ -65,68 +73,17 @@ module Y2Network
         )
       end
 
-      def wpa_psk
-        @connection_config.wpa_psk
-      end
-
-      def wpa_psk=(value)
-        # TODO: select backend?
-        @connection_config.wpa_psk = value
-      end
-
-      def wpa_password
-        @connection_config.wpa_password
-      end
-
-      def wpa_password=(value)
-        # TODO: select backend?
-        @connection_config.wpa_password = value
-      end
-
-      def wpa_identity
-        @connection_config.wpa_identity
-      end
-
-      def wpa_identity=(value)
-        # TODO: select backend?
-        @connection_config.wpa_identity = value
-      end
-
-      def wpa_anonymous_identity
-        @connection_config.wpa_anonymous_identity
-      end
-
-      def wpa_anonymous_identity=(value)
-        # TODO: select backend?
-        @connection_config.wpa_anonymous_identity = value
-      end
-
-      def ca_cert
-        @connection_config.ca_cert
-      end
-
-      def ca_cert=(value)
-        # TODO: select backend?
-        @connection_config.ca_cert = value
-      end
-
-      def client_cert
-        @connection_config.client_cert
-      end
-
-      def client_cert=(value)
-        # TODO: select backend?
-        @connection_config.client_cert = value
-      end
-
-      def client_key
-        @connection_config.client_key
-      end
-
-      def client_key=(value)
-        # TODO: select backend?
-        @connection_config.client_key = value
-      end
+      # TODO: select backend? probably not needed as we will merge it when new backend will be already ready
+      def_delegators :@connection_config,
+        :wpa_psk, :wpa_psk=,
+        :wpa_password, :wpa_password=,
+        :wpa_identity, :wpa_identity=,
+        :wpa_anonymous_identity, :wpa_anonymous_identity=,
+        :ca_cert, :ca_cert=,
+        :client_key, :client_key=,
+        :client_cert, :client_cert=,
+        :channel, :channel=,
+        :bitrate, :bitrate=
     end
   end
 end

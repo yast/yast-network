@@ -255,12 +255,16 @@ module Y2Network
       define_variable(:wireless_ap)
 
       # @!attribute [r] wireless_channel
-      #   @return [Integer] Wireless channel
-      define_variable(:wireless_channel)
+      #   @return [Integer, nil] Wireless channel or nil for auto selection
+      define_variable(:wireless_channel, :integer)
 
       # @!attribute [r] wireless_nwid
       #   @return [String] Network ID
       define_variable(:wireless_nwid)
+
+      # @!attribute [r] wireless_rate
+      #   @return [String] Wireless bit rate specification ( Mb/s)
+      define_variable(:wireless_rate, :float)
 
       ## INFINIBAND
 
@@ -468,6 +472,14 @@ module Y2Network
       # @return [Integer,nil]
       def value_as_integer(value)
         value.nil? || value.empty? ? nil : value.to_i
+      end
+
+      # Converts the value into an float (or nil if empty)
+      #
+      # @param [String] value
+      # @return [Float,nil]
+      def value_as_float(value)
+        value.nil? || value.empty? ? nil : value.to_f
       end
 
       # Converts the value into a symbol (or nil if empty)

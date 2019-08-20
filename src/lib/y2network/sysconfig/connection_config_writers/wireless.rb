@@ -34,6 +34,8 @@ module Y2Network
           file.wireless_essid = conn.essid
           file.wireless_mode = conn.mode
           file.wireless_nwid = conn.nwid
+          file.wireless_channel = conn.channel
+          file.wireless_rate = conn.bitrate
           write_auth_settings(conn) if conn.auth_mode
         end
 

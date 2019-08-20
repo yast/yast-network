@@ -49,11 +49,11 @@ module Y2Network
       attr_accessor :eap_mode
       # @return [String]
       attr_accessor :eap_auth
-      # @return [Integer]
+      # @return [Integer, nil]
       attr_accessor :channel
       # @return [Integer]
       attr_accessor :frequency
-      # @return [Integer]
+      # @return [Float, nil] bitrate limitation in Mb/s or nil for automatic
       attr_accessor :bitrate
       # @return [String]
       attr_accessor :ap
