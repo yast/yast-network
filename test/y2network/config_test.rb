@@ -53,7 +53,6 @@ describe Y2Network::Config do
   end
   let(:connections) { Y2Network::ConnectionConfigsCollection.new([eth0_conn]) }
 
-
   let(:routing) { Y2Network::Routing.new(tables: [table1, table2]) }
 
   describe ".from" do

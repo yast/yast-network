@@ -35,10 +35,12 @@ describe Y2Network::Sysconfig::InterfacesReader do
   end
 
   let(:udev_rule) do
-    Y2Network::UdevRule.new([
-      Y2Network::UdevRulePart.new("ATTR{address}", "==", "00:12:34:56:78"),
-      Y2Network::UdevRulePart.new("ACTION", "=", "eth0")
-    ])
+    Y2Network::UdevRule.new(
+      [
+        Y2Network::UdevRulePart.new("ATTR{address}", "==", "00:12:34:56:78"),
+        Y2Network::UdevRulePart.new("ACTION", "=", "eth0")
+      ]
+    )
   end
 
   let(:configured_interfaces) { ["lo", "eth0"] }

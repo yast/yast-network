@@ -84,9 +84,9 @@ describe Y2Network::UdevRule do
   describe "#add_part" do
     it "adds a new key/value to the rule" do
       udev_rule.add_part("ACTION", "==", "add")
-      expect(udev_rule.parts).to eq([
-        Y2Network::UdevRulePart.new("ACTION", "==", "add")
-      ])
+      expect(udev_rule.parts).to eq(
+        [Y2Network::UdevRulePart.new("ACTION", "==", "add")]
+      )
     end
   end
 

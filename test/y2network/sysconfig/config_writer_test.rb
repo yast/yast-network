@@ -84,7 +84,7 @@ describe Y2Network::Sysconfig::ConfigWriter do
 
     let(:dns_writer) { instance_double(Y2Network::Sysconfig::DNSWriter, write: nil) }
     let(:conn_writer) { instance_double(Y2Network::Sysconfig::ConnectionConfigWriter, write: nil) }
-    let(:interfaces_writer)  { instance_double(Y2Network::Sysconfig::InterfacesWriter, write: nil) }
+    let(:interfaces_writer) { instance_double(Y2Network::Sysconfig::InterfacesWriter, write: nil) }
 
     before do
       allow(Y2Network::Sysconfig::RoutesFile).to receive(:new)

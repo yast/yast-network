@@ -53,10 +53,9 @@ module Y2Network
       # @param name [String] Interface's name
       # @param mac  [String] MAC address
       def new_mac_based_rename(name, mac)
-        new_network_rule([
-          UdevRulePart.new("ATTR{address}", "=", mac),
-          UdevRulePart.new("NAME", "=", name)
-        ])
+        new_network_rule(
+          [UdevRulePart.new("ATTR{address}", "=", mac), UdevRulePart.new("NAME", "=", name)]
+        )
       end
 
       # Helper method to create a rename rule based on the BUS ID
