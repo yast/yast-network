@@ -75,10 +75,23 @@ module Y2Network
       # Physical interfaces are read from the old LanItems module
       def find_physical_interfaces
         return if @interfaces
-        physical_interfaces = Yast::LanItems.Hardware.map do |h|
+        physical_interfaces = hardware.map do |h|
           build_physical_interface(h)
         end
         @interfaces = Y2Network::InterfacesCollection.new(physical_interfaces)
+      end
+
+      # Returns hardware information
+      #
+      # This method makes sure that the hardware information was read.
+      #
+      # @todo It still relies on Yast::LanItems.Hardware
+      #
+      # @return [Array<Hash>] Hardware information
+      def hardware
+        Yast::LanItems.Hardware unless Yast::LanItems.Hardware.empty?
+        Yast::LanItems.Read # try again if no hardware was found
+        Yast::LanItems.Hardware
       end
 
       # Finds the connections configurations
