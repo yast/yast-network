@@ -73,6 +73,11 @@ module Y2Network
         )
       end
 
+      def access_point=(value)
+        @config["WIRELESS_AP"] = value
+        @connection_config.ap = value
+      end
+
       # TODO: select backend? probably not needed as we will merge it when new backend will be already ready
       def_delegators :@connection_config,
         :wpa_psk, :wpa_psk=,
@@ -83,7 +88,8 @@ module Y2Network
         :client_key, :client_key=,
         :client_cert, :client_cert=,
         :channel, :channel=,
-        :bitrate, :bitrate=
+        :bitrate, :bitrate=,
+        :ap_scanmode, :ap_scanmode=
     end
   end
 end

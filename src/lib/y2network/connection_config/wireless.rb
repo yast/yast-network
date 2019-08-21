@@ -57,8 +57,6 @@ module Y2Network
       attr_accessor :bitrate
       # @return [String]
       attr_accessor :ap
-      # @return [Boolean]
-      attr_accessor :power
       # FIXME: Consider an enum
       # @return [Integer] (0, 1, 2)
       attr_accessor :ap_scanmode

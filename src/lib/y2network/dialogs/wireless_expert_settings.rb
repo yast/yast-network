@@ -36,8 +36,6 @@ module Y2Network
                   VSpacing(0.2),
                   access_point_widget,
                   VSpacing(0.2),
-                  Left(power_management_widget),
-                  VSpacing(0.2),
                   Left(ap_scan_mode_widget),
                   VSpacing(1)
                 ),

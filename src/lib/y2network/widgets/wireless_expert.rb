@@ -90,23 +90,12 @@ module Y2Network
       def init
         self.value = @settings.access_point
       end
-    end
 
-    # Widget that enables wifi power management
-    class WirelessPowerManagement < CWM::CheckBox
-      # @param settings [Y2network::InterfaceConfigBuilder]
-      def initialize(settings)
-        @settings = settings
-        textdomain "network"
+      def store
+        @settings.access_point = value
       end
 
-      def label
-        _("Use &Power Management")
-      end
-
-      def init
-        self.value = true
-      end
+      # TODO: help text
     end
 
     # widget to set Scan mode
@@ -132,6 +121,16 @@ module Y2Network
       def maximum
         2
       end
+
+      def init
+        self.value = @settings.ap_scanmode
+      end
+
+      def store
+        @settings.ap_scanmode = self.value
+      end
+
+      # TODO: help text
     end
   end
 end
