@@ -76,6 +76,11 @@ module Y2Network
           )
       end
 
+      # Always open new dialog to work properly in sequence
+      def should_open_dialog?
+        true
+      end
+
     private
 
       def channel_widget

@@ -95,7 +95,8 @@ module Y2Network
         @settings.access_point = value
       end
 
-      # TODO: help text
+      # TODO: help text with explanation what exactly is needed
+      # TODO: validation of MAC address
     end
 
     # widget to set Scan mode

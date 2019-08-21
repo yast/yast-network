@@ -4,11 +4,12 @@ module Y2Network
   module Widgets
     class WirelessAuthMode < CWM::ComboBox
       def initialize(settings)
+        textdomain "network"
+
         @settings = settings
       end
 
       def init
-        textdomain "network"
         self.value = @settings.auth_mode
       end
 

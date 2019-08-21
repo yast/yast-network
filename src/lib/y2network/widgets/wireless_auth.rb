@@ -85,6 +85,7 @@ module Y2Network
       class WirelessWepKeys < CWM::PushButton
         def initialize(settings)
           @settings = settings
+          textdomain "network"
         end
 
         def label
