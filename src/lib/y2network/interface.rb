@@ -107,6 +107,15 @@ module Y2Network
       hardware.drivers
     end
 
+    # Renames the interface
+    #
+    # @param new_name  [String] New interface's name
+    # @param mechanism [Symbol] Property to base the rename on (:mac or :bus_id)
+    def rename(new_name, mechanism)
+      @name = new_name
+      @renaming_mechanism = mechanism
+    end
+
   private
 
     def system_config(name)
