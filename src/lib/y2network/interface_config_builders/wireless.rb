@@ -89,7 +89,10 @@ module Y2Network
         :client_cert, :client_cert=,
         :channel, :channel=,
         :bitrate, :bitrate=,
-        :ap_scanmode, :ap_scanmode=
+        :ap_scanmode, :ap_scanmode=,
+        :keys, :keys=,
+        :key_length, :key_length=,
+        :default_key, :default_key=
     end
   end
 end

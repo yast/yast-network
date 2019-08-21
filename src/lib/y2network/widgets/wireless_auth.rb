@@ -94,6 +94,8 @@ module Y2Network
 
         def handle
           Y2Network::Dialogs::WirelessWepKeys.run(@settings)
+
+          nil
         end
       end
     end

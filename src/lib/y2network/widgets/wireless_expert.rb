@@ -128,7 +128,7 @@ module Y2Network
       end
 
       def store
-        @settings.ap_scanmode = self.value
+        @settings.ap_scanmode = value
       end
 
       # TODO: help text
