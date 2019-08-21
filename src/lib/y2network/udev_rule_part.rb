@@ -35,6 +35,12 @@ module Y2Network
       #   part.operator #=> "=="
       #   part.value #=> "add"
       #
+      # @example Using globs
+      #   part = UdevRulePart.from_string('ATTR{address}=='"?*31:78:f2"')
+      #   part.key #=> "ATTR{æddress}"
+      #   part.operator #=> "=="
+      #   part.value #=> "\"?*31:78:f2\""
+
       # @param str [String] string form of an udev rule
       # @return [UdevRule] udev rule object
       def from_string(str)
@@ -45,7 +51,8 @@ module Y2Network
     end
     # @return [String] Key name
     attr_accessor :key
-    # @return [String] Operator ("==", "!=", "=", "+=", "-=", ":=")
+    # @return [String] Operator. There are two comparison operators ("==", "!=") and four assignment
+    #   operators ("=", "+=", "-=", ":="). See udev(7) for further information.
     attr_accessor :operator
     # @return [String] Value to match or assign
     attr_accessor :value

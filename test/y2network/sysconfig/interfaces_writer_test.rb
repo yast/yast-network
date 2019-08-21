@@ -37,7 +37,7 @@ describe Y2Network::Sysconfig::InterfacesWriter do
     let(:renaming_mechanism) { nil }
 
     before do
-      allow(Yast::Execute).to receive(:on_target!)
+      allow(Yast::Execute).to receive(:on_target)
       allow(eth0).to receive(:hardware).and_return(hardware)
     end
 
@@ -81,8 +81,8 @@ describe Y2Network::Sysconfig::InterfacesWriter do
     end
 
     it "refreshes udev" do
-      expect(Yast::Execute).to receive(:on_target!).with("/usr/bin/udevadm", "control", any_args)
-      expect(Yast::Execute).to receive(:on_target!).with("/usr/bin/udevadm", "trigger", any_args)
+      expect(Yast::Execute).to receive(:on_target).with("/usr/bin/udevadm", "control", any_args)
+      expect(Yast::Execute).to receive(:on_target).with("/usr/bin/udevadm", "trigger", any_args)
       subject.write(interfaces)
     end
   end

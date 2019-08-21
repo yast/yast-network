@@ -56,8 +56,8 @@ module Y2Network
 
       # Refreshes udev service
       def update_udevd
-        Yast::Execute.on_target!("/usr/bin/udevadm", "control", "--reload")
-        Yast::Execute.on_target!("/usr/bin/udevadm", "trigger", "--subsystem-match=net", "--action=add")
+        Yast::Execute.on_target("/usr/bin/udevadm", "control", "--reload")
+        Yast::Execute.on_target("/usr/bin/udevadm", "trigger", "--subsystem-match=net", "--action=add")
       end
     end
   end

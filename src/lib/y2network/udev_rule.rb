@@ -65,8 +65,8 @@ module Y2Network
       # @param dev_port [String] Device port
       def new_bus_id_based_rename(name, bus_id, dev_port = nil)
         parts = [UdevRulePart.new("KERNELS", "=", bus_id)]
-        parts.push(UdevRulePart.new("ATTR{dev_port}", "=", dev_port)) if dev_port
-        parts.push(UdevRulePart.new("NAME", "=", name))
+        parts << UdevRulePart.new("ATTR{dev_port}", "=", dev_port) if dev_port
+        parts << UdevRulePart.new("NAME", "=", name)
         new_network_rule(parts)
       end
 
@@ -91,7 +91,7 @@ module Y2Network
       # @param udev_rules [Array<UdevRule>] List of udev rules
       def write(udev_rules)
         Yast::SCR.Write(Yast::Path.new(".udev_persistent.rules"), udev_rules.map(&:to_s))
-        Yast::SCR.Write(Yast::Path.new(".udev_persistent.nil"), [])
+        Yast::SCR.Write(Yast::Path.new(".udev_persistent.nil"), []) # Writes changes to the rules file
       end
     end
 
