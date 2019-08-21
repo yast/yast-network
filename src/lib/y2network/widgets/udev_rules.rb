@@ -27,7 +27,7 @@ module Y2Network
       end
 
       def handle
-        self.value = Yast::EditNicName.new.run
+        self.value = Yast::EditNicName.new(@settings).run
 
         nil
       end
