@@ -1,4 +1,6 @@
 require "cwm/dialog"
+require "cwm/custom_widget"
+require "cwm/common_widgets"
 
 module Y2Network
   module Dialogs
