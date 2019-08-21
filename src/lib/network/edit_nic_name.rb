@@ -21,7 +21,7 @@ module Yast
 
     # Constructor
     #
-    # @param [Y2Network::InterfaceConfigBuilder] Interface configuration
+    # @param settings [Y2Network::InterfaceConfigBuilder] Interface configuration
     def initialize(settings)
       textdomain "network"
       @settings = settings

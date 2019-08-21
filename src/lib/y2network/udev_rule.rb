@@ -61,7 +61,7 @@ module Y2Network
       # Helper method to create a rename rule based on the BUS ID
       #
       # @param name     [String] Interface's name
-      # @param mac      [String] BUS ID (e.g., "0000:08:00.0")
+      # @param bus_id   [String] BUS ID (e.g., "0000:08:00.0")
       # @param dev_port [String] Device port
       def new_bus_id_based_rename(name, bus_id, dev_port = nil)
         parts = [UdevRulePart.new("KERNELS", "=", bus_id)]
@@ -100,7 +100,7 @@ module Y2Network
 
     # Constructor
     #
-    # @param [Array<UdevRulePart>] udev rule parts
+    # @param parts [Array<UdevRulePart>] udev rule parts
     def initialize(parts = [])
       @parts = parts
     end
