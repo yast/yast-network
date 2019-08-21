@@ -44,13 +44,6 @@ describe Y2Network::Widgets::WirelessAccessPoint do
   include_examples "CWM::InputField"
 end
 
-describe Y2Network::Widgets::WirelessPowerManagement do
-  let(:builder) { Y2Network::InterfaceConfigBuilder.for("wlan") }
-  subject { described_class.new(builder) }
-
-  include_examples "CWM::CheckBox"
-end
-
 describe Y2Network::Widgets::WirelessAPScanMode do
   let(:builder) { Y2Network::InterfaceConfigBuilder.for("wlan") }
   subject { described_class.new(builder) }
