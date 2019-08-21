@@ -113,6 +113,7 @@ module Y2Network
     #
     # @return [Boolean] true if it was renamed; false otherwise
     def renamed_interface?
+      return false unless interface
       name != interface.name || @renaming_mechanism != interface.renaming_mechanism
     end
 
