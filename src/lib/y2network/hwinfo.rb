@@ -76,7 +76,8 @@ module Y2Network
       { name: "wl_auth_modes", default: "" },
       { name: "wl_enc_modes", default: nil },
       { name: "wl_channels", default: nil },
-      { name: "wl_bitrates", default: nil }
+      { name: "wl_bitrates", default: nil },
+      { name: "dev_port", default: nil }
     ].each do |hwinfo_item|
       define_method hwinfo_item[:name].downcase do
         @hwinfo ? @hwinfo.fetch(hwinfo_item[:name], hwinfo_item[:default]) : hwinfo_item[:default]
@@ -117,7 +118,14 @@ module Y2Network
     include Yast::I18n
 
     def load_hwinfo(name)
-      Yast::LanItems.Hardware.find { |h| h["dev_name"] == name }
+      hw = Yast::LanItems.Hardware.find { |h| h["dev_name"] == name }
+      return nil if hw.nil?
+
+      raw_dev_port = Yast::SCR.Read(
+        Yast::Path.new(".target.string"), "/sys/class_net/#{name}/dev_port"
+      ).to_s.strip
+      hw["dev_port"] = raw_dev_port unless raw_dev_port.empty?
+      hw
     end
   end
 end

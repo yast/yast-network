@@ -22,6 +22,7 @@ require "y2network/sysconfig_paths"
 require "y2network/sysconfig/routes_file"
 require "y2network/sysconfig/dns_writer"
 require "y2network/sysconfig/connection_config_writer"
+require "y2network/sysconfig/interfaces_writer"
 
 module Y2Network
   module Sysconfig
@@ -46,6 +47,7 @@ module Y2Network
         file.save
 
         write_dns_settings(config, old_config)
+        write_interfaces(config.interfaces)
         write_connections(config.connections)
       end
 
@@ -166,6 +168,15 @@ module Y2Network
         old_dns = old_config.dns if old_config
         writer = Y2Network::Sysconfig::DNSWriter.new
         writer.write(config.dns, old_dns)
+      end
+
+      # Updates the interfaces configuration
+      #
+      # @param interfaces [Y2Network::InterfacesCollection]
+      # @see Y2Network::Sysconfig::InterfacesWriter
+      def write_interfaces(interfaces)
+        writer = Y2Network::Sysconfig::InterfacesWriter.new
+        writer.write(interfaces)
       end
 
       # Writes connections configuration

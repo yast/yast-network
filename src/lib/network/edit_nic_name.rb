@@ -19,33 +19,17 @@ module Yast
     # @return [String] current udev match criteria
     attr_reader :old_key
 
-    # udev rule attribute for MAC address
-    MAC_UDEV_ATTR   = "ATTR{address}".freeze
-
-    # udev rule attribute for BUS id
-    BUSID_UDEV_ATTR = "KERNELS".freeze
-
-    def initialize
+    # Constructor
+    #
+    # @param settings [Y2Network::InterfaceConfigBuilder] Interface configuration
+    def initialize(settings)
       textdomain "network"
-
-      Yast.include self, "network/routines.rb"
-
-      current_item = LanItems.getCurrentItem
-      current_rule = LanItems.current_udev_rule
-
-      @old_name = LanItems.current_udev_name
-      unless current_rule.empty?
-        @old_key = :mac unless LanItems.GetItemUdev(MAC_UDEV_ATTR).empty?
-        @old_key = :bus_id unless LanItems.GetItemUdev(BUSID_UDEV_ATTR).empty?
-      end
-
-      if current_item["hwinfo"]
-        @mac = current_item["hwinfo"]["permanent_mac"]
-        @bus_id = current_item["hwinfo"]["busid"]
-      else
-        @mac = ""
-        @bus_id = ""
-      end
+      @settings = settings
+      interface = settings.interface
+      @old_name = interface.name
+      @old_key = interface.renaming_mechanism
+      @mac = interface.hardware.mac
+      @bus_id = interface.hardware.busid
     end
 
     # Opens dialog for editing NIC name and runs event loop.
@@ -61,22 +45,16 @@ module Yast
         next if ret != :ok
 
         new_name = UI.QueryWidget(:dev_name, :Value)
+        udev_type = UI.QueryWidget(:udev_type, :CurrentButton)
 
         if CheckUdevNicName(new_name)
-          LanItems.rename(new_name)
+          @settings.rename_interface(new_name, udev_type)
         else
           UI.SetFocus(:dev_name)
           ret = nil
 
           next
         end
-
-        udev_type = UI.QueryWidget(:udev_type, :CurrentButton)
-
-        # FIXME: it changes udev key used for device identification
-        #  and / or its value only, name is changed elsewhere
-        LanItems.update_item_udev_rule!(udev_type) if udev_type && (old_key != udev_type)
-        LanItems.rename_current_device_in_routing(old_name) if new_name != old_name
       end
 
       close
@@ -146,11 +124,12 @@ module Yast
     # @return [boolean] false if name is invalid
     def CheckUdevNicName(name)
       # check if the name is assigned to another device already
-      if LanItems.GetNetcardNames.include?(name) && name != LanItems.GetCurrentName
+      if @settings.name_exists?(name)
         Popup.Error(_("Configuration name already exists."))
         return false
       end
-      if !ValidNicName(name)
+
+      if !@settings.valid_name?(name)
         Popup.Error(_("Invalid configuration name."))
         return false
       end

@@ -10,12 +10,13 @@ require "y2network/routing"
 require "y2network/routing_table"
 require "y2network/interfaces_collection"
 require "y2network/interface"
+require "y2network/interface_config_builder"
 require "y2network/config"
 
 Yast.import "LanItems"
 
 describe Yast::EditNicName do
-  let(:subject) { described_class.new }
+  let(:subject) { described_class.new(builder) }
   let(:current_name) { "spec0" }
   let(:new_name) { "new1" }
   let(:existing_new_name) { "existing_new_name" }
@@ -28,6 +29,10 @@ describe Yast::EditNicName do
   let(:ifaces) { Y2Network::InterfacesCollection.new([iface]) }
   let(:yast_config) do
     Y2Network::Config.new(interfaces: ifaces, routing: routing, source: :sysconfig)
+  end
+  let(:builder) do
+    instance_double(Y2Network::InterfaceConfigBuilder, interface: iface,
+      name_exists?: false, valid_name?: true, rename_interface: nil)
   end
 
   before do
@@ -91,16 +96,10 @@ describe Yast::EditNicName do
         it "asks for new user input when name already exists" do
           allow(Yast::UI).to receive(:QueryWidget)
             .with(:dev_name, :Value).and_return(existing_new_name, new_name)
-          expect(subject).to receive(:CheckUdevNicName).with(existing_new_name).and_return(false)
-          expect(subject).to receive(:CheckUdevNicName).with(new_name).and_return(true)
-          expect(Yast::UI).to receive(:SetFocus)
-          expect(Yast::LanItems).to receive(:rename).with(new_name)
-          subject.run
-        end
-
-        it "updates the Routing devices list with the new name" do
-          expect(Yast::LanItems).to receive(:rename_current_device_in_routing)
-            .with("spec0")
+          allow(subject).to receive(:CheckUdevNicName).with(existing_new_name).and_return(false)
+          allow(subject).to receive(:CheckUdevNicName).with(new_name).and_return(true)
+          allow(Yast::UI).to receive(:SetFocus)
+          expect(builder).to receive(:rename_interface).with(new_name, :mac)
           subject.run
         end
 

@@ -26,7 +26,12 @@ describe Y2Network::ConnectionConfigsCollection do
   subject(:collection) { described_class.new(connections) }
 
   let(:connections) { [eth0, wlan0] }
-  let(:eth0) { Y2Network::ConnectionConfig::Ethernet.new.tap { |c| c.name = "eth0" } }
+  let(:eth0) do
+    Y2Network::ConnectionConfig::Ethernet.new.tap do |conn|
+      conn.name = "eth0"
+      conn.interface = "eth0"
+    end
+  end
   let(:wlan0) { Y2Network::ConnectionConfig::Wireless.new.tap { |c| c.name = "wlan0" } }
 
   describe "#by_name" do
@@ -38,6 +43,12 @@ describe Y2Network::ConnectionConfigsCollection do
       it "returns nil" do
         expect(collection.by_name("eth1")).to be_nil
       end
+    end
+  end
+
+  describe "#by_interface" do
+    it "returns the connection configurations associated to the given interface name" do
+      expect(collection.by_interface("eth0")).to eq([eth0])
     end
   end
 

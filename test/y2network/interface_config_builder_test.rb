@@ -4,6 +4,8 @@ require_relative "../test_helper"
 
 require "yast"
 require "y2network/interface_config_builder"
+require "y2network/interfaces_collection"
+require "y2network/physical_interface"
 
 Yast.import "Lan"
 
@@ -14,7 +16,9 @@ describe Y2Network::InterfaceConfigBuilder do
     res
   end
 
-  let(:config) { Y2Network::Config.new(source: :sysconfig) }
+  let(:config) { Y2Network::Config.new(interfaces: interfaces, source: :sysconfig) }
+  let(:interfaces) { Y2Network::InterfacesCollection.new([eth0]) }
+  let(:eth0) { Y2Network::PhysicalInterface.new("eth0") }
 
   before do
     allow(Yast::Lan).to receive(:yast_config).and_return(config)
@@ -77,6 +81,25 @@ describe Y2Network::InterfaceConfigBuilder do
       ip_alias = connection_config.ip_aliases.first
       expect(ip_alias.address).to eq(Y2Network::IPAddress.new("10.0.0.0", 24))
       expect(ip_alias.label).to eq("test")
+    end
+
+    context "when interface was renamed" do
+      before do
+        subject.rename_interface("eth2", :mac)
+      end
+
+      it "updates the name in the configuration" do
+        expect(Yast::Lan.yast_config).to receive(:rename_interface)
+          .with("eth0", "eth2", :mac)
+        subject.save
+      end
+    end
+
+    context "when interface was not renamed" do
+      it "does not alter the name" do
+        expect(Yast::Lan.yast_config).to_not receive(:rename_interface)
+        subject.save
+      end
     end
   end
 
@@ -166,6 +189,47 @@ describe Y2Network::InterfaceConfigBuilder do
             expect(result).to be_eql expected_startmode
           end
         end
+      end
+    end
+  end
+
+  describe "#rename_interface" do
+    it "updates the interface name" do
+      expect { config_builder.rename_interface("eth2", :mac) }
+        .to change { config_builder.name }.from("eth0").to("eth2")
+    end
+
+    it "updates the renaming mechanism" do
+      expect { config_builder.rename_interface("eth2", :mac) }
+        .to change { config_builder.renaming_mechanism }.from(nil).to(:mac)
+    end
+  end
+
+  describe "#renamed_interface?" do
+    context "when the interface has been renamed" do
+      it "returns false" do
+        expect(config_builder.renamed_interface?).to eq(false)
+      end
+    end
+
+    context "when the interface has been renamed" do
+      before do
+        config_builder.rename_interface("eth2", :mac)
+      end
+
+      it "returns true" do
+        expect(config_builder.renamed_interface?).to eq(true)
+      end
+    end
+
+    context "when the old name and mechanism have been restored " do
+      before do
+        config_builder.rename_interface("eth2", :mac)
+      end
+
+      it "returns false" do
+        config_builder.rename_interface("eth0", nil)
+        expect(config_builder.renamed_interface?).to eq(false)
       end
     end
   end

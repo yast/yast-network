@@ -4,6 +4,8 @@ require_relative "../../test_helper"
 
 require "yast"
 require "y2network/interface_config_builders/infiniband"
+require "y2network/interfaces_collection"
+require "y2network/physical_interface"
 
 describe Y2Network::InterfaceConfigBuilders::Infiniband do
   subject(:config_builder) do
@@ -12,7 +14,9 @@ describe Y2Network::InterfaceConfigBuilders::Infiniband do
     res
   end
 
-  let(:config) { Y2Network::Config.new(source: :sysconfig) }
+  let(:config) { Y2Network::Config.new(interfaces: interfaces, source: :sysconfig) }
+  let(:interfaces) { Y2Network::InterfacesCollection.new([ib0]) }
+  let(:ib0) { Y2Network::PhysicalInterface.new("ib0") }
 
   before do
     allow(Yast::Lan).to receive(:yast_config).and_return(config)

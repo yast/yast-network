@@ -4,13 +4,17 @@ require_relative "test_helper"
 
 require "network/install_inf_convertor"
 require "y2network/interface_config_builder"
+require "y2network/interfaces_collection"
+require "y2network/physical_interface"
 
 Yast.import "Lan"
 
 describe "Yast::LanItemsClass" do
   subject { Yast::LanItems }
 
-  let(:config) { Y2Network::Config.new(source: :sysconfig) }
+  let(:config) { Y2Network::Config.new(interfaces: interfaces, source: :sysconfig) }
+  let(:interfaces) { Y2Network::InterfacesCollection.new([eth0]) }
+  let(:eth0) { Y2Network::PhysicalInterface.new("eth0") }
 
   before do
     allow(Yast::Lan).to receive(:yast_config).and_return(config)
