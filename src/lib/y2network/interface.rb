@@ -77,7 +77,7 @@ module Y2Network
       @description = ""
       @type = type
       # @hardware and @name should not change during life of the object
-      @hardware = Hwinfo.new(name: name)
+      @hardware = Hwinfo.for(name)
 
       init(name)
     end

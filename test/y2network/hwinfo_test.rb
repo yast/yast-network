@@ -21,7 +21,7 @@ require_relative "../test_helper"
 require "y2network/hwinfo"
 
 describe Y2Network::Hwinfo do
-  subject(:hwinfo) { described_class.new(name: interface_name) }
+  subject(:hwinfo) { described_class.for(interface_name) }
 
   let(:hardware) do
     YAML.load_file(File.join(DATA_PATH, "hardware.yml"))
@@ -79,6 +79,22 @@ describe Y2Network::Hwinfo do
 
       it "returns the dev_port" do
         expect(hwinfo.dev_port).to be_nil
+      end
+    end
+  end
+
+  describe "#==" do
+    context "when both objects contain the same information" do
+      it "returns true" do
+        expect(described_class.new("dev_name" => "eth0"))
+          .to eq(described_class.new("dev_name" => "eth0"))
+      end
+    end
+
+    context "when both objects contain different information" do
+      it "returns false" do
+        expect(described_class.new("dev_name" => "eth0"))
+          .to_not eq(described_class.new("dev_name" => "eth1"))
       end
     end
   end

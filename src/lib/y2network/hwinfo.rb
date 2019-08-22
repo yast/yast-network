@@ -25,11 +25,37 @@ module Y2Network
   # FIXME: decide whether it should read hwinfo (on demand or at once) for a network
   # device and store only necessary info or just parse provided hash
   class Hwinfo
+    # TODO: this method should be private
     attr_reader :hwinfo
 
-    def initialize(name:)
+    class << self
+      # Creates a new instance containing hardware information for a given interface
+      #
+      # @param name [String] Interface's name
+      def for(name)
+        new(load_hwinfo(name))
+      end
+
+    private
+
+      def load_hwinfo(name)
+        hw = Yast::LanItems.Hardware.find { |h| h["dev_name"] == name }
+        return nil if hw.nil?
+
+        raw_dev_port = Yast::SCR.Read(
+          Yast::Path.new(".target.string"), "/sys/class_net/#{name}/dev_port"
+        ).to_s.strip
+        hw["dev_port"] = raw_dev_port unless raw_dev_port.empty?
+        hw
+      end
+    end
+
+    # Constructor
+    #
+    # @param hwinfo [Hash<String,Object>] Hardware information
+    def initialize(hwinfo)
       # FIXME: store only what's needed.
-      @hwinfo = load_hwinfo(name)
+      @hwinfo = hwinfo
     end
 
     # Shortcuts for accessing hwinfo items. Each hwinfo item has own method for reading
@@ -112,20 +138,14 @@ module Y2Network
       modules.map { |m| Driver.new(*m) }
     end
 
-  private
-
-    # for textdomain in network/hardware.rb
-    include Yast::I18n
-
-    def load_hwinfo(name)
-      hw = Yast::LanItems.Hardware.find { |h| h["dev_name"] == name }
-      return nil if hw.nil?
-
-      raw_dev_port = Yast::SCR.Read(
-        Yast::Path.new(".target.string"), "/sys/class_net/#{name}/dev_port"
-      ).to_s.strip
-      hw["dev_port"] = raw_dev_port unless raw_dev_port.empty?
-      hw
+    # Determines whether two objects are equivalent
+    #
+    # @param other [Hwinfo] Object to compare with
+    # @return [Boolean]
+    def ==(other)
+      hwinfo == other.hwinfo
     end
+
+    alias_method :eql?, :==
   end
 end
