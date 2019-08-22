@@ -1,3 +1,22 @@
+# Copyright (c) [2019] SUSE LLC
+#
+# All Rights Reserved.
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of version 2 of the GNU General Public License as published
+# by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, contact SUSE LLC.
+#
+# To contact SUSE LLC about this file by physical or electronic mail, you may
+# find current contact information at www.suse.com.
+
 require "cwm/common_widgets"
 require "cwm/custom_widget"
 require "yast2/feedback"
@@ -101,13 +120,7 @@ module Y2Network
 
     private
 
-      def obtained_networks(networks)
-        output = "<ul>"
-        networks.map { |n| output << "<li>#{n}</li>" }
-        output << "</ul>"
-        output
-      end
-
+      # TODO: own class and do not call directly in widget.
       def essid_list
         command = "#{link_up} && #{scan} | #{grep_and_cut_essid} | #{sort}"
 

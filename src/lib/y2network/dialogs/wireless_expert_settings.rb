@@ -1,3 +1,22 @@
+# Copyright (c) [2019] SUSE LLC
+#
+# All Rights Reserved.
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of version 2 of the GNU General Public License as published
+# by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, contact SUSE LLC.
+#
+# To contact SUSE LLC about this file by physical or electronic mail, you may
+# find current contact information at www.suse.com.
+
 require "yast"
 require "cwm/dialog"
 require "y2network/widgets/wireless"
@@ -7,7 +26,7 @@ module Y2Network
   module Dialogs
     # Dialog that shows when expert button is clicked on wireless tab.
     class WirelessExpertSettings < CWM::Dialog
-      # @param settings [InterfaceBuilder] object holding interface configuration
+      # @param settings [InterfaceConfigBuilder] object holding interface configuration
       #   modified by the dialog.
       def initialize(settings)
         @settings = settings
@@ -30,13 +49,13 @@ module Y2Network
                 HSpacing(2),
                 VBox(
                   VSpacing(1),
-                  channel_widget,
+                  channel_widget, # TODO: channel only when mode is master or adhoc
                   VSpacing(0.2),
                   bitrate_widget,
                   VSpacing(0.2),
-                  access_point_widget,
+                  access_point_widget, # TODO: Access point only in managed mode
                   VSpacing(0.2),
-                  Left(ap_scan_mode_widget),
+                  Left(ap_scan_mode_widget), # TODO: AP scan mode only in managed mode
                   VSpacing(1)
                 ),
                 HSpacing(2)

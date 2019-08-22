@@ -9,7 +9,7 @@ require "y2network/widgets/client_key_path"
 module Y2Network
   module Widgets
     # High Level widget that allow to select kind of EAP authentication and also dynamically change
-    # its content according to selection
+    # its content according to the selection
     class WirelessEap < CWM::CustomWidget
       attr_reader :settings
 

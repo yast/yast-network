@@ -1,3 +1,22 @@
+# Copyright (c) [2019] SUSE LLC
+#
+# All Rights Reserved.
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of version 2 of the GNU General Public License as published
+# by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, contact SUSE LLC.
+#
+# To contact SUSE LLC about this file by physical or electronic mail, you may
+# find current contact information at www.suse.com.
+
 require "cwm/dialog"
 require "cwm/custom_widget"
 require "cwm/common_widgets"
@@ -6,7 +25,7 @@ module Y2Network
   module Dialogs
     # Dialog to manage WEP keys
     class WirelessWepKeys < CWM::Dialog
-      # @param builder [Y2network::InterfaceConfigBuilder]
+      # @param builder [InterfaceConfigBuilder]
       def initialize(builder)
         textdomain "network"
         @builder = builder
@@ -65,11 +84,13 @@ module Y2Network
           @builder = builder
         end
 
+        ITEMS = [
+          ["64", "64"],
+          ["128", "128"]
+        ].freeze
+
         def items
-          [
-            ["64", "64"],
-            ["128", "128"]
-          ]
+          ITEMS
         end
 
         def init
@@ -135,25 +156,28 @@ module Y2Network
           refresh_table
         end
 
-        def refresh_table
+        def refresh_table(selected_index)
           table_items = @settings.keys.each_with_index.map do |key, i|
             next unless key
             Item(Id(i), i.to_s, key, i == @settings.default_key ? "X" : "")
           end
+
+          compact_keys = @settings.keys.compact
 
           Yast::UI.ChangeWidget(Id(:wep_keys_table), :Items, table_items.compact)
           [:wep_keys_delete, :wep_keys_edit, :wep_keys_default].each do |k|
             Yast::UI.ChangeWidget(
               Id(k),
               :Enabled,
-              !@settings.keys.compact.empty?
+              !compact_keys.empty?
             )
           end
           Yast::UI.ChangeWidget(
             Id(:wep_keys_add),
             :Enabled,
-            @settings.keys.compact.size < 4 # only 4 keys are possible
+            compact_keys.size < 4 # only 4 keys are possible
           )
+          Yast::UI.ChangeWidget(Id(:wep_keys_table), :CurrentItem, selected_index)
         end
 
         # @return [Symbol, nil] dialog result
@@ -166,8 +190,7 @@ module Y2Network
             key = dialog(@settings.keys[cur])
             if key
               @settings.keys[cur] = key
-              refresh_table
-              Yast::UI.ChangeWidget(Id(:wep_keys_table), :CurrentItem, cur)
+              refresh_table(cur)
             end
           when :wep_keys_add
             key = dialog
@@ -180,20 +203,14 @@ module Y2Network
                 @settings.keys << key
               end
               log.info "new keys #{@settings.keys.inspect}"
-              refresh_table
-              Yast::UI.ChangeWidget(
-                Id(:wep_keys_table),
-                :CurrentItem,
-                @settings.keys.compact.size - 1
-              )
+              refresh_table(@settings.keys.compact.size - 1)
             end
           when :wep_keys_delete
             @settings.keys.delete_at(cur)
-            refresh_table
+            refresh_table(0)
           when :wep_keys_default
             @settings.default_key = cur
-            refresh_table
-            Yast::UI.ChangeWidget(Id(:wep_keys_table), :CurrentItem, cur)
+            refresh_table(cur)
           end
 
           nil
@@ -223,18 +240,15 @@ module Y2Network
           val = nil
           while (ret = Yast::UI.UserInput) == :ok
             val = Yast::UI.QueryWidget(Id(:key), :Value)
-            if !valid_key(val)
-              # Popup::Error text
-              Yast::Popup.Error(
-                _(
-                  "The WEP key is not valid. WEP key can be specified either directly in hex " \
-                    "digits, with or without dashes, or in the key's ASCII representation " \
-                    "(prefix s: ), or as a passphrase which will be hashed (prefix h: )."
-                )
+            break if valid_key?(val)
+            # Popup::Error text
+            Yast::Popup.Error(
+              _(
+                "The WEP key is not valid. WEP key can be specified either directly in hex " \
+                  "digits, with or without dashes, or in the key's ASCII representation " \
+                  "(prefix s: ), or as a passphrase which will be hashed (prefix h: )."
               )
-              next
-            end
-            break
+            )
           end
 
           Yast::UI.CloseDialog
@@ -243,7 +257,7 @@ module Y2Network
           val
         end
 
-        def valid_key(_key)
+        def valid_key?(_key)
           # TODO: write validation
           true
         end
