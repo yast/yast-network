@@ -395,7 +395,7 @@ module Y2Network
     def connection_config_klass(type)
       ConnectionConfig.const_get(type.class_name)
     rescue NameError
-      log.error "Could not find a class to handle '#{type.name}' connections"
+      log.error "Could not find a class to handle '#{type.class_name}' connections"
       ConnectionConfig::Base
     end
 
