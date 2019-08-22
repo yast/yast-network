@@ -23,6 +23,8 @@ require "y2network/udev_rule"
 describe Y2Network::UdevRule do
   subject(:udev_rule) { described_class.new(parts) }
 
+  before { described_class.reset_cache }
+
   let(:parts) { [] }
 
   let(:udev_persistent) do

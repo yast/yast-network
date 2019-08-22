@@ -42,7 +42,6 @@ module Y2Network
       # @param device [String] Network device name
       # @return [UdevRule] udev rule
       def find_for(device)
-        rules_map = Yast::SCR.Read(Yast::Path.new(".udev_persistent.net")) || {}
         return nil unless rules_map.key?(device)
         parts = rules_map[device].map { |p| UdevRulePart.from_string(p) }
         new(parts)
@@ -81,6 +80,9 @@ module Y2Network
           UdevRulePart.new("SUBSYSTEM", "==", "net"),
           UdevRulePart.new("ACTION", "==", "add"),
           UdevRulePart.new("DRIVERS", "==", "?*"),
+          # Ethernet devices
+          # https://github.com/torvalds/linux/blob/bb7ba8069de933d69cb45dd0a5806b61033796a3/include/uapi/linux/if_arp.h#L31
+          # TODO: what about InfiniBand (it is type 32)?
           UdevRulePart.new("ATTR{type}", "==", "1")
         ]
         new(base_parts.concat(parts))
@@ -92,6 +94,20 @@ module Y2Network
       def write(udev_rules)
         Yast::SCR.Write(Yast::Path.new(".udev_persistent.rules"), udev_rules.map(&:to_s))
         Yast::SCR.Write(Yast::Path.new(".udev_persistent.nil"), []) # Writes changes to the rules file
+      end
+
+      # Clears rules cache map
+      def reset_cache
+        @rules_map = nil
+      end
+
+    private
+
+      # Returns the rules map
+      #
+      # @return [Hash<String,Array<String>>] Rules parts (as strings) indexed by interface name
+      def rules_map
+        @rules_map ||= Yast::SCR.Read(Yast::Path.new(".udev_persistent.net")) || {}
       end
     end
 
