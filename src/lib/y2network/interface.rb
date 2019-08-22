@@ -17,6 +17,7 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
+require "yast"
 require "y2network/interface_type"
 require "y2network/hwinfo"
 
@@ -35,6 +36,8 @@ module Y2Network
   # @see Y2Network::VirtualInterface
   # @see Y2Network::FakeInterface
   class Interface
+    include Yast::Logger
+
     # @return [String] Device name ('eth0', 'wlan0', etc.)
     attr_accessor :name
     # @return [String] Interface description
@@ -112,6 +115,7 @@ module Y2Network
     # @param new_name  [String] New interface's name
     # @param mechanism [Symbol] Property to base the rename on (:mac or :bus_id)
     def rename(new_name, mechanism)
+      log.info "Rename interface '#{name}' to '#{new_name}' using the '#{mechanism}'"
       @name = new_name
       @renaming_mechanism = mechanism
     end

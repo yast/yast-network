@@ -172,5 +172,21 @@ describe Y2Network::Config do
       eth1_conns = config.connections.by_interface("eth1")
       expect(eth1_conns).to_not be_empty
     end
+
+    context "when the interface is renamed twice" do
+      it "adjusts the interface name to the last name" do
+        config.rename_interface("eth0", "eth1", :mac)
+        config.rename_interface("eth1", "eth2", :bios_id)
+        eth2 = config.interfaces.by_name("eth2")
+        expect(eth2.renaming_mechanism).to eq(:bios_id)
+      end
+
+      it "adjusts the connection configurations for that interface using the last name" do
+        config.rename_interface("eth0", "eth1", :mac)
+        config.rename_interface("eth1", "eth2", :mac)
+        eth2_conns = config.connections.by_interface("eth2")
+        expect(eth2_conns).to_not be_empty
+      end
+    end
   end
 end
