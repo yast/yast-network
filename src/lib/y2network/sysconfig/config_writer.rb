@@ -67,6 +67,7 @@ module Y2Network
       def write_interface_changes(config, old_config)
         # Write ifroute files
         config.interfaces.each do |dev|
+          next if dev.name.empty?
           routes = find_routes_for(dev, config.routing.routes)
           file = routes_file_for(dev)
 

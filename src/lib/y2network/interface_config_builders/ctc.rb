@@ -25,83 +25,50 @@ Yast.import "NetworkInterfaces"
 
 module Y2Network
   module InterfaceConfigBuilders
-    # Builder for S390 qeth interfaces. It also assumes the activation
-    # responsibilities.
-    class Qeth < InterfaceConfigBuilder
+    class Ctc < InterfaceConfigBuilder
       extend Forwardable
 
-      # Constructor
-      #
-      # @param config [Y2Network::ConnectionConfig::Base, nil] existing configuration of device or nil
-      #   for newly created
       def initialize(config: nil)
-        super(type: InterfaceType::QETH, config: config)
+        super(type: InterfaceType::CTC, config: config)
       end
 
       def_delegators :@connection_config,
         :read_channel, :read_channel=,
         :write_channel, :write_channel=,
-        :data_channel, :data_channel=,
-        :layer2, :layer2=,
-        :port_number, :port_number=,
-        :lladdress, :lladdress=,
-        :ipa_takeover, :ipa_takeover=,
-        :attributes, :attributes=
+        :protocol, :protocol=
 
-      # @return [Array<String>]
-      def configure_attributes
-        return [] unless attributes
-
-        attributes.split(" ")
-      end
-
-      # The device id to be used by lszdev or chzdev commands
-      #
-      # @return [String]
       def device_id
         return if read_channel.to_s.empty?
 
-        [read_channel, write_channel, data_channel].join(":")
+        "#{read_channel}:#{write_channel}"
       end
 
-      # Returns the complete device id which contains the given channel
-      #
-      # @param channel [String]
-      # @return [String]
       def device_id_from(channel)
-        cmd = "/sbin/lszdev qeth -c id -n".split(" ")
+        cmd = "/sbin/lszdev ctc -c id -n".split(" ")
 
         Yast::Execute.stdout.on_target!(cmd).split("\n").find do |d|
           d.include? channel
         end
       end
 
-      # It tries to enable the interface with the configured device id
-      #
-      # @return [Boolean] true when enabled
       def configure
-        cmd = "/sbin/chzdev qeth #{device_id} -e".split(" ").concat(configure_attributes)
+        cmd = "/sbin/chzdev ctc #{device_id} -e protocol=#{protocol}".split(" ")
 
         Yast::Execute.on_target!(*cmd, allowed_exitstatus: 0..255).zero?
       end
 
-      # Obtains the enabled interface name associated with the device id
-      #
-      # @return [String] device name
       def configured_interface
-        cmd = "/sbin/lszdev #{device_id} -c names -n".split(" ").concat(configure_attributes)
+        cmd = "/sbin/lszdev #{device_id} -c names -n".split(" ")
 
         Yast::Execute.stdout.on_target!(cmd).chomp
       end
 
-      # Modifies the read, write and data channel from the the device id
       def propose_channels
         id = device_id_from(hwinfo.busid)
         return unless id
-        self.read_channel, self.write_channel, self.data_channel = id.split(":")
+        self.read_channel, self.write_channel = id.split(":")
       end
 
-      # Makes a new channels proposal only if not already set
       def proposal
         propose_channels unless device_id
       end
