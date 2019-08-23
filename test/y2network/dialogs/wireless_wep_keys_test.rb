@@ -56,5 +56,3 @@ describe Y2Network::Dialogs::WirelessWepKeys::WEPKeys do
     end
   end
 end
-
-
