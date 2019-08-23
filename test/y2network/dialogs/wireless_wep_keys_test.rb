@@ -28,3 +28,31 @@ describe Y2Network::Dialogs::WirelessWepKeys do
 
   include_examples "CWM::Dialog"
 end
+
+describe Y2Network::Dialogs::WirelessWepKeys::WEPKeyLength do
+  subject { described_class.new(Y2Network::InterfaceConfigBuilder.for("wlan")) }
+
+  include_examples "CWM::ComboBox"
+end
+
+describe Y2Network::Dialogs::WirelessWepKeys::WEPKeys do
+  let(:builder) { Y2Network::InterfaceConfigBuilder.for("wlan") }
+  subject { described_class.new(builder) }
+
+  include_examples "CWM::CustomWidget"
+
+  describe "#handle" do
+    it "opens wep key dialog for edit button" do
+      builder.keys = ["test"]
+      expect(Yast::UI).to receive(:UserInput).and_return(:cancel)
+
+      subject.handle("EventReason" => "Activated", "ID" => :wep_keys_edit)
+    end
+
+    it "opens wep key dialog for add button" do
+      expect(Yast::UI).to receive(:UserInput).and_return(:cancel)
+
+      subject.handle("EventReason" => "Activated", "ID" => :wep_keys_add)
+    end
+  end
+end

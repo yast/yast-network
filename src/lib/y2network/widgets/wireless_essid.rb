@@ -67,8 +67,8 @@ module Y2Network
       end
 
       def init
-        self.value = @settings.essid.to_s
         Yast::UI.ChangeWidget(Id(widget_id), :ValidChars, valid_chars)
+        self.value = @settings.essid.to_s
       end
 
       # allow to use not found name e.g. when scan failed or when network is hidden
@@ -82,6 +82,10 @@ module Y2Network
         old_value = value
         change_items(networks.map { |n| [n, n] })
         self.value = old_value
+      end
+
+      def store
+        @settings.essid = value
       end
 
     private
