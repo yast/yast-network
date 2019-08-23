@@ -40,6 +40,8 @@ module Y2Network
       end
 
       def init
+        auth_mode_widget.init # force init of auth to ensure that refresh has correct value
+        replace_widget.init
         refresh
       end
 
