@@ -210,6 +210,10 @@ module Y2Network
       #  @return [String] Password as configured on the RADIUS server (for WPA-EAP)
       define_variable(:wireless_wpa_password)
 
+      # @!attribute [r] wireless_wpa_anonid
+      #  @return [String] anonymous identity used for initial tunnel (TTLS)
+      define_variable(:wireless_wpa_anonid)
+
       # @!attribute [r] wireless_wpa_driver
       #   @return [String] Driver to be used by the wpa_supplicant program
       define_variable(:wireless_wpa_driver)
@@ -217,6 +221,22 @@ module Y2Network
       # @!attribute [r] wireless_wpa_psk
       #   @return [String] WPA preshared key (for WPA-PSK)
       define_variable(:wireless_wpa_psk)
+
+      # @!attribute [r] wireless_wpa_identity
+      #   @return [String] WPA identify
+      define_variable(:wireless_wpa_identity)
+
+      # @!attribute [r] wireless_ca_cert
+      #   @return [String] CA certificate used to sign server certificate
+      define_variable(:wireless_ca_cert)
+
+      # @!attribute [r] wireless_client_cert
+      #   @return [String] CA certificate used to sign server certificate
+      define_variable(:wireless_client_cert)
+
+      # @!attribute [r] wireless_client_key
+      #   @return [String] client private key used for encryption in TLS
+      define_variable(:wireless_client_key)
 
       # @!attribute [r] wireless_eap_mode
       #   @return [String] WPA-EAP outer authentication method
@@ -235,12 +255,16 @@ module Y2Network
       define_variable(:wireless_ap)
 
       # @!attribute [r] wireless_channel
-      #   @return [Integer] Wireless channel
-      define_variable(:wireless_channel)
+      #   @return [Integer, nil] Wireless channel or nil for auto selection
+      define_variable(:wireless_channel, :integer)
 
       # @!attribute [r] wireless_nwid
       #   @return [String] Network ID
       define_variable(:wireless_nwid)
+
+      # @!attribute [r] wireless_rate
+      #   @return [String] Wireless bit rate specification ( Mb/s)
+      define_variable(:wireless_rate, :float)
 
       ## INFINIBAND
 
@@ -448,6 +472,14 @@ module Y2Network
       # @return [Integer,nil]
       def value_as_integer(value)
         value.nil? || value.empty? ? nil : value.to_i
+      end
+
+      # Converts the value into an float (or nil if empty)
+      #
+      # @param [String] value
+      # @return [Float,nil]
+      def value_as_float(value)
+        value.nil? || value.empty? ? nil : value.to_f
       end
 
       # Converts the value into a symbol (or nil if empty)
