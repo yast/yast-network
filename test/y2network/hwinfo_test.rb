@@ -97,5 +97,10 @@ describe Y2Network::Hwinfo do
           .to_not eq(described_class.new("dev_name" => "eth1"))
       end
     end
+
+    it "ignores nil values" do
+      expect(described_class.new("dev_name" => "eth0", "other" => nil))
+        .to eq(described_class.new("dev_name" => "eth0"))
+    end
   end
 end

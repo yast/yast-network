@@ -53,9 +53,9 @@ module Y2Network
     # Constructor
     #
     # @param hwinfo [Hash<String,Object>] Hardware information
-    def initialize(hwinfo)
+    def initialize(hwinfo = {})
       # FIXME: store only what's needed.
-      @hwinfo = hwinfo
+      @hwinfo = Hash[hwinfo.map { |k, v| [k.to_s, v] }] if hwinfo
     end
 
     # Shortcuts for accessing hwinfo items. Each hwinfo item has own method for reading
@@ -140,10 +140,12 @@ module Y2Network
 
     # Determines whether two objects are equivalent
     #
+    # Ignores any element having a nil value.
+    #
     # @param other [Hwinfo] Object to compare with
     # @return [Boolean]
     def ==(other)
-      hwinfo == other.hwinfo
+      hwinfo.reject { |_k, v| v.nil? } == other.hwinfo.reject { |_k, v| v.nil? }
     end
 
     alias_method :eql?, :==
