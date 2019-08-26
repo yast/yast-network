@@ -31,14 +31,28 @@ module Y2Network
     class << self
       # Creates a new instance containing hardware information for a given interface
       #
+      # It retrieves the information from two sources:
+      #
+      # * hardware (through {Yast::LanItems} for the time being),
+      # * from existing udev rules.
+      #
+      # @todo Probably, this logic should be moved to a separate class.
+      #
       # @param name [String] Interface's name
+      # @return [Hwinfo]
       def for(name)
-        new(load_hwinfo(name))
+        hwinfo_from_hardware(name) || hwinfo_from_udev(name) || Hwinfo.new
       end
 
     private
 
-      def load_hwinfo(name)
+      # Returns hardware information for the given device
+      #
+      # It relies on the {Yast::LanItems} module.
+      #
+      # @param name [String] Interface's name
+      # @return [Hwinfo,nil] Hardware info or nil if not found
+      def hwinfo_from_hardware(name)
         hw = Yast::LanItems.Hardware.find { |h| h["dev_name"] == name }
         return nil if hw.nil?
 
@@ -46,7 +60,24 @@ module Y2Network
           Yast::Path.new(".target.string"), "/sys/class_net/#{name}/dev_port"
         ).to_s.strip
         hw["dev_port"] = raw_dev_port unless raw_dev_port.empty?
-        hw
+        new(hw)
+      end
+
+      # Returns hardware information for the given device
+      #
+      # It relies on udev rules.
+      #
+      # @param name [String] Interface's name
+      # @return [Hwinfo,nil] Hardware info or nil if not found
+      def hwinfo_from_udev(name)
+        udev_rule = UdevRule.find_for(name)
+        return Hwinfo.new if udev_rule.nil?
+        info = {
+          udev:     udev_rule.bus_id,
+          mac:      udev_rule.mac,
+          dev_port: udev_rule.dev_port
+        }.compact
+        new(info)
       end
     end
 
@@ -114,7 +145,7 @@ module Y2Network
     alias_method :name, :dev_name
 
     def exists?
-      !@hwinfo.nil?
+      !@hwinfo.empty?
     end
 
     # Device type description
@@ -128,6 +159,7 @@ module Y2Network
     # @param other [Hwinfo] Object to merge data from
     def merge!(other)
       @hwinfo.merge!(other.hwinfo)
+      self
     end
 
     # Returns the list of kernel modules
@@ -152,7 +184,7 @@ module Y2Network
     # @param other [Hwinfo] Object to compare with
     # @return [Boolean]
     def ==(other)
-      hwinfo.reject { |_k, v| v.nil? } == other.hwinfo.reject { |_k, v| v.nil? }
+      hwinfo.compact == other.hwinfo.compact
     end
 
     alias_method :eql?, :==

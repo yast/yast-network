@@ -136,5 +136,46 @@ module Y2Network
     def to_s
       parts.map(&:to_s).join(", ")
     end
+
+    # Returns the part with the given key
+    #
+    # @param key [String] Key name
+    def part_by_key(key)
+      parts.find { |p| p.key == key }
+    end
+
+    # Returns the value for a given part
+    #
+    # @param key [String] Key name
+    # @return [String,nil] Value or nil if not found a part which such a key
+    def part_value_for(key)
+      part = part_by_key(key)
+      return nil unless part
+      part.value
+    end
+
+    # Returns the MAC in the udev rule
+    #
+    # @return [String,nil] MAC address or nil if not found
+    # @see #part_value_for
+    def mac
+      part_value_for("ATTR{address}")
+    end
+
+    # Returns the BUS ID in the udev rule
+    #
+    # @return [String,nil] BUS ID or nil if not found
+    # @see #part_value_for
+    def bus_id
+      part_value_for("KERNELS")
+    end
+
+    # Returns the device port in the udev rule
+    #
+    # @return [String,nil] Device port or nil if not found
+    # @see #part_value_for
+    def dev_port
+      part_value_for("ATTR{dev_port}")
+    end
   end
 end

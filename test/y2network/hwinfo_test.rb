@@ -31,6 +31,37 @@ describe Y2Network::Hwinfo do
 
   before do
     allow(Yast::LanItems).to receive(:Hardware).and_return(hardware)
+    allow(Y2Network::UdevRule).to receive(:find_for).with(interface_name).and_return(udev_rule)
+  end
+
+  let(:udev_rule) { nil }
+
+  describe ".for" do
+    context "when there is info from hardware" do
+      it "returns a hwinfo object containing the info from hardware" do
+        hwinfo = described_class.for(interface_name)
+        expect(hwinfo.mac).to eq("52:54:00:68:54:fb")
+      end
+    end
+
+    context "when there is no info from hardware" do
+      let(:hardware) { [] }
+      let(:udev_rule) { Y2Network::UdevRule.new_mac_based_rename(interface_name, "01:23:45:67:89:ab") }
+
+      it "returns info from udev rules" do
+        hwinfo = described_class.for(interface_name)
+        expect(hwinfo.mac).to eq("01:23:45:67:89:ab")
+      end
+
+      context "when there is no info from udev rules" do
+        let(:udev_rule) { nil }
+
+        it "returns nil" do
+          hwinfo = described_class.for(interface_name)
+          expect(hwinfo.exists?).to eq(false)
+        end
+      end
+    end
   end
 
   describe "#exists?" do
