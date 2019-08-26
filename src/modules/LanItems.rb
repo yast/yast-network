@@ -1647,43 +1647,6 @@ module Yast
       true
     end
 
-    TRISTATE_TO_S = { nil => nil, false => "no", true => "yes" }.freeze
-
-    # Sets device map items related to dhclient
-    def setup_dhclient_options(devmap)
-      if dhcp?(devmap)
-        val = TRISTATE_TO_S.fetch(@set_default_route)
-        devmap["DHCLIENT_SET_DEFAULT_ROUTE"] = val if val
-      end
-      devmap
-    end
-
-    # Sets bonding specific sysconfig options in given device map
-    #
-    # If any bonding specific option is present already it gets overwritten
-    # by new ones in case of collision. If any BONDING_SLAVEx from devmap
-    # is not set, then its value is set to 'nil'
-    #
-    # @param devmap [Hash] hash of a device's sysconfig variables
-    # @param slaves [array] list of strings, each string is a bond slave name
-    #
-    # @return [Hash] updated copy of the device map
-    def setup_bonding(devmap, slaves, options)
-      raise ArgumentError, "Device map has to be provided." if devmap.nil?
-
-      devmap = deep_copy(devmap)
-      slaves ||= []
-
-      slave_opts = devmap.select { |k, _| k.start_with?("BONDING_SLAVE") }.keys
-      slave_opts.each { |s| devmap[s] = nil }
-      slaves.each_with_index { |s, i| devmap["BONDING_SLAVE#{i}"] = s }
-
-      devmap["BONDING_MODULE_OPTS"] = options || ""
-      devmap["BONDING_MASTER"] = "yes"
-
-      devmap
-    end
-
     # Commit pending operation
     #
     # It commits *only* content of the corresponding ifcfg into NetworkInterfaces.
