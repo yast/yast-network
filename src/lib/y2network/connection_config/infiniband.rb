@@ -18,6 +18,7 @@
 # find current contact information at www.suse.com.
 
 require "y2network/connection_config/base"
+require "y2network/ipoib_mode"
 
 module Y2Network
   module ConnectionConfig
@@ -27,6 +28,12 @@ module Y2Network
     class Infiniband < Base
       # @return [IpoibMode] transport mode
       attr_accessor :ipoib_mode
+
+      def initialize
+        super
+
+        self.ipoib_mode = IpoibMode::DEFAULT
+      end
     end
   end
 end

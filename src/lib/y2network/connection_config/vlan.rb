@@ -25,6 +25,7 @@ module Y2Network
     class Vlan < Base
       # FIXME: By now it will be just the interface name although in NM it
       #   could be a ifname, UUID or even a MAC address.
+      # TODO: consider using Interface instead of plain string?
       #
       # @return [String] the real interface associated with the vlan
       attr_accessor :parent_device

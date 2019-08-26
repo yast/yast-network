@@ -25,12 +25,11 @@ module Y2Network
   module InterfaceConfigBuilders
     class Bonding < InterfaceConfigBuilder
       include Yast::Logger
+      extend Forwardable
 
       def initialize(config: nil)
         super(type: InterfaceType::BONDING, config: config)
 
-        # fill mandatory bond option
-        @slaves = []
       end
 
       # @return [Array<Interface>] list of interfaces usable for the bond device
@@ -38,33 +37,17 @@ module Y2Network
         interfaces.all.select { |i| bondable?(i) }
       end
 
-      # @return [String] options for bonding
-      attr_writer :bond_options
+      def_delegators :connection_config,
+        :slaves, :slaves=
+
+      # @param value [String] options for bonding
+      def bond_options= (value)
+        connection_config.options = value
+      end
+
       # current options for bonding
       def bond_options
-        return @bond_options if @bond_options
-
-        @bond_options = Yast::LanItems.bond_option
-        if @bond_options.nil? || @bond_options.empty?
-          @bond_options = @config["BONDING_MODULE_OPTS"]
-        end
-        @bond_options
-      end
-
-      def slaves
-        @slaves
-      end
-
-      def slaves=(value)
-        @slaves = value
-      end
-
-      # (see Y2Network::InterfaceConfigBuilder#save)
-      def save
-        super
-
-        Yast::LanItems.bond_slaves = @slaves
-        Yast::LanItems.bond_option = bond_options
+        connection_config.options
       end
 
     private

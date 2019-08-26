@@ -32,22 +32,22 @@ module Y2Network
 
       # @return [Integer]
       def vlan_id
-        (@config["VLAN_ID"] || "0").to_i
+        connection_config.vlan_id || 0
       end
 
       # @param [Integer] value
       def vlan_id=(value)
-        @config["VLAN_ID"] = value.to_s
+        connection_config.vlan_id = value
       end
 
       # @return [String]
       def etherdevice
-        @config["ETHERDEVICE"]
+        connection_config.parent_device
       end
 
       # @param [String] value
       def etherdevice=(value)
-        @config["ETHERDEVICE"] = value
+        connection_config.parent_device = value
       end
 
       # @return [Hash<String, String>] returns ordered list of devices that can be used for vlan
@@ -55,6 +55,7 @@ module Y2Network
       def possible_vlans
         res = {}
         # unconfigured devices
+        # TODO: new backend
         Yast::LanItems.Items.each_value do |lan_item|
           next unless (lan_item["ifcfg"] || "").empty?
           dev_name = lan_item.fetch("hwinfo", {}).fetch("dev_name", "")
