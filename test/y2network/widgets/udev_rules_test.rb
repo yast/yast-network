@@ -21,13 +21,14 @@ require_relative "../../test_helper"
 require "cwm/rspec"
 
 require "y2network/widgets/udev_rules"
+require "y2network/dialogs/rename_interface"
 
 describe Y2Network::Widgets::UdevRules do
   subject { described_class.new({}) }
 
   before do
     allow(Yast::LanItems).to receive(:current_udev_name).and_return("hell666")
-    allow(Yast::EditNicName).to receive(:new).and_return(double(run: "heaven010"))
+    allow(Y2Network::Dialogs::RenameInterface).to receive(:new).and_return(double(run: "heaven010"))
   end
 
   include_examples "CWM::CustomWidget"
