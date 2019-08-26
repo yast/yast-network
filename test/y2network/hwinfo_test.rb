@@ -49,6 +49,18 @@ describe Y2Network::Hwinfo do
     end
   end
 
+  describe "#merge!" do
+    subject(:hwinfo) { described_class.new(mac: "00:11:22:33:44:55:66", busid: "0000:08:00.0") }
+    let(:other) { described_class.new(mac: "01:23:45:78:90:ab", dev_port: "1") }
+
+    it "merges data from another Hwinfo object" do
+      hwinfo.merge!(other)
+      expect(hwinfo.mac).to eq(other.mac)
+      expect(hwinfo.busid).to eq("0000:08:00.0")
+      expect(hwinfo.dev_port).to eq("1")
+    end
+  end
+
   describe "#drivers" do
     it "returns the list of kernel modules names" do
       expect(hwinfo.drivers).to eq(

@@ -123,6 +123,13 @@ module Y2Network
       @hwinfo ? @hwinfo.fetch("name", "") : ""
     end
 
+    # Merges data from another Hwinfo object
+    #
+    # @param other [Hwinfo] Object to merge data from
+    def merge!(other)
+      @hwinfo.merge!(other.hwinfo)
+    end
+
     # Returns the list of kernel modules
     #
     # The list of modules is internally represented as:
