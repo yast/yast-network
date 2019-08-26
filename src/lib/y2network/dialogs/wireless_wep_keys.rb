@@ -153,10 +153,11 @@ module Y2Network
         # TODO: help text which explain format of WEP keys
 
         def init
-          refresh_table
+          refresh_table(0)
         end
 
         def refresh_table(selected_index)
+          @settings.keys ||= [] # TODO: should be fixed by proper initialize of settings object
           table_items = @settings.keys.each_with_index.map do |key, i|
             next unless key
             Item(Id(i), i.to_s, key, i == @settings.default_key ? "X" : "")
