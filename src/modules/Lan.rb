@@ -35,6 +35,7 @@ require "ui/text_helpers"
 require "y2firewall/firewalld"
 require "y2network/autoinst_profile/networking_section"
 require "y2network/config"
+require "y2network/interface_config_builder"
 require "y2network/presenters/routing_summary"
 require "y2network/presenters/dns_summary"
 

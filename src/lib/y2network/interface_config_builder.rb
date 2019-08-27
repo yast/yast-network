@@ -213,10 +213,11 @@ module Y2Network
     # @param [String,Y2Network::Startmode] name startmode name used to create Startmode object
     #   or object itself
     def startmode=(name)
+      mode = name.is_a?(Startmode) ? name : Startmode.create(name)
       # assign only if it is not already this value. This helps with ordering of ifplugd_priority
-      if !@connection_config.startmode || @connection_config.startmode.name != mode.name
-        @connection_config.startmode = mode
-      end
+      return if @connection_config.startmode && @connection_config.startmode.name == mode.name
+
+      @connection_config.startmode = mode
     end
 
     # @param [Integer] value priority value
@@ -336,12 +337,10 @@ module Y2Network
         ip_config_default.address.prefix = value[1..-1].to_i
       elsif value.size < 3 # one or two digits can be only prefixlen
         ip_config_default.address.prefix = value.to_i
+      elsif param == "PREFIXLEN"
+        ip_config_default.address.prefix = value.to_i
       else
-        if param == "PREFIXLEN"
-          ip_config_default.address.prefix = value.to_i
-        else
-          ip_config_default.address.netmask = value
-        end
+        ip_config_default.address.netmask = value
       end
     end
 
@@ -359,7 +358,7 @@ module Y2Network
     # @return [String]
     def remote_ip
       default = @connection_config.ip
-      new_ = if default
+      if default
         default.remote_address.to_s
       else
         ""

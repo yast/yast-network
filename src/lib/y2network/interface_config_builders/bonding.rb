@@ -29,7 +29,6 @@ module Y2Network
 
       def initialize(config: nil)
         super(type: InterfaceType::BONDING, config: config)
-
       end
 
       # @return [Array<Interface>] list of interfaces usable for the bond device
@@ -41,7 +40,7 @@ module Y2Network
         :slaves, :slaves=
 
       # @param value [String] options for bonding
-      def bond_options= (value)
+      def bond_options=(value)
         connection_config.options = value
       end
 

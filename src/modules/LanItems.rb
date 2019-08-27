@@ -1732,7 +1732,7 @@ module Yast
       nil
     end
 
-    def SetItem(builder:)
+    def SetItem(*)
       @hotplug = ""
       Builtins.y2debug("type=%1", @type)
       if Builtins.issubstring(@type, "-")
