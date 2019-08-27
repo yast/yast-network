@@ -123,8 +123,8 @@ module Y2Network
     #   @return [String,nil]
     [
       { name: "dev_name", default: "" },
-      { name: "mac", default: "" },
-      { name: "busid", default: "" },
+      { name: "mac", default: nil },
+      { name: "busid", default: nil },
       { name: "link", default: false },
       { name: "driver", default: "" },
       { name: "module", default: nil },

@@ -17,28 +17,15 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/interface"
+require_relative "../test_helper"
+require "y2network/virtual_interface"
 
-module Y2Network
-  # Virtual Interface Class (veth, bond, bridge, vlan, dummy...)
-  class VirtualInterface < Interface
-    # Build connection
-    #
-    # @todo Would be possible to get the name from the connection?
-    #
-    # @param conn [ConnectionConfig] Connection configuration related to the
-    #   network interface
-    def self.from_connection(name, conn)
-      new(name, type: conn.type)
-    end
+describe Y2Network::VirtualInterface do
+  subject(:interface) { described_class.new("br0") }
 
-    # Determines whether the interface can be renamed
-    #
-    # A virtual interface can always be renamed.
-    #
-    # @return [Boolean]
-    def can_be_renamed?
-      true
+  describe "#can_be_renamed?" do
+    it "returns true" do
+      expect(interface.can_be_renamed?).to eq(true)
     end
   end
 end

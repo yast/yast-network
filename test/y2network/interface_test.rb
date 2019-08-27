@@ -54,4 +54,36 @@ describe Y2Network::Interface do
       expect(interface.drivers).to eq([driver])
     end
   end
+
+  describe "#can_be_renamed?" do
+    let(:mac) { nil }
+    let(:busid) { nil }
+    let(:hwinfo) { instance_double(Y2Network::Hwinfo, mac: mac, busid: busid) }
+
+    before do
+      allow(interface).to receive(:hardware).and_return(hwinfo)
+    end
+
+    context "when no MAC or Bus ID information is available" do
+      it "returns false" do
+        expect(interface.can_be_renamed?).to eq(false)
+      end
+    end
+
+    context "when the MAC address is present" do
+      let(:mac) { "01:23:45:67:89:ab" }
+
+      it "returns true" do
+        expect(interface.can_be_renamed?).to eq(true)
+      end
+    end
+
+    context "when the Bus ID is present" do
+      let(:busid) { "0000:08:00.0" }
+
+      it "returns true" do
+        expect(interface.can_be_renamed?).to eq(true)
+      end
+    end
+  end
 end
