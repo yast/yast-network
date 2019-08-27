@@ -36,16 +36,15 @@ module Y2Network
         @builder = builder
 
         interface = builder.interface
-        return unless interface.hardware # FIXME: handle interfaces with no hardware information
-        @hwinfo = interface.hardware || Y2Network::Hwinfo.new({})
+        @hwinfo = interface.hardware
         @mac = @hwinfo.mac
         @bus_id = @hwinfo.busid
+        @renaming_mechanism = interface.renaming_mechanism
       end
 
       # @see CWM::AbstractWidget
       def init
-        udev_attr = @hwinfo.busid && !@hwinfo.busid.empty? ? :bus_id : :mac
-        Yast::UI.ChangeWidget(Id(:udev_type), :Value, udev_attr)
+        Yast::UI.ChangeWidget(Id(:udev_type), :Value, @renaming_mechanism)
       end
 
       # @see CWM::AbstractWidget
@@ -55,7 +54,7 @@ module Y2Network
 
       # @see CWM::CustomWidget
       def contents
-        VBox(
+        Frame(
           _("Base Udev Rule On"),
           RadioButtonGroup(
             Id(:udev_type),
@@ -66,7 +65,7 @@ module Y2Network
                 RadioButton(
                   Id(:mac),
                   _("MAC address: %s") % @mac
-                )
+                ),
               ),
               Left(
                 RadioButton(
@@ -82,24 +81,6 @@ module Y2Network
     private
 
       def current_value
-        [selected_udev_type, current_hwinfo]
-      end
-
-      # Determines the hardware information used to match
-      #
-      # @return [HWinfo]
-      def current_hwinfo
-        case selected_udev_type
-        when :mac
-          args = { mac: @mac }
-        when :bus_id
-          args = { busid: @bus_id }
-          args[:dev_port] = @dev_port if @dev_port
-        end
-        Y2Network::Hwinfo.new(args)
-      end
-
-      def selected_udev_type
         Yast::UI.QueryWidget(Id(:udev_type), :Value)
       end
     end

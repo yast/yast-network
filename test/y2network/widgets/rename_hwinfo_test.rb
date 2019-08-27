@@ -39,7 +39,7 @@ describe Y2Network::Widgets::RenameHwinfo do
 
   before do
     allow(interface).to receive(:hardware).and_return(hwinfo)
-    allow(subject).to receive(:selected_udev_type).and_return(mechanism)
+    allow(subject).to receive(:current_value).and_return(mechanism)
   end
 
   describe "#value" do
@@ -53,11 +53,6 @@ describe Y2Network::Widgets::RenameHwinfo do
         selected_mechanism, = subject.value
         expect(selected_mechanism).to eq(:mac)
       end
-
-      it "returns an Hwinfo containig the MAC" do
-        _, hwinfo = subject.value
-        expect(hwinfo).to eq(Y2Network::Hwinfo.new(mac: hwinfo.mac))
-      end
     end
 
     context "when the BUS ID is selected as renaming method" do
@@ -66,11 +61,6 @@ describe Y2Network::Widgets::RenameHwinfo do
       it "returns :bus_id as the renaming mechanism" do
         selected_mechanism, = subject.value
         expect(selected_mechanism).to eq(:bus_id)
-      end
-
-      it "returns an Hwinfo containig the MAC" do
-        _, hwinfo = subject.value
-        expect(hwinfo).to eq(Y2Network::Hwinfo.new(busid: hwinfo.busid))
       end
     end
   end
