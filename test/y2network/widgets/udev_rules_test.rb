@@ -22,9 +22,14 @@ require "cwm/rspec"
 
 require "y2network/widgets/udev_rules"
 require "y2network/dialogs/rename_interface"
+require "y2network/interface_config_builder"
 
 describe Y2Network::Widgets::UdevRules do
-  subject { described_class.new({}) }
+  subject { described_class.new(builder) }
+
+  let(:builder) do
+    instance_double(Y2Network::InterfaceConfigBuilder, interface: double(can_be_renamed?: true))
+  end
 
   before do
     allow(Yast::LanItems).to receive(:current_udev_name).and_return("hell666")

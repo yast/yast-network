@@ -121,7 +121,7 @@ module Y2Network
     #
     # @param new_name [String] New interface's name
     # @param renaming_mechanism [Symbol,nil] Mechanism to rename the interface
-    #   (nil -no rename-, :mac or :bus_id)
+    #   (no hardware based, :mac or :bus_id)
     def rename_interface(new_name, renaming_mechanism)
       @old_name ||= name
       self.name = new_name
@@ -309,7 +309,7 @@ module Y2Network
 
     # gets interface name that will be assigned by udev
     def udev_name
-      # cannot cache as EditNicName dialog can change it
+      # cannot cache as it can be changed
       Yast::LanItems.current_udev_name
     end
 

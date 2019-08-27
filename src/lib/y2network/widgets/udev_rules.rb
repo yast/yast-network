@@ -36,7 +36,7 @@ module Y2Network
           _("Udev Rules"),
           HBox(
             InputField(Id(:udev_rules_name), Opt(:hstretch, :disabled), _("Device Name"), ""),
-            PushButton(Id(:udev_rules_change), _("Change"))
+            @settings.interface.can_be_renamed? ? change_button : Empty()
           )
         )
       end
@@ -69,6 +69,12 @@ module Y2Network
             "associating the MAC address or BusID of the network device with its name (for\n" \
             "example, eth1, wlan0 ) and assures a persistent device name upon reboot.\n"
         )
+      end
+
+    private
+
+      def change_button
+        PushButton(Id(:udev_rules_change), _("Change"))
       end
     end
   end

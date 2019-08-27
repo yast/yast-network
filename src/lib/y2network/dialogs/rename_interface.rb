@@ -39,7 +39,6 @@ module Y2Network
         textdomain "network"
 
         @builder = builder
-        interface = @builder.interface
         @old_name = interface.name
       end
 
@@ -47,7 +46,7 @@ module Y2Network
       def run
         ret = super
         return unless ret == :ok
-        renaming_mechanism, _hwinfo = rename_hwinfo_widget.value
+        renaming_mechanism = rename_hwinfo_widget.value unless virtual_interface?
         @builder.rename_interface(name_widget.value, renaming_mechanism)
         name_widget.value
       end
@@ -56,12 +55,15 @@ module Y2Network
       def contents
         VBox(
           Left(name_widget),
-          VSpacing(0.5),
-          Frame(
-            _("Base Udev Rule On"),
-            rename_hwinfo_widget
-          )
+          *hardware_info
         )
+      end
+
+    private
+
+      # Elements to display the hardware information
+      def hardware_info
+        virtual_interface? ? [Empty()] : [VSpacing(0.5), rename_hwinfo_widget]
       end
 
       # Interface's name widget
@@ -76,6 +78,18 @@ module Y2Network
       # @return [Y2Network::Widgets::RenameHwinfo]
       def rename_hwinfo_widget
         @rename_hwinfo_widget ||= Y2Network::Widgets::RenameHwinfo.new(@builder)
+      end
+
+      # Returns the interface
+      #
+      # @return [Y2Network::Interface]
+      def interface
+        @builder.interface
+      end
+
+      # Determines whether it is a virtual interface
+      def virtual_interface?
+        interface.is_a?(Y2Network::VirtualInterface)
       end
     end
   end

@@ -39,7 +39,7 @@ module Y2Network
         @hwinfo = interface.hardware
         @mac = @hwinfo.mac
         @bus_id = @hwinfo.busid
-        @renaming_mechanism = interface.renaming_mechanism
+        @renaming_mechanism = builder.renaming_mechanism || :mac
       end
 
       # @see CWM::AbstractWidget
@@ -52,6 +52,10 @@ module Y2Network
         @value = current_value
       end
 
+      def value
+        @value ||= current_value
+      end
+
       # @see CWM::CustomWidget
       def contents
         Frame(
@@ -61,18 +65,7 @@ module Y2Network
             VBox(
               # make sure there is enough space (#367239)
               HSpacing(30),
-              Left(
-                RadioButton(
-                  Id(:mac),
-                  _("MAC address: %s") % @mac
-                ),
-              ),
-              Left(
-                RadioButton(
-                  Id(:bus_id),
-                  _("BusID: %s") % @bus_id
-                )
-              )
+              *radio_buttons
             )
           )
         )
@@ -82,6 +75,13 @@ module Y2Network
 
       def current_value
         Yast::UI.QueryWidget(Id(:udev_type), :Value)
+      end
+
+      def radio_buttons
+        buttons = []
+        buttons << Left(RadioButton(Id(:mac), _("MAC address: %s") % @mac)) if @mac
+        buttons << Left(RadioButton(Id(:bus_id), _("BusID: %s") % @bus_id)) if @bus_id
+        buttons
       end
     end
   end
