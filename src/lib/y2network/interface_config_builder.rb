@@ -382,16 +382,6 @@ module Y2Network
       @connection_config.mtu = value.to_i
     end
 
-    # @return [Array(2)<String,String>] user and group of tunnel
-    def tunnel_user_group
-      [@config["TUNNEL_SET_OWNER"], @config["TUNNEL_SET_GROUP"]]
-    end
-
-    def assign_tunnel_user_group(user, group)
-      @config["TUNNEL_SET_OWNER"] = user
-      @config["TUNNEL_SET_GROUP"] = group
-    end
-
   private
 
     def hwinfo
