@@ -27,6 +27,7 @@ require "y2network/sysconfig/connection_config_reader"
 require "y2network/interfaces_collection"
 require "y2network/connection_configs_collection"
 require "y2network/sysconfig/type_detector"
+require "y2network/udev_rule"
 
 Yast.import "LanItems"
 
@@ -74,10 +75,23 @@ module Y2Network
       # Physical interfaces are read from the old LanItems module
       def find_physical_interfaces
         return if @interfaces
-        physical_interfaces = Yast::LanItems.Hardware.map do |h|
+        physical_interfaces = hardware.map do |h|
           build_physical_interface(h)
         end
         @interfaces = Y2Network::InterfacesCollection.new(physical_interfaces)
+      end
+
+      # Returns hardware information
+      #
+      # This method makes sure that the hardware information was read.
+      #
+      # @todo It still relies on Yast::LanItems.Hardware
+      #
+      # @return [Array<Hash>] Hardware information
+      def hardware
+        Yast::LanItems.Hardware unless Yast::LanItems.Hardware.empty?
+        Yast::LanItems.Read # try again if no hardware was found
+        Yast::LanItems.Hardware
       end
 
       # Finds the connections configurations
@@ -104,6 +118,7 @@ module Y2Network
       def build_physical_interface(data)
         Y2Network::PhysicalInterface.new(data["dev_name"]).tap do |iface|
           iface.description = data["name"]
+          iface.renaming_mechanism = renaming_mechanism_for(iface.name)
           iface.type = TypeDetector.type_of(iface.name)
         end
       end
@@ -131,6 +146,20 @@ module Y2Network
       def add_interface(name, conn)
         interface_class = conn.virtual? ? VirtualInterface : FakeInterface
         @interfaces << interface_class.from_connection(name, conn)
+      end
+
+      # Detects the renaming mechanism used by the interface
+      #
+      # @param name [String] Interface's name
+      # @return [Symbol,nil] :mac (MAC address), :bus_id (BUS ID) or nil (no renaming)
+      def renaming_mechanism_for(name)
+        rule = UdevRule.find_for(name)
+        return nil unless rule
+        if rule.parts.any? { |p| p.key == "ATTR{address}" }
+          :mac
+        elsif rule.parts.any? { |p| p.key == "KERNELS" }
+          :bus_id
+        end
       end
     end
   end

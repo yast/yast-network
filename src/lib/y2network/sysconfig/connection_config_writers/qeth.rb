@@ -17,14 +17,14 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/sysconfig/connection_config_writers/ethernet"
+require "y2network/sysconfig/connection_config_writers/base"
 
 module Y2Network
   module Sysconfig
     module ConnectionConfigWriters
       # This class is responsible for writing the information from a ConnectionConfig::Qeth
       # object to the underlying system.
-      class Qeth < Ethernet
+      class Qeth < Base
       end
     end
   end

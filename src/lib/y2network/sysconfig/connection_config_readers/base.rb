@@ -76,7 +76,6 @@ module Y2Network
         #
         # @param _conn [Y2Network::ConnectionConfig::Base]
         def update_connection_config(_conn)
-          raise NotImplementedError
         end
 
         # Returns the IPs configuration from the file

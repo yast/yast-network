@@ -50,7 +50,7 @@ module Y2Network
       require "y2network/interface_config_builders/#{type.file_name}"
       InterfaceConfigBuilders.const_get(type.class_name).new(config: config)
     rescue LoadError => e
-      log.info "Specialed builder for #{type} not found. Fallbacking to default. #{e.inspect}"
+      log.info "Specialized builder for #{type} not found. Falling back to default. #{e.inspect}"
       new(type: type, config: config)
     end
 
@@ -93,7 +93,8 @@ module Y2Network
 
       @connection_config.name = name
       @connection_config.interface = name
-      Yast::Lan.yast_config.connections.add_or_update(@connection_config)
+      yast_config.connections.add_or_update(@connection_config)
+      yast_config.rename_interface(@old_name, name, renaming_mechanism) if renamed_interface?
 
       # create new instance as name can change
       firewall_interface = Y2Firewall::Firewalld::Interface.new(name)
@@ -106,6 +107,41 @@ module Y2Network
       save_aliases
 
       nil
+    end
+
+    # Determines whether the interface has been renamed
+    #
+    # @return [Boolean] true if it was renamed; false otherwise
+    def renamed_interface?
+      return false unless interface
+      name != interface.name || @renaming_mechanism != interface.renaming_mechanism
+    end
+
+    # Renames the interface
+    #
+    # @param new_name [String] New interface's name
+    # @param renaming_mechanism [Symbol,nil] Mechanism to rename the interface
+    #   (nil -no rename-, :mac or :bus_id)
+    def rename_interface(new_name, renaming_mechanism)
+      @old_name ||= name
+      self.name = new_name
+      @renaming_mechanism = renaming_mechanism
+    end
+
+    # Returns the current renaming mechanism
+    #
+    # @return [Symbol,nil] Mechanism to rename the interface (nil -no rename-, :mac or :bus_id)
+    def renaming_mechanism
+      @renaming_mechanism || interface.renaming_mechanism
+    end
+
+    # Returns the underlying interface
+    #
+    # If the interface has been renamed, take the old name into account.
+    #
+    # @return [Y2Network::Interface,nil]
+    def interface
+      @interface ||= yast_config.interfaces.by_name(@old_name || name)
     end
 
     # how many device names is proposed
@@ -601,6 +637,13 @@ module Y2Network
           id:    "_#{i}" # TODO: remember original prefixes
         )
       end
+    end
+
+    # Helper method to access to the current configuration
+    #
+    # @return [Y2Network::Config]
+    def yast_config
+      Yast::Lan.yast_config
     end
   end
 end

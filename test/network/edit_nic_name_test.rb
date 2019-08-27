@@ -1,5 +1,24 @@
 #!/usr/bin/env rspec
 
+# Copyright (c) [2019] SUSE LLC
+#
+# All Rights Reserved.
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of version 2 of the GNU General Public License as published
+# by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, contact SUSE LLC.
+#
+# To contact SUSE LLC about this file by physical or electronic mail, you may
+# find current contact information at www.suse.com.
+
 require_relative "../test_helper"
 
 require "yast"
@@ -10,12 +29,13 @@ require "y2network/routing"
 require "y2network/routing_table"
 require "y2network/interfaces_collection"
 require "y2network/interface"
+require "y2network/interface_config_builder"
 require "y2network/config"
 
 Yast.import "LanItems"
 
 describe Yast::EditNicName do
-  let(:subject) { described_class.new }
+  let(:subject) { described_class.new(builder) }
   let(:current_name) { "spec0" }
   let(:new_name) { "new1" }
   let(:existing_new_name) { "existing_new_name" }
@@ -28,6 +48,10 @@ describe Yast::EditNicName do
   let(:ifaces) { Y2Network::InterfacesCollection.new([iface]) }
   let(:yast_config) do
     Y2Network::Config.new(interfaces: ifaces, routing: routing, source: :sysconfig)
+  end
+  let(:builder) do
+    instance_double(Y2Network::InterfaceConfigBuilder, interface: iface,
+      name_exists?: false, valid_name?: true, rename_interface: nil)
   end
 
   before do
@@ -91,16 +115,10 @@ describe Yast::EditNicName do
         it "asks for new user input when name already exists" do
           allow(Yast::UI).to receive(:QueryWidget)
             .with(:dev_name, :Value).and_return(existing_new_name, new_name)
-          expect(subject).to receive(:CheckUdevNicName).with(existing_new_name).and_return(false)
-          expect(subject).to receive(:CheckUdevNicName).with(new_name).and_return(true)
-          expect(Yast::UI).to receive(:SetFocus)
-          expect(Yast::LanItems).to receive(:rename).with(new_name)
-          subject.run
-        end
-
-        it "updates the Routing devices list with the new name" do
-          expect(Yast::LanItems).to receive(:rename_current_device_in_routing)
-            .with("spec0")
+          allow(subject).to receive(:CheckUdevNicName).with(existing_new_name).and_return(false)
+          allow(subject).to receive(:CheckUdevNicName).with(new_name).and_return(true)
+          allow(Yast::UI).to receive(:SetFocus)
+          expect(builder).to receive(:rename_interface).with(new_name, :mac)
           subject.run
         end
 

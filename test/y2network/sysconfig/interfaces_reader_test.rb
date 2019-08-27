@@ -19,6 +19,7 @@
 
 require_relative "../../test_helper"
 require "y2network/sysconfig/interfaces_reader"
+require "y2network/udev_rule_part"
 
 describe Y2Network::Sysconfig::InterfacesReader do
   subject(:reader) { described_class.new }
@@ -33,6 +34,15 @@ describe Y2Network::Sysconfig::InterfacesReader do
     }
   end
 
+  let(:udev_rule) do
+    Y2Network::UdevRule.new(
+      [
+        Y2Network::UdevRulePart.new("ATTR{address}", "==", "00:12:34:56:78"),
+        Y2Network::UdevRulePart.new("ACTION", "=", "eth0")
+      ]
+    )
+  end
+
   let(:configured_interfaces) { ["lo", "eth0"] }
   TYPES = { "eth0" => "eth" }.freeze
 
@@ -42,6 +52,7 @@ describe Y2Network::Sysconfig::InterfacesReader do
       .and_return(configured_interfaces)
     allow(Yast::SCR).to receive(:Dir).and_call_original
     allow(Yast::NetworkInterfaces).to receive(:GetTypeFromSysfs) { |n| TYPES[n] }
+    allow(Y2Network::UdevRule).to receive(:find_for).and_return(udev_rule)
   end
 
   around { |e| change_scr_root(File.join(DATA_PATH, "scr_read"), &e) }
@@ -50,6 +61,11 @@ describe Y2Network::Sysconfig::InterfacesReader do
     it "reads physical interfaces" do
       interfaces = reader.interfaces
       expect(interfaces.by_name("eth0")).to_not be_nil
+    end
+
+    it "sets the renaming mechanism" do
+      eth0 = reader.interfaces.by_name("eth0")
+      expect(eth0.renaming_mechanism).to eq(:mac)
     end
 
     it "reads wifi interfaces"

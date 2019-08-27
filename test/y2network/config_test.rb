@@ -20,6 +20,9 @@ require_relative "../test_helper"
 require "y2network/config"
 require "y2network/routing_table"
 require "y2network/interface"
+require "y2network/interfaces_collection"
+require "y2network/connection_config/ethernet"
+require "y2network/connection_configs_collection"
 require "y2network/sysconfig/config_reader"
 require "y2network/sysconfig/config_writer"
 
@@ -29,7 +32,9 @@ describe Y2Network::Config do
   end
 
   subject(:config) do
-    described_class.new(interfaces: [eth0], routing: routing, source: :sysconfig)
+    described_class.new(
+      interfaces: interfaces, connections: connections, routing: routing, source: :sysconfig
+    )
   end
 
   let(:route1) { Y2Network::Route.new }
@@ -39,6 +44,14 @@ describe Y2Network::Config do
   let(:table2) { Y2Network::RoutingTable.new([route2]) }
 
   let(:eth0) { Y2Network::Interface.new("eth0") }
+  let(:interfaces) { Y2Network::InterfacesCollection.new([eth0]) }
+
+  let(:eth0_conn) do
+    Y2Network::ConnectionConfig::Ethernet.new.tap do |conn|
+      conn.interface = "eth0"
+    end
+  end
+  let(:connections) { Y2Network::ConnectionConfigsCollection.new([eth0_conn]) }
 
   let(:routing) { Y2Network::Routing.new(tables: [table1, table2]) }
 
@@ -127,7 +140,7 @@ describe Y2Network::Config do
 
     context "when interfaces list is different" do
       it "returns false" do
-        copy.interfaces = [Y2Network::Interface.new("eth1")]
+        copy.interfaces = Y2Network::InterfacesCollection.new([Y2Network::Interface.new("eth1")])
         expect(copy).to_not eq(config)
       end
     end
@@ -143,6 +156,36 @@ describe Y2Network::Config do
       it "returns false" do
         copy.dns.hostname = "dummy"
         expect(copy).to_not eq(config)
+      end
+    end
+  end
+
+  describe "#rename_interface" do
+    it "adjusts the interface name" do
+      config.rename_interface("eth0", "eth1", :mac)
+      eth1 = config.interfaces.by_name("eth1")
+      expect(eth1.renaming_mechanism).to eq(:mac)
+    end
+
+    it "adjusts the connection configurations for that interface" do
+      config.rename_interface("eth0", "eth1", :mac)
+      eth1_conns = config.connections.by_interface("eth1")
+      expect(eth1_conns).to_not be_empty
+    end
+
+    context "when the interface is renamed twice" do
+      it "adjusts the interface name to the last name" do
+        config.rename_interface("eth0", "eth1", :mac)
+        config.rename_interface("eth1", "eth2", :bios_id)
+        eth2 = config.interfaces.by_name("eth2")
+        expect(eth2.renaming_mechanism).to eq(:bios_id)
+      end
+
+      it "adjusts the connection configurations for that interface using the last name" do
+        config.rename_interface("eth0", "eth1", :mac)
+        config.rename_interface("eth1", "eth2", :mac)
+        eth2_conns = config.connections.by_interface("eth2")
+        expect(eth2_conns).to_not be_empty
       end
     end
   end

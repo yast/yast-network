@@ -129,6 +129,17 @@ module Y2Network
         routing == other.routing && dns == other.dns
     end
 
+    # Renames a given interface and the associated connections
+    #
+    # @param old_name  [String] Old interface's name
+    # @param new_name  [String] New interface's name
+    # @param mechanism [Symbol] Property to base the rename on (:mac or :bus_id)
+    def rename_interface(old_name, new_name, mechanism)
+      interface = interfaces.by_name(old_name)
+      interface.rename(new_name, mechanism)
+      connections.by_interface(old_name).each { |c| c.interface = new_name }
+    end
+
     alias_method :eql?, :==
   end
 end

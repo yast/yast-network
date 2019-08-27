@@ -44,26 +44,34 @@ module Y2Network
       # @return [Integer] default WEP key
       attr_accessor :default_key
       # @return [String]
-      attr_accessor :nick
+      attr_accessor :nick # TODO: what it is? identity?
       # @return [String]
       attr_accessor :eap_mode
       # @return [String]
       attr_accessor :eap_auth
-      # @return [Integer]
+      # @return [Integer, nil]
       attr_accessor :channel
       # @return [Integer]
       attr_accessor :frequency
-      # @return [Integer]
+      # @return [Float, nil] bitrate limitation in Mb/s or nil for automatic
       attr_accessor :bitrate
       # @return [String]
       attr_accessor :ap
-      # @return [Boolean]
-      attr_accessor :power
       # FIXME: Consider an enum
       # @return [Integer] (0, 1, 2)
       attr_accessor :ap_scanmode
       # @return [String]
-      attr_accessor :wpa_password
+      attr_accessor :wpa_password # TODO unify psk and password and write correct one depending on mode
+      # @return [String]
+      attr_accessor :wpa_identity
+      # @return [String] initial identity used for creating tunnel
+      attr_accessor :wpa_anonymous_identity
+      # @return [String] ca certificate used to sign server certificate
+      attr_accessor :ca_cert
+      # @return [String] client certificate used to login for TLS
+      attr_accessor :client_cert
+      # @return [String] client private key used to encrypt for TLS
+      attr_accessor :client_key
     end
   end
 end

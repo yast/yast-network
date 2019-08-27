@@ -40,8 +40,15 @@ module Y2Network
           conn.keys = wireless_keys
           conn.mode = file.wireless_mode
           conn.nwid = file.wireless_nwid
+          conn.ca_cert = file.wireless_ca_cert
+          conn.client_cert = file.wireless_client_cert
+          conn.client_key = file.wireless_client_key
           conn.wpa_password = file.wireless_wpa_password
           conn.wpa_psk = file.wireless_wpa_psk
+          conn.wpa_identity = file.wireless_wpa_identity
+          conn.wpa_anonymous_identity = file.wireless_wpa_anonid
+          conn.channel = file.wireless_channel
+          conn.bitrate = file.wireless_rate
         end
 
         # Max number of wireless keys

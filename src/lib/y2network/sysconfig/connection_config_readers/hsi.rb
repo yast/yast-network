@@ -17,14 +17,14 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/sysconfig/connection_config_readers/ethernet"
+require "y2network/sysconfig/connection_config_readers/base"
 
 module Y2Network
   module Sysconfig
     module ConnectionConfigReaders
       # This class is able to build a ConnectionConfig::Hsi object given a
       # Sysconfig::InterfaceFile object.
-      class Hsi < Ethernet
+      class Hsi < Base
       end
     end
   end
