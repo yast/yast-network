@@ -26,6 +26,7 @@ require "yast2/target_file"
 require "cfa/memory_file"
 require "cfa/base_model"
 require "cfa/hosts"
+require "y2network/sysconfig/type_detector"
 
 Yast.import "Host"
 Yast.import "DNS"
@@ -50,6 +51,7 @@ describe Yast::Host do
   end
 
   before do
+    allow(Yast::Lan).to receive(:Read)
     allow(Yast::Lan).to receive(:yast_config).and_return(lan_config)
     allow(Yast::SCR).to receive(:Read).with(path(".target.size"), "/etc/hosts").and_return(50)
     allow(Y2Network::Sysconfig::TypeDetector)
