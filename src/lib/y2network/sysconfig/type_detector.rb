@@ -30,7 +30,6 @@ module Y2Network
       class << self
       private
 
-
         # Checks wheter iface type can be recognized by interface configuration
         def type_by_config(iface)
           iface_file = Y2Network::Sysconfig::InterfaceFile.find(iface)
