@@ -48,7 +48,8 @@ describe Y2Network::Sysconfig::InterfacesWriter do
         expect(Y2Network::UdevRule).to receive(:write) do |rules|
           expect(rules.first.to_s).to eq(
             "SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", " \
-            "ATTR{type}==\"1\", ATTR{address}=\"01:23:45:67:89:ab\", NAME=\"eth0\""
+              "ATTR{type}==\"1\", KERNEL==\"eth*\", ATTR{dev_id}==\"0x0\", " \
+              "ATTR{address}==\"01:23:45:67:89:ab\", NAME=\"eth0\""
           )
         end
         subject.write(interfaces)
@@ -62,7 +63,7 @@ describe Y2Network::Sysconfig::InterfacesWriter do
         expect(Y2Network::UdevRule).to receive(:write) do |rules|
           expect(rules.first.to_s).to eq(
             "SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", " \
-              "ATTR{type}==\"1\", KERNELS=\"00:1c.0\", ATTR{dev_port}=\"1\", NAME=\"eth0\""
+              "ATTR{type}==\"1\", KERNELS==\"00:1c.0\", ATTR{dev_port}==\"1\", NAME=\"eth0\""
           )
         end
         subject.write(interfaces)
@@ -83,6 +84,7 @@ describe Y2Network::Sysconfig::InterfacesWriter do
     it "refreshes udev" do
       expect(Yast::Execute).to receive(:on_target).with("/usr/bin/udevadm", "control", any_args)
       expect(Yast::Execute).to receive(:on_target).with("/usr/bin/udevadm", "trigger", any_args)
+      expect(Yast::Execute).to receive(:on_target).with("/usr/bin/udevadm", "settle")
       subject.write(interfaces)
     end
   end

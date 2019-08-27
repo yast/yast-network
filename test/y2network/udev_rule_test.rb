@@ -58,7 +58,8 @@ describe Y2Network::UdevRule do
       rule = described_class.new_mac_based_rename("eth0", "01:23:45:67:89:ab")
       expect(rule.to_s).to eq(
         "SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", ATTR{type}==\"1\", " \
-          "ATTR{address}=\"01:23:45:67:89:ab\", NAME=\"eth0\""
+          "KERNEL==\"eth*\", ATTR{dev_id}==\"0x0\", ATTR{address}==\"01:23:45:67:89:ab\", " \
+          "NAME=\"eth0\""
       )
     end
   end
@@ -68,7 +69,7 @@ describe Y2Network::UdevRule do
       rule = described_class.new_bus_id_based_rename("eth0", "0000:08:00.0", "1")
       expect(rule.to_s).to eq(
         "SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", ATTR{type}==\"1\", " \
-          "KERNELS=\"0000:08:00.0\", ATTR{dev_port}=\"1\", NAME=\"eth0\""
+          "KERNELS==\"0000:08:00.0\", ATTR{dev_port}==\"1\", NAME=\"eth0\""
       )
     end
 
@@ -77,7 +78,7 @@ describe Y2Network::UdevRule do
         rule = described_class.new_bus_id_based_rename("eth0", "0000:08:00.0")
         expect(rule.to_s).to eq(
           "SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", ATTR{type}==\"1\", " \
-            "KERNELS=\"0000:08:00.0\", NAME=\"eth0\""
+            "KERNELS==\"0000:08:00.0\", NAME=\"eth0\""
         )
       end
     end

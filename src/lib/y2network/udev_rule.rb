@@ -53,7 +53,15 @@ module Y2Network
       # @param mac  [String] MAC address
       def new_mac_based_rename(name, mac)
         new_network_rule(
-          [UdevRulePart.new("ATTR{address}", "=", mac), UdevRulePart.new("NAME", "=", name)]
+          [
+            # Guard to not try to rename everything with the same MAC address (e.g. vlan devices
+            # inherit the MAC address from the underlying device).
+            UdevRulePart.new("KERNEL", "==", "eth*"),
+            # The port number of a NIC where the ports share the same hardware device.
+            UdevRulePart.new("ATTR{dev_id}", "==", "0x0"),
+            UdevRulePart.new("ATTR{address}", "==", mac),
+            UdevRulePart.new("NAME", "=", name)
+          ]
         )
       end
 
@@ -63,8 +71,8 @@ module Y2Network
       # @param bus_id   [String] BUS ID (e.g., "0000:08:00.0")
       # @param dev_port [String] Device port
       def new_bus_id_based_rename(name, bus_id, dev_port = nil)
-        parts = [UdevRulePart.new("KERNELS", "=", bus_id)]
-        parts << UdevRulePart.new("ATTR{dev_port}", "=", dev_port) if dev_port
+        parts = [UdevRulePart.new("KERNELS", "==", bus_id)]
+        parts << UdevRulePart.new("ATTR{dev_port}", "==", dev_port) if dev_port
         parts << UdevRulePart.new("NAME", "=", name)
         new_network_rule(parts)
       end
