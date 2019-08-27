@@ -44,7 +44,6 @@ module Yast
       Yast.import "Popup"
       Yast.import "Wizard"
       Yast.import "LanItems"
-      Yast.include include_target, "network/summary.rb"
       Yast.include include_target, "network/routines.rb"
       Yast.include include_target, "network/lan/cards.rb"
 

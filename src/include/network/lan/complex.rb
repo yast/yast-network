@@ -54,7 +54,6 @@ module Yast
       Yast.import "LanItems"
 
       Yast.include include_target, "network/routines.rb"
-      Yast.include include_target, "network/summary.rb"
       Yast.include include_target, "network/lan/help.rb"
       Yast.include include_target, "network/services/routing.rb"
       Yast.include include_target, "network/services/dns.rb"
