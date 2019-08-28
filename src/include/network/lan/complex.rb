@@ -71,11 +71,11 @@ module Yast
     def wd
       return @wd if @wd
       @wd = {
-        "MANAGED"  => managed_widget,
-        "IPV6"     => ipv6_widget,
+        "MANAGED"                  => managed_widget,
+        "IPV6"                     => ipv6_widget,
         interfaces_table.widget_id => interfaces_table.cwm_definition,
-        add_interface.widget_id => add_interface.cwm_definition,
-        edit_interface.widget_id => edit_interface.cwm_definition,
+        add_interface.widget_id    => add_interface.cwm_definition,
+        edit_interface.widget_id   => edit_interface.cwm_definition,
         delete_interface.widget_id => delete_interface.cwm_definition
         # TODO: hardware summary richtext
       }
@@ -114,7 +114,7 @@ module Yast
         "overview" => {
           "header"       => _("Overview"),
           "contents"     => VBox(interfaces_table.widget_id, Left(HBox(add_interface.widget_id, edit_interface.widget_id, delete_interface.widget_id))),
-          "widget_names" => [interfaces_table.widget_id, add_interface.widget_id, edit_interface.widget_id,delete_interface.widget_id]
+          "widget_names" => [interfaces_table.widget_id, add_interface.widget_id, edit_interface.widget_id, delete_interface.widget_id]
         }
       }
       @tabs_descr = Builtins.union(@tabs_descr, route_td)

@@ -20,7 +20,6 @@
 require "yast"
 require "cwm/table"
 
-
 module Y2Network
   module Widgets
     class InterfacesTable < CWM::Table

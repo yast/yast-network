@@ -45,7 +45,7 @@ module Y2Network
         builder = Y2Network::InterfaceConfigBuilder.for(connection_config.type, config: connection_config)
         builder.name = connection_config.name
         Y2Network::Sequences::Interface.new.edit(builder)
-        return :redraw
+        :redraw
       end
     end
   end

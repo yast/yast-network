@@ -36,7 +36,7 @@ module Y2Network
 
       def handle
         Y2Network::Sequences::Interface.new.add
-        return :redraw
+        :redraw
       end
     end
   end
