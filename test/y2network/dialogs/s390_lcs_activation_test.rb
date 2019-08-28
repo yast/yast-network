@@ -24,7 +24,8 @@ require "y2network/dialogs/s390_lcs_activation"
 require "y2network/interface_config_builder"
 
 describe Y2Network::Dialogs::S390LcsActivation do
-  subject { described_class.new(Y2Network::InterfaceConfigBuilder.for("lcs")) }
+  let(:builder) { Y2Network::InterfaceConfigBuilder.for("lcs") }
+  subject { described_class.for(builder) }
 
   include_examples "CWM::Dialog"
 end

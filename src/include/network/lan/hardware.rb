@@ -29,7 +29,7 @@
 
 include Yast::UIShortcuts
 
-require "y2network/dialogs/s390"
+require "y2network/dialogs/s390_device_activation"
 
 module Yast
   module NetworkLanHardwareInclude
@@ -74,25 +74,8 @@ module Yast
     # S/390 devices configuration dialog
     # @return dialog result
     def S390Dialog(builder:)
-      dialog = Y2Network::Dialogs::S390DeviceActivation.for(builder.type)
-      ret = dialog ? dialog.run(builder) : :abort
-
-      if ret == :next
-        configured = builder.configure
-        builder.name = builder.configured_interface if configured
-        builder.interface.name = builder.name if configured && builder.interface
-        if !configured || builder.name.empty?
-          Popup.Error(
-            _(
-              "An error occurred while creating device.\nSee YaST log for details."
-            )
-          )
-
-          ret = nil
-        end
-      end
-
-      ret
+      dialog = Y2Network::Dialogs::S390DeviceActivation.for(builder)
+      dialog ? dialog.run : :abort
     end
   end
 end

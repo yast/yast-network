@@ -30,10 +30,34 @@ describe Y2Network::Widgets::S390LanCmdTimeout do
 end
 
 describe Y2Network::Widgets::S390Protocol do
-  let(:builder) { Y2Network::InterfaceConfigBuilder.for("ctc") }
+  let(:builder) do
+    res = Y2Network::InterfaceConfigBuilder.for("ctc")
+    res.name = "ctc0"
+    res.protocol = 1
+    res
+  end
+
   subject { described_class.new(builder) }
 
   include_examples "CWM::ComboBox"
+
+  describe "#init" do
+    it "initializes the widget value with the configured protocol" do
+      expect(subject).to receive(:value=).with("1")
+      subject.init
+    end
+  end
+
+  describe "#store" do
+    before do
+      allow(subject).to receive(:value).and_return("4")
+    end
+
+    it "modifies the builder protocol attribute with the widget value" do
+      expect { subject.store }.to change { builder.protocol }.from(1).to(4)
+    end
+  end
+
 end
 
 describe Y2Network::Widgets::S390PortNumber do

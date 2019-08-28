@@ -17,26 +17,17 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "yast"
-require "y2network/interface_config_builder"
-
-Yast.import "LanItems"
-Yast.import "NetworkInterfaces"
+require "y2network/s390_device_activators/ctc"
 
 module Y2Network
-  module InterfaceConfigBuilders
-    class Lcs < InterfaceConfigBuilder
-      extend Forwardable
+  module S390DeviceActivators
+    # The Lcs device activator is based in Ctc
+    class Lcs < Ctc
+      def configure_attributes
+        return [] unless builder.timeout
 
-      def initialize(config: nil)
-        super(type: InterfaceType::LCS, config: config)
+        ["lancmd_timeout=#{builder.timeout}"]
       end
-
-      def_delegators :@connection_config,
-        :read_channel, :read_channel=,
-        :write_channel, :write_channel=,
-        :protocol, :protocol=,
-        :timeout, :timeout=
     end
   end
 end

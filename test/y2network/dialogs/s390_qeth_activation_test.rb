@@ -24,7 +24,8 @@ require "y2network/dialogs/s390_qeth_activation"
 require "y2network/interface_config_builder"
 
 describe Y2Network::Dialogs::S390QethActivation do
-  subject { described_class.new(Y2Network::InterfaceConfigBuilder.for("qeth")) }
+  let(:builder) { Y2Network::InterfaceConfigBuilder.for("qeth") }
+  subject { described_class.for(builder) }
 
   include_examples "CWM::Dialog"
 end

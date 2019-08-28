@@ -68,6 +68,16 @@ module Y2Network
       end
     end
 
+    # Returns an interface with the given hardware busid if present
+    #
+    # @param busid [String] interface busid ("0.0.0700", "0000:00:19.0", ...)
+    # @return [Interface,nil] Interface with the given busid or nil if not found
+    def by_busid(busid)
+      interfaces.find do |iface|
+        iface.hardware.busid == busid
+      end
+    end
+
     # Returns list of interfaces of given type
     #
     # @param type [InterfaceType] device type

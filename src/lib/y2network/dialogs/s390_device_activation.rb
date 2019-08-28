@@ -18,6 +18,7 @@
 # find current contact information at www.suse.com.
 
 require "cwm/dialog"
+require "y2network/s390_device_activator"
 require "y2network/widgets/s390_common"
 require "y2network/widgets/s390_channels"
 
@@ -25,30 +26,41 @@ module Y2Network
   module Dialogs
     # Base class dialog for activating S390 devices
     class S390DeviceActivation < CWM::Dialog
-      # @param type [Y2Network::InterfaceType] type of device
+      # @param builder [Y2Network::InterfaceConfigBuilder]
       # @return [S390DeviceActivation, nil]
-      def self.for(type)
-        case type.short_name
+      def self.for(builder)
+        return nil unless builder.type
+        case builder.type.short_name
         when "qeth", "hsi"
           require "y2network/dialogs/s390_qeth_activation"
-          Y2Network::Dialogs::S390QethActivation
+          require "y2network/s390_device_activators/qeth"
+          activator = S390DeviceActivators::Qeth.new(builder)
+          Y2Network::Dialogs::S390QethActivation.new(activator)
         when "ctc"
           require "y2network/dialogs/s390_ctc_activation"
-          Y2Network::Dialogs::S390CtcActivation
+          require "y2network/s390_device_activators/ctc"
+          activator = S390DeviceActivators::Ctc.new(builder)
+          Y2Network::Dialogs::S390CtcActivation.new(activator)
         when "lcs"
           require "y2network/dialogs/s390_lcs_activation"
-          Y2Network::Dialogs::S390LcsActivation
+          require "y2network/s390_device_activators/lcs"
+          activator = S390DeviceActivators::Lcs.new(builder)
+          Y2Network::Dialogs::S390LcsActivation.new(activator)
         end
       end
 
+      attr_reader :builder
+      attr_reader :activator
+
       # Constructor
       #
-      # @param settings [Y2Network::InterfaceConfigBuilder]
-      def initialize(settings)
+      # @param activator [Y2Network::S390DeviceActivator]
+      def initialize(activator)
         textdomain "network"
 
-        @settings = settings
-        @settings.proposal
+        @activator = activator
+        @activator.proposal
+        @builder = activator.builder
       end
 
       def title
@@ -57,6 +69,29 @@ module Y2Network
 
       def contents
         Empty()
+      end
+
+      def run
+        ret = super
+        if ret == :next
+          configured = activator.configure
+          builder.name = activator.configured_interface if configured
+          # TODO: Refresh the list of interfaces in yast_config. Take into
+          # account that the interface in yast_config does not have a nem so
+          # the builder.interface is probably nil and should be obtained
+          # through the busid.
+          if !configured || builder.name.empty?
+            Yast::Popup.Error(
+              _(
+                "An error occurred while creating device.\nSee YaST log for details."
+              )
+            )
+
+            ret = nil
+          end
+        end
+
+        ret
       end
 
       def abort_handler

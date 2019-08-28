@@ -54,6 +54,7 @@ module Y2Network
       end
     end
 
+    # Widget for setting the Ctc device protocol to be used
     class S390Protocol < CWM::ComboBox
       # Constructor
       #
@@ -66,7 +67,7 @@ module Y2Network
 
       # @see CWM::AbstractWidget
       def init
-        self.value = @settings.protocol
+        self.value = @settings.protocol.to_s
       end
 
       # @see CWM::AbstractWidget
@@ -90,7 +91,7 @@ module Y2Network
 
       # @see CWM::AbstractWidget
       def store
-        @settings.protocol = value
+        @settings.protocol = value.to_i
       end
 
       # @see CWM::AbstractWidget
@@ -99,6 +100,7 @@ module Y2Network
       end
     end
 
+    # Widget for specifying whether use the port number 0 or 1
     class S390PortNumber < CWM::ComboBox
       # Constructor
       #
@@ -135,6 +137,8 @@ module Y2Network
       end
     end
 
+    # This widget permits to pass defined any extra attribute to set during
+    # Qeth device activation
     class S390Attributes < CWM::InputField
       # Constructor
       #
@@ -171,6 +175,7 @@ module Y2Network
       end
     end
 
+    # Checkbox for enabling IPA Takeover in the configured interface
     class S390IPAddressTakeover < CWM::CheckBox
       # Constructor
       #
@@ -202,6 +207,9 @@ module Y2Network
       end
     end
 
+    # This custom widget contents a checkbox for enabling the layer2 support
+    # and an input field for setting the mac address to be used in case of
+    # enablement.
     class S390Layer2 < CWM::CustomWidget
       # Constructor
       #
@@ -212,6 +220,7 @@ module Y2Network
         self.handle_all_events = true
       end
 
+      # @see CWM::AbstractWidget
       def contents
         VBox(
           Left(support_widget),
@@ -219,13 +228,15 @@ module Y2Network
         )
       end
 
+      # @see CWM::AbstractWidget
       def init
         refresh
       end
 
+      # @see CWM::AbstractWidget
       def handle(event)
         case event["ID"]
-        when support_widget.widget_id, mac_address_widget.widget_id
+        when support_widget.widget_id
           refresh
         end
 
@@ -247,6 +258,7 @@ module Y2Network
       end
     end
 
+    # Widget for enabling layer2 support in the configured device
     class S390Layer2Support < CWM::CheckBox
       # Constructor
       #
@@ -263,6 +275,7 @@ module Y2Network
 
       # @see CWM::AbstractWidget
       def opt
+        # Needed for handling the event in other widgets that contents it.
         [:notify]
       end
 
@@ -283,6 +296,7 @@ module Y2Network
       end
     end
 
+    # Widget for setting the mac address to be used in case of layer2 supported
     class S390Layer2Address < CWM::InputField
       # Constructor
       #
@@ -295,11 +309,6 @@ module Y2Network
       # @see CWM::AbstractWidget
       def init
         self.value = @settings.lladdress
-      end
-
-      # @see CWM::AbstractWidget
-      def opt
-        [:notify]
       end
 
       # @see CWM::AbstractWidget

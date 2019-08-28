@@ -56,23 +56,23 @@ module Y2Network
     private
 
       def s390_port_number
-        Y2Network::Widgets::S390PortNumber.new(@settings)
+        Y2Network::Widgets::S390PortNumber.new(builder)
       end
 
       def s390_attributes
-        Y2Network::Widgets::S390Attributes.new(@settings)
+        Y2Network::Widgets::S390Attributes.new(builder)
       end
 
       def s390_ip_takeover
-        Y2Network::Widgets::S390IPAddressTakeover.new(@settings)
+        Y2Network::Widgets::S390IPAddressTakeover.new(builder)
       end
 
       def s390_channels
-        Y2Network::Widgets::S390Channels.new(@settings)
+        Y2Network::Widgets::S390Channels.new(builder)
       end
 
       def s390_layer2
-        Y2Network::Widgets::S390Layer2.new(@settings)
+        Y2Network::Widgets::S390Layer2.new(builder)
       end
     end
   end

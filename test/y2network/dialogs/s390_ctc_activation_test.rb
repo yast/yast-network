@@ -24,7 +24,10 @@ require "y2network/dialogs/s390_ctc_activation"
 require "y2network/interface_config_builder"
 
 describe Y2Network::Dialogs::S390CtcActivation do
-  subject { described_class.new(Y2Network::InterfaceConfigBuilder.for("ctc")) }
+  let(:builder) { Y2Network::InterfaceConfigBuilder.for("ctc") }
+  let(:activator) { Y2Network::S390DeviceActivator.for(builder) }
+
+  subject { described_class.new(activator) }
 
   include_examples "CWM::Dialog"
 end

@@ -46,13 +46,18 @@ module Y2Network
       # @return [String] write device bus id
       attr_accessor :write_channel
       # @return [Integer] connection protocol (0, 1, 3, or 4)
-      #   0 Compatibility with peers other than OS/390®.
+      #   0 Compatibility with peers other than OS/390®. (default)
       #   1 Enhanced package checking for Linux peers.
       #   3 For compatibility with OS/390 or z/OS peers.
       #   4 For MPC connections to VTAM on traditional mainframe operating systems.
       # @see https://www.ibm.com/support/knowledgecenter/en/linuxonibm/com.ibm.linux.z.ljdd/ljdd_t_ctcm_wrk_protocol.html
       # @see https://github.com/SUSE/s390-tools/blob/master/ctc_configure#L16
       attr_accessor :protocol
+
+      def initialize
+        super()
+        @protocol = 0
+      end
 
       def ==(other)
         return false unless super

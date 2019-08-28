@@ -378,11 +378,15 @@ module Y2Network
       self.aliases = []
     end
 
-  private
+    def hwinfo_from(info)
+      @hwinfo = Hwinfo.new(info)
+    end
 
     def hwinfo
-      @hwinfo ||= Hwinfo.new(name: name)
+      @hwinfo ||= Hwinfo.for(name)
     end
+
+  private
 
     def ip_config_default
       return @connection_config.ip if @connection_config.ip

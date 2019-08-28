@@ -17,36 +17,38 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "yast"
-require "y2network/interface_config_builder"
-
-Yast.import "LanItems"
-Yast.import "NetworkInterfaces"
+require "y2network/s390_device_activator"
 
 module Y2Network
-  module InterfaceConfigBuilders
-    # Builder for S390 qeth interfaces. It also assumes the activation
-    # responsibilities.
-    class Qeth < InterfaceConfigBuilder
-      extend Forwardable
-
-      # Constructor
-      #
-      # @param config [Y2Network::ConnectionConfig::Base, nil] existing configuration of device or nil
-      #   for newly created
-      def initialize(config: nil)
-        super(type: InterfaceType::QETH, config: config)
-      end
-
-      def_delegators :@connection_config,
+  module S390DeviceActivators
+    class Ctc < S390DeviceActivator
+      def_delegators :@builder,
         :read_channel, :read_channel=,
         :write_channel, :write_channel=,
-        :data_channel, :data_channel=,
-        :layer2, :layer2=,
-        :port_number, :port_number=,
-        :lladdress, :lladdress=,
-        :ipa_takeover, :ipa_takeover=,
-        :attributes, :attributes=
+        :hwinfo, :protocol
+
+      def device_id
+        return if read_channel.to_s.empty?
+
+        [read_channel, write_channel].join(":")
+      end
+
+      def configure_attributes
+        return [] unless builder.protocol
+
+        ["protocol=#{builder.protocol}"]
+      end
+
+      # Modifies the read, write and data channel from the the device id
+      def propose_channels
+        id = device_id_from(hwinfo.busid)
+        return unless id
+        self.read_channel, self.write_channel = id.split(":")
+      end
+
+      def proposal
+        propose_channels unless device_id
+      end
     end
   end
 end

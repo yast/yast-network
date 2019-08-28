@@ -54,15 +54,15 @@ module Y2Network
     private
 
       def protocol_widget
-        Y2Network::Widgets::S390Protocol.new(@settings)
+        Y2Network::Widgets::S390Protocol.new(builder)
       end
 
       def read_channel_widget
-        Y2Network::Widgets::S390ReadChannel.new(@settings)
+        Y2Network::Widgets::S390ReadChannel.new(builder)
       end
 
       def write_channel_widget
-        Y2Network::Widgets::S390WriteChannel.new(@settings)
+        Y2Network::Widgets::S390WriteChannel.new(builder)
       end
     end
   end
