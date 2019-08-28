@@ -56,7 +56,8 @@ module Y2Network
           [
             # Guard to not try to rename everything with the same MAC address (e.g. vlan devices
             # inherit the MAC address from the underlying device).
-            UdevRulePart.new("KERNEL", "==", "eth*"),
+            # FIXME: it won't work when using predictable network names (openSUSE)
+            # UdevRulePart.new("KERNEL", "==", "eth*"),
             # The port number of a NIC where the ports share the same hardware device.
             UdevRulePart.new("ATTR{dev_id}", "==", "0x0"),
             UdevRulePart.new("ATTR{address}", "==", mac),

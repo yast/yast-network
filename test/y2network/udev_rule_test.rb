@@ -58,7 +58,7 @@ describe Y2Network::UdevRule do
       rule = described_class.new_mac_based_rename("eth0", "01:23:45:67:89:ab")
       expect(rule.to_s).to eq(
         "SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", ATTR{type}==\"1\", " \
-          "KERNEL==\"eth*\", ATTR{dev_id}==\"0x0\", ATTR{address}==\"01:23:45:67:89:ab\", " \
+          "ATTR{dev_id}==\"0x0\", ATTR{address}==\"01:23:45:67:89:ab\", " \
           "NAME=\"eth0\""
       )
     end

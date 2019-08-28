@@ -90,7 +90,7 @@ describe Y2Network::Sysconfig::InterfacesWriter do
           expect(Y2Network::UdevRule).to receive(:write) do |rules|
             expect(rules.first.to_s).to eq(
               "SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", " \
-                "ATTR{type}==\"1\", KERNEL==\"eth*\", ATTR{dev_id}==\"0x0\", " \
+                "ATTR{type}==\"1\", ATTR{dev_id}==\"0x0\", " \
                 "ATTR{address}==\"01:23:45:67:89:ab\", NAME=\"eth1\""
             )
           end
