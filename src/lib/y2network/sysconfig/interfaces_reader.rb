@@ -119,7 +119,7 @@ module Y2Network
         Y2Network::PhysicalInterface.new(data["dev_name"]).tap do |iface|
           iface.description = data["name"]
           iface.renaming_mechanism = renaming_mechanism_for(iface.name)
-          iface.type = TypeDetector.type_of(iface.name)
+          iface.type = InterfaceType.from_short_name(data["type"]) || TypeDetector.type_of(iface.name)
         end
       end
 
