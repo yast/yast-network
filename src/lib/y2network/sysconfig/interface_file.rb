@@ -284,6 +284,10 @@ module Y2Network
 
       ## BONDING
 
+      # @!attribute [r] bonding_master
+      #   @return [String] whether the interface is a bond device or not
+      define_variable(:bonding_master)
+
       # @!attribute [r] bonding_slaves
       #   @return [Hash] Bonding slaves
       define_collection_variable(:bonding_slave)
@@ -368,11 +372,15 @@ module Y2Network
 
       # Determines the interface's type
       #
-      # @todo Borrow logic from https://github.com/yast/yast-yast2/blob/6f7a789d00cd03adf62e00da34720f326f0e0633/library/network/src/modules/NetworkInterfaces.rb#L291
-      #
-      # @return [Y2Network::InterfaceType] Interface's type depending on the file values
+      # @return [Y2Network::InterfaceType] Interface's type depending on the configuration
+      #                                    If particular type cannot be recognized, then
+      #                                    ETHERNET is returned (same default as in wicked)
       def type
-        type_from_keys || type_from_values || InterfaceType::ETHERNET
+        type_by_key_value ||
+          type_by_key_existence ||
+          type_from_interfacetype ||
+          type_by_name ||
+          InterfaceType::ETHERNET
       end
 
       # Empties all known values
@@ -394,25 +402,59 @@ module Y2Network
 
     private
 
-      # Determines the Interface type based on specific values
+      # Detects interface type according to type specific option and its value
       #
-      # @return [Y2Network::InterfaceType, nil]
-      def type_from_values
-        return InterfaceType::DUMMY if interfacetype == "dummy"
+      # @return [Y2Network::InterfaceType, nil] particular type if recognized, nil otherwise
+      def type_by_key_value
+        return InterfaceType::BONDING if bonding_master == "yes"
         return InterfaceType::BRIDGE if bridge == "yes"
-        # TODO: Add support for ip-tunnels
-        return InterfaceType::TUN if tunnel == "tun"
-        return InterfaceType::TAP if tunnel == "tap"
+        return InterfaceType.from_short_name(tunnel) if tunnel
+
+        # in relation to original implementation ommited ENCAP option which leads to isdn
+        # and PPPMODE which leads to ppp. Neither of this type has been handled as
+        # "netcard" - see Yast::NetworkInterfaces for details
+
+        nil
       end
 
-      # Determines the Interface type based on defined variables
+      KEY_TO_TYPE = {
+        "ETHERDEVICE"   => InterfaceType::VLAN,
+        "WIRELESS_MODE" => InterfaceType::WIRELESS,
+        "MODEM_DEVICE"  => InterfaceType::PPP
+      }.freeze
+
+      # Detects interface type according to type specific option
       #
-      # @return [Y2Network::InterfaceType, nil]
-      def type_from_keys
-        return InterfaceType::BONDING if defined_variables.any? { |k| k.start_with?("BOND") }
-        return InterfaceType::WIRELESS if defined_variables.any? { |k| k.start_with?("WIRELESS") }
-        return InterfaceType::VLAN if defined_variables.include? "ETHERDEVICE"
-        return InterfaceType::INFINIBAND if defined_variables.include? "IPOIB_MODE"
+      # @return [Y2Network::InterfaceType, nil] particular type if recognized, nil otherwise
+      def type_by_key_existence
+        key = KEY_TO_TYPE.keys.find { |k| defined_variables.include?(k) }
+        return KEY_TO_TYPE[key] if key
+
+        nil
+      end
+
+      # Detects interface type according to sysconfig's INTERFACETYPE option
+      #
+      # This option is kind of special that it deserve own method mostly for documenting
+      # that it should almost never be used. Only meaningful cases for its usage is
+      # dummy device definition and loopback device (when an additional to standard ifcfg-lo
+      # is defined)
+      #
+      # @return [Y2Network::InterfaceType, nil] type according to INTERFACETYPE option
+      #                                    value if recognized, nil otherwise
+      def type_from_interfacetype
+        return InterfaceType.from_short_name(interfacetype) if interfacetype
+        nil
+      end
+
+      # Distinguishes interface type by its name
+      #
+      # The only case should be loopback device with special name (in sysconfig) "lo"
+      #
+      # @return [Y2Network::InterfaceType, nil] InterfaceType::LO or nil if not loopback
+      def type_by_name
+        InterfaceType::LO if interface == "lo"
+        nil
       end
 
       # Returns a list of those keys that have a value

@@ -22,6 +22,7 @@
 require_relative "../../test_helper"
 require "y2network/autoinst_profile/networking_section"
 require "y2network/autoinst/config_reader"
+require "y2network/sysconfig/interfaces_reader"
 
 describe Y2Network::Autoinst::ConfigReader do
   let(:subject) { described_class.new(networking_section) }
@@ -61,6 +62,8 @@ describe Y2Network::Autoinst::ConfigReader do
 
   describe "#config" do
     it "builds a new Y2Network::Config from a Y2Networking::Section" do
+      # TODO: mock hardware properly
+      allow_any_instance_of(Y2Network::Sysconfig::InterfacesReader).to receive(:hardware).and_return([])
       expect(subject.config).to be_a Y2Network::Config
       expect(subject.config.routing).to be_a Y2Network::Routing
       expect(subject.config.dns).to be_a Y2Network::DNS
