@@ -111,6 +111,8 @@ module Y2Network
     WIRELESS = new(N_("Wireless"), "wlan")
     # Infiniband card
     INFINIBAND = new(N_("Infiniband"), "ib")
+    # Infiniband card child device. Used in IPoIB (IP-over-InfiniBand)
+    INFINIBAND_CHILD = new(N_("Infiniband Child"), "ibchild")
     # Bonding device
     BONDING = new(N_("Bonding"), "bond")
     # bridge device
@@ -136,5 +138,19 @@ module Y2Network
     CTC = new(N_("CTC"), "ctc")
     # FICON-attached direct access storage devices. s390 specific
     FICON = new(N_("FICON"), "ficon")
+    # Point-to-Point Protocol
+    PPP = new(N_("Point-to-Point Protocol"), "ppp")
+    # Ip in Ip protocol
+    IPIP = new(N_("Ip-in-ip"), "ipip")
+    # IPv6 Tunnel interface
+    IPV6TNL = new(N_("IPv6 Tunnel"), "ip6tnl")
+    # IPv6 over IPv4
+    SIT = new(N_("IPv6 over IPv4 Tunnel"), "sit")
+    # IP over IPv4
+    GRE = new(N_("IP over IPv4 Tunnel"), "gre")
+    # Infrared
+    IRDA = new(N_("Infrared"), "irda")
+    # Loopback
+    LO = new(N_("Loopback"), "lo")
   end
 end

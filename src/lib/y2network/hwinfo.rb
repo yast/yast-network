@@ -21,6 +21,12 @@ require "yast"
 require "y2network/driver"
 
 module Y2Network
+  class HardwareWrapper
+    def initialize
+      Yast.include self, "network/routines.rb"
+    end
+  end
+
   # Stores useful (from networking POV) items of hwinfo for an interface
   # FIXME: decide whether it should read hwinfo (on demand or at once) for a network
   # device and store only necessary info or just parse provided hash
@@ -114,11 +120,9 @@ module Y2Network
 
   private
 
-    # for textdomain in network/hardware.rb
-    include Yast::I18n
-
     def load_hwinfo(name)
-      hw = Yast::LanItems.Hardware.find { |h| h["dev_name"] == name }
+      netcards = HardwareWrapper.new.ReadHardware("netcard")
+      hw = netcards.find { |h| h["dev_name"] == name }
       return nil if hw.nil?
 
       raw_dev_port = Yast::SCR.Read(

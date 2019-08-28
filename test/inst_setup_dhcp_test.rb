@@ -31,6 +31,7 @@ describe Yast::SetupDhcp do
   end
 
   before do
+    allow(Yast::Lan).to receive(:Read).and_return(lan_config)
     allow(Yast::Lan).to receive(:yast_config).and_return(lan_config)
   end
 

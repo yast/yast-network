@@ -30,7 +30,7 @@ describe Y2Network::Hwinfo do
   let(:interface_name) { "enp1s0" }
 
   before do
-    allow(Yast::LanItems).to receive(:Hardware).and_return(hardware)
+    allow_any_instance_of(Y2Network::HardwareWrapper).to receive(:ReadHardware).and_return(hardware)
   end
 
   describe "#exists?" do
