@@ -1,4 +1,4 @@
-# , :gw6dev encoding: utf-8
+# encoding: utf-8
 
 # ***************************************************************************
 #
@@ -29,6 +29,10 @@
 
 require "y2network/interface_config_builder"
 require "y2network/sequences/interface"
+require "y2network/widgets/interfaces_table"
+require "y2network/widgets/add_interface"
+require "y2network/widgets/edit_interface"
+require "y2network/widgets/delete_interface"
 
 module Yast
   module NetworkLanComplexInclude
@@ -69,34 +73,11 @@ module Yast
       @wd = {
         "MANAGED"  => managed_widget,
         "IPV6"     => ipv6_widget,
-        "OVERVIEW" => {
-          "widget"        => :custom,
-          "custom_widget" => VBox(
-            VWeight(
-              2,
-              Table(
-                Id(:_hw_items),
-                Opt(:notify, :immediate),
-                Header(_("Name"), _("IP Address"), _("Device"), _("Note"))
-              )
-            ),
-            VWeight(1, RichText(Id(:_hw_sum), "")),
-            HBox(
-              *overview_buttons.map { |k, v| PushButton(Id(k), v) },
-              HStretch()
-            )
-          ),
-          "init"          => fun_ref(method(:initOverview), "void (string)"),
-          "handle"        => fun_ref(
-            method(:handleOverview),
-            "symbol (string, map)"
-          ),
-          "help"          => Ops.get_string(
-            @help,
-            "overview",
-            ""
-          )
-        }
+        interfaces_table.widget_id => interfaces_table.cwm_definition,
+        add_interface.widget_id => add_interface.cwm_definition,
+        edit_interface.widget_id => edit_interface.cwm_definition,
+        delete_interface.widget_id => delete_interface.cwm_definition
+        # TODO: hardware summary richtext
       }
 
       @wd = Convert.convert(
@@ -132,12 +113,28 @@ module Yast
         },
         "overview" => {
           "header"       => _("Overview"),
-          "contents"     => VBox("OVERVIEW"),
-          "widget_names" => ["OVERVIEW"]
+          "contents"     => VBox(interfaces_table.widget_id, Left(HBox(add_interface.widget_id, edit_interface.widget_id, delete_interface.widget_id))),
+          "widget_names" => [interfaces_table.widget_id, add_interface.widget_id, edit_interface.widget_id,delete_interface.widget_id]
         }
       }
       @tabs_descr = Builtins.union(@tabs_descr, route_td)
       @tabs_descr = Builtins.union(@tabs_descr, @dns_td)
+    end
+
+    def interfaces_table
+      @interfaces_table ||= Y2Network::Widgets::InterfacesTable.new
+    end
+
+    def add_interface
+      @add_interface ||= Y2Network::Widgets::AddInterface.new
+    end
+
+    def edit_interface
+      @edit_interface ||= Y2Network::Widgets::EditInterface.new(interfaces_table)
+    end
+
+    def delete_interface
+      @delete_interface ||= Y2Network::Widgets::DeleteInterface.new(interfaces_table)
     end
 
     # Commit changes to internal structures
