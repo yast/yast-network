@@ -56,6 +56,16 @@ describe Y2Network::Sysconfig::InterfaceFile do
     end
   end
 
+  describe "#remove" do
+    subject(:file) { described_class.find("eth0") }
+
+    it "removes the file" do
+      expect(file).to_not be_nil
+      file.remove
+      expect(File).to_not exist(File.join(scr_root, file.path))
+    end
+  end
+
   describe "#ipaddrs" do
     it "returns the IP addresses" do
       expect(file.ipaddrs).to eq(
