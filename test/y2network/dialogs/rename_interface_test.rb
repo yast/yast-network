@@ -66,8 +66,8 @@ describe Y2Network::Dialogs::RenameInterface do
     allow(subject).to receive(:cwm_show).and_return(result)
     allow(Y2Network::Widgets::CustomInterfaceName).to receive(:new).and_return(name_widget)
     allow(Y2Network::Widgets::RenameHwinfo).to receive(:new).and_return(rename_hwinfo_widget)
-    allow(name_widget).to receive(:value).and_return(new_name)
-    allow(rename_hwinfo_widget).to receive(:value).and_return(rename_hwinfo)
+    allow(name_widget).to receive(:result).and_return(new_name)
+    allow(rename_hwinfo_widget).to receive(:result).and_return(rename_hwinfo)
     allow(interface).to receive(:hardware).and_return(hardware)
   end
 

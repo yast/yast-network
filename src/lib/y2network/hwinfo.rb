@@ -59,7 +59,8 @@ module Y2Network
       # @param name [String] Interface's name
       # @return [Hwinfo,nil] Hardware info or nil if not found
       def hwinfo_from_hardware(name)
-        hw = Yast::LanItems.Hardware.find { |h| h["dev_name"] == name }
+        netcards = HardwareWrapper.new.ReadHardware("netcard")
+        hw = netcards.find { |h| h["dev_name"] == name }
         return nil if hw.nil?
 
         raw_dev_port = Yast::SCR.Read(
@@ -77,7 +78,7 @@ module Y2Network
       # @return [Hwinfo,nil] Hardware info or nil if not found
       def hwinfo_from_udev(name)
         udev_rule = UdevRule.find_for(name)
-        return Hwinfo.new if udev_rule.nil?
+        return nil if udev_rule.nil?
         info = {
           udev:     udev_rule.bus_id,
           mac:      udev_rule.mac,
@@ -92,7 +93,7 @@ module Y2Network
     # @param hwinfo [Hash<String,Object>] Hardware information
     def initialize(hwinfo = {})
       # FIXME: store only what's needed.
-      @hwinfo = Hash[hwinfo.map { |k, v| [k.to_s, v] }] if hwinfo
+      @hwinfo = Hash[hwinfo.map { |k, v| [k.to_s, v] }]
     end
 
     # Shortcuts for accessing hwinfo items. Each hwinfo item has own method for reading

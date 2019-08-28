@@ -25,8 +25,8 @@ module Y2Network
     # This class allows the user to select which hardware information
     # should be taken into account when renaming a device
     class RenameHwinfo < CWM::CustomWidget
-      # @return [Hwinfo,nil] Hardware information to consider
-      attr_reader :value
+      # @return [Symbol] Renaming mechanis
+      attr_reader :result
 
       # Constructor
       #
@@ -49,11 +49,7 @@ module Y2Network
 
       # @see CWM::AbstractWidget
       def store
-        @value = current_value
-      end
-
-      def value
-        @value ||= current_value
+        @result = current_value
       end
 
       # @see CWM::CustomWidget

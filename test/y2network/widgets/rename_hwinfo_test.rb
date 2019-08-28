@@ -42,7 +42,7 @@ describe Y2Network::Widgets::RenameHwinfo do
     allow(subject).to receive(:current_value).and_return(mechanism)
   end
 
-  describe "#value" do
+  describe "#result" do
     before do
       subject.init
       subject.store
@@ -50,7 +50,7 @@ describe Y2Network::Widgets::RenameHwinfo do
 
     context "when the MAC is selected as renaming method" do
       it "returns :mac as the renaming mechanism" do
-        selected_mechanism, = subject.value
+        selected_mechanism, = subject.result
         expect(selected_mechanism).to eq(:mac)
       end
     end
@@ -59,7 +59,7 @@ describe Y2Network::Widgets::RenameHwinfo do
       let(:mechanism) { :bus_id }
 
       it "returns :bus_id as the renaming mechanism" do
-        selected_mechanism, = subject.value
+        selected_mechanism, = subject.result
         expect(selected_mechanism).to eq(:bus_id)
       end
     end

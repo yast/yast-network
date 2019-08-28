@@ -25,6 +25,9 @@ Yast.import "Popup"
 module Y2Network
   module Widgets
     class CustomInterfaceName < CWM::InputField
+      # @return [String] Entered interface name
+      attr_reader :result
+
       # Constructor
       #
       # @param builder [InterfaceConfigBuilder] Interface configuration builder object
@@ -52,14 +55,7 @@ module Y2Network
       # Saves the current value so it can be queried after the widget is closed
       # @see CWM::AbstractWidget#init
       def store
-        @value = value
-      end
-
-      # Current value
-      #
-      # @return [String,nil]
-      def value
-        @value || super
+        @result = value
       end
 
       # The value is valid when it does not contain unexpected characters

@@ -20,6 +20,7 @@
 require "cwm/popup"
 require "y2network/widgets/custom_interface_name"
 require "y2network/widgets/rename_hwinfo"
+require "y2network/virtual_interface"
 
 module Y2Network
   module Dialogs
@@ -46,9 +47,9 @@ module Y2Network
       def run
         ret = super
         return unless ret == :ok
-        renaming_mechanism = rename_hwinfo_widget.value unless virtual_interface?
-        @builder.rename_interface(name_widget.value, renaming_mechanism)
-        name_widget.value
+        renaming_mechanism = rename_hwinfo_widget.result unless virtual_interface?
+        @builder.rename_interface(name_widget.result, renaming_mechanism)
+        name_widget.result
       end
 
       # @see CWM::CustomWidget
