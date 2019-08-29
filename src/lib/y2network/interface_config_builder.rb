@@ -378,10 +378,13 @@ module Y2Network
       self.aliases = []
     end
 
+    # @param info [Hash<String,Object>] Hardware information
+    # @return [Hwinfo]
     def hwinfo_from(info)
       @hwinfo = Hwinfo.new(info)
     end
 
+    # @return [Hwinfo]
     def hwinfo
       @hwinfo ||= Hwinfo.for(name)
     end

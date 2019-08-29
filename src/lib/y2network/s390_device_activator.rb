@@ -40,7 +40,7 @@ module Y2Network
 
     # Constructor
     #
-    # @param [Y2Network::InterfaceConfigBuilder]
+    # @param builder [Y2Network::InterfaceConfigBuilder]
     def initialize(builder)
       @builder = builder
     end

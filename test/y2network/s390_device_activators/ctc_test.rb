@@ -82,7 +82,7 @@ describe Y2Network::S390DeviceActivators::Ctc do
     context "given the read or write device id" do
       let(:device_id) { "0.0.0800:0.0.0801" }
       let(:write_channel) { "0.0.0801" }
-      let(:hwinfo) { Y2Network::Hwinfo.new(hwinfo: { "busid" => write_channel }) }
+      let(:hwinfo) { Y2Network::Hwinfo.new("busid" => write_channel) }
       before do
         allow(builder).to receive(:hwinfo).and_return(hwinfo)
         allow(executor).to receive(:on_target!)
@@ -107,7 +107,7 @@ describe Y2Network::S390DeviceActivators::Ctc do
       let(:initialize_channels) { false }
       let(:device_id) { "0.0.0800:0.0.0801" }
       let(:write_channel) { "0.0.0801" }
-      let(:hwinfo) { Y2Network::Hwinfo.new(hwinfo: { "busid" => write_channel }) }
+      let(:hwinfo) { Y2Network::Hwinfo.new("busid" => write_channel) }
 
       before do
         allow(subject).to receive(:device_id_from).with(write_channel).and_return(device_id)
