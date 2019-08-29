@@ -41,6 +41,7 @@ describe Y2Network::Sysconfig::InterfacesWriter do
     before do
       allow(Yast::Execute).to receive(:on_target)
       allow(eth0).to receive(:hardware).and_return(hardware)
+      allow(writer).to receive(:sleep)
     end
 
     around do |example|
