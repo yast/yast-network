@@ -101,6 +101,16 @@ module Y2Network
             result << "<b>BusID : </b>" << hwinfo.busid << "<br>"
           end
         end
+        connection = Yast::Lan.yast_config.connections.by_name(value)
+        if connection
+          result << _("Device Name: %s") % ifcfg_name
+          # TODO: start mode description. Ideally in startmode class
+          # TODO: ip overview
+        else
+          result << "<p>" <<
+            _("The device is not configured. Press <b>Edit</b>\nto configure.\n") <<
+            "</p>"
+        end
 
         result
       end
