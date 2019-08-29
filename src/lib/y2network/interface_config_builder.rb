@@ -306,12 +306,6 @@ module Y2Network
       @aliases = value
     end
 
-    # gets interface name that will be assigned by udev
-    def udev_name
-      # cannot cache as it can be changed
-      Yast::LanItems.current_udev_name
-    end
-
     # TODO: eth only?
     # @return [String]
     def ethtool_options
