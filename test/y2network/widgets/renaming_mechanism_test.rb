@@ -20,11 +20,11 @@
 require_relative "../../test_helper"
 require "cwm/rspec"
 
-require "y2network/widgets/rename_hwinfo"
+require "y2network/widgets/renaming_mechanism"
 require "y2network/interface_config_builder"
 require "y2network/physical_interface"
 
-describe Y2Network::Widgets::RenameHwinfo do
+describe Y2Network::Widgets::RenamingMechanism do
   subject { described_class.new(builder) }
 
   let(:builder) do

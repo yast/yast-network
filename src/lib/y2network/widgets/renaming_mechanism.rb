@@ -19,13 +19,14 @@
 
 require "yast"
 require "cwm"
+require "cwm/custom_widget"
 
 module Y2Network
   module Widgets
     # This class allows the user to select which hardware information
     # should be taken into account when renaming a device
-    class RenameHwinfo < CWM::CustomWidget
-      # @return [Symbol] Renaming mechanis
+    class RenamingMechanism < CWM::CustomWidget
+      # @return [Symbol] Renaming mechanism
       attr_reader :result
 
       # Constructor
