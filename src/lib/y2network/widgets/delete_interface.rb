@@ -49,7 +49,7 @@ module Y2Network
           end
         end
 
-        config.connections.delete_if { |c| c.name == @table.value }
+        config.delete_interface(@table.value)
 
         :redraw
       end
