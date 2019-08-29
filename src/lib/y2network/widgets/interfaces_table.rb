@@ -49,14 +49,14 @@ module Y2Network
       end
 
       def items
-        # TODO: unconfigured devices
         config = Yast::Lan.yast_config
-        # TODO: handle unconfigured
         config.interfaces.map do |interface|
+          hwinfo = interface.hardware
+          friendly_name = hwinfo.exists? ? hwinfo.description : interface.name
           conn = config.connections.by_name(interface.name)
           [
             interface.name, # first is ID in table
-            interface.name, # TODO: better name based on hwinfo?
+            friendly_name,
             interface_protocol(conn),
             interface.name,
             ""
@@ -98,6 +98,16 @@ module Y2Network
           if !hwinfo.busid.empty?
             result << "<b>BusID : </b>" << hwinfo.busid << "<br>"
           end
+        end
+        connection = Yast::Lan.yast_config.connections.by_name(value)
+        if connection
+          result << _("Device Name: %s") % ifcfg_name
+          # TODO: start mode description. Ideally in startmode class
+          # TODO: ip overview
+        else
+          result << "<p>" <<
+            _("The device is not configured. Press <b>Edit</b>\nto configure.\n") <<
+            "</p>"
         end
 
         result
