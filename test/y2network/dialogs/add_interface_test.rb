@@ -32,18 +32,6 @@ describe Y2Network::Dialogs::AddInterface do
       allow(subject).to receive(:cwm_show).and_return(:abort)
     end
 
-    it "adds new interface to lan items" do
-      expect(Yast::LanItems).to receive(:AddNew)
-
-      subject.run
-    end
-
-    it "adds new interface to lan" do
-      expect(Yast::Lan).to receive(:Add)
-
-      subject.run
-    end
-
     it "returns nil if canceled" do
       allow(subject).to receive(:cwm_show).and_return(:abort)
 

@@ -184,17 +184,14 @@ module Yast
     # Handler for action "add"
     # @param [Hash{String => String}] options action options
     def AddHandler(options)
-      LanItems.AddNew
-      Lan.Add
-      LanItems.Items[LanItems.current]["ifcfg"] = options.fetch("name", "")
-      LanItems.type = options.fetch("type", infered_type(options))
-      if LanItems.type.empty?
+      type = options.fetch("type", infered_type(options))
+      if type.empty?
         Report.Error(_("The device type is mandatory."))
         return false
       end
 
-      builder = Y2Network::InterfaceConfigBuilder.for(LanItems.type)
-      builder.name = LanItems.GetCurrentName()
+      builder = Y2Network::InterfaceConfigBuilder.for(Y2Network::InterfaceType.from_short_name(type))
+      builder.name = options.fetch("name")
       update_builder_from_options!(builder, options)
 
       return false unless validate_config(builder)

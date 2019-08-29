@@ -30,6 +30,7 @@ module Y2Network
 
       # @param value [String] ipoib mode configuration
       def ipoib_mode=(value)
+        value = "" if value == "default"
         connection_config.ipoib_mode = IpoibMode.from_name(value)
       end
 

@@ -47,32 +47,6 @@ describe Y2Network::InterfaceConfigBuilders::Infiniband do
     end
   end
 
-  describe "#save" do
-    around do |test|
-      Yast::LanItems.AddNew
-      test.call
-      Yast::LanItems.Rollback
-    end
-
-    it "stores ipoib configuration" do
-      subject.ipoib_mode = "datagram"
-
-      subject.save
-      devmap = subject.device_sysconfig
-
-      expect(devmap).to include("IPOIB_MODE" => "datagram")
-    end
-
-    it "stores nil to ipoib configuration if mode is 'default'" do
-      subject.ipoib_mode = "default"
-
-      subject.save
-      devmap = subject.device_sysconfig
-
-      expect(devmap).to include("IPOIB_MODE" => nil)
-    end
-  end
-
   describe "#ipoib_mode" do
     context "modified by ipoib=" do
       it "returns modified value" do

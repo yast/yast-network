@@ -41,11 +41,6 @@ module Y2Network
 
       # initialize legacy stuff, that should be removed soon
       def legacy_init
-        # FIXME: can be mostly deleted
-        Yast::LanItems.AddNew
-        # FIXME: can be partly deleted and partly moved
-        Yast::Lan.Add
-
         # FIXME: This is for backward compatibility only
         # dhclient needs to set just one dhcp enabled interface to
         # DHCLIENT_SET_DEFAULT_ROUTE=yes. Otherwise interface is selected more
@@ -65,19 +60,12 @@ module Y2Network
         log.info "AddInterface result #{ret}"
         ret = :back if ret == :abort
 
-        # TODO: replace with builder initialization
-        if ret == :back
-          Yast::LanItems.Rollback
-          return nil
-        end
+        return if ret == :back
 
         # TODO: use factory to get proper builder
         builder = InterfaceConfigBuilder.for(InterfaceType.from_short_name(@type_widget.result))
         proposed_name = Yast::LanItems.new_type_devices(@type_widget.result, 1).first
         builder.name = proposed_name
-        Yast::NetworkInterfaces.Name = proposed_name
-        Yast::LanItems.Items[Yast::LanItems.current]["ifcfg"] = proposed_name
-        Yast::LanItems.Items[Yast::LanItems.current]["udev"] = {}
 
         builder
       end

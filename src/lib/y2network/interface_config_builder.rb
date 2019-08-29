@@ -73,11 +73,11 @@ module Y2Network
       # TODO: also config need to store it, as newly added can be later
       # edited with option for not yet created interface
       @newly_added = config.nil?
-      if config
-        @connection_config = config
+      @connection_config = if config
+        config
       else
         # TODO: propose new defaults
-        @connection_config = connection_config_klass(type).new
+        connection_config_klass(type).new
       end
     end
 
@@ -390,7 +390,7 @@ module Y2Network
     #
     # @param type [Y2Network::InterfaceType] type of device
     def connection_config_klass(type)
-      ConnectionConfig.const_get(type.name)
+      ConnectionConfig.const_get(type.class_name)
     rescue NameError
       log.error "Could not find a class to handle '#{type.name}' connections"
       ConnectionConfig::Base

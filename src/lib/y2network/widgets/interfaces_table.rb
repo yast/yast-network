@@ -91,9 +91,7 @@ module Y2Network
         if !hwinfo.exists?
           result << "<b>(" << _("No hardware information") << ")</b><br>"
         else
-          if !hwinfo.link
-            result << "<b>(" << _("Not connected") << ")</b><br>"
-          end
+          result << "<b>(" << _("Not connected") << ")</b><br>" if !hwinfo.link
           if !hwinfo.mac.empty?
             result << "<b>MAC : </b>" << hwinfo.mac << "<br>"
           end
