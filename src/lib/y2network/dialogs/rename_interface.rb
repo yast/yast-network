@@ -19,55 +19,38 @@
 
 require "cwm/popup"
 require "y2network/widgets/custom_interface_name"
-require "y2network/widgets/rename_hwinfo"
+require "y2network/widgets/renaming_mechanism"
 require "y2network/virtual_interface"
 
 module Y2Network
   module Dialogs
     # This dialog allows the user to rename a network interface
     #
-    # Is works in a slightly different way depending on the interface.
-    #
-    # * For physical interfaces, it allows the user to select between using
-    #   the MAC adddress or the Bus ID, which are present in the Hwinfo object
-    #   associated to the interface.
-    # * For not connected interfaces ({FakeInterface}), as the hardware is not present,
-    #   the user must specify the MAC or the Bus ID by hand (NOT IMPLEMENTED YET).
-    # * For virtual interfaces, like bridges, only the name can be chaned (no hardware
-    #   info at all) (NOT IMPLEMENTED YET).
+    # It allows the user to enter a new name and to select the attribute to
+    # base the rename on. Supported attributes are MAC address and Bus ID.
     class RenameInterface < CWM::Popup
+      # Constructor
+      #
+      # @param [Y2Network::InterfaceConfigBuilder] Interface configuration builder object
       def initialize(builder)
         textdomain "network"
 
         @builder = builder
-        @old_name = interface.name
-      end
-
-      # Runs the dialog
-      def run
-        ret = super
-        return unless ret == :ok
-        renaming_mechanism = rename_hwinfo_widget.result unless virtual_interface?
-        @builder.rename_interface(name_widget.result, renaming_mechanism)
-        name_widget.result
+        @old_name = builder.interface.name
       end
 
       # @see CWM::CustomWidget
       def contents
         VBox(
           Left(name_widget),
-          *hardware_info
+          VSpacing(0.5),
+          rename_hwinfo_widget
         )
       end
 
     private
 
-      # Elements to display the hardware information
-      def hardware_info
-        virtual_interface? ? [Empty()] : [VSpacing(0.5), rename_hwinfo_widget]
-      end
-
-      # Interface's name widget
+      # Interface name widget
       #
       # @return [Y2Network::Widgets::CustomInterfaceName]
       def name_widget
@@ -76,21 +59,9 @@ module Y2Network
 
       # Widget to select the hardware information to base the rename on
       #
-      # @return [Y2Network::Widgets::RenameHwinfo]
+      # @return [Y2Network::Widgets::RenamingMechanism]
       def rename_hwinfo_widget
-        @rename_hwinfo_widget ||= Y2Network::Widgets::RenameHwinfo.new(@builder)
-      end
-
-      # Returns the interface
-      #
-      # @return [Y2Network::Interface]
-      def interface
-        @builder.interface
-      end
-
-      # Determines whether it is a virtual interface
-      def virtual_interface?
-        interface.is_a?(Y2Network::VirtualInterface)
+        @rename_hwinfo_widget ||= Y2Network::Widgets::RenamingMechanism.new(@builder)
       end
     end
   end
