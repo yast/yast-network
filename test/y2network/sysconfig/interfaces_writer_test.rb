@@ -111,6 +111,21 @@ describe Y2Network::Sysconfig::InterfacesWriter do
           subject.write(interfaces)
         end
       end
+
+      context "when there is some rule for an unknown interface" do
+        let(:unknown_rule) { Y2Network::UdevRule.new_mac_based_rename("unknown", "00:11:22:33:44:55:66") }
+
+        before do
+          allow(Y2Network::UdevRule).to receive(:all).and_return([unknown_rule])
+        end
+
+        it "keeps the rule" do
+          expect(Y2Network::UdevRule).to receive(:write) do |rules|
+            expect(rules.first.to_s).to eq(unknown_rule.to_s)
+          end
+          subject.write(interfaces)
+        end
+      end
     end
 
     context "when the interface is not renamed" do
