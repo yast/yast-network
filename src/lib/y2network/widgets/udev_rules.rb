@@ -36,7 +36,7 @@ module Y2Network
           _("Udev Rules"),
           HBox(
             InputField(Id(:udev_rules_name), Opt(:hstretch, :disabled), _("Device Name"), ""),
-            @settings.interface.can_be_renamed? ? change_button : Empty()
+            PushButton(Id(:udev_rules_change), _("Change"))
           )
         )
       end
@@ -46,13 +46,12 @@ module Y2Network
       end
 
       def handle
-        self.value = Y2Network::Dialogs::RenameInterface.new(@settings).run
+        dialog = Y2Network::Dialogs::RenameInterface.new(@settings)
+        ret = dialog.run
+        return unless ret == :ok
+        self.value = @settings.name
 
         nil
-      end
-
-      def store
-        # TODO: nothing to do as done in RenameInterface which looks wrong
       end
 
       def value=(name)
@@ -69,12 +68,6 @@ module Y2Network
             "associating the MAC address or BusID of the network device with its name (for\n" \
             "example, eth1, wlan0 ) and assures a persistent device name upon reboot.\n"
         )
-      end
-
-    private
-
-      def change_button
-        PushButton(Id(:udev_rules_change), _("Change"))
       end
     end
   end
