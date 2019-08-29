@@ -59,7 +59,7 @@ module Y2Network
 
       # Renames interfaces and refresh the udev service
       #
-      # @param [InterfaceCollection] Interfaces
+      # @param interfaces [InterfaceCollection] Interfaces
       def update_udevd(interfaces)
         udev_rules = interfaces.map { |i| udev_rule_for(i) }.compact
         Y2Network::UdevRule.write(udev_rules)

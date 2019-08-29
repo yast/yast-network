@@ -31,7 +31,7 @@ module Y2Network
     class RenameInterface < CWM::Popup
       # Constructor
       #
-      # @param [Y2Network::InterfaceConfigBuilder] Interface configuration builder object
+      # @param builder [Y2Network::InterfaceConfigBuilder] Interface configuration builder object
       def initialize(builder)
         textdomain "network"
 

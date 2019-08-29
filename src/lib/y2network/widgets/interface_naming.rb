@@ -27,7 +27,7 @@ module Y2Network
     class InterfaceNaming < ::CWM::CustomWidget
       # Constructor
       #
-      # @param [Y2Network::InterfaceConfigBuilder] Interface configuration builder object
+      # @param builder [Y2Network::InterfaceConfigBuilder] Interface configuration builder object
       def initialize(builder)
         @builder = builder
       end
