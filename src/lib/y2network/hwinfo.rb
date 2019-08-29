@@ -21,15 +21,79 @@ require "yast"
 require "y2network/driver"
 
 module Y2Network
+  class HardwareWrapper
+    def initialize
+      Yast.include self, "network/routines.rb"
+    end
+  end
+
   # Stores useful (from networking POV) items of hwinfo for an interface
   # FIXME: decide whether it should read hwinfo (on demand or at once) for a network
   # device and store only necessary info or just parse provided hash
   class Hwinfo
+    # TODO: this method should be private
     attr_reader :hwinfo
 
-    def initialize(name:)
+    class << self
+      # Creates a new instance containing hardware information for a given interface
+      #
+      # It retrieves the information from two sources:
+      #
+      # * hardware (through {Yast::LanItems} for the time being),
+      # * from existing udev rules.
+      #
+      # @todo Probably, this logic should be moved to a separate class.
+      #
+      # @param name [String] Interface's name
+      # @return [Hwinfo]
+      def for(name)
+        hwinfo_from_hardware(name) || hwinfo_from_udev(name) || Hwinfo.new
+      end
+
+    private
+
+      # Returns hardware information for the given device
+      #
+      # It relies on the {Yast::LanItems} module.
+      #
+      # @param name [String] Interface's name
+      # @return [Hwinfo,nil] Hardware info or nil if not found
+      def hwinfo_from_hardware(name)
+        netcards = HardwareWrapper.new.ReadHardware("netcard")
+        hw = netcards.find { |h| h["dev_name"] == name }
+        return nil if hw.nil?
+
+        raw_dev_port = Yast::SCR.Read(
+          Yast::Path.new(".target.string"), "/sys/class_net/#{name}/dev_port"
+        ).to_s.strip
+        hw["dev_port"] = raw_dev_port unless raw_dev_port.empty?
+        new(hw)
+      end
+
+      # Returns hardware information for the given device
+      #
+      # It relies on udev rules.
+      #
+      # @param name [String] Interface's name
+      # @return [Hwinfo,nil] Hardware info or nil if not found
+      def hwinfo_from_udev(name)
+        udev_rule = UdevRule.find_for(name)
+        return nil if udev_rule.nil?
+        info = {
+          udev:     udev_rule.bus_id,
+          mac:      udev_rule.mac,
+          dev_port: udev_rule.dev_port
+        }.compact
+        new(info)
+      end
+    end
+
+    # Constructor
+    #
+    # @param hwinfo [Hash<String,Object>] Hardware information
+    def initialize(hwinfo = {})
       # FIXME: store only what's needed.
-      @hwinfo = load_hwinfo(name)
+      @hwinfo = Hash[hwinfo.map { |k, v| [k.to_s, v] }]
     end
 
     # Shortcuts for accessing hwinfo items. Each hwinfo item has own method for reading
@@ -66,8 +130,8 @@ module Y2Network
     #   @return [String,nil]
     [
       { name: "dev_name", default: "" },
-      { name: "mac", default: "" },
-      { name: "busid", default: "" },
+      { name: "mac", default: nil },
+      { name: "busid", default: nil },
       { name: "link", default: false },
       { name: "driver", default: "" },
       { name: "module", default: nil },
@@ -88,13 +152,21 @@ module Y2Network
     alias_method :name, :dev_name
 
     def exists?
-      !@hwinfo.nil?
+      !@hwinfo.empty?
     end
 
     # Device type description
     # FIXME: collision with alias for dev_name
     def description
       @hwinfo ? @hwinfo.fetch("name", "") : ""
+    end
+
+    # Merges data from another Hwinfo object
+    #
+    # @param other [Hwinfo] Object to merge data from
+    def merge!(other)
+      @hwinfo.merge!(other.hwinfo)
+      self
     end
 
     # Returns the list of kernel modules
@@ -112,20 +184,16 @@ module Y2Network
       modules.map { |m| Driver.new(*m) }
     end
 
-  private
-
-    # for textdomain in network/hardware.rb
-    include Yast::I18n
-
-    def load_hwinfo(name)
-      hw = Yast::LanItems.Hardware.find { |h| h["dev_name"] == name }
-      return nil if hw.nil?
-
-      raw_dev_port = Yast::SCR.Read(
-        Yast::Path.new(".target.string"), "/sys/class_net/#{name}/dev_port"
-      ).to_s.strip
-      hw["dev_port"] = raw_dev_port unless raw_dev_port.empty?
-      hw
+    # Determines whether two objects are equivalent
+    #
+    # Ignores any element having a nil value.
+    #
+    # @param other [Hwinfo] Object to compare with
+    # @return [Boolean]
+    def ==(other)
+      hwinfo.compact == other.hwinfo.compact
     end
+
+    alias_method :eql?, :==
   end
 end

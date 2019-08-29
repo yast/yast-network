@@ -21,16 +21,48 @@ require_relative "../test_helper"
 require "y2network/hwinfo"
 
 describe Y2Network::Hwinfo do
-  subject(:hwinfo) { described_class.new(name: interface_name) }
+  subject(:hwinfo) { described_class.for(interface_name) }
 
   let(:hardware) do
     YAML.load_file(File.join(DATA_PATH, "hardware.yml"))
   end
 
   let(:interface_name) { "enp1s0" }
+  let(:hw_wrapper) { double("Y2Network::HardwareWrapper", ReadHardware: hardware) }
 
   before do
-    allow(Yast::LanItems).to receive(:Hardware).and_return(hardware)
+    allow(Y2Network::HardwareWrapper).to receive(:new).and_return(hw_wrapper)
+    allow(Y2Network::UdevRule).to receive(:find_for).with(interface_name).and_return(udev_rule)
+  end
+
+  let(:udev_rule) { nil }
+
+  describe ".for" do
+    context "when there is info from hardware" do
+      it "returns a hwinfo object containing the info from hardware" do
+        hwinfo = described_class.for(interface_name)
+        expect(hwinfo.mac).to eq("52:54:00:68:54:fb")
+      end
+    end
+
+    context "when there is no info from hardware" do
+      let(:hardware) { [] }
+      let(:udev_rule) { Y2Network::UdevRule.new_mac_based_rename(interface_name, "01:23:45:67:89:ab") }
+
+      it "returns info from udev rules" do
+        hwinfo = described_class.for(interface_name)
+        expect(hwinfo.mac).to eq("01:23:45:67:89:ab")
+      end
+
+      context "when there is no info from udev rules" do
+        let(:udev_rule) { nil }
+
+        it "returns nil" do
+          hwinfo = described_class.for(interface_name)
+          expect(hwinfo.exists?).to eq(false)
+        end
+      end
+    end
   end
 
   describe "#exists?" do
@@ -46,6 +78,18 @@ describe Y2Network::Hwinfo do
       it "returns false" do
         expect(hwinfo.exists?).to eq(false)
       end
+    end
+  end
+
+  describe "#merge!" do
+    subject(:hwinfo) { described_class.new(mac: "00:11:22:33:44:55:66", busid: "0000:08:00.0") }
+    let(:other) { described_class.new(mac: "01:23:45:78:90:ab", dev_port: "1") }
+
+    it "merges data from another Hwinfo object" do
+      hwinfo.merge!(other)
+      expect(hwinfo.mac).to eq(other.mac)
+      expect(hwinfo.busid).to eq("0000:08:00.0")
+      expect(hwinfo.dev_port).to eq("1")
     end
   end
 
@@ -80,6 +124,27 @@ describe Y2Network::Hwinfo do
       it "returns the dev_port" do
         expect(hwinfo.dev_port).to be_nil
       end
+    end
+  end
+
+  describe "#==" do
+    context "when both objects contain the same information" do
+      it "returns true" do
+        expect(described_class.new("dev_name" => "eth0"))
+          .to eq(described_class.new("dev_name" => "eth0"))
+      end
+    end
+
+    context "when both objects contain different information" do
+      it "returns false" do
+        expect(described_class.new("dev_name" => "eth0"))
+          .to_not eq(described_class.new("dev_name" => "eth1"))
+      end
+    end
+
+    it "ignores nil values" do
+      expect(described_class.new("dev_name" => "eth0", "other" => nil))
+        .to eq(described_class.new("dev_name" => "eth0"))
     end
   end
 end

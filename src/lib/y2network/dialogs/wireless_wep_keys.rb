@@ -17,9 +17,13 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
+require "yast"
+
 require "cwm/dialog"
 require "cwm/custom_widget"
 require "cwm/common_widgets"
+
+Yast.import "Label"
 
 module Y2Network
   module Dialogs
@@ -75,6 +79,20 @@ module Y2Network
       # Always open new dialog to work properly in sequence
       def should_open_dialog?
         true
+      end
+
+      # Omits abort
+      def abort_button
+        ""
+      end
+
+      # Omits back button, only let OK be. So it do directly modification
+      def back_button
+        ""
+      end
+
+      def next_button
+        Yast::Label.OKButton
       end
 
       class WEPKeyLength < CWM::ComboBox

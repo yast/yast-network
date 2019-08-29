@@ -59,6 +59,8 @@ module Y2Network
     attr_accessor :type
     # @return [Y2Network::ConnectionConfig] connection config on which builder operates
     attr_reader :connection_config
+    # @return [Symbol,nil] Mechanism to rename the interface (no hardware based, :mac or :bus_id)
+    attr_writer :renaming_mechanism
 
     # Constructor
     #
@@ -122,12 +124,9 @@ module Y2Network
     # Renames the interface
     #
     # @param new_name [String] New interface's name
-    # @param renaming_mechanism [Symbol,nil] Mechanism to rename the interface
-    #   (nil -no rename-, :mac or :bus_id)
-    def rename_interface(new_name, renaming_mechanism)
+    def rename_interface(new_name)
       @old_name ||= name
       self.name = new_name
-      @renaming_mechanism = renaming_mechanism
     end
 
     # Returns the current renaming mechanism
@@ -281,13 +280,6 @@ module Y2Network
     # @param value [Array<Hash>] see #aliases for hash values
     def aliases=(value)
       @aliases = value
-    end
-
-    # gets interface name that will be assigned by udev
-    def udev_name
-      # TODO: change to new way of renaming interface. Imo?
-      # cannot cache as EditNicName dialog can change it
-      Yast::LanItems.current_udev_name
     end
 
     # TODO: eth only?

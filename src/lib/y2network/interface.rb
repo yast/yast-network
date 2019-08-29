@@ -50,6 +50,8 @@ module Y2Network
     attr_reader :hardware
     # @return [Symbol] Mechanism to rename the interface (nil -no rename-, :bus_id or :mac)
     attr_accessor :renaming_mechanism
+    # @return [String,nil]
+    attr_reader :old_name
 
     # Shortcuts for accessing interfaces' ifcfg options
     #
@@ -77,7 +79,7 @@ module Y2Network
       @description = ""
       @type = type
       # @hardware and @name should not change during life of the object
-      @hardware = Hwinfo.new(name: name)
+      @hardware = Hwinfo.for(name)
 
       init(name)
     end
@@ -116,6 +118,7 @@ module Y2Network
     # @param mechanism [Symbol] Property to base the rename on (:mac or :bus_id)
     def rename(new_name, mechanism)
       log.info "Rename interface '#{name}' to '#{new_name}' using the '#{mechanism}'"
+      @old_name = name
       @name = new_name
       @renaming_mechanism = mechanism
     end

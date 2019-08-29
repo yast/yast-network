@@ -24,7 +24,9 @@ require "y2network/widgets/interface_name"
 require "y2network/interface_config_builder"
 
 describe Y2Network::Widgets::InterfaceName do
-  let(:builder) { Y2Network::InterfaceConfigBuilder.for("eth") }
+  let(:builder) do
+    Y2Network::InterfaceConfigBuilder.for("eth").tap { |b| b.name = "eth0" }
+  end
   subject { described_class.new(builder) }
 
   include_examples "CWM::ComboBox"
@@ -56,6 +58,30 @@ describe Y2Network::Widgets::InterfaceName do
 
       expect(Yast::UI).to receive(:SetFocus)
       expect(subject.validate).to be false
+    end
+  end
+
+  describe "#store" do
+    before do
+      allow(subject).to receive(:value).and_return(value)
+    end
+
+    context "when the name has changed" do
+      let(:value) { "eth1" }
+
+      it "renames the interface" do
+        expect(builder).to receive(:rename_interface).with(value)
+        subject.store
+      end
+    end
+
+    context "when the name has changed" do
+      let(:value) { builder.name }
+
+      it "does not rename the interface" do
+        expect(builder).to_not receive(:rename_interface)
+        subject.store
+      end
     end
   end
 end

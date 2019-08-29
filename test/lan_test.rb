@@ -24,6 +24,7 @@ require_relative "test_helper"
 require "yast"
 require "y2network/config"
 require "y2network/routing"
+require "y2network/interface_config_builder"
 
 Yast.import "Lan"
 
@@ -531,6 +532,10 @@ describe "LanClass" do
 
     context "when wicked is in use" do
       let(:nm_enabled) { false }
+
+      before do
+        allow(Yast::Lan).to receive(:ReadWithCacheNoGUI)
+      end
 
       it "reads the current network configuration" do
         expect(Yast::Lan).to receive(:ReadWithCacheNoGUI)

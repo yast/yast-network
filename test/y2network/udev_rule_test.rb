@@ -58,7 +58,8 @@ describe Y2Network::UdevRule do
       rule = described_class.new_mac_based_rename("eth0", "01:23:45:67:89:ab")
       expect(rule.to_s).to eq(
         "SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", ATTR{type}==\"1\", " \
-          "ATTR{address}=\"01:23:45:67:89:ab\", NAME=\"eth0\""
+          "ATTR{dev_id}==\"0x0\", ATTR{address}==\"01:23:45:67:89:ab\", " \
+          "NAME=\"eth0\""
       )
     end
   end
@@ -68,7 +69,7 @@ describe Y2Network::UdevRule do
       rule = described_class.new_bus_id_based_rename("eth0", "0000:08:00.0", "1")
       expect(rule.to_s).to eq(
         "SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", ATTR{type}==\"1\", " \
-          "KERNELS=\"0000:08:00.0\", ATTR{dev_port}=\"1\", NAME=\"eth0\""
+          "KERNELS==\"0000:08:00.0\", ATTR{dev_port}==\"1\", NAME=\"eth0\""
       )
     end
 
@@ -77,7 +78,7 @@ describe Y2Network::UdevRule do
         rule = described_class.new_bus_id_based_rename("eth0", "0000:08:00.0")
         expect(rule.to_s).to eq(
           "SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", ATTR{type}==\"1\", " \
-            "KERNELS=\"0000:08:00.0\", NAME=\"eth0\""
+            "KERNELS==\"0000:08:00.0\", NAME=\"eth0\""
         )
       end
     end
@@ -104,6 +105,54 @@ describe Y2Network::UdevRule do
       expect(udev_rule.to_s).to eq(
         'ACTION=="add", NAME="dummy"'
       )
+    end
+  end
+
+  describe "#mac" do
+    subject(:udev_rule) { described_class.new_mac_based_rename("eth0", "01:23:45:67:89:ab") }
+
+    it "returns the MAC from the udev rule" do
+      expect(udev_rule.mac).to eq("01:23:45:67:89:ab")
+    end
+
+    context "if no MAC address is present" do
+      subject(:udev_rule) { described_class.new }
+
+      it "returns nil" do
+        expect(udev_rule.mac).to be_nil
+      end
+    end
+  end
+
+  describe "#bus_id" do
+    subject(:udev_rule) { described_class.new_bus_id_based_rename("eth0", "0000:08:00.0") }
+
+    it "returns the BUS ID from the udev rule" do
+      expect(udev_rule.bus_id).to eq("0000:08:00.0")
+    end
+
+    context "if no BUS ID is present" do
+      subject(:udev_rule) { described_class.new }
+
+      it "returns nil" do
+        expect(udev_rule.bus_id).to be_nil
+      end
+    end
+  end
+
+  describe "#bus_id" do
+    subject(:udev_rule) { described_class.new_bus_id_based_rename("eth0", "0000:08:00.0", "1") }
+
+    it "returns the device port from the udev rule" do
+      expect(udev_rule.dev_port).to eq("1")
+    end
+
+    context "if no device port is present" do
+      subject(:udev_rule) { described_class.new }
+
+      it "returns nil" do
+        expect(udev_rule.dev_port).to be_nil
+      end
     end
   end
 end

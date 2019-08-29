@@ -53,7 +53,16 @@ module Y2Network
       # @param mac  [String] MAC address
       def new_mac_based_rename(name, mac)
         new_network_rule(
-          [UdevRulePart.new("ATTR{address}", "=", mac), UdevRulePart.new("NAME", "=", name)]
+          [
+            # Guard to not try to rename everything with the same MAC address (e.g. vlan devices
+            # inherit the MAC address from the underlying device).
+            # FIXME: it won't work when using predictable network names (openSUSE)
+            # UdevRulePart.new("KERNEL", "==", "eth*"),
+            # The port number of a NIC where the ports share the same hardware device.
+            UdevRulePart.new("ATTR{dev_id}", "==", "0x0"),
+            UdevRulePart.new("ATTR{address}", "==", mac),
+            UdevRulePart.new("NAME", "=", name)
+          ]
         )
       end
 
@@ -63,8 +72,8 @@ module Y2Network
       # @param bus_id   [String] BUS ID (e.g., "0000:08:00.0")
       # @param dev_port [String] Device port
       def new_bus_id_based_rename(name, bus_id, dev_port = nil)
-        parts = [UdevRulePart.new("KERNELS", "=", bus_id)]
-        parts << UdevRulePart.new("ATTR{dev_port}", "=", dev_port) if dev_port
+        parts = [UdevRulePart.new("KERNELS", "==", bus_id)]
+        parts << UdevRulePart.new("ATTR{dev_port}", "==", dev_port) if dev_port
         parts << UdevRulePart.new("NAME", "=", name)
         new_network_rule(parts)
       end
@@ -135,6 +144,47 @@ module Y2Network
     # @return [String]
     def to_s
       parts.map(&:to_s).join(", ")
+    end
+
+    # Returns the part with the given key
+    #
+    # @param key [String] Key name
+    def part_by_key(key)
+      parts.find { |p| p.key == key }
+    end
+
+    # Returns the value for a given part
+    #
+    # @param key [String] Key name
+    # @return [String,nil] Value or nil if not found a part which such a key
+    def part_value_for(key)
+      part = part_by_key(key)
+      return nil unless part
+      part.value
+    end
+
+    # Returns the MAC in the udev rule
+    #
+    # @return [String,nil] MAC address or nil if not found
+    # @see #part_value_for
+    def mac
+      part_value_for("ATTR{address}")
+    end
+
+    # Returns the BUS ID in the udev rule
+    #
+    # @return [String,nil] BUS ID or nil if not found
+    # @see #part_value_for
+    def bus_id
+      part_value_for("KERNELS")
+    end
+
+    # Returns the device port in the udev rule
+    #
+    # @return [String,nil] Device port or nil if not found
+    # @see #part_value_for
+    def dev_port
+      part_value_for("ATTR{dev_port}")
     end
   end
 end
