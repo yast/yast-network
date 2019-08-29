@@ -28,7 +28,7 @@ describe Y2Network::Hwinfo do
   end
 
   let(:interface_name) { "enp1s0" }
-  let(:hw_wrapper) { double("Y2Network::HardwareWrapper", ReadHardware: hardware)}
+  let(:hw_wrapper) { double("Y2Network::HardwareWrapper", ReadHardware: hardware) }
 
   before do
     allow(Y2Network::HardwareWrapper).to receive(:new).and_return(hw_wrapper)
