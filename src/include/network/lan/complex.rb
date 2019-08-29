@@ -30,6 +30,7 @@
 require "y2network/interface_config_builder"
 require "y2network/sequences/interface"
 require "y2network/widgets/interfaces_table"
+require "y2network/widgets/interface_description"
 require "y2network/widgets/add_interface"
 require "y2network/widgets/edit_interface"
 require "y2network/widgets/delete_interface"
@@ -74,10 +75,10 @@ module Yast
         "MANAGED"                  => managed_widget,
         "IPV6"                     => ipv6_widget,
         interfaces_table.widget_id => interfaces_table.cwm_definition,
+        interface_description.widget_id => interface_description.cwm_definition,
         add_interface.widget_id    => add_interface.cwm_definition,
         edit_interface.widget_id   => edit_interface.cwm_definition,
         delete_interface.widget_id => delete_interface.cwm_definition
-        # TODO: hardware summary richtext
       }
 
       @wd = Convert.convert(
@@ -113,8 +114,12 @@ module Yast
         },
         "overview" => {
           "header"       => _("Overview"),
-          "contents"     => VBox(interfaces_table.widget_id, Left(HBox(add_interface.widget_id, edit_interface.widget_id, delete_interface.widget_id))),
-          "widget_names" => [interfaces_table.widget_id, add_interface.widget_id, edit_interface.widget_id, delete_interface.widget_id]
+          "contents"     => VBox(
+            interfaces_table.widget_id,
+            interface_description.widget_id,
+            Left(HBox(add_interface.widget_id, edit_interface.widget_id, delete_interface.widget_id))
+          ),
+          "widget_names" => [interfaces_table.widget_id, interface_description.widget_id, add_interface.widget_id, edit_interface.widget_id, delete_interface.widget_id]
         }
       }
       @tabs_descr = Builtins.union(@tabs_descr, route_td)
@@ -122,7 +127,11 @@ module Yast
     end
 
     def interfaces_table
-      @interfaces_table ||= Y2Network::Widgets::InterfacesTable.new
+      @interfaces_table ||= Y2Network::Widgets::InterfacesTable.new(interface_description)
+    end
+
+    def interface_description
+      @interface_description ||= Y2Network::Widgets::InterfaceDescription.new
     end
 
     def add_interface

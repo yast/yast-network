@@ -23,8 +23,10 @@ require "cwm/table"
 module Y2Network
   module Widgets
     class InterfacesTable < CWM::Table
-      def initialize
+      def initialize(description)
         textdomain "network"
+
+        @description = description
       end
 
       def header
@@ -36,16 +38,27 @@ module Y2Network
         ]
       end
 
+      def opt
+        [:notify, :immediate]
+      end
+
+      def handle
+        @description.value = create_description
+
+        nil
+      end
+
       def items
         # TODO: unconfigured devices
-        config = Yast::Lan.yast_config.copy
+        config = Yast::Lan.yast_config
         # TODO: handle unconfigured
-        config.connections.map do |conn|
+        config.interfaces.map do |interface|
+          conn = config.connections.by_name(interface.name)
           [
-            conn.name, # first is ID in table
-            conn.name, # TODO: better name based on hwinfo?
+            interface.name, # first is ID in table
+            interface.name, # TODO: better name based on hwinfo?
             interface_protocol(conn),
-            conn.interface,
+            interface.name,
             ""
           ]
         end
@@ -54,6 +67,7 @@ module Y2Network
       # Workaround for usage in old CWM which also cache content of cwm items
       def init
         change_items(items)
+        handle
       end
 
     private
@@ -68,6 +82,27 @@ module Y2Network
         else
           bootproto.upcase
         end
+      end
+
+      def create_description
+        interface = Yast::Lan.yast_config.interfaces.by_name(value)
+        hwinfo = interface.hardware
+        result = ""
+        if !hwinfo.exists?
+          result << "<b>(" << _("No hardware information") << ")</b><br>"
+        else
+          if !hwinfo.link
+            result << "<b>(" << _("Not connected") << ")</b><br>"
+          end
+          if !hwinfo.mac.empty?
+            result << "<b>MAC : </b>" << hwinfo.mac << "<br>"
+          end
+          if !hwinfo.busid.empty?
+            result << "<b>BusID : </b>" << hwinfo.busid << "<br>"
+          end
+        end
+
+        result
       end
     end
   end
