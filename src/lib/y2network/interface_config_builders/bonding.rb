@@ -45,6 +45,7 @@ module Y2Network
       end
 
       # current options for bonding
+      # @return [String]
       def bond_options
         connection_config.options
       end

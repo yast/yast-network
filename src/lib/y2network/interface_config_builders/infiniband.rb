@@ -38,11 +38,9 @@ module Y2Network
       #
       # @return [String] particular mode or "default" when not set
       def ipoib_mode
-        case connection_config.ipoib_mode.name
-        when "" then "default"
-        else
-          connection_config.ipoib_mode.name
-        end
+        return "default" if connection_config.ipoib_mode.name == ""
+
+        connection_config.ipoib_mode.name
       end
     end
   end

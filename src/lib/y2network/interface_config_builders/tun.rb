@@ -32,6 +32,8 @@ module Y2Network
         [connection_config.owner, connection_config.group]
       end
 
+      # @param [String] user owner of tunnel. Name or UID
+      # @param [String] group owner of tunnel. Name or GID
       def assign_tunnel_user_group(user, group)
         connection_config.owner = user
         connection_config.group = group

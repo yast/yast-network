@@ -140,7 +140,8 @@ module Y2Network
       connections.by_interface(old_name).each { |c| c.interface = new_name }
     end
 
-    # deletes interface and all its config. If interface is physical, it is kept.
+    # deletes interface and all its config. If interface is physical,
+    # it is not removed as we cannot remove physical interface.
     def delete_interface(name)
       connections.reject! { |c| c.name == name }
       interface = interfaces.by_name(name)

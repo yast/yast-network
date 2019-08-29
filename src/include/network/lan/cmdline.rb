@@ -302,9 +302,9 @@ module Yast
       when "bond"
         builder.slaves = options.fetch("slaves", "").split(" ")
       when "vlan"
-        builder.etherdevice = options.fetch("ethdevice", "")
+        builder.etherdevice = options["ethdevice"]
       when "br"
-        builder.ports = options.fetch("bridge_ports", "")
+        builder.ports = options["bridge_ports"]
       end
 
       default_bootproto = options.keys.include?("ip") ? "static" : "none"
