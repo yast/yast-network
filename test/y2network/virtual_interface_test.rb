@@ -22,10 +22,4 @@ require "y2network/virtual_interface"
 
 describe Y2Network::VirtualInterface do
   subject(:interface) { described_class.new("br0") }
-
-  describe "#can_be_renamed?" do
-    it "returns true" do
-      expect(interface.can_be_renamed?).to eq(true)
-    end
-  end
 end

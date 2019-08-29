@@ -27,9 +27,7 @@ require "y2network/interface_config_builder"
 describe Y2Network::Widgets::UdevRules do
   subject { described_class.new(builder) }
 
-  let(:builder) do
-    instance_double(Y2Network::InterfaceConfigBuilder, interface: double(can_be_renamed?: true))
-  end
+  let(:builder) { instance_double(Y2Network::InterfaceConfigBuilder) }
 
   before do
     allow(Yast::LanItems).to receive(:current_udev_name).and_return("hell666")

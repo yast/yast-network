@@ -123,15 +123,6 @@ module Y2Network
       @renaming_mechanism = mechanism
     end
 
-    # Determines whether the interface can be renamed
-    #
-    # An interface can be renamed if it has a MAC address or a Bus ID.
-    #
-    # @return [Boolean]
-    def can_be_renamed?
-      hardware && !(hardware.mac.nil? && hardware.busid.nil?)
-    end
-
   private
 
     def system_config(name)

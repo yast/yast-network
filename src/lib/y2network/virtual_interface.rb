@@ -31,14 +31,5 @@ module Y2Network
     def self.from_connection(name, conn)
       new(name, type: conn.type)
     end
-
-    # Determines whether the interface can be renamed
-    #
-    # A virtual interface can always be renamed.
-    #
-    # @return [Boolean]
-    def can_be_renamed?
-      true
-    end
   end
 end
