@@ -140,7 +140,7 @@ describe Y2Network::UdevRule do
     end
   end
 
-  describe "#bus_id" do
+  describe "#dev_port" do
     subject(:udev_rule) { described_class.new_bus_id_based_rename("eth0", "0000:08:00.0", "1") }
 
     it "returns the device port from the udev rule" do
@@ -153,6 +153,14 @@ describe Y2Network::UdevRule do
       it "returns nil" do
         expect(udev_rule.dev_port).to be_nil
       end
+    end
+  end
+
+  describe "#device" do
+    subject(:udev_rule) { described_class.new_mac_based_rename("eth0", "01:23:45:67:89:ab") }
+
+    it "returns device" do
+      expect(udev_rule.device).to eq("eth0")
     end
   end
 end

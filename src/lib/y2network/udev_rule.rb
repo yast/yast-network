@@ -37,14 +37,24 @@ module Y2Network
   #   rule.to_s #=> "ACTION==\"add\", SUBSYSTEM==\"net\", ATTR{address}==\"?*31:78:f2\", NAME=\"eth0\""
   class UdevRule
     class << self
+      # Returns all persistent network rules
+      #
+      # @return [Array<UdevRule>] Persistent network rules
+      def all
+        return @all if @all
+        rules_map = Yast::SCR.Read(Yast::Path.new(".udev_persistent.net")) || {}
+        @all = rules_map.values.map do |parts|
+          udev_parts = parts.map { |p| UdevRulePart.from_string(p) }
+          new(udev_parts)
+        end
+      end
+
       # Returns the udev rule for a given device
       #
       # @param device [String] Network device name
       # @return [UdevRule] udev rule
       def find_for(device)
-        return nil unless rules_map.key?(device)
-        parts = rules_map[device].map { |p| UdevRulePart.from_string(p) }
-        new(parts)
+        all.find { |r| r.device == device }
       end
 
       # Helper method to create a rename rule based on a MAC address
@@ -107,16 +117,7 @@ module Y2Network
 
       # Clears rules cache map
       def reset_cache
-        @rules_map = nil
-      end
-
-    private
-
-      # Returns the rules map
-      #
-      # @return [Hash<String,Array<String>>] Rules parts (as strings) indexed by interface name
-      def rules_map
-        @rules_map ||= Yast::SCR.Read(Yast::Path.new(".udev_persistent.net")) || {}
+        @all = nil
       end
     end
 
@@ -148,17 +149,19 @@ module Y2Network
 
     # Returns the part with the given key
     #
-    # @param key [String] Key name
-    def part_by_key(key)
-      parts.find { |p| p.key == key }
+    # @param key [String] Key name to match
+    # @param operator [String,nil] Operator to match; nil omits matching the operator
+    def part_by_key(key, operator = nil)
+      parts.find { |p| p.key == key && (operator.nil? || p.operator == operator) }
     end
 
     # Returns the value for a given part
     #
     # @param key [String] Key name
+    # @param operator [String,nil] Operator to match; nil omits matching the operator
     # @return [String,nil] Value or nil if not found a part which such a key
-    def part_value_for(key)
-      part = part_by_key(key)
+    def part_value_for(key, operator = nil)
+      part = part_by_key(key, operator)
       return nil unless part
       part.value
     end
@@ -185,6 +188,11 @@ module Y2Network
     # @see #part_value_for
     def dev_port
       part_value_for("ATTR{dev_port}")
+    end
+
+    # Returns the device mentioned in the rule (if any)
+    def device
+      part_value_for("NAME", "=")
     end
   end
 end
