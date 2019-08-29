@@ -21,8 +21,7 @@ require "yast"
 require "cwm/tabs"
 
 # used widgets
-require "y2network/widgets/interface_name"
-require "y2network/widgets/udev_rules"
+require "y2network/widgets/interface_naming"
 require "y2network/widgets/startmode"
 require "y2network/widgets/ifplugd_priority"
 require "y2network/widgets/firewall_zone"
@@ -52,8 +51,7 @@ module Y2Network
               1,
               0,
               VBox(
-                # FIXME: udev rules for anything without hwinfo is wrong
-                @settings.newly_added? ? InterfaceName.new(@settings) : UdevRules.new(@settings),
+                InterfaceNaming.new(@settings),
                 Frame(
                   _("Device Activation"),
                   HBox(Startmode.new(@settings, ifplugd_widget), ifplugd_widget, HStretch())

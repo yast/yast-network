@@ -79,7 +79,8 @@ module Y2Network
       end
 
       def store
-        @settings.name = value
+        return if @settings.name == value
+        @settings.rename_interface(value)
       end
     end
   end

@@ -19,7 +19,7 @@
 
 require "yast"
 require "cwm/custom_widget"
-require "network/edit_nic_name"
+require "y2network/dialogs/rename_interface"
 
 Yast.import "UI"
 
@@ -42,17 +42,16 @@ module Y2Network
       end
 
       def init
-        self.value = @settings.udev_name
+        self.value = @settings.name
       end
 
       def handle
-        self.value = Yast::EditNicName.new(@settings).run
+        dialog = Y2Network::Dialogs::RenameInterface.new(@settings)
+        ret = dialog.run
+        return unless ret == :ok
+        self.value = @settings.name
 
         nil
-      end
-
-      def store
-        # TODO: nothing to do as done in EditNicName which looks wrong
       end
 
       def value=(name)

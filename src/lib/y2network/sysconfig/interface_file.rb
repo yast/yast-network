@@ -394,6 +394,12 @@ module Y2Network
         @defined_variables = nil
       end
 
+      # Removes the file
+      def remove
+        return unless Yast::FileUtils.Exists(path.to_s)
+        Yast::SCR.Execute(Yast::Path.new(".target.remove"), path.to_s)
+      end
+
     private
 
       # Detects interface type according to type specific option and its value

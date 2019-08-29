@@ -20,6 +20,10 @@
 require "yast"
 require "y2network/udev_rule"
 require "yast2/execute"
+require "y2network/sysconfig/interface_file"
+require "y2network/sysconfig/routes_file"
+
+Yast.import "Mode"
 
 module Y2Network
   module Sysconfig
@@ -34,9 +38,8 @@ module Y2Network
       #
       # @param interfaces [Y2Network::InterfacesCollection] Interfaces collection
       def write(interfaces)
-        udev_rules = interfaces.map { |i| udev_rule_for(i) }.compact
-        Y2Network::UdevRule.write(udev_rules)
-        update_udevd
+        clean_up_old_interfaces(interfaces)
+        update_udevd(interfaces)
       end
 
     private
@@ -54,10 +57,40 @@ module Y2Network
         end
       end
 
-      # Refreshes udev service
-      def update_udevd
+      # Renames interfaces and refresh the udev service
+      #
+      # @param interfaces [InterfaceCollection] Interfaces
+      def update_udevd(interfaces)
+        udev_rules = interfaces.map { |i| udev_rule_for(i) }.compact
+        Y2Network::UdevRule.write(udev_rules)
+
         Yast::Execute.on_target("/usr/bin/udevadm", "control", "--reload")
         Yast::Execute.on_target("/usr/bin/udevadm", "trigger", "--subsystem-match=net", "--action=add")
+        # wait so that ifcfgs written in NetworkInterfaces are newer
+        # (1-second-wise) than netcontrol status files,
+        # and rcnetwork reload actually works (bnc#749365)
+        Yast::Execute.on_target("/usr/bin/udevadm", "settle")
+        sleep(1)
+      end
+
+      # Cleans and shutdowns renamed interfaces
+      #
+      # @param interfaces [InterfacesCollection] Interfaces
+      def clean_up_old_interfaces(interfaces)
+        interfaces.to_a.select(&:old_name).each do |iface|
+          set_interface_down(iface.old_name)
+          ifcfg = Y2Network::Sysconfig::InterfaceFile.find(iface.old_name)
+          ifcfg && ifcfg.remove
+          ifroute = Y2Network::Sysconfig::RoutesFile.find(iface.old_name)
+          ifroute && ifroute.remove
+        end
+      end
+
+      # Sets the interface down
+      #
+      # @param iface_name [String] Interface's name
+      def set_interface_down(iface_name)
+        Yast::Execute.on_target("/sbin/ifdown", iface_name) unless Yast::Mode.autoinst
       end
     end
   end
