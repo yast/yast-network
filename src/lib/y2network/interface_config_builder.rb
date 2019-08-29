@@ -58,6 +58,8 @@ module Y2Network
     attr_accessor :name
     # @return [Y2Network::InterfaceType] type of @see Y2Network::Interface which is intended to be build
     attr_accessor :type
+    # @return [Symbol,nil] Mechanism to rename the interface (no hardware based, :mac or :bus_id)
+    attr_writer :renaming_mechanism
 
     # Constructor
     #
@@ -120,12 +122,9 @@ module Y2Network
     # Renames the interface
     #
     # @param new_name [String] New interface's name
-    # @param renaming_mechanism [Symbol,nil] Mechanism to rename the interface
-    #   (no hardware based, :mac or :bus_id)
-    def rename_interface(new_name, renaming_mechanism)
+    def rename_interface(new_name)
       @old_name ||= name
       self.name = new_name
-      @renaming_mechanism = renaming_mechanism
     end
 
     # Returns the current renaming mechanism

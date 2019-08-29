@@ -104,7 +104,8 @@ describe Y2Network::InterfaceConfigBuilder do
 
     context "when interface was renamed" do
       before do
-        subject.rename_interface("eth2", :mac)
+        subject.rename_interface("eth2")
+        subject.renaming_mechanism = :mac
       end
 
       it "updates the name in the configuration" do
@@ -214,13 +215,8 @@ describe Y2Network::InterfaceConfigBuilder do
 
   describe "#rename_interface" do
     it "updates the interface name" do
-      expect { config_builder.rename_interface("eth2", :mac) }
+      expect { config_builder.rename_interface("eth2") }
         .to change { config_builder.name }.from("eth0").to("eth2")
-    end
-
-    it "updates the renaming mechanism" do
-      expect { config_builder.rename_interface("eth2", :mac) }
-        .to change { config_builder.renaming_mechanism }.from(nil).to(:mac)
     end
   end
 
@@ -233,7 +229,17 @@ describe Y2Network::InterfaceConfigBuilder do
 
     context "when the interface has been renamed" do
       before do
-        config_builder.rename_interface("eth2", :mac)
+        config_builder.rename_interface("eth2")
+      end
+
+      it "returns true" do
+        expect(config_builder.renamed_interface?).to eq(true)
+      end
+    end
+
+    context "when the renaming mechanism has been changed" do
+      before do
+        config_builder.renaming_mechanism = :busid
       end
 
       it "returns true" do
@@ -243,11 +249,13 @@ describe Y2Network::InterfaceConfigBuilder do
 
     context "when the old name and mechanism have been restored " do
       before do
-        config_builder.rename_interface("eth2", :mac)
+        config_builder.rename_interface("eth2")
+        config_builder.renaming_mechanism = :mac
       end
 
       it "returns false" do
-        config_builder.rename_interface("eth0", nil)
+        config_builder.rename_interface("eth0")
+        config_builder.renaming_mechanism = nil
         expect(config_builder.renamed_interface?).to eq(false)
       end
     end

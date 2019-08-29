@@ -43,14 +43,14 @@ module Y2Network
         @renaming_mechanism = builder.renaming_mechanism || :mac
       end
 
-      # @see CWM::AbstractWidget
+      # @see CWM::AbstractWidget#init
       def init
         Yast::UI.ChangeWidget(Id(:udev_type), :Value, @renaming_mechanism)
       end
 
-      # @see CWM::AbstractWidget
+      # @see CWM::AbstractWidget#store
       def store
-        @result = current_value
+        @builder.renaming_mechanism = value
       end
 
       # @see CWM::CustomWidget
@@ -68,11 +68,12 @@ module Y2Network
         )
       end
 
-    private
-
-      def current_value
+      # @see CWM::ValueBasedWidget#value
+      def value
         Yast::UI.QueryWidget(Id(:udev_type), :Value)
       end
+
+    private
 
       def radio_buttons
         buttons = []
