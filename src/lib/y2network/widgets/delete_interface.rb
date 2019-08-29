@@ -18,13 +18,40 @@
 # find current contact information at www.suse.com.
 
 require "yast"
-require "y2network/interface_config_builder"
+require "cwm/common_widgets"
+
+Yast.import "Label"
+Yast.import "Lan"
+Yast.import "Popup"
 
 module Y2Network
-  module InterfaceConfigBuilders
-    class Dummy < InterfaceConfigBuilder
-      def initialize(config: nil)
-        super(type: InterfaceType::DUMMY, config: config)
+  module Widgets
+    class DeleteInterface < CWM::PushButton
+      # @param table [InterfacesTable]
+      def initialize(table)
+        textdomain "network"
+        @table = table
+      end
+
+      def label
+        Yast::Label.DeleteButton
+      end
+
+      def handle
+        config = Yast::Lan.yast_config
+        connection_config = config.connections.by_name(@table.value)
+        if connection_config.startmode.name == "nfsroot"
+          if !Yast::Popup.YesNoHeadline(
+            Label.WarningMsg,
+            _("Device you select has STARTMODE=nfsroot. Really delete?")
+          )
+            return nil
+          end
+        end
+
+        config.delete_interface(@table.value)
+
+        :redraw
       end
     end
   end

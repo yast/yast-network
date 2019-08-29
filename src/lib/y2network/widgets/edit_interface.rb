@@ -18,13 +18,34 @@
 # find current contact information at www.suse.com.
 
 require "yast"
-require "y2network/interface_config_builder"
+require "cwm/common_widgets"
+require "y2network/sequences/interface"
+
+Yast.import "Label"
+Yast.import "Lan"
 
 module Y2Network
-  module InterfaceConfigBuilders
-    class Dummy < InterfaceConfigBuilder
-      def initialize(config: nil)
-        super(type: InterfaceType::DUMMY, config: config)
+  module Widgets
+    class EditInterface < CWM::PushButton
+      # @param table [InterfacesTable]
+      def initialize(table)
+        textdomain "network"
+
+        @table = table
+      end
+
+      def label
+        Yast::Label.EditButton
+      end
+
+      def handle
+        config = Yast::Lan.yast_config.copy
+        # TODO: handle unconfigured
+        connection_config = config.connections.by_name(@table.value)
+        builder = Y2Network::InterfaceConfigBuilder.for(connection_config.type, config: connection_config)
+        builder.name = connection_config.name
+        Y2Network::Sequences::Interface.new.edit(builder)
+        :redraw
       end
     end
   end

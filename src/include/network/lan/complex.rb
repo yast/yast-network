@@ -1,4 +1,4 @@
-# , :gw6dev encoding: utf-8
+# encoding: utf-8
 
 # ***************************************************************************
 #
@@ -29,6 +29,11 @@
 
 require "y2network/interface_config_builder"
 require "y2network/sequences/interface"
+require "y2network/widgets/interfaces_table"
+require "y2network/widgets/interface_description"
+require "y2network/widgets/add_interface"
+require "y2network/widgets/edit_interface"
+require "y2network/widgets/delete_interface"
 
 module Yast
   module NetworkLanComplexInclude
@@ -54,7 +59,6 @@ module Yast
       Yast.import "LanItems"
 
       Yast.include include_target, "network/routines.rb"
-      Yast.include include_target, "network/summary.rb"
       Yast.include include_target, "network/lan/help.rb"
       Yast.include include_target, "network/services/routing.rb"
       Yast.include include_target, "network/services/dns.rb"
@@ -68,36 +72,13 @@ module Yast
     def wd
       return @wd if @wd
       @wd = {
-        "MANAGED"  => managed_widget,
-        "IPV6"     => ipv6_widget,
-        "OVERVIEW" => {
-          "widget"        => :custom,
-          "custom_widget" => VBox(
-            VWeight(
-              2,
-              Table(
-                Id(:_hw_items),
-                Opt(:notify, :immediate),
-                Header(_("Name"), _("IP Address"), _("Device"), _("Note"))
-              )
-            ),
-            VWeight(1, RichText(Id(:_hw_sum), "")),
-            HBox(
-              *overview_buttons.map { |k, v| PushButton(Id(k), v) },
-              HStretch()
-            )
-          ),
-          "init"          => fun_ref(method(:initOverview), "void (string)"),
-          "handle"        => fun_ref(
-            method(:handleOverview),
-            "symbol (string, map)"
-          ),
-          "help"          => Ops.get_string(
-            @help,
-            "overview",
-            ""
-          )
-        }
+        "MANAGED"                       => managed_widget,
+        "IPV6"                          => ipv6_widget,
+        interfaces_table.widget_id      => interfaces_table.cwm_definition,
+        interface_description.widget_id => interface_description.cwm_definition,
+        add_interface.widget_id         => add_interface.cwm_definition,
+        edit_interface.widget_id        => edit_interface.cwm_definition,
+        delete_interface.widget_id      => delete_interface.cwm_definition
       }
 
       @wd = Convert.convert(
@@ -133,12 +114,36 @@ module Yast
         },
         "overview" => {
           "header"       => _("Overview"),
-          "contents"     => VBox("OVERVIEW"),
-          "widget_names" => ["OVERVIEW"]
+          "contents"     => VBox(
+            interfaces_table.widget_id,
+            interface_description.widget_id,
+            Left(HBox(add_interface.widget_id, edit_interface.widget_id, delete_interface.widget_id))
+          ),
+          "widget_names" => [interfaces_table.widget_id, interface_description.widget_id, add_interface.widget_id, edit_interface.widget_id, delete_interface.widget_id]
         }
       }
       @tabs_descr = Builtins.union(@tabs_descr, route_td)
       @tabs_descr = Builtins.union(@tabs_descr, @dns_td)
+    end
+
+    def interfaces_table
+      @interfaces_table ||= Y2Network::Widgets::InterfacesTable.new(interface_description)
+    end
+
+    def interface_description
+      @interface_description ||= Y2Network::Widgets::InterfaceDescription.new
+    end
+
+    def add_interface
+      @add_interface ||= Y2Network::Widgets::AddInterface.new
+    end
+
+    def edit_interface
+      @edit_interface ||= Y2Network::Widgets::EditInterface.new(interfaces_table)
+    end
+
+    def delete_interface
+      @delete_interface ||= Y2Network::Widgets::DeleteInterface.new(interfaces_table)
     end
 
     # Commit changes to internal structures
@@ -196,312 +201,11 @@ module Yast
       ret ? :next : :abort
     end
 
-    def AddInterface
-      Lan.Add
-      LanItems.operation = :add
-      LanItems.SelectHWMap(Ops.get_map(LanItems.getCurrentItem, "hwinfo", {}))
-      Ops.set(
-        LanItems.Items,
-        [LanItems.current, "ifcfg"],
-        Ops.get_string(LanItems.getCurrentItem, ["hwinfo", "dev_name"], "")
-      )
-      LanItems.operation = :edit
-      fw = ""
-      if LanItems.needFirmwareCurrentItem
-        fw = LanItems.GetFirmwareForCurrentItem
-        if fw != ""
-          if !Package.Installed(fw) && !Package.Available(fw)
-            Popup.Message(
-              Builtins.sformat(
-                _(
-                  "Firmware is needed. Install it from \n" \
-                    "the add-on CD.\n" \
-                    "First add the add-on CD to your YaST software repositories then return \n" \
-                    "to this configuration dialog.\n"
-                )
-              )
-            )
-            return false
-          elsif !Builtins.contains(LanItems.Requires, fw)
-            LanItems.Requires = Builtins.add(LanItems.Requires, fw)
-          end
-        else
-          return Popup.ContinueCancel(
-            _(
-              "The device needs a firmware to function properly. Usually, it can be\n" \
-                "downloaded from your driver vendor's Web page. \n" \
-                "If you have already downloaded and installed the firmware, click\n" \
-                "<b>Continue</b> to configure the device. Otherwise click <b>Cancel</b> and\n" \
-                "return to this dialog once you have installed the firmware.\n"
-            )
-          )
-        end
-      end
-
-      # this is one of 2 places to install packages :-(
-      # - kernel modules (InstallKernel): before loaded
-      # - wlan firmware: here, just because it is copied from modems
-      #   #45960
-      if LanItems.Requires != [] && !LanItems.Requires.nil?
-        return false if PackagesInstall(LanItems.Requires) != :next
-        if fw == "b43-fwcutter"
-          if Popup.ContinueCancelHeadline(
-            _("Installing firmware"),
-            _(
-              "For successful firmware installation, the 'install_bcm43xx_firmware' script needs to be executed. Execute it now?"
-            )
-          )
-            command = Convert.convert(
-              SCR.Execute(
-                path(".target.bash_output"),
-                "/usr/sbin/install_bcm43xx_firmware"
-              ),
-              from: "any",
-              to:   "map <string, any>"
-            )
-            if Ops.get_integer(command, "exit", -1) != 0
-              Popup.ErrorDetails(
-                _("An error occurred during firmware installation."),
-                Ops.get_string(command, "stderr", "")
-              )
-            else
-              Popup.Message("bcm43xx_firmware installed successfully")
-            end
-          end
-        end
-      end
-      #    TODO: Refresh hwinfo in LanItems
-      true
-    end
-
     # Returns true if the device can be used (means handled as normal linux device)
     # or false otherwise (it is used mainly at s390 based systems where a special
     # handling is needed to run linux device emulation)
     def DeviceReady(devname)
       !Arch.s390 || s390_DriverLoaded(devname)
-    end
-
-    def enableDisableButtons
-      LanItems.current = Convert.to_integer(
-        UI.QueryWidget(Id(:_hw_items), :CurrentItem)
-      )
-
-      UI.ChangeWidget(:_hw_sum, :Value, LanItems.GetItemDescription)
-      if !LanItems.IsCurrentConfigured # unconfigured
-        UI.ChangeWidget(Id(:delete), :Enabled, false)
-      else
-        UI.ChangeWidget(Id(:delete), :Enabled, true)
-      end
-
-      UI.ChangeWidget(Id(:edit), :Enabled, LanItems.enableCurrentEditButton)
-
-      if !Mode.config && Lan.HaveXenBridge # #196479
-        # #178848
-        overview_buttons.keys.each { |b| UI.ChangeWidget(Id(b), :Enabled, false) }
-      end
-
-      nil
-    end
-
-    # Automatically configures slaves when user enslaves them into a bond or bridge device
-    def UpdateSlaves
-      # TODO: sometimes it is called when no device is selected and then it crashes
-      return if LanItems.GetCurrentName.nil? || LanItems.GetCurrentName.empty?
-
-      current = LanItems.current
-      config = Lan.yast_config.copy
-      connection_config = config.connections.by_name(LanItems.GetCurrentName)
-      Yast.y2milestone("update slaves for #{current}:#{LanItems.GetCurrentName}:#{LanItems.GetCurrentType}")
-      master_builder = Y2Network::InterfaceConfigBuilder.for(LanItems.GetCurrentType(), config: connection_config)
-      master_builder.name = LanItems.GetCurrentName()
-
-      Lan.autoconf_slaves.each do |dev|
-        if LanItems.FindAndSelect(dev)
-          connection_config = config.connections.by_name(LanItems.GetCurrentName)
-          builder = Y2Network::InterfaceConfigBuilder.for(LanItems.GetCurrentType(), config: connection_config)
-          builder.name = LanItems.GetCurrentName()
-          LanItems.SetItem(builder: builder)
-        else
-          dev_index = LanItems.FindDeviceIndex(dev)
-          if dev_index < 0
-            log.error("initOverview: invalid slave device name #{dev}")
-            next
-          end
-          LanItems.current = dev_index
-
-          AddInterface()
-          builder = Y2Network::InterfaceConfigBuilder.for(LanItems.GetDeviceType(current))
-          builder.name = LanItems.GetCurrentName
-        end
-        # clear defaults, some defaults are invalid for slaves and can cause troubles
-        # in related sysconfig scripts or makes no sence for slaves (e.g. ip configuration).
-        builder.subnet_prefix = ""
-        builder.boot_protocol = "none"
-        case master_builder.type.short_name
-        when "bond"
-          LanItems.startmode = "hotplug"
-          # If there is already a rule based on the bus_id, do not update it.
-          if LanItems.current_udev_rule.empty? || LanItems.GetItemUdev("KERNELS").empty?
-            LanItems.update_item_udev_rule!(:bus_id)
-          end
-        when "br"
-          builder.ip_address = ""
-        else
-          raise "Adapting slaves for wrong type #{master_builder.type.inspect}"
-        end
-
-        LanItems.Commit(builder)
-      end
-
-      # Once the interfaces have been configured we should empty the list to
-      # avoid configure them again in case that some interface is removed from the
-      # master.
-      Lan.autoconf_slaves = []
-
-      LanItems.current = current
-
-      nil
-    end
-
-    # Automatically updates interfaces configuration according users input.
-    #
-    # Perform automatic configuration based on user input. E.g. when an interface is inserted
-    # into bond device and persistence based on bus id is required, then some configuration changes
-    # are required in ifcfg and udev. It used to be needed to do it by hand before.
-    def AutoUpdateOverview
-      # TODO: allow disabling. E.g. if bus id based persistency is not requested.
-      UpdateSlaves()
-
-      nil
-    end
-
-    def initOverview(_key)
-      # search for automatic updates
-      AutoUpdateOverview()
-
-      # update table with device description
-      term_items =
-        LanItems.Overview.map do |i|
-          t = Item(Id(i["id"]))
-          (i["table_descr"] || []).each { |l| t << l }
-          t
-        end
-
-      UI.ChangeWidget(Id(:_hw_items), :Items, term_items)
-
-      if !@shown
-        disable_unconfigureable_items([:_hw_items, :_hw_sum] + overview_buttons.keys, true)
-        @shown = true
-      else
-        enableDisableButtons
-      end
-
-      log.info("LanItems #{LanItems.Items}")
-
-      nil
-    end
-
-    def handleOverview(_key, event)
-      if !disable_unconfigureable_items([:_hw_items, :_hw_sum] + overview_buttons.keys, false)
-        enableDisableButtons
-      end
-      UI.ChangeWidget(:_hw_sum, :Value, LanItems.GetItemDescription)
-
-      if Ops.get_string(event, "EventReason", "") == "Activated"
-        case Ops.get_symbol(event, "ID")
-        when :add
-          Y2Network::Sequences::Interface.new.add
-          return :redraw
-        when :edit
-          if LanItems.IsCurrentConfigured
-            config = Lan.yast_config.copy
-            connection_config = config.connections.by_name(LanItems.GetCurrentName)
-            builder = Y2Network::InterfaceConfigBuilder.for(LanItems.GetCurrentType(), config: connection_config)
-            builder.name = LanItems.GetCurrentName()
-            LanItems.SetItem(builder: builder)
-
-            if LanItems.startmode == "managed"
-              # Continue-Cancel popup
-              if !Popup.ContinueCancel(
-                _(
-                  "The interface is currently set to be managed\n" \
-                    "by the NetworkManager applet.\n" \
-                    "\n" \
-                    "If you edit the settings for this interface here,\n" \
-                    "the interface will no longer be managed by NetworkManager.\n"
-                )
-              )
-                # y2r: cannot break from middle of switch
-                # but in this function return will do
-                return nil # means cancel
-              end
-
-              LanItems.startmode = "ifplugd"
-            end
-          else
-            if !AddInterface()
-              Builtins.y2error("handleOverview: AddInterface failed.")
-              # y2r: cannot break from middle of switch
-              # but in this function return will do
-              return nil
-            end
-
-            type = LanItems.GetCurrentType()
-            # s390 does not have type yet set, but it can be read from hwinfo
-            type = LanItems.Items.dig(LanItems.current, "hwinfo", "type") if !type || type.empty?
-            builder = Y2Network::InterfaceConfigBuilder.for(type)
-            builder.name = LanItems.GetCurrentName()
-
-            # FIXME: This is for backward compatibility only
-            # dhclient needs to set just one dhcp enabled interface to
-            # DHCLIENT_SET_DEFAULT_ROUTE=yes. Otherwise interface is selected more
-            # or less randomly (bnc#868187). However, UI is not ready for such change yet.
-            # As it could easily happen that all interfaces are set to "no" (and
-            # default route is unrecheable in such case) this explicite setup was
-            # added.
-            LanItems.set_default_route = true
-
-            if !DeviceReady(
-              Ops.get_string(
-                LanItems.getCurrentItem,
-                ["hwinfo", "dev_name"],
-                ""
-              )
-            )
-              Y2Network::Sequences::Interface.new.init_s390(builder)
-              return :redraw
-            end
-          end
-
-          Y2Network::Sequences::Interface.new.edit(builder)
-          return :redraw
-
-        when :delete
-          # warn user when device to delete has STARTMODE=nfsroot (bnc#433867)
-          devmap = LanItems.GetCurrentMap
-          if devmap && devmap["STARTMODE"] == "nfsroot"
-            if !Popup.YesNoHeadline(
-              Label.WarningMsg,
-              _("Device you select has STARTMODE=nfsroot. Really delete?")
-            )
-              # y2r: cannot break from middle of switch
-              # but in this function return will do
-              return nil
-            end
-          end
-
-          LanItems.DeleteItem
-          initOverview("")
-        end
-      end
-      if Builtins.size(LanItems.Items) == 0
-        UI.ChangeWidget(:_hw_sum, :Value, "")
-        UI.ChangeWidget(Id(:edit), :Enabled, false)
-        UI.ChangeWidget(Id(:delete), :Enabled, false)
-        return nil
-      end
-
-      nil
     end
 
     def ManagedDialog
@@ -593,18 +297,6 @@ module Yast
         ret = CWM.Run(w, {})
         break if input_done?(ret)
       end
-
-      ret
-    end
-
-  private
-
-    def overview_buttons
-      ret = {}
-
-      ret[:add]    = Label.AddButton
-      ret[:edit]   = Label.EditButton
-      ret[:delete] = Label.DeleteButton
 
       ret
     end

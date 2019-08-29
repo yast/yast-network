@@ -208,36 +208,5 @@ module Yast
         "store"         => fun_ref(method(:storeIPv6), "void (string, map)")
       }
     end
-
-    def GetDeviceDescription(device_id)
-      device_name = NetworkInterfaces.GetValue(device_id, "NAME")
-      if device_name.nil? || device_name == ""
-        # TRANSLATORS: Informs that device name is not known
-        device_name = _("Unknown device")
-      end
-      Builtins.y2milestone("device_name %1", device_name)
-      # avoid too long device names
-      # if (size(device_name) > 30) {
-      #    device_name = substring (device_name, 0, 27) + "...";
-      # }
-      ip_addr = if Builtins.issubstring(NetworkInterfaces.GetValue(device_id, "BOOTPROTO"), "dhcp")
-        # TRANSLATORS: Part of label, device with IP address assigned by DHCP
-        _("DHCP address")
-      else
-        # TRANSLATORS: Part of label, device with static IP address
-        NetworkInterfaces.GetValue(device_id, "IPADDR")
-      end
-      if ip_addr.nil? || ip_addr == ""
-        # TRANSLATORS: Informs that no IP has been assigned to the device
-        ip_addr = _("No IP address assigned")
-      end
-      output = Builtins.sformat(
-        _("%1 \n%2 - %3"),
-        device_name,
-        NetworkInterfaces.GetDeviceTypeName(device_id),
-        ip_addr
-      )
-      output
-    end
   end
 end

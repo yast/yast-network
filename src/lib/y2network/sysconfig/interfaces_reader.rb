@@ -90,7 +90,7 @@ module Y2Network
       # @return [Array<Hash>] Hardware information
       def hardware
         Yast::LanItems.Hardware unless Yast::LanItems.Hardware.empty?
-        Yast::LanItems.Read # try again if no hardware was found
+        Yast::LanItems.ReadHw # try again if no hardware was found
         Yast::LanItems.Hardware
       end
 

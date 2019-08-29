@@ -31,6 +31,7 @@ describe Y2Network::Hwinfo do
   let(:hw_wrapper) { double("Y2Network::HardwareWrapper", ReadHardware: hardware) }
 
   before do
+    allow(Y2Network::Hwinfo).to receive(:hwinfo_from_hardware).and_call_original
     allow(Y2Network::HardwareWrapper).to receive(:new).and_return(hw_wrapper)
     allow(Y2Network::UdevRule).to receive(:find_for).with(interface_name).and_return(udev_rule)
   end

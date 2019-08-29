@@ -1004,30 +1004,9 @@ module Yast
     def Read
       reset_cache
 
-      ReadHw()
-      NetworkInterfaces.Read
-      NetworkInterfaces.adapt_old_config!
-      NetworkInterfaces.CleanHotplugSymlink
-
-      interfaces = getNetworkInterfaces
-      items = LanItems.Items
-      # match configurations to Items list with hwinfo
-      interfaces.each do |confname|
-        items.each do |key, value|
-          match = value.fetch("hwinfo", {}).fetch("dev_name", "") == confname
-          items[key]["ifcfg"] = confname if match
-        end
-      end
-
-      interfaces.each do |confname|
-        next if items.values.any? { |item| item && item["ifcfg"] == confname }
-
-        items[items.size] = { "ifcfg" => confname }
-      end
-
-      log.info "Read Configuration LanItems::Items #{@Items}"
-
-      nil
+      system_config = Y2Network::Config.from(:sysconfig)
+      Yast::Lan.add_config(:system, system_config)
+      Yast::Lan.add_config(:yast, system_config.copy)
     end
 
     # Clears internal cache of the module to default values
@@ -1668,43 +1647,6 @@ module Yast
       true
     end
 
-    TRISTATE_TO_S = { nil => nil, false => "no", true => "yes" }.freeze
-
-    # Sets device map items related to dhclient
-    def setup_dhclient_options(devmap)
-      if dhcp?(devmap)
-        val = TRISTATE_TO_S.fetch(@set_default_route)
-        devmap["DHCLIENT_SET_DEFAULT_ROUTE"] = val if val
-      end
-      devmap
-    end
-
-    # Sets bonding specific sysconfig options in given device map
-    #
-    # If any bonding specific option is present already it gets overwritten
-    # by new ones in case of collision. If any BONDING_SLAVEx from devmap
-    # is not set, then its value is set to 'nil'
-    #
-    # @param devmap [Hash] hash of a device's sysconfig variables
-    # @param slaves [array] list of strings, each string is a bond slave name
-    #
-    # @return [Hash] updated copy of the device map
-    def setup_bonding(devmap, slaves, options)
-      raise ArgumentError, "Device map has to be provided." if devmap.nil?
-
-      devmap = deep_copy(devmap)
-      slaves ||= []
-
-      slave_opts = devmap.select { |k, _| k.start_with?("BONDING_SLAVE") }.keys
-      slave_opts.each { |s| devmap[s] = nil }
-      slaves.each_with_index { |s, i| devmap["BONDING_SLAVE#{i}"] = s }
-
-      devmap["BONDING_MODULE_OPTS"] = options || ""
-      devmap["BONDING_MASTER"] = "yes"
-
-      devmap
-    end
-
     # Commit pending operation
     #
     # It commits *only* content of the corresponding ifcfg into NetworkInterfaces.
@@ -1713,125 +1655,10 @@ module Yast
     #
     # @return true if success
     def Commit(builder)
-      if @operation != :add && @operation != :edit
-        log.error("Unknown operation: #{@operation}")
-        raise ArgumentError, "Unknown operation: #{@operation}"
-      end
-
       log.info "committing builder #{builder.inspect}"
       builder.save # does all modification, later only things that is not yet converted
-      # FIXME: most of the following stuff should be moved into InterfaceConfigBuilder
-      # when generating sysconfig configuration
-      newdev = builder.device_sysconfig
 
-      # #50955 omit computable fields
-      newdev["BROADCAST"] = ""
-      newdev["NETWORK"] = ""
-
-      # set LLADDR to sysconfig only for device on layer2 and only these which needs it
-      # do not write incorrect LLADDR.
-      # FIXME: s390 - broken in network-ng
-      if @qeth_layer2 && s390_correct_lladdr(@qeth_macaddress)
-        busid = Ops.get_string(@Items, [@current, "hwinfo", "busid"], "")
-        # sysfs id has changed from css0...
-        sysfs_id = "/devices/qeth/#{busid}"
-        log.info("busid #{busid}")
-        if s390_device_needs_persistent_mac(sysfs_id, @Hardware)
-          newdev["LLADDR"] = @qeth_macaddress
-        end
-      end
-
-      newdev = setup_dhclient_options(newdev)
-
-      # FIXME: network-ng currently works for eth only
-      case builder.type.short_name
-      when "bond"
-        # we need current slaves - when some of them is not used anymore we need to
-        # configure it for deletion from ifcfg (SCR expects special value nil)
-        current_slaves = (GetCurrentMap() || {}).select { |k, _| k.start_with?("BONDING_SLAVE") }
-        newdev = setup_bonding(newdev.merge(current_slaves), @bond_slaves, builder.bond_options)
-
-      when "wlan"
-        newdev["WIRELESS_MODE"] = @wl_mode
-        newdev["WIRELESS_ESSID"] = @wl_essid
-        newdev["WIRELESS_NWID"] = @wl_nwid
-        newdev["WIRELESS_AUTH_MODE"] = @wl_auth_mode
-        newdev["WIRELESS_WPA_PSK"] = @wl_wpa_psk
-        newdev["WIRELESS_KEY_LENGTH"] = @wl_key_length
-        # obsoleted by WIRELESS_KEY_0
-        newdev["WIRELESS_KEY"] = "" # TODO: delete the varlable
-        newdev["WIRELESS_KEY_0"] = Ops.get(@wl_key, 0, "")
-        newdev["WIRELESS_KEY_1"] = Ops.get(@wl_key, 1, "")
-        newdev["WIRELESS_KEY_2"] = Ops.get(@wl_key, 2, "")
-        newdev["WIRELESS_KEY_3"] = Ops.get(@wl_key, 3, "")
-        Ops.set(
-          newdev,
-          "WIRELESS_DEFAULT_KEY",
-          Builtins.tostring(@wl_default_key)
-        )
-        Ops.set(newdev, "WIRELESS_NICK", @wl_nick)
-        Ops.set(newdev, "WIRELESS_AP_SCANMODE", @wl_ap_scanmode)
-
-        if @wl_wpa_eap != {}
-          Ops.set(
-            newdev,
-            "WIRELESS_EAP_MODE",
-            Ops.get_string(@wl_wpa_eap, "WPA_EAP_MODE", "")
-          )
-          Ops.set(
-            newdev,
-            "WIRELESS_WPA_IDENTITY",
-            Ops.get_string(@wl_wpa_eap, "WPA_EAP_IDENTITY", "")
-          )
-          Ops.set(
-            newdev,
-            "WIRELESS_WPA_PASSWORD",
-            Ops.get_string(@wl_wpa_eap, "WPA_EAP_PASSWORD", "")
-          )
-          Ops.set(
-            newdev,
-            "WIRELESS_WPA_ANONID",
-            Ops.get_string(@wl_wpa_eap, "WPA_EAP_ANONID", "")
-          )
-          Ops.set(
-            newdev,
-            "WIRELESS_CLIENT_CERT",
-            Ops.get_string(@wl_wpa_eap, "WPA_EAP_CLIENT_CERT", "")
-          )
-          Ops.set(
-            newdev,
-            "WIRELESS_CLIENT_KEY",
-            Ops.get_string(@wl_wpa_eap, "WPA_EAP_CLIENT_KEY", "")
-          )
-          Ops.set(
-            newdev,
-            "WIRELESS_CLIENT_KEY_PASSWORD",
-            Ops.get_string(@wl_wpa_eap, "WPA_EAP_CLIENT_KEY_PASSWORD", "")
-          )
-          Ops.set(
-            newdev,
-            "WIRELESS_CA_CERT",
-            Ops.get_string(@wl_wpa_eap, "WPA_EAP_CA_CERT", "")
-          )
-          Ops.set(
-            newdev,
-            "WIRELESS_EAP_AUTH",
-            Ops.get_string(@wl_wpa_eap, "WPA_EAP_AUTH", "")
-          )
-          Ops.set(
-            newdev,
-            "WIRELESS_PEAP_VERSION",
-            Ops.get_string(@wl_wpa_eap, "WPA_EAP_PEAP_VERSION", "")
-          )
-        end
-
-        newdev["WIRELESS_CHANNEL"] = @wl_channel
-        newdev["WIRELESS_FREQUENCY"] = @wl_frequency
-        newdev["WIRELESS_BITRATE"] = @wl_bitrate
-        newdev["WIRELESS_AP"] = @wl_accesspoint
-        newdev["WIRELESS_POWER"] = @wl_power ? "yes" : "no"
-      end
-
+      # TODO: still needed?
       if DriverType(builder.type.short_name) == "ctc"
         if Ops.get(NetworkConfig.Config, "WAIT_FOR_INTERFACES").nil? ||
             Ops.less_than(
@@ -1842,37 +1669,8 @@ module Yast
         end
       end
 
-      # ZONE uses an empty string as the default ZONE which means that is not
-      # the same than not defining the attribute
-      current_map = (GetCurrentMap() || {}).select { |k, v| !v.nil? && (k == "ZONE" || !v.empty?) }
-      # FIXME: move to config builder (might depend on some proposals above)
-      new_map = newdev.select { |k, v| !v.nil? && (k == "ZONE" || !v.empty?) }
-
-      log.info "current map #{current_map.inspect}"
-      log.info "new map #{newdev.inspect}"
-
-      # CanonicalizeIP is called to get new device map into the same shape as
-      # NetworkInterfaces provides the current one.
-      if current_map != NetworkInterfaces.CanonicalizeIP(new_map)
-        keep_existing = false
-        ifcfg_name = builder.name
-        ifcfg_name.replace("") if !NetworkInterfaces.Change2(ifcfg_name, newdev, keep_existing)
-
-        # bnc#752464 - can leak wireless passwords
-        # useful only for debugging. Writes huge struct mostly filled by defaults.
-        Builtins.y2debug("%1", NetworkInterfaces.ConcealSecrets1(newdev))
-
-        # configure bridge ports
-        if builder.type.bridge?
-          bridge_ports = builder.ports
-          log.info "Configuring bridge ports #{bridge_ports} for: #{ifcfg_name}"
-          bridge_ports.each { |bp| configure_as_bridge_port(bp) }
-        end
-
-        SetModified()
-      end
-
-      @operation = nil
+      # TODO: is it still needed?
+      SetModified()
       true
     end
 
@@ -1934,29 +1732,7 @@ module Yast
       nil
     end
 
-    def SetItem(builder:)
-      @operation = :edit
-      @device = Ops.get_string(getCurrentItem, "ifcfg", "")
-
-      NetworkInterfaces.Edit(@device)
-      @type = Ops.get_string(getCurrentItem, ["hwinfo", "type"], "")
-
-      @type = NetworkInterfaces.GetType(@device) if @type.empty?
-
-      # general stuff
-      devmap = deep_copy(NetworkInterfaces.Current)
-      s390_devmap = s390_ReadQethConfig(
-        Ops.get_string(getCurrentItem, ["hwinfo", "dev_name"], "")
-      )
-
-      @description = BuildDescription(@type, @device, devmap, @Hardware)
-
-      devmap = SetDeviceVars(devmap, @SysconfigDefaults)
-      s390_devmap = SetS390Vars(s390_devmap, @s390_defaults)
-
-      builder.load_sysconfig(devmap)
-      builder.load_s390_config(s390_devmap)
-
+    def SetItem(*)
       @hotplug = ""
       Builtins.y2debug("type=%1", @type)
       if Builtins.issubstring(@type, "-")

@@ -42,7 +42,6 @@ module Yast
       Yast.import "Summary"
 
       Yast.include include_target, "network/routines.rb"
-      Yast.include include_target, "network/summary.rb"
     end
 
     # Used for initializing the description variable (ifcfg[NAME])

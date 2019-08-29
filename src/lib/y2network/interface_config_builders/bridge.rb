@@ -18,6 +18,7 @@
 # find current contact information at www.suse.com.
 
 require "yast"
+require "forwardable"
 require "y2network/config"
 require "y2network/interface_config_builder"
 
@@ -27,6 +28,7 @@ module Y2Network
   module InterfaceConfigBuilders
     class Bridge < InterfaceConfigBuilder
       include Yast::Logger
+      extend Forwardable
 
       def initialize(config: nil)
         super(type: InterfaceType::BRIDGE, config: config)
@@ -45,15 +47,8 @@ module Y2Network
         interfaces.all.select { |i| bridgeable?(i) }
       end
 
-      # @return [Array<String>]
-      def ports
-        @config["BRIDGE_PORTS"].split
-      end
-
-      # @param [Array<String>] value
-      def ports=(value)
-        @config["BRIDGE_PORTS"] = value.join(" ")
-      end
+      def_delegators :@connection_config,
+        :ports, :ports=
 
     private
 

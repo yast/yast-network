@@ -22,9 +22,21 @@ require "y2network/interface_config_builder"
 
 module Y2Network
   module InterfaceConfigBuilders
-    class Dummy < InterfaceConfigBuilder
+    class TAP < InterfaceConfigBuilder
       def initialize(config: nil)
-        super(type: InterfaceType::DUMMY, config: config)
+        super(type: InterfaceType::TAP, config: config)
+      end
+
+      # @return [Array(2)<String,String>] user and group of tunnel
+      def tunnel_user_group
+        [connection_config.owner, connection_config.group]
+      end
+
+      # @param [String] user owner of tunnel. Name or UID
+      # @param [String] group owner of tunnel. Name or GID
+      def assign_tunnel_user_group(user, group)
+        connection_config.owner = user
+        connection_config.group = group
       end
     end
   end

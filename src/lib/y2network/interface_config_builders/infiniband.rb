@@ -19,8 +19,7 @@
 
 require "yast"
 require "y2network/interface_config_builder"
-
-Yast.import "LanItems"
+require "y2network/ipoib_mode"
 
 module Y2Network
   module InterfaceConfigBuilders
@@ -29,30 +28,19 @@ module Y2Network
         super(type: InterfaceType::INFINIBAND, config: config)
       end
 
-      # @return [String] ipoib mode configuration
-      attr_writer :ipoib_mode
+      # @param value [String] ipoib mode configuration
+      def ipoib_mode=(value)
+        value = "" if value == "default"
+        connection_config.ipoib_mode = IpoibMode.from_name(value)
+      end
 
       # Returns current value of infiniband mode
       #
       # @return [String] particular mode or "default" when not set
       def ipoib_mode
-        @ipoib_mode ||= if [nil, ""].include?(@config["IPOIB_MODE"])
-          "default"
-        else
-          @config["IPOIB_MODE"]
-        end
-      end
+        return "default" if connection_config.ipoib_mode.name == ""
 
-      # (see Y2Network::InterfaceConfigBuilder#save)
-      #
-      # In case of config builder for Ib interface type it sets infiniband's
-      # mode to reasonable default when not set explicitly.
-      def save
-        super
-
-        @config["IPOIB_MODE"] = ipoib_mode == "default" ? nil : ipoib_mode
-
-        nil
+        connection_config.ipoib_mode.name
       end
     end
   end

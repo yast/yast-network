@@ -47,7 +47,6 @@ module Yast
       Yast.import "ProductFeatures"
       Yast.import "String"
 
-      Yast.include include_target, "network/summary.rb"
       Yast.include include_target, "network/lan/help.rb"
       Yast.include include_target, "network/lan/hardware.rb"
       Yast.include include_target, "network/complex.rb"

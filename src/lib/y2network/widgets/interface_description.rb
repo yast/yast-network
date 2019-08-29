@@ -18,14 +18,11 @@
 # find current contact information at www.suse.com.
 
 require "yast"
-require "y2network/interface_config_builder"
+require "cwm/common_widgets"
 
 module Y2Network
-  module InterfaceConfigBuilders
-    class Dummy < InterfaceConfigBuilder
-      def initialize(config: nil)
-        super(type: InterfaceType::DUMMY, config: config)
-      end
+  module Widgets
+    class InterfaceDescription < CWM::RichText
     end
   end
 end
