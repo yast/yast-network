@@ -49,16 +49,14 @@ module Y2Network
       end
 
       def items
-        # TODO: unconfigured devices
         config = Yast::Lan.yast_config
-        # TODO: handle unconfigured
         config.interfaces.map do |interface|
           hwinfo = interface.hardware
           friendly_name = hwinfo.exists? ? hwinfo.description : interface.name
           conn = config.connections.by_name(interface.name)
           [
             interface.name, # first is ID in table
-            friendly_name, # TODO: better name based on hwinfo?
+            friendly_name,
             interface_protocol(conn),
             interface.name,
             ""
