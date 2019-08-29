@@ -21,6 +21,8 @@ require "y2network/s390_device_activator"
 
 module Y2Network
   module S390DeviceActivators
+    # This class is responsible of activating OSA-Express (QDIO) and
+    # HiperSockets group devices (qeth driver).
     class Qeth < S390DeviceActivator
       def_delegators :@builder,
         :read_channel, :read_channel=,

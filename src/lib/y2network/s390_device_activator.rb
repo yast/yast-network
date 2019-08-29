@@ -21,6 +21,7 @@ require "yast"
 require "yast2/execute"
 
 module Y2Network
+  # This class is responsable of activating the supported S390 devices.
   class S390DeviceActivator
     extend Forwardable
     include Yast::Logger
@@ -37,6 +38,9 @@ module Y2Network
       nil
     end
 
+    # Constructor
+    #
+    # @param [Y2Network::InterfaceConfigBuilder]
     def initialize(builder)
       @builder = builder
     end
@@ -46,6 +50,9 @@ module Y2Network
       []
     end
 
+    # Convenience method for obtaining the short name of the builder's type..
+    #
+    # @return string
     def type
       builder.type.short_name
     end
@@ -89,7 +96,7 @@ module Y2Network
       Yast::Execute.stdout.on_target!(cmd).chomp
     end
 
-    # Makes a new proposal
+    # Makes a new configuration proposal
     def proposal
     end
   end

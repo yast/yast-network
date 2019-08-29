@@ -21,6 +21,7 @@ require "y2network/s390_device_activator"
 
 module Y2Network
   module S390DeviceActivators
+    # This class is responsible of activating CTC group devices.
     class Ctc < S390DeviceActivator
       def_delegators :@builder,
         :read_channel, :read_channel=,
@@ -39,7 +40,7 @@ module Y2Network
         ["protocol=#{builder.protocol}"]
       end
 
-      # Modifies the read, write and data channel from the the device id
+      # Modifies the read and write channel from the the device id
       def propose_channels
         id = device_id_from(hwinfo.busid)
         return unless id

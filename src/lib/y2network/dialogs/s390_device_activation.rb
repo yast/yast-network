@@ -31,6 +31,8 @@ module Y2Network
       def self.for(builder)
         return nil unless builder.type
         case builder.type.short_name
+        # Both interfaces uses the qeth driver and uses the same configuration
+        # for activating the group device.
         when "qeth", "hsi"
           require "y2network/dialogs/s390_qeth_activation"
           require "y2network/s390_device_activators/qeth"

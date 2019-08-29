@@ -21,7 +21,12 @@ require "y2network/s390_device_activators/ctc"
 
 module Y2Network
   module S390DeviceActivators
-    # The Lcs device activator is based in Ctc
+    # The Lcs device activator is based in Ctc as both have two group device
+    # channels (read and write).
+    #
+    # In the past they shared also the configure command 'ctc_configure)' and
+    # the 'protocol' attribute was needed, but as the configuration has
+    # been moved to 'chzdev' command it is not the case anymore.
     class Lcs < Ctc
       def configure_attributes
         return [] unless builder.timeout

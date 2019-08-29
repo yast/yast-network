@@ -22,7 +22,7 @@ require "cwm/custom_widget"
 
 module Y2Network
   module Widgets
-    # Widget for setting the s390 device write channel
+    # Widget for setting the Lcs group device lancmd timeout
     class S390LanCmdTimeout < CWM::InputField
       # Constructor
       #
@@ -133,7 +133,8 @@ module Y2Network
 
       # @see CWM::AbstractWidget
       def help
-        _("<p>Choose the <b>Port Number</b> for this interface.</p>")
+        _("<p>Choose which physical <b>Port Number</b> on the OSA Adapter " \
+          "will be used by this interface. <b>(0 by default)</b></p>")
       end
     end
 
