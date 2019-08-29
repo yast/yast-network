@@ -75,7 +75,7 @@ module Y2Network
         @connection_config = config
       else
         # TODO: propose new defaults
-        connection_config_klass(type).new
+        @connection_config = connection_config_klass(type).new
       end
     end
 
@@ -337,7 +337,7 @@ module Y2Network
         ip_config_default.address.prefix = value[1..-1].to_i
       elsif value.size < 3 # one or two digits can be only prefixlen
         ip_config_default.address.prefix = value.to_i
-      elsif param == "PREFIXLEN"
+      elsif value =~ /^\d{3}$/
         ip_config_default.address.prefix = value.to_i
       else
         ip_config_default.address.netmask = value
@@ -346,12 +346,13 @@ module Y2Network
 
     # @return [String]
     def hostname
-      @config["HOSTNAME"]
+      # TODO: write it
+      ""
     end
 
     # @param [String] value
     def hostname=(value)
-      @config["HOSTNAME"] = value
+      # TODO: write it
     end
 
     # sets remote ip for ptp connections
