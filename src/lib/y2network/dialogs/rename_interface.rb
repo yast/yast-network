@@ -18,7 +18,7 @@
 # find current contact information at www.suse.com.
 
 require "cwm/popup"
-require "y2network/widgets/custom_interface_name"
+require "y2network/widgets/interface_name"
 require "y2network/widgets/renaming_mechanism"
 require "y2network/virtual_interface"
 
@@ -52,9 +52,9 @@ module Y2Network
 
       # Interface name widget
       #
-      # @return [Y2Network::Widgets::CustomInterfaceName]
+      # @return [Y2Network::Widgets::InterfaceName]
       def name_widget
-        @name_widget ||= Y2Network::Widgets::CustomInterfaceName.new(@builder)
+        @name_widget ||= Y2Network::Widgets::InterfaceName.new(@builder)
       end
 
       # Widget to select the hardware information to base the rename on
