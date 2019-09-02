@@ -94,6 +94,8 @@ module Y2Network
     class WirelessExpertSettings < CWM::PushButton
       def initialize(settings)
         @settings = settings
+
+        textdomain "network"
       end
 
       def label

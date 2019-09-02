@@ -49,7 +49,7 @@ module Y2Network
       def items
         [
           ["ad-hoc", _("Ad-hoc")],
-          ["managed", _("Managed")],
+          ["Managed", _("Managed")],
           ["master", _("Master")]
         ]
       end

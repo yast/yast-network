@@ -72,24 +72,24 @@ module Y2Network
       attr_accessor :client_cert
       # @return [String] client private key used to encrypt for TLS
       attr_accessor :client_key
-    end
 
-    def initialize
-      super
+      def initialize
+        super
 
-      self.mode = "Managed"
-      self.essid = ""
-      self.nwid = ""
-      self.auth_mode = :open
-      self.wpa_psk = ""
-      self.key_length = 128
-      self.keys = []
-      self.default_key = 0
-      self.eap_mode = "PEAP"
-      self.eap_auth = "MSCHAPV2"
-      self.ap_scanmode = 1
-      # For WIFI DHCP makes more sense as majority of wifi routers act as dhcp servers
-      self.bootproto = BootProtocol::DHCP
+        self.mode = "Managed"
+        self.essid = ""
+        self.nwid = ""
+        self.auth_mode = :open
+        self.wpa_psk = ""
+        self.key_length = 128
+        self.keys = []
+        self.default_key = 0
+        self.eap_mode = "PEAP"
+        self.eap_auth = "MSCHAPV2"
+        self.ap_scanmode = 1
+        # For WIFI DHCP makes more sense as majority of wifi routers act as dhcp servers
+        self.bootproto = BootProtocol::DHCP
+      end
     end
   end
 end
