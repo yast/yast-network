@@ -149,4 +149,22 @@ describe Y2Network::Hwinfo do
         .to eq(described_class.new("dev_name" => "eth0"))
     end
   end
+
+  describe "#present?" do
+    context "when the hardware was detected" do
+      subject(:hwinfo) { described_class.new("type" => "eth") }
+
+      it "returns true" do
+        expect(hwinfo).to be_present
+      end
+    end
+
+    context "when the hardware was not detected" do
+      subject(:hwinfo) { described_class.new({}) }
+
+      it "returns false" do
+        expect(hwinfo).to_not be_present
+      end
+    end
+  end
 end

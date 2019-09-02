@@ -19,6 +19,7 @@
 
 require "yast"
 require "y2network/driver"
+require "y2network/udev_rule"
 
 module Y2Network
   class HardwareWrapper
@@ -171,7 +172,9 @@ module Y2Network
       { name: "wl_enc_modes", default: nil },
       { name: "wl_channels", default: nil },
       { name: "wl_bitrates", default: nil },
-      { name: "dev_port", default: nil }
+      { name: "dev_port", default: nil },
+      { name: "type", default: nil },
+      { name: "name", default: "" }
     ].each do |hwinfo_item|
       define_method hwinfo_item[:name].downcase do
         @hwinfo ? @hwinfo.fetch(hwinfo_item[:name], hwinfo_item[:default]) : hwinfo_item[:default]
@@ -212,6 +215,17 @@ module Y2Network
       drivers_list = @hwinfo.fetch("drivers", [])
       modules = drivers_list[0].fetch("modules", [])
       modules.map { |m| Driver.new(*m) }
+    end
+
+    # Determines whether the hardware is available (plugged)
+    #
+    # If the hardware layer was able to get its type, it consider the hardware to be connected. Bear
+    # in mind that it is not possible to just rely in #exists? because it could include some info
+    # from udev rules.
+    #
+    # @return [Boolean]
+    def present?
+      !!type
     end
 
     # Determines whether two objects are equivalent
