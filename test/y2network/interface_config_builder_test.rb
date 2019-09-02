@@ -146,7 +146,7 @@ describe Y2Network::InterfaceConfigBuilder do
 
       it "returns false" do
         config_builder.rename_interface("eth0")
-        config_builder.renaming_mechanism = nil
+        config_builder.renaming_mechanism = :none
         expect(config_builder.renamed_interface?).to eq(false)
       end
     end

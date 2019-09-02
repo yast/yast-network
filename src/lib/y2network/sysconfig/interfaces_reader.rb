@@ -151,14 +151,16 @@ module Y2Network
       # Detects the renaming mechanism used by the interface
       #
       # @param name [String] Interface's name
-      # @return [Symbol,nil] :mac (MAC address), :bus_id (BUS ID) or nil (no renaming)
+      # @return [Symbol] :mac (MAC address), :bus_id (BUS ID) or :none (no renaming)
       def renaming_mechanism_for(name)
         rule = UdevRule.find_for(name)
-        return nil unless rule
+        return :none unless rule
         if rule.parts.any? { |p| p.key == "ATTR{address}" }
           :mac
         elsif rule.parts.any? { |p| p.key == "KERNELS" }
           :bus_id
+        else
+          :none
         end
       end
     end

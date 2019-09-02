@@ -35,7 +35,7 @@ describe Y2Network::Sysconfig::InterfacesWriter do
     let(:hardware) do
       instance_double(Y2Network::Hwinfo, busid: "00:1c.0", mac: "01:23:45:67:89:ab", dev_port: "1")
     end
-    let(:renaming_mechanism) { nil }
+    let(:renaming_mechanism) { :none }
     let(:scr_root) { Dir.mktmpdir }
 
     before do
