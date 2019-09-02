@@ -112,9 +112,19 @@ describe Y2Network::InterfaceConfigBuilder do
   end
 
   describe "#renamed_interface?" do
-    context "when the interface has been renamed" do
+    context "when the interface name has not been changed" do
       it "returns false" do
         expect(config_builder.renamed_interface?).to eq(false)
+      end
+
+      context "but it was initially renamed by udev" do
+        before do
+          allow(eth0).to receive(:renaming_mechanism).and_return(:mac)
+        end
+
+        it "returns false" do
+          expect(config_builder.renamed_interface?).to eq(false)
+        end
       end
     end
 

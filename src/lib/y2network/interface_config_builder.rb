@@ -54,13 +54,15 @@ module Y2Network
     end
 
     # @return [String] Device name (eth0, wlan0, etc.)
-    attr_accessor :name
+    attr_reader :name
     # @return [Y2Network::InterfaceType] type of @see Y2Network::Interface which is intended to be build
     attr_accessor :type
     # @return [Y2Network::ConnectionConfig] connection config on which builder operates
     attr_reader :connection_config
-    # @return [Symbol,nil] Mechanism to rename the interface (no hardware based, :mac or :bus_id)
+    # @return [Symbol] Mechanism to rename the interface (:none -no hardware based-, :mac or :bus_id)
     attr_writer :renaming_mechanism
+    # @return [Y2Network::Interface,nil] Underlying interface if it exists
+    attr_reader :interface
 
     # Constructor
     #
@@ -79,6 +81,17 @@ module Y2Network
         # TODO: propose new defaults
         connection_config_klass(type).new
       end
+    end
+
+    # Sets the interface name
+    #
+    # It initializes the interface using the given name if it exists
+    #
+    # @param value [String] Interface name
+    def name=(value)
+      @name = value
+      iface = find_interface
+      self.interface = iface if iface
     end
 
     def newly_added?
@@ -126,7 +139,7 @@ module Y2Network
     # @param new_name [String] New interface's name
     def rename_interface(new_name)
       @old_name ||= name
-      self.name = new_name
+      @name = new_name
     end
 
     # Returns the current renaming mechanism
@@ -134,15 +147,6 @@ module Y2Network
     # @return [Symbol,nil] Mechanism to rename the interface (nil -no rename-, :mac or :bus_id)
     def renaming_mechanism
       @renaming_mechanism || interface.renaming_mechanism
-    end
-
-    # Returns the underlying interface
-    #
-    # If the interface has been renamed, take the old name into account.
-    #
-    # @return [Y2Network::Interface,nil]
-    def interface
-      @interface ||= yast_config.interfaces.by_name(@old_name || name)
     end
 
     # how many device names is proposed
@@ -412,6 +416,22 @@ module Y2Network
           id:    "_#{i}" # TODO: remember original prefixes
         )
       end
+    end
+
+    # Sets the interface for the builder
+    #
+    # @param iface [Interface] Interface to associate the builder with
+    def interface=(iface)
+      @interface = iface
+      @renaming_mechanism ||= @interface.renaming_mechanism
+    end
+
+    # Returns the underlying interface
+    #
+    # @return [Y2Network::Interface,nil]
+    def find_interface
+      return nil unless yast_config # in some tests, it could return nil
+      yast_config.interfaces.by_name(name)
     end
 
     # Helper method to access to the current configuration
