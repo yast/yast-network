@@ -30,7 +30,8 @@ describe Y2Network::Widgets::InterfaceNaming do
   let(:builder) do
     instance_double(
       Y2Network::InterfaceConfigBuilder,
-      interface: interface
+      interface: interface,
+      name: "eth0"
     )
   end
 
