@@ -92,16 +92,16 @@ module Y2Network
           result << "<b>(" << _("No hardware information") << ")</b><br>"
         else
           result << "<b>(" << _("Not connected") << ")</b><br>" if !hwinfo.link
-          if !hwinfo.mac.empty?
+          if hwinfo.mac
             result << "<b>MAC : </b>" << hwinfo.mac << "<br>"
           end
-          if !hwinfo.busid.empty?
+          if hwinfo.busid
             result << "<b>BusID : </b>" << hwinfo.busid << "<br>"
           end
         end
         connection = Yast::Lan.yast_config.connections.by_name(value)
         if connection
-          result << _("Device Name: %s") % ifcfg_name
+          result << _("Device Name: %s") % connection.name
           # TODO: start mode description. Ideally in startmode class
           # TODO: ip overview
         else
