@@ -91,4 +91,19 @@ describe Y2Network::InterfacesCollection do
       end
     end
   end
+
+  describe "#known_names" do
+    it "returns the list of known interfaces" do
+      expect(collection.known_names).to eq(["eth0", "br0", "wlan0"])
+    end
+
+    context "when an interface was renamed" do
+      before do
+        eth0.rename("eth1", :mac)
+      end
+      it "returns the old and the new names" do
+        expect(collection.known_names).to eq(["eth0", "eth1", "br0", "wlan0"])
+      end
+    end
+  end
 end

@@ -84,6 +84,16 @@ module Y2Network
       self
     end
 
+    # Returns all interfaces names
+    #
+    # For those interfaces that are renamed, the new and old names are included
+    # in the list.
+    #
+    # @return [Array<String>] List of known interfaces
+    def known_names
+      @interfaces.map { |i| [i.old_name, i.name] }.flatten.compact
+    end
+
     # Compares InterfacesCollections
     #
     # @return [Boolean] true when both collections contain only equal interfaces,
