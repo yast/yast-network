@@ -31,7 +31,7 @@ describe Y2Network::Widgets::InterfaceNaming do
     instance_double(
       Y2Network::InterfaceConfigBuilder,
       interface: interface,
-      name: "eth0"
+      name:      "eth0"
     )
   end
 
