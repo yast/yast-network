@@ -25,6 +25,28 @@ module Y2Network
     def initialize
       Yast.include self, "network/routines.rb"
     end
+
+    # Returns the network devices hardware information
+    #
+    # @return [Array<Hwinfo>]
+    def netcards
+      return @netcards if @netcards
+      @netcards = ReadHardware("netcard").map do |attrs|
+        add_missing_attrs(attrs)
+        Hwinfo.new(attrs)
+      end
+    end
+
+  private
+
+    def add_missing_attrs(hash)
+      name = hash["dev_name"]
+      return unless name
+      raw_dev_port = Yast::SCR.Read(
+        Yast::Path.new(".target.string"), "/sys/class_net/#{name}/dev_port"
+      ).to_s.strip
+      hash["dev_port"] = raw_dev_port unless raw_dev_port.empty?
+    end
   end
 
   # Stores useful (from networking POV) items of hwinfo for an interface
@@ -50,6 +72,13 @@ module Y2Network
         hwinfo_from_hardware(name) || hwinfo_from_udev(name) || Hwinfo.new
       end
 
+      # Resets the hardware information
+      #
+      # It will be re-read the next time is needed.
+      def reset
+        @hardware_wrapper = nil
+      end
+
     private
 
       # Returns hardware information for the given device
@@ -59,15 +88,16 @@ module Y2Network
       # @param name [String] Interface's name
       # @return [Hwinfo,nil] Hardware info or nil if not found
       def hwinfo_from_hardware(name)
-        netcards = HardwareWrapper.new.ReadHardware("netcard")
-        hw = netcards.find { |h| h["dev_name"] == name }
-        return nil if hw.nil?
+        hardware_wrapper.netcards.find { |h| h.dev_name == name }
+      end
 
-        raw_dev_port = Yast::SCR.Read(
-          Yast::Path.new(".target.string"), "/sys/class_net/#{name}/dev_port"
-        ).to_s.strip
-        hw["dev_port"] = raw_dev_port unless raw_dev_port.empty?
-        new(hw)
+      # Hardware wrapper instance
+      #
+      # It memoizes the hardware wrapper in order to speed up the access
+      #
+      # @return [HardWrapper]
+      def hardware_wrapper
+        @hardware_wrapper = HardwareWrapper.new
       end
 
       # Returns hardware information for the given device
