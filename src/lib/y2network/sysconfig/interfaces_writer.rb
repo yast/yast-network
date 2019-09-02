@@ -57,13 +57,22 @@ module Y2Network
         end
       end
 
-      # Renames interfaces and refresh the udev service
+      # Renames interfaces and refreshes the udev service
       #
       # @param interfaces [InterfaceCollection] Interfaces
       def update_udevd(interfaces)
-        udev_rules = interfaces.map { |i| udev_rule_for(i) }.compact
-        Y2Network::UdevRule.write(udev_rules)
+        update_udev_rules(interfaces)
+        reload_udev_rules
+      end
 
+      def update_udev_rules(interfaces)
+        udev_rules = interfaces.map { |i| udev_rule_for(i) }.compact
+        known_names = interfaces.known_names
+        custom_rules = Y2Network::UdevRule.all.reject { |u| known_names.include?(u.device) }
+        Y2Network::UdevRule.write(custom_rules + udev_rules)
+      end
+
+      def reload_udev_rules
         Yast::Execute.on_target("/usr/bin/udevadm", "control", "--reload")
         Yast::Execute.on_target("/usr/bin/udevadm", "trigger", "--subsystem-match=net", "--action=add")
         # wait so that ifcfgs written in NetworkInterfaces are newer
