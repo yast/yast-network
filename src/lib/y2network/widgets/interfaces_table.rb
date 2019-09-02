@@ -92,12 +92,8 @@ module Y2Network
           result << "<b>(" << _("No hardware information") << ")</b><br>"
         else
           result << "<b>(" << _("Not connected") << ")</b><br>" if !hwinfo.link
-          if hwinfo.mac
-            result << "<b>MAC : </b>" << hwinfo.mac << "<br>"
-          end
-          if hwinfo.busid
-            result << "<b>BusID : </b>" << hwinfo.busid << "<br>"
-          end
+          result << "<b>MAC : </b>" << hwinfo.mac << "<br>" if hwinfo.mac
+          result << "<b>BusID : </b>" << hwinfo.busid << "<br>" if hwinfo.busid
         end
         connection = Yast::Lan.yast_config.connections.by_name(value)
         if connection

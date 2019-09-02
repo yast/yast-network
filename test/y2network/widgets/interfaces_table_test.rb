@@ -43,12 +43,10 @@ describe Y2Network::Widgets::InterfacesTable do
     Y2Network::ConnectionConfig::Ethernet.new.tap { |c| c.name = "eth0" }
   end
 
-
   before do
     allow(Yast::Lan).to receive(:yast_config).and_return(double(interfaces: interfaces, connections: connections))
     allow(Yast::UI).to receive(:QueryWidget).and_return([])
     allow(subject).to receive(:value).and_return("eth0")
-    # allow(subject).to receive(:create_description).and_return("")
   end
 
   include_examples "CWM::Table"
