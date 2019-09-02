@@ -48,7 +48,7 @@ module Y2Network
     attr_reader :configured
     # @return [HwInfo]
     attr_reader :hardware
-    # @return [Symbol] Mechanism to rename the interface (nil -no rename-, :bus_id or :mac)
+    # @return [Symbol] Mechanism to rename the interface (:none -no rename-, :bus_id or :mac)
     attr_accessor :renaming_mechanism
     # @return [String,nil]
     attr_reader :old_name
@@ -78,6 +78,7 @@ module Y2Network
       @name = name
       @description = ""
       @type = type
+      @renaming_mechanism = :none
       # @hardware and @name should not change during life of the object
       @hardware = Hwinfo.for(name)
 
