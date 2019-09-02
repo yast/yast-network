@@ -47,7 +47,6 @@ module Yast
       Yast.include include_target, "network/lan/complex.rb"
       Yast.include include_target, "network/lan/dhcp.rb"
       Yast.include include_target, "network/lan/hardware.rb"
-      Yast.include include_target, "network/lan/wireless.rb"
       Yast.include include_target, "network/services/dns.rb"
       Yast.include include_target, "network/services/host.rb"
     end

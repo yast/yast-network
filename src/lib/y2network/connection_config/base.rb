@@ -59,8 +59,37 @@ module Y2Network
       # Constructor
       def initialize
         @ip_aliases = []
-        @bootproto = BootProtocol::STATIC
+        @bootproto = BootProtocol::STATIC # TODO: maybe do test query if psycical interface is attached?
         @startmode = Startmode.create("manual")
+      end
+
+      # Propose reasonable defaults for given config. Useful for newly created devices.
+      def propose
+        propose_startmode
+      end
+
+      def propose_startmode
+        Yast.import "ProductFeatures"
+
+        product_startmode = Yast::ProductFeatures.GetStringFeature(
+          "network",
+          "startmode"
+        )
+
+        startmode = case product_startmode
+        when "ifplugd"
+          if replace_ifplugd?
+            hotplug_interface? ? "hotplug" : "auto"
+          else
+            product_startmode
+          end
+        when "auto"
+          "auto"
+        else
+          hotplug_interface? ? "hotplug" : "auto"
+        end
+
+        @startmode = Startmode.create(startmode)
       end
 
       # Returns the connection type
@@ -86,6 +115,27 @@ module Y2Network
       # @return [Array<IPConfig>]
       def all_ips
         ([ip] + ip_aliases).compact
+      end
+
+    private
+
+      def replace_ifplugd?
+        Yast.import "Arch"
+
+        return true if !Yast::Arch.is_laptop
+        # virtual devices cannot expect any event from ifplugd
+        return true if virtual?
+
+        false
+      end
+
+      def hotplug_interface?
+        # virtual interface is not hotplugable
+        return false if virtual?
+        # if interface is not there
+        return true unless interface
+
+        interface.hardware.hotplug
       end
     end
   end

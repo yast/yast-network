@@ -73,12 +73,11 @@ module Y2Network
       # TODO: also config need to store it, as newly added can be later
       # edited with option for not yet created interface
       @newly_added = config.nil?
-      @connection_config = if config
-        config
-      else
-        # TODO: propose new defaults
-        connection_config_klass(type).new
+      if !config
+        config = connection_config_klass(type).new
+        config.propose
       end
+      @connection_config = config
     end
 
     def newly_added?
