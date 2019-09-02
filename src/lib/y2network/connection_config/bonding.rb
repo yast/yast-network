@@ -33,7 +33,7 @@ module Y2Network
       def initialize
         super()
         @slaves = []
-        @options = ""
+        @options = "mode=active-backup miimon=100"
       end
     end
   end

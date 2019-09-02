@@ -811,21 +811,6 @@ module Yast
       end
     end
 
-    # Add a new device
-    # @return true if success
-    def Add
-      return false if LanItems.Select("") != true
-      NetworkInterfaces.Add
-      true
-    end
-
-    # Delete current device (see LanItems::current)
-    # @return true if success
-    def Delete
-      LanItems.DeleteItem
-      true
-    end
-
     # Uses product info and is subject to installed packages.
     # @return Should NM be enabled?
     def UseNetworkManager

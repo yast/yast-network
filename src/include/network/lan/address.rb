@@ -103,11 +103,6 @@ module Yast
         LanItems.add_device_to_routing if LanItems.update_routing_devices?
       end
 
-      # rollback if changes are canceled, as still some widgets edit LanItems directly
-      LanItems.Rollback if ret != :next
-      # proceed with WLAN settings if appropriate, #42420
-      ret = :wire if ret == :next && builder.type.wireless?
-
       log.info "AddressDialog res: #{ret.inspect}"
       ret
     end
