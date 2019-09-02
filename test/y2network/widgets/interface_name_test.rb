@@ -52,12 +52,26 @@ describe Y2Network::Widgets::InterfaceName do
       expect(subject.validate).to be false
     end
 
-    it "fails for already used names" do
-      allow(subject).to receive(:value).and_return valid_name
-      allow(Yast::NetworkInterfaces).to receive(:List).and_return [valid_name]
+    context "when the name is already used" do
+      before do
+        allow(subject).to receive(:value).and_return valid_name
+        allow(Yast::NetworkInterfaces).to receive(:List).and_return [valid_name]
+      end
 
-      expect(Yast::UI).to receive(:SetFocus)
-      expect(subject.validate).to be false
+      context "if the name was changed" do
+        let(:valid_name) { "eth1" }
+
+        it "fails" do
+          expect(Yast::UI).to receive(:SetFocus)
+          expect(subject.validate).to be false
+        end
+      end
+
+      context "if the name was not changed" do
+        it "passes" do
+          expect(subject.validate).to eq(true)
+        end
+      end
     end
   end
 
