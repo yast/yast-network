@@ -85,9 +85,10 @@ describe Y2Network::Sysconfig::InterfacesReader do
       end
 
       context "and it is not a virtual connection" do
-        it "creates a fake interface" do
+        it "creates a not present physical interface" do
           eth1 = reader.interfaces.by_name("eth1")
-          expect(eth1).to be_a Y2Network::FakeInterface
+          expect(eth1).to be_a Y2Network::PhysicalInterface
+          expect(eth1).to_not be_present
         end
       end
     end

@@ -22,7 +22,6 @@ require "y2network/interface"
 require "y2network/interface_type"
 require "y2network/virtual_interface"
 require "y2network/physical_interface"
-require "y2network/fake_interface"
 require "y2network/sysconfig/connection_config_reader"
 require "y2network/interfaces_collection"
 require "y2network/connection_configs_collection"
@@ -144,8 +143,13 @@ module Y2Network
       # @param conn [ConnectionConfig] Connection configuration related to the
       #   network interface
       def add_interface(name, conn)
-        interface_class = conn.virtual? ? VirtualInterface : FakeInterface
-        @interfaces << interface_class.from_connection(name, conn)
+        interface =
+          if conn.virtual?
+            VirtualInterface.from_connection(name, conn)
+          else
+            PhysicalInterface.new(conn.name, hardware: Hwinfo.for(conn.name))
+          end
+        @interfaces << interface
       end
 
       # Detects the renaming mechanism used by the interface

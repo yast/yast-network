@@ -78,9 +78,8 @@ module Y2Network
       @name = name
       @description = ""
       @type = type
+      # TODO: move renaming logic to physical interfaces only
       @renaming_mechanism = :none
-      # @hardware and @name should not change during life of the object
-      @hardware = Hwinfo.for(name)
 
       init(name)
     end
