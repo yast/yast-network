@@ -59,11 +59,13 @@ module Y2Network
       # Constructor
       def initialize
         @ip_aliases = []
-        @bootproto = BootProtocol::STATIC # TODO: maybe do test query if psycical interface is attached?
+        @bootproto = BootProtocol::STATIC # TODO: maybe do test query if physical interface is attached?
         @startmode = Startmode.create("manual")
       end
 
       # Propose reasonable defaults for given config. Useful for newly created devices.
+      # @note difference between constructor and propose is that initialize should set defaults same as backend
+      #   and propose can have more tricky config or different to backend defaults.
       def propose
         propose_startmode
       end
