@@ -30,6 +30,7 @@ module Y2Network
         textdomain "network"
 
         @settings = settings
+        @old_name = @settings.name
       end
 
       def label
@@ -57,7 +58,7 @@ module Y2Network
       end
 
       def validate
-        if @settings.name_exists?(value)
+        if @old_name != value && @settings.name_exists?(value)
           Yast::Popup.Error(
             format(_("Configuration name %s already exists.\nChoose a different one."), value)
           )
