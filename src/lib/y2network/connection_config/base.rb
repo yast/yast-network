@@ -64,8 +64,8 @@ module Y2Network
       end
 
       # Propose reasonable defaults for given config. Useful for newly created devices.
-      # @note difference between constructor and propose is that initialize should set defaults same as backend
-      #   and propose can have more tricky config or different to backend defaults.
+      # @note difference between constructor and propose is that initialize should set simple defaults
+      #   and propose have more tricky config that depends on env, product, etc.
       def propose
         propose_startmode
       end

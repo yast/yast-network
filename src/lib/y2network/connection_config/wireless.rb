@@ -76,6 +76,7 @@ module Y2Network
 
     def initialize
       super
+
       self.mode = "Managed"
       self.essid = ""
       self.nwid = ""
@@ -87,10 +88,6 @@ module Y2Network
       self.eap_mode = "PEAP"
       self.eap_auth = "MSCHAPV2"
       self.ap_scanmode = 1
-    end
-
-    def propose
-      super
       # For WIFI DHCP makes more sense as majority of wifi routers act as dhcp servers
       self.bootproto = BootProtocol::DHCP
     end
