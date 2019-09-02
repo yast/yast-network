@@ -49,18 +49,22 @@ module Y2Network
       attr_accessor :ip_aliases
       # @return [Integer, nil]
       attr_accessor :mtu
-      # @return [Startmode, nil]
+      # @return [Startmode]
       attr_accessor :startmode
       # @return [String] Connection's description (e.g., "Ethernet Card 0")
       attr_accessor :description
       # @return [String] Link layer address
       attr_accessor :lladdress
+      # @return [String] configuration for ethtools when initializing
+      attr_accessor :ethtool_options
 
       # Constructor
       def initialize
         @ip_aliases = []
         @bootproto = BootProtocol::STATIC # TODO: maybe do test query if physical interface is attached?
         @startmode = Startmode.create("manual")
+        @description = ""
+        @ethtool_options = ""
       end
 
       # Propose reasonable defaults for given config. Useful for newly created devices.

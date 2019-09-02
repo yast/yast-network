@@ -45,6 +45,7 @@ module Y2Network
           file.lladdr = conn.lladdress
           file.startmode = conn.startmode.to_s
           file.ifplugd_priority = conn.startmode.priority if conn.startmode.name == "ifplugd"
+          file.ethtool_options = conn.ethtool_options unless conn.ethtool_options.empty?
           add_ips(conn)
           update_file(conn)
         end

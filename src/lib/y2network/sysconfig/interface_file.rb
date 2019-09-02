@@ -181,6 +181,10 @@ module Y2Network
       #   @return [String] Link layer address
       define_variable(:lladdr)
 
+      # !@attribute [r] ethtool_options
+      #   @return [String] setting variables on device activation. See man ethtool
+      define_variable(:ethtool_options)
+
       # !@attribute [r] wireless_key_length
       #   @return [Integer] Length in bits for all keys used
       define_variable(:wireless_key_length, :integer)
