@@ -20,7 +20,6 @@
 require_relative "../../../test_helper"
 
 require "y2network/sysconfig/connection_config_writers/vlan"
-require "y2network/fake_interface"
 require "y2network/startmode"
 require "y2network/boot_protocol"
 require "y2network/connection_config/vlan"
