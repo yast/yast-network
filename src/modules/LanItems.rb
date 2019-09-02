@@ -193,13 +193,6 @@ module Yast
 
       Yast.include self, "network/hardware.rb"
 
-      # Default values used when creating an emulated NIC for physical s390 hardware.
-      @s390_defaults = YAML.load_file(Directory.find_data_file("network/s390_defaults.yml")) if Arch.s390
-
-      # the defaults here are what sysconfig defaults to
-      # (as opposed to what a new interface gets, in {#Select)}
-      @SysconfigDefaults = YAML.load_file(Directory.find_data_file("network/sysconfig_defaults.yml"))
-
       # this is the map of kernel modules vs. requested firmware
       # non-empty keys are firmware packages shipped by SUSE
       @request_firmware = YAML.load_file(Directory.find_data_file("network/firmwares.yml"))
