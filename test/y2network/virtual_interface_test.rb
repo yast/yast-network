@@ -19,7 +19,10 @@
 
 require_relative "../test_helper"
 require "y2network/virtual_interface"
+require "y2network/connection_config/bridge"
 
 describe Y2Network::VirtualInterface do
-  subject(:interface) { described_class.new("br0") }
+  subject(:interface) { described_class.new("br0", type: type) }
+
+  let(:type) { Y2Network::InterfaceType::BRIDGE }
 end

@@ -97,10 +97,6 @@ module Yast
             end
           end
         end
-
-        # When virtual interfaces are added the list of routing devices needs
-        # to be updated to offer them
-        LanItems.add_device_to_routing if LanItems.update_routing_devices?
       end
 
       log.info "AddressDialog res: #{ret.inspect}"

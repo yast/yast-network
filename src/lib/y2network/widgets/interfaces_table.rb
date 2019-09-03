@@ -51,12 +51,10 @@ module Y2Network
       def items
         config = Yast::Lan.yast_config
         config.interfaces.map do |interface|
-          hwinfo = interface.hardware
-          friendly_name = hwinfo.exists? ? hwinfo.description : interface.name
           conn = config.connections.by_name(interface.name)
           [
             interface.name, # first is ID in table
-            friendly_name,
+            friendly_name(interface),
             interface_protocol(conn),
             interface.name,
             ""
@@ -78,7 +76,8 @@ module Y2Network
         bootproto = connection.bootproto.name
 
         if bootproto == "static"
-          connection.ip.to_s
+          ip_config = connection.ip
+          ip_config ? ip_config.address.to_s : ""
         else
           bootproto.upcase
         end
@@ -88,7 +87,7 @@ module Y2Network
         interface = Yast::Lan.yast_config.interfaces.by_name(value)
         hwinfo = interface.hardware
         result = ""
-        if !hwinfo.exists?
+        if hwinfo.nil? || !hwinfo.exists?
           result << "<b>(" << _("No hardware information") << ")</b><br>"
         else
           result << "<b>(" << _("Not connected") << ")</b><br>" if !hwinfo.link
@@ -107,6 +106,15 @@ module Y2Network
         end
 
         result
+      end
+
+      # Returns a friendly name for a given interface
+      #
+      # @param interface [Interface] Network interface
+      # @return [String] Friendly name for the interface (description or name)
+      def friendly_name(interface)
+        hwinfo = interface.hardware
+        hwinfo && hwinfo.present? ? hwinfo.description : interface.name
       end
     end
   end

@@ -117,7 +117,7 @@ module Y2Network
 
       @connection_config.name = name
       @connection_config.interface = name
-      yast_config.connections.add_or_update(@connection_config)
+      yast_config.add_or_update_connection_config(@connection_config)
       yast_config.rename_interface(@old_name, name, renaming_mechanism) if renamed_interface?
 
       # write to ifcfg always and to firewalld only when available

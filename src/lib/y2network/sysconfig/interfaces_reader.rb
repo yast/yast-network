@@ -86,7 +86,7 @@ module Y2Network
               interface ? interface.type : nil
             )
             next unless connection
-            add_interface(name, connection) if interface.nil?
+            add_interface(connection) if interface.nil?
             conns << connection
           end
       end
@@ -118,13 +118,12 @@ module Y2Network
       # while reading the configuration. In such situations, a fake one
       # should be added.
       #
-      # @param name [String] Interface name
       # @param conn [ConnectionConfig] Connection configuration related to the
       #   network interface
-      def add_interface(name, conn)
+      def add_interface(conn)
         interface =
           if conn.virtual?
-            VirtualInterface.from_connection(name, conn)
+            VirtualInterface.from_connection(conn)
           else
             PhysicalInterface.new(conn.name, hardware: Hwinfo.for(conn.name))
           end

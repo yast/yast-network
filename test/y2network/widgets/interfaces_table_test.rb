@@ -30,17 +30,22 @@ describe Y2Network::Widgets::InterfacesTable do
   let(:description) { double(:value= => nil) }
 
   let(:eth0) { instance_double(Y2Network::Interface, name: "eth0", hardware: hwinfo) }
-  let(:interfaces) { Y2Network::InterfacesCollection.new([eth0]) }
+  let(:br0) { instance_double(Y2Network::VirtualInterface, name: "br0", hardware: nil) }
+  let(:interfaces) { Y2Network::InterfacesCollection.new([eth0, br0]) }
   let(:hwinfo) do
-    instance_double(Y2Network::Hwinfo, link: link, mac: mac, busid: busid, exists?: exists?, description: "")
+    instance_double(Y2Network::Hwinfo, link: link, mac: mac, busid: busid,
+      exists?: exists?, present?: true, description: "")
   end
   let(:mac) { "01:23:45:67:89:ab" }
   let(:busid) { "0000:04:00.0" }
   let(:link) { false }
   let(:exists?) { true }
-  let(:connections) { Y2Network::ConnectionConfigsCollection.new([eth0_conn]) }
+  let(:connections) { Y2Network::ConnectionConfigsCollection.new([eth0_conn, br0_conn]) }
   let(:eth0_conn) do
     Y2Network::ConnectionConfig::Ethernet.new.tap { |c| c.name = "eth0" }
+  end
+  let(:br0_conn) do
+    Y2Network::ConnectionConfig::Bridge.new.tap { |c| c.name = "br0" }
   end
 
   before do

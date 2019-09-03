@@ -46,7 +46,7 @@ module Y2Network
     attr_reader :interfaces
     alias_method :to_a, :interfaces
 
-    def_delegators :@interfaces, :each, :push, :<<, :reject!, :map, :flat_map, :any?
+    def_delegators :@interfaces, :each, :push, :<<, :reject!, :map, :flat_map, :any?, :size
 
     # Constructor
     #
