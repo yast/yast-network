@@ -153,7 +153,8 @@ module Y2Network
 
     # Adds or update a connection config
     #
-    # If it is a virtual connection, it adds interface if it does not exist.
+    # If the interface which is associated to does not exist (because it is a virtual one or it is
+    # not present), it gets added.
     def add_or_update_connection_config(connection_config)
       connections.add_or_update(connection_config)
       interface = interfaces.by_name(connection_config.interface)
