@@ -76,7 +76,8 @@ module Y2Network
         bootproto = connection.bootproto.name
 
         if bootproto == "static"
-          connection.ip.to_s
+          ip_config = connection.ip
+          ip_config ? ip_config.address.to_s : ""
         else
           bootproto.upcase
         end
