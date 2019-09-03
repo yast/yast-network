@@ -33,7 +33,7 @@ module Y2Network
 
       # @return [Array<Interface>] list of interfaces usable for the bond device
       def bondable_interfaces
-        interfaces.all.select { |i| bondable?(i) }
+        interfaces.select { |i| bondable?(i) }
       end
 
       def_delegators :connection_config,
