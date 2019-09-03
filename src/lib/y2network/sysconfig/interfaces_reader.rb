@@ -93,10 +93,7 @@ module Y2Network
 
       # Instantiates an interface given a hash containing hardware details
       #
-      # @param data [Hash] hardware information
-      # @option data [String] "dev_name" Device name ("eth0")
-      # @option data [String] "name"     Device description
-      # @option data [String] "type"     Device type ("eth", "wlan", etc.)
+      # @param hwinfo [Hash] hardware information
       def build_physical_interface(hwinfo)
         Y2Network::PhysicalInterface.new(hwinfo.dev_name, hardware: hwinfo).tap do |iface|
           iface.renaming_mechanism = renaming_mechanism_for(iface.name)
