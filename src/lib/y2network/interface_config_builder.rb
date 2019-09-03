@@ -436,6 +436,13 @@ module Y2Network
       yast_config.interfaces.by_name(name)
     end
 
+    # Returns the interfaces collection
+    #
+    # @return [Y2Network::InterfacesCollection]
+    def interfaces
+      yast_config.interfaces
+    end
+
     # Helper method to access to the current configuration
     #
     # @return [Y2Network::Config]
