@@ -161,4 +161,45 @@ describe Y2Network::InterfaceConfigBuilder do
       end
     end
   end
+
+  describe "#save_hostname" do
+    before do
+      expect(Yast::Host).to receive(:names).with("0.0.0.0").and_return(["original.example.net"])
+      config_builder.hostname # FIXME: Force hostname initialization (it should be done implicitly)
+    end
+
+    context "when the configuration has changed" do
+      before do
+        config_builder.hostname = "new.example.net"
+        config_builder.ip_address = "192.168.122.1"
+      end
+
+      it "updates the hostname" do
+        expect(Yast::Host).to receive(:Update)
+          .with("original.example.net", "new.example.net", "192.168.122.1")
+        config_builder.save_hostname
+      end
+    end
+
+    context "when configuration has not changed" do
+      it "does not change the hostname" do
+        expect(Yast::Host).to_not receive(:remove_ip)
+        expect(Yast::Host).to_not receive(:Update)
+
+        config_builder.save_hostname
+      end
+    end
+
+    context "when there is no IP configuration" do
+      before do
+        config_builder.boot_protocol = "none"
+        config_builder.ip_address = "192.168.122.1"
+      end
+
+      it "removes old hostname if it exists" do
+        expect(Yast::Host).to receive(:remove_ip)
+        config_builder.save_hostname
+      end
+    end
+  end
 end

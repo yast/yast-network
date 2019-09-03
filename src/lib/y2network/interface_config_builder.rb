@@ -343,13 +343,16 @@ module Y2Network
       @hostname = value
     end
 
+    # Saves the hostname
+    #
+    # It needs to take into account whether the old configuration and the boot protocol.
     def save_hostname
-      # avoid unnecessary modification
-      return if @original_ip_config == @connection_config.ip && @original_hostname == hostname
+      if !required_ip_config? || hostname.empty?
+        Yast::Host.remove_ip(@original_ip_config.address.to_s)
+        return
+      end
 
-      # remove old ip
-      Yast::Host.remove_ip(@original_ip_config.address.to_s) if @original_ip_config != @connection_config.ip
-
+      return if @original_ip_config == connection_config.ip && @original_hostname == hostname
       Yast::Host.Update(@original_hostname, hostname, @connection_config.ip.address.to_s)
     end
 
@@ -448,6 +451,13 @@ module Y2Network
     # @return [Y2Network::Config]
     def yast_config
       Yast::Lan.yast_config
+    end
+
+    # Determines whether the IP configuration is required
+    #
+    # @return [Boolean]
+    def required_ip_config?
+      boot_protocol == BootProtocol::STATIC
     end
   end
 end
