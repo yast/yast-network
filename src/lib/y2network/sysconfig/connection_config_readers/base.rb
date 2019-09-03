@@ -55,6 +55,7 @@ module Y2Network
             conn.startmode = Startmode.create(file.startmode || "manual")
             conn.startmode.priority = file.ifplugd_priority if conn.startmode.name == "ifplugd"
             conn.ethtool_options = file.ethtool_options
+            conn.firewall_zone = file.zone
             update_connection_config(conn)
           end
         end

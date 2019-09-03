@@ -49,8 +49,6 @@ module Yast
 
   # FIXME: well this class really is not nice
   class LanItemsClass < Module
-    attr_accessor :firewall_zone
-
     include Logger
     include Wicked
 
@@ -121,7 +119,6 @@ module Yast
       @wl_key = []
       @wl_default_key = 0
       @wl_nick = ""
-      @firewall_zone = nil
 
       # FIXME: We should unify bridge_ports and bond_slaves variables
 
