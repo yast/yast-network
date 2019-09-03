@@ -28,8 +28,6 @@ require "y2network/connection_configs_collection"
 require "y2network/sysconfig/type_detector"
 require "y2network/udev_rule"
 
-Yast.import "LanItems"
-
 module Y2Network
   module Sysconfig
     # This class reads interfaces configuration from sysconfig files
@@ -70,27 +68,12 @@ module Y2Network
     private
 
       # Finds the physical interfaces
-      #
-      # Physical interfaces are read from the old LanItems module
       def find_physical_interfaces
         return if @interfaces
-        physical_interfaces = hardware.map do |h|
+        physical_interfaces = Hwinfo.netcards.map do |h|
           build_physical_interface(h)
         end
         @interfaces = Y2Network::InterfacesCollection.new(physical_interfaces)
-      end
-
-      # Returns hardware information
-      #
-      # This method makes sure that the hardware information was read.
-      #
-      # @todo It still relies on Yast::LanItems.Hardware
-      #
-      # @return [Array<Hash>] Hardware information
-      def hardware
-        Yast::LanItems.Hardware unless Yast::LanItems.Hardware.empty?
-        Yast::LanItems.ReadHw # try again if no hardware was found
-        Yast::LanItems.Hardware
       end
 
       # Finds the connections configurations
@@ -114,11 +97,10 @@ module Y2Network
       # @option data [String] "dev_name" Device name ("eth0")
       # @option data [String] "name"     Device description
       # @option data [String] "type"     Device type ("eth", "wlan", etc.)
-      def build_physical_interface(data)
-        Y2Network::PhysicalInterface.new(data["dev_name"]).tap do |iface|
-          iface.description = data["name"]
+      def build_physical_interface(hwinfo)
+        Y2Network::PhysicalInterface.new(hwinfo.dev_name, hardware: hwinfo).tap do |iface|
           iface.renaming_mechanism = renaming_mechanism_for(iface.name)
-          iface.type = InterfaceType.from_short_name(data["type"]) || TypeDetector.type_of(iface.name)
+          iface.type = InterfaceType.from_short_name(hwinfo.type) || TypeDetector.type_of(iface.name)
         end
       end
 

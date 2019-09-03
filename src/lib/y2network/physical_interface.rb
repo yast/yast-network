@@ -34,7 +34,8 @@ module Y2Network
     def initialize(name, type: InterfaceType::ETHERNET, hardware: nil)
       super(name, type: type)
       # @hardware and @name should not change during life of the object
-      @hardware = hardware || Hwinfo.for(name)
+      @hardware = hardware || Hwinfo.for(name) || Hwinfo.new
+      @description = @hardware.name
     end
 
     # Determines whether the interface is present (attached)
