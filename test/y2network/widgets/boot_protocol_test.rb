@@ -79,7 +79,6 @@ describe Y2Network::Widgets::BootProtocol do
       end
 
       it "sets hostname" do
-        pending "write it"
         expect_set_widget(:bootproto_hostname, "pepa")
 
         subject.init
@@ -209,7 +208,6 @@ describe Y2Network::Widgets::BootProtocol do
       end
 
       it "sets hostname to value of hostname widget" do
-        pending "write hostname"
         allow(Yast::UI).to receive(:QueryWidget).with(:bootproto_hostname, :Value).and_return("test.suse.cz")
 
         subject.store

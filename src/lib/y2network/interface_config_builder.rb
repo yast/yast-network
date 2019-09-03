@@ -29,6 +29,7 @@ require "y2firewall/firewalld/interface"
 
 Yast.import "LanItems"
 Yast.import "NetworkInterfaces"
+Yast.import "Host"
 
 module Y2Network
   # Collects data from the UI until we have enough of it to create a
@@ -85,6 +86,7 @@ module Y2Network
         config.propose
       end
       @connection_config = config
+      @original_ip_config = ip_config_default
     end
 
     # Sets the interface name
@@ -126,6 +128,8 @@ module Y2Network
         # TODO: should change only if different, but maybe firewall_interface responsibility?
         firewall_interface.zone = firewall_zone if !firewall_interface.zone || firewall_zone != firewall_interface.zone.name
       end
+
+      save_hostname
 
       nil
     end
@@ -328,13 +332,25 @@ module Y2Network
 
     # @return [String]
     def hostname
-      # TODO: write it
-      ""
+      return @hostname if @hostname
+
+      names = Yast::Host.names(@original_ip_config.address.to_s)
+      @original_hostname = @hostname = names.first || ""
     end
 
     # @param [String] value
     def hostname=(value)
-      # TODO: write it
+      @hostname = value
+    end
+
+    def save_hostname
+      # avoid unncessary modification
+      return if @original_ip_config == @connection_config.ip && @original_hostname == hostname
+
+      # remove old ip
+      Yast::Host.remove_ip(@original_ip_config.ip.address.to_s) if @original_ip_config != @connection_config.ip
+
+      Yast::Host.Update(@original_hostname, hostname, @connection_config.ip.address.to_s)
     end
 
     # sets remote ip for ptp connections
