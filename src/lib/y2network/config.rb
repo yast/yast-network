@@ -22,6 +22,7 @@ require "y2network/routing"
 require "y2network/dns"
 require "y2network/interfaces_collection"
 require "y2network/connection_configs_collection"
+require "y2network/virtual_interface"
 
 module Y2Network
   # This class represents the current network configuration including interfaces,
@@ -148,6 +149,17 @@ module Y2Network
       return if interface.hardware.exists?
 
       interfaces.reject! { |i| i.name == name }
+    end
+
+    # Adds or update a connection config
+    #
+    # If it is a virtual connection, it adds interface if it does not exist.
+    def add_or_update_connection_config(connection_config)
+      connections.add_or_update(connection_config)
+      return unless connection_config.virtual?
+      interface = interfaces.by_name(connection_config.interface)
+      return if interface
+      interfaces << VirtualInterface.from_connection(connection_config.interface, connection_config)
     end
 
     alias_method :eql?, :==

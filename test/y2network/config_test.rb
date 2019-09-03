@@ -21,6 +21,7 @@ require "y2network/config"
 require "y2network/routing_table"
 require "y2network/interface"
 require "y2network/interfaces_collection"
+require "y2network/connection_config/bridge"
 require "y2network/connection_config/ethernet"
 require "y2network/connection_configs_collection"
 require "y2network/sysconfig/config_reader"
@@ -186,6 +187,60 @@ describe Y2Network::Config do
         config.rename_interface("eth1", "eth2", :mac)
         eth2_conns = config.connections.by_interface("eth2")
         expect(eth2_conns).to_not be_empty
+      end
+    end
+  end
+
+  describe "#add_or_update_connection_config" do
+    let(:new_conn) do
+      Y2Network::ConnectionConfig::Ethernet.new.tap do |conn|
+        conn.interface = "eth2"
+      end
+    end
+
+    it "adds the connection config" do
+      config.add_or_update_connection_config(new_conn)
+      expect(config.connections.by_name(new_conn.name)).to eq(new_conn)
+    end
+
+    context "when a connection config with the same name exists" do
+      let(:other_conn) do
+        Y2Network::ConnectionConfig::Ethernet.new.tap do |conn|
+          conn.interface = "eth2"
+        end
+      end
+
+      before do
+        config.add_or_update_connection_config(new_conn)
+      end
+
+      it "updates the connection config" do
+        config.add_or_update_connection_config(other_conn)
+        expect(config.connections.by_name(new_conn.name)).to eq(other_conn)
+      end
+    end
+
+    context "when is a virtual connection config" do
+      let(:new_conn) do
+        Y2Network::ConnectionConfig::Bridge.new.tap do |conn|
+          conn.interface = "br0"
+        end
+      end
+
+      it "adds the corresponding virtual interface" do
+        config.add_or_update_connection_config(new_conn)
+        expect(config.interfaces.by_name("br0")).to be_a(Y2Network::VirtualInterface)
+      end
+
+      context "and the interface already exists" do
+        before do
+          config.interfaces << Y2Network::VirtualInterface.new("br0")
+        end
+
+        it "does not add any interface" do
+          expect { config.add_or_update_connection_config(new_conn) }
+            .to_not change { config.interfaces.size }
+        end
       end
     end
   end
