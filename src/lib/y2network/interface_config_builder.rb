@@ -118,6 +118,8 @@ module Y2Network
       yast_config.connections.add_or_update(@connection_config)
       yast_config.rename_interface(@old_name, name, renaming_mechanism) if renamed_interface?
 
+      # write to ifcfg always and to firewalld only when available
+      @connection_config.firewall_zone = firewall_zone
       # create new instance as name can change
       firewall_interface = Y2Firewall::Firewalld::Interface.new(name)
       if Y2Firewall::Firewalld.instance.installed?
@@ -191,7 +193,7 @@ module Y2Network
 
       # TODO: handle renaming
       firewall_interface = Y2Firewall::Firewalld::Interface.new(name)
-      @firewall_zone = firewall_interface.zone && firewall_interface.zone.name
+      @firewall_zone = (firewall_interface.zone && firewall_interface.zone.name) || @connection_config.firewall_zone
     end
 
     # sets assigned firewall zone

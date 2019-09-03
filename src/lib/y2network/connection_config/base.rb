@@ -57,6 +57,8 @@ module Y2Network
       attr_accessor :lladdress
       # @return [String] configuration for ethtools when initializing
       attr_accessor :ethtool_options
+      # @return [String] assigned firewall zone to interface
+      attr_accessor :firewall_zone
 
       # Constructor
       def initialize
@@ -65,6 +67,7 @@ module Y2Network
         @startmode = Startmode.create("manual")
         @description = ""
         @ethtool_options = ""
+        @firewall_zone = ""
       end
 
       # Propose reasonable defaults for given config. Useful for newly created devices.

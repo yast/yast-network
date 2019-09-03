@@ -185,6 +185,10 @@ module Y2Network
       #   @return [String] setting variables on device activation. See man ethtool
       define_variable(:ethtool_options)
 
+      # !@attribute [r] zone
+      #   @return [String] assign zone to interface. Extensions then can handle it
+      define_variable(:zone)
+
       # !@attribute [r] wireless_key_length
       #   @return [Integer] Length in bits for all keys used
       define_variable(:wireless_key_length, :integer)
