@@ -344,7 +344,7 @@ module Y2Network
     end
 
     def save_hostname
-      # avoid unncessary modification
+      # avoid unnecessary modification
       return if @original_ip_config == @connection_config.ip && @original_hostname == hostname
 
       # remove old ip
