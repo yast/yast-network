@@ -21,6 +21,8 @@ require "yast"
 require "y2network/driver"
 require "y2network/udev_rule"
 
+Yast.import "LanItems"
+
 module Y2Network
   class HardwareWrapper
     def initialize
@@ -29,24 +31,35 @@ module Y2Network
 
     # Returns the network devices hardware information
     #
-    # @return [Array<Hwinfo>]
+    # @return [Array<Hwinfo>] Hardware information for netword devices
     def netcards
       return @netcards if @netcards
+      read_hardware
       @netcards = ReadHardware("netcard").map do |attrs|
-        add_missing_attrs(attrs)
-        Hwinfo.new(attrs)
+        name = attrs["dev_name"]
+        extra_attrs = name ? extra_attrs_for(name) : {}
+        Hwinfo.new(attrs.merge(extra_attrs))
       end
     end
 
   private
 
-    def add_missing_attrs(hash)
-      name = hash["dev_name"]
-      return unless name
+    # Add aditional attributes
+    #
+    # @param name [String] Device name
+    # @return [Hash] Hash containing extra attributes
+    def extra_attrs_for(name)
+      extra = {}
       raw_dev_port = Yast::SCR.Read(
         Yast::Path.new(".target.string"), "/sys/class_net/#{name}/dev_port"
       ).to_s.strip
-      hash["dev_port"] = raw_dev_port unless raw_dev_port.empty?
+      extra["dev_port"] = raw_dev_port unless raw_dev_port.empty?
+      extra
+    end
+
+    # Makes sure that the hardware information was read
+    def read_hardware
+      Yast::LanItems.ReadHw if Yast::LanItems.Hardware.empty?
     end
   end
 
@@ -71,6 +84,13 @@ module Y2Network
       # @return [Hwinfo]
       def for(name)
         hwinfo_from_hardware(name) || hwinfo_from_udev(name) || Hwinfo.new
+      end
+
+      # Returns the network devices hardware information
+      #
+      # @return [Array<Hwinfo>] Hardware information for netword devices
+      def netcards
+        hardware_wrapper.netcards
       end
 
       # Resets the hardware information
