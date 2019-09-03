@@ -42,6 +42,9 @@ describe Y2Network::Sysconfig::InterfacesWriter do
       allow(Yast::Execute).to receive(:on_target)
       allow(eth0).to receive(:hardware).and_return(hardware)
       allow(writer).to receive(:sleep)
+
+      # prevent collision with real hardware
+      allow(Y2Network::UdevRule).to receive(:all).and_return([])
     end
 
     around do |example|

@@ -54,6 +54,7 @@ module Y2Network
             conn.lladdress = file.lladdr
             conn.startmode = Startmode.create(file.startmode || "manual")
             conn.startmode.priority = file.ifplugd_priority if conn.startmode.name == "ifplugd"
+            conn.ethtool_options = file.ethtool_options
             update_connection_config(conn)
           end
         end

@@ -50,7 +50,7 @@ module Y2Network
       end
 
       def handle
-        device = @settings["IFCFG"]
+        device = @settings.name
         timeout = Yast::UI.QueryWidget(:blink_time, :Value)
         log.info "blink, blink ... #{timeout} seconds on #{device} device"
         cmd = "/usr/sbin/ethtool -p #{device.shellescape} #{timeout.to_i}"

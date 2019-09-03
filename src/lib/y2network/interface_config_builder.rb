@@ -17,6 +17,7 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 require "yast"
+require "forwardable"
 
 require "y2network/connection_config"
 require "y2network/hwinfo"
@@ -36,6 +37,7 @@ module Y2Network
   # {Yast::LanItemsClass#Commit Yast::LanItems.Commit(builder)} use it.
   class InterfaceConfigBuilder
     include Yast::Logger
+    extend Forwardable
 
     # Load fresh instance of interface config builder for given type.
     # It can be specialized type or generic, depending if specialized is needed.
@@ -56,13 +58,16 @@ module Y2Network
     # @return [String] Device name (eth0, wlan0, etc.)
     attr_reader :name
     # @return [Y2Network::InterfaceType] type of @see Y2Network::Interface which is intended to be build
-    attr_accessor :type
+    attr_reader :type
     # @return [Y2Network::ConnectionConfig] connection config on which builder operates
     attr_reader :connection_config
     # @return [Symbol] Mechanism to rename the interface (:none -no hardware based-, :mac or :bus_id)
     attr_writer :renaming_mechanism
     # @return [Y2Network::Interface,nil] Underlying interface if it exists
     attr_reader :interface
+
+    def_delegators :@connection_config,
+      :startmode, :ethtool_options, :ethtool_options=
 
     # Constructor
     #
@@ -192,9 +197,7 @@ module Y2Network
     end
 
     # sets assigned firewall zone
-    def firewall_zone=(value)
-      @firewall_zone = value
-    end
+    attr_writer :firewall_zone
 
     # @return [Y2Network::BootProtocol]
     def boot_protocol
@@ -205,11 +208,6 @@ module Y2Network
     def boot_protocol=(value)
       value = value.name if value.is_a?(Y2Network::BootProtocol)
       @connection_config.bootproto = Y2Network::BootProtocol.from_name(value)
-    end
-
-    # @return [Startmode]
-    def startmode
-      @connection_config.startmode
     end
 
     # @param [String,Y2Network::Startmode] name startmode name used to create Startmode object
@@ -283,17 +281,6 @@ module Y2Network
     # @param value [Array<Hash>] see #aliases for hash values
     def aliases=(value)
       @aliases = value
-    end
-
-    # TODO: eth only?
-    # @return [String]
-    def ethtool_options
-      @config["ETHTOOL_OPTIONS"]
-    end
-
-    # @param [String] value
-    def ethtool_options=(value)
-      @config["ETHTOOL_OPTIONS"] = value
     end
 
     # @return [String]
