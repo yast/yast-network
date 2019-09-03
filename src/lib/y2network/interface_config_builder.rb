@@ -348,7 +348,7 @@ module Y2Network
       return if @original_ip_config == @connection_config.ip && @original_hostname == hostname
 
       # remove old ip
-      Yast::Host.remove_ip(@original_ip_config.ip.address.to_s) if @original_ip_config != @connection_config.ip
+      Yast::Host.remove_ip(@original_ip_config.address.to_s) if @original_ip_config != @connection_config.ip
 
       Yast::Host.Update(@original_hostname, hostname, @connection_config.ip.address.to_s)
     end
