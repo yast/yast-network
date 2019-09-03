@@ -121,8 +121,6 @@ module Y2Network
       # create new instance as name can change
       firewall_interface = Y2Firewall::Firewalld::Interface.new(name)
       if Y2Firewall::Firewalld.instance.installed?
-        # TODO: New backend?
-        Yast::LanItems.firewall_zone = firewall_zone
         # TODO: should change only if different, but maybe firewall_interface responsibility?
         firewall_interface.zone = firewall_zone if !firewall_interface.zone || firewall_zone != firewall_interface.zone.name
       end
