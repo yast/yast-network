@@ -19,11 +19,47 @@
 
 require "yast"
 require "y2network/driver"
+require "y2network/udev_rule"
+
+Yast.import "LanItems"
 
 module Y2Network
   class HardwareWrapper
     def initialize
       Yast.include self, "network/routines.rb"
+    end
+
+    # Returns the network devices hardware information
+    #
+    # @return [Array<Hwinfo>] Hardware information for netword devices
+    def netcards
+      return @netcards if @netcards
+      read_hardware
+      @netcards = ReadHardware("netcard").map do |attrs|
+        name = attrs["dev_name"]
+        extra_attrs = name ? extra_attrs_for(name) : {}
+        Hwinfo.new(attrs.merge(extra_attrs))
+      end
+    end
+
+  private
+
+    # Add aditional attributes
+    #
+    # @param name [String] Device name
+    # @return [Hash] Hash containing extra attributes
+    def extra_attrs_for(name)
+      extra = {}
+      raw_dev_port = Yast::SCR.Read(
+        Yast::Path.new(".target.string"), "/sys/class_net/#{name}/dev_port"
+      ).to_s.strip
+      extra["dev_port"] = raw_dev_port unless raw_dev_port.empty?
+      extra
+    end
+
+    # Makes sure that the hardware information was read
+    def read_hardware
+      Yast::LanItems.ReadHw if Yast::LanItems.Hardware.empty?
     end
   end
 
@@ -50,6 +86,20 @@ module Y2Network
         hwinfo_from_hardware(name) || hwinfo_from_udev(name) || Hwinfo.new
       end
 
+      # Returns the network devices hardware information
+      #
+      # @return [Array<Hwinfo>] Hardware information for netword devices
+      def netcards
+        hardware_wrapper.netcards
+      end
+
+      # Resets the hardware information
+      #
+      # It will be re-read the next time is needed.
+      def reset
+        @hardware_wrapper = nil
+      end
+
     private
 
       # Returns hardware information for the given device
@@ -59,15 +109,16 @@ module Y2Network
       # @param name [String] Interface's name
       # @return [Hwinfo,nil] Hardware info or nil if not found
       def hwinfo_from_hardware(name)
-        netcards = HardwareWrapper.new.ReadHardware("netcard")
-        hw = netcards.find { |h| h["dev_name"] == name }
-        return nil if hw.nil?
+        hardware_wrapper.netcards.find { |h| h.dev_name == name }
+      end
 
-        raw_dev_port = Yast::SCR.Read(
-          Yast::Path.new(".target.string"), "/sys/class_net/#{name}/dev_port"
-        ).to_s.strip
-        hw["dev_port"] = raw_dev_port unless raw_dev_port.empty?
-        new(hw)
+      # Hardware wrapper instance
+      #
+      # It memoizes the hardware wrapper in order to speed up the access
+      #
+      # @return [HardWrapper]
+      def hardware_wrapper
+        @hardware_wrapper = HardwareWrapper.new
       end
 
       # Returns hardware information for the given device
@@ -141,7 +192,9 @@ module Y2Network
       { name: "wl_enc_modes", default: nil },
       { name: "wl_channels", default: nil },
       { name: "wl_bitrates", default: nil },
-      { name: "dev_port", default: nil }
+      { name: "dev_port", default: nil },
+      { name: "type", default: nil },
+      { name: "name", default: "" }
     ].each do |hwinfo_item|
       define_method hwinfo_item[:name].downcase do
         @hwinfo ? @hwinfo.fetch(hwinfo_item[:name], hwinfo_item[:default]) : hwinfo_item[:default]
@@ -182,6 +235,17 @@ module Y2Network
       drivers_list = @hwinfo.fetch("drivers", [])
       modules = drivers_list[0].fetch("modules", [])
       modules.map { |m| Driver.new(*m) }
+    end
+
+    # Determines whether the hardware is available (plugged)
+    #
+    # If the hardware layer was able to get its type, it consider the hardware to be connected. Bear
+    # in mind that it is not possible to just rely in #exists? because it could include some info
+    # from udev rules.
+    #
+    # @return [Boolean]
+    def present?
+      !!type
     end
 
     # Determines whether two objects are equivalent

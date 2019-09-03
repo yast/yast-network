@@ -18,11 +18,34 @@
 # find current contact information at www.suse.com.
 
 require "y2network/interface"
+require "y2network/hwinfo"
 
 module Y2Network
   # Physical interface class (ethernet, wireless, infiniband...)
   class PhysicalInterface < Interface
     # @return [String]
     attr_accessor :ethtool_options
+
+    # Constructor
+    #
+    # @param name [String] Interface name (e.g., "eth0")
+    # @param type [InterfaceType] Interface type
+    # @param hardware [Hwinfo] Hardware information
+    def initialize(name, type: InterfaceType::ETHERNET, hardware: nil)
+      super(name, type: type)
+      # @hardware and @name should not change during life of the object
+      @hardware = hardware || Hwinfo.for(name) || Hwinfo.new
+      @description = @hardware.name
+    end
+
+    # Determines whether the interface is present (attached)
+    #
+    # It relies in the hardware information
+    #
+    # @return [Boolean]
+    # @see Interface#present?
+    def present?
+      @hardware.present?
+    end
   end
 end

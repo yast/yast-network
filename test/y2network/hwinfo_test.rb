@@ -28,12 +28,13 @@ describe Y2Network::Hwinfo do
   end
 
   let(:interface_name) { "enp1s0" }
-  let(:hw_wrapper) { double("Y2Network::HardwareWrapper", ReadHardware: hardware) }
+  let(:hw_wrapper) { Y2Network::HardwareWrapper.new }
 
   before do
     allow(Y2Network::Hwinfo).to receive(:hwinfo_from_hardware).and_call_original
     allow(Y2Network::HardwareWrapper).to receive(:new).and_return(hw_wrapper)
     allow(Y2Network::UdevRule).to receive(:find_for).with(interface_name).and_return(udev_rule)
+    allow(hw_wrapper).to receive(:ReadHardware).and_return(hardware)
   end
 
   let(:udev_rule) { nil }
@@ -146,6 +147,24 @@ describe Y2Network::Hwinfo do
     it "ignores nil values" do
       expect(described_class.new("dev_name" => "eth0", "other" => nil))
         .to eq(described_class.new("dev_name" => "eth0"))
+    end
+  end
+
+  describe "#present?" do
+    context "when the hardware was detected" do
+      subject(:hwinfo) { described_class.new("type" => "eth") }
+
+      it "returns true" do
+        expect(hwinfo).to be_present
+      end
+    end
+
+    context "when the hardware was not detected" do
+      subject(:hwinfo) { described_class.new({}) }
+
+      it "returns false" do
+        expect(hwinfo).to_not be_present
+      end
     end
   end
 end
