@@ -28,8 +28,8 @@ module Y2Network
     #
     # @param conn [ConnectionConfig] Connection configuration related to the
     #   network interface
-    def self.from_connection(name, conn)
-      new(name, type: conn.type)
+    def self.from_connection(conn)
+      new(conn.interface || conn.name, type: conn.type)
     end
   end
 end

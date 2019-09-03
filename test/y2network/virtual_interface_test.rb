@@ -19,7 +19,23 @@
 
 require_relative "../test_helper"
 require "y2network/virtual_interface"
+require "y2network/connection_config/bridge"
 
 describe Y2Network::VirtualInterface do
-  subject(:interface) { described_class.new("br0") }
+  subject(:interface) { described_class.new("br0", type: type) }
+
+  let(:type) { Y2Network::InterfaceType::BRIDGE }
+
+  describe ".from_connection" do
+    let(:conn) do
+      Y2Network::ConnectionConfig::Bridge.new.tap { |c| c.name = "br0" }
+    end
+
+    it "returns a virtual interface using connection's and type" do
+      interface = described_class.from_connection(conn)
+      expect(interface).to be_a(described_class)
+      expect(interface.name).to eq("br0")
+      expect(interface.type).to eq(Y2Network::InterfaceType::BRIDGE)
+    end
+  end
 end

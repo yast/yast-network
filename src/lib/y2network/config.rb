@@ -159,7 +159,7 @@ module Y2Network
       return unless connection_config.virtual?
       interface = interfaces.by_name(connection_config.interface)
       return if interface
-      interfaces << VirtualInterface.from_connection(connection_config.interface, connection_config)
+      interfaces << VirtualInterface.from_connection(connection_config)
     end
 
     alias_method :eql?, :==
