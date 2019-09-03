@@ -156,10 +156,9 @@ module Y2Network
     # If it is a virtual connection, it adds interface if it does not exist.
     def add_or_update_connection_config(connection_config)
       connections.add_or_update(connection_config)
-      return unless connection_config.virtual?
       interface = interfaces.by_name(connection_config.interface)
       return if interface
-      interfaces << VirtualInterface.from_connection(connection_config)
+      interfaces << Interface.from_connection(connection_config)
     end
 
     alias_method :eql?, :==

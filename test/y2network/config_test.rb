@@ -220,14 +220,14 @@ describe Y2Network::Config do
       end
     end
 
-    context "when is a virtual connection config" do
+    context "when the interface is missing" do
       let(:new_conn) do
         Y2Network::ConnectionConfig::Bridge.new.tap do |conn|
           conn.interface = "br0"
         end
       end
 
-      it "adds the corresponding virtual interface" do
+      it "adds the corresponding interface" do
         config.add_or_update_connection_config(new_conn)
         expect(config.interfaces.by_name("br0")).to be_a(Y2Network::VirtualInterface)
       end

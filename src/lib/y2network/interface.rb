@@ -53,6 +53,16 @@ module Y2Network
     # @return [String,nil]
     attr_reader :old_name
 
+    class << self
+      # Builds an interface based on a connection
+      #
+      # @param conn [ConnectionConfig] Connection configuration related to the network interface
+      def from_connection(conn)
+        interface_class = conn.virtual? ? VirtualInterface : PhysicalInterface
+        interface_class.new(conn.interface || conn.name, type: conn.type)
+      end
+    end
+
     # Shortcuts for accessing interfaces' ifcfg options
     #
     # TODO: this makes Interface class tighly coupled with netconfig (sysconfig) backend

@@ -29,7 +29,7 @@ module Y2Network
 
         # @see Y2Network::Sysconfig::ConnectionConfigReaders::Base#update_connection_config
         def update_connection_config(conn)
-          conn.ports = file.bridge_ports.split(" ")
+          conn.ports = file.bridge_ports.to_s.split(" ")
           conn.stp = file.bridge_stp
           conn.forward_delay = file.bridge_forwarddelay
         end
