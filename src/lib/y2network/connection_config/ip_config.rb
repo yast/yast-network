@@ -16,9 +16,14 @@
 #
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
+
+require "y2network/can_be_copied"
+
 module Y2Network
   module ConnectionConfig
     class IPConfig
+      include CanBeCopied
+
       # @return [IPAddress] IP address
       attr_accessor :address
       # @return [String,nil] Address label
@@ -44,6 +49,14 @@ module Y2Network
         @label = label
         @remote_address = remote_address
         @broadcast = broadcast
+      end
+
+      # Determines whether IP configurations are equal
+      #
+      # @return [Boolean] true if both are equal; false otherwise
+      def ==(other)
+        address == other.address && label == other.label &&
+          remote_address == other.remote_address && broadcast == other.broadcast
       end
     end
   end
