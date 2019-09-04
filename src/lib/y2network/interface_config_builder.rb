@@ -438,7 +438,7 @@ module Y2Network
     # @return [Y2Network::Interface,nil]
     def find_interface
       return nil unless yast_config # in some tests, it could return nil
-      yast_config.interfaces.by_name(name)
+      interfaces.by_name(name)
     end
 
     # Returns the interfaces collection
