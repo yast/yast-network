@@ -86,7 +86,7 @@ module Y2Network
         config.propose
       end
       @connection_config = config
-      @original_ip_config = ip_config_default
+      @original_ip_config = ip_config_default.copy
     end
 
     # Sets the interface name
@@ -345,9 +345,11 @@ module Y2Network
 
     # Saves the hostname
     #
-    # It needs to take into account whether the old configuration and the boot protocol.
+    # The hostname entry must be updated when the IP or the hostname change. Moreover, it must be
+    # removed when the hostname is empty or when the boot protocol is not STATIC (as there is no IP
+    # to associate with the name).
     def save_hostname
-      if !required_ip_config? || hostname.empty?
+      if !required_ip_config?
         Yast::Host.remove_ip(@original_ip_config.address.to_s)
         return
       end

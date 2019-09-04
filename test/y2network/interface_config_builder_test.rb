@@ -163,20 +163,52 @@ describe Y2Network::InterfaceConfigBuilder do
   end
 
   describe "#save_hostname" do
+    subject(:config_builder) { Y2Network::InterfaceConfigBuilder.for("eth", config: conn) }
+    let(:conn) do
+      Y2Network::ConnectionConfig::Ethernet.new.tap { |c| c.ip = original_ip_config }
+    end
+
+    let(:original_ip_config) do
+      Y2Network::ConnectionConfig::IPConfig.new(Y2Network::IPAddress.new("10.0.0.1"))
+    end
+
     before do
-      expect(Yast::Host).to receive(:names).with("0.0.0.0").and_return(["original.example.net"])
+      allow(Yast::Host).to receive(:names).with("10.0.0.1").and_return(["original.example.net"])
       config_builder.hostname # FIXME: Force hostname initialization (it should be done implicitly)
     end
 
-    context "when the configuration has changed" do
+    context "when the hostname has changed" do
       before do
         config_builder.hostname = "new.example.net"
-        config_builder.ip_address = "192.168.122.1"
       end
 
       it "updates the hostname" do
         expect(Yast::Host).to receive(:Update)
-          .with("original.example.net", "new.example.net", "192.168.122.1")
+          .with("original.example.net", "new.example.net", "10.0.0.1")
+        config_builder.save_hostname
+      end
+
+      context "and the hostname is empty" do
+        before do
+          config_builder.hostname = ""
+        end
+
+        it "removes the hostname" do
+          expect(Yast::Host).to receive(:Update)
+            .with("original.example.net", "", "10.0.0.1")
+          config_builder.save_hostname
+        end
+      end
+    end
+
+    context "when the IP has changed" do
+      before do
+        config_builder.ip_address = "192.168.122.1"
+      end
+
+      it "updates the IP" do
+        expect(Yast::Host).to receive(:Update)
+          .with("original.example.net", "original.example.net", "192.168.122.1")
         config_builder.save_hostname
       end
     end
@@ -190,7 +222,7 @@ describe Y2Network::InterfaceConfigBuilder do
       end
     end
 
-    context "when there is no IP configuration" do
+    context "when there is boot protocol is not static" do
       before do
         config_builder.boot_protocol = "none"
         config_builder.ip_address = "192.168.122.1"
