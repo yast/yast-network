@@ -25,7 +25,7 @@ describe Y2Network::Sysconfig::DNSWriter do
 
   describe "#write" do
 
-    let(:dhcp_hostname) { true }
+    let(:dhcp_hostname) { :any }
     let(:dns) do
       Y2Network::DNS.new(
         nameservers:        [IPAddr.new("10.0.0.1"), IPAddr.new("10.0.0.2")],
@@ -36,7 +36,7 @@ describe Y2Network::Sysconfig::DNSWriter do
       )
     end
 
-    let(:old_dhcp_hostname) { !dhcp_hostname }
+    let(:old_dhcp_hostname) { :none }
     let(:old_dns) do
       Y2Network::DNS.new(
         nameservers:        [IPAddr.new("10.0.0.1")],
@@ -47,14 +47,29 @@ describe Y2Network::Sysconfig::DNSWriter do
       )
     end
     let(:hostname) { "myhost.example.net" }
+    let(:ifcfg_eth0) do
+      instance_double(
+        Y2Network::Sysconfig::InterfaceFile, interface: "eth0",
+        dhclient_set_hostname: "yes", :dhclient_set_hostname= => nil, load: nil, save: nil
+      )
+    end
+    let(:ifcfg_eth1) do
+      instance_double(
+        Y2Network::Sysconfig::InterfaceFile, interface: "eth1",
+        dhclient_set_hostname: "no", :dhclient_set_hostname= => nil, load: nil, save: true
+      )
+    end
 
     before do
       allow(Yast::SCR).to receive(:Write)
       allow(Yast::Execute).to receive(:on_target!)
+      allow(Y2Network::Sysconfig::InterfaceFile).to receive(:all)
+        .and_return([ifcfg_eth0, ifcfg_eth1])
     end
 
-    context "when dhcp_hostname is changed to true" do
-      let(:dhcp_hostname) { true }
+    context "when dhcp_hostname is changed to :any" do
+      let(:old_dhcp_hostname) { :none }
+      let(:dhcp_hostname) { :any }
 
       it "sets DHCLIENT_SET_HOSTNAME to 'yes'" do
         expect(Yast::SCR).to receive(:Write)
@@ -63,8 +78,9 @@ describe Y2Network::Sysconfig::DNSWriter do
       end
     end
 
-    context "when dhcp_hostname is changed to false" do
-      let(:dhcp_hostname) { false }
+    context "when dhcp_hostname is changed to :none" do
+      let(:old_dhcp_hostname) { :any }
+      let(:dhcp_hostname) { :none }
 
       it "writes DHCLIENT_SET_HOSTNAME to 'no'" do
         expect(Yast::SCR).to receive(:Write)
@@ -83,12 +99,12 @@ describe Y2Network::Sysconfig::DNSWriter do
       end
     end
 
-    context "when dhcp_hostname is nil" do
-      let(:dhcp_hostname) { nil }
+    context "when dhcp_hostname is set to an interface name" do
+      let(:dhcp_hostname) { "eth1" }
 
-      it "does not write DHCLIENT_SET_HOSTNAME" do
-        expect(Yast::SCR).to_not receive(:Write)
-          .with(Yast::Path.new(".sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME"), anything)
+      it "sets the DHCLIENT_SET_HOSTNAME in the corresponding ifcfg-* file" do
+        expect(ifcfg_eth0).to receive(:dhclient_set_hostname=).with(nil)
+        expect(ifcfg_eth1).to receive(:dhclient_set_hostname=).with("yes")
         writer.write(dns, old_dns)
       end
     end

@@ -32,7 +32,9 @@ module Y2Network
     # @return [String] resolv.conf update policy
     attr_accessor :resolv_conf_policy
 
-    # @return [Boolean] Whether to take the hostname from DHCP
+    # @return [String,Symbol] Whether to take the hostname from DHCP.
+    #   It can be an interface name (String), :any for any interface or :none from no taking
+    #   the hostname from DHCP.
     attr_accessor :dhcp_hostname
 
     # @todo receive an array instead all these arguments

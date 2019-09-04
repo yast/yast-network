@@ -349,6 +349,10 @@ module Y2Network
       #   @return [String] tunnel group
       define_variable(:tunnel_set_group)
 
+      # @!attribute [r] dhclient_set_hostname
+      #   @return [String] use hostname from dhcp
+      define_variable(:dhclient_set_hostname)
+
       # Constructor
       #
       # @param interface [String] Interface interface
