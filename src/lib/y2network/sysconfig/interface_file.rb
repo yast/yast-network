@@ -55,6 +55,18 @@ module Y2Network
       class << self
         SYSCONFIG_NETWORK_DIR = Pathname.new("/etc/sysconfig/network").freeze
 
+        # @return [Regex] expression to filter out invalid ifcfg-* files
+        IGNORE_IFCFG_REGEX = /(\.bak|\.orig|\.rpmnew|\.rpmorig|-range|~|\.old|\.scpmbackup)$/
+
+        # Returns all configuration files
+        #
+        # @return [Array<InterfaceFile>]
+        def all
+          Yast::SCR.Dir(Yast::Path.new(".network.section"))
+                   .reject { |f| IGNORE_IFCFG_REGEX =~ f || f == "lo" }
+                   .map { |f| find(f) }
+        end
+
         # Finds the ifcfg-* file for a given interface
         #
         # @param interface [String] Interface name

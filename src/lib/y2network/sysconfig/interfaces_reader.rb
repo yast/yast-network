@@ -23,6 +23,7 @@ require "y2network/interface_type"
 require "y2network/virtual_interface"
 require "y2network/physical_interface"
 require "y2network/sysconfig/connection_config_reader"
+require "y2network/sysconfig/interface_file"
 require "y2network/interfaces_collection"
 require "y2network/connection_configs_collection"
 require "y2network/sysconfig/type_detector"
@@ -79,10 +80,10 @@ module Y2Network
       # Finds the connections configurations
       def find_connections
         @connections ||=
-          configured_devices.each_with_object(ConnectionConfigsCollection.new([])) do |name, conns|
-            interface = @interfaces.by_name(name)
+          InterfaceFile.all.each_with_object(ConnectionConfigsCollection.new([])) do |file, conns|
+            interface = @interfaces.by_name(file.interface)
             connection = ConnectionConfigReader.new.read(
-              name,
+              file.interface,
               interface ? interface.type : nil
             )
             next unless connection
@@ -99,17 +100,6 @@ module Y2Network
           iface.renaming_mechanism = renaming_mechanism_for(iface.name)
           iface.type = InterfaceType.from_short_name(hwinfo.type) || TypeDetector.type_of(iface.name)
         end
-      end
-
-      # @return [Regex] expression to filter out invalid ifcfg-* files
-      IGNORE_IFCFG_REGEX = /(\.bak|\.orig|\.rpmnew|\.rpmorig|-range|~|\.old|\.scpmbackup)$/
-
-      # List of devices which has a configuration file (ifcfg-*)
-      #
-      # @return [Array<String>] List of configured devices
-      def configured_devices
-        files = Yast::SCR.Dir(Yast::Path.new(".network.section"))
-        files.reject { |f| IGNORE_IFCFG_REGEX =~ f || f == "lo" }
       end
 
       # Adds a fake or virtual interface for a given connection
