@@ -24,7 +24,7 @@ Yast.import "IP"
 
 module Y2Network
   module Autoinst
-    # This class is responsible of importing the AutoYast dns section
+    # This class is responsible of importing the AutoYast interfaces section
     class InterfacesReader
       # @return [AutoinstProfile::InterfacesSection]
       attr_reader :section
