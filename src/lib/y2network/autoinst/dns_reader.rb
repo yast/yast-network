@@ -19,6 +19,7 @@
 
 require "yast"
 require "y2network/dns"
+require "y2network/hostname_reader"
 require "ipaddr"
 Yast.import "IP"
 
@@ -61,7 +62,11 @@ module Y2Network
         end
       end
 
+      # Returns a random hostname
+      #
+      # @return [String]
       def default_hostname
+        HostnameReader.new.hostname
       end
     end
   end

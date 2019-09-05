@@ -39,6 +39,11 @@ describe Y2Network::Autoinst::DNSReader do
       "resolv_conf_policy" => "some-policy"
     }
   end
+  let(:hostname_reader) { instance_double(Y2Network::HostnameReader, hostname: "foo") }
+
+  before do
+    allow(Y2Network::HostnameReader).to receive(:new).and_return(hostname_reader)
+  end
 
   describe "#config" do
     EMPTY_DNS_SECTION = Y2Network::AutoinstProfile::DNSSection.new_from_hashes({})
@@ -48,6 +53,11 @@ describe Y2Network::Autoinst::DNSReader do
       expect(subject.config.hostname).to eq("linux.example.org")
       expect(subject.config.resolv_conf_policy).to eq("some-policy")
       expect(subject.config.nameservers.size).to eq(2)
+    end
+
+    it "falls back to the current hostname" do
+      config = described_class.new(EMPTY_DNS_SECTION).config
+      expect(config.hostname).to eq("foo")
     end
 
     it "falls back to 'auto' for resolv_conf_policy" do
