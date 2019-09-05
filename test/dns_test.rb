@@ -212,11 +212,4 @@ describe Yast::DNS do
       end
     end
   end
-
-  describe "#propose_hostname" do
-    it "proposes a hostname" do
-      expect(dns_config).to receive(:ensure_hostname!)
-      subject.propose_hostname
-    end
-  end
 end

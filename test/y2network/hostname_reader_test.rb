@@ -118,22 +118,15 @@ describe Y2Network::HostnameReader do
   end
 
   describe "#hostname_from_system" do
-    let(:executor) do
-      double("Yast::Execute", on_target!: "foo")
-    end
-
-    before do
-      allow(Yast::Execute).to receive(:stdout).and_return(executor)
-    end
-
     it "returns the systems' hostname" do
-      expect(executor).to receive(:on_target!).with("/bin/hostname", "--fqdn").and_return("foo")
+      expect(Yast::Execute).to receive(:on_target!).with("/bin/hostname", "--fqdn", stdout: :capture)
+        .and_return("foo")
       expect(reader.hostname_from_system).to eq("foo")
     end
 
     context "when the hostname cannot be determined" do
       before do
-        allow(executor).to receive(:on_target!).with("/bin/hostname", "--fqdn")
+        allow(Yast::Execute).to receive(:on_target!).with("/bin/hostname", "--fqdn", stdout: :capture)
           .and_raise(Cheetah::ExecutionFailed.new([], "", nil, nil))
       end
 

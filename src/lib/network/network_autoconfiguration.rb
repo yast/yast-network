@@ -110,7 +110,6 @@ module Yast
     # Propose DNS and Hostname setup
     def configure_dns
       DNS.Read # handles NetworkConfig too
-      DNS.propose_hostname
       log.info("NetworkAutoconfiguration: proposing DNS / Hostname configuration")
       DNS.Write
     end

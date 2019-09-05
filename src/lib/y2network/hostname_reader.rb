@@ -74,7 +74,7 @@ module Y2Network
     #
     # @return [String] Hostname
     def hostname_from_system
-      Yast::Execute.stdout.on_target!("/bin/hostname", "--fqdn")
+      Yast::Execute.on_target!("/bin/hostname", "--fqdn", stdout: :capture)
     rescue Cheetah::ExecutionFailed
       nil
     end

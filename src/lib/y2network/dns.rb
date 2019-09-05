@@ -55,12 +55,6 @@ module Y2Network
       @dhcp_hostname = opts[:dhcp_hostname]
     end
 
-    # Sets a hostname is none is present
-    def ensure_hostname!
-      return unless @hostname.nil? || @hostname.empty?
-      @hostname = HostnameReader.new.random_hostname
-    end
-
     # @return [Array<Symbol>] Methods to check when comparing two instances
     ATTRS = [
       :hostname, :nameservers, :searchlist, :resolv_conf_policy, :dhcp_hostname
