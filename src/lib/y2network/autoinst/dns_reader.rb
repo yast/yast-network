@@ -40,9 +40,9 @@ module Y2Network
       def config
         Y2Network::DNS.new(
           dhcp_hostname:      section.dhcp_hostname,
-          hostname:           section.hostname,
+          hostname:           section.hostname || default_hostname,
           nameservers:        valid_ips(section.nameservers),
-          resolv_conf_policy: section.resolv_conf_policy,
+          resolv_conf_policy: section.resolv_conf_policy || "auto",
           searchlist:         section.searchlist
         )
       end
@@ -59,6 +59,9 @@ module Y2Network
         ips.each_with_object([]) do |ip_str, all|
           all << IPAddr.new(ip_str) if Yast::IP.Check(ip_str)
         end
+      end
+
+      def default_hostname
       end
     end
   end

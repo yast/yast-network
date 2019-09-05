@@ -25,28 +25,44 @@ require "y2network/autoinst/dns_reader"
 
 describe Y2Network::Autoinst::DNSReader do
   subject { described_class.new(dns_section) }
+
   let(:dns_section) do
     Y2Network::AutoinstProfile::DNSSection.new_from_hashes(dns_profile)
   end
-
   let(:forwarding_profile) { { "ip_forward" => true } }
-
   let(:dhcp_hostname) { true }
   let(:dns_profile) do
     {
       "hostname"           => "linux.example.org",
       "nameservers"        => ["192.168.122.1", "10.0.0.1"],
       "searchlist"         => ["suse.com"],
-      "resolv_conf_policy" => "auto"
+      "resolv_conf_policy" => "some-policy"
     }
   end
 
   describe "#config" do
+    EMPTY_DNS_SECTION = Y2Network::AutoinstProfile::DNSSection.new_from_hashes({})
+
     it "builds a new Y2Network::DNS config from the profile" do
       expect(subject.config).to be_a Y2Network::DNS
       expect(subject.config.hostname).to eq("linux.example.org")
-      expect(subject.config.resolv_conf_policy).to eq("auto")
+      expect(subject.config.resolv_conf_policy).to eq("some-policy")
       expect(subject.config.nameservers.size).to eq(2)
+    end
+
+    it "falls back to 'auto' for resolv_conf_policy" do
+      config = described_class.new(EMPTY_DNS_SECTION).config
+      expect(config.resolv_conf_policy).to eq("auto")
+    end
+
+    it "falls back to an empty array for the name servers" do
+      config = described_class.new(EMPTY_DNS_SECTION).config
+      expect(config.nameservers).to eq([])
+    end
+
+    it "falls back to an empty array for the search list" do
+      config = described_class.new(EMPTY_DNS_SECTION).config
+      expect(config.searchlist).to eq([])
     end
   end
 end
