@@ -253,7 +253,7 @@ module Y2Network
       def init_from_config(config)
         @bootproto = config.bootproto.name
         @name = config.name
-        if config.bootproto == BootProtocol::STATIC
+        if config.bootproto == BootProtocol::STATIC && config.ip
           @ipaddr = config.ip.address.to_s
           @prefixlen = config.ip.address.address.to_s
           @remote_ipaddr = config.ip.remote_address.address.to_s if config.ip.remote_address
