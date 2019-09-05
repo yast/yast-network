@@ -124,14 +124,26 @@ describe Y2Network::HostnameReader do
       expect(reader.hostname_from_system).to eq("foo")
     end
 
-    context "when the hostname cannot be determined" do
+    context "when the fqdn cannot be determined" do
+      let(:hostname_content) { "bar\n" }
+
       before do
         allow(Yast::Execute).to receive(:on_target!).with("/bin/hostname", "--fqdn", stdout: :capture)
           .and_raise(Cheetah::ExecutionFailed.new([], "", nil, nil))
+        allow(Yast::SCR).to receive(:Read).with(Yast::Path.new(".target.string"), "/etc/hostname")
+          .and_return(hostname_content)
       end
 
-      it "returns nil" do
-        expect(reader.hostname_from_system).to be_nil
+      it "returns the name in /etc/hostname" do
+        expect(reader.hostname_from_system).to eq("bar")
+      end
+
+      context "when the /etc/hostname file is empty" do
+        let(:hostname_content) { "\n" }
+
+        it "returns nil" do
+          expect(reader.hostname_from_system).to be_nil
+        end
       end
     end
   end

@@ -76,7 +76,8 @@ module Y2Network
     def hostname_from_system
       Yast::Execute.on_target!("/bin/hostname", "--fqdn", stdout: :capture)
     rescue Cheetah::ExecutionFailed
-      nil
+      name = Yast::SCR.Read(Yast::Path.new(".target.string"), "/etc/hostname").to_s.strip
+      name.empty? ? nil : name
     end
 
     # @return [Array<String>] Valid chars to be used in the random part of a hostname
