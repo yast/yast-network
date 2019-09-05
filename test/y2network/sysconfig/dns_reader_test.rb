@@ -39,9 +39,7 @@ describe Y2Network::Sysconfig::DNSReader do
       { "config" => netconfig_dns, "dhcp" => netconfig_dhcp }
     end
 
-    let(:executor) do
-      double("Yast::Execute", on_target!: "")
-    end
+    let(:hostname_reader) { instance_double(Y2Network::HostnameReader, hostname: "foo") }
 
     let(:ifcfg_eth0) do
       instance_double(
@@ -55,7 +53,7 @@ describe Y2Network::Sysconfig::DNSReader do
         key_parts = arg.to_s.split(".")
         netconfig.dig(*key_parts[3..-1])
       end
-      allow(Yast::Execute).to receive(:stdout).and_return(executor)
+      allow(Y2Network::HostnameReader).to receive(:new).and_return(hostname_reader)
       allow(Y2Network::Sysconfig::InterfaceFile).to receive(:all).and_return([ifcfg_eth0])
     end
 
@@ -65,59 +63,8 @@ describe Y2Network::Sysconfig::DNSReader do
     end
 
     it "includes the hostname" do
-      expect(executor).to receive(:on_target!).with(/hostname/).and_return("foo")
       config = reader.config
       expect(config.hostname).to eq("foo")
-    end
-
-    context "during installation" do
-      before do
-        allow(Yast::Mode).to receive(:installation).and_return(true)
-        allow(Yast::FileUtils).to receive(:Exists).with("/etc/install.inf")
-          .and_return(install_inf_exists)
-        allow(Yast::SCR).to receive(:Read).and_return(hostname)
-        allow(executor).to receive(:on_target!).with(/hostname/).and_return("foo")
-      end
-
-      let(:hostname) { "linuxrc.example.net" }
-      let(:install_inf_exists) { true }
-
-      it "reads the hostname from /etc/install.conf" do
-        config = reader.config
-        expect(config.hostname).to eq("linuxrc")
-      end
-
-      context "and the hostname from /etc/install.conf is an IP address" do
-        let(:hostname) { "192.168.122.1" }
-
-        before do
-          allow(Yast::NetHwDetection).to receive(:ResolveIP).with(hostname)
-            .and_return("router")
-        end
-
-        it "returns the name for the address" do
-          config = reader.config
-          expect(config.hostname).to eq("router")
-        end
-      end
-
-      context "and the hostname is not defined in /etc/install.conf" do
-        let(:hostname) { nil }
-
-        it "reads the hostname from the system" do
-          config = reader.config
-          expect(config.hostname).to eq("foo")
-        end
-      end
-
-      context "and the /etc/install.inf file does not exists" do
-        let(:install_inf_exists) { false }
-
-        it "reads the hostname from the system" do
-          config = reader.config
-          expect(config.hostname).to eq("foo")
-        end
-      end
     end
 
     it "includes the list of name servers" do
