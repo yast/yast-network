@@ -133,8 +133,10 @@ module Y2Network
         value = Yast::SCR.Read(Yast::Path.new(".sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME"))
         return :any if value == "yes"
         files = InterfaceFile.all
-        files.each(&:load)
-        file = files.find { |f| f.dhclient_set_hostname == "yes" }
+        file = files.find do |f|
+          f.load
+          f.dhclient_set_hostname == "yes"
+        end
         file ? file.interface : :none
       end
     end
