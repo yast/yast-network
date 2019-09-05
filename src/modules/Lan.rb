@@ -777,7 +777,7 @@ module Yast
         ),
         "net-udev"             => Ops.get_map(udev_rules, "net-udev", {}),
         "config"               => NetworkConfig.Export,
-        "devices"              => profile.interfaces.to_hashes,
+        "devices"              => profile.interfaces ? profile.interfaces.to_hashes : {},
         "ipv6"                 => @ipv6,
         "routing"              => profile.routing ? profile.routing.to_hashes : {},
         "managed"              => NetworkService.is_network_manager,

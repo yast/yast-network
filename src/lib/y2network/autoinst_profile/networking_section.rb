@@ -61,7 +61,7 @@ module Y2Network
         return result unless config
         result.routing = RoutingSection.new_from_network(config.routing) if config.routing
         result.dns = DNSSection.new_from_network(config.dns) if config.dns
-        result.interfaces = InterfacesSection.new_from_network(config.connections) if config.dns
+        result.interfaces = InterfacesSection.new_from_network(config.connections)
         result
       end
 
