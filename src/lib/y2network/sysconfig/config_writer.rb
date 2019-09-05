@@ -46,9 +46,9 @@ module Y2Network
         file.routes = find_routes_for(nil, config.routing.routes)
         file.save
 
-        write_dns_settings(config, old_config)
         write_interfaces(config.interfaces)
         write_connections(config.connections)
+        write_dns_settings(config, old_config)
       end
 
     private

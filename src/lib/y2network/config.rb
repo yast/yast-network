@@ -135,6 +135,7 @@ module Y2Network
       interface = interfaces.by_name(old_name)
       interface.rename(new_name, mechanism)
       connections.by_interface(old_name).each { |c| c.interface = new_name }
+      dns.dhcp_hostname = new_name if dns.dhcp_hostname == old_name
     end
 
     # deletes interface and all its config. If interface is physical,
