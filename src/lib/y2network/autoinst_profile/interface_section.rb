@@ -242,7 +242,7 @@ module Y2Network
 
         self.class.attributes.each do |attr|
           # init everything to empty string
-          self.public.send(:"#{attr}=", "")
+          self.public_send(:"#{attr[:name]}=", "")
         end
       end
 
@@ -257,7 +257,7 @@ module Y2Network
           @ipaddr = config.ip.address.to_s
           @prefixlen = config.ip.address.address.to_s
           @remote_ipaddr = config.ip.remote_address.address.to_s if config.ip.remote_address
-          @broadcast = config.ip.broadcast.address.to_s
+          @broadcast = config.ip.broadcast.address.to_s if config.ip.broadcast
         end
 
         @startmode = config.startmode.name
