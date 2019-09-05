@@ -22,6 +22,7 @@ require "y2network/interface"
 require "y2network/config"
 require "y2network/autoinst/routing_reader"
 require "y2network/autoinst/dns_reader"
+require "y2network/autoinst/interfaces_reader"
 require "y2network/autoinst_profile/networking_section"
 require "y2network/sysconfig/interfaces_reader"
 
@@ -44,12 +45,19 @@ module Y2Network
       # @return [Y2Network::Config] Network configuration
       def config
         attrs = { source: :sysconfig }
-        # FIXME: implement proper readers for AutoYaST
-        attrs[:interfaces] =  interfaces_reader.interfaces
-        attrs[:connections] = interfaces_reader.connections
+        # How it works? For autoyast it reads current config and apply autoyast on top of it
+        attrs[:interfaces] = system_interfaces.interfaces
+        attrs[:connections] = system_interfaces.connections
         attrs[:routing] = RoutingReader.new(section.routing).config if section.routing
         attrs[:dns] = DNSReader.new(section.dns).config if section.dns
-        Y2Network::Config.new(attrs)
+        config = Y2Network::Config.new(attrs)
+        interfaces = InterfacesReader.new(section.interfaces).config
+        intefaces.each do |interface|
+          # add or update system configuration, this will also create all missing interfaces
+          config.add_or_update_connection_config(interface)
+        end
+
+        config
       end
 
     private
@@ -57,8 +65,8 @@ module Y2Network
       # Returns an interfaces reader instance
       #
       # @return [SysconfigInterfaces] Interfaces reader
-      def interfaces_reader
-        @interfaces_reader ||= Y2Network::Sysconfig::InterfacesReader.new
+      def system_interfaces
+        @system_interfaces ||= Y2Network::Sysconfig::InterfacesReader.new
       end
     end
   end
