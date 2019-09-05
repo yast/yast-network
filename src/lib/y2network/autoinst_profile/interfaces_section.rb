@@ -78,7 +78,7 @@ module Y2Network
       # @param hash [Hash] see {.new_from_hashes}
       def init_from_hashes(hash)
         super
-        @interfaces = connection_configs_from_hash(hash)
+        @interfaces = interfaces_from_hash(hash)
       end
 
       # Method used by {.new_from_network} to populate the attributes when cloning routing settings

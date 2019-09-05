@@ -54,7 +54,7 @@ module Y2Network
       def create_config(interface_section)
         # TODO: autoyast backend for type detector?
         # TODO: TUN/TAP interface missing for autoyast?
-        return ConnectionConfig::Bonding.new if interface_section.bonding.slave0 && !interface_section.bonding.slave0.empty?
+        return ConnectionConfig::Bonding.new if interface_section.bonding_slave0 && !interface_section.bonding_slave0.empty?
         return ConnectionConfig::Bridge.new if interface_section.bridge_ports && !interface_section.bridge_ports.empty?
         return ConnectionConfig::Vlan.new if interface_section.etherdevice && !interface_section.etherdevice.empty?
         return ConnectionConfig::Wireless.new if interface_section.wireless_essid && !interface_section.wireless_essid.empty?
