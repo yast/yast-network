@@ -17,6 +17,8 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
+require "y2network/hostname_reader"
+
 module Y2Network
   # DNS configuration (hostname, nameservers, etc.).
   class DNS
@@ -53,15 +55,10 @@ module Y2Network
       @dhcp_hostname = opts[:dhcp_hostname]
     end
 
-    # @return [Array<String>] Valid chars to be used in the random part of a hostname
-    HOSTNAME_CHARS = (("a".."z").to_a + ("0".."9").to_a).freeze
-    private_constant :HOSTNAME_CHARS
-
     # Sets a hostname is none is present
     def ensure_hostname!
       return unless @hostname.nil? || @hostname.empty?
-      suffix = HOSTNAME_CHARS.sample(4).join
-      @hostname = "linux-#{suffix}"
+      @hostname = HostnameReader.new.random_hostname
     end
 
     # @return [Array<Symbol>] Methods to check when comparing two instances

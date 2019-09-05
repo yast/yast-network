@@ -38,25 +38,25 @@ module Y2Network
 
     # Returns the hostname
     #
+    # @note If the hostname cannot be determined, generate a random one.
+    #
     # @return [String]
     def hostname
       if (Yast::Mode.installation || Yast::Mode.autoinst) && Yast::FileUtils.Exists("/etc/install.inf")
         fqdn = hostname_from_install_inf
       end
 
-      return hostname_from_system if fqdn.nil? || fqdn.empty?
-      host, _domain = *Yast::Hostname.SplitFQ(fqdn)
-      host
+      fqdn || hostname_from_system || random_hostname
     end
 
     # Reads the hostname from the /etc/install.inf file
     #
-    # @return [String] Hostname
+    # @return [String,nil] Hostname
     def hostname_from_install_inf
       install_inf_hostname = Yast::SCR.Read(Yast::Path.new(".etc.install_inf.Hostname")) || ""
       log.info("Got #{install_inf_hostname} from install.inf")
 
-      return "" if install_inf_hostname.empty?
+      return nil if install_inf_hostname.empty?
 
       # if the name is actually IP, try to resolve it (bnc#556613, bnc#435649)
       if Yast::IP.Check(install_inf_hostname)
@@ -66,14 +66,31 @@ module Y2Network
         fqdn = install_inf_hostname
       end
 
-      fqdn
+      host, _domain = *Yast::Hostname.SplitFQ(fqdn)
+      host.empty? ? nil : host
     end
 
     # Reads the hostname from the underlying system
     #
     # @return [String] Hostname
     def hostname_from_system
-      Yast::Execute.stdout.on_target!("/bin/hostname").strip
+      Yast::Execute.stdout.on_target!("/bin/hostname", "--fqdn")
+    rescue Cheetah::ExecutionFailed
+      nil
+    end
+
+    # @return [Array<String>] Valid chars to be used in the random part of a hostname
+    HOSTNAME_CHARS = (("a".."z").to_a + ("0".."9").to_a).freeze
+    private_constant :HOSTNAME_CHARS
+
+    # Returns a random hostname
+    #
+    # The idea is to use a name like this as fallback.
+    #
+    # @return [String]
+    def random_hostname
+      suffix = HOSTNAME_CHARS.sample(4).join
+      "linux-#{suffix}"
     end
   end
 end
