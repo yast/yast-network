@@ -19,7 +19,6 @@
 
 require "yast"
 require "y2network/interface_type"
-require "y2network/hwinfo"
 
 module Y2Network
   # Network interface.
