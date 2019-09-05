@@ -71,9 +71,9 @@ module Y2Network
       # @return [Hash]
       def to_hashes
         {
-          "routing" => routing.to_hashes,
-          "dns"     => dns.to_hashes,
-          "interfaces"     => interfaces.to_hashes,
+          "routing"    => routing.to_hashes,
+          "dns"        => dns.to_hashes,
+          "interfaces" => interfaces.to_hashes
         }
       end
     end

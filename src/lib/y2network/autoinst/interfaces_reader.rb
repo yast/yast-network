@@ -43,7 +43,27 @@ module Y2Network
       def config
         configs = @section.interfaces.map do |interface_section|
           config = create_config(interface_section)
-          # TODO: read it from section
+          config.bootproto = BootProtocol.from_name(interface_section.bootproto)
+          config.name = interface_section.name || interface_section.device # device is just fallback
+          if config.bootproto == BootProtocol::STATIC
+            # TODO: report if ipaddr missing for static config
+            ipaddr = IPAddress.from_string(interface_section.ipaddr)
+            # Assign first netmask, as prefixlen has precedence so it will overwrite it
+            ipaddr.netmask = interface_section.netmask if interface_section.netmask
+            ipaddr.prefix = interface_section.prefixlen.to_i if interface_section.prefixlen
+            broadcast = interface_section.broadcast && IPAddress.new(interface_section.broadcast)
+            remote = interface_section.remote_ipaddr && IPAddress.new(interface_section.remote_ipaddr)
+            config.ip = IPConfig.new(ipaddr, broadcast: broadcast, remote_address: remote)
+          end
+
+          config.startmode = Startmode.create(interface_section.startmode) if interface_section.startmode
+          config.startmode.priority = interface_section.ifplugd_priority if config.startmode.name == "ifplugd" && interface_section.ifplugd_priority
+          config.mtu = interface_section.mtu.to_i if interface_section.mtu
+          config.ethtool_options = interface_section.ethtool_options if interface_section.ethtool_options
+          config.firewall_zone = interface_section.zone if interface_section.zone
+
+          # TODO: type specific configs
+          config
         end
 
         ConnectionConfigsCollection.new(configs)

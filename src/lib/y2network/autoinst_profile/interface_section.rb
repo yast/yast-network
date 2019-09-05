@@ -229,7 +229,7 @@ module Y2Network
 
       # Clones a network interface into an AutoYaST interface section
       #
-      # @param route [Y2Network::ConnectionConfig] Network connection config
+      # @param connection_config [Y2Network::ConnectionConfig] Network connection config
       # @return [InterfacesSection]
       def self.new_from_network(connection_config)
         result = new
@@ -242,7 +242,7 @@ module Y2Network
 
         self.class.attributes.each do |attr|
           # init everything to empty string
-          self.public_send(:"#{attr[:name]}=", "")
+          public_send(:"#{attr[:name]}=", "")
         end
       end
 

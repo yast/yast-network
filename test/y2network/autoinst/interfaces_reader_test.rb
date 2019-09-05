@@ -31,13 +31,13 @@ describe Y2Network::Autoinst::InterfacesReader do
   end
 
   let(:interfaces_profile) do
-    {
-      "interfaces"       => [
+    [
+      {
         "bootproto" => "dhcp",
         "name"      => "eth0",
         "startmode" => "auto"
-      ]
-    }
+      }
+    ]
   end
 
   describe "#config" do

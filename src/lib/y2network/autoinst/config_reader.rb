@@ -51,10 +51,12 @@ module Y2Network
         attrs[:routing] = RoutingReader.new(section.routing).config if section.routing
         attrs[:dns] = DNSReader.new(section.dns).config if section.dns
         config = Y2Network::Config.new(attrs)
-        interfaces = InterfacesReader.new(section.interfaces).config
-        intefaces.each do |interface|
-          # add or update system configuration, this will also create all missing interfaces
-          config.add_or_update_connection_config(interface)
+        if section.interfaces
+          interfaces = InterfacesReader.new(section.interfaces).config
+          interfaces.each do |interface|
+            # add or update system configuration, this will also create all missing interfaces
+            config.add_or_update_connection_config(interface)
+          end
         end
 
         config

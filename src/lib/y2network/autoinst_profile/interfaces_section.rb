@@ -59,7 +59,7 @@ module Y2Network
 
       # Clones network interfaces settings into an AutoYaST interfaces section
       #
-      # @param routing [Y2Network::Config] whole config as it need both interfaces and connection configs
+      # @param config [Y2Network::Config] whole config as it need both interfaces and connection configs
       # @return [InterfacesSection]
       def self.new_from_network(config)
         result = new
@@ -75,9 +75,8 @@ module Y2Network
 
       # Method used by {.new_from_hashes} to populate the attributes when importing a profile
       #
-      # @param hash [Hash] see {.new_from_hashes}
+      # @param hash [Array] see {.new_from_hashes}. In this case it is array of interfaces
       def init_from_hashes(hash)
-        super
         @interfaces = interfaces_from_hash(hash)
       end
 
@@ -96,8 +95,7 @@ module Y2Network
       #
       # @param hash [Hash] Interfaces section hash
       def interfaces_from_hash(hash)
-        hashes = hash["interfaces"] || []
-        hashes.map { |h| InterfaceSection.new_from_hashes(h) }
+        hash.map { |h| InterfaceSection.new_from_hashes(h) }
       end
 
       def interfaces_section(connection_configs)

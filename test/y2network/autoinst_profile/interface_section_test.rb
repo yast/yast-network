@@ -46,9 +46,9 @@ describe Y2Network::AutoinstProfile::InterfaceSection do
   describe ".new_from_hashes" do
     let(:hash) do
       {
-        "bootproto"   => "dhcp4",
-        "device"      => "eth0",
-        "startmode"   => "auto"
+        "bootproto" => "dhcp4",
+        "device"    => "eth0",
+        "startmode" => "auto"
       }
     end
 
