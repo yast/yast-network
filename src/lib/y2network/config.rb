@@ -23,6 +23,7 @@ require "y2network/dns"
 require "y2network/interfaces_collection"
 require "y2network/connection_configs_collection"
 require "y2network/virtual_interface"
+require "y2network/can_be_copied"
 
 module Y2Network
   # This class represents the current network configuration including interfaces,
@@ -38,6 +39,8 @@ module Y2Network
   #   config.routing.tables.first << route
   #   config.write
   class Config
+    include CanBeCopied
+
     # @return [InterfacesCollection]
     attr_accessor :interfaces
     # @return [ConnectionConfigsCollection]
@@ -115,13 +118,6 @@ module Y2Network
       Y2Network::ConfigWriter.for(source).write(self, original)
     end
 
-    # Returns a deep-copy of the configuration
-    #
-    # @return [Config]
-    def copy
-      Marshal.load(Marshal.dump(self))
-    end
-
     # Determines whether two configurations are equal
     #
     # @return [Boolean] true if both configurations are equal; false otherwise
@@ -139,6 +135,7 @@ module Y2Network
       interface = interfaces.by_name(old_name)
       interface.rename(new_name, mechanism)
       connections.by_interface(old_name).each { |c| c.interface = new_name }
+      dns.dhcp_hostname = new_name if dns.dhcp_hostname == old_name
     end
 
     # deletes interface and all its config. If interface is physical,

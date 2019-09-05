@@ -44,7 +44,7 @@ module Y2Network
 
       # @return [Array<Interface>] list of interfaces usable in the bridge
       def bridgeable_interfaces
-        interfaces.all.select { |i| bridgeable?(i) }
+        interfaces.select { |i| bridgeable?(i) }
       end
 
       def_delegators :@connection_config,

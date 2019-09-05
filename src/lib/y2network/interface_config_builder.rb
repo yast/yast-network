@@ -86,7 +86,7 @@ module Y2Network
         config.propose
       end
       @connection_config = config
-      @original_ip_config = ip_config_default
+      @original_ip_config = ip_config_default.copy
     end
 
     # Sets the interface name
@@ -117,8 +117,8 @@ module Y2Network
 
       @connection_config.name = name
       @connection_config.interface = name
-      yast_config.add_or_update_connection_config(@connection_config)
       yast_config.rename_interface(@old_name, name, renaming_mechanism) if renamed_interface?
+      yast_config.add_or_update_connection_config(@connection_config)
 
       # write to ifcfg always and to firewalld only when available
       @connection_config.firewall_zone = firewall_zone
@@ -343,13 +343,18 @@ module Y2Network
       @hostname = value
     end
 
+    # Saves the hostname
+    #
+    # The hostname entry must be updated when the IP or the hostname change. Moreover, it must be
+    # removed when the hostname is empty or when the boot protocol is not STATIC (as there is no IP
+    # to associate with the name).
     def save_hostname
-      # avoid unnecessary modification
-      return if @original_ip_config == @connection_config.ip && @original_hostname == hostname
+      if !required_ip_config?
+        Yast::Host.remove_ip(@original_ip_config.address.to_s)
+        return
+      end
 
-      # remove old ip
-      Yast::Host.remove_ip(@original_ip_config.ip.address.to_s) if @original_ip_config != @connection_config.ip
-
+      return if @original_ip_config == connection_config.ip && @original_hostname == hostname
       Yast::Host.Update(@original_hostname, hostname, @connection_config.ip.address.to_s)
     end
 
@@ -433,7 +438,14 @@ module Y2Network
     # @return [Y2Network::Interface,nil]
     def find_interface
       return nil unless yast_config # in some tests, it could return nil
-      yast_config.interfaces.by_name(name)
+      interfaces.by_name(name)
+    end
+
+    # Returns the interfaces collection
+    #
+    # @return [Y2Network::InterfacesCollection]
+    def interfaces
+      yast_config.interfaces
     end
 
     # Helper method to access to the current configuration
@@ -441,6 +453,13 @@ module Y2Network
     # @return [Y2Network::Config]
     def yast_config
       Yast::Lan.yast_config
+    end
+
+    # Determines whether the IP configuration is required
+    #
+    # @return [Boolean]
+    def required_ip_config?
+      boot_protocol == BootProtocol::STATIC
     end
   end
 end

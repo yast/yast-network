@@ -46,7 +46,7 @@ module Y2Network
     attr_reader :interfaces
     alias_method :to_a, :interfaces
 
-    def_delegators :@interfaces, :each, :push, :<<, :reject!, :map, :flat_map, :any?, :size
+    def_delegators :@interfaces, :each, :push, :<<, :reject!, :map, :flat_map, :any?, :size, :select
 
     # Constructor
     #
@@ -156,17 +156,6 @@ module Y2Network
       log.debug("bond slaves index: #{index}")
 
       index
-    end
-
-    def all
-      # FIXME: this is only helper when coexisting with old LanItems module
-      # can be used in new API of network-ng for read-only methods. It converts
-      # old LanItems::Items into new Interface objects
-      Yast::LanItems.Items.map do |_index, item|
-        name = item["ifcfg"] || item["hwinfo"]["dev_name"]
-        type = Yast::NetworkInterfaces.GetType(name)
-        Y2Network::Interface.new(name, type: InterfaceType.from_short_name(type))
-      end
     end
   end
 end

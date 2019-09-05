@@ -56,6 +56,15 @@ describe Y2Network::Sysconfig::InterfaceFile do
     end
   end
 
+  describe ".all" do
+    it "returns all the present interfaces files" do
+      files = described_class.all
+      expect(files).to be_all(Y2Network::Sysconfig::InterfaceFile)
+      interfaces = files.map(&:interface)
+      expect(interfaces).to include("wlan0")
+    end
+  end
+
   describe "#remove" do
     subject(:file) { described_class.find("eth0") }
 

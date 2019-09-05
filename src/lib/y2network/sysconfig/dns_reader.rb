@@ -18,6 +18,7 @@
 # find current contact information at www.suse.com.
 require "yast"
 require "y2network/dns"
+require "y2network/sysconfig/interface_file"
 
 Yast.import "Hostname"
 Yast.import "Mode"
@@ -126,10 +127,17 @@ module Y2Network
 
       # Returns whether the hostname should be taken from DHCP
       #
-      # @return [Boolean]
+      # @return [String,:any,:none] Interface to set the hostname based on DHCP settings;
+      #   :any for any interface; :none for ignoring the hostname assigned via DHCP
       def dhcp_hostname
         value = Yast::SCR.Read(Yast::Path.new(".sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME"))
-        value == "yes"
+        return :any if value == "yes"
+        files = InterfaceFile.all
+        file = files.find do |f|
+          f.load
+          f.dhclient_set_hostname == "yes"
+        end
+        file ? file.interface : :none
       end
     end
   end

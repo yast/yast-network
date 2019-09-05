@@ -189,6 +189,28 @@ describe Y2Network::Config do
         expect(eth2_conns).to_not be_empty
       end
     end
+
+    context "when dhcp_hostname points to the renamed interface" do
+      before do
+        allow(config.dns).to receive(:dhcp_hostname).and_return("eth0")
+      end
+
+      it "adjusts the dhcp_hostname" do
+        expect(config.dns).to receive(:dhcp_hostname=).with("eth1")
+        config.rename_interface("eth0", "eth1", :mac)
+      end
+    end
+
+    context "when dhcp_hostname does not point to the renamed interface" do
+      before do
+        allow(config.dns).to receive(:dhcp_hostname).and_return(:any)
+      end
+
+      it "does not adjust the dhcp_hostname" do
+        expect(config.dns).to_not receive(:dhcp_hostname=)
+        config.rename_interface("eth0", "eth1", :mac)
+      end
+    end
   end
 
   describe "#add_or_update_connection_config" do
