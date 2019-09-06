@@ -19,12 +19,7 @@
 require "yast"
 require "y2network/dns"
 require "y2network/sysconfig/interface_file"
-
-Yast.import "Hostname"
-Yast.import "Mode"
-Yast.import "IP"
-Yast.import "FileUtils"
-Yast.import "NetHwDetection"
+require "y2network/hostname_reader"
 
 module Y2Network
   module Sysconfig
@@ -80,40 +75,7 @@ module Y2Network
       #
       # @return [String]
       def hostname
-        if (Yast::Mode.installation || Yast::Mode.autoinst) && Yast::FileUtils.Exists("/etc/install.inf")
-          fqdn = hostname_from_install_inf
-        end
-
-        return hostname_from_system if fqdn.nil? || fqdn.empty?
-        host, _domain = *Yast::Hostname.SplitFQ(fqdn)
-        host
-      end
-
-      # Reads the hostname from the /etc/install.inf file
-      #
-      # @return [String] Hostname
-      def hostname_from_install_inf
-        install_inf_hostname = Yast::SCR.Read(Yast::Path.new(".etc.install_inf.Hostname")) || ""
-        log.info("Got #{install_inf_hostname} from install.inf")
-
-        return "" if install_inf_hostname.empty?
-
-        # if the name is actually IP, try to resolve it (bnc#556613, bnc#435649)
-        if Yast::IP.Check(install_inf_hostname)
-          fqdn = Yast::NetHwDetection.ResolveIP(install_inf_hostname)
-          log.info("Got #{fqdn} after resolving IP from install.inf")
-        else
-          fqdn = install_inf_hostname
-        end
-
-        fqdn
-      end
-
-      # Reads the hostname from the underlying system
-      #
-      # @return [String] Hostname
-      def hostname_from_system
-        Yast::Execute.stdout.on_target!("/bin/hostname").strip
+        HostnameReader.new.hostname
       end
 
       # Return the list of search domains

@@ -218,13 +218,6 @@ module Yast
       true
     end
 
-    # Proposes hostname if none was given
-    #
-    # @see Y2Network::DNS#ensure_hostname!
-    def propose_hostname
-      yast_dns_config.ensure_hostname!
-    end
-
     # Check if hostname or IP address is local computer
     # Used to determine if LDAP server is local (and it should be checked if
     #  required schemes are included
@@ -298,9 +291,9 @@ module Yast
     # @return [Hash<String>] a map containing ip, hostname_short, and hostname_fq keys
     def dhcp_data
       {
-        "ip"             => Yast::Execute.stdout.on_target!("/bin/hostname -i").strip,
-        "hostname_short" => Yast::Execute.stdout.on_target!("/bin/hostname").strip,
-        "hostname_fq"    => Yast::Execute.stdout.on_target!("/bin/hostname -f").strip
+        "ip"             => Yast::Execute.stdout.on_target!("/usr/bin/hostname -i").strip,
+        "hostname_short" => Yast::Execute.stdout.on_target!("/usr/bin/hostname").strip,
+        "hostname_fq"    => Yast::Execute.stdout.on_target!("/usr/bin/hostname -f").strip
       }
     end
 

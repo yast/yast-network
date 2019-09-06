@@ -131,9 +131,9 @@ describe Yast::DNS do
       allow(Yast::IP).to receive(:Check4).and_return(ipv4)
       allow(Yast::IP).to receive(:Check6).and_return(ipv6)
       allow(Yast::Execute).to receive(:stdout).and_return(stdout)
-      allow(stdout).to receive(:on_target!).with("/bin/hostname -i").and_return(ip)
-      allow(stdout).to receive(:on_target!).with("/bin/hostname").and_return(hostname_short)
-      allow(stdout).to receive(:on_target!).with("/bin/hostname -f").and_return(hostname_fq)
+      allow(stdout).to receive(:on_target!).with("/usr/bin/hostname -i").and_return(ip)
+      allow(stdout).to receive(:on_target!).with("/usr/bin/hostname").and_return(hostname_short)
+      allow(stdout).to receive(:on_target!).with("/usr/bin/hostname -f").and_return(hostname_fq)
 
       subject.dhcp_hostname = true
     end
@@ -210,13 +210,6 @@ describe Yast::DNS do
       it "returns false" do
         expect(subject.modified).to eq(false)
       end
-    end
-  end
-
-  describe "#propose_hostname" do
-    it "proposes a hostname" do
-      expect(dns_config).to receive(:ensure_hostname!)
-      subject.propose_hostname
     end
   end
 end

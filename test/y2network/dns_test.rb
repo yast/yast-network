@@ -78,33 +78,4 @@ describe Y2Network::DNS do
       end
     end
   end
-
-  describe "#ensure_hostname!" do
-    context "when no hostname was given" do
-      subject(:dns) { described_class.new }
-
-      it "returns a random name" do
-        dns.ensure_hostname!
-        expect(dns.hostname).to match(/linux-\w{4}/)
-      end
-    end
-
-    context "when an empty hostname was given" do
-      subject(:dns) { described_class.new(hostname: "") }
-
-      it "returns a random name" do
-        dns.ensure_hostname!
-        expect(dns.hostname).to match(/linux-\w{4}/)
-      end
-    end
-
-    context "when a hostname was given" do
-      subject(:dns) { described_class.new(hostname: "foo") }
-
-      it "returns the given name" do
-        dns.ensure_hostname!
-        expect(dns.hostname).to eq("foo")
-      end
-    end
-  end
 end

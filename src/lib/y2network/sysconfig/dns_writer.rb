@@ -71,8 +71,7 @@ module Y2Network
       #
       # @param dns [Y2Network::DNS] DNS configuration
       def update_hostname(dns)
-        dns.ensure_hostname!
-        Yast::Execute.on_target!("/bin/hostname", dns.hostname.split(".")[0])
+        Yast::Execute.on_target!("/usr/bin/hostname", dns.hostname.split(".")[0])
         Yast::SCR.Write(Yast::Path.new(".target.string"), HOSTNAME_PATH, "#{dns.hostname}\n")
       end
 

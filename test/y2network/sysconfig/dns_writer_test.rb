@@ -110,19 +110,10 @@ describe Y2Network::Sysconfig::DNSWriter do
     end
 
     it "updates the hostname" do
-      expect(Yast::Execute).to receive(:on_target!).with("/bin/hostname", "myhost")
+      expect(Yast::Execute).to receive(:on_target!).with("/usr/bin/hostname", "myhost")
       expect(Yast::SCR).to receive(:Write)
         .with(Yast::Path.new(".target.string"), "/etc/hostname", "myhost.example.net\n")
       writer.write(dns, old_dns)
-    end
-
-    context "when no hostname is given" do
-      let(:hostname) { nil }
-
-      it "proposes a hostname" do
-        expect(Yast::Execute).to receive(:on_target!).with("/bin/hostname", /linux-/)
-        writer.write(dns, old_dns)
-      end
     end
 
     context "when sendmail update script is installed" do

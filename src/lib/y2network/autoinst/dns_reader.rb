@@ -19,6 +19,7 @@
 
 require "yast"
 require "y2network/dns"
+require "y2network/hostname_reader"
 require "ipaddr"
 Yast.import "IP"
 
@@ -28,6 +29,8 @@ module Y2Network
     class DNSReader
       # @return [AutoinstProfile::DNSSection]
       attr_reader :section
+
+      DEFAULT_RESOLV_CONF_POLICY = "auto".freeze
 
       # @param section [AutoinstProfile::DNSSection]
       def initialize(section)
@@ -40,9 +43,9 @@ module Y2Network
       def config
         Y2Network::DNS.new(
           dhcp_hostname:      section.dhcp_hostname,
-          hostname:           section.hostname,
+          hostname:           section.hostname || default_hostname,
           nameservers:        valid_ips(section.nameservers),
-          resolv_conf_policy: section.resolv_conf_policy,
+          resolv_conf_policy: section.resolv_conf_policy || DEFAULT_RESOLV_CONF_POLICY,
           searchlist:         section.searchlist
         )
       end
@@ -59,6 +62,13 @@ module Y2Network
         ips.each_with_object([]) do |ip_str, all|
           all << IPAddr.new(ip_str) if Yast::IP.Check(ip_str)
         end
+      end
+
+      # Returns a random hostname
+      #
+      # @return [String]
+      def default_hostname
+        HostnameReader.new.hostname
       end
     end
   end
