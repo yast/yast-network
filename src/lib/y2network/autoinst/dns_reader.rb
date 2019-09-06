@@ -30,6 +30,8 @@ module Y2Network
       # @return [AutoinstProfile::DNSSection]
       attr_reader :section
 
+      DEFAULT_RESOLV_CONF_POLICY = "auto".freeze
+
       # @param section [AutoinstProfile::DNSSection]
       def initialize(section)
         @section = section
@@ -43,7 +45,7 @@ module Y2Network
           dhcp_hostname:      section.dhcp_hostname,
           hostname:           section.hostname || default_hostname,
           nameservers:        valid_ips(section.nameservers),
-          resolv_conf_policy: section.resolv_conf_policy || "auto",
+          resolv_conf_policy: section.resolv_conf_policy || DEFAULT_RESOLV_CONF_POLICY,
           searchlist:         section.searchlist
         )
       end
