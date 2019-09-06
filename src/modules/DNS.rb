@@ -291,9 +291,9 @@ module Yast
     # @return [Hash<String>] a map containing ip, hostname_short, and hostname_fq keys
     def dhcp_data
       {
-        "ip"             => Yast::Execute.stdout.on_target!("/bin/hostname -i").strip,
-        "hostname_short" => Yast::Execute.stdout.on_target!("/bin/hostname").strip,
-        "hostname_fq"    => Yast::Execute.stdout.on_target!("/bin/hostname -f").strip
+        "ip"             => Yast::Execute.stdout.on_target!("/usr/bin/hostname -i").strip,
+        "hostname_short" => Yast::Execute.stdout.on_target!("/usr/bin/hostname").strip,
+        "hostname_fq"    => Yast::Execute.stdout.on_target!("/usr/bin/hostname -f").strip
       }
     end
 

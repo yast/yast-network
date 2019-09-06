@@ -29,7 +29,7 @@ module Y2Network
   # This class is responsible for reading the hostname
   #
   # Depending on different circunstamces, the hostname can be read from different places (from a
-  # simple call to `/bin/hostname` to the `/etc/install.inf` during installation).
+  # simple call to `/usr/bin/hostname` to the `/etc/install.inf` during installation).
   #
   # @example Read hostname
   #   Y2Network::HostnameReader.new.hostname #=> "foo"
@@ -74,7 +74,7 @@ module Y2Network
     #
     # @return [String] Hostname
     def hostname_from_system
-      Yast::Execute.on_target!("/bin/hostname", "--fqdn", stdout: :capture)
+      Yast::Execute.on_target!("/usr/bin/hostname", "--fqdn", stdout: :capture)
     rescue Cheetah::ExecutionFailed
       name = Yast::SCR.Read(Yast::Path.new(".target.string"), "/etc/hostname").to_s.strip
       name.empty? ? nil : name
