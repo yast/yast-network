@@ -80,6 +80,7 @@ module Y2Network
           { name: :bridge_stp }, # on/off
           { name: :bridge_forward_delay },
           { name: :wireless_ap },
+          { name: :wireless_auth_mode },
           { name: :wireless_bitrate },
           { name: :wireless_ca_cert },
           { name: :wireless_channel },
@@ -202,6 +203,7 @@ module Y2Network
       #  @return [String] time of delay
 
       # @!attribute wireless_ap
+      # @!attribute wireless_auth_mode
       # @!attribute wireless_bitrate
       # @!attribute wireless_ca_cert
       # @!attribute wireless_channel
@@ -299,7 +301,7 @@ module Y2Network
         @wireless_client_cert = config.client_cert
         @wireless_client_key = config.client_key
         @wireless_essid = config.essid
-        @wireless_mode = config.auth_mode.to_s
+        @wireless_auth_mode = config.auth_mode.to_s
         @wireless_nick = config.nick
         @wireless_nwid = config.nwid
         @wireless_wpa_anonid = config.wpa_anonymous_identity
