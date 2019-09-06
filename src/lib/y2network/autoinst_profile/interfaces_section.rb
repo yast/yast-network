@@ -46,6 +46,8 @@ module Y2Network
     #
     # @see NetworkingSection
     class InterfacesSection < SectionWithAttributes
+      include Yast::Logger
+
       def self.attributes
         [
           { name: :interfaces }
@@ -95,7 +97,12 @@ module Y2Network
       #
       # @param hash [Hash] Interfaces section hash
       def interfaces_from_hash(hash)
-        hash.map { |h| InterfaceSection.new_from_hashes(h) }
+        hash.map do |h|
+          h = h["device"] if h["device"].is_a? ::Hash # hash can be enclosed in different hash
+          res = InterfaceSection.new_from_hashes(h)
+          log.info "interfaces section #{res.inspect} load from hash #{h.inspect}"
+          res
+        end
       end
 
       def interfaces_section(connection_configs)

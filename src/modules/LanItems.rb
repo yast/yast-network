@@ -1023,12 +1023,6 @@ module Yast
     def Import(settings)
       reset_cache
 
-      items = LanItems.Items
-      NetworkInterfaces.Import("netcard", settings["devices"] || {})
-      NetworkInterfaces.List("netcard").each do |device|
-        items[items.size] = { "ifcfg" => device }
-      end
-
       @autoinstall_settings["start_immediately"] = settings.fetch("start_immediately", false)
       @autoinstall_settings["strict_IP_check_timeout"] = settings.fetch("strict_IP_check_timeout", -1)
       @autoinstall_settings["keep_install_network"] = settings.fetch("keep_install_network", true)

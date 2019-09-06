@@ -135,50 +135,44 @@ module Yast
       settings = deep_copy(settings)
       interfaces = []
       discard = ["UDI", "_nm_name"]
-      Builtins.foreach(Ops.get_map(settings, "devices", {})) do |_type, devsmap|
-        Builtins.foreach(
-          Convert.convert(devsmap, from: "map", to: "map <string, map>")
-        ) do |device, devmap|
-          newmap = {}
-          Builtins.foreach(
-            Convert.convert(devmap, from: "map", to: "map <string, any>")
-          ) do |key, val|
-            Builtins.y2milestone("Adding: %1=%2", key, val)
-            if key != "_aliases"
-              if Ops.greater_than(Builtins.size(Convert.to_string(val)), 0) &&
-                  !Builtins.contains(discard, key) &&
-                  !Builtins.contains(discard, Builtins.tolower(key))
-                Ops.set(newmap, Builtins.tolower(key), Convert.to_string(val))
-              end
-            else
-              # handle aliases
-              Builtins.y2debug("val: %1", val)
-              # if aliases are empty, then ommit it
-              if Ops.greater_than(Builtins.size(Convert.to_map(val)), 0)
-                # replace key "0" into "alias0" (bnc#372678)
-                Builtins.foreach(
-                  Convert.convert(
-                    val,
-                    from: "any",
-                    to:   "map <string, map <string, any>>"
+      Builtins.y2milestone("Devices: #{settings["devices"].inspect})")
+      Builtins.foreach(settings.fetch("devices", {}).fetch("interfaces", [])) do |devsmap|
+        newmap = {}
+        Builtins.foreach(devsmap) do |key, val|
+          Builtins.y2milestone("Adding: %1=%2", key, val)
+          if key != "_aliases"
+            if Ops.greater_than(Builtins.size(Convert.to_string(val)), 0) &&
+                !Builtins.contains(discard, key) &&
+                !Builtins.contains(discard, Builtins.tolower(key))
+              Ops.set(newmap, Builtins.tolower(key), Convert.to_string(val))
+            end
+          else
+            # handle aliases
+            Builtins.y2debug("val: %1", val)
+            # if aliases are empty, then ommit it
+            if Ops.greater_than(Builtins.size(Convert.to_map(val)), 0)
+              # replace key "0" into "alias0" (bnc#372678)
+              Builtins.foreach(
+                Convert.convert(
+                  val,
+                  from: "any",
+                  to:   "map <string, map <string, any>>"
+                )
+              ) do |k, v|
+                Ops.set(
+                  newmap,
+                  Builtins.tolower("aliases"),
+                  Builtins.add(
+                    Ops.get_map(newmap, Builtins.tolower("aliases"), {}),
+                    Builtins.sformat("alias%1", k),
+                    v
                   )
-                ) do |k, v|
-                  Ops.set(
-                    newmap,
-                    Builtins.tolower("aliases"),
-                    Builtins.add(
-                      Ops.get_map(newmap, Builtins.tolower("aliases"), {}),
-                      Builtins.sformat("alias%1", k),
-                      v
-                    )
-                  )
-                end
+                )
               end
             end
           end
-          newmap["device"] = device
-          interfaces = Builtins.add(interfaces, newmap)
         end
+        interfaces = Builtins.add(interfaces, newmap)
       end
 
       # Modules

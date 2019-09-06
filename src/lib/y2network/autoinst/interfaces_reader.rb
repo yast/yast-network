@@ -26,6 +26,8 @@ module Y2Network
   module Autoinst
     # This class is responsible of importing the AutoYast interfaces section
     class InterfacesReader
+      include Yast::Logger
+
       # @return [AutoinstProfile::InterfacesSection]
       attr_reader :section
 
@@ -42,6 +44,7 @@ module Y2Network
       # @return [ConnectionConfigsCollection] the imported connections configs
       def config
         configs = @section.interfaces.map do |interface_section|
+          log.info "Creating config for interface section: #{interface_section.inspect}"
           config = create_config(interface_section)
           config.propose # propose reasonable defaults for not set attributes
           load_generic(config, interface_section)
@@ -57,6 +60,7 @@ module Y2Network
             load_wireless(config, interface_section)
           end
 
+          log.info "Resulting config: #{config.inspect}"
           config
         end
 
