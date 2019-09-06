@@ -45,5 +45,11 @@ describe Y2Network::Autoinst::InterfacesReader do
       expect(subject.config).to be_a Y2Network::ConnectionConfigsCollection
       expect(subject.config.size).to eq(1)
     end
+
+    it "assign properly all values in profile" do
+      config = subject.config.by_name("eth0")
+      expect(config.startmode).to eq Y2Network::Startmode.create("auto")
+      expect(config.bootproto).to eq Y2Network::BootProtocol.from_name("dhcp")
+    end
   end
 end
