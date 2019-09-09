@@ -35,7 +35,19 @@ describe Y2Network::Autoinst::InterfacesReader do
       {
         "bootproto" => "dhcp",
         "name"      => "eth0",
-        "startmode" => "auto"
+        "startmode" => "auto",
+        "aliases"   => {
+          "alias0" => {
+            "IPADDR"    => "10.100.0.1",
+            "PREFIXLEN" => "24",
+            "LABEL"     => "test"
+          },
+          "alias1" => {
+            "IPADDR"    => "10.100.0.2",
+            "PREFIXLEN" => "24",
+            "LABEL"     => "test2"
+          }
+        }
       }
     ]
   end
@@ -50,6 +62,7 @@ describe Y2Network::Autoinst::InterfacesReader do
       config = subject.config.by_name("eth0")
       expect(config.startmode).to eq Y2Network::Startmode.create("auto")
       expect(config.bootproto).to eq Y2Network::BootProtocol.from_name("dhcp")
+      expect(config.ip_aliases.size).to eq 2
     end
   end
 end

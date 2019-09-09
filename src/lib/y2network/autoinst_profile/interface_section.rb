@@ -161,7 +161,23 @@ module Y2Network
       #  @return [String] bonding options
 
       # @!attribute aliases
-      #  @return [Object] aliases for interface TODO: allows anything, so how it looks like?
+      # @example xml section for aliases from SLE15
+      #   <aliases>
+      #     <alias0>
+      #       <IPADDR>10.100.0.1</IPADDR>
+      #       <LABEL>test</LABEL>
+      #       <NETMASK>255.255.255.0</NETMASK>
+      #       <PREFIXLEN>24</PREFIXLEN>
+      #     </alias0>
+      #     <alias1>
+      #       <IPADDR>10.100.0.2</IPADDR>
+      #       <LABEL>test2</LABEL>
+      #       <NETMASK>255.255.255.0</NETMASK>
+      #       <PREFIXLEN>24</PREFIXLEN>
+      #     </alias1>
+      #   </aliases>
+      #
+      # @return [Object] aliases for interface
 
       # @!attribute mtu
       #  @return [String] MTU for interface
@@ -246,6 +262,15 @@ module Y2Network
           # init everything to empty string
           public_send(:"#{attr[:name]}=", "")
         end
+
+        self.aliases = {}
+      end
+
+      # Overwrite base method to load also nested aliases
+      def init_from_hashes(hash)
+        super
+
+        self.aliases = hash["aliases"] if hash["aliases"]
       end
 
       # Method used by {.new_from_network} to populate the attributes when cloning a network interface
@@ -267,7 +292,14 @@ module Y2Network
         @mtu = config.mtu.to_s if config.mtu
         @ethtool_options = config.ethtool_options if config.ethtool_options
         @zone = config.firewall_zone.to_s
-        # TODO: aliases but format is unknown
+        # see aliases for example output
+        @aliases = config.ip_aliases.each_with_index.each_with_object({}) do |(ip, index), res|
+          res["alias#{index}"] = {
+            "IPADDR"    => ip.address.address.to_s,
+            "LABEL"     => ip.label || "",
+            "PREFIXLEN" => ip.address.prefix.to_s
+          }
+        end
 
         case config
         when ConnectionConfig::Vlan

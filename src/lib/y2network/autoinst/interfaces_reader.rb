@@ -88,7 +88,16 @@ module Y2Network
           ipaddr.prefix = interface_section.prefixlen.to_i if interface_section.prefixlen
           broadcast = interface_section.broadcast && IPAddress.new(interface_section.broadcast)
           remote = interface_section.remote_ipaddr && IPAddress.new(interface_section.remote_ipaddr)
-          config.ip = IPConfig.new(ipaddr, broadcast: broadcast, remote_address: remote)
+          config.ip = ConnectionConfig::IPConfig.new(ipaddr, broadcast: broadcast, remote_address: remote)
+        end
+
+        # handle aliases
+        interface_section.aliases.each_value do |alias_h|
+          ipaddr = IPAddress.from_string(alias_h["IPADDR"])
+          # Assign first netmask, as prefixlen has precedence so it will overwrite it
+          ipaddr.netmask = alias_h["NETMASK"] if alias_h["NETMASK"]
+          ipaddr.prefix = alias_h["PREFIXLEN"].delete("/").to_i if alias_h["PREFIXLEN"]
+          config.ip_aliases << ConnectionConfig::IPConfig.new(ipaddr, label: alias_h["LABEL"])
         end
 
         config.startmode = Startmode.create(interface_section.startmode) if interface_section.startmode
