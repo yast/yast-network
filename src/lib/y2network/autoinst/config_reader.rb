@@ -44,7 +44,7 @@ module Y2Network
 
       # @return [Y2Network::Config] Network configuration
       def config
-        config = Yast::Lan.system_config || Yast::Config.new(source: :autoyast)
+        config = Yast::Lan.system_config || Y2Network::Config.new(source: :autoyast)
         config.routing = RoutingReader.new(section.routing).config if section.routing
         config.dns = DNSReader.new(section.dns).config if section.dns
         if section.interfaces

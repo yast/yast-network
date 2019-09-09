@@ -67,7 +67,7 @@ describe Y2Network::AutoinstProfile::InterfaceSection do
     it "return each defined wireless key" do
       hash = {
         "wireless_key1" => "test1",
-        "wireless_key3" => "test3",
+        "wireless_key3" => "test3"
       }
 
       section = described_class.new_from_hashes(hash)
@@ -84,7 +84,7 @@ describe Y2Network::AutoinstProfile::InterfaceSection do
     it "return each defined wireless key" do
       hash = {
         "bonding_slave1" => "eth0",
-        "bonding_slave3" => "eth1",
+        "bonding_slave3" => "eth1"
       }
 
       section = described_class.new_from_hashes(hash)

@@ -19,6 +19,7 @@
 
 require "yast"
 require "y2network/dns"
+require "y2network/autoinst/type_detector"
 require "ipaddr"
 Yast.import "IP"
 
@@ -70,14 +71,10 @@ module Y2Network
     private
 
       def create_config(interface_section)
-        # TODO: autoyast backend for type detector?
+        name = interface_section.name || interface_section.device
+        type = TypeDetector.type_of(name, interface_section)
         # TODO: TUN/TAP interface missing for autoyast?
-        return ConnectionConfig::Bonding.new if interface_section.bonding_slave0 && !interface_section.bonding_slave0.empty?
-        return ConnectionConfig::Bridge.new if interface_section.bridge_ports && !interface_section.bridge_ports.empty?
-        return ConnectionConfig::Vlan.new if interface_section.etherdevice && !interface_section.etherdevice.empty?
-        return ConnectionConfig::Wireless.new if interface_section.wireless_essid && !interface_section.wireless_essid.empty?
-
-        ConnectionConfig::Ethernet.new # TODO: use type detector to read it from sys
+        ConnectionConfig.const_get(type.class_name).new
       end
 
       def load_generic(config, interface_section)
