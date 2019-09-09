@@ -44,13 +44,9 @@ module Y2Network
 
       # @return [Y2Network::Config] Network configuration
       def config
-        attrs = { source: :sysconfig }
-        # How it works? For autoyast it reads current config and apply autoyast on top of it
-        attrs[:interfaces] = system_interfaces.interfaces
-        attrs[:connections] = system_interfaces.connections
-        attrs[:routing] = RoutingReader.new(section.routing).config if section.routing
-        attrs[:dns] = DNSReader.new(section.dns).config if section.dns
-        config = Y2Network::Config.new(attrs)
+        config = Yast::Lan.system_config || Yast::Config.new(source: :autoyast)
+        config.routing = RoutingReader.new(section.routing).config if section.routing
+        config.dns = DNSReader.new(section.dns).config if section.dns
         if section.interfaces
           interfaces = InterfacesReader.new(section.interfaces).config
           interfaces.each do |interface|
