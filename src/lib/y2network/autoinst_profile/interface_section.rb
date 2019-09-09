@@ -290,6 +290,31 @@ module Y2Network
         true
       end
 
+      # Helper to get wireless keys as array
+      # @return [Array<String>]
+      def wireless_keys
+        keys = []
+        (0..3).each do |i|
+          key = public_send(:"wireless_key#{i}")
+          keys << key unless key.empty?
+        end
+
+        keys
+      end
+
+      # Helper to get bonding slaves as array
+      # @return [Array<String>]
+      def bonding_slaves
+        slaves = []
+
+        (0..9).each do |i|
+          slave = public_send(:"bonding_slave#{i}")
+          slaves << slave unless slave.empty?
+        end
+
+        slaves
+      end
+
     private
 
       def init_from_wireless(config)

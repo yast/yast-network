@@ -57,4 +57,38 @@ describe Y2Network::AutoinstProfile::InterfaceSection do
       expect(section.bootproto).to eq "dhcp4"
     end
   end
+
+  describe "#wireless_keys" do
+    it "returns array" do
+      section = described_class.new_from_hashes({})
+      expect(section.wireless_keys).to be_a Array
+    end
+
+    it "return each defined wireless key" do
+      hash = {
+        "wireless_key1" => "test1",
+        "wireless_key3" => "test3",
+      }
+
+      section = described_class.new_from_hashes(hash)
+      expect(section.wireless_keys).to eq ["test1", "test3"]
+    end
+  end
+
+  describe "#bonding_slaves" do
+    it "returns array" do
+      section = described_class.new_from_hashes({})
+      expect(section.bonding_slaves).to be_a Array
+    end
+
+    it "return each defined wireless key" do
+      hash = {
+        "bonding_slave1" => "eth0",
+        "bonding_slave3" => "eth1",
+      }
+
+      section = described_class.new_from_hashes(hash)
+      expect(section.bonding_slaves).to eq ["eth0", "eth1"]
+    end
+  end
 end
