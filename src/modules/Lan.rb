@@ -626,36 +626,9 @@ module Yast
       input = deep_copy(input)
       Builtins.y2debug("input %1", input)
 
-      ifaces = []
-      Builtins.foreach(Ops.get_list(input, "interfaces", [])) do |interface|
-        iface = {}
-        Builtins.foreach(interface) do |key, value|
-          if key == "aliases"
-            Builtins.foreach(
-              Convert.convert(
-                value,
-                from: "any",
-                to:   "map <string, map <string, any>>"
-              )
-            ) do |k, v|
-              # replace "alias0" to "0" (bnc#372687)
-              t = Convert.convert(
-                value,
-                from: "any",
-                to:   "map <string, any>"
-              )
-              Ops.set(t, Ops.get_string(v, "LABEL", ""), Ops.get_map(t, k, {}))
-              t = Builtins.remove(t, k)
-              value = deep_copy(t)
-            end
-          end
-          Ops.set(iface, key, value)
-        end
-        ifaces = Builtins.add(ifaces, iface)
-      end
-      Ops.set(input, "interfaces", ifaces)
-
-      interfaces = Builtins.listmap(Ops.get_list(input, "interfaces", [])) do |interface|
+      input["interfaces"] ||= []
+      # TODO: remove when s390 and udev no longer need it
+      interfaces = Builtins.listmap(input["interfaces"]) do |interface|
         # input: list of items $[ "device": "d", "foo": "f", "bar": "b"]
         # output: map of items  "d": $["FOO": "f", "BAR": "b"]
         new_interface = {}
@@ -730,7 +703,7 @@ module Yast
       end
 
       Builtins.y2milestone("input=%1", input)
-      deep_copy(input)
+      input
     end
 
     # Import data.
@@ -777,7 +750,7 @@ module Yast
         ),
         "net-udev"             => Ops.get_map(udev_rules, "net-udev", {}),
         "config"               => NetworkConfig.Export,
-        "devices"              => devices,
+        "interfaces"           => profile.interfaces ? profile.interfaces.interfaces.map(&:to_hashes) : [],
         "ipv6"                 => @ipv6,
         "routing"              => profile.routing ? profile.routing.to_hashes : {},
         "managed"              => NetworkService.is_network_manager,
