@@ -40,6 +40,7 @@ module Y2Network
   #   config.write
   class Config
     include CanBeCopied
+    include Yast::Logger
 
     # @return [InterfacesCollection]
     attr_accessor :interfaces
@@ -153,6 +154,7 @@ module Y2Network
     # If the interface which is associated to does not exist (because it is a virtual one or it is
     # not present), it gets added.
     def add_or_update_connection_config(connection_config)
+      log.info "add_update connection config #{connection_config.inspect}"
       connections.add_or_update(connection_config)
       interface = interfaces.by_name(connection_config.interface)
       return if interface

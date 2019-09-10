@@ -115,12 +115,15 @@ module Y2Network
         Yast::LanItems.driver_options[driver] = driver_options
       end
 
+      @connection_config.ip_aliases = aliases.each_with_object([]) do |map, result|
+        ipaddr = IPAddress.from_string(map[:ip])
+        ipaddr.prefix = map[:prefixlen].delete("/").to_i if map[:prefixlen]
+        result << ConnectionConfig::IPConfig.new(ipaddr, label: map[:label])
+      end
+
       @connection_config.name = name
       @connection_config.interface = name
-      yast_config.rename_interface(@old_name, name, renaming_mechanism) if renamed_interface?
-      yast_config.add_or_update_connection_config(@connection_config)
 
-      # write to ifcfg always and to firewalld only when available
       @connection_config.firewall_zone = firewall_zone
       # create new instance as name can change
       firewall_interface = Y2Firewall::Firewalld::Interface.new(name)
@@ -129,6 +132,10 @@ module Y2Network
         firewall_interface.zone = firewall_zone if !firewall_interface.zone || firewall_zone != firewall_interface.zone.name
       end
 
+      yast_config.rename_interface(@old_name, name, renaming_mechanism) if renamed_interface?
+      yast_config.add_or_update_connection_config(@connection_config)
+
+      # write to ifcfg always and to firewalld only when available
       save_hostname
 
       nil
