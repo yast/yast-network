@@ -333,9 +333,7 @@ module Y2Network
     # @return [String]
     def hostname
       return @hostname if @hostname
-
-      names = Yast::Host.names(@original_ip_config.address.to_s)
-      @original_hostname = @hostname = names.first || ""
+      original_hostname
     end
 
     # @param [String] value
@@ -354,8 +352,8 @@ module Y2Network
         return
       end
 
-      return if @original_ip_config == connection_config.ip && @original_hostname == hostname
-      Yast::Host.Update(@original_hostname, hostname, @connection_config.ip.address.to_s)
+      return if @original_ip_config == connection_config.ip && original_hostname == hostname
+      Yast::Host.Update(original_hostname, hostname, @connection_config.ip.address.to_s)
     end
 
     # sets remote ip for ptp connections
@@ -460,6 +458,15 @@ module Y2Network
     # @return [Boolean]
     def required_ip_config?
       boot_protocol == BootProtocol::STATIC
+    end
+
+    # Returns the original hostname
+    #
+    # @return [String] Original hostname
+    def original_hostname
+      return @original_hostname if @original_hostname
+      names = Yast::Host.names(@original_ip_config.address.to_s)
+      @original_hostname = names.first || ""
     end
   end
 end
