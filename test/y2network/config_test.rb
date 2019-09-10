@@ -306,9 +306,11 @@ describe Y2Network::Config do
       end
 
       context "when the interface is not present" do
+        let(:present?) { false }
+
         it "removes the interface" do
-          expect { config.delete_interface(br0.name) }.to change { config.interfaces.to_a }
-            .from([eth0, br0]).to([eth0])
+          expect { config.delete_interface(eth0.name) }.to change { config.interfaces.to_a }
+            .from([eth0, br0]).to([br0])
         end
       end
     end
