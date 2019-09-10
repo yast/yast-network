@@ -44,7 +44,7 @@ describe Y2Network::Config do
   let(:table1) { Y2Network::RoutingTable.new([route1]) }
   let(:table2) { Y2Network::RoutingTable.new([route2]) }
 
-  let(:eth0) { Y2Network::Interface.new("eth0") }
+  let(:eth0) { Y2Network::PhysicalInterface.new("eth0") }
   let(:interfaces) { Y2Network::InterfacesCollection.new([eth0]) }
 
   let(:eth0_conn) do
@@ -262,6 +262,55 @@ describe Y2Network::Config do
         it "does not add any interface" do
           expect { config.add_or_update_connection_config(new_conn) }
             .to_not change { config.interfaces.size }
+        end
+      end
+    end
+  end
+
+  describe "#delete_interface" do
+    let(:br0) { Y2Network::VirtualInterface.new("br0") }
+    let(:br0_conn) do
+      Y2Network::ConnectionConfig::Ethernet.new.tap do |conn|
+        conn.interface = "br0"
+      end
+    end
+    let(:interfaces) { Y2Network::InterfacesCollection.new([eth0, br0]) }
+    let(:connections) { Y2Network::ConnectionConfigsCollection.new([eth0_conn, br0_conn]) }
+
+    context "when it is not a physical interface" do
+      it "removes the connection config" do
+        expect { config.delete_interface(br0.name) }.to change { config.connections.to_a }
+          .from([eth0_conn, br0_conn]).to([eth0_conn])
+      end
+
+      it "removes the interface" do
+        expect { config.delete_interface(br0.name) }.to change { config.interfaces.to_a }
+          .from([eth0, br0]).to([eth0])
+      end
+    end
+
+    context "when it is a physical interface" do
+      let(:present?) { true }
+
+      before do
+        allow(eth0).to receive(:present?).and_return(present?)
+      end
+
+      it "removes the connection config" do
+        expect { config.delete_interface(eth0.name) }.to change { config.connections.to_a }
+          .from([eth0_conn, br0_conn]).to([br0_conn])
+      end
+
+      it "does not remove the interface" do
+        expect { config.delete_interface(eth0.name) }.to_not change { config.interfaces.to_a }
+      end
+
+      context "when the interface is not present" do
+        let(:present?) { false }
+
+        it "removes the interface" do
+          expect { config.delete_interface(eth0.name) }.to change { config.interfaces.to_a }
+            .from([eth0, br0]).to([br0])
         end
       end
     end

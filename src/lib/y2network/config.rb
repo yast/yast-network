@@ -22,7 +22,7 @@ require "y2network/routing"
 require "y2network/dns"
 require "y2network/interfaces_collection"
 require "y2network/connection_configs_collection"
-require "y2network/virtual_interface"
+require "y2network/physical_interface"
 require "y2network/can_be_copied"
 
 module Y2Network
@@ -141,10 +141,12 @@ module Y2Network
 
     # deletes interface and all its config. If interface is physical,
     # it is not removed as we cannot remove physical interface.
+    #
+    # @param name [String] Interface's name
     def delete_interface(name)
-      connections.reject! { |c| c.name == name }
+      connections.reject! { |c| c.interface == name }
       interface = interfaces.by_name(name)
-      return if interface.hardware.exists?
+      return if interface.is_a?(PhysicalInterface) && interface.present?
 
       interfaces.reject! { |i| i.name == name }
     end
