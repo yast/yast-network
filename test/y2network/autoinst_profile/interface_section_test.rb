@@ -45,10 +45,8 @@ describe Y2Network::AutoinstProfile::InterfaceSection do
       section = described_class.new_from_network(config)
       expect(section.bootproto).to eq("static")
       expect(section.aliases).to eq(
-        {
-          "alias0" => { "IPADDR" => "10.100.0.1", "PREFIXLEN" => "24", "LABEL" => "test" },
-          "alias1" => { "IPADDR" => "10.100.0.2", "PREFIXLEN" => "24", "LABEL" => "test1" }
-        }
+        "alias0" => { "IPADDR" => "10.100.0.1", "PREFIXLEN" => "24", "LABEL" => "test" },
+        "alias1" => { "IPADDR" => "10.100.0.2", "PREFIXLEN" => "24", "LABEL" => "test1" }
       )
     end
   end
