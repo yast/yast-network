@@ -140,10 +140,12 @@ module Y2Network
 
     # deletes interface and all its config. If interface is physical,
     # it is not removed as we cannot remove physical interface.
+    #
+    # @param name [String] Interface's name
     def delete_interface(name)
-      connections.reject! { |c| c.name == name }
+      connections.reject! { |c| c.interface == name }
       interface = interfaces.by_name(name)
-      return if interface.hardware.exists?
+      return unless interface.is_a?(VirtualInterface)
 
       interfaces.reject! { |i| i.name == name }
     end

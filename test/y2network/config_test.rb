@@ -266,4 +266,38 @@ describe Y2Network::Config do
       end
     end
   end
+
+  describe "#delete_interface" do
+    let(:br0) { Y2Network::VirtualInterface.new("br0") }
+    let(:br0_conn) do
+      Y2Network::ConnectionConfig::Ethernet.new.tap do |conn|
+        conn.interface = "br0"
+      end
+    end
+    let(:interfaces) { Y2Network::InterfacesCollection.new([eth0, br0]) }
+    let(:connections) { Y2Network::ConnectionConfigsCollection.new([eth0_conn, br0_conn]) }
+
+    context "when it is a virtual interface" do
+      it "removes the connection config" do
+        expect { config.delete_interface(br0.name) }.to change { config.connections.to_a }
+          .from([eth0_conn, br0_conn]).to([eth0_conn])
+      end
+
+      it "removes the interface" do
+        expect { config.delete_interface(br0.name) }.to change { config.interfaces.to_a }
+          .from([eth0, br0]).to([eth0])
+      end
+    end
+
+    context "when it is a physical interface" do
+      it "removes the connection config" do
+        expect { config.delete_interface(eth0.name) }.to change { config.connections.to_a }
+          .from([eth0_conn, br0_conn]).to([br0_conn])
+      end
+
+      it "does not remove the interface" do
+        expect { config.delete_interface(eth0.name) }.to_not change { config.interfaces.to_a }
+      end
+    end
+  end
 end
