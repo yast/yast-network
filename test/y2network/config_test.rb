@@ -44,7 +44,7 @@ describe Y2Network::Config do
   let(:table1) { Y2Network::RoutingTable.new([route1]) }
   let(:table2) { Y2Network::RoutingTable.new([route2]) }
 
-  let(:eth0) { Y2Network::Interface.new("eth0") }
+  let(:eth0) { Y2Network::PhysicalInterface.new("eth0") }
   let(:interfaces) { Y2Network::InterfacesCollection.new([eth0]) }
 
   let(:eth0_conn) do
@@ -277,7 +277,7 @@ describe Y2Network::Config do
     let(:interfaces) { Y2Network::InterfacesCollection.new([eth0, br0]) }
     let(:connections) { Y2Network::ConnectionConfigsCollection.new([eth0_conn, br0_conn]) }
 
-    context "when it is a virtual interface" do
+    context "when it is not a physical interface" do
       it "removes the connection config" do
         expect { config.delete_interface(br0.name) }.to change { config.connections.to_a }
           .from([eth0_conn, br0_conn]).to([eth0_conn])
@@ -290,6 +290,12 @@ describe Y2Network::Config do
     end
 
     context "when it is a physical interface" do
+      let(:present?) { true }
+
+      before do
+        allow(eth0).to receive(:present?).and_return(present?)
+      end
+
       it "removes the connection config" do
         expect { config.delete_interface(eth0.name) }.to change { config.connections.to_a }
           .from([eth0_conn, br0_conn]).to([br0_conn])
@@ -297,6 +303,13 @@ describe Y2Network::Config do
 
       it "does not remove the interface" do
         expect { config.delete_interface(eth0.name) }.to_not change { config.interfaces.to_a }
+      end
+
+      context "when the interface is not present" do
+        it "removes the interface" do
+          expect { config.delete_interface(br0.name) }.to change { config.interfaces.to_a }
+            .from([eth0, br0]).to([eth0])
+        end
       end
     end
   end
