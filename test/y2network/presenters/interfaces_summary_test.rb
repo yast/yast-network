@@ -39,11 +39,13 @@ describe Y2Network::Presenters::InterfacesSummary do
     )
   end
   let(:interfaces) do
-    Y2Network::InterfacesCollection.new([
-                                          double(Y2Network::Interface, hardware: nil, name: "vlan1"),
-                                          double(Y2Network::Interface, hardware: double.as_null_object, name: "eth1"),
-                                          double(Y2Network::Interface, hardware: double.as_null_object, name: "eth0")
-                                        ])
+    Y2Network::InterfacesCollection.new(
+      [
+        double(Y2Network::Interface, hardware: nil, name: "vlan1"),
+        double(Y2Network::Interface, hardware: double.as_null_object, name: "eth1"),
+        double(Y2Network::Interface, hardware: double.as_null_object, name: "eth0")
+      ]
+    )
   end
   let(:connections) do
     Y2Network::ConnectionConfigsCollection.new([vlan1, eth0])

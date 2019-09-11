@@ -49,33 +49,37 @@ module Y2Network
         hardware = interface ? interface.hardware : nil
         descr = hardware ? hardware.description : ""
 
-        config = @config.connections.by_name(@name)
+        connection = @config.connections.by_name(@name)
         bullets = []
         rich = ""
 
-        if config
-          descr = config.name if descr.empty?
+        if connection
+          descr = connection.name if descr.empty?
 
-          status = status_info(config)
+          status = status_info(connection)
 
-          bullets << _("Device Name: %s") % config.name
+          bullets << _("Device Name: %s") % connection.name
           bullets << status
-          bullets << config.startmode.long_description
-          bullets += aliases_info(config)
+          bullets << connection.startmode.long_description
+          bullets += aliases_info(connection)
 
-          if config.type.bonding?
+          if connection.type.bonding?
+            # TRANSLATORS: text label before list of slaves
             label = _("Bonding Slaves")
-            bullets << "#{label}: #{config.slaves.join(" ")}"
-          elsif config.type.bridge?
+            bullets << "#{label}: #{connection.slaves.join(" ")}"
+          elsif connection.type.bridge?
+            # TRANSLATORS: text label before list of ports
             label = _("Bridge Ports")
-            bullets << "#{label}: #{config.ports.join(" ")}"
+            bullets << "#{label}: #{connection.ports.join(" ")}"
           end
 
-          master = config.find_master(@config.connections)
+          master = connection.find_master(@config.connections)
           if master
             master_desc = if master.type.bonding?
+              # TRANSLATORS: text label before device which is master for this device
               _("Bonding master")
             else
+              # TRANSLATORS: text label before device which is bridge for this device
               _("Bridge")
             end
             bullets << format("%s: %s", master_desc, master.name)
@@ -92,7 +96,7 @@ module Y2Network
         end
 
         rich = Yast::HTML.Bold(descr) + "<br>" + rich
-        if config
+        if connection
           rich << Yast::HTML.List(bullets)
         else
           if hardware && hardware.name && !hardware.name.empty?
