@@ -466,6 +466,26 @@ describe "NetworkAutoYast" do
         ]
       end
 
+      let(:udev_mac_rules) do
+        [
+          {
+            "name"  => "eth1",
+            "rule"  => "ATTR{address}",
+            "value" => "00:00:00:00:00:00"
+          },
+          {
+            "name"  => "eth3",
+            "rule"  => "ATTR{address}",
+            "value" => "00:00:00:00:00:01"
+          },
+          {
+            "name"  => "eth0",
+            "rule"  => "ATTR{address}",
+            "value" => "00:00:00:00:00:02"
+          }
+        ]
+      end
+
       let(:persistent_udevs) do
         {
           "eth0" => [
@@ -486,19 +506,22 @@ describe "NetworkAutoYast" do
       let(:hw_netcard) do
         [
           {
-            "dev_name" => "eth0",
-            "busid"    => "0000:01:00.0",
-            "mac"      => "00:00:00:00:00:00"
+            "dev_name"      => "eth0",
+            "busid"         => "0000:01:00.0",
+            "mac"           => "00:00:00:00:00:00",
+            "permanent_mac" => "00:00:00:00:00:00"
           },
           {
-            "dev_name" => "eth1",
-            "busid"    => "0000:01:00.1",
-            "mac"      => "00:00:00:00:00:01"
+            "dev_name"      => "eth1",
+            "busid"         => "0000:01:00.1",
+            "mac"           => "00:00:00:00:00:01",
+            "permanent_mac" => "00:00:00:00:00:01"
           },
           {
-            "dev_name" => "eth2",
-            "busid"    => "0000:01:00.2",
-            "mac"      => "00:00:00:00:00:02"
+            "dev_name"      => "eth2",
+            "busid"         => "0000:01:00.2",
+            "mac"           => "00:00:00:00:00:02",
+            "permanent_mac" => ""
           }
         ]
       end
@@ -518,7 +541,6 @@ describe "NetworkAutoYast" do
           .and_return(persistent_udevs)
 
         Yast::LanItems.Read
-        Yast::LanItems.Items[3] = { "ifcfg" => "eth3" }
       end
 
       # see bnc#1056109
@@ -533,6 +555,8 @@ describe "NetworkAutoYast" do
       # applying of the ruleset we could end with new nameset e.g. <eth2, eth0, eth0>
       # which obviously leads to misconfiguration of the system
       it "applies rules so, that names remain unique" do
+        Yast::LanItems.Items[3] = { "ifcfg" => "eth3" }
+
         network_autoyast.send(:assign_udevs_to_devs, udev_rules)
 
         lan_items = Yast::LanItems
@@ -542,6 +566,18 @@ describe "NetworkAutoYast" do
 
         # check if device names are unique
         expect(names.sort).to eql ["eth0", "eth1", "eth2", "eth3"]
+      end
+
+      it "matches devices according to permanent mac or mac field when first one is missing" do
+        network_autoyast.send(:assign_udevs_to_devs, udev_mac_rules)
+
+        lan_items = Yast::LanItems
+        names = lan_items.Items.keys.map do |i|
+          lan_items.renamed?(i) ? lan_items.renamed_to(i) : lan_items.GetDeviceName(i)
+        end
+
+        # check if device names are unique
+        expect(names.sort).to eql ["eth0", "eth1", "eth3"]
       end
     end
   end
