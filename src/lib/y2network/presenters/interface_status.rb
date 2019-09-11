@@ -25,9 +25,12 @@ module Y2Network
   module Presenters
     # Mixin that provide status info about interface `status_info(config)`
     module InterfaceStatus
+      include Yast::I18n
       # @param config [ConnectionConfig::Base]
       # @return [String] status information
       def status_info(config)
+        textdomain "network"
+
         case config.bootproto
         when BootProtocol::STATIC
           return Yast::HTML.Colorize(_("Configured without an address"), "red") if !config.ip
