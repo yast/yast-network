@@ -39,6 +39,12 @@ module Y2Network
       def to_human_string
         _("On NFSroot")
       end
+
+      def long_description
+        _(
+          "Started automatically at boot (mandatory)"
+        )
+      end
     end
   end
 end

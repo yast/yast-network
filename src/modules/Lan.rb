@@ -38,6 +38,7 @@ require "y2network/config"
 require "y2network/interface_config_builder"
 require "y2network/presenters/routing_summary"
 require "y2network/presenters/dns_summary"
+require "y2network/presenters/interfaces_summary"
 
 require "shellwords"
 
@@ -776,11 +777,11 @@ module Yast
     def Summary(mode)
       case mode
       when "summary"
-        "#{LanItems.BuildLanOverview.first}#{dns_summary}#{routing_summary}"
+        "#{interfaces_summary}#{dns_summary}#{routing_summary}"
       when "proposal"
         "#{LanItems.summary(:proposal)}#{dns_summary}#{routing_summary}"
       else
-        LanItems.BuildLanOverview.first
+        interfaces_summary
       end
     end
 
@@ -1101,6 +1102,16 @@ module Yast
       config = find_config(:yast)
       return "" unless config && config.dns
       presenter = Y2Network::Presenters::DNSSummary.new(config.dns)
+      presenter.text
+    end
+
+    # Returns the interfaces configuration summary
+    #
+    # @return [String]
+    def interfaces_summary
+      config = find_config(:yast)
+      return "" unless config
+      presenter = Y2Network::Presenters::InterfacesSummary.new(config)
       presenter.text
     end
 
