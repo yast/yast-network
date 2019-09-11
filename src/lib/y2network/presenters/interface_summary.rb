@@ -18,6 +18,8 @@
 # find current contact information at www.suse.com.
 
 require "yast"
+require "y2network/presenters/interface_status"
+
 Yast.import "Summary"
 Yast.import "HTML"
 
@@ -27,6 +29,7 @@ module Y2Network
     # in an AutoYaST summary or in table description.
     class InterfaceSummary
       include Yast::I18n
+      include InterfaceStatus
 
       # @return [String]
       attr_reader :name
@@ -107,34 +110,6 @@ module Y2Network
       end
 
     private
-
-      def status_info(config)
-        if config.bootproto == BootProtocol::STATIC
-          return Yast::HTML.Colorize(_("Configured without an address"), "red") if !config.ip
-
-          ip = config.ip.address.to_s
-          host = Yast::NetHwDetection.ResolveIP(config.ip.address.address.to_s)
-          addr = ip
-          addr << "(#{host})" if host && !host.empty?
-          if config.ip.remote_address
-            # TRANSLATORS %{local} is local address and %{remote} is remote address
-            format(
-              _("Configured with address %{local} (remote %{remote})"),
-              local:  addr,
-              remote: config.remote_address.to_s
-            )
-          else
-            # TRANSLATORS %s is address
-            format(_("Configured with address %s"), addr)
-          end
-        elsif config.bootproto == BootProtocol::NONE
-          _("Do not assign (e.g. bond or bridge slaves)")
-        else
-          # TODO: maybe human name for boot protocols?
-          format(_("Configured with %s"), config.bootproto.name)
-
-        end
-      end
 
       def aliases_info(config)
         config.ip_aliases.map do |alias_|
