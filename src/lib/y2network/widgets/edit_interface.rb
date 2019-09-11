@@ -40,10 +40,18 @@ module Y2Network
 
       def handle
         config = Yast::Lan.yast_config.copy
-        # TODO: handle unconfigured
         connection_config = config.connections.by_name(@table.value)
-        builder = Y2Network::InterfaceConfigBuilder.for(connection_config.type, config: connection_config)
-        builder.name = connection_config.name
+
+        name, type =
+          if connection_config
+            [connection_config.name, connection_config.type]
+          else
+            interface = config.interfaces.by_name(@table.value)
+            [interface.name, interface.type]
+          end
+
+        builder = Y2Network::InterfaceConfigBuilder.for(type, config: connection_config)
+        builder.name = name
         Y2Network::Sequences::Interface.new.edit(builder)
         :redraw
       end
