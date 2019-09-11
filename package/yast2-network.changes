@@ -5,8 +5,6 @@ Tue Sep 10 07:40:04 UTC 2019 - Michal Filka <mfilka@suse.com>
   - apply udev rule from AY profile according to device's mac
     value when permanent_mac is missing in list of the device's
     options
-- backport: - change proposal naming and add option to set cpu
-  mitigations (bsc#1128707)
 - bsc#1133442
   - Increased the DHCP timeout when NetworkManager is in use to
     its default (45 seconds).
