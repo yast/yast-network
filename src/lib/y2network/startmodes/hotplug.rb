@@ -43,7 +43,6 @@ module Y2Network
           "Started automatically when attached"
         )
       end
-
     end
   end
 end

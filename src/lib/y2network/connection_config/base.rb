@@ -126,7 +126,6 @@ module Y2Network
         ([ip] + ip_aliases).compact
       end
 
-
       # find master from given collection of configs
       # @param configs [ConnectionConfigsCollection]
       # @return [ConnectionConfig::Bonding, ConnectionConfig::Bridge, nil] gets bridge, bonding or

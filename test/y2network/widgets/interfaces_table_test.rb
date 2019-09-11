@@ -34,7 +34,7 @@ describe Y2Network::Widgets::InterfacesTable do
   let(:interfaces) { Y2Network::InterfacesCollection.new([eth0, br0]) }
   let(:hwinfo) do
     instance_double(Y2Network::Hwinfo, link: link, mac: mac, busid: busid,
-      exists?: exists?, present?: true, description: "", name: "Coold device", )
+      exists?: exists?, present?: true, description: "", name: "Coold device")
   end
   let(:mac) { "01:23:45:67:89:ab" }
   let(:busid) { "0000:04:00.0" }
