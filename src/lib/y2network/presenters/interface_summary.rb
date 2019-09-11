@@ -26,7 +26,7 @@ Yast.import "HTML"
 module Y2Network
   module Presenters
     # This class converts a connection config configuration object into a string to be used
-    # in an AutoYaST summary or in table description.
+    # in an AutoYaST summary or in a table.
     class InterfaceSummary
       include Yast::I18n
       include InterfaceStatus
@@ -37,21 +37,19 @@ module Y2Network
       # Constructor
       #
       # @param name [String] name of device to describe
-      # @param configs [Y2Network::ConnectionConfigsCollection]
-      # @param interfaces [Y2Network::InterfacesCollection]
-      def initialize(name, configs, interfaces)
+      # @param config [Y2Network::Config]
+      def initialize(name, config)
         textdomain "network"
         @name = name
-        @configs = configs
-        @interfaces = interfaces
+        @config = config
       end
 
       def text
-        interface = @interfaces.by_name(@name)
+        interface = @config.interfaces.by_name(@name)
         hardware = interface ? interface.hardware : nil
         descr = hardware ? hardware.description : ""
 
-        config = @configs.by_name(@name)
+        config = @config.connections.by_name(@name)
         bullets = []
         rich = ""
 
@@ -73,7 +71,7 @@ module Y2Network
             bullets << "#{label}: #{config.ports.join(" ")}"
           end
 
-          master = config.find_master(@configs)
+          master = config.find_master(@config.connections)
           if master
             master_desc = if master.type.bonding?
               _("Bonding master")

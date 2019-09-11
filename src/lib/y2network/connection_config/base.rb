@@ -138,8 +138,6 @@ module Y2Network
           elsif config.type.bridge?
             config.ports.include?(name)
           end
-
-          false
         end
       end
 

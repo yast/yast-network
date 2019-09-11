@@ -97,7 +97,7 @@ module Y2Network
 
       def create_description
         config = Yast::Lan.yast_config
-        Presenters::InterfaceSummary.new(value, config.connections, config.interfaces).text
+        Presenters::InterfaceSummary.new(value, config).text
       end
 
       # Returns a friendly name for a given interface
