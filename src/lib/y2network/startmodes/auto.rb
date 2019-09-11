@@ -40,6 +40,12 @@ module Y2Network
       def to_human_string
         _("At Boot Time")
       end
+
+      def long_description
+        _(
+          "Started automatically at boot"
+        )
+      end
     end
   end
 end

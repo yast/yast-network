@@ -29,12 +29,12 @@ describe Y2Network::Widgets::InterfacesTable do
 
   let(:description) { double(:value= => nil) }
 
-  let(:eth0) { instance_double(Y2Network::Interface, name: "eth0", hardware: hwinfo) }
-  let(:br0) { instance_double(Y2Network::VirtualInterface, name: "br0", hardware: nil) }
+  let(:eth0) { instance_double(Y2Network::Interface, name: "eth0", hardware: hwinfo, old_name: "eth1") }
+  let(:br0) { instance_double(Y2Network::VirtualInterface, name: "br0", hardware: nil, old_name: nil) }
   let(:interfaces) { Y2Network::InterfacesCollection.new([eth0, br0]) }
   let(:hwinfo) do
     instance_double(Y2Network::Hwinfo, link: link, mac: mac, busid: busid,
-      exists?: exists?, present?: true, description: "")
+      exists?: exists?, present?: true, description: "", name: "Coold device", )
   end
   let(:mac) { "01:23:45:67:89:ab" }
   let(:busid) { "0000:04:00.0" }

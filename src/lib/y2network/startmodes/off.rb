@@ -36,6 +36,12 @@ module Y2Network
       def to_human_string
         _("Never")
       end
+
+      def long_description
+        _(
+          "Will not be started at all"
+        )
+      end
     end
   end
 end

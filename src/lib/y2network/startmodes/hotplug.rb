@@ -37,6 +37,13 @@ module Y2Network
       def to_human_string
         _("On Hotplug")
       end
+
+      def long_description
+        _(
+          "Started automatically when attached"
+        )
+      end
+
     end
   end
 end

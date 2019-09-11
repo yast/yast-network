@@ -36,6 +36,12 @@ module Y2Network
       def to_human_string
         _("Manually")
       end
+
+      def long_description
+        _(
+          "Started manually"
+        )
+      end
     end
   end
 end

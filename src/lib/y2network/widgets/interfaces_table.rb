@@ -19,6 +19,7 @@
 
 require "yast"
 require "cwm/table"
+require "y2network/presenters/interface_summary"
 
 module Y2Network
   module Widgets
@@ -57,7 +58,7 @@ module Y2Network
             friendly_name(interface),
             interface_protocol(conn),
             interface.name,
-            ""
+            note(interface, conn, config)
           ]
         end
       end
@@ -69,6 +70,17 @@ module Y2Network
       end
 
     private
+
+      def note(interface, conn, config)
+        if interface.name != interface.old_name && interface.old_name
+          return format("%s -> %s", interface.old_name, interface.name)
+        end
+
+        master = conn.find_master(config.connections)
+        return format(_("enslaved in %s"), master.name) if master
+
+        ""
+      end
 
       def interface_protocol(connection)
         return _("Not configured") if connection.nil?
@@ -84,28 +96,8 @@ module Y2Network
       end
 
       def create_description
-        interface = Yast::Lan.yast_config.interfaces.by_name(value)
-        hwinfo = interface.hardware
-        result = ""
-        if hwinfo.nil? || !hwinfo.exists?
-          result << "<b>(" << _("No hardware information") << ")</b><br>"
-        else
-          result << "<b>(" << _("Not connected") << ")</b><br>" if !hwinfo.link
-          result << "<b>MAC : </b>" << hwinfo.mac << "<br>" if hwinfo.mac
-          result << "<b>BusID : </b>" << hwinfo.busid << "<br>" if hwinfo.busid
-        end
-        connection = Yast::Lan.yast_config.connections.by_name(value)
-        if connection
-          result << _("Device Name: %s") % connection.name
-          # TODO: start mode description. Ideally in startmode class
-          # TODO: ip overview
-        else
-          result << "<p>" <<
-            _("The device is not configured. Press <b>Edit</b>\nto configure.\n") <<
-            "</p>"
-        end
-
-        result
+        config = Yast::Lan.yast_config
+        Presenters::InterfaceSummary.new(value, config.connections, config.interfaces).text
       end
 
       # Returns a friendly name for a given interface

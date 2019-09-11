@@ -36,7 +36,7 @@ module Y2Network
     attr_reader :connection_configs
     alias_method :to_a, :connection_configs
 
-    def_delegators :@connection_configs, :each, :push, :<<, :reject!, :map, :flat_map, :any?, :size
+    def_delegators :@connection_configs, :each, :find, :push, :<<, :reject!, :map, :flat_map, :any?, :size
 
     # Constructor
     #

@@ -48,6 +48,12 @@ module Y2Network
       def ==(other)
         name == other.name && priority == other.priority
       end
+
+      def long_description
+        _(
+          "Started automatically on cable connection"
+        )
+      end
     end
   end
 end

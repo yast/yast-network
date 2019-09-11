@@ -35,6 +35,7 @@ module Y2Network
 
     # gets new instance of startmode for given type and its params
     def self.create(name)
+      name = "auto" if name == "onboot" # onboot is alias for auto
       # avoid circular dependencies
       require "y2network/startmodes"
       Startmodes.const_get(name.capitalize).new
