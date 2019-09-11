@@ -340,6 +340,8 @@ module Yast
           # Match also parent busid if exist (bsc#1129012)
           parent_busid = i["hwinfo"]["parent_busid"] || busid
           mac = i["hwinfo"]["permanent_mac"]
+          # use mac if permanent_mac is missing (bsc#1149234)
+          mac = i["hwinfo"]["mac"] if mac.nil? || mac.empty?
 
           [busid, parent_busid, mac].any? { |v| v.casecmp(key).zero? }
         end

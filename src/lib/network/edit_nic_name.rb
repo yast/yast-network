@@ -40,7 +40,7 @@ module Yast
       end
 
       if current_item["hwinfo"]
-        @mac = current_item["hwinfo"]["permanent_mac"]
+        @mac = LanItems.item_mac(LanItems.current)
         @bus_id = current_item["hwinfo"]["busid"]
       else
         @mac = ""
