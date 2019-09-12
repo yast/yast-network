@@ -27,15 +27,35 @@ describe Y2Network::UdevRule do
 
   let(:parts) { [] }
 
-  let(:udev_persistent) do
+  let(:udev_persistent_net) do
     {
       "eth0" => ["SUBSYSTEM==\"net\"", "ACTION==\"add\"", "ATTR{address}==\"?*31:78:f2\"", "NAME=\"eth0\""]
     }
   end
 
+  let(:udev_persistent_drivers) do
+    {
+      "virtio:d00000001v00001AF4" => ["ENV{MODALIAS}==\"virtio:d00000001v00001AF4\"", "ENV{MODALIAS}=\"e1000\""]
+    }
+  end
+
   before do
     allow(Yast::SCR).to receive(:Read).with(Yast::Path.new(".udev_persistent.net"))
-      .and_return(udev_persistent)
+      .and_return(udev_persistent_net)
+    allow(Yast::SCR).to receive(:Read).with(Yast::Path.new(".udev_persistent.drivers"))
+      .and_return(udev_persistent_drivers)
+  end
+
+  describe ".all" do
+    it "returns the rules from :net group" do
+      rules = described_class.all(:net)
+      expect(rules.first.to_s).to match(/NAME=/)
+    end
+
+    it "returns the rules from :drivers group" do
+      rules = described_class.all(:drivers)
+      expect(rules.first.to_s).to match(/MODALIAS/)
+    end
   end
 
   describe ".find_for" do
@@ -81,6 +101,35 @@ describe Y2Network::UdevRule do
             "KERNELS==\"0000:08:00.0\", NAME=\"eth0\""
         )
       end
+    end
+  end
+
+  describe ".new_driver_assignment" do
+    it "returns a module assignment rule" do
+      rule = described_class.new_driver_assignment("virtio:0000", "virtio_net")
+      expect(rule.to_s).to eq("ENV{MODALIAS}==\"virtio:0000\", ENV{MODALIAS}=\"virtio_net\"")
+    end
+  end
+
+  describe ".write_net_rules" do
+    it "writes changes using the udev_persistent agent" do
+      expect(Yast::SCR).to receive(:Write).with(
+        Yast::Path.new(".udev_persistent.rules"), [udev_rule.to_s]
+      )
+      expect(Yast::SCR).to receive(:Write).with(Yast::Path.new(".udev_persistent.nil"), [])
+      described_class.write_net_rules([udev_rule])
+    end
+  end
+
+  describe ".write_drivers_rules" do
+    let(:udev_rule) { described_class.new_driver_assignment("virtio:0000", "virtio_net") }
+
+    it "writes changes using the udev_persistent agent" do
+      expect(Yast::SCR).to receive(:Write).with(
+        Yast::Path.new(".udev_persistent.drivers"), { "virtio_net" => udev_rule.parts.map(&:to_s) }
+      )
+      expect(Yast::SCR).to receive(:Write).with(Yast::Path.new(".udev_persistent.nil"), [])
+      described_class.write_drivers_rules([udev_rule])
     end
   end
 
