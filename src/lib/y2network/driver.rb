@@ -33,6 +33,19 @@ module Y2Network
         params_string = params.map { |k, v| "#{k}=#{v}" }.join(" ")
         new(name, params_string)
       end
+
+      # Writes driver options to the underlying system
+      #
+      # @param drivers [Y2Network::Driver] Drivers to write options
+      def write_options(drivers)
+        drivers.each(&:write_options)
+        commit
+      end
+
+      # Commits drivers options to disk
+      def commit
+        Yast::SCR.Write(Yast::Path.new(".modules"), nil)
+      end
     end
 
     # @return [String] Kernel module name
@@ -57,8 +70,16 @@ module Y2Network
       name == other.name && params == other.params
     end
 
-    # Saves driver parameters to the underlying system
-    def save
+    # Adds driver parameters to be written to the underlying system
+    #
+    # Parameters are not written to disk until Y2Network::Driver.commit
+    # is called. The reason is that writing them is an expensive operation, so it is
+    # better to write parameters for all drivers at the same time.
+    #
+    # You might prefer to use Y2Network::Driver.write_options instead.
+    #
+    # @see Y2Network::Driver.commit
+    def write_options
       parts = params.split(/ +/)
       params_hash = parts.each_with_object({}) do |param, hash|
         key, value = param.split("=")

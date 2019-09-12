@@ -46,6 +46,7 @@ module Y2Network
         file.routes = find_routes_for(nil, config.routing.routes)
         file.save
 
+        write_drivers(config.drivers)
         write_interfaces(config.interfaces)
         write_connections(config.connections)
         write_dns_settings(config, old_config)
@@ -187,6 +188,13 @@ module Y2Network
       def write_connections(conns)
         writer = Y2Network::Sysconfig::ConnectionConfigWriter.new
         conns.each { |c| writer.write(c) }
+      end
+
+      # Writes drivers options
+      #
+      # @param drivers [Array<Y2Network::Driver>] Drivers to write options
+      def write_drivers(drivers)
+        Y2Network::Driver.write_options(drivers)
       end
     end
   end

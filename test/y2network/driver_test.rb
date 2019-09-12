@@ -36,11 +36,20 @@ describe Y2Network::Driver do
     end
   end
 
-  describe "#save" do
+  describe ".write_options" do
+    it "writes the parameters to the underlying system" do
+      expect(driver).to receive(:write_options)
+      expect(Yast::SCR).to receive(:Write)
+        .with(Yast::Path.new(".modules"), nil)
+      described_class.write_options([driver])
+    end
+  end
+
+  describe "#write_options" do
     it "writes options to the underlying system" do
       expect(Yast::SCR).to receive(:Write)
         .with(Yast::Path.new(".modules.options.virtio_net"), "debug" => "16")
-      driver.save
+      driver.write_options
     end
   end
 end
