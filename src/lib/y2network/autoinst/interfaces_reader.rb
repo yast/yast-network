@@ -33,7 +33,6 @@ module Y2Network
       attr_reader :section
 
       # @param section [AutoinstProfile::InterfacesSection]
-      # TODO: read also udev rules
       def initialize(section)
         @section = section
       end

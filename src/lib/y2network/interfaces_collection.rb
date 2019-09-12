@@ -157,5 +157,22 @@ module Y2Network
 
       index
     end
+
+    # @return [String] returns free interface name for given prefix
+    def free_name(prefix)
+      free_names(prefix, 1).first
+    end
+
+    # @return [Array<String>] returns free interface name for given prefix
+    def free_names(prefix, count)
+      result = []
+      (0..).each do |i|
+        candidate = prefix + i.to_s
+        next if by_name(candidate)
+
+        result << candidate
+        return result if result.size == count
+      end
+    end
   end
 end

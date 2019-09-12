@@ -27,6 +27,7 @@ require "y2network/ip_address"
 require "y2firewall/firewalld"
 require "y2firewall/firewalld/interface"
 
+Yast.import "Lan"
 Yast.import "LanItems"
 Yast.import "NetworkInterfaces"
 Yast.import "Host"
@@ -170,8 +171,7 @@ module Y2Network
     # do not modify anything
     # @return [Array<String>]
     def proposed_names
-      # TODO: new backend?
-      Yast::LanItems.new_type_devices(type.short_name, NEW_DEVICES_COUNT)
+      interfaces.free_names(type.short_name, NEW_DEVICES_COUNT)
     end
 
     # checks if passed name is valid as interface name
@@ -182,8 +182,7 @@ module Y2Network
 
     # checks if interface name already exists
     def name_exists?(name)
-      # TODO: new backend
-      Yast::NetworkInterfaces.List("").include?(name)
+      interfaces.known_names.include?(name)
     end
 
     # gets valid characters that can be used in interface name

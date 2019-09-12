@@ -22,6 +22,7 @@ require "y2network/widgets/interface_type"
 require "y2network/interface_config_builder"
 
 Yast.import "Label"
+Yast.import "Lan"
 Yast.import "LanItems"
 Yast.import "NetworkInterfaces"
 
@@ -64,7 +65,7 @@ module Y2Network
 
         # TODO: use factory to get proper builder
         builder = InterfaceConfigBuilder.for(InterfaceType.from_short_name(@type_widget.result))
-        proposed_name = Yast::LanItems.new_type_devices(@type_widget.result, 1).first
+        proposed_name = Yast::Lan.yast_config.interfaces.free_name(@type_widget.result)
         builder.name = proposed_name
 
         builder
