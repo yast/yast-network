@@ -21,13 +21,14 @@ require "y2network/autoinst_profile/section_with_attributes"
 
 module Y2Network
   module AutoinstProfile
-    # This class represents an AutoYaST <interface> section under <interfaces>
+    # This class represents an AutoYaST <rule> section under <net-udev>
     #
-    #  <rule>
-    #    <name>eth0</name>
-    #    <rule>ATTR{address}</rule>
-    #    <value>00:30:6E:08:EC:80</value>
-    #  </rule>
+    # @example xml content
+    #   <rule>
+    #     <name>eth0</name>
+    #     <rule>ATTR\{address\}</rule>
+    #     <value>00:30:6E:08:EC:80</value>
+    #   </rule>
     #
     # @see InterfacesSection
     class UdevRuleSection < SectionWithAttributes
@@ -44,7 +45,7 @@ module Y2Network
       define_attr_accessors
 
       # @!attribute rule
-      #  @return [String] type of rule. Supported now is "ATTR{address}" and "KERNELS".
+      #  @return [String] type of rule. Supported now is `ATTR\{address\}` and `KERNELS`.
       #    The first one is for MAC based rules and second for bus id based ones.
 
       # @!attribute value
@@ -75,15 +76,15 @@ module Y2Network
 
       # mapping of renaming_mechanism to rule string
       RULE_MAPPING = {
-        mac: "ATTR{address}",
+        mac:    "ATTR{address}",
         bus_id: "KERNELS"
-      }
+      }.freeze
 
       # mapping of renaming_mechanism to method to obtain value
       VALUE_MAPPING = {
-        mac: :mac,
+        mac:    :mac,
         bus_id: :busid
-      }
+      }.freeze
 
       # Method used by {.new_from_network} to populate the attributes when cloning a udev rule
       #

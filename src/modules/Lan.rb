@@ -628,7 +628,7 @@ module Yast
       Builtins.y2debug("input %1", input)
 
       input["interfaces"] ||= []
-      # TODO: remove when s390 and udev no longer need it
+      # TODO: remove when s390 no longer need it
       interfaces = Builtins.listmap(input["interfaces"]) do |interface|
         # input: list of items $[ "device": "d", "foo": "f", "bar": "b"]
         # output: map of items  "d": $["FOO": "f", "BAR": "b"]

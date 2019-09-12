@@ -23,6 +23,7 @@ require "y2network/config"
 require "y2network/autoinst/routing_reader"
 require "y2network/autoinst/dns_reader"
 require "y2network/autoinst/interfaces_reader"
+require "y2network/autoinst/udev_rules_reader"
 require "y2network/autoinst_profile/networking_section"
 require "y2network/sysconfig/interfaces_reader"
 
@@ -45,6 +46,8 @@ module Y2Network
       # @return [Y2Network::Config] Network configuration
       def config
         config = Yast::Lan.system_config || Y2Network::Config.new(source: :autoyast)
+        # apply at first udev rules, so interfaces names are correct
+        UdevRulesReader.new(section.udev_rules).apply(config) if section.udev_rules
         config.routing = RoutingReader.new(section.routing).config if section.routing
         config.dns = DNSReader.new(section.dns).config if section.dns
         if section.interfaces

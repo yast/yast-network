@@ -24,13 +24,14 @@ module Y2Network
   module AutoinstProfile
     # This class represents an AutoYaST <net-udev> section under <networking>
     #
-    # <net-udev config:type="list">
-    #   <rule>
-    #     <name>eth0</name>
-    #     <rule>ATTR{address}</rule>
-    #     <value>00:30:6E:08:EC:80</value>
-    #   </rule>
-    # </net-udev>
+    # @example xml content
+    #   <net-udev config:type="list">
+    #     <rule>
+    #       <name>eth0</name>
+    #       <rule>ATTR\{address\}</rule>
+    #       <value>00:30:6E:08:EC:80</value>
+    #     </rule>
+    #   </net-udev>
     #
     # @see NetworkingSection
     class UdevRulesSection < SectionWithAttributes
@@ -49,10 +50,10 @@ module Y2Network
 
       # Clones network interfaces settings into an AutoYaST interfaces section
       #
-      # @param interface [Y2Network::InterfacesCollection] interfaces to detect udev rules
+      # @param interfaces [Y2Network::InterfacesCollection] interfaces to detect udev rules
       # @return [UdevRulesSection]
-      def self.new_from_network(config)
-        new.tap { |r| r.init_from_network(config) }
+      def self.new_from_network(interfaces)
+        new.tap { |r| r.init_from_network(interfaces) }
       end
 
       # Constructor
@@ -70,7 +71,7 @@ module Y2Network
 
       # Method used by {.new_from_network} to populate the attributes when cloning routing settings
       #
-      # @param connection_configs [Y2Network::InterfacesCollection] Network settings
+      # @param interfaces [Y2Network::InterfacesCollection] Network settings
       def init_from_network(interfaces)
         @udev_rules = udev_rules_section(interfaces)
       end
@@ -90,8 +91,8 @@ module Y2Network
 
       def udev_rules_section(interfaces)
         result = interfaces
-          .map { |i| Y2Network::AutoinstProfile::UdevRuleSection.new_from_network(i) }
-          .compact
+                 .map { |i| Y2Network::AutoinstProfile::UdevRuleSection.new_from_network(i) }
+                 .compact
 
         log.info "udev rules for interfaces: #{interfaces.inspect} => #{result.inspect}"
 

@@ -166,7 +166,8 @@ module Y2Network
     # @return [Array<String>] returns free interface name for given prefix
     def free_names(prefix, count)
       result = []
-      (0..).each do |i|
+      # TODO: when switch rubocop use endless range `(0..)`
+      (0..100000).each do |i|
         candidate = prefix + i.to_s
         next if by_name(candidate)
 

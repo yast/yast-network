@@ -27,7 +27,6 @@ require "y2network/ip_address"
 require "y2firewall/firewalld"
 require "y2firewall/firewalld/interface"
 
-Yast.import "Lan"
 Yast.import "LanItems"
 Yast.import "NetworkInterfaces"
 Yast.import "Host"
@@ -456,6 +455,8 @@ module Y2Network
     #
     # @return [Y2Network::Config]
     def yast_config
+      Yast.import "Lan" # avoid circular dependency
+
       Yast::Lan.yast_config
     end
 
