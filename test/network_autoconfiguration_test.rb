@@ -222,6 +222,11 @@ describe Yast::NetworkAutoconfiguration do
     context "when the proposal is required" do
       let(:proposal) { true }
 
+      after(:each) do
+        # some methods might have sideeffects - clen them :-/
+        Yast::NetworkInterfaces.Devices.reject! { |k, _| k == "br" }
+      end
+
       it "creates the virtulization proposal config" do
         expect(Yast::Lan).to receive(:ProposeVirtualized).and_call_original
         expect { instance.configure_virtuals }.to change { Yast::NetworkInterfaces.Devices.keys.size }.from(1).to(2)
