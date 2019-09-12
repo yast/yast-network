@@ -133,8 +133,10 @@ module Y2Network
     # @param new_name  [String] New interface's name
     # @param mechanism [Symbol] Property to base the rename on (:mac or :bus_id)
     def rename_interface(old_name, new_name, mechanism)
-      interface = interfaces.by_name(old_name)
+      log.info "Renaming #{old_name.inspect} to #{new_name.inspect} using #{mechanism.inspect}"
+      interface = interfaces.by_name(old_name || new_name)
       interface.rename(new_name, mechanism)
+      return unless old_name # do not modify configurations if it is just renaming mechanism
       connections.by_interface(old_name).each { |c| c.interface = new_name }
       dns.dhcp_hostname = new_name if dns.dhcp_hostname == old_name
     end
