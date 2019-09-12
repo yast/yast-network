@@ -247,9 +247,23 @@ module Y2Network
 
     # Returns the device mentioned in the rule (if any)
     #
-    # @return [String]
+    # @return [String,nil] Device name or nil if not found
     def device
       part_value_for("NAME", "=")
+    end
+
+    # Returns the original modalias
+    #
+    # @return [String,nil] Original modalias or nil if not found
+    def original_modalias
+      part_value_for("ENV{MODALIAS}", "==")
+    end
+
+    # Returns the modalias
+    #
+    # @return [String,nil] Original modalias or nil if not found
+    def driver
+      part_value_for("ENV{MODALIAS}", "=")
     end
   end
 end

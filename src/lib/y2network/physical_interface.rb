@@ -31,7 +31,7 @@ module Y2Network
     # This driver will be set using a udev rule.
     #
     # @return [String]
-    attr_accessor :driver
+    attr_accessor :custom_driver
 
     # Constructor
     #

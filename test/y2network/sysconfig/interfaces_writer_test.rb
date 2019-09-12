@@ -32,7 +32,7 @@ describe Y2Network::Sysconfig::InterfacesWriter do
     let(:eth0) do
       Y2Network::PhysicalInterface.new("eth0", hardware: hardware).tap do |i|
         i.renaming_mechanism = renaming_mechanism
-        i.driver = driver
+        i.custom_driver = driver
       end
     end
 

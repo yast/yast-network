@@ -97,7 +97,8 @@ module Y2Network
       # @param hwinfo [Hash] hardware information
       def build_physical_interface(hwinfo)
         Y2Network::PhysicalInterface.new(hwinfo.dev_name, hardware: hwinfo).tap do |iface|
-          iface.renaming_mechanism = renaming_mechanism_for(iface.name)
+          iface.renaming_mechanism = renaming_mechanism_for(iface)
+          iface.custom_driver = custom_driver_for(iface)
           iface.type = InterfaceType.from_short_name(hwinfo.type) || TypeDetector.type_of(iface.name)
         end
       end
@@ -122,10 +123,10 @@ module Y2Network
 
       # Detects the renaming mechanism used by the interface
       #
-      # @param name [String] Interface's name
+      # @param name [PhysicalInterface] Interface
       # @return [Symbol] :mac (MAC address), :bus_id (BUS ID) or :none (no renaming)
-      def renaming_mechanism_for(name)
-        rule = UdevRule.find_for(name)
+      def renaming_mechanism_for(iface)
+        rule = UdevRule.find_for(iface.name)
         return :none unless rule
         if rule.parts.any? { |p| p.key == "ATTR{address}" }
           :mac
@@ -134,6 +135,18 @@ module Y2Network
         else
           :none
         end
+      end
+
+      # Detects the custom driver used by the interface
+      #
+      # A driver is considered "custom" is it was set by the user through a udev rule.
+      #
+      # @param iface [PhysicalInterface] Interface to fetch the custom driver
+      # @return [String,nil] Custom driver (or nil if not set)
+      def custom_driver_for(iface)
+        return nil unless iface.modalias
+        rule = UdevRule.all(:drivers).find { |r| r.original_modalias == iface.modalias }
+        rule ? rule.driver : nil
       end
     end
   end

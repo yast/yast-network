@@ -62,8 +62,8 @@ module Y2Network
       # @param iface [Interface] Interface to generate the udev rule for
       # @return [UdevRule,nil] udev rule or nil if it is not needed
       def driver_udev_rule_for(iface)
-        return nil unless iface.respond_to?(:driver) && iface.driver
-        Y2Network::UdevRule.new_driver_assignment(iface.modalias, iface.driver)
+        return nil unless iface.respond_to?(:custom_driver) && iface.custom_driver
+        Y2Network::UdevRule.new_driver_assignment(iface.modalias, iface.custom_driver)
       end
 
       # Renames interfaces and refreshes the udev service

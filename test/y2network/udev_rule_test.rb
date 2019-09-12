@@ -212,4 +212,20 @@ describe Y2Network::UdevRule do
       expect(udev_rule.device).to eq("eth0")
     end
   end
+
+  describe "#original_modalias" do
+    subject(:udev_rule) { described_class.new_driver_assignment("virtio:0000", "virtio_net") }
+
+    it "returns the original modalias" do
+      expect(udev_rule.original_modalias).to eq("virtio:0000")
+    end
+  end
+
+  describe "#driver" do
+    subject(:udev_rule) { described_class.new_driver_assignment("virtio:0000", "virtio_net") }
+
+    it "return the assigned driver" do
+      expect(udev_rule.driver).to eq("virtio_net")
+    end
+  end
 end
