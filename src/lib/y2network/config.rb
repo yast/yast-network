@@ -167,6 +167,27 @@ module Y2Network
       interfaces << Interface.from_connection(connection_config)
     end
 
+    # Returns the candidate drivers for a given interface
+    #
+    # @return [Array<Driver>]
+    def drivers_for_interface(name)
+      interface = interfaces.by_name(name)
+      names = interface.drivers.map(&:name)
+      drivers.select { |d| names.include?(d.name) }
+    end
+
+    # Adds or update a driver
+    #
+    # @param new_driver [Driver] Driver to add or update
+    def add_or_update_driver(new_driver)
+      idx = drivers.find_index { |d| d.name == new_driver.name }
+      if idx
+        drivers[idx] = new_driver
+      else
+        drivers << new_driver
+      end
+    end
+
     alias_method :eql?, :==
   end
 end
