@@ -24,9 +24,15 @@ require "cwm/common_widgets"
 module Y2Network
   module Widgets
     class KernelModule < CWM::ComboBox
-      def initialize(settings)
+      # Constructor
+      #
+      # @param names    [Array<String>] Drivers names
+      # @param selected [String,nil] Initially selected driver (nil if no driver is selected)
+      def initialize(names, selected)
         textdomain "network"
-        @settings = settings
+        @names = names
+        @selected = selected
+        self.widget_id = "kernel_module"
       end
 
       def label
@@ -40,21 +46,15 @@ module Y2Network
       end
 
       def opt
-        [:editable]
+        [:editable, :notify]
       end
 
       def items
-        @settings.kernel_modules.map do |i|
-          [i, i]
-        end
+        @names.map { |n| [n, n] }
       end
 
       def init
-        self.value = @settings.driver unless @settings.driver.empty?
-      end
-
-      def store
-        @settings.driver = value
+        self.value = @selected if @selected
       end
     end
   end
