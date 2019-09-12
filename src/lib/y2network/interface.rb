@@ -127,7 +127,7 @@ module Y2Network
     # @param mechanism [Symbol] Property to base the rename on (:mac or :bus_id)
     def rename(new_name, mechanism)
       log.info "Rename interface '#{name}' to '#{new_name}' using the '#{mechanism}'"
-      @old_name = name
+      @old_name = name if name != new_name # same name, just set different mechanism
       @name = new_name
       @renaming_mechanism = mechanism
     end
