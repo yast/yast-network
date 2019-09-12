@@ -749,7 +749,7 @@ module Yast
           "s390-devices",
           {}
         ),
-        "net-udev"             => Ops.get_map(udev_rules, "net-udev", {}),
+        "net-udev"             => profile.udev_rules ? profile.udev_rules.udev_rules.map(&:to_hashes) : [],
         "config"               => NetworkConfig.Export,
         "interfaces"           => profile.interfaces ? profile.interfaces.interfaces.map(&:to_hashes) : [],
         "ipv6"                 => @ipv6,

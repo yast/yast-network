@@ -49,7 +49,7 @@ module Y2Network
 
       # Clones network interfaces settings into an AutoYaST interfaces section
       #
-      # @param config [Y2Network::Config] whole config as it need both interfaces and connection configs
+      # @param interface [Y2Network::InterfacesCollection] interfaces to detect udev rules
       # @return [UdevRulesSection]
       def self.new_from_network(config)
         new.tap { |r| r.init_from_network(config) }
@@ -71,7 +71,6 @@ module Y2Network
       # Method used by {.new_from_network} to populate the attributes when cloning routing settings
       #
       # @param connection_configs [Y2Network::InterfacesCollection] Network settings
-      # @return [Boolean] Result true on success or false otherwise
       def init_from_network(interfaces)
         @udev_rules = udev_rules_section(interfaces)
       end
@@ -83,17 +82,20 @@ module Y2Network
       # @param hash [Hash] net-udev section hash
       def udev_rules_from_hash(hash)
         hash.map do |h|
-          h = h["device"] if h["device"].is_a? ::Hash # hash can be enclosed in different hash
           res = InterfaceSection.new_from_hashes(h)
-          log.info "interfaces section #{res.inspect} load from hash #{h.inspect}"
+          log.info "udev rules section #{res.inspect} load from hash #{h.inspect}"
           res
         end
       end
 
       def udev_rules_section(interfaces)
-        interfaces
+        result = interfaces
           .map { |i| Y2Network::AutoinstProfile::UdevRuleSection.new_from_network(i) }
           .compact
+
+        log.info "udev rules for interfaces: #{interfaces.inspect} => #{result.inspect}"
+
+        result
       end
     end
   end

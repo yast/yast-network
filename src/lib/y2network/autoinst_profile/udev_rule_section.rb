@@ -31,6 +31,8 @@ module Y2Network
     #
     # @see InterfacesSection
     class UdevRuleSection < SectionWithAttributes
+      include Yast::Logger
+
       def self.attributes
         [
           { name: :rule },
