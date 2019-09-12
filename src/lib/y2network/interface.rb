@@ -57,6 +57,10 @@ module Y2Network
       #
       # @param conn [ConnectionConfig] Connection configuration related to the network interface
       def from_connection(conn)
+        # require here to avoid circular dependency
+        require "y2network/physical_interface"
+        require "y2network/virtual_interface"
+
         interface_class = conn.virtual? ? VirtualInterface : PhysicalInterface
         interface_class.new(conn.interface || conn.name, type: conn.type)
       end
@@ -127,7 +131,7 @@ module Y2Network
     # @param mechanism [Symbol] Property to base the rename on (:mac or :bus_id)
     def rename(new_name, mechanism)
       log.info "Rename interface '#{name}' to '#{new_name}' using the '#{mechanism}'"
-      @old_name = name
+      @old_name = name if name != new_name # same name, just set different mechanism
       @name = new_name
       @renaming_mechanism = mechanism
     end

@@ -48,6 +48,32 @@ describe Y2Network::Interface do
     end
   end
 
+  describe "#rename" do
+    it "assign name to new_name parameter" do
+      interface.rename("eth1", :mac)
+      expect(interface.name).to eq "eth1"
+    end
+
+    it "assign renaming_mechanism to mechanism parameter" do
+      interface.rename("eth1", :mac)
+      expect(interface.renaming_mechanism).to eq :mac
+    end
+
+    context "if new_name differs to old one" do
+      it "assign old name to old_name attribute" do
+        interface.rename("eth1", :mac)
+        expect(interface.old_name).to eq "eth0"
+      end
+    end
+
+    context "if new_name is same as old one" do
+      it "does not assign old_name attribute" do
+        interface.rename("eth0", :mac)
+        expect(interface.old_name).to eq nil
+      end
+    end
+  end
+
   describe "#==" do
     context "given two interfaces with the same name" do
       let(:other) { Y2Network::Interface.new(interface.name) }

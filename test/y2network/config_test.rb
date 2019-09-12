@@ -190,6 +190,14 @@ describe Y2Network::Config do
       end
     end
 
+    context "when the old name is nil" do
+      it "adjust renaming mechanism only" do
+        config.rename_interface(nil, "eth0", :mac)
+        eth1 = config.interfaces.by_name("eth0")
+        expect(eth1.renaming_mechanism).to eq(:mac)
+      end
+    end
+
     context "when dhcp_hostname points to the renamed interface" do
       before do
         allow(config.dns).to receive(:dhcp_hostname).and_return("eth0")
