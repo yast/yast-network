@@ -102,10 +102,16 @@ module Y2Network
 
       # Finds the available drivers
       def find_drivers
-        candidate_drivers = @interfaces
+        drivers_names =
+          @interfaces
           .select { |i| i.is_a?(Y2Network::PhysicalInterface) }
-          .flat_map { |i| i.drivers }
-        @drivers = candidate_drivers.map(&:copy).uniq
+          .flat_map(&:drivers)
+          .map(&:name)
+          .uniq
+
+        @drivers = drivers_names.map do |name|
+          Y2Network::Driver.from_system(name)
+        end
       end
 
       # Instantiates an interface given a hash containing hardware details

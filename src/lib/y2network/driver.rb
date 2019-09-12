@@ -17,20 +17,33 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/can_be_copied"
+require "yast"
 
 module Y2Network
   # This class represents a driver for an interface
   #
   # It is composed of a kernel module name and a string representing the module options
   class Driver
-    include CanBeCopied
+    class << self
+      # Returns a driver using the information from the system
+      #
+      # @param name [String] Driver's name
+      def from_system(name)
+        params = Yast::SCR.Read(Yast::Path.new(".modules.options.#{name}"))
+        params_string = params.map { |k, v| "#{k}=#{v}" }.join(" ")
+        new(name, params_string)
+      end
+    end
 
     # @return [String] Kernel module name
     attr_accessor :name
     # @return [String] Kernel module parameters
     attr_accessor :params
 
+    # Constructor
+    #
+    # @param name   [String] Driver name
+    # @param params [String] Driver parameters (e.g., "csum=1 debug=16")
     def initialize(name, params = "")
       @name = name
       @params = params
@@ -42,6 +55,16 @@ module Y2Network
     # @return [Boolean]
     def ==(other)
       name == other.name && params == other.params
+    end
+
+    # Saves driver parameters to the underlying system
+    def save
+      parts = params.split(/ +/)
+      params_hash = parts.each_with_object({}) do |param, hash|
+        key, value = param.split("=")
+        hash[key] = value.to_s
+      end
+      Yast::SCR.Write(Yast::Path.new(".modules.options.#{name}"), params_hash)
     end
 
     # eql? (hash key equality) should alias ==, see also

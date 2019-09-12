@@ -126,7 +126,7 @@ describe Y2Network::UdevRule do
 
     it "writes changes using the udev_persistent agent" do
       expect(Yast::SCR).to receive(:Write).with(
-        Yast::Path.new(".udev_persistent.drivers"), { "virtio_net" => udev_rule.parts.map(&:to_s) }
+        Yast::Path.new(".udev_persistent.drivers"), "virtio_net" => udev_rule.parts.map(&:to_s)
       )
       expect(Yast::SCR).to receive(:Write).with(Yast::Path.new(".udev_persistent.nil"), [])
       described_class.write_drivers_rules([udev_rule])

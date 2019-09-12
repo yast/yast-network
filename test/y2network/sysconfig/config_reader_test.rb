@@ -36,7 +36,7 @@ describe Y2Network::Sysconfig::ConfigReader do
       Y2Network::Sysconfig::InterfacesReader,
       interfaces:  Y2Network::InterfacesCollection.new(interfaces),
       connections: connections,
-      drivers: drivers
+      drivers:     drivers
     )
   end
 
