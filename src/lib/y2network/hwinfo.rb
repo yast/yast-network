@@ -194,7 +194,8 @@ module Y2Network
       { name: "wl_bitrates", default: nil },
       { name: "dev_port", default: nil },
       { name: "type", default: nil },
-      { name: "name", default: "" }
+      { name: "name", default: "" },
+      { name: "modalias", default: nil }
     ].each do |hwinfo_item|
       define_method hwinfo_item[:name].downcase do
         @hwinfo ? @hwinfo.fetch(hwinfo_item[:name], hwinfo_item[:default]) : hwinfo_item[:default]

@@ -26,6 +26,13 @@ module Y2Network
     # @return [String]
     attr_accessor :ethtool_options
 
+    # User selected driver
+    #
+    # This driver will be set using a udev rule.
+    #
+    # @return [String]
+    attr_accessor :driver
+
     # Constructor
     #
     # @param name [String] Interface name (e.g., "eth0")
@@ -36,6 +43,13 @@ module Y2Network
       # @hardware and @name should not change during life of the object
       @hardware = hardware || Hwinfo.for(name) || Hwinfo.new
       @description = @hardware.name
+    end
+
+    # Returns interface modalias
+    #
+    # @return [String,nil] Modalias
+    def modalias
+      @hardware.modalias
     end
 
     # Determines whether the interface is present (attached)
