@@ -48,7 +48,8 @@ module Y2Network
         return @config if @config
         find_physical_interfaces
         find_connections
-        @config = { interfaces: @interfaces, connections: @connections }
+        find_drivers
+        @config = { interfaces: @interfaces, connections: @connections, drivers: @drivers }
       end
 
       # Convenience method to get connections configuration
@@ -64,6 +65,13 @@ module Y2Network
       # @return [Y2Network::InterfacesCollection]
       def interfaces
         config[:interfaces]
+      end
+
+      # Convenience method to get the drivers list
+      #
+      # @return [Array<Y2Network::Driver>]
+      def drivers
+        config[:drivers]
       end
 
     private
@@ -90,6 +98,14 @@ module Y2Network
             add_interface(connection) if interface.nil?
             conns << connection
           end
+      end
+
+      # Finds the available drivers
+      def find_drivers
+        candidate_drivers = @interfaces
+          .select { |i| i.is_a?(Y2Network::PhysicalInterface) }
+          .flat_map { |i| i.drivers }
+        @drivers = candidate_drivers.map(&:copy).uniq
       end
 
       # Instantiates an interface given a hash containing hardware details

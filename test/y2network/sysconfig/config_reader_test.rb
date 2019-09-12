@@ -28,13 +28,15 @@ describe Y2Network::Sysconfig::ConfigReader do
   let(:interfaces) { [eth0, wlan0] }
   let(:eth0_config) { instance_double(Y2Network::ConnectionConfig::Ethernet) }
   let(:connections) { [eth0_config] }
+  let(:drivers) { Y2Network::Driver.new("virtio_net", "") }
   let(:routes_file) { instance_double(Y2Network::Sysconfig::RoutesFile, load: nil, routes: []) }
   let(:dns_reader) { instance_double(Y2Network::Sysconfig::DNSReader, config: dns) }
   let(:interfaces_reader) do
     instance_double(
       Y2Network::Sysconfig::InterfacesReader,
       interfaces:  Y2Network::InterfacesCollection.new(interfaces),
-      connections: connections
+      connections: connections,
+      drivers: drivers
     )
   end
 
@@ -68,6 +70,11 @@ describe Y2Network::Sysconfig::ConfigReader do
     it "returns a configuration which includes DNS settings" do
       config = reader.config
       expect(config.dns).to eq(dns)
+    end
+
+    it "returns a configuration which includes available drivers" do
+      config = reader.config
+      expect(config.drivers).to eq(drivers)
     end
 
     it "sets the config source to :sysconfig" do

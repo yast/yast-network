@@ -50,6 +50,8 @@ module Y2Network
     attr_accessor :routing
     # @return [DNS] DNS configuration
     attr_accessor :dns
+    # @return [Array<Driver>] Available drivers
+    attr_accessor :drivers
     # @return [Symbol] Information source (see {Y2Network::Reader} and {Y2Network::Writer})
     attr_accessor :source
 
@@ -98,10 +100,12 @@ module Y2Network
     # @param routing     [Routing] Object with routing configuration
     # @param dns         [DNS] Object with DNS configuration
     # @param source      [Symbol] Configuration source
+    # @param drivers     [Array<Driver>] List of available drivers
     def initialize(interfaces: InterfacesCollection.new, connections: ConnectionConfigsCollection.new,
-      routing: Routing.new, dns: DNS.new, source:)
+      routing: Routing.new, dns: DNS.new, drivers: [], source:)
       @interfaces = interfaces
       @connections = connections
+      @drivers = drivers
       @routing = routing
       @dns = dns
       @source = source

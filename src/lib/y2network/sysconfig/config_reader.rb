@@ -48,6 +48,7 @@ module Y2Network
         Config.new(
           interfaces:  interfaces_reader.interfaces,
           connections: interfaces_reader.connections,
+          drivers:     interfaces_reader.drivers,
           routing:     routing,
           dns:         dns,
           source:      :sysconfig

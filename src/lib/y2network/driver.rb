@@ -17,11 +17,15 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
+require "y2network/can_be_copied"
+
 module Y2Network
   # This class represents a driver for an interface
   #
   # It is composed of a kernel module name and a string representing the module options
   class Driver
+    include CanBeCopied
+
     # @return [String] Kernel module name
     attr_accessor :name
     # @return [String] Kernel module parameters
@@ -32,7 +36,7 @@ module Y2Network
       @params = params
     end
 
-    # Determines whether two interfaces are equal
+    # Determines whether two drivers are equal
     #
     # @param other [Driver] Driver to compare with
     # @return [Boolean]

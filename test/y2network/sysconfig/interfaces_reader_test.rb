@@ -29,8 +29,9 @@ describe Y2Network::Sysconfig::InterfacesReader do
 
   let(:eth0) do
     {
-      "active" => true, "dev_name" => "eth0", "mac" => "00:12:34:56:78:90", "name" => "Ethernet Connection",
-      "type" => "eth"
+      "active" => true, "dev_name" => "eth0", "mac" => "00:12:34:56:78:90",
+      "name" => "Ethernet Connection", "type" => "eth",
+      "drivers" => [{ "modules" => [["virtio_net", ""]] }]
     }
   end
 
@@ -102,6 +103,15 @@ describe Y2Network::Sysconfig::InterfacesReader do
       connections = reader.connections
       conn = connections.by_name("eth0")
       expect(conn.interface).to eq("eth0")
+    end
+  end
+
+  describe "#drivers" do
+    it "returns a list of drivers" do
+      drivers = reader.drivers
+      expect(drivers).to eq(
+        [Y2Network::Driver.new("virtio_net", "")]
+      )
     end
   end
 end

@@ -234,6 +234,7 @@ module Y2Network
     # @return [Array<Driver>] List of drivers
     def drivers
       drivers_list = @hwinfo.fetch("drivers", [])
+      return [] unless drivers_list[0]
       modules = drivers_list[0].fetch("modules", [])
       modules.map { |m| Driver.new(*m) }
     end
