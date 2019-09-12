@@ -57,7 +57,7 @@ module Y2Network
         config.interfaces.find do |interface|
           next unless interface.hardware
 
-          hw_method = AutoinstProfile::UdevRulesSectionSection::VALUE_MAPPING[udev_rule.rule]
+          hw_method = AutoinstProfile::UdevRuleSection::VALUE_MAPPING[udev_rule.mechanism]
           interface.hardware.public_send(hw_method) == udev_rule.value
         end
       end
@@ -66,8 +66,7 @@ module Y2Network
         solve_collision(config, target_interface, udev_rule)
 
         old_name = target_interface.name == udev_rule.name ? nil : target_interface.name
-        mechanism = AutoinstProfile::UdevRulesSectionSection::RULE_MAPPING[udev_rule.rule]
-        config.rename_interface(old_name, udev_rule.name, mechanism)
+        config.rename_interface(old_name, udev_rule.name, rule.mechanism)
       end
 
       def create_interface(_config, udev_rule)

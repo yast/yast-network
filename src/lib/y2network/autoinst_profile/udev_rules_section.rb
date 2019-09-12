@@ -83,7 +83,7 @@ module Y2Network
       # @param hash [Hash] net-udev section hash
       def udev_rules_from_hash(hash)
         hash.map do |h|
-          res = InterfaceSection.new_from_hashes(h)
+          res = UdevRuleSection.new_from_hashes(h)
           log.info "udev rules section #{res.inspect} load from hash #{h.inspect}"
           res
         end

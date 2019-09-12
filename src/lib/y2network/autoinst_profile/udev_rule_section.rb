@@ -95,6 +95,11 @@ module Y2Network
           raise("invalid renaming mechanism #{interface.renaming_mechanism}")
         @value = interface.hardware.public_send(VALUE_MAPPING[interface.renaming_mechanism])
       end
+
+      # helper to get mechanism symbol from rule
+      def mechanism
+        RULE_MAPPING.each_pair { |k,v| return k if v == rule }
+      end
     end
   end
 end
