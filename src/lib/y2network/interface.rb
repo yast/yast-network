@@ -57,6 +57,10 @@ module Y2Network
       #
       # @param conn [ConnectionConfig] Connection configuration related to the network interface
       def from_connection(conn)
+        # require here to avoid circular dependency
+        require "y2network/physical_interface"
+        require "y2network/virtual_interface"
+
         interface_class = conn.virtual? ? VirtualInterface : PhysicalInterface
         interface_class.new(conn.interface || conn.name, type: conn.type)
       end
