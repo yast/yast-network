@@ -195,18 +195,12 @@ describe Yast::NetworkAutoconfiguration do
     let(:instance) { Yast::NetworkAutoconfiguration.instance }
 
     it "returns true if any of available interfaces has configuration and is up" do
-      allow(Yast::LanItems)
-        .to receive(:Read)
-        .and_return(true)
-      allow(Yast::LanItems)
-        .to receive(:GetNetcardNames)
-        .and_return([IFACE, "enp0s3", "br7"])
-      allow(Yast::NetworkInterfaces)
-        .to receive(:adapt_old_config!)
-      allow(Yast::NetworkInterfaces)
-        .to receive(:Check)
-        .with(IFACE)
-        .and_return(true)
+      allow(Yast::Lan).to receive(:yast_config)
+        .and_return(Y2Network::Config.new(
+          interfaces: Y2Network::InterfacesCollection.new([double(name: IFACE)]),
+          connections: Y2Network::ConnectionConfigsCollection.new([double(name: IFACE)]),
+          source: :testing
+        ))
       allow(Yast::SCR)
         .to receive(:Execute)
         .and_return(0)
