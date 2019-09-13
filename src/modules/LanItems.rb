@@ -1184,9 +1184,9 @@ module Yast
     # It supports differents types of summaries depending on the options[:type]
     #
     # @see LanItemsSummary
-    # @param type [Hash] summary options
+    # @param type [String,Symbol] summary options, supported "one-line" and "proposal"
     # @return [String] summary of the configured items
-    def summary(type = "default")
+    def summary(type)
       LanItemsSummary.new.send(type)
     end
 

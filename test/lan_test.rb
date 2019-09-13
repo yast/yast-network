@@ -34,6 +34,7 @@ describe "LanClass" do
 
   before do
     Yast::Lan.clear_configs
+    allow(Yast::Lan).to receive(:system_config).and_call_original
   end
 
   describe "#Packages" do

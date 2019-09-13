@@ -64,6 +64,7 @@ RSpec.configure do |c|
     Yast::Lan.clear_configs
     allow(Yast::NetworkInterfaces).to receive(:Write)
     allow(Y2Network::Hwinfo).to receive(:hwinfo_from_hardware)
+    allow(Yast::Lan).to receive(:system_config).and_return(Y2Network::Config.new(source: :testing))
   end
 end
 
