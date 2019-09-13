@@ -53,19 +53,32 @@ module Y2Network
         )
       end
 
+      def init
+        disable_kernel_options if @builder.driver == :auto
+      end
+
       def handle(event)
         return unless event["ID"] == "kernel_module" && event["EventReason"] == "ValueChanged"
         return nil if @old_kernel_module == kernel_module_widget.value
 
-        new_driver = @builder.drivers.find { |d| d.name == kernel_module_widget.value }
-        kernel_options_widget.value = new_driver.params if new_driver
+        if kernel_module_widget.value == :auto
+          disable_kernel_options
+        else
+          enable_kernel_options
+        end
+
         @old_kernel_module = kernel_module_widget.value
 
         nil
       end
 
       def store
-        @builder.driver = Y2Network::Driver.new(kernel_module_widget.value, kernel_options_widget.value)
+        @builder.driver =
+          if kernel_module_widget.value == :auto
+            :auto
+          else
+            Y2Network::Driver.new(kernel_module_widget.value, kernel_options_widget.value)
+          end
       end
 
     private
@@ -73,14 +86,26 @@ module Y2Network
       def kernel_module_widget
         return @kernel_module_widget if @kernel_module_widget
         drivers_names = @builder.drivers.map(&:name)
-        selected_driver = @builder.driver.name if @builder.driver
-        @kernel_module_widget = KernelModule.new(drivers_names, selected_driver)
+        selected_driver = @builder.driver.name if @builder.driver != :auto
+        current_driver = @builder.interface.current_driver if @builder.interface
+        @kernel_module_widget = KernelModule.new(drivers_names, selected_driver, current_driver)
       end
 
       def kernel_options_widget
         return @kernel_options_widget if @kernel_options_widget
-        options = @builder.driver ? @builder.driver.params : ""
+        options = @builder.driver != :auto ? @builder.driver.params : ""
         @kernel_options_widget ||= KernelOptions.new(options)
+      end
+
+      def disable_kernel_options
+        kernel_options_widget.value = ""
+        kernel_options_widget.disable
+      end
+
+      def enable_kernel_options
+        new_driver = @builder.drivers.find { |d| d.name == kernel_module_widget.value }
+        kernel_options_widget.value = new_driver.params if new_driver
+        kernel_options_widget.enable
       end
     end
   end

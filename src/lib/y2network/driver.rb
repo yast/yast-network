@@ -70,6 +70,7 @@ module Y2Network
     # @param other [Driver] Driver to compare with
     # @return [Boolean]
     def ==(other)
+      return false unless other.is_a?(Driver)
       name == other.name && params == other.params
     end
 
