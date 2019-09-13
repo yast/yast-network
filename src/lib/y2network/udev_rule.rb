@@ -80,6 +80,8 @@ module Y2Network
 
       # Returns the udev rule for a given device
       #
+      # Only the naming rules are considered.
+      #
       # @param device [String] Network device name
       # @return [UdevRule] udev rule
       def find_for(device)
