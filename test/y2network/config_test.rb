@@ -323,7 +323,8 @@ describe Y2Network::Config do
 
   describe "#drivers_for_interface" do
     let(:e1000) { Y2Network::Driver.new("e1000", "") }
-    let(:drivers) { [virtio_net, e1000] }
+    let(:custom) { Y2Network::Driver.new("custom", "") }
+    let(:drivers) { [virtio_net, e1000, custom] }
 
     before do
       allow(eth0).to receive(:drivers).and_return([Y2Network::Driver.new("virtio_net")])
@@ -332,6 +333,17 @@ describe Y2Network::Config do
     it "returns the driver for a given interface" do
       drivers = config.drivers_for_interface("eth0")
       expect(drivers).to eq([virtio_net])
+    end
+
+    context "when a custom driver is set" do
+      before do
+        eth0.custom_driver = custom.name
+      end
+
+      it "includes the custom driver" do
+        expect(config.drivers_for_interface("eth0"))
+          .to include(custom)
+      end
     end
   end
 

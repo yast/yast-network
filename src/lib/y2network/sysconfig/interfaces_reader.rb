@@ -102,12 +102,10 @@ module Y2Network
 
       # Finds the available drivers
       def find_drivers
-        drivers_names =
-          @interfaces
-          .select { |i| i.is_a?(Y2Network::PhysicalInterface) }
-          .flat_map(&:drivers)
-          .map(&:name)
-          .uniq
+        physical_interfaces = @interfaces.physical
+        drivers_names = physical_interfaces.flat_map(&:drivers).map(&:name)
+        drivers_names += @interfaces.physical.map(&:custom_driver).compact
+        drivers_names.uniq!
 
         @drivers = drivers_names.map do |name|
           Y2Network::Driver.from_system(name)

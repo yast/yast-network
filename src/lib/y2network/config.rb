@@ -173,6 +173,7 @@ module Y2Network
     def drivers_for_interface(name)
       interface = interfaces.by_name(name)
       names = interface.drivers.map(&:name)
+      names << interface.custom_driver if interface.custom_driver && !names.include?(interface.custom_driver)
       drivers.select { |d| names.include?(d.name) }
     end
 

@@ -76,6 +76,13 @@ module Y2Network
       InterfacesCollection.new(interfaces.select { |i| i.type == type })
     end
 
+    # Returns the list of physical interfaces
+    #
+    # @return [InterfacesCollection] List of physical interfaces
+    def physical
+      interfaces.select { |i| i.is_a?(PhysicalInterface) }
+    end
+
     # Deletes elements which meet a given condition
     #
     # @return [InterfacesCollection]

@@ -92,6 +92,12 @@ describe Y2Network::InterfacesCollection do
     end
   end
 
+  describe "#physical" do
+    it "returns only physical interfaces" do
+      expect(collection.physical.map(&:name)).to eq(["eth0", "wlan0"])
+    end
+  end
+
   describe "#known_names" do
     it "returns the list of known interfaces" do
       expect(collection.known_names).to eq(["eth0", "br0", "wlan0"])
