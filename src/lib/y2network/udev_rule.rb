@@ -146,7 +146,7 @@ module Y2Network
 
       # Writes drivers specific udev rules to the filesystem
       #
-      # Those roles that does not have an "ENV{MODALIAS}=\"xxx\"" part will be ignored.
+      # Those rules that does not have an MODALIAS part will be ignored.
       #
       # @param udev_rules [Array<UdevRule>] List of udev rules
       def write_drivers_rules(udev_rules)
