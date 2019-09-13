@@ -89,7 +89,7 @@ module Y2Network
         return if existing_interface == target_interface
 
         prefix = existing_interface.name[/\A(.*[^\d])\d+\z/, 1]
-        new_name = config.interfaces.new_name(prefix)
+        new_name = config.interfaces.free_name(prefix)
 
         # TODO: what mechanism should be default?
         config.rename_interface(existing_interface.name, new_name, :mac)
