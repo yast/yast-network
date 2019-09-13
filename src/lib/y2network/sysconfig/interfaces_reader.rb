@@ -143,7 +143,7 @@ module Y2Network
 
       # Detects the renaming mechanism used by the interface
       #
-      # @param name [PhysicalInterface] Interface
+      # @param iface [PhysicalInterface] Interface
       # @return [Symbol] :mac (MAC address), :bus_id (BUS ID) or :none (no renaming)
       def renaming_mechanism_for(iface)
         rule = UdevRule.find_for(iface.name)

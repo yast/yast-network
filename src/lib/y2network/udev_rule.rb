@@ -31,10 +31,10 @@ module Y2Network
   # * 79-yast2-drivers.rules ('drivers' group): rules to assign drivers to interfaces.
   #
   # This class offers a set of constructors to build different kinds of rules.
-  # See {#new_mac_based_rename}, {#new_bus_id_based_rename} and {#new_driver_assignment}.
+  # See {.new_mac_based_rename}, {.new_bus_id_based_rename} and {.new_driver_assignment}.
   #
   # When it comes to write rules to the filesystem, we decided to offer different methods to
-  # write to each file. See {#write_net_rules} and {#write_drivers_rules}.
+  # write to each file. See {.write_net_rules} and {.write_drivers_rules}.
   #
   # @example Create a rule containing some key/value pairs (rule part)
   #   rule = Y2Network::UdevRule.new(
@@ -53,7 +53,6 @@ module Y2Network
   #
   # @example Writing driver assignment rules
   #   rule = UdevRule.new_driver_assignment("virtio:d00000001v00001AF4", "virtio_net")
-  #   rule.to_s #=> "ENV{MODALIAS}==\"virtio:d00000001v00001AF4\", ENV{MODALIAS}=\"e1000\""
   #   UdevRule.write_drivers_rules([rule])
   #
   class UdevRule
