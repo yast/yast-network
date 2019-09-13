@@ -135,16 +135,13 @@ module Yast
       settings = deep_copy(settings)
       interfaces = settings["interfaces"] || []
       Builtins.y2milestone("interfaces: #{interfaces.inspect})")
+      net_udev = settings["net-udev"] || []
+      Builtins.y2milestone("net-udev: #{net_udev.inspect})")
 
       # Modules
       s390_devices = []
       Builtins.foreach(Ops.get_map(settings, "s390-devices", {})) do |_device, mod|
         s390_devices = Builtins.add(s390_devices, mod)
-      end
-
-      net_udev = []
-      Builtins.foreach(Ops.get_map(settings, "net-udev", {})) do |_device, mod|
-        net_udev = Builtins.add(net_udev, mod)
       end
 
       modules = []

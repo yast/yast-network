@@ -46,7 +46,7 @@ module Y2Network
     attr_reader :interfaces
     alias_method :to_a, :interfaces
 
-    def_delegators :@interfaces, :each, :push, :<<, :reject!, :map, :flat_map, :any?, :size, :select
+    def_delegators :@interfaces, :each, :push, :<<, :reject!, :map, :flat_map, :any?, :size, :select, :find
 
     # Constructor
     #
@@ -156,6 +156,24 @@ module Y2Network
       log.debug("bond slaves index: #{index}")
 
       index
+    end
+
+    # @return [String] returns free interface name for given prefix
+    def free_name(prefix)
+      free_names(prefix, 1).first
+    end
+
+    # @return [Array<String>] returns free interface name for given prefix
+    def free_names(prefix, count)
+      result = []
+      # TODO: when switch rubocop use endless range `(0..)`
+      (0..100000).each do |i|
+        candidate = prefix + i.to_s
+        next if by_name(candidate)
+
+        result << candidate
+        return result if result.size == count
+      end
     end
   end
 end

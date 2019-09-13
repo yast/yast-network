@@ -628,7 +628,7 @@ module Yast
       Builtins.y2debug("input %1", input)
 
       input["interfaces"] ||= []
-      # TODO: remove when s390 and udev no longer need it
+      # TODO: remove when s390 no longer need it
       interfaces = Builtins.listmap(input["interfaces"]) do |interface|
         # input: list of items $[ "device": "d", "foo": "f", "bar": "b"]
         # output: map of items  "d": $["FOO": "f", "BAR": "b"]
@@ -749,7 +749,7 @@ module Yast
           "s390-devices",
           {}
         ),
-        "net-udev"             => Ops.get_map(udev_rules, "net-udev", {}),
+        "net-udev"             => profile.udev_rules ? profile.udev_rules.udev_rules.map(&:to_hashes) : [],
         "config"               => NetworkConfig.Export,
         "interfaces"           => profile.interfaces ? profile.interfaces.interfaces.map(&:to_hashes) : [],
         "ipv6"                 => @ipv6,

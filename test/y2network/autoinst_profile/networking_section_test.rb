@@ -47,14 +47,16 @@ describe Y2Network::AutoinstProfile::NetworkingSection do
   describe ".new_from_hashes" do
     let(:hash) do
       {
-        "routing" => routing,
-        "dns"     => dns
+        "routing"  => routing,
+        "dns"      => dns,
+        "net-udev" => net_udev
       }
     end
     let(:routing) { {} }
     let(:routing_section) { double("RoutingSection") }
     let(:dns) { {} }
     let(:dns_section) { double("DNSSection") }
+    let(:net_udev) { {} }
 
     before do
       allow(Y2Network::AutoinstProfile::RoutingSection).to receive(:new_from_hashes)
@@ -91,5 +93,9 @@ describe Y2Network::AutoinstProfile::NetworkingSection do
       end
     end
 
+    it "initializes the udev rules section" do
+      section = described_class.new_from_hashes(hash)
+      expect(section.udev_rules.udev_rules).to eq([])
+    end
   end
 end

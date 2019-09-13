@@ -106,4 +106,10 @@ describe Y2Network::InterfacesCollection do
       end
     end
   end
+
+  describe "#free_names" do
+    it "returns count of names with prefix that is not yet used" do
+      expect(collection.free_names("eth", 3)).to eq(["eth1", "eth2", "eth3"])
+    end
+  end
 end

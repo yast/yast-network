@@ -25,9 +25,19 @@ require "y2network/interface_config_builder"
 
 describe Y2Network::Widgets::InterfaceName do
   let(:builder) do
-    Y2Network::InterfaceConfigBuilder.for("eth").tap { |b| b.name = "eth0" }
+    Y2Network::InterfaceConfigBuilder.for("eth")
   end
   subject { described_class.new(builder) }
+
+  let(:known_names) { [] }
+
+  before do
+    allow(Yast::Lan).to receive(:yast_config).and_return(
+      double(interfaces: double(known_names: known_names, free_names: ["eth1"]))
+    )
+    allow(builder).to receive(:find_interface)
+    builder.name = "eth0"
+  end
 
   include_examples "CWM::ComboBox"
 
@@ -37,7 +47,6 @@ describe Y2Network::Widgets::InterfaceName do
 
     it "passes for valid names only" do
       allow(subject).to receive(:value).and_return valid_name
-      allow(Yast::NetworkInterfaces).to receive(:List).and_return []
       expect(Yast::Popup).to_not receive(:Error)
 
       expect(subject.validate).to be true
@@ -46,16 +55,15 @@ describe Y2Network::Widgets::InterfaceName do
     # bnc#991486
     it "fails for long names" do
       allow(subject).to receive(:value).and_return long_name
-      allow(Yast::NetworkInterfaces).to receive(:List).and_return []
 
       expect(Yast::UI).to receive(:SetFocus)
       expect(subject.validate).to be false
     end
 
     context "when the name is already used" do
+      let(:known_names) { [valid_name] }
       before do
         allow(subject).to receive(:value).and_return valid_name
-        allow(Yast::NetworkInterfaces).to receive(:List).and_return [valid_name]
       end
 
       context "if the name was changed" do
