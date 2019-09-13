@@ -65,7 +65,6 @@ module Yast
       Yast.include self, "network/complex.rb"
       Yast.include self, "network/routines.rb"
       Yast.include self, "network/lan/s390.rb"
-      Yast.include self, "network/lan/udev.rb"
 
       reset_cache
 
@@ -543,115 +542,6 @@ module Yast
       renamed?(@current)
     end
 
-    # Writes udev rules for all items.
-    #
-    # Currently only interesting change is renaming interface.
-    def WriteUdevItemsRules
-      # loop over all items and checks if device name has changed
-      net_rules = []
-
-      Builtins.foreach(
-        Convert.convert(
-          Map.Keys(@Items),
-          from: "list",
-          to:   "list <integer>"
-        )
-      ) do |key|
-        item_udev_net = GetItemUdevRule(key)
-        next if IsEmpty(item_udev_net)
-        dev_name = Ops.get_string(@Items, [key, "hwinfo", "dev_name"], "")
-        @current = key
-        if dev_name != GetItemUdev("NAME")
-          # when changing device name you have a choice
-          # - change kernel "match rule", or
-          # - remove it completely
-          # removing is less error prone when tracking name changes, so it was chosen.
-          item_udev_net = RemoveKeyFromUdevRule(item_udev_net, "KERNEL")
-          # setting links down during AY is forbidden bcs it can freeze ssh installation
-          SetIfaceDown(dev_name) if !Mode.autoinst
-
-          @force_restart = true
-        end
-        net_rules = Builtins.add(
-          net_rules,
-          Builtins.mergestring(item_udev_net, ", ")
-        )
-      end
-
-      Builtins.y2milestone("write net udev rules: %1", net_rules)
-
-      write_update_udevd(net_rules)
-
-      true
-    end
-
-    def WriteUdevDriverRules
-      udev_drivers_rules = {}
-
-      Builtins.foreach(
-        Convert.convert(
-          Map.Keys(@Items),
-          from: "list",
-          to:   "list <integer>"
-        )
-      ) do |key|
-        driver = Ops.get_string(@Items, [key, "udev", "driver"], "")
-        if IsNotEmpty(driver)
-          modalias = Ops.get_string(@Items, [key, "hwinfo", "modalias"], "")
-          driver_rule = []
-
-          driver_rule = AddToUdevRule(
-            driver_rule,
-            Builtins.sformat("ENV{MODALIAS}==\"%1\"", modalias)
-          )
-          driver_rule = AddToUdevRule(
-            driver_rule,
-            Builtins.sformat("ENV{MODALIAS}=\"%1\"", driver)
-          )
-
-          Ops.set(udev_drivers_rules, driver, driver_rule)
-        end
-      end
-
-      Builtins.y2milestone("write drivers udev rules: %1", udev_drivers_rules)
-
-      SCR.Write(path(".udev_persistent.drivers"), udev_drivers_rules)
-
-      # write rules from driver
-      Builtins.foreach(
-        Convert.convert(
-          @driver_options,
-          from: "map <string, any>",
-          to:   "map <string, string>"
-        )
-      ) do |key, value|
-        val = {}
-        Builtins.foreach(Builtins.splitstring(value, " ")) do |k|
-          l = Builtins.splitstring(k, "=")
-          Ops.set(val, Ops.get(l, 0, ""), Ops.get(l, 1, ""))
-        end
-        val = nil if IsEmpty(value)
-        SCR.Write(Builtins.add(path(".modules.options"), key), val)
-      end
-
-      SCR.Write(path(".modules"), nil)
-
-      nil
-    end
-
-    def WriteUdevRules
-      WriteUdevItemsRules()
-      WriteUdevDriverRules()
-
-      # wait so that ifcfgs written in NetworkInterfaces are newer
-      # (1-second-wise) than netcontrol status files,
-      # and rcnetwork reload actually works (bnc#749365)
-      SCR.Execute(path(".target.bash"), "/usr/bin/udevadm settle")
-      sleep(1)
-
-      nil
-    end
-
     def write
       renamed_items = @Items.keys.select { |item_id| renamed?(item_id) }
       renamed_items.each do |item_id|
@@ -660,16 +550,6 @@ module Yast
         NetworkInterfaces.Change2(renamed_to(item_id), devmap, false) if devmap
         SetItemName(item_id, renamed_to(item_id))
       end
-
-      LanItems.WriteUdevRules if !Stage.cont && InstallInfConvertor.instance.AllowUdevModify
-    end
-
-    # Exports configuration for use in AY profile
-    #
-    # TODO: it currently exports only udevs (as a consequence of dropping LanUdevAuto)
-    # so once it is extended, all references has to be checked
-    def export(devices)
-      export_udevs(devices)
     end
 
     # Function which returns if the settings were modified
@@ -1931,112 +1811,6 @@ module Yast
       Host.remove_ip(ip)
     end
 
-    # Exports udev rules for AY profile
-    def export_udevs(devices)
-      devices = deep_copy(devices)
-      ay = { "s390-devices" => {}, "net-udev" => {} }
-      if Arch.s390
-        devs = []
-        Builtins.foreach(
-          Convert.convert(devices, from: "map", to: "map <string, any>")
-        ) do |_type, value|
-          devs = Convert.convert(
-            Builtins.union(devs, Map.Keys(Convert.to_map(value))),
-            from: "list",
-            to:   "list <string>"
-          )
-        end
-        Builtins.foreach(devs) do |device|
-          begin
-            driver = File.readlink("/sys/class/net/#{device}/device/driver")
-          rescue SystemCallError => e
-            Builtins.y2error("Failed to read driver #{e.inspect}")
-            next
-          end
-          driver = File.basename(driver)
-          device_type = ""
-          chanids = ""
-          case driver
-          when "qeth"
-            device_type = driver
-          when "ctcm"
-            device_type = "ctc"
-          when "netiucv"
-            device_type = "iucv"
-          else
-            Builtins.y2error("unknown driver type :#{driver}")
-          end
-          chan_ids = SCR.Execute(
-            path(".target.bash_output"),
-            Builtins.sformat(
-              "for i in $(seq 0 2); do chanid=$(/usr/bin/ls -l /sys/class/net/%1/device/cdev$i); /usr/bin/echo ${chanid##*/}; done | /usr/bin/tr '\n' ' '",
-              device.shellescape
-            )
-          )
-          if !chan_ids["stdout"].empty?
-            chanids = String.CutBlanks(Ops.get_string(chan_ids, "stdout", ""))
-          end
-
-          # we already know that kernel device exist, otherwise next above would apply
-          # FIXME: It seems that it is not always the case (bsc#1124002)
-          portname_file = "/sys/class/net/#{device}/device/portname"
-          portname = ::File.exist?(portname_file) ? ::File.read(portname_file).strip : ""
-
-          protocol_file = "/sys/class/net/#{device}/device/protocol"
-          protocol = ::File.exist?(protocol_file) ? ::File.read(protocol_file).strip : ""
-
-          layer2_ret = SCR.Execute(
-            path(".target.bash"),
-            Builtins.sformat(
-              "/usr/bin/grep -q 1 /sys/class/net/%1/device/layer2",
-              device.shellescape
-            )
-          )
-          layer2 = layer2_ret == 0
-          Ops.set(ay, ["s390-devices", device], "type" => device_type)
-          Ops.set(ay, ["s390-devices", device, "chanids"], chanids) if !chanids.empty?
-          Ops.set(ay, ["s390-devices", device, "portname"], portname) if !portname.empty?
-          Ops.set(ay, ["s390-devices", device, "protocol"], protocol) if !protocol.empty?
-          Ops.set(ay, ["s390-devices", device, "layer2"], true) if layer2
-          port0 = SCR.Execute(
-            path(".target.bash_output"),
-            Builtins.sformat(
-              "port0=$(/usr/bin/ls -l /sys/class/net/%1/device/cdev0); /usr/bin/echo ${port0##*/} | /usr/bin/tr -d '\n'",
-              device
-            )
-          )
-          Builtins.y2milestone("port0 %1", port0)
-          if !port0["stdout"].empty?
-            value = Ops.get_string(port0, "stdout", "")
-            Ops.set(
-              ay,
-              ["net-udev", device],
-              "rule" => "KERNELS", "name" => device, "value" => value
-            )
-          end
-        end
-      else
-        configured = Items().select { |i, _| IsItemConfigured(i) }
-        ay["net-udev"] = configured.keys.each_with_object({}) do |id, udev|
-          @current = id # for GetItemUdev
-
-          name = GetItemUdev("NAME").to_s
-          rule = ["ATTR{address}", "KERNELS"].find { |r| !GetItemUdev(r).to_s.empty? }
-
-          next if !rule || name.empty?
-
-          udev[name] = {
-            "rule"  => rule,
-            "name"  => name,
-            "value" => GetItemUdev(rule)
-          }
-        end
-      end
-
-      Builtins.y2milestone("AY profile %1", ay)
-      deep_copy(ay)
-    end
-
     # Searches available items according sysconfig option
     #
     # Expects a block. The block is provided
@@ -2117,7 +1891,6 @@ module Yast
     publish function: :GetItemUdevRule, type: "list <string> (integer)"
     publish function: :GetItemUdev, type: "string (string)"
     publish function: :ReplaceItemUdev, type: "list <string> (string, string, string)"
-    publish function: :WriteUdevRules, type: "void ()"
     publish function: :GetModified, type: "boolean ()"
     publish function: :SetModified, type: "void ()"
     publish function: :AddNew, type: "void ()"
