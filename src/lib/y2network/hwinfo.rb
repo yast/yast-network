@@ -194,7 +194,8 @@ module Y2Network
       { name: "wl_bitrates", default: nil },
       { name: "dev_port", default: nil },
       { name: "type", default: nil },
-      { name: "name", default: "" }
+      { name: "name", default: "" },
+      { name: "modalias", default: nil }
     ].each do |hwinfo_item|
       define_method hwinfo_item[:name].downcase do
         @hwinfo ? @hwinfo.fetch(hwinfo_item[:name], hwinfo_item[:default]) : hwinfo_item[:default]
@@ -232,8 +233,9 @@ module Y2Network
     #
     # @return [Array<Driver>] List of drivers
     def drivers
-      drivers_list = @hwinfo.fetch("drivers", [])
-      modules = drivers_list[0].fetch("modules", [])
+      driver = @hwinfo.fetch("drivers", []).first
+      return [] unless driver
+      modules = driver.fetch("modules", [])
       modules.map { |m| Driver.new(*m) }
     end
 

@@ -18,6 +18,7 @@
 # find current contact information at www.suse.com.
 require_relative "../test_helper"
 require "y2network/config"
+require "y2network/driver"
 require "y2network/routing_table"
 require "y2network/interface"
 require "y2network/interfaces_collection"
@@ -34,7 +35,8 @@ describe Y2Network::Config do
 
   subject(:config) do
     described_class.new(
-      interfaces: interfaces, connections: connections, routing: routing, source: :sysconfig
+      interfaces: interfaces, connections: connections, routing: routing,
+      drivers: drivers, source: :sysconfig
     )
   end
 
@@ -53,6 +55,9 @@ describe Y2Network::Config do
     end
   end
   let(:connections) { Y2Network::ConnectionConfigsCollection.new([eth0_conn]) }
+
+  let(:virtio_net) { Y2Network::Driver.new("virtio_net", "csum=1") }
+  let(:drivers) { [virtio_net] }
 
   let(:routing) { Y2Network::Routing.new(tables: [table1, table2]) }
 
@@ -320,6 +325,50 @@ describe Y2Network::Config do
           expect { config.delete_interface(eth0.name) }.to change { config.interfaces.to_a }
             .from([eth0, br0]).to([br0])
         end
+      end
+    end
+  end
+
+  describe "#drivers_for_interface" do
+    let(:e1000) { Y2Network::Driver.new("e1000", "") }
+    let(:custom) { Y2Network::Driver.new("custom", "") }
+    let(:drivers) { [virtio_net, e1000, custom] }
+
+    before do
+      allow(eth0).to receive(:drivers).and_return([Y2Network::Driver.new("virtio_net")])
+    end
+
+    it "returns the driver for a given interface" do
+      drivers = config.drivers_for_interface("eth0")
+      expect(drivers).to eq([virtio_net])
+    end
+
+    context "when a custom driver is set" do
+      before do
+        eth0.custom_driver = custom.name
+      end
+
+      it "includes the custom driver" do
+        expect(config.drivers_for_interface("eth0"))
+          .to include(custom)
+      end
+    end
+  end
+
+  describe "#add_or_update_driver" do
+    let(:new_driver) { Y2Network::Driver.new("e1000", "") }
+
+    it "adds the driver" do
+      config.add_or_update_driver(new_driver)
+      expect(config.drivers).to eq([virtio_net, new_driver])
+    end
+
+    context "when a driver with the same name already exists" do
+      let(:new_driver) { Y2Network::Driver.new("virtio_net", "csum=0") }
+
+      it "replaces the driver with the given one" do
+        config.add_or_update_driver(new_driver)
+        expect(config.drivers).to eq([new_driver])
       end
     end
   end

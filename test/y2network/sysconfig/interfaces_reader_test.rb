@@ -23,14 +23,14 @@ require "y2network/udev_rule_part"
 
 describe Y2Network::Sysconfig::InterfacesReader do
   subject(:reader) { described_class.new }
-  let(:netcards) do
-    [eth0]
-  end
+
+  let(:netcards) { [eth0] }
 
   let(:eth0) do
     {
-      "active" => true, "dev_name" => "eth0", "mac" => "00:12:34:56:78:90", "name" => "Ethernet Connection",
-      "type" => "eth"
+      "active" => true, "dev_name" => "eth0", "mac" => "00:12:34:56:78:90",
+      "name" => "Ethernet Connection", "type" => "eth",
+      "drivers" => [{ "modules" => [["virtio_net", ""]] }]
     }
   end
 
@@ -45,6 +45,7 @@ describe Y2Network::Sysconfig::InterfacesReader do
 
   let(:configured_interfaces) { ["lo", "eth0"] }
   let(:hardware_wrapper) { Y2Network::HardwareWrapper.new }
+  let(:driver) { Y2Network::Driver.new("virtio_net") }
 
   TYPES = { "eth0" => "eth" }.freeze
 
@@ -56,6 +57,7 @@ describe Y2Network::Sysconfig::InterfacesReader do
     allow(Yast::SCR).to receive(:Dir).and_call_original
     allow(Yast::NetworkInterfaces).to receive(:GetTypeFromSysfs) { |n| TYPES[n] }
     allow(Y2Network::UdevRule).to receive(:find_for).and_return(udev_rule)
+    allow(Y2Network::Driver).to receive(:from_system).and_return(driver)
   end
 
   around { |e| change_scr_root(File.join(DATA_PATH, "scr_read"), &e) }
@@ -102,6 +104,12 @@ describe Y2Network::Sysconfig::InterfacesReader do
       connections = reader.connections
       conn = connections.by_name("eth0")
       expect(conn.interface).to eq("eth0")
+    end
+  end
+
+  describe "#drivers" do
+    it "returns a list of drivers" do
+      expect(reader.drivers).to eq([driver])
     end
   end
 end

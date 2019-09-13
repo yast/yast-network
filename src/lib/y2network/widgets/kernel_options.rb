@@ -25,10 +25,12 @@ Yast.import "Label"
 module Y2Network
   module Widgets
     class KernelOptions < CWM::InputField
-      def initialize(settings)
+      # Constructor
+      #
+      # @param options [String] Driver options
+      def initialize(options)
         textdomain "network"
-
-        @settings = settings
+        @options = options
       end
 
       def label
@@ -48,11 +50,7 @@ module Y2Network
       end
 
       def init
-        self.value = @settings.driver_options
-      end
-
-      def store
-        @settings.driver_options = value
+        self.value = @options
       end
     end
   end

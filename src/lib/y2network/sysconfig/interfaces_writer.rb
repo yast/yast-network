@@ -44,11 +44,11 @@ module Y2Network
 
     private
 
-      # Creates an udev rule for the given interface
+      # Creates an udev rule to rename the given interface
       #
       # @param iface [Interface] Interface to generate the udev rule for
       # @return [UdevRule,nil] udev rule or nil if it is not needed
-      def udev_rule_for(iface)
+      def renaming_udev_rule_for(iface)
         case iface.renaming_mechanism
         when :mac
           Y2Network::UdevRule.new_mac_based_rename(iface.name, iface.hardware.mac)
@@ -57,19 +57,34 @@ module Y2Network
         end
       end
 
+      # Creates an udev rule to set the driver for the given interface
+      #
+      # @param iface [Interface] Interface to generate the udev rule for
+      # @return [UdevRule,nil] udev rule or nil if it is not needed
+      def driver_udev_rule_for(iface)
+        return nil unless iface.respond_to?(:custom_driver) && iface.custom_driver
+        Y2Network::UdevRule.new_driver_assignment(iface.modalias, iface.custom_driver)
+      end
+
       # Renames interfaces and refreshes the udev service
       #
       # @param interfaces [InterfaceCollection] Interfaces
       def update_udevd(interfaces)
-        update_udev_rules(interfaces)
+        update_renaming_udev_rules(interfaces)
+        update_drivers_udev_rules(interfaces)
         reload_udev_rules
       end
 
-      def update_udev_rules(interfaces)
-        udev_rules = interfaces.map { |i| udev_rule_for(i) }.compact
+      def update_renaming_udev_rules(interfaces)
+        udev_rules = interfaces.map { |i| renaming_udev_rule_for(i) }.compact
         known_names = interfaces.known_names
-        custom_rules = Y2Network::UdevRule.all.reject { |u| known_names.include?(u.device) }
-        Y2Network::UdevRule.write(custom_rules + udev_rules)
+        custom_rules = Y2Network::UdevRule.naming_rules.reject { |u| known_names.include?(u.device) }
+        Y2Network::UdevRule.write_net_rules(custom_rules + udev_rules)
+      end
+
+      def update_drivers_udev_rules(interfaces)
+        udev_rules = interfaces.map { |i| driver_udev_rule_for(i) }.compact
+        Y2Network::UdevRule.write_drivers_rules(udev_rules)
       end
 
       def reload_udev_rules

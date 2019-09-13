@@ -23,7 +23,18 @@ module Y2Network
   # Simple udev rule class
   #
   # This class represents a network udev rule. The current implementation is quite simplistic,
-  # featuring a pretty simple API.
+  # featuring a an API which is tailored to our needs.
+  #
+  # Basically, udev rules are kept in two different files under `/etc/udev/rules.d`:
+  #
+  # * 70-persistent-net.rules ('net' group): rules to assign names to interfaces.
+  # * 79-yast2-drivers.rules ('drivers' group): rules to assign drivers to interfaces.
+  #
+  # This class offers a set of constructors to build different kinds of rules.
+  # See {.new_mac_based_rename}, {.new_bus_id_based_rename} and {.new_driver_assignment}.
+  #
+  # When it comes to write rules to the filesystem, we decided to offer different methods to
+  # write to each file. See {.write_net_rules} and {.write_drivers_rules}.
   #
   # @example Create a rule containing some key/value pairs (rule part)
   #   rule = Y2Network::UdevRule.new(
@@ -35,26 +46,46 @@ module Y2Network
   # @example Create a rule from a string
   #   rule = UdevRule.find_for("eth0")
   #   rule.to_s #=> "ACTION==\"add\", SUBSYSTEM==\"net\", ATTR{address}==\"?*31:78:f2\", NAME=\"eth0\""
+  #
+  # @example Writing renaming rules
+  #   rule = UdevRule.new_mac_based_rename("00:12:34:56:78:ab", "eth0")
+  #   UdevRule.write_net_rules([rule])
+  #
+  # @example Writing driver assignment rules
+  #   rule = UdevRule.new_driver_assignment("virtio:d00000001v00001AF4", "virtio_net")
+  #   UdevRule.write_drivers_rules([rule])
+  #
   class UdevRule
     class << self
       # Returns all persistent network rules
       #
       # @return [Array<UdevRule>] Persistent network rules
       def all
-        return @all if @all
-        rules_map = Yast::SCR.Read(Yast::Path.new(".udev_persistent.net")) || {}
-        @all = rules_map.values.map do |parts|
-          udev_parts = parts.map { |p| UdevRulePart.from_string(p) }
-          new(udev_parts)
-        end
+        naming_rules + drivers_rules
+      end
+
+      # Returns naming rules
+      #
+      # @return [Array<UdevRule>] Naming network rules
+      def naming_rules
+        find_rules(:net)
+      end
+
+      # Returns driver rules
+      #
+      # @return [Array<UdevRule>] Drivers rules
+      def drivers_rules
+        find_rules(:drivers)
       end
 
       # Returns the udev rule for a given device
       #
+      # Only the naming rules are considered.
+      #
       # @param device [String] Network device name
       # @return [UdevRule] udev rule
       def find_for(device)
-        all.find { |r| r.device == device }
+        naming_rules.find { |r| r.device == device }
       end
 
       # Helper method to create a rename rule based on a MAC address
@@ -107,17 +138,57 @@ module Y2Network
         new(base_parts.concat(parts))
       end
 
+      # Returns a module assignment rule
+      #
+      # @param modalias    [String] Interface's modalias
+      # @param driver_name [String] Module name
+      # @return [UdevRule] udev rule
+      def new_driver_assignment(modalias, driver_name)
+        parts = [
+          UdevRulePart.new("ENV{MODALIAS}", "==", modalias),
+          UdevRulePart.new("ENV{MODALIAS}", "=", driver_name)
+        ]
+        new(parts)
+      end
+
       # Writes udev rules to the filesystem
       #
       # @param udev_rules [Array<UdevRule>] List of udev rules
-      def write(udev_rules)
+      def write_net_rules(udev_rules)
         Yast::SCR.Write(Yast::Path.new(".udev_persistent.rules"), udev_rules.map(&:to_s))
+        Yast::SCR.Write(Yast::Path.new(".udev_persistent.nil"), []) # Writes changes to the rules file
+      end
+
+      # Writes drivers specific udev rules to the filesystem
+      #
+      # Those rules that does not have an MODALIAS part will be ignored.
+      #
+      # @param udev_rules [Array<UdevRule>] List of udev rules
+      def write_drivers_rules(udev_rules)
+        rules_hash = udev_rules.each_with_object({}) do |rule, hash|
+          driver = rule.part_value_for("ENV{MODALIAS}", "=")
+          next unless driver
+          hash[driver] = rule.parts.map(&:to_s)
+        end
+        Yast::SCR.Write(Yast::Path.new(".udev_persistent.drivers"), rules_hash)
         Yast::SCR.Write(Yast::Path.new(".udev_persistent.nil"), []) # Writes changes to the rules file
       end
 
       # Clears rules cache map
       def reset_cache
         @all = nil
+      end
+
+    private
+
+      def find_rules(group)
+        @all ||= {}
+        return @all[group] if @all[group]
+        rules_map = Yast::SCR.Read(Yast::Path.new(".udev_persistent.#{group}")) || {}
+        @all[group] = rules_map.values.map do |parts|
+          udev_parts = parts.map { |p| UdevRulePart.from_string(p) }
+          new(udev_parts)
+        end
       end
     end
 
@@ -191,8 +262,24 @@ module Y2Network
     end
 
     # Returns the device mentioned in the rule (if any)
+    #
+    # @return [String,nil] Device name or nil if not found
     def device
       part_value_for("NAME", "=")
+    end
+
+    # Returns the original modalias
+    #
+    # @return [String,nil] Original modalias or nil if not found
+    def original_modalias
+      part_value_for("ENV{MODALIAS}", "==")
+    end
+
+    # Returns the modalias
+    #
+    # @return [String,nil] Original modalias or nil if not found
+    def driver
+      part_value_for("ENV{MODALIAS}", "=")
     end
   end
 end

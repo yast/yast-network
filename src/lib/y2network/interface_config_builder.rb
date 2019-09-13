@@ -109,12 +109,6 @@ module Y2Network
     #   down, so here mainly workarounds, but ideally this save should change
     #   completely backend
     def save
-      if !driver.empty?
-        # TODO: new backend?
-        Yast::LanItems.setDriver(driver)
-        Yast::LanItems.driver_options[driver] = driver_options
-      end
-
       @connection_config.ip_aliases = aliases.each_with_object([]) do |map, result|
         ipaddr = IPAddress.from_string(map[:ip])
         ipaddr.prefix = map[:prefixlen].delete("/").to_i if map[:prefixlen]
@@ -132,6 +126,10 @@ module Y2Network
         firewall_interface.zone = firewall_zone if !firewall_interface.zone || firewall_zone != firewall_interface.zone.name
       end
 
+      if interface.respond_to?(:custom_driver) && driver
+        interface.custom_driver = driver.name if driver.name != interface.current_driver
+        yast_config.add_or_update_driver(driver)
+      end
       yast_config.rename_interface(@old_name, name, renaming_mechanism) if renamed_interface?
       yast_config.add_or_update_connection_config(@connection_config)
 
@@ -191,9 +189,9 @@ module Y2Network
     end
 
     # gets a list of available kernel modules for the interface
-    def kernel_modules
-      # TODO: new backend?
-      Yast::LanItems.GetItemModules("")
+    def drivers
+      return [] unless interface
+      yast_config.drivers_for_interface(interface.name)
     end
 
     # gets currently assigned firewall zone
@@ -244,28 +242,16 @@ module Y2Network
 
     # gets currently assigned kernel module
     def driver
-      # TODO: new backend
-      @driver ||= Yast::Ops.get_string(Yast::LanItems.getCurrentItem, ["udev", "driver"], "")
+      return @driver if @driver
+      driver_name = @interface.custom_driver || @interface.current_driver
+      return nil unless driver_name
+      @driver = yast_config.drivers.find { |d| d.name == driver_name }
     end
 
     # sets kernel module for interface
+    # @param value [Driver]
     def driver=(value)
-      # TODO: new backend
       @driver = value
-    end
-
-    # gets specific options for kernel driver
-    def driver_options
-      target_driver = @driver
-      target_driver = hwinfo.module if target_driver.empty?
-      # TODO: new backend
-      @driver_options ||= Yast::LanItems.driver_options[target_driver] || ""
-    end
-
-    # sets specific options for kernel driver
-    def driver_options=(value)
-      # TODO: new backend
-      @driver_options = value
     end
 
     # gets aliases for interface

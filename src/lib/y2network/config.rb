@@ -50,6 +50,8 @@ module Y2Network
     attr_accessor :routing
     # @return [DNS] DNS configuration
     attr_accessor :dns
+    # @return [Array<Driver>] Available drivers
+    attr_accessor :drivers
     # @return [Symbol] Information source (see {Y2Network::Reader} and {Y2Network::Writer})
     attr_accessor :source
 
@@ -98,10 +100,12 @@ module Y2Network
     # @param routing     [Routing] Object with routing configuration
     # @param dns         [DNS] Object with DNS configuration
     # @param source      [Symbol] Configuration source
+    # @param drivers     [Array<Driver>] List of available drivers
     def initialize(interfaces: InterfacesCollection.new, connections: ConnectionConfigsCollection.new,
-      routing: Routing.new, dns: DNS.new, source:)
+      routing: Routing.new, dns: DNS.new, drivers: [], source:)
       @interfaces = interfaces
       @connections = connections
+      @drivers = drivers
       @routing = routing
       @dns = dns
       @source = source
@@ -164,6 +168,28 @@ module Y2Network
       return if interface
       log.info "Creating new interface"
       interfaces << Interface.from_connection(connection_config)
+    end
+
+    # Returns the candidate drivers for a given interface
+    #
+    # @return [Array<Driver>]
+    def drivers_for_interface(name)
+      interface = interfaces.by_name(name)
+      names = interface.drivers.map(&:name)
+      names << interface.custom_driver if interface.custom_driver && !names.include?(interface.custom_driver)
+      drivers.select { |d| names.include?(d.name) }
+    end
+
+    # Adds or update a driver
+    #
+    # @param new_driver [Driver] Driver to add or update
+    def add_or_update_driver(new_driver)
+      idx = drivers.find_index { |d| d.name == new_driver.name }
+      if idx
+        drivers[idx] = new_driver
+      else
+        drivers << new_driver
+      end
     end
 
     alias_method :eql?, :==
