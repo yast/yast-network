@@ -71,7 +71,7 @@ module Y2Network
     private
 
       def kernel_module_widget
-        return @kernel_module_width if @kernel_module_width
+        return @kernel_module_widget if @kernel_module_widget
         drivers_names = @builder.drivers.map(&:name)
         selected_driver = @builder.driver.name if @builder.driver
         @kernel_module_widget = KernelModule.new(drivers_names, selected_driver)

@@ -127,7 +127,7 @@ describe Y2Network::Sysconfig::InterfacesWriter do
         let(:unknown_rule) { Y2Network::UdevRule.new_mac_based_rename("unknown", "00:11:22:33:44:55:66") }
 
         before do
-          allow(Y2Network::UdevRule).to receive(:all).and_return([unknown_rule])
+          allow(Y2Network::UdevRule).to receive(:naming_rules).and_return([unknown_rule])
         end
 
         it "keeps the rule" do

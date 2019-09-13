@@ -165,7 +165,7 @@ module Y2Network
       # @return [String,nil] Custom driver (or nil if not set)
       def custom_driver_for(iface)
         return nil unless iface.modalias
-        rule = UdevRule.all(:drivers).find { |r| r.original_modalias == iface.modalias }
+        rule = UdevRule.drivers_rules.find { |r| r.original_modalias == iface.modalias }
         rule ? rule.driver : nil
       end
     end

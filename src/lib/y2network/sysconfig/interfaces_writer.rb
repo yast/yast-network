@@ -78,7 +78,7 @@ module Y2Network
       def update_renaming_udev_rules(interfaces)
         udev_rules = interfaces.map { |i| renaming_udev_rule_for(i) }.compact
         known_names = interfaces.known_names
-        custom_rules = Y2Network::UdevRule.all(:net).reject { |u| known_names.include?(u.device) }
+        custom_rules = Y2Network::UdevRule.naming_rules.reject { |u| known_names.include?(u.device) }
         Y2Network::UdevRule.write_net_rules(custom_rules + udev_rules)
       end
 

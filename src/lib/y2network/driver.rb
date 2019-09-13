@@ -18,12 +18,15 @@
 # find current contact information at www.suse.com.
 
 require "yast"
+require "y2network/can_be_copied"
 
 module Y2Network
   # This class represents a driver for an interface
   #
   # It is composed of a kernel module name and a string representing the module options
   class Driver
+    include CanBeCopied
+
     class << self
       # Returns a driver using the information from the system
       #
@@ -76,7 +79,7 @@ module Y2Network
     # is called. The reason is that writing them is an expensive operation, so it is
     # better to write parameters for all drivers at the same time.
     #
-    # You might prefer to use Y2Network::Driver.write_options instead.
+    # You might prefer to use {.write_options} instead.
     #
     # @see Y2Network::Driver.commit
     def write_options

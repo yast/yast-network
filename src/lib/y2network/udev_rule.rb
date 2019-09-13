@@ -60,9 +60,22 @@ module Y2Network
       # Returns all persistent network rules
       #
       # @return [Array<UdevRule>] Persistent network rules
-      def all(group = :net)
-        @all ||= {}
-        @all[group] ||= find_rules(group)
+      def all
+        naming_rules + drivers_rules
+      end
+
+      # Returns naming rules
+      #
+      # @return [Array<UdevRule>] Naming network rules
+      def naming_rules
+        find_rules(:net)
+      end
+
+      # Returns driver rules
+      #
+      # @return [Array<UdevRule>] Drivers rules
+      def drivers_rules
+        find_rules(:drivers)
       end
 
       # Returns the udev rule for a given device
@@ -70,7 +83,7 @@ module Y2Network
       # @param device [String] Network device name
       # @return [UdevRule] udev rule
       def find_for(device)
-        all.find { |r| r.device == device }
+        naming_rules.find { |r| r.device == device }
       end
 
       # Helper method to create a rename rule based on a MAC address
@@ -167,8 +180,10 @@ module Y2Network
     private
 
       def find_rules(group)
+        @all ||= {}
+        return @all[group] if @all[group]
         rules_map = Yast::SCR.Read(Yast::Path.new(".udev_persistent.#{group}")) || {}
-        rules_map.values.map do |parts|
+        @all[group] = rules_map.values.map do |parts|
           udev_parts = parts.map { |p| UdevRulePart.from_string(p) }
           new(udev_parts)
         end

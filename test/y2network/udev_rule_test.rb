@@ -46,14 +46,16 @@ describe Y2Network::UdevRule do
       .and_return(udev_persistent_drivers)
   end
 
-  describe ".all" do
-    it "returns the rules from :net group" do
-      rules = described_class.all(:net)
+  describe ".naming_rules" do
+    it "returns naming rules" do
+      rules = described_class.naming_rules
       expect(rules.first.to_s).to match(/NAME=/)
     end
+  end
 
-    it "returns the rules from :drivers group" do
-      rules = described_class.all(:drivers)
+  describe ".drivers_rules" do
+    it "returns drivers rules" do
+      rules = described_class.drivers_rules
       expect(rules.first.to_s).to match(/MODALIAS/)
     end
   end
