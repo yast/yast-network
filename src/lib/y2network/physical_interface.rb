@@ -52,6 +52,13 @@ module Y2Network
       @hardware.modalias
     end
 
+    # Returns the name of the current driver
+    #
+    # @return [String]
+    def current_driver
+      @hardware.module
+    end
+
     # Determines whether the interface is present (attached)
     #
     # It relies in the hardware information

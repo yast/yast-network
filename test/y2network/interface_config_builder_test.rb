@@ -62,20 +62,36 @@ describe Y2Network::InterfaceConfigBuilder do
   end
 
   describe "#save" do
-    around do |block|
-      Yast::LanItems.AddNew
-      # FIXME: workaround for device without reading hwinfo, so udev is not initialized
-      Yast::LanItems.Items[Yast::LanItems.current]["udev"] = {}
-      block.call
-      Yast::LanItems.Rollback
-    end
+    let(:driver) { Y2Network::Driver.new("virtio_net", "csum=1") }
 
     it "stores driver configuration" do
-      subject.driver = "e1000e"
-      subject.driver_options = "test"
+      expect(config).to receive(:add_or_update_driver).with(driver)
+      subject.driver = driver
       subject.save
-      expect(Yast::LanItems.Items[Yast::LanItems.current]["udev"]["driver"]).to eq "e1000e"
-      expect(Yast::LanItems.driver_options["e1000e"]).to eq "test"
+    end
+
+    context "when the selected driver is different from the current one" do
+      before do
+        allow(eth0).to receive(:current_driver).and_return("e1000")
+      end
+
+      it "sets the interface driver" do
+        expect(eth0).to receive(:custom_driver=).with(driver.name)
+        config_builder.driver = driver
+        subject.save
+      end
+    end
+
+    context "when the selected driver is the same than the current one" do
+      before do
+        allow(eth0).to receive(:current_driver).and_return("virtio_net")
+      end
+
+      it "sets the interface driver" do
+        expect(eth0).to_not receive(:custom_driver=)
+        config_builder.driver = driver
+        subject.save
+      end
     end
 
     it "saves connection config" do
@@ -90,7 +106,7 @@ describe Y2Network::InterfaceConfigBuilder do
       end
 
       it "updates the name in the configuration" do
-        expect(Yast::Lan.yast_config).to receive(:rename_interface)
+        expect(config).to receive(:rename_interface)
           .with("eth0", "eth2", :mac)
         subject.save
       end
@@ -98,7 +114,7 @@ describe Y2Network::InterfaceConfigBuilder do
 
     context "when interface was not renamed" do
       it "does not alter the name" do
-        expect(Yast::Lan.yast_config).to_not receive(:rename_interface)
+        expect(config).to_not receive(:rename_interface)
         subject.save
       end
     end
