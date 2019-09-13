@@ -69,7 +69,7 @@ module Y2Network
         @udev_rules = udev_rules_from_hash(hash)
       end
 
-      # Method used by {.new_from_network} to populate the attributes when cloning routing settings
+      # Method used by {.new_from_network} to populate the attributes when cloning udev rules settings
       #
       # @param interfaces [Y2Network::InterfacesCollection] Network settings
       def init_from_network(interfaces)
@@ -89,6 +89,7 @@ module Y2Network
         end
       end
 
+      # @param interfaces [Y2Network::InterfacesCollection] interfaces to detect udev rules
       def udev_rules_section(interfaces)
         result = interfaces
                  .map { |i| Y2Network::AutoinstProfile::UdevRuleSection.new_from_network(i) }

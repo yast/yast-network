@@ -79,6 +79,7 @@ module Y2Network
       def load_generic(config, interface_section)
         config.bootproto = BootProtocol.from_name(interface_section.bootproto)
         config.name = interface_section.name || interface_section.device # device is just fallback
+        config.interface = config.name # in autoyast name and interface is same
         if config.bootproto == BootProtocol::STATIC
           # TODO: report if ipaddr missing for static config
           ipaddr = IPAddress.from_string(interface_section.ipaddr)

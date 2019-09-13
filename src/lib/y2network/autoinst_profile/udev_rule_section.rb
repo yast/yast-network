@@ -97,6 +97,7 @@ module Y2Network
       end
 
       # helper to get mechanism symbol from rule
+      # @return [Symbol] mechanism corresponding to {Interface#rename_mechanism}
       def mechanism
         RULE_MAPPING.each_pair { |k, v| return k if v == rule }
       end

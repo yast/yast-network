@@ -162,6 +162,7 @@ module Y2Network
       connections.add_or_update(connection_config)
       interface = interfaces.by_name(connection_config.interface)
       return if interface
+      log.info "Creating new interface"
       interfaces << Interface.from_connection(connection_config)
     end
 

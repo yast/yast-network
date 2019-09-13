@@ -23,7 +23,7 @@ require "y2network/autoinst_profile/udev_rule_section"
 module Y2Network
   module Autoinst
     # This class is responsible of importing the AutoYast udev rules section
-    # It is a bit different then other readers as it does not produce its config,
+    # It is a bit different than other readers as it does not produce its config,
     # but instead it is applied on top of current config by applying proper names
     # for interfaces or creating new ones.
     class UdevRulesReader
@@ -53,6 +53,8 @@ module Y2Network
     private
 
       # find according to udev rule interface that match given hardware specification or nil if not exist
+      # @param config [Config]
+      # @param udev_rule [AutoinstSection::UdevRuleSection]
       def interface_for(config, udev_rule)
         config.interfaces.find do |interface|
           next unless interface.hardware
@@ -62,6 +64,9 @@ module Y2Network
         end
       end
 
+      # @param config [Config]
+      # @param target_interface [Interface]
+      # @param udev_rule [AutoinstSection::UdevRuleSection]
       def rename_interface(config, target_interface, udev_rule)
         solve_collision(config, target_interface, udev_rule)
 
@@ -69,10 +74,15 @@ module Y2Network
         config.rename_interface(old_name, udev_rule.name, udev_rule.mechanism)
       end
 
+      # @param _config [Config]
+      # @param udev_rule [AutoinstSection::UdevRuleSection]
       def create_interface(_config, udev_rule)
         log.error "Cannot find interface to apply udev rule #{udev_rule.inspect}. Skipping ..."
       end
 
+      # @param config [Config]
+      # @param target_interface [Interface]
+      # @param udev_rule [AutoinstSection::UdevRuleSection]
       def solve_collision(config, target_interface, udev_rule)
         existing_interface = config.interfaces.by_name(udev_rule.name)
         return unless existing_interface
