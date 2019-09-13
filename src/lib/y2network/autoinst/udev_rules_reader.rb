@@ -66,7 +66,7 @@ module Y2Network
         solve_collision(config, target_interface, udev_rule)
 
         old_name = target_interface.name == udev_rule.name ? nil : target_interface.name
-        config.rename_interface(old_name, udev_rule.name, rule.mechanism)
+        config.rename_interface(old_name, udev_rule.name, udev_rule.mechanism)
       end
 
       def create_interface(_config, udev_rule)

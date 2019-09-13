@@ -98,7 +98,7 @@ module Y2Network
 
       # helper to get mechanism symbol from rule
       def mechanism
-        RULE_MAPPING.each_pair { |k,v| return k if v == rule }
+        RULE_MAPPING.each_pair { |k, v| return k if v == rule }
       end
     end
   end
