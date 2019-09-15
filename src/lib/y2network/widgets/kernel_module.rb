@@ -50,7 +50,7 @@ module Y2Network
       end
 
       def items
-        @items ||= [["yast_auto", _("Auto")]] + @names.map { |n| [n, n] }
+        @items ||= [["", _("Auto")]] + @names.map { |n| [n, n] }
       end
 
       def init
@@ -59,7 +59,7 @@ module Y2Network
 
       def value
         ret = super
-        ret == "yast_auto" ? :auto : ret
+        ret == "" ? :auto : ret
       end
     end
   end
