@@ -42,7 +42,7 @@ describe Y2Network::Widgets::Driver do
   describe "#contents" do
     it "contains a kernel module widget" do
       expect(Y2Network::Widgets::KernelModule).to receive(:new)
-        .with(["virtio_net"], "virtio_net", nil)
+        .with(["virtio_net"], "virtio_net")
       widget.contents
     end
 

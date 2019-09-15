@@ -28,12 +28,10 @@ module Y2Network
       #
       # @param names    [Array<String>] Drivers names
       # @param selected [String,nil] Initially selected driver (nil if no driver is selected)
-      # @param current  [String] Name of the module currently used by the kernel
-      def initialize(names, selected, current)
+      def initialize(names, selected)
         textdomain "network"
         @names = names
         @selected = selected
-        @current = current
         self.widget_id = "kernel_module"
       end
 
@@ -52,7 +50,7 @@ module Y2Network
       end
 
       def items
-        @items ||= [["yast_auto", auto_label]] + @names.map { |n| [n, n] }
+        @items ||= [["yast_auto", _("Auto")]] + @names.map { |n| [n, n] }
       end
 
       def init
@@ -62,12 +60,6 @@ module Y2Network
       def value
         ret = super
         ret == "yast_auto" ? :auto : ret
-      end
-
-    private
-
-      def auto_label
-        @current ? format(_("Auto (%s)"), @current) : _("Auto")
       end
     end
   end
