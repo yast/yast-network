@@ -32,7 +32,6 @@ describe Y2Network::Widgets::UdevRules do
   let(:dialog) { instance_double(Y2Network::Dialogs::RenameInterface, run: dialog_ret) }
 
   before do
-    allow(Yast::LanItems).to receive(:current_udev_name).and_return("hell666")
     allow(Y2Network::Dialogs::RenameInterface).to receive(:new).and_return(dialog)
   end
 
