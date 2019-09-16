@@ -41,16 +41,11 @@ module Yast
 
       textdomain "network"
 
-      Yast.import "Host"
-      Yast.import "Lan"
-      Yast.import "NetworkInterfaces"
       Yast.import "ProductFeatures"
-      Yast.import "String"
 
       Yast.include include_target, "network/lan/help.rb"
       Yast.include include_target, "network/lan/hardware.rb"
       Yast.include include_target, "network/complex.rb"
-      Yast.include include_target, "network/lan/bridge.rb"
       Yast.include include_target, "network/lan/s390.rb"
 
       @force_static_ip = ProductFeatures.GetBooleanFeature(
@@ -68,91 +63,28 @@ module Yast
       log.info "ShowAndRun: #{ret}"
 
       if ret != :back && ret != :abort
-        bootproto = builder.boot_protocol
-        ipaddr = builder.ip_address
-
-        # IP is mandatory for static configuration. Makes no sense to write static
-        # configuration without that.
-        return ret if bootproto == Y2Network::BootProtocol::STATIC && ipaddr.empty?
-
-        if bootproto == Y2Network::BootProtocol::STATIC
-          update_hostname(ipaddr, builder.hostname || "")
-        elsif LanItems.isCurrentDHCP && !LanItems.isCurrentHotplug
+        if LanItems.isCurrentDHCP && !LanItems.isCurrentHotplug
           # fixed bug #73739 - if dhcp is used, dont set default gw statically
           # but also: reset default gw only if DHCP* is used, this branch covers
           #		 "No IP address" case, then default gw must stay (#460262)
           # and also: don't delete default GW for usb/pcmcia devices (#307102)
-          if LanItems.isCurrentDHCP && !LanItems.isCurrentHotplug
-            yast_config = Y2Network::Config.find(:yast)
-            if yast_config && yast_config.routing && yast_config.routing.default_route
-              remove_gw = Popup.YesNo(
-                _(
-                  "A static default route is defined.\n" \
-                  "It is suggested to remove the static default route definition \n" \
-                  "if one can be obtained also via DHCP.\n" \
-                  "Do you want to remove the static default route?"
-                )
+          yast_config = Y2Network::Config.find(:yast)
+          if yast_config && yast_config.routing && yast_config.routing.default_route
+            remove_gw = Popup.YesNo(
+              _(
+                "A static default route is defined.\n" \
+                "It is suggested to remove the static default route definition \n" \
+                "if one can be obtained also via DHCP.\n" \
+                "Do you want to remove the static default route?"
               )
-              yast_config.routing.remove_default_routes if remove_gw
-            end
+            )
+            yast_config.routing.remove_default_routes if remove_gw
           end
         end
       end
 
       log.info "AddressDialog res: #{ret.inspect}"
       ret
-    end
-
-  private
-
-    # Performs hostname update
-    #
-    # This handles ip and hostname change when editing NIC properties.
-    # The method relies on old NIC's IP which is set globally at initialization
-    # of NIC edit dialog (@see LanItems#ipaddr)
-    #
-    # When hostname is empty, then old IP's record is cleared from /etc/hosts and
-    # new is not created.
-    # Otherwise the canonical name and all aliases in the record
-    # are replaced by new ones.
-    #
-    # @param ipaddr [String] ip address
-    # @param hostname [String] new hostname
-    def update_hostname(ipaddr, hostname)
-      ip_changed = LanItems.ipaddr != ipaddr
-      initial_hostname = initial_hostname(LanItems.ipaddr)
-      hostname_changed = initial_hostname != hostname
-
-      return if !(ip_changed || hostname_changed || hostname.empty?)
-
-      # store old names, remove the record
-      names = Host.names(LanItems.ipaddr).first
-      Host.remove_ip(LanItems.ipaddr)
-
-      if ip_changed && !hostname_changed && !names.nil?
-        log.info("Dropping record for #{LanItems.ipaddr} from /etc/hosts")
-
-        Host.add_name(ipaddr, names)
-      end
-      if !hostname.empty? && hostname_changed
-        log.info("Updating cannonical name for #{LanItems.ipaddr} in /etc/hosts")
-
-        Host.Update(initial_hostname, hostname, ipaddr)
-      end
-
-      nil
-    end
-
-    # Returns canonical hostname for the given ip
-    def initial_hostname(ipaddr)
-      host_list = Host.names(ipaddr)
-      if Ops.greater_than(Builtins.size(host_list), 1)
-        Builtins.y2milestone(
-          "More than one hostname for single IP detected, using the first one only"
-        )
-      end
-
-      String.FirstChunk(Ops.get(host_list, 0, ""), " \t")
     end
   end
 end

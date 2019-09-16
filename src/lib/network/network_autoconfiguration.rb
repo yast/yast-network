@@ -45,29 +45,31 @@ module Yast
     #
     # returns [Boolean] true when at least one interface is active
     def any_iface_active?
-      network_cards.any? { |c| configured?(c) && active_config?(c) }
+      config.interfaces.any? { |c| config.connections.by_name(c.name) && active_config?(c.name) }
     end
 
     def configure_dhcp
-      Yast.include self, "network/routines.rb"
+      Yast::Lan.Read(:cache)
+      Yast.include self, "network/routines.rb" # TODO: needed only for phy_connected
 
       # find out network devices suitable for dhcp autoconfiguration.
       # Such device has to:
       # - be unconfigured
       # - physically connected to a network
       #   (it speeds up the initialization phase of installer - bnc#872319)
-      dhcp_cards = network_cards.select do |c|
-        !configured?(c) && phy_connected?(c)
+      dhcp_cards = config.interfaces.select do |c|
+        next false if config.connections.by_name(c.name)
+        phy_connected?(c.name)
       end
-      log.info "Candidates for enabling DHCP: #{dhcp_cards}"
+      log.info "Candidates for enabling DHCP: #{dhcp_cards.inspect}"
 
       # TODO: time consuming, some progress would be nice
       dhcp_cards.each { |d| setup_dhcp(d) }
 
-      activate_changes(dhcp_cards)
+      activate_changes(dhcp_cards.map(&:name))
 
       # drop devices without dhcp lease
-      inactive_devices = dhcp_cards.select { |c| !active_config?(c) }
+      inactive_devices = dhcp_cards.select { |c| !active_config?(c.name) }
       log.info "Inactive devices: #{inactive_devices}"
 
       inactive_devices.each { |c| delete_config(c) }
@@ -82,10 +84,10 @@ module Yast
         # try to find just one dhcp aware device for allowing default route
         # if there is more than one dhcp devices enabled for setting default
         # route (DHCLIENT_SET_DEFAULT_ROUTE = "yes"). bnc#868187
-        active_devices.find { |d| set_default_route_flag_if_wan_dev?(d) }
+        active_devices.find { |d| set_default_route_flag_if_wan_dev?(d.name) }
       end
 
-      activate_changes(dhcp_cards)
+      activate_changes(dhcp_cards.map(&:name))
     end
 
     # Propose configuration for virtual devices
@@ -126,49 +128,29 @@ module Yast
 
   private
 
-    def network_cards
-      LanItems.Read
-      LanItems.GetNetcardNames
-    end
-
     # Makes DHCP setup persistent
     #
     # instsys currently uses wicked as network services "manager" (including
     # dhcp client). wicked is currently able to configure a card for dhcp leases
     # only via loading config from file. All other ways are workarounds and
     # needn't to work when wickedd* services are already running
+    # @param card [Y2Network::Interface]
     def setup_dhcp(card)
-      index = LanItems.FindDeviceIndex(card)
+      builder = Y2Network::InterfaceConfigBuilder.for(card.type)
+      builder.name = card.name
 
-      raise "Failed to save configuration for device #{card}" if index == -1
-
-      LanItems.current = index
-
-      builder = Y2Network::InterfaceConfigBuilder.for(LanItems.GetCurrentType())
-      builder.name = LanItems.GetCurrentName()
-
-      LanItems.SetItem(builder: builder)
-
-      # tricky part if ifcfg is not set
-      # yes, this code smell and show bad API of LanItems
-      if !LanItems.IsCurrentConfigured
-        NetworkInterfaces.Add
-        current = LanItems.Items[LanItems.current]
-        current["ifcfg"] = card
-      end
-
-      builder.boot_protocol = "dhcp"
-      builder.startmode = "auto"
+      builder.boot_protocol = Y2Network::BootProtocol::DHCP
+      builder.startmode = Y2Network::Startmode.create("auto")
 
       LanItems.Commit(builder)
     end
 
-    def delete_config(devname)
-      LanItems.delete_dev(devname)
+    def delete_config(interface)
+      config.delete_interface(interface.name)
     end
 
     def write_configuration
-      NetworkInterfaces.Write("")
+      config.write
     end
 
     # Writes and activates changes in devices configurations
@@ -176,21 +158,9 @@ module Yast
     # @param devnames [Array] list of device names
     # @return true when changes were successfully applied
     def activate_changes(devnames)
-      return false if !write_configuration
-
-      # workaround for gh#yast/yast-core#74 (https://github.com/yast/yast-core/issues/74)
-      NetworkInterfaces.CleanCacheRead()
+      write_configuration
 
       reload_config(devnames)
-    end
-
-    def configured?(devname)
-      # TODO: one day there should be LanItems.IsItemConfigured, but we currently
-      # miss index -> devname translation. As this LanItems internal structure
-      # will be subject of refactoring, we will use NetworkInterfaces directly.
-      # It currently doesn't hurt as it currently writes configuration for both
-      # wicked even sysconfig.
-      NetworkInterfaces.Check(devname)
     end
 
     # Checks if given device is active
@@ -240,8 +210,7 @@ module Yast
     # @param [String] devname name of device as seen by system (e.g. enp0s3)
     # @param [String] value "yes" or "no", as in sysconfig
     def set_default_route_flag(devname, value)
-      item_id = LanItems.FindDeviceIndex(devname)
-      LanItems.SetItemSysconfigOpt(item_id, "DHCLIENT_SET_DEFAULT_ROUTE", value)
+      # TODO: not implemented
     end
 
     # Decides if a proposal for virtualization host machine is required.
@@ -254,6 +223,10 @@ module Yast
       return true if PackageSystem.Installed("qemu")
 
       false
+    end
+
+    def config
+      Yast::Lan.yast_config
     end
   end
 end

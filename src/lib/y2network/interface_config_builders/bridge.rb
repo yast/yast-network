@@ -48,7 +48,8 @@ module Y2Network
       end
 
       def_delegators :@connection_config,
-        :ports, :ports=
+        :ports, :ports=,
+        :stp, :stp=
 
     private
 

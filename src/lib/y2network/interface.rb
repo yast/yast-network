@@ -66,23 +66,6 @@ module Y2Network
       end
     end
 
-    # Shortcuts for accessing interfaces' ifcfg options
-    #
-    # TODO: this makes Interface class tighly coupled with netconfig (sysconfig) backend
-    # once we have generic layer for accessing backends these methods has to be replaced
-    ["STARTMODE", "BOOTPROTO"].each do |ifcfg_option|
-      method_name = ifcfg_option.downcase
-
-      define_method method_name do
-        # when switching to new backend we need as much guards as possible
-        if !configured || config.nil? || config.empty?
-          raise "Trying to read configuration of an unconfigured interface #{@name}"
-        end
-
-        config[ifcfg_option]
-      end
-    end
-
     # Constructor
     #
     # @param name [String] Interface name (e.g., "eth0")
@@ -139,7 +122,7 @@ module Y2Network
   private
 
     def system_config(name)
-      Yast::NetworkInterfaces.devmap(name)
+      Yast::Lan.system_config.connections.by_name(name)
     end
 
     def init(name)

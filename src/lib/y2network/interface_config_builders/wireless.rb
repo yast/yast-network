@@ -34,10 +34,6 @@ module Y2Network
         super(type: InterfaceType::WIRELESS, config: config)
       end
 
-      def auth_modes
-        Yast::LanItems.wl_auth_modes
-      end
-
       def access_point
         @connection_config.ap
       end

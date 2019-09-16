@@ -72,6 +72,8 @@ describe Yast::NetworkAutoconfiguration do
   before do
     Y2Network::Config.add(:yast, yast_config)
     Y2Network::Config.add(:system, system_config)
+    allow(yast_config).to receive(:write)
+    allow(Yast::Lan).to receive(:Read)
   end
 
   describe "it sets DHCLIENT_SET_DEFAULT_ROUTE properly" do
@@ -79,40 +81,6 @@ describe Yast::NetworkAutoconfiguration do
     let(:network_interfaces) { double("NetworkInterfaces") }
 
     before(:each) do
-      ifcfg_files = SectionKeyValue.new
-
-      # network configs
-      allow(Yast::SCR).to receive(:Dir) do |path|
-        case path.to_s
-        when ".network.section"
-          ifcfg_files.sections
-        when /^\.network\.value\."(eth\d+)"$/
-          ifcfg_files.keys(Regexp.last_match(1))
-        when ".modules.options", ".etc.install_inf"
-          []
-        else
-          raise "Unexpected Dir #{path}"
-        end
-      end
-
-      allow(Yast::SCR).to receive(:Read) do |path|
-        if path.to_s =~ /^\.network\.value\."(eth\d+)".(.*)/
-          next ifcfg_files.get(Regexp.last_match(1), Regexp.last_match(2))
-        end
-
-        raise "Unexpected Read #{path}"
-      end
-
-      allow(Yast::SCR).to receive(:Write) do |path, value|
-        if path.to_s =~ /^\.network\.value\."(eth\d+)".(.*)/
-          ifcfg_files.set(Regexp.last_match(1), Regexp.last_match(2), value)
-        elsif path.to_s == ".network" && value.nil?
-          true
-        else
-          raise "Unexpected Write #{path}, #{value}"
-        end
-      end
-
       # stub NetworkInterfaces, apart from the ifcfgs
       allow(Yast::NetworkInterfaces)
         .to receive(:CleanHotplugSymlink)
@@ -147,13 +115,13 @@ describe Yast::NetworkAutoconfiguration do
       # because SCR multiplexes too much and the matchers get confused.
 
       # Hardware detection
-      expect(Yast::SCR)
+      allow(Yast::SCR)
         .to receive(:Read)
         .with(path(".probe.netcard"))
         .and_return([probe_netcard_factory(0), probe_netcard_factory(1)])
 
       # link status
-      expect(Yast::SCR)
+      allow(Yast::SCR)
         .to receive(:Read)
         .with(path(".target.string"), %r{/sys/class/net/.*/carrier})
         .twice
@@ -163,29 +131,12 @@ describe Yast::NetworkAutoconfiguration do
 
       allow(Yast::Arch).to receive(:architecture).and_return "x86_64"
       allow(Yast::Confirm).to receive(:Detection).and_return true
-      expect(Yast::SCR)
-        .to receive(:Read)
-        .with(path(".etc.install_inf.BrokenModules"))
-        .and_return ""
-      expect(Yast::SCR)
-        .to receive(:Read)
-        .with(path(".udev_persistent.net"))
-        .and_return({})
-      expect(Yast::SCR)
-        .to receive(:Read)
-        .with(path(".udev_persistent.drivers"))
-        .and_return({})
       allow(Yast::NetworkInterfaces).to receive(:Write).and_call_original
-      # reinit network interfaces to avoid trash from other tests
-      Yast::NetworkInterfaces.main
     end
 
     it "configures just one NIC to have a default route" do
-      pending "adapt to new API"
       expect { instance.configure_dhcp }.to_not raise_error
-      result = Yast::NetworkInterfaces.FilterDevices("")
-      expect(result["eth"]["eth0"]["DHCLIENT_SET_DEFAULT_ROUTE"]).to eq "yes"
-      expect(result["eth"]["eth1"]["DHCLIENT_SET_DEFAULT_ROUTE"]).to eq nil
+      # TODO: write it when we can set up dhcp default route
     end
   end
 
@@ -195,18 +146,12 @@ describe Yast::NetworkAutoconfiguration do
     let(:instance) { Yast::NetworkAutoconfiguration.instance }
 
     it "returns true if any of available interfaces has configuration and is up" do
-      allow(Yast::LanItems)
-        .to receive(:Read)
-        .and_return(true)
-      allow(Yast::LanItems)
-        .to receive(:GetNetcardNames)
-        .and_return([IFACE, "enp0s3", "br7"])
-      allow(Yast::NetworkInterfaces)
-        .to receive(:adapt_old_config!)
-      allow(Yast::NetworkInterfaces)
-        .to receive(:Check)
-        .with(IFACE)
-        .and_return(true)
+      allow(Yast::Lan).to receive(:yast_config)
+        .and_return(Y2Network::Config.new(
+                      interfaces:  Y2Network::InterfacesCollection.new([double(name: IFACE)]),
+                      connections: Y2Network::ConnectionConfigsCollection.new([double(name: IFACE)]),
+                      source:      :testing
+        ))
       allow(Yast::SCR)
         .to receive(:Execute)
         .and_return(0)
@@ -234,10 +179,11 @@ describe Yast::NetworkAutoconfiguration do
     let(:proposal) { false }
     let(:eth0_profile) do
       {
-        "BOOTPROTO" => "static",
-        "IPADDR"    => "192.168.122.213",
-        "NETMASK"   => "255.255.255.0",
-        "STARTMODE" => "auto"
+        "bootproto" => "static",
+        "ipaddr"    => "192.168.122.213",
+        "netmask"   => "255.255.255.0",
+        "startmode" => "auto",
+        "device"    => "eth0"
       }
     end
     let(:routes_profile) do
@@ -259,13 +205,8 @@ describe Yast::NetworkAutoconfiguration do
       allow(Yast::LanItems).to receive(:Read)
       allow(yast_config).to receive(:write)
       allow(Yast::Lan).to receive(:connected_and_bridgeable?).and_return(true)
-      # FIXME: seems that autoinst config reader is ... not ready yet
-      allow(Y2Network::Sysconfig::TypeDetector)
-        .to receive(:type_of)
-        .with(/eth[0-9]/)
-        .and_return(Y2Network::InterfaceType::ETHERNET)
+      allow(Yast::PackageSystem).to receive(:Installed).and_return(true)
       Yast::Lan.Import(
-        "devices" => { "eth" => { "eth0" => eth0_profile } },
         "routing" => { "routes" => routes_profile }
       )
     end
@@ -277,14 +218,13 @@ describe Yast::NetworkAutoconfiguration do
       end
     end
 
-    # TODO: write it using new backend as now changes is not longer done in NetworkInterfaces
-    xcontext "when the proposal is required" do
+    context "when the proposal is required" do
+      let(:interfaces) { Y2Network::InterfacesCollection.new([eth0]) }
       let(:proposal) { true }
 
       it "creates the virtulization proposal config" do
         expect(Yast::Lan).to receive(:ProposeVirtualized).and_call_original
-        expect { instance.configure_virtuals }.to change { Yast::NetworkInterfaces.Devices.keys.size }.from(1).to(2)
-        expect(Yast::NetworkInterfaces.Devices["br"]["br0"]).to include(eth0_profile.merge("BRIDGE_PORTS" => "eth0"))
+        expect { instance.configure_virtuals }.to change { yast_config.connections.size }.from(0).to(2)
       end
 
       it "writes the configuration of the interfaces" do

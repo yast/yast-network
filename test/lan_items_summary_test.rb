@@ -61,23 +61,6 @@ describe Yast::LanItemsSummary do
       .and_return(instance_double(Y2Network::Config, interfaces: interfaces))
   end
 
-  describe "#default" do
-    it "returns a Richtext summary of the configured interfaces" do
-      expect(subject.default)
-        .to eql "<ul>" \
-                "<li><p>eth0<br>DHCP</p></li>" \
-                "<li><p>eth1<br>NONE</p></li>" \
-                "<li><p>br0<br>STATIC</p></li>" \
-                "</ul>"
-    end
-
-    it "returns Summary.NotConfigured in case of not configured interfaces" do
-      allow(Yast::LanItems).to receive(:IsItemConfigured).and_return(false)
-
-      expect(subject.default).to eql Yast::Summary.NotConfigured
-    end
-  end
-
   describe "#proposal" do
     let(:interfaces) { instance_double(Y2Network::InterfacesCollection) }
     let(:br0) { instance_double(Y2Network::Interface, name: "br0", type: Y2Network::InterfaceType::BRIDGE) }

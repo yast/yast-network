@@ -374,6 +374,11 @@ module Y2Network
       @connection_config.mtu = value.to_i
     end
 
+    def configure_as_slave
+      self.boot_protocol = "none"
+      self.aliases = []
+    end
+
   private
 
     def hwinfo

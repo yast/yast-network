@@ -66,7 +66,6 @@ module Yast
       Yast.include self, "network/routines.rb"
       Yast.include self, "network/lan/s390.rb"
       Yast.include self, "network/lan/udev.rb"
-      Yast.include self, "network/lan/bridge.rb"
 
       reset_cache
 
@@ -98,69 +97,6 @@ module Yast
       @hotplug = ""
 
       @Requires = []
-
-      # address options
-      # boot protocol: BOOTPROTO
-      @bootproto = "static"
-      @ipaddr = ""
-      @netmask = ""
-      @prefix = ""
-
-      @startmode = "auto"
-
-      # wireless options
-      @wl_mode = ""
-      @wl_essid = ""
-      @wl_nwid = ""
-      @wl_auth_mode = ""
-      # when adding another key, don't forget the chmod 600 in NetworkInterfaces
-      @wl_wpa_psk = ""
-      @wl_key_length = ""
-      @wl_key = []
-      @wl_default_key = 0
-      @wl_nick = ""
-
-      # FIXME: We should unify bridge_ports and bond_slaves variables
-
-      # interfaces attached to bridge (list delimited by ' ')
-      @bridge_ports = ""
-
-      # bond options
-      @bond_slaves = []
-      @bond_option = ""
-
-      # VLAN option
-      @vlan_etherdevice = ""
-
-      # wl_wpa_eap aggregates the settings in a map for easier CWM access.
-      #
-      # **Structure:**
-      #
-      #     wpa_eap
-      #      WPA_EAP_MODE: string ("TTLS" "PEAP" or "TLS")
-      #      WPA_EAP_IDENTITY: string
-      #      WPA_EAP_PASSWORD: string (for TTLS and PEAP)
-      #      WPA_EAP_ANONID: string (for TTLS and PEAP)
-      #      WPA_EAP_CLIENT_CERT: string (for TLS, file name)
-      #      WPA_EAP_CLIENT_KEY: string (for TLS, file name)
-      #      WPA_EAP_CLIENT_KEY_PASSWORD: string (for TLS)
-      #      WPA_EAP_CA_CERT: string (file name)
-      #      WPA_EAP_AUTH: string ("", "MD5", "GTC", "CHAP"*, "PAP"*, "MSCHAP"*, "MSCHAPV2") (*: TTLS only)
-      #      WPA_EAP_PEAP_VERSION: string ("", "0", "1")
-      @wl_wpa_eap = {}
-      @wl_channel = ""
-      @wl_frequency = ""
-      @wl_bitrate = ""
-      @wl_accesspoint = ""
-      @wl_power = true
-      @wl_ap_scanmode = ""
-
-      # Card Features from hwinfo
-      # if not provided, we use the default full list
-      @wl_auth_modes = nil
-      @wl_enc_modes = nil
-      @wl_channels = nil
-      @wl_bitrates = nil
 
       # s390 options
       @qeth_portname = ""
@@ -1184,9 +1120,9 @@ module Yast
     # It supports differents types of summaries depending on the options[:type]
     #
     # @see LanItemsSummary
-    # @param type [Hash] summary options
+    # @param type [String,Symbol] summary options, supported "one-line" and "proposal"
     # @return [String] summary of the configured items
-    def summary(type = "default")
+    def summary(type)
       LanItemsSummary.new.send(type)
     end
 
@@ -1399,15 +1335,6 @@ module Yast
       # FIXME: devname
       @hotplug = ""
 
-      # Wireless Card Features
-      @wl_auth_modes = Builtins.prepend(
-        hardware["wl_auth_modes"],
-        "no-encryption"
-      )
-      @wl_enc_modes = hardware["wl_enc_modes"]
-      @wl_channels = hardware["wl_channels"]
-      @wl_bitrates = hardware["wl_bitrates"]
-
       Builtins.y2milestone("hw=%1", hardware)
 
       @hw = deep_copy(hardware)
@@ -1569,46 +1496,6 @@ module Yast
       Builtins.y2debug("type=%1", @type)
 
       nil
-    end
-
-    PROPOSED_PPPOE_MTU = "1492".freeze # suggested value for PPPoE
-    # A default configuration for device when installer needs to configure it
-    def ProposeItem(item_id)
-      Builtins.y2milestone("Propose configuration for %1", GetDeviceName(item_id))
-      return false if Select("") != true
-
-      type = Items().fetch(item_id, {}).fetch("hwinfo", {})[type]
-      builder = Y2Network::InterfaceConfigBuilder.for(type)
-
-      builder.mtu = PROPOSED_PPPOE_MTU if Arch.s390 && Builtins.contains(["lcs", "eth"], type)
-      builder.ip_address = ""
-      builder.subnet_prefix = ""
-      builder.boot_protocol = Y2Network::BootProtocol::DHCP
-
-      # see bsc#176804
-      devicegraph = Y2Storage::StorageManager.instance.staging
-      if devicegraph.filesystem_in_network?("/")
-        builder.startmode = "nfsroot"
-        Builtins.y2milestone("startmode nfsroot")
-      end
-
-      # FIXME: seems like a hack
-      NetworkInterfaces.Add
-      @operation = :edit
-      Ops.set(
-        @Items,
-        [item_id, "ifcfg"],
-        Ops.get_string(GetLanItem(item_id), ["hwinfo", "dev_name"], "")
-      )
-      # FIXME: is it needed?
-      @description = HardwareName(
-        [Ops.get_map(GetLanItem(item_id), "hwinfo", {})],
-        Ops.get_string(GetLanItem(item_id), ["hwinfo", "dev_name"], "")
-      )
-
-      Commit(builder)
-      Builtins.y2milestone("After configuration propose %1", GetLanItem(item_id))
-      true
     end
 
     def setDriver(driver)
@@ -2204,36 +2091,7 @@ module Yast
     publish_variable :hotplug, "string"
     # @attribute Requires
     publish_variable :Requires, "list <string>"
-    publish_variable :bootproto, "string"
-    publish_variable :ipaddr, "string"
-    publish_variable :netmask, "string"
     publish_variable :set_default_route, "boolean"
-    publish_variable :prefix, "string"
-    publish_variable :startmode, "string"
-    publish_variable :wl_mode, "string"
-    publish_variable :wl_essid, "string"
-    publish_variable :wl_nwid, "string"
-    publish_variable :wl_auth_mode, "string"
-    publish_variable :wl_wpa_psk, "string"
-    publish_variable :wl_key_length, "string"
-    publish_variable :wl_key, "list <string>"
-    publish_variable :wl_default_key, "integer"
-    publish_variable :wl_nick, "string"
-    publish_variable :bond_slaves, "list <string>"
-    publish_variable :bond_option, "string"
-    publish_variable :vlan_etherdevice, "string"
-    publish_variable :bridge_ports, "string"
-    publish_variable :wl_wpa_eap, "map <string, any>"
-    publish_variable :wl_channel, "string"
-    publish_variable :wl_frequency, "string"
-    publish_variable :wl_bitrate, "string"
-    publish_variable :wl_accesspoint, "string"
-    publish_variable :wl_power, "boolean"
-    publish_variable :wl_ap_scanmode, "string"
-    publish_variable :wl_auth_modes, "list <string>"
-    publish_variable :wl_enc_modes, "list <string>"
-    publish_variable :wl_channels, "list <string>"
-    publish_variable :wl_bitrates, "list <string>"
     publish_variable :qeth_portname, "string"
     publish_variable :qeth_portnumber, "string"
     publish_variable :chan_mode, "string"
@@ -2283,7 +2141,6 @@ module Yast
     publish function: :Commit, type: "boolean ()"
     publish function: :Rollback, type: "boolean ()"
     publish function: :DeleteItem, type: "void ()"
-    publish function: :ProposeItem, type: "boolean ()"
     publish function: :setDriver, type: "void (string)"
     publish function: :enableCurrentEditButton, type: "boolean ()"
     publish function: :createS390Device, type: "boolean ()"
