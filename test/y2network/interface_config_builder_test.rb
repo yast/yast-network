@@ -70,26 +70,34 @@ describe Y2Network::InterfaceConfigBuilder do
       subject.save
     end
 
-    context "when the selected driver is different from the current one" do
+    context "when a driver is selected" do
       before do
-        allow(eth0).to receive(:current_driver).and_return("e1000")
+        config_builder.driver = driver
       end
 
       it "sets the interface driver" do
         expect(eth0).to receive(:custom_driver=).with(driver.name)
-        config_builder.driver = driver
+        subject.save
+      end
+
+      it "updates the driver" do
+        expect(config).to receive(:add_or_update_driver).with(driver)
         subject.save
       end
     end
 
-    context "when the selected driver is the same than the current one" do
+    context "when no driver is selected" do
       before do
-        allow(eth0).to receive(:current_driver).and_return("virtio_net")
+        config_builder.driver = :auto
       end
 
-      it "sets the interface driver" do
-        expect(eth0).to_not receive(:custom_driver=)
-        config_builder.driver = driver
+      it "sets the interface driver to nil" do
+        expect(eth0).to receive(:custom_driver=).with(nil)
+        subject.save
+      end
+
+      it "does not update any driver" do
+        expect(config).to_not receive(:add_or_update_driver)
         subject.save
       end
     end

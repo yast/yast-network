@@ -50,11 +50,16 @@ module Y2Network
       end
 
       def items
-        @names.map { |n| [n, n] }
+        @items ||= [["", _("Auto")]] + @names.map { |n| [n, n] }
       end
 
       def init
         self.value = @selected if @selected
+      end
+
+      def value
+        ret = super
+        ret == "" ? :auto : ret
       end
     end
   end

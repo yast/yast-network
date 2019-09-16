@@ -23,7 +23,7 @@ require "cwm/rspec"
 require "y2network/widgets/kernel_module"
 
 describe Y2Network::Widgets::KernelModule do
-  subject { described_class.new(["virtio_net"], "virtio_net") }
+  subject { described_class.new(["virtio_net", "alt"], "virtio_net") }
 
   include_examples "CWM::ComboBox"
 end

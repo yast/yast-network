@@ -29,10 +29,12 @@ describe Y2Network::Widgets::Driver do
     Y2Network::InterfaceConfigBuilder.for("eth")
   end
   let(:virtio_net) { Y2Network::Driver.new("virtio_net", "csum=1") }
+  let(:eth0) { Y2Network::PhysicalInterface.new("eth0") }
 
   before do
     allow(builder).to receive(:drivers).and_return([virtio_net])
     allow(builder).to receive(:driver).and_return(virtio_net)
+    allow(builder).to receive(:interface).and_return(eth0)
   end
 
   include_examples "CWM::CustomWidget"

@@ -126,9 +126,9 @@ module Y2Network
         firewall_interface.zone = firewall_zone if !firewall_interface.zone || firewall_zone != firewall_interface.zone.name
       end
 
-      if interface.respond_to?(:custom_driver) && driver
-        interface.custom_driver = driver.name if driver.name != interface.current_driver
-        yast_config.add_or_update_driver(driver)
+      if interface.respond_to?(:custom_driver)
+        interface.custom_driver = driver_auto? ? nil : driver.name
+        yast_config.add_or_update_driver(driver) unless driver_auto?
       end
       yast_config.rename_interface(@old_name, name, renaming_mechanism) if renamed_interface?
       yast_config.add_or_update_connection_config(@connection_config)
@@ -243,9 +243,8 @@ module Y2Network
     # gets currently assigned kernel module
     def driver
       return @driver if @driver
-      driver_name = @interface.custom_driver || @interface.current_driver
-      return nil unless driver_name
-      @driver = yast_config.drivers.find { |d| d.name == driver_name }
+      @driver = yast_config.drivers.find { |d| d.name == @interface.custom_driver } if @interface.custom_driver
+      @driver ||= :auto
     end
 
     # sets kernel module for interface
@@ -460,6 +459,13 @@ module Y2Network
       return @original_hostname if @original_hostname
       names = Yast::Host.names(@original_ip_config.address.to_s)
       @original_hostname = names.first || ""
+    end
+
+    # Determines whether the driver should be set automatically
+    #
+    # @return [Boolean]
+    def driver_auto?
+      :auto == driver
     end
   end
 end
