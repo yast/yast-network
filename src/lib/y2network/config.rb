@@ -192,6 +192,17 @@ module Y2Network
       end
     end
 
+    # Determines whether a given interface is configured or not
+    #
+    # An interface is considered as configured when it has an associated collection.
+    #
+    # @param iface_name [String] Interface's name
+    # @return [Boolean]
+    def configured_interface?(iface_name)
+      return false if iface_name.nil? || iface_name.empty?
+      !connections.by_interface(iface_name).empty?
+    end
+
     alias_method :eql?, :==
   end
 end

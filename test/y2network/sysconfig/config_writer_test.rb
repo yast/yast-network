@@ -19,6 +19,7 @@
 require_relative "../../test_helper"
 require "y2network/sysconfig/config_writer"
 require "y2network/config"
+require "y2network/connection_configs_collection"
 require "y2network/interface"
 require "y2network/interfaces_collection"
 require "y2network/routing"
@@ -35,7 +36,7 @@ describe Y2Network::Sysconfig::ConfigWriter do
     let(:config) do
       Y2Network::Config.new(
         interfaces:  Y2Network::InterfacesCollection.new([eth0]),
-        connections: [eth0_conn],
+        connections: Y2Network::ConnectionConfigsCollection.new([eth0_conn]),
         routing:     routing,
         source:      :sysconfig
       )
@@ -99,7 +100,6 @@ describe Y2Network::Sysconfig::ConfigWriter do
         .and_return(conn_writer)
       allow(Y2Network::Sysconfig::InterfacesWriter).to receive(:new)
         .and_return(interfaces_writer)
-      allow(eth0).to receive(:configured).and_return(true)
     end
 
     it "saves general routes to main routes file" do
@@ -150,7 +150,6 @@ describe Y2Network::Sysconfig::ConfigWriter do
         allow(Y2Network::Sysconfig::RoutesFile).to receive(:new)
           .with("/etc/sysconfig/network/ifroute-eth1")
           .and_return(ifroute_eth1)
-        allow(eth1).to receive(:configured).and_return(true)
       end
 
       it "removes the ifroute file" do

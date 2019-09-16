@@ -84,7 +84,7 @@ module Y2Network
         # already contains partially configured bond when adding
         return false if iface.name == @name
 
-        return true if !iface.configured
+        return true unless yast_config.configured_interface?(iface.name)
 
         iface.bootproto == "none"
       end

@@ -372,4 +372,30 @@ describe Y2Network::Config do
       end
     end
   end
+
+  describe "#configured_interface?" do
+    context "when a connection for the given interface exists" do
+      it "reeturns true" do
+        expect(config.configured_interface?("eth0")).to eq(true)
+      end
+    end
+
+    context "when no connection for the given interface exists" do
+      it "reeturns false" do
+        expect(config.configured_interface?("eth9")).to eq(false)
+      end
+    end
+
+    context "when interface name is nil" do
+      it "returns false" do
+        expect(config.configured_interface?(nil)).to eq(false)
+      end
+    end
+
+    context "when interface name is empty" do
+      it "returns false" do
+        expect(config.configured_interface?("")).to eq(false)
+      end
+    end
+  end
 end
