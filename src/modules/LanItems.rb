@@ -1043,126 +1043,6 @@ module Yast
       bullets
     end
 
-    # FIXME: side effect: sets @type. No reason for that. It should only build item
-    #   overview. Check and remove.
-    def BuildLanOverview
-      overview = []
-      links = []
-
-      LanItems.Items.each_key do |key|
-        rich = ""
-
-        item_hwinfo = LanItems.Items[key]["hwinfo"] || {}
-        descr = item_hwinfo["name"] || ""
-
-        note = ""
-        bullets = []
-        ifcfg_name = LanItems.Items[key]["ifcfg"] || ""
-        ifcfg_type = NetworkInterfaces.GetType(ifcfg_name)
-
-        if !ifcfg_name.empty?
-          ifcfg_conf = GetDeviceMap(key)
-          log.error("BuildLanOverview: devmap for #{key}/#{ifcfg_name} is nil") if ifcfg_conf.nil?
-
-          ifcfg_desc = ifcfg_conf["NAME"]
-          descr = ifcfg_desc if !ifcfg_desc.nil? && !ifcfg_desc.empty?
-          descr = CheckEmptyName(ifcfg_type, descr)
-          status = DeviceStatus(ifcfg_type, ifcfg_name, ifcfg_conf)
-
-          bullets << _("Device Name: %s") % ifcfg_name
-          bullets += startmode_overview(key)
-          bullets += ip_overview(ifcfg_conf) if ifcfg_conf["STARTMODE"] != "managed"
-
-          if ifcfg_type == "wlan" &&
-              ifcfg_conf["WIRELESS_AUTH_MODE"] == "open" &&
-              IsEmpty(ifcfg_conf["WIRELESS_KEY_0"])
-
-            # avoid colons
-            ifcfg_name = ifcfg_name.tr(":", "/")
-            href = "lan--wifi-encryption-" + ifcfg_name
-            # interface summary: WiFi without encryption
-            warning = HTML.Colorize(_("Warning: no encryption is used."), "red")
-            # Hyperlink: Change the configuration of an interface
-            status << " " << warning << " " << Hyperlink(href, _("Change."))
-            links << href
-          end
-
-          if ifcfg_type == "bond" || ifcfg_type == "br"
-            bullets << slaves_desc(ifcfg_type, ifcfg_name)
-          end
-
-          if enslaved?(ifcfg_name)
-            if yast_config.interfaces.bond_index[ifcfg_name]
-              master = yast_config.interfaces.bond_index[ifcfg_name]
-              master_desc = _("Bonding master")
-            else
-              master = yast_config.interfaces.bridge_index[ifcfg_name]
-              master_desc = _("Bridge")
-            end
-            note = format(_("enslaved in %s"), master)
-            bullets << format("%s: %s", master_desc, master)
-          end
-
-          if renamed?(key)
-            note = format("%s -> %s", GetDeviceName(key), renamed_to(key))
-          end
-
-          overview << Summary.Device(descr, status)
-        else
-          descr = CheckEmptyName(ifcfg_type, descr)
-          overview << Summary.Device(descr, Summary.NotConfigured)
-        end
-        conn = ""
-        conn = HTML.Bold(format("(%s)", _("Not connected"))) if !item_hwinfo["link"]
-        conn = HTML.Bold(format("(%s)", _("No hwinfo"))) if item_hwinfo.empty?
-
-        mac_dev = HTML.Bold("MAC : ") + item_hwinfo["permanent_mac"].to_s + "<br>"
-        bus_id  = HTML.Bold("BusID : ") + item_hwinfo["busid"].to_s + "<br>"
-        physical_port_id = HTML.Bold("PhysicalPortID : ") + physical_port_id(ifcfg_name) + "<br>"
-
-        rich << " " << conn << "<br>" << mac_dev if IsNotEmpty(item_hwinfo["permanent_mac"])
-        rich << bus_id if IsNotEmpty(item_hwinfo["busid"])
-        rich << physical_port_id if physical_port_id?(ifcfg_name)
-        # display it only if we need it, don't duplicate "ifcfg_name" above
-        if IsNotEmpty(item_hwinfo["dev_name"]) && ifcfg_name.empty?
-          dev_name = _("Device Name: %s") % item_hwinfo["dev_name"]
-          rich << HTML.Bold(dev_name) << "<br>"
-        end
-        rich = HTML.Bold(descr) + rich
-        if IsEmpty(item_hwinfo["dev_name"]) && !item_hwinfo.empty? && !Arch.s390
-          rich << "<p>"
-          rich << _("Unable to configure the network card because the kernel device (eth0, wlan0) is not present. This is mostly caused by missing firmware (for wlan devices). See dmesg output for details.")
-          rich << "</p>"
-        elsif !ifcfg_name.empty?
-          rich << HTML.List(bullets)
-        else
-          rich << "<p>"
-          rich << _("The device is not configured. Press <b>Edit</b>\nto configure.\n")
-          rich << "</p>"
-
-          curr = @current
-          @current = key
-          if needFirmwareCurrentItem
-            fw = GetFirmwareForCurrentItem()
-            rich << format("%s : %s", _("Needed firmware"), !fw.empty? ? fw : _("unknown"))
-          end
-          @current = curr
-        end
-        LanItems.Items[key]["table_descr"] = {
-          "rich_descr"  => rich,
-          "table_descr" => [descr, DeviceProtocol(ifcfg_conf), ifcfg_name, note]
-        }
-      end
-      [Summary.DevicesList(overview), links]
-    end
-
-    # Create an overview table with all configured devices
-    # @return table items
-    def Overview
-      BuildLanOverview()
-      GetDescr()
-    end
-
     # Is current device hotplug or not? I.e. is connected via usb/pcmci?
     def isCurrentHotplug
       hotplugtype = Ops.get_string(getCurrentItem, ["hwinfo", "hotplug"], "")
@@ -1903,8 +1783,6 @@ module Yast
     publish function: :needFirmwareCurrentItem, type: "boolean ()"
     publish function: :GetFirmwareForCurrentItem, type: "string ()"
     publish function: :GetBondSlaves, type: "list <string> (string)"
-    publish function: :BuildLanOverview, type: "list ()"
-    publish function: :Overview, type: "list ()"
     publish function: :isCurrentHotplug, type: "boolean ()"
     publish function: :isCurrentDHCP, type: "boolean ()"
     publish function: :GetItemDescription, type: "string ()"
