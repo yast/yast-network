@@ -73,7 +73,7 @@ module Y2Network
         # FIXME: this can happen only bcs we silently use LanItems::Items which
         # already contains partially configured bridge when adding
         return false if iface.name == @name
-        return true if !iface.configured
+        return true unless yast_config.configured_interface?(iface.name)
 
         if interfaces.bond_index[iface.name]
           log.debug("Excluding (#{iface.name}) - is bonded")

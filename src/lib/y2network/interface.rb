@@ -43,8 +43,6 @@ module Y2Network
     attr_accessor :description
     # @return [InterfaceType] Interface type
     attr_accessor :type
-    # @return [Boolean]
-    attr_reader :configured
     # @return [HwInfo]
     attr_reader :hardware
     # @return [Symbol] Mechanism to rename the interface (:none -no rename-, :bus_id or :mac)
@@ -76,8 +74,6 @@ module Y2Network
       @type = type
       # TODO: move renaming logic to physical interfaces only
       @renaming_mechanism = :none
-
-      init(name)
     end
 
     # Determines whether two interfaces are equal
@@ -117,17 +113,6 @@ module Y2Network
       @old_name = name if name != new_name # same name, just set different mechanism
       @name = new_name
       @renaming_mechanism = mechanism
-    end
-
-  private
-
-    def system_config(name)
-      Yast::Lan.system_config.connections.by_name(name)
-    end
-
-    def init(name)
-      @configured = false
-      @configured = !system_config(name).nil? if !(name.nil? || name.empty?)
     end
   end
 end
