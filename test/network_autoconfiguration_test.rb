@@ -201,7 +201,6 @@ describe Yast::NetworkAutoconfiguration do
       allow(Y2Network::Config).to receive(:find).with(:yast).and_return(yast_config)
       allow(Y2Network::Config).to receive(:find).with(:system).and_return(system_config)
       allow(instance).to receive(:virtual_proposal_required?).and_return(proposal)
-      allow(Yast::LanItems).to receive(:write)
       allow(Yast::LanItems).to receive(:Read)
       allow(yast_config).to receive(:write)
       allow(Yast::Lan).to receive(:connected_and_bridgeable?).and_return(true)
@@ -228,7 +227,7 @@ describe Yast::NetworkAutoconfiguration do
       end
 
       it "writes the configuration of the interfaces" do
-        expect(Yast::LanItems).to receive(:write)
+        expect(Yast::Lan.yast_config).to receive(:write)
         instance.configure_virtuals
       end
 

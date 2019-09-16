@@ -510,7 +510,6 @@ module Yast
       return false if Abort()
       # Progress step 3 - multiple devices may be present, really plural
       ProgressNextStage(_("Writing device configuration..."))
-      LanItems.write
       Builtins.sleep(sl)
 
       return false if Abort()

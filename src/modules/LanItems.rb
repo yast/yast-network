@@ -254,10 +254,6 @@ module Yast
       SetDeviceMap(item_id, devmap)
     end
 
-    def write
-      # TODO Remove
-    end
-
     # Function which returns if the settings were modified
     # @return [Boolean]  settings were modified
     def GetModified
