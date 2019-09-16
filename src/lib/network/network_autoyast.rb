@@ -72,39 +72,6 @@ module Yast
       conf
     end
 
-    # Creates udev rules according definition from profile
-    def create_udevs
-      return if !Mode.autoinst
-
-      log.info("Applying udev rules according to AY profile")
-
-      # get implicitly defined udev rules (via old style names)
-      im_udev_rules = LanItems.createUdevFromIfaceName(ay_networking_section["interfaces"])
-      log.info("- implicitly defined udev rules: #{im_udev_rules}")
-
-      no_rules = im_udev_rules.empty?
-
-      # get explicit udev definition from the profile
-      ex_udev_rules = ay_networking_section["net-udev"] || []
-      log.info("- explicitly defined udev rules: #{ex_udev_rules}")
-
-      no_rules &&= ex_udev_rules.empty?
-      return if no_rules
-
-      # for the purpose of setting the persistent names, create the devices 1st
-      s390_devices = ay_networking_section.fetch("s390-devices", {})
-      s390_devices.each { |rule| LanItems.createS390Device(rule) } if Arch.s390
-
-      LanItems.Read
-
-      # implicitly defined udev rules are overwritten by explicit ones in
-      # case of collision.
-      assign_udevs_to_devs(im_udev_rules)
-      assign_udevs_to_devs(ex_udev_rules)
-
-      LanItems.write
-    end
-
     # Sets network service for target
     def set_network_service
       return if !Mode.autoinst
@@ -292,86 +259,6 @@ module Yast
       return {} if ay_current_profile["host"].nil?
 
       ay_current_profile["host"]
-    end
-
-    # Checks if the udev rule is valid for renaming a NIC
-    def valid_rename_udev_rule?(rule)
-      return false if rule["name"].nil? || rule["name"].empty?
-      return false if rule["rule"].nil? || rule["rule"].empty?
-      return false if rule["value"].nil? || rule["value"].empty?
-
-      true
-    end
-
-    # Renames a network device represented by given item.
-    #
-    # @param item [Integer] is an item id. See LanItems for detail
-    # @param name_to [String] new device name
-    # @param attr [String] an udev attribute usable in NIC's rule. Currently just
-    #  "KERNELS" or "ATTR{address}" makes sense. This parameter is optional
-    # @param key [String] for the given udev attribute. Optional parameter.
-    def rename_lan_item(item, name_to, attr = nil, key = nil)
-      return if item.nil? || item < 0 || item >= LanItems.Items.size
-      return if name_to.nil? || name_to.empty?
-
-      # selecting according device name is unreliable (selects only in between configured devices)
-      LanItems.current = item
-      LanItems.InitItemUdevRule(item)
-
-      if !attr.nil? && !key.nil?
-        # find out what attribude is currently used for setting device name and
-        # change it if needed. Currently mac is used by default. So, we check is it is
-        # the other one (busid). If no we defaults to mac.
-        bus_attr = LanItems.GetItemUdev("KERNELS")
-        current_attr = bus_attr.empty? ? "ATTR{address}" : "KERNELS"
-
-        # make sure that we base renaming on defined attribute with value given in AY profile
-        LanItems.ReplaceItemUdev(current_attr, attr, key)
-      elsif attr.nil? ^ key.nil? # xor
-        raise ArgumentError, "Not enough data for udev rule definition"
-      end
-
-      LanItems.rename(name_to)
-
-      nil
-    end
-
-    # Takes a list of udev rules and assignes them to corresponding devices.
-    #
-    # If a device has an udev rule defined already, it is overwritten by new one.
-    # Note: initialization of LanItems has to be done outside of this method
-    def assign_udevs_to_devs(udev_rules)
-      return if udev_rules.nil?
-
-      udev_rules.each do |rule|
-        name_to = rule["name"]
-        attr = rule["rule"]
-        key = rule["value"]
-
-        next if !valid_rename_udev_rule?(rule)
-        key.downcase!
-
-        # find item which matches to the given rule definition
-        item_id, matching_item = LanItems.Items.find do |_, i|
-          next unless i["hwinfo"]
-          busid = i["hwinfo"]["busid"]
-          # Match also parent busid if exist (bsc#1129012)
-          parent_busid = i["hwinfo"]["parent_busid"] || busid
-          mac = i["hwinfo"]["permanent_mac"]
-
-          [busid, parent_busid, mac].any? { |v| v.casecmp(key).zero? }
-        end
-        next if !matching_item
-
-        name_from = LanItems.current_name_for(item_id)
-        log.info("Matching device found - renaming <#{name_from}> -> <#{name_to}>")
-
-        # rename item in collision
-        rename_lan_item(LanItems.colliding_item(name_to), name_from)
-
-        # rename matching item
-        rename_lan_item(item_id, name_to, attr, key)
-      end
     end
 
     # Configures given yast submodule according AY configuration
