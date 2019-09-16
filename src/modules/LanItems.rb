@@ -175,22 +175,6 @@ module Yast
       "" # this should never happen
     end
 
-    # Convenience method to obtain the current Item udev rule
-    #
-    # @return [Array<String>] Item udev rule
-    def current_udev_rule
-      LanItems.GetItemUdevRule(LanItems.current)
-    end
-
-    # Returns name which is going to be used in the udev rule
-    def current_udev_name
-      if LanItems.current_renamed?
-        LanItems.current_renamed_to
-      else
-        LanItems.GetItemUdev("NAME")
-      end
-    end
-
     # transforms given list of item ids onto device names
     #
     # item id is index into internal @Items structure
@@ -270,286 +254,8 @@ module Yast
       SetDeviceMap(item_id, devmap)
     end
 
-    # Returns udev rule known for particular item
-    #
-    # @param itemId [Integer] a key for {#Items}
-    def GetItemUdevRule(itemId)
-      Ops.get_list(GetLanItem(itemId), ["udev", "net"], [])
-    end
-
-    # Sets udev rule for given item
-    #
-    # @param itemId [Integer] a key for {#Items}
-    # @param rule   [String]  an udev rule
-    def SetItemUdevRule(itemId, rule)
-      GetLanItem(itemId)["udev"]["net"] = rule
-    end
-
-    # Inits item's udev rule to a default one if none is present
-    #
-    # @param item_id [Integer] a key for {#Items}
-    # @return [String] item's udev rule
-    def InitItemUdevRule(item_id)
-      udev = GetItemUdevRule(item_id)
-      return udev if !udev.empty?
-
-      default_mac = GetLanItem(item_id).fetch("hwinfo", {})["permanent_mac"]
-      raise ArgumentError, "Cannot propose udev rule - NIC not present" if !default_mac
-
-      default_udev = GetDefaultUdevRule(
-        GetDeviceName(item_id),
-        default_mac
-      )
-      SetItemUdevRule(item_id, default_udev)
-
-      default_udev
-    end
-
-    def ReadUdevDriverRules
-      Builtins.y2milestone("Reading udev rules ...")
-      @udev_net_rules = Convert.convert(
-        SCR.Read(path(".udev_persistent.net")),
-        from: "any",
-        to:   "map <string, any>"
-      )
-
-      Builtins.y2milestone("Reading driver options ...")
-      Builtins.foreach(SCR.Dir(path(".modules.options"))) do |driver|
-        pth = Builtins.sformat(".modules.options.%1", driver)
-        Builtins.foreach(
-          Convert.convert(
-            SCR.Read(Builtins.topath(pth)),
-            from: "any",
-            to:   "map <string, string>"
-          )
-        ) do |key, value|
-          Ops.set(
-            @driver_options,
-            driver,
-            Builtins.sformat(
-              "%1%2%3=%4",
-              Ops.get_string(@driver_options, driver, ""),
-              if Ops.greater_than(
-                Builtins.size(Ops.get_string(@driver_options, driver, "")),
-                0
-              )
-                " "
-              else
-                ""
-              end,
-              key,
-              value
-            )
-          )
-        end
-      end
-
-      true
-    end
-
-    def getUdevFallback
-      udev_rules = Ops.get_list(getCurrentItem, ["udev", "net"], [])
-
-      if IsEmpty(udev_rules)
-        udev_rules = GetDefaultUdevRule(
-          GetCurrentName(),
-          Ops.get_string(getCurrentItem, ["hwinfo", "permanent_mac"], "")
-        )
-        Builtins.y2milestone(
-          "No Udev rules found, creating default: %1",
-          udev_rules
-        )
-      end
-
-      deep_copy(udev_rules)
-    end
-
-    # It returns a value for the particular key of udev rule belonging to the current item.
-    def GetItemUdev(key)
-      udev_key_value(getUdevFallback, key)
-    end
-
-    # It deletes the given key from the udev rule of the current item.
-    #
-    # @param key [string] udev key which identifies the tuple to be removed
-    # @return [Object, nil] the current item's udev rule without the given key; nil if
-    # there is not udev rules for the current item
-    def RemoveItemUdev(key)
-      return nil if current_udev_rule.empty?
-
-      log.info("Removing #{key} from #{current_udev_rule}")
-      Items()[@current]["udev"]["net"] =
-        LanItems.RemoveKeyFromUdevRule(current_udev_rule, key)
-    end
-
-    # Updates the udev rule of the current Lan Item based on the key given
-    # which currently could be mac or bus_id.
-    #
-    # In case of bus_id the dev_port will be always added to avoid cases where
-    # the interfaces shared the same bus_id (i.e. Multiport cards using the
-    # same function to all the ports) (bsc#1007172)
-    #
-    # @param based_on [Symbol] principal key to be matched, `:mac` or `:bus_id`
-    # @return [void]
-    def update_item_udev_rule!(based_on = :mac)
-      new_rule = current_udev_rule.empty?
-      LanItems.InitItemUdevRule(LanItems.current) if new_rule
-
-      case based_on
-      when :mac
-        return if new_rule
-
-        LanItems.RemoveItemUdev("ATTR{dev_port}")
-
-        # FIXME: While the user is able to modify the udev rule using the
-        # mac address instead of bus_id when bonding, could be that the
-        # mac in use was not the permanent one. We could read it with
-        # ethtool -P dev_name}
-        LanItems.ReplaceItemUdev(
-          "KERNELS",
-          "ATTR{address}",
-          LanItems.getCurrentItem.fetch("hwinfo", {}).fetch("permanent_mac", "")
-        )
-      when :bus_id
-        # Update or insert the dev_port if the sysfs dev_port attribute is present
-        LanItems.ReplaceItemUdev(
-          "ATTR{dev_port}",
-          "ATTR{dev_port}",
-          LanItems.dev_port(LanItems.GetCurrentName)
-        ) if LanItems.dev_port?(LanItems.GetCurrentName)
-
-        # If the current rule is mac based, overwrite to bus id. Don't touch otherwise.
-        LanItems.ReplaceItemUdev(
-          "ATTR{address}",
-          "KERNELS",
-          LanItems.getCurrentItem.fetch("hwinfo", {}).fetch("busid", "")
-        )
-      else
-        raise ArgumentError, "The key given for udev rule #{based_on} is not supported"
-      end
-    end
-
-    # It replaces a tuple identified by replace_key in current item's udev rule
-    #
-    # Note that the tuple is identified by key only. However modification flag is
-    # set only if value was changed (in case when replace_key == new_key)
-    #
-    # It also contain a logic on tuple operators. When the new_key is "NAME"
-    # then assignment operator (=) is used. Otherwise equality operator (==) is used.
-    # Thats bcs this function is currently used for touching "NAME", "KERNELS" and
-    # `ATTR{address}` keys only
-    #
-    # @param replace_key [string] udev key which identifies tuple to be replaced
-    # @param new_key     [string] new key to by used
-    # @param new_val     [string] value for new key
-    # @return updated rule when replace_key is found, current rule otherwise
-    def ReplaceItemUdev(replace_key, new_key, new_val)
-      # =    for assignment
-      # ==   for equality checks
-      operator = new_key == "NAME" ? "=" : "=="
-      rule = RemoveKeyFromUdevRule(getUdevFallback, replace_key)
-
-      # NAME="devname" has to be last in the rule.
-      # otherwise SCR agent .udev_persistent.net returns crap
-      # isn't that fun
-      name_tuple = rule.pop
-      new_rule = AddToUdevRule(rule, "#{new_key}#{operator}\"#{new_val}\"")
-      new_rule.push(name_tuple)
-
-      if current_udev_rule.sort != new_rule.sort
-        SetModified()
-
-        log.info("ReplaceItemUdev: new udev rule = #{new_rule}")
-
-        Items()[@current]["udev"] = { "net" => [] } if !Items()[@current]["udev"]
-        Items()[@current]["udev"]["net"] = new_rule
-      end
-
-      deep_copy(new_rule)
-    end
-
-    # Updates device name.
-    #
-    # It updates device's udev rules and config name.
-    # Updating config name means that old configuration is deleted from
-    # the system.
-    #
-    # @param itemId [Integer] a key for {#Items}
-    #
-    # Returns new name
-    def SetItemName(itemId, name)
-      lan_items = LanItems.Items
-
-      if name && !name.empty?
-        if lan_items[itemId]["udev"]
-          updated_rule = update_udev_rule_key(GetItemUdevRule(itemId), "NAME", name)
-          lan_items[itemId]["udev"]["net"] = updated_rule
-        end
-      else
-        # rewrite rule for empty name is meaningless
-        lan_items[itemId].delete("udev")
-      end
-
-      if lan_items[itemId].key?("ifcfg")
-        NetworkInterfaces.Delete2(lan_items[itemId]["ifcfg"])
-        lan_items[itemId]["ifcfg"] = name.to_s
-      end
-
-      name
-    end
-
-    # Updates current device name.
-    #
-    # It updates device's udev rules and config name.
-    # Updating config name means that old configuration is deleted from
-    # the system.
-    #
-    # Returns new name
-    def SetCurrentName(name)
-      SetItemName(@current, name)
-    end
-
-    # Sets new device name for current item
-    def rename(name)
-      if GetCurrentName() != name
-        @Items[@current]["renamed_to"] = name
-        SetModified()
-      else
-        @Items[@current].delete("renamed_to")
-      end
-    end
-
-    # Returns new name for current item
-    #
-    # @param item_id [Integer] a key for {#Items}
-    def renamed_to(item_id)
-      Items()[item_id]["renamed_to"]
-    end
-
-    def current_renamed_to
-      renamed_to(@current)
-    end
-
-    # Tells if current item was renamed
-    #
-    # @param item_id [Integer] a key for {#Items}
-    def renamed?(item_id)
-      return false if !renamed_to(item_id)
-      renamed_to(item_id) != GetDeviceName(item_id)
-    end
-
-    def current_renamed?
-      renamed?(@current)
-    end
-
     def write
-      renamed_items = @Items.keys.select { |item_id| renamed?(item_id) }
-      renamed_items.each do |item_id|
-        devmap = GetDeviceMap(item_id)
-        # change configuration name if device is configured
-        NetworkInterfaces.Change2(renamed_to(item_id), devmap, false) if devmap
-        SetItemName(item_id, renamed_to(item_id))
-      end
+      # TODO Remove
     end
 
     # Function which returns if the settings were modified
@@ -752,50 +458,6 @@ module Yast
       @Items = {}
       @Hardware = ReadHardware("netcard")
       # Hardware = [$["active":true, "bus":"pci", "busid":"0000:02:00.0", "dev_name":"wlan0", "drivers":[$["active":true, "modprobe":true, "modules":[["ath5k" , ""]]]], "link":true, "mac":"00:22:43:37:55:c3", "modalias":"pci:v0000168Cd0000001Csv00001A3Bsd00001026bc02s c00i00", "module":"ath5k", "name":"AR242x 802.11abg Wireless PCI Express Adapter", "num":0, "options":"", "re quires":[], "sysfs_id":"/devices/pci0000:00/0000:00:1c.1/0000:02:00.0", "type":"wlan", "udi":"/org/freedeskto p/Hal/devices/pci_168c_1c", "wl_auth_modes":["open", "sharedkey", "wpa-psk", "wpa-eap"], "wl_bitrates":nil, " wl_channels":["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"], "wl_enc_modes":["WEP40", "WEP104", "T KIP", "CCMP"]], $["active":true, "bus":"pci", "busid":"0000:01:00.0", "dev_name":"eth0", "drivers":[$["active ":true, "modprobe":true, "modules":[["atl1e", ""]]]], "link":false, "mac":"00:23:54:3f:7c:c3", "modalias":"pc i:v00001969d00001026sv00001043sd00008324bc02sc00i00", "module":"atl1e", "name":"L1 Gigabit Ethernet Adapter", "num":1, "options":"", "requires":[], "sysfs_id":"/devices/pci0000:00/0000:00:1c.3/0000:01:00.0", "type":"et h", "udi":"/org/freedesktop/Hal/devices/pci_1969_1026", "wl_auth_modes":nil, "wl_bitrates":nil, "wl_channels" :nil, "wl_enc_modes":nil]];
-      ReadUdevDriverRules()
-
-      udev_drivers_rules = Convert.convert(
-        SCR.Read(path(".udev_persistent.drivers")),
-        from: "any",
-        to:   "map <string, any>"
-      )
-      Builtins.foreach(@Hardware) do |hwitem|
-        udev_net = if Ops.get_string(hwitem, "dev_name", "") != ""
-          Ops.get_list(
-            @udev_net_rules,
-            Ops.get_string(hwitem, "dev_name", ""),
-            []
-          )
-        else
-          []
-        end
-        mod = Builtins.deletechars(
-          Ops.get(
-            Builtins.splitstring(
-              Ops.get(
-                Ops.get_list(
-                  udev_drivers_rules,
-                  Ops.get_string(hwitem, "modalias", ""),
-                  []
-                ),
-                1,
-                ""
-              ),
-              "="
-            ),
-            1,
-            ""
-          ),
-          "\""
-        )
-        Ops.set(
-          @Items,
-          Builtins.size(@Items),
-          "hwinfo" => hwitem,
-          "udev"   => { "net" => udev_net, "driver" => mod }
-        )
-      end
-
       nil
     end
 
@@ -1227,8 +889,6 @@ module Yast
       # We have to remove it from routing before deleting the item
       remove_current_device_from_routing
 
-      SetCurrentName("")
-
       current_item = @Items[@current]
 
       if current_item["hwinfo"].nil? || current_item["hwinfo"].empty?
@@ -1591,22 +1251,6 @@ module Yast
       false
     end
 
-    # Return the current name of the {LanItems} given
-    #
-    # @param item_id [Integer] a key for {#Items}
-    def current_name_for(item_id)
-      renamed?(item_id) ? renamed_to(item_id) : GetDeviceName(item_id)
-    end
-
-    # Finds a LanItem which name is in collision to the provided name
-    #
-    # @param name [String] a device name (eth0, ...)
-    # @return [Integer, nil] item id (see LanItems::Items)
-    def colliding_item(name)
-      item_id, _item_map = Items().find { |i, _| name == current_name_for(i) }
-      item_id
-    end
-
     # Return wether the routing devices list needs to be updated or not to include
     # the current interface name
     #
@@ -1768,9 +1412,6 @@ module Yast
     publish function: :GetCurrentName, type: "string ()"
     publish function: :GetDeviceType, type: "string (integer)"
     publish function: :GetDeviceMap, type: "map <string, any> (integer)"
-    publish function: :GetItemUdevRule, type: "list <string> (integer)"
-    publish function: :GetItemUdev, type: "string (string)"
-    publish function: :ReplaceItemUdev, type: "list <string> (string, string, string)"
     publish function: :GetModified, type: "boolean ()"
     publish function: :SetModified, type: "void ()"
     publish function: :AddNew, type: "void ()"
@@ -1791,7 +1432,6 @@ module Yast
     publish function: :Select, type: "boolean (string)"
     publish function: :Commit, type: "boolean ()"
     publish function: :Rollback, type: "boolean ()"
-    publish function: :DeleteItem, type: "void ()"
     publish function: :setDriver, type: "void (string)"
     publish function: :enableCurrentEditButton, type: "boolean ()"
     publish function: :createS390Device, type: "boolean ()"

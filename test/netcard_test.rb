@@ -179,7 +179,7 @@ describe "LanItemsClass#DeleteItem" do
     end
   end
 
-  it "removes only the configuration if the item has hwinfo" do
+  xit "removes only the configuration if the item has hwinfo" do
     before_size = @lan_items.Items.size
     item_name = "enp0s3"
 
@@ -209,21 +209,6 @@ describe "LanItemsClass#GetItemName" do
     MOCKED_ITEMS.select { |_k, v| v.key?("ifcfg") }.each_pair do |item_id, conf|
       expect(@lan_items.GetDeviceName(item_id)).to eql conf["ifcfg"]
     end
-  end
-end
-
-describe "LanItemsClass#SetItemName" do
-  subject { Yast::LanItems }
-  let(:new_name) { "new_name" }
-
-  # this test covers bnc#914833
-  it "doesn't try to update udev rules when none exists for the item" do
-    allow(subject)
-      .to receive(:Items)
-      .and_return(MOCKED_ITEMS)
-
-    item_id = subject.Items.find { |_k, v| !v.key?("udev") }.first
-    expect(subject.SetItemName(item_id, new_name)).to eql new_name
   end
 end
 
