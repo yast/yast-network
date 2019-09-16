@@ -74,19 +74,19 @@ module Y2Network
           return false unless s390_config["QETH_LAYER2"] == "yes"
         end
 
-        if interfaces.bond_index[iface.name] && interfaces.bond_index[iface.name] != @name
-          log.debug("Excluding (#{iface.name}) - is already bonded")
+        config = yast_config.connections.by_name(iface.name)
+        master = config.find_master(yast_config.connections)
+        if master
+          log.debug("Excluding (#{iface.name}) - already has master #{master.inspect}")
           return false
         end
 
         # cannot enslave itself
-        # FIXME: this can happen only bcs we silently use LanItems::Items which
-        # already contains partially configured bond when adding
         return false if iface.name == @name
 
         return true unless yast_config.configured_interface?(iface.name)
 
-        iface.bootproto == "none"
+        config.bootproto.to_s == "none"
       end
     end
   end

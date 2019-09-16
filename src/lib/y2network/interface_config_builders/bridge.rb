@@ -54,7 +54,7 @@ module Y2Network
     private
 
       def interfaces
-        Config.find(:yast).interfaces
+        yast_config.interfaces
       end
 
       NONBRIDGEABLE_TYPES = [
@@ -75,14 +75,10 @@ module Y2Network
         return false if iface.name == @name
         return true unless yast_config.configured_interface?(iface.name)
 
-        if interfaces.bond_index[iface.name]
-          log.debug("Excluding (#{iface.name}) - is bonded")
-          return false
-        end
-
-        # the iface is already in another bridge
-        if interfaces.bridge_index[iface.name] && interfaces.bridge_index[iface.name] != @name
-          log.debug("Excluding (#{iface.name}) - already bridged")
+        config = yast_config.connections.by_name(iface.name)
+        master = config.find_master(yast_config.connections)
+        if master
+          log.debug("Excluding (#{iface.name}) - already has master #{master.inspect}")
           return false
         end
 
@@ -92,8 +88,8 @@ module Y2Network
           return false
         end
 
-        if NONBRIDGEABLE_STARTMODE.include?(iface.startmode)
-          log.debug("Excluding (#{iface.name}) - is #{iface.startmode}")
+        if NONBRIDGEABLE_STARTMODE.include?(config.startmode.to_s)
+          log.debug("Excluding (#{iface.name}) - is #{config.startmode}")
           return false
         end
 
