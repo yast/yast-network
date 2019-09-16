@@ -46,7 +46,6 @@ module Yast
       Yast.include include_target, "network/lan/help.rb"
       Yast.include include_target, "network/lan/hardware.rb"
       Yast.include include_target, "network/complex.rb"
-      Yast.include include_target, "network/lan/bridge.rb"
       Yast.include include_target, "network/lan/s390.rb"
 
       @force_static_ip = ProductFeatures.GetBooleanFeature(

@@ -66,7 +66,6 @@ module Yast
       Yast.include self, "network/routines.rb"
       Yast.include self, "network/lan/s390.rb"
       Yast.include self, "network/lan/udev.rb"
-      Yast.include self, "network/lan/bridge.rb"
 
       reset_cache
 
@@ -1499,46 +1498,6 @@ module Yast
       nil
     end
 
-    PROPOSED_PPPOE_MTU = "1492".freeze # suggested value for PPPoE
-    # A default configuration for device when installer needs to configure it
-    def ProposeItem(item_id)
-      Builtins.y2milestone("Propose configuration for %1", GetDeviceName(item_id))
-      return false if Select("") != true
-
-      type = Items().fetch(item_id, {}).fetch("hwinfo", {})[type]
-      builder = Y2Network::InterfaceConfigBuilder.for(type)
-
-      builder.mtu = PROPOSED_PPPOE_MTU if Arch.s390 && Builtins.contains(["lcs", "eth"], type)
-      builder.ip_address = ""
-      builder.subnet_prefix = ""
-      builder.boot_protocol = Y2Network::BootProtocol::DHCP
-
-      # see bsc#176804
-      devicegraph = Y2Storage::StorageManager.instance.staging
-      if devicegraph.filesystem_in_network?("/")
-        builder.startmode = "nfsroot"
-        Builtins.y2milestone("startmode nfsroot")
-      end
-
-      # FIXME: seems like a hack
-      NetworkInterfaces.Add
-      @operation = :edit
-      Ops.set(
-        @Items,
-        [item_id, "ifcfg"],
-        Ops.get_string(GetLanItem(item_id), ["hwinfo", "dev_name"], "")
-      )
-      # FIXME: is it needed?
-      @description = HardwareName(
-        [Ops.get_map(GetLanItem(item_id), "hwinfo", {})],
-        Ops.get_string(GetLanItem(item_id), ["hwinfo", "dev_name"], "")
-      )
-
-      Commit(builder)
-      Builtins.y2milestone("After configuration propose %1", GetLanItem(item_id))
-      true
-    end
-
     def setDriver(driver)
       Builtins.y2milestone(
         "driver %1, %2",
@@ -2182,7 +2141,6 @@ module Yast
     publish function: :Commit, type: "boolean ()"
     publish function: :Rollback, type: "boolean ()"
     publish function: :DeleteItem, type: "void ()"
-    publish function: :ProposeItem, type: "boolean ()"
     publish function: :setDriver, type: "void (string)"
     publish function: :enableCurrentEditButton, type: "boolean ()"
     publish function: :createS390Device, type: "boolean ()"

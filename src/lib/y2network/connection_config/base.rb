@@ -17,6 +17,7 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
+require "y2storage"
 require "y2network/interface_type"
 require "y2network/boot_protocol"
 require "y2network/startmode"
@@ -70,15 +71,25 @@ module Y2Network
         @firewall_zone = ""
       end
 
+      PROPOSED_PPPOE_MTU = 1492 # suggested value for PPPoE
+
       # Propose reasonable defaults for given config. Useful for newly created devices.
       # @note difference between constructor and propose is that initialize should set simple defaults
       #   and propose have more tricky config that depends on env, product, etc.
       def propose
         propose_startmode
+        self.mtu = PROPOSED_PPPOE_MTU if Yast::Arch.s390 && (type.lcs? || type.ethernet?)
       end
 
       def propose_startmode
         Yast.import "ProductFeatures"
+        # see bsc#176804
+        devicegraph = Y2Storage::StorageManager.instance.staging
+        if devicegraph.filesystem_in_network?("/")
+          @startmode = Startmode.create("nfsroot")
+          log.info "startmode nfsroot"
+          return
+        end
 
         product_startmode = Yast::ProductFeatures.GetStringFeature(
           "network",

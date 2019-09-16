@@ -50,7 +50,7 @@ module Yast
 
     def configure_dhcp
       Yast::Lan.Read(:cache)
-      Yast.include self, "network/routines.rb"  # TODO: needed only for phy_connected
+      Yast.include self, "network/routines.rb" # TODO: needed only for phy_connected
 
       # find out network devices suitable for dhcp autoconfiguration.
       # Such device has to:
@@ -136,7 +136,7 @@ module Yast
     # needn't to work when wickedd* services are already running
     # @param card [Y2Network::Interface]
     def setup_dhcp(card)
-      builder = Y2Network::InterfaceConfigBuilder.for(LanItems.GetCurrentType())
+      builder = Y2Network::InterfaceConfigBuilder.for(card.type)
       builder.name = card.name
 
       builder.boot_protocol = Y2Network::BootProtocol::DHCP

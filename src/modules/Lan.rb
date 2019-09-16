@@ -71,7 +71,6 @@ module Yast
 
       Yast.include self, "network/complex.rb"
       Yast.include self, "network/runtime.rb"
-      Yast.include self, "network/lan/bridge.rb"
 
       #-------------
       # GLOBAL DATA
@@ -854,20 +853,24 @@ module Yast
     def ProposeVirtualized
       # then each configuration (except bridges) move to the bridge
       # and add old device name into bridge_ports
-      LanItems.Items.each do |current, config|
-        bridge_name = LanItems.new_type_device("br")
+      yast_config.interfaces.each do |interface|
+        bridge_builder = Y2Network::InterfaceConfigBuilder.for("br")
+        bridge_builder.name = yast_config.interfaces.free_name("br")
 
-        next unless connected_and_bridgeable?(bridge_name, current, config)
+        next unless connected_and_bridgeable?(bridge_builder, interface)
 
-        # first configure all connected unconfigured devices with dhcp (with default parameters)
-        # FIXME: ProposeItem is always true
-        next if !LanItems.IsItemConfigured(current) && !LanItems.ProposeItem(current)
+        next if yast_config.connections.by_name(interface.name)
 
-        ifcfg = LanItems.GetDeviceName(current)
-        next unless configure_as_bridge!(ifcfg, bridge_name)
-        # reconfigure existing device as newly created bridge's port
-        configure_as_bridge_port(ifcfg)
-        LanItems.move_routes(ifcfg, bridge_name)
+        bridge_builder.stp = false
+        bridge_builder.ports = interface.name
+        bridge_builder.startmode = "auto"
+        bridge_builder.save
+
+        builder = Y2Network::InterfaceConfigBuilder.for(interface.type)
+        builder.name = interface.name
+        builder.configure_as_slave
+        builder.save
+        LanItems.move_routes(builder.name, bridge_builder.name)
         refresh_lan_items
       end
 
@@ -1019,54 +1022,24 @@ module Yast
       end
     end
 
-    def configure_as_bridge!(ifcfg, bridge_name)
-      return false if !NetworkInterfaces.Edit(ifcfg)
-
-      log.info("device #{ifcfg} is gointg to be in bridge #{bridge_name}")
-
-      NetworkInterfaces.Name = bridge_name
-
-      # from bridge interface remove all bonding-related stuff
-      NetworkInterfaces.Current.each do |key, _value|
-        NetworkInterfaces.Current[key] = nil if key.include? "BONDING"
-      end
-
-      NetworkInterfaces.Current["BRIDGE"] = "yes"
-      NetworkInterfaces.Current["BRIDGE_PORTS"] = ifcfg
-      NetworkInterfaces.Current["BRIDGE_STP"] = "off"
-      NetworkInterfaces.Current["BRIDGE_FORWARDDELAY"] = "0"
-
-      # hardcode startmode (bnc#450670), it can't be ifplugd!
-      NetworkInterfaces.Current["STARTMODE"] = "auto"
-      # remove description - will be replaced by new (real) one
-      NetworkInterfaces.Current.delete("NAME")
-      # remove ETHTOOLS_OPTIONS as it is useful only for real hardware
-      NetworkInterfaces.Current.delete("ETHTOOLS_OPTIONS")
-
-      NetworkInterfaces.Commit
-    end
-
     # Convenience method that returns true if the current item has link and can
     # be enslaved in a bridge.
     #
     # @return [Boolean] true if it is bridgeable
-    def connected_and_bridgeable?(bridge_name, item, config)
-      # FIXME: a workaround until we fully use builders in proposals
-      bridge_builder = Y2Network::InterfaceConfigBuilder.for("br")
-      bridge_builder.name = bridge_name
-
-      if !bridge_builder.bridgeable_interfaces.map(&:name).include?(LanItems.GetDeviceName(item))
-        log.info "The interface #{config["ifcfg"]} cannot be proposed as bridge."
+    def connected_and_bridgeable?(bridge_builder, interface)
+      if !bridge_builder.bridgeable_interfaces.map(&:name).include?(interface.name)
+        log.info "The interface #{interface.name} cannot be proposed as bridge."
         return false
       end
 
-      hwinfo = config.fetch("hwinfo", {})
-      unless hwinfo.fetch("link", false)
-        log.warn("Lan item #{item} has link:false detected")
+      hwinfo = interface.hardware
+      if !hwinfo.present? || !hwinfo.link
+        log.warn("Lan item #{interface.inspect} has link:false detected")
         return false
       end
-      if hwinfo.fetch("type", "") == "wlan"
-        log.warn("Not proposing WLAN interface for lan item: #{item}")
+
+      if interface.type.wireless?
+        log.warn("Not proposing WLAN interface for lan item: #{interface.inspect}")
         return false
       end
       true
@@ -1074,7 +1047,6 @@ module Yast
 
     def refresh_lan_items
       LanItems.force_restart = true
-      log.info("List #{NetworkInterfaces.List("")}")
       # re-read configuration to see new items in UI
       LanItems.Read
 

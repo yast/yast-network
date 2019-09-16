@@ -86,8 +86,8 @@ module Y2Network
           # Assign first netmask, as prefixlen has precedence so it will overwrite it
           ipaddr.netmask = interface_section.netmask if interface_section.netmask
           ipaddr.prefix = interface_section.prefixlen.to_i if interface_section.prefixlen
-          broadcast = interface_section.broadcast && IPAddress.new(interface_section.broadcast)
-          remote = interface_section.remote_ipaddr && IPAddress.new(interface_section.remote_ipaddr)
+          broadcast = IPAddress.new(interface_section.broadcast) unless interface_section.broadcast.empty?
+          remote = IPAddress.new(interface_section.remote_ipaddr) unless interface_section.remote_ipaddr.empty?
           config.ip = ConnectionConfig::IPConfig.new(ipaddr, broadcast: broadcast, remote_address: remote)
         end
 
