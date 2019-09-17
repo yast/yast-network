@@ -510,7 +510,6 @@ module Yast
       return false if Abort()
       # Progress step 3 - multiple devices may be present, really plural
       ProgressNextStage(_("Writing device configuration..."))
-      LanItems.write
       Builtins.sleep(sl)
 
       return false if Abort()
@@ -741,15 +740,8 @@ module Yast
     # @return dumped settings
     def Export
       profile = Y2Network::AutoinstProfile::NetworkingSection.new_from_network(yast_config)
-      devices = NetworkInterfaces.Export("")
-      udev_rules = LanItems.export(devices)
       ay = {
         "dns"                  => profile.dns ? profile.dns.to_hashes : {},
-        "s390-devices"         => Ops.get_map(
-          udev_rules,
-          "s390-devices",
-          {}
-        ),
         "net-udev"             => profile.udev_rules ? profile.udev_rules.udev_rules.map(&:to_hashes) : [],
         "config"               => NetworkConfig.Export,
         "interfaces"           => profile.interfaces ? profile.interfaces.interfaces.map(&:to_hashes) : [],

@@ -157,56 +157,6 @@ describe "NetworkComplexInclude#HardwareName" do
   end
 end
 
-describe "LanItemsClass#BuildLanOverview" do
-  let(:interfaces) { Y2Network::InterfacesCollection.new([]) }
-
-  before(:each) do
-    @lan_items = Yast::LanItems
-    @lan_items.main
-    @lan_items.Items = Yast.deep_copy(MOCKED_ITEMS)
-
-    allow(Y2Network::Config)
-      .to receive(:find)
-      .and_return(instance_double(Y2Network::Config, interfaces: interfaces))
-  end
-
-  it "returns description and uses custom name if present" do
-    allow(@lan_items).to receive(:GetDeviceMap) { { "NAME" => "Custom name" } }
-
-    @lan_items.BuildLanOverview
-    @lan_items.Items.each_pair do |_key, value|
-      # it is not issue, really same index two times
-      desc = value["table_descr"]["table_descr"].first
-
-      if value["ifcfg"]
-        expect(desc).to eql "Custom name"
-      else
-        expect(desc).not_to be_empty
-      end
-    end
-  end
-
-  it "returns description and uses type based name if hwinfo is not present" do
-    allow(@lan_items).to receive(:GetDeviceMap) { { "NAME" => "" } }
-
-    @lan_items.BuildLanOverview
-    @lan_items.Items.each_pair do |_key, value|
-      desc = value["table_descr"]["table_descr"].first
-
-      if !value["hwinfo"]
-        dev_name = value["ifcfg"].to_s
-        dev_type = Yast::NetworkInterfaces.GetType(dev_name)
-        expected_dev_desc = Yast::NetworkInterfaces.GetDevTypeDescription(dev_type, true)
-      else
-        expected_dev_desc = value["hwinfo"]["name"]
-      end
-
-      expect(desc).not_to be_empty
-      expect(desc).to eql expected_dev_desc
-    end
-  end
-end
-
 describe "LanItemsClass#DeleteItem" do
   before(:each) do
     @lan_items = Yast::LanItems
@@ -229,7 +179,7 @@ describe "LanItemsClass#DeleteItem" do
     end
   end
 
-  it "removes only the configuration if the item has hwinfo" do
+  xit "removes only the configuration if the item has hwinfo" do
     before_size = @lan_items.Items.size
     item_name = "enp0s3"
 
@@ -259,21 +209,6 @@ describe "LanItemsClass#GetItemName" do
     MOCKED_ITEMS.select { |_k, v| v.key?("ifcfg") }.each_pair do |item_id, conf|
       expect(@lan_items.GetDeviceName(item_id)).to eql conf["ifcfg"]
     end
-  end
-end
-
-describe "LanItemsClass#SetItemName" do
-  subject { Yast::LanItems }
-  let(:new_name) { "new_name" }
-
-  # this test covers bnc#914833
-  it "doesn't try to update udev rules when none exists for the item" do
-    allow(subject)
-      .to receive(:Items)
-      .and_return(MOCKED_ITEMS)
-
-    item_id = subject.Items.find { |_k, v| !v.key?("udev") }.first
-    expect(subject.SetItemName(item_id, new_name)).to eql new_name
   end
 end
 
