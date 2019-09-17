@@ -23,6 +23,7 @@ require "cwm/custom_widget"
 require "y2network/widgets/slave_items"
 
 Yast.import "Label"
+Yast.import "Lan"
 Yast.import "Popup"
 Yast.import "UI"
 
@@ -91,7 +92,8 @@ module Y2Network
         # TODO: use def items, but problem now is that slave_items returns term and not array
         items = slave_items_from(
           @settings.bondable_interfaces.map(&:name),
-          slaves
+          slaves,
+          Yast::Lan.yast_config # ideally get it from builder?
         )
 
         # reorder the items
@@ -124,7 +126,19 @@ module Y2Network
       def validate
         physical_ports = repeated_physical_port_ids(selected_items)
 
-        physical_ports.empty? ? true : continue_with_duplicates?(physical_ports)
+        if !physical_ports.empty?
+          return false unless continue_with_duplicates?(physical_ports)
+        end
+
+        if @settings.already_configured?(selected_items || [])
+          return Yast::Popup.ContinueCancel(
+            _(
+              "At least one selected device is already configured.\nAdapt the configuration for bonding?\n"
+            )
+          )
+        else
+          true
+        end
       end
 
       def value

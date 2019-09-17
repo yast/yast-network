@@ -81,7 +81,9 @@ module Y2Network
       # TODO: also config need to store it, as newly added can be later
       # edited with option for not yet created interface
       @newly_added = config.nil?
-      if !config
+      if config
+        self.name = config.name
+      else
         config = connection_config_klass(type).new
         config.propose
       end
@@ -230,6 +232,7 @@ module Y2Network
     # @param [Integer] value priority value
     def ifplugd_priority=(value)
       if !@connection_config.startmode || @connection_config.startmode.name != "ifplugd"
+        log.info "priority set and startmode is not ifplugd. Adapting..."
         @connection_config.startmode = Startmode.create("ifplugd")
       end
       @connection_config.startmode.priority = value.to_i
