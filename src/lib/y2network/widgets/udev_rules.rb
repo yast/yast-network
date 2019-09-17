@@ -36,7 +36,10 @@ module Y2Network
           _("Udev Rules"),
           HBox(
             InputField(Id(:udev_rules_name), Opt(:hstretch, :disabled), _("Device Name"), ""),
-            PushButton(Id(:udev_rules_change), _("Change"))
+            VBox(
+              VSpacing(),
+              PushButton(Id(:udev_rules_change), _("Change"))
+            )
           )
         )
       end
