@@ -53,26 +53,15 @@ module Y2Network
       # @return [Hash<String, String>] returns ordered list of devices that can be used for vlan
       # Keys are ids for #etherdevice and value are label
       def possible_vlans
-        res = {}
-        # unconfigured devices
-        # TODO: new backend
-        Yast::LanItems.Items.each_value do |lan_item|
-          next unless (lan_item["ifcfg"] || "").empty?
-          dev_name = lan_item.fetch("hwinfo", {}).fetch("dev_name", "")
-          res[dev_name] = dev_name
-        end
-        # configured devices
-        configurations = Yast::NetworkInterfaces.FilterDevices("netcard")
-        # TODO: API looks horrible
-        Yast::NetworkInterfaces.CardRegex["netcard"].split("|").each do |devtype|
-          (configurations[devtype] || {}).each_key do |devname|
-            next if Yast::NetworkInterfaces.GetType(devname) == type
+        yast_config.interfaces.to_a.each_with_object({}) do |interface, result|
+          next if interface.type.vlan? # does not make sense to have vlan of vlan
 
-            res[devname] = "#{devname} - #{Yast::Ops.get_string(configurations, [devtype, devname, "NAME"], "")}"
+          result[interface.name] = if interface.hardware.present?
+            "#{interface.name} - #{interface.hardware.description}"
+          else
+            interface.name
           end
         end
-
-        res
       end
     end
   end

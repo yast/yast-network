@@ -76,8 +76,15 @@ module Y2Network
           return format("%s -> %s", interface.old_name, interface.name)
         end
 
+        return "" unless conn
+
         master = conn.find_master(config.connections)
         return format(_("enslaved in %s"), master.name) if master
+
+        # TODO: maybe add to find master, but then it cannot be used in bond or bridge. Does it reflect reality?
+        if conn.type.vlan?
+          return format(_("enslaved in %s"), conn.parent_device)
+        end
 
         ""
       end

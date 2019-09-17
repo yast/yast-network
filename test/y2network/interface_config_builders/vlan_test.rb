@@ -32,6 +32,10 @@ describe Y2Network::InterfaceConfigBuilders::Vlan do
     res
   end
 
+  before do
+    allow(config_builder).to receive(:yast_config).and_return(Y2Network::Config.new(source: :testing))
+  end
+
   describe "#type" do
     it "returns vlan type" do
       expect(subject.type).to eq Y2Network::InterfaceType::VLAN

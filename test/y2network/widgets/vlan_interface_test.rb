@@ -27,5 +27,9 @@ describe Y2Network::Widgets::VlanInterface do
   let(:builder) { Y2Network::InterfaceConfigBuilder.for("vlan") }
   subject { described_class.new(builder) }
 
+  before do
+    allow(builder).to receive(:yast_config).and_return(Y2Network::Config.new(source: :testing))
+  end
+
   include_examples "CWM::ComboBox"
 end
