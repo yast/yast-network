@@ -84,7 +84,6 @@ module Y2Network
           return format(_("enslaved in %s"), conn.parent_device)
         end
 
-
         ""
       end
 
