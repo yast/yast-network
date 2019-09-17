@@ -60,15 +60,6 @@ module Y2Network
 
         config
       end
-
-    private
-
-      # Returns an interfaces reader instance
-      #
-      # @return [SysconfigInterfaces] Interfaces reader
-      def system_interfaces
-        @system_interfaces ||= Y2Network::Sysconfig::InterfacesReader.new
-      end
     end
   end
 end
