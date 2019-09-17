@@ -76,6 +76,8 @@ module Y2Network
           return format("%s -> %s", interface.old_name, interface.name)
         end
 
+        return "" unless conn
+
         master = conn.find_master(config.connections)
         return format(_("enslaved in %s"), master.name) if master
 
