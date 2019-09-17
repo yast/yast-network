@@ -39,7 +39,7 @@ module Y2Network
       # Constructor
       #
       # @param section [AutoinstProfile::NetworkingSection]
-      # @param system_config [Config] system configuration
+      # @param original_config [Config] system configuration
       def initialize(section, original_config)
         @section = section
         @original_config = original_config

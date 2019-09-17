@@ -57,7 +57,7 @@ module Y2Network
 
     class << self
       # @param source [Symbol] Source to read the configuration from
-      # @param *opts  [Array<Object>] Reader options. Check readers documentation to find out
+      # @param opts   [Array<Object>] Reader options. Check readers documentation to find out
       #   supported options.
       def from(source, *opts)
         reader = ConfigReader.for(source, *opts)

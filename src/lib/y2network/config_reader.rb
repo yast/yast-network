@@ -21,7 +21,7 @@ module Y2Network
     # Config reader for a given source
     #
     # @param source [Symbol] Source name (e.g., :sysconfig)
-    # @param *opts  [Array<Object>] Reader options
+    # @param opts  [Array<Object>] Reader options
     # @return [Y2Network::Autoinst::ConfigReader,Y2Network::Sysconfig::ConfigReader]
     def self.for(source, *opts)
       require "y2network/#{source}/config_reader"
