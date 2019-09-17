@@ -51,7 +51,8 @@ describe Y2Network::Sysconfig::InterfacesWriter do
       allow(writer).to receive(:sleep)
 
       # prevent collision with real hardware
-      allow(Y2Network::UdevRule).to receive(:all).and_return([])
+      allow(Y2Network::UdevRule).to receive(:naming_rules).and_return([])
+      allow(Y2Network::UdevRule).to receive(:drivers_rules).and_return([])
     end
 
     around do |example|
