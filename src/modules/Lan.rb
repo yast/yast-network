@@ -524,7 +524,8 @@ module Yast
       ProgressNextStage(_("Writing routing configuration..."))
       orig = Progress.set(false)
 
-      yast_config.write(original: system_config)
+      target = :sysconfig if Mode.auto
+      yast_config.write(original: system_config, target: target)
       Progress.set(orig)
       Builtins.sleep(sl)
 
