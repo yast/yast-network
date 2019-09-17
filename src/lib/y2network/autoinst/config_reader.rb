@@ -39,13 +39,15 @@ module Y2Network
       # Constructor
       #
       # @param section [AutoinstProfile::NetworkingSection]
-      def initialize(section)
+      # @param original_config [Config] system configuration
+      def initialize(section, original_config)
         @section = section
+        @original_config = original_config
       end
 
       # @return [Y2Network::Config] Network configuration
       def config
-        config = Yast::Lan.system_config || Y2Network::Config.new(source: :autoyast)
+        config = @original_config.copy
         # apply at first udev rules, so interfaces names are correct
         UdevRulesReader.new(section.udev_rules).apply(config) if section.udev_rules
         config.routing = RoutingReader.new(section.routing).config if section.routing

@@ -524,7 +524,8 @@ module Yast
       ProgressNextStage(_("Writing routing configuration..."))
       orig = Progress.set(false)
 
-      yast_config.write(original: system_config)
+      target = :sysconfig if Mode.auto
+      yast_config.write(original: system_config, target: target)
       Progress.set(orig)
       Builtins.sleep(sl)
 
@@ -716,8 +717,9 @@ module Yast
     def Import(settings)
       settings = {} if settings.nil?
 
+      Lan.Read(:cache)
       profile = Y2Network::AutoinstProfile::NetworkingSection.new_from_hashes(settings)
-      config = Y2Network::Config.from(:autoinst, profile)
+      config = Y2Network::Config.from(:autoinst, profile, system_config)
       add_config(:yast, config)
 
       LanItems.Import(settings)

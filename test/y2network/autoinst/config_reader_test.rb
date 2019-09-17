@@ -26,10 +26,11 @@ require "y2network/autoinst/config_reader"
 require "y2network/sysconfig/interfaces_reader"
 
 describe Y2Network::Autoinst::ConfigReader do
-  let(:subject) { described_class.new(networking_section) }
+  let(:subject) { described_class.new(networking_section, system_config) }
   let(:networking_section) do
     Y2Network::AutoinstProfile::NetworkingSection.new_from_hashes(profile)
   end
+  let(:system_config) { Y2Network::Config.new(source: :testing) }
 
   let(:eth0) { { "device" => "eth0", "bootproto" => "dhcp", "startmode" => "auto" } }
   let(:interfaces) { [eth0] }
