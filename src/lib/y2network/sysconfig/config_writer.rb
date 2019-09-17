@@ -36,9 +36,7 @@ module Y2Network
       # @param config     [Y2Network::Config] Configuration to write
       # @param old_config [Y2Network::Config] Old configuration
       def write(config, old_config = nil)
-        return unless config.routing
-
-        write_ip_forwarding(config.routing)
+        write_ip_forwarding(config.routing) if config.routing
         write_interface_changes(config, old_config)
 
         # update /etc/sysconfig/network/routes file
