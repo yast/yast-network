@@ -45,7 +45,7 @@ module Y2Network
           tables: routing_tables, forward_ipv4: forward_ipv4?, forward_ipv6: forward_ipv6?
         )
 
-        Config.new(
+        result = Config.new(
           interfaces:  interfaces_reader.interfaces,
           connections: interfaces_reader.connections,
           drivers:     interfaces_reader.drivers,
@@ -53,6 +53,9 @@ module Y2Network
           dns:         dns,
           source:      :sysconfig
         )
+
+        log.info "Sysconfig reader result: #{result.inspect}"
+        result
       end
 
     private

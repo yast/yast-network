@@ -35,16 +35,33 @@ module Y2Network
       end
 
       # Checks if any of given device is already configured and need adaptation for bridge
+      # @param devices [Array<String>] devices to check
+      # @return [Boolean] true if there is device that needs adaptation
       def already_configured?(devices)
         devices.any? do |device|
-          next false if Yast::NetworkInterfaces.devmap(device).nil?
-          ![nil, "none"].include?(Yast::NetworkInterfaces.devmap(device)["BOOTPROTO"])
+          next false unless yast_config.configured_interface?(device)
+          yast_config.connections.by_name(device).bootproto.name != "none"
         end
       end
 
       # @return [Array<Interface>] list of interfaces usable in the bridge
       def bridgeable_interfaces
         interfaces.select { |i| bridgeable?(i) }
+      end
+
+      # additionally it adapt slaves if needed
+      def save
+        ports.each do |port|
+          interface = yast_config.interfaces.by_name(port)
+          connection = yast_config.connections.by_name(port)
+          next unless connection
+          next if connection.startmode.name == "none"
+          builder = InterfaceConfigBuilder.for(interface.type, config: connection)
+          builder.configure_as_slave
+          builder.save
+        end
+
+        super
       end
 
       def_delegators :@connection_config,
@@ -54,7 +71,7 @@ module Y2Network
     private
 
       def interfaces
-        Config.find(:yast).interfaces
+        yast_config.interfaces
       end
 
       NONBRIDGEABLE_TYPES = [
@@ -70,19 +87,13 @@ module Y2Network
       # @param iface [Interface] an interface to be validated as the bridge slave
       def bridgeable?(iface)
         # cannot enslave itself
-        # FIXME: this can happen only bcs we silently use LanItems::Items which
-        # already contains partially configured bridge when adding
         return false if iface.name == @name
         return true unless yast_config.configured_interface?(iface.name)
 
-        if interfaces.bond_index[iface.name]
-          log.debug("Excluding (#{iface.name}) - is bonded")
-          return false
-        end
-
-        # the iface is already in another bridge
-        if interfaces.bridge_index[iface.name] && interfaces.bridge_index[iface.name] != @name
-          log.debug("Excluding (#{iface.name}) - already bridged")
+        config = yast_config.connections.by_name(iface.name)
+        master = config.find_master(yast_config.connections)
+        if master && master.name != name
+          log.debug("Excluding (#{iface.name}) - already has master #{master.inspect}")
           return false
         end
 
@@ -92,8 +103,8 @@ module Y2Network
           return false
         end
 
-        if NONBRIDGEABLE_STARTMODE.include?(iface.startmode)
-          log.debug("Excluding (#{iface.name}) - is #{iface.startmode}")
+        if NONBRIDGEABLE_STARTMODE.include?(config.startmode.to_s)
+          log.debug("Excluding (#{iface.name}) - is #{config.startmode}")
           return false
         end
 

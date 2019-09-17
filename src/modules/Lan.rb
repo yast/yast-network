@@ -862,7 +862,7 @@ module Yast
         next if yast_config.connections.by_name(interface.name)
 
         bridge_builder.stp = false
-        bridge_builder.ports = interface.name
+        bridge_builder.ports = [interface.name]
         bridge_builder.startmode = "auto"
         bridge_builder.save
 

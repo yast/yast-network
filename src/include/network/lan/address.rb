@@ -60,7 +60,6 @@ module Yast
       @builder = builder
 
       ret = Y2Network::Dialogs::EditInterface.run(builder)
-      log.info "ShowAndRun: #{ret}"
 
       if ret != :back && ret != :abort
         if LanItems.isCurrentDHCP && !LanItems.isCurrentHotplug

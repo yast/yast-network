@@ -50,10 +50,35 @@ module Y2Network
         connection_config.options
       end
 
+      # Checks if any of given device is already configured and need adaptation for bridge
+      # @param devices [Array<String>] devices to check
+      # @return [Boolean] true if there is device that needs adaptation
+      def already_configured?(devices)
+        devices.any? do |device|
+          next false unless yast_config.configured_interface?(device)
+          yast_config.connections.by_name(device).startmode.name != "none"
+        end
+      end
+
+      # additionally it adapt slaves if needed
+      def save
+        slaves.each do |slave|
+          interface = yast_config.interfaces.by_name(slave)
+          connection = yast_config.connections.by_name(slave)
+          next unless connection
+          next if connection.startmode.name == "none"
+          builder = InterfaceConfigBuilder.for(interface.type, config: connection)
+          builder.configure_as_slave
+          builder.save
+        end
+
+        super
+      end
+
     private
 
       def interfaces
-        Config.find(:yast).interfaces
+        yast_config.interfaces
       end
 
       # Checks whether an interface can be enslaved in particular bond interface
@@ -74,19 +99,17 @@ module Y2Network
           return false unless s390_config["QETH_LAYER2"] == "yes"
         end
 
-        if interfaces.bond_index[iface.name] && interfaces.bond_index[iface.name] != @name
-          log.debug("Excluding (#{iface.name}) - is already bonded")
+        config = yast_config.connections.by_name(iface.name)
+        master = config.find_master(yast_config.connections)
+        if master && master.name != name
+          log.debug("Excluding (#{iface.name}) - already has master #{master.inspect}")
           return false
         end
 
         # cannot enslave itself
-        # FIXME: this can happen only bcs we silently use LanItems::Items which
-        # already contains partially configured bond when adding
         return false if iface.name == @name
 
-        return true unless yast_config.configured_interface?(iface.name)
-
-        iface.bootproto == "none"
+        true
       end
     end
   end

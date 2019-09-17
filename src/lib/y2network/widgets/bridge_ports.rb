@@ -22,6 +22,7 @@ require "cwm/common_widgets"
 require "y2network/widgets/slave_items"
 
 Yast.import "Label"
+Yast.import "Lan"
 Yast.import "Popup"
 Yast.import "UI"
 
@@ -50,7 +51,8 @@ module Y2Network
         br_ports = @settings.ports
         items = slave_items_from(
           @settings.bridgeable_interfaces.map(&:name),
-          br_ports
+          br_ports,
+          Yast::Lan.yast_config # ideally get it from builder?
         )
 
         # it is list of Items, so cannot use `change_items` helper

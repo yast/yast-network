@@ -34,51 +34,41 @@ module Y2Network
       #
       # @param [Array<String>] slaves             list of device names
       # @param [Array<String>] enslaved_ifaces    list of device names of already enslaved devices
-      def slave_items_from(slaves, enslaved_ifaces)
+      # @param [ConnectionConfig] config where slaves lives
+      def slave_items_from(slaves, enslaved_ifaces, config)
         raise ArgumentError, "slaves cannot be nil" if slaves.nil?
         raise ArgumentError, "enslaved interfaces cannot be nil" if enslaved_ifaces.nil?
         raise ArgumentError, "slaves cannot be empty" if slaves.empty? && !enslaved_ifaces.empty?
 
         textdomain "network"
 
-        item_ids = slaves.map { |s| Yast::LanItems.find_configured(s) || Yast::LanItems.FindDeviceIndex(s) }
+        log.debug "creating list of slaves from #{slaves.inspect}"
 
-        item_ids.each_with_object([]) do |item_id, items|
-          # TODO: do not touch directly LanItems here, but current it is quite hard to list all items without it
-          dev_name = Yast::LanItems.GetDeviceName(item_id)
+        slaves.each_with_object([]) do |slave, result|
+          interface = config.interfaces.by_name(slave)
 
-          next if dev_name.nil? || dev_name.empty?
+          next unless interface
 
-          dev_type = Yast::LanItems.GetDeviceType(item_id)
-
-          if ["tun", "tap"].include?(dev_type)
-            description = Yast::NetworkInterfaces.GetDevTypeDescription(dev_type, true)
+          if interface.type.tun? || interface.type.tap?
+            description = Yast::NetworkInterfaces.GetDevTypeDescription(interface.type.short_name, true)
           else
-            ifcfg = Yast::LanItems.GetDeviceMap(item_id) || {}
-
-            description = TmpInclude.new.BuildDescription(
-              dev_type,
-              dev_name,
-              ifcfg,
-              [Yast::LanItems.GetLanItem(item_id)["hwinfo"] || {}]
-            )
+            description = interface.name
 
             # this conditions origin from bridge configuration
             # if enslaving a configured device then its configuration is rewritten
             # to "0.0.0.0/32"
             #
             # translators: a note that listed device is already configured
-            description += " " + _("configured") if ifcfg["IPADDR"] != "0.0.0.0"
+            description += " " + _("configured") if config.connections.by_name(interface.name)
           end
 
-          selected = false
-          selected = enslaved_ifaces.include?(dev_name) if enslaved_ifaces
+          selected = enslaved_ifaces.include?(interface.name)
 
-          description << " (Port ID: #{physical_port_id(dev_name)})" if physical_port_id?(dev_name)
+          description << " (Port ID: #{physical_port_id(interface.name)})" if physical_port_id?(interface.name)
 
-          items << Yast::Term.new(:item,
-            Yast::Term.new(:id, dev_name),
-            "#{dev_name} - #{description}",
+          result << Yast::Term.new(:item,
+            Yast::Term.new(:id, interface.name),
+            "#{interface.name} - #{description}",
             selected)
         end
       end
@@ -102,16 +92,6 @@ module Y2Network
       # @see #physical_port_id
       def physical_port_id?(dev_name)
         !physical_port_id(dev_name).empty?
-      end
-
-      # TODO: just cleaner way to get a bit more complex method from include for now
-      class TmpInclude
-        include Yast
-        include Yast::I18n
-
-        def initialize
-          Yast.include self, "network/complex.rb"
-        end
       end
     end
   end
