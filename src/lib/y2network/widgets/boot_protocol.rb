@@ -256,7 +256,7 @@ module Y2Network
         hname = Yast::UI.QueryWidget(:bootproto_hostname, :Value)
         if !hname.empty?
           if !Yast::Hostname.CheckFQ(hname)
-            Popup.Error(_("Invalid hostname."))
+            Yast::Popup.Error(_("Invalid hostname."))
             Yast::UI.SetFocus(:bootproto_hostname)
             return false
           end
