@@ -35,6 +35,8 @@ module Y2Network
       end
 
       # Checks if any of given device is already configured and need adaptation for bridge
+      # @param devices [Array<String>] devices to check
+      # @return [Boolean] true if there is device that needs adaptation
       def already_configured?(devices)
         devices.any? do |device|
           next false unless yast_config.configured_interface?(device)
