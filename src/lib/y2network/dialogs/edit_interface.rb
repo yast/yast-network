@@ -53,15 +53,14 @@ module Y2Network
         addr_tab.initial = true unless @settings.type.wireless?
 
         tabs = case @settings.type.short_name
-        when "vlan"
+        when "vlan", "dummy"
           [Widgets::GeneralTab.new(@settings), addr_tab]
         when "tun", "tap"
           [addr_tab]
         when "br"
           [Widgets::GeneralTab.new(@settings), addr_tab, Widgets::BridgePorts.new(@settings)]
         when "bond"
-          [Widgets::GeneralTab.new(@settings), addr_tab, Widgets::HardwareTab.new(@settings),
-           Widgets::BondSlavesTab.new(@settings)]
+          [Widgets::GeneralTab.new(@settings), addr_tab, Widgets::BondSlavesTab.new(@settings)]
         when "wlan"
           wireless = Widgets::WirelessTab.new(@settings)
           wireless.initial = true
