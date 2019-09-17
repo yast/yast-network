@@ -57,10 +57,10 @@ module Y2Network
 
     class << self
       # @param source [Symbol] Source to read the configuration from
-      # @param opts   [Hash]   Reader options. Check readers documentation to find out
-      #                        supported options.
-      def from(source, opts = {})
-        reader = ConfigReader.for(source, opts)
+      # @param *opts  [Array<Object>] Reader options. Check readers documentation to find out
+      #   supported options.
+      def from(source, *opts)
+        reader = ConfigReader.for(source, *opts)
         reader.config
       end
 
@@ -113,14 +113,16 @@ module Y2Network
 
     # Writes the configuration into the YaST modules
     #
-    # Writes only changes agains original configuration if the original configuration
+    # Writes only changes against original configuration if the original configuration
     # is provided
     #
     # @param original [Y2Network::Config] configuration used for detecting changes
+    # @param target   [Symbol] Target to write the configuration to (:sysconfig)
     #
     # @see Y2Network::ConfigWriter
-    def write(original: nil)
-      Y2Network::ConfigWriter.for(source).write(self, original)
+    def write(original: nil, target: nil)
+      target ||= source
+      Y2Network::ConfigWriter.for(target).write(self, original)
     end
 
     # Determines whether two configurations are equal
