@@ -53,6 +53,14 @@ module Y2Network
       # @see https://www.ibm.com/support/knowledgecenter/en/linuxonibm/com.ibm.linux.z.ljdd/ljdd_t_ctcm_wrk_protocol.html
       # @see https://github.com/SUSE/s390-tools/blob/master/ctc_configure#L16
       attr_accessor :protocol
+
+      def ==(other)
+        return false unless super
+
+        [:read_channel, :write_channel, :protocol].all? do |method|
+          public_send(method) == other.public_send(method)
+        end
+      end
     end
   end
 end

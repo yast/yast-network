@@ -90,6 +90,17 @@ module Y2Network
         # For WIFI DHCP makes more sense as majority of wifi routers act as dhcp servers
         self.bootproto = BootProtocol::DHCP
       end
+
+      def ==(other)
+        return false unless super
+
+        [:mode, :essid, :nwid, :auth_mode, :wpa_psk, :key_length, :keys, :default_key, :nick,
+         :eap_mode, :eap_auth, :channel, :frequency, :bitrate, :ap, :ap_scanmode,
+         :wpa_password, :wpa_identity, :wpa_anonymous_identity, :ca_cert, :client_cert,
+         :client_key].all? do |method|
+          public_send(method) == other.public_send(method)
+        end
+      end
     end
   end
 end

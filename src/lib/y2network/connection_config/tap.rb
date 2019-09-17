@@ -37,6 +37,14 @@ module Y2Network
       def virtual?
         true
       end
+
+      def ==(other)
+        return false unless super
+
+        [:owner, :group].all? do |method|
+          public_send(method) == other.public_send(method)
+        end
+      end
     end
   end
 end

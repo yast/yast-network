@@ -52,5 +52,7 @@ module Y2Network
     def ==(other)
       name == other.name
     end
+
+    alias_method :eql?, :==
   end
 end

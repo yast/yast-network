@@ -65,6 +65,14 @@ module Y2Network
         @protocol = 0
         @timeout = 5
       end
+
+      def ==(other)
+        return false unless super
+
+        [:read_channel, :write_channel, :protocol, :timeout].all? do |method|
+          public_send(method) == other.public_send(method)
+        end
+      end
     end
   end
 end

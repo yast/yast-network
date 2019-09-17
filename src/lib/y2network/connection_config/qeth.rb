@@ -56,6 +56,14 @@ module Y2Network
         @layer2 = false
         @port_number = 0
       end
+
+      def ==(other)
+        return false unless super
+
+        [:read_channel, :write_channel, :data_channel, :layer2, :port_number].all? do |method|
+          public_send(method) == other.public_send(method)
+        end
+      end
     end
   end
 end

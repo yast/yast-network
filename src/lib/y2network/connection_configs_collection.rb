@@ -84,5 +84,15 @@ module Y2Network
       name = connection_config.respond_to?(:name) ? connection_config.name : connection_config
       connection_configs.reject! { |c| c.name == name }
     end
+
+    # Compares ConnectionConfigsCollection
+    #
+    # @return [Boolean] true when both collections contain only equal connections,
+    #                   false otherwise
+    def ==(other)
+      ((connection_configs - other.connection_configs) + (other.connection_configs - connection_configs)).empty?
+    end
+
+    alias_method :eql?, :==
   end
 end
