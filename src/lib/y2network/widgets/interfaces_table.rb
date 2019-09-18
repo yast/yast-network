@@ -82,7 +82,7 @@ module Y2Network
         return format(_("enslaved in %s"), master.name) if master
 
         if conn.type.vlan?
-          return format(_("parent interface %s"), conn.parent_device)
+          return format(_("parent: %s"), conn.parent_device)
         end
 
         ""
