@@ -221,11 +221,6 @@ describe Yast::NetworkAutoconfiguration do
       let(:interfaces) { Y2Network::InterfacesCollection.new([eth0]) }
       let(:proposal) { true }
 
-      after(:each) do
-        # some methods might have sideeffects - clen them :-/
-        Yast::NetworkInterfaces.Devices.reject! { |k, _| k == "br" }
-      end
-
       it "creates the virtulization proposal config" do
         expect(Yast::Lan).to receive(:ProposeVirtualized).and_call_original
         expect { instance.configure_virtuals }.to change { yast_config.connections.size }.from(0).to(2)
