@@ -458,13 +458,18 @@ module Y2Network
     # @return [Array<IPConfig>]
     def aliases_to_ip_configs
       last_id = 0
-      used_ids = aliases.select { |a| a[:id] && a[:id] =~ /\A\d+\z/ }.map { |a| a[:id].to_i }
+      used_ids = aliases
+        .select { |a| a[:id] && a[:id] =~ /\A_?\d+\z/ }
+        .map { |a| a[:id].sub("_", "").to_i }
       aliases.each_with_object([]) do |map, result|
         ipaddr = IPAddress.from_string(map[:ip])
         ipaddr.prefix = map[:prefixlen].delete("/").to_i if map[:prefixlen]
         id = map[:id]
-        last_id = id = find_free_alias_id(used_ids, last_id) if id.nil? || id.empty?
-        result << ConnectionConfig::IPConfig.new(ipaddr, label: map[:label], id: id.to_s)
+        if id.nil? || id.empty?
+          last_id = id = find_free_alias_id(used_ids, last_id) if id.nil? || id.empty?
+          id = "_#{id}"
+        end
+        result << ConnectionConfig::IPConfig.new(ipaddr, label: map[:label], id: id)
       end
     end
 
