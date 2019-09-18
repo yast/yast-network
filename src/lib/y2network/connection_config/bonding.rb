@@ -41,6 +41,10 @@ module Y2Network
 
         options == other.options && ((slaves - other.slaves) + (other.slaves - slaves)).empty?
       end
+
+      def virtual?
+        true
+      end
     end
   end
 end
