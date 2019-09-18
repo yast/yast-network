@@ -157,6 +157,7 @@ module Y2Network
       def dialog(name, entry)
         label = entry ? entry[:label] : ""
         ip = entry ? entry[:ip] : ""
+        id = entry ? entry[:id] : ""
         mask = if entry
           entry[:prefixlen].empty? ? entry[:mask] : "/#{entry[:prefixlen]}"
         else
@@ -240,6 +241,7 @@ module Y2Network
           end
           res[:mask] = netmask
           res[:prefixlen] = prefixlen
+          res[:id] = id
 
           break
         end

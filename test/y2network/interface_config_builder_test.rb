@@ -126,6 +126,35 @@ describe Y2Network::InterfaceConfigBuilder do
         subject.save
       end
     end
+
+    context "when aliases are defined" do
+      before do
+        subject.aliases = [
+          { id: "1", ip: "192.168.122.100", prefixlen: "/24", label: "alias1" },
+          { id: "suffix1", ip: "192.168.123.100", prefixlen: "/24", label: "alias2" },
+          { ip: "10.0.0.2", label: "alias3" },
+          { id: "", ip: "10.0.0.3", label: "alias4" }
+        ]
+      end
+
+      it "sets aliases for the connection config" do
+        subject.save
+        expect(subject.connection_config.ip_aliases).to eq([
+          Y2Network::ConnectionConfig::IPConfig.new(
+            Y2Network::IPAddress.from_string("192.168.122.100/24"), id: "1", label: "alias1"
+          ),
+          Y2Network::ConnectionConfig::IPConfig.new(
+            Y2Network::IPAddress.from_string("192.168.123.100/24"), id: "suffix1", label: "alias2"
+          ),
+          Y2Network::ConnectionConfig::IPConfig.new(
+            Y2Network::IPAddress.from_string("10.0.0.2"), id: "2", label: "alias3"
+          ),
+          Y2Network::ConnectionConfig::IPConfig.new(
+            Y2Network::IPAddress.from_string("10.0.0.3"), id: "3", label: "alias4"
+          )
+        ])
+      end
+    end
   end
 
   describe "#rename_interface" do

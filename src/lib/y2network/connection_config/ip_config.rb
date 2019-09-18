@@ -56,7 +56,8 @@ module Y2Network
       # @return [Boolean] true if both are equal; false otherwise
       def ==(other)
         address == other.address && label == other.label &&
-          remote_address == other.remote_address && broadcast == other.broadcast
+          remote_address == other.remote_address && broadcast == other.broadcast &&
+          id == other.id
       end
     end
   end

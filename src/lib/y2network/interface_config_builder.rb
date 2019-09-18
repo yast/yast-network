@@ -111,14 +111,9 @@ module Y2Network
     #   down, so here mainly workarounds, but ideally this save should change
     #   completely backend
     def save
-      @connection_config.ip_aliases = aliases.each_with_object([]) do |map, result|
-        ipaddr = IPAddress.from_string(map[:ip])
-        ipaddr.prefix = map[:prefixlen].delete("/").to_i if map[:prefixlen]
-        result << ConnectionConfig::IPConfig.new(ipaddr, label: map[:label])
-      end
-
       @connection_config.name = name
       @connection_config.interface = name
+      @connection_config.ip_aliases = aliases_to_ip_configs
 
       @connection_config.firewall_zone = firewall_zone
       # create new instance as name can change
@@ -403,24 +398,6 @@ module Y2Network
       ConnectionConfig::Base
     end
 
-    # Saves aliases to current connection config object
-    def save_aliases_to_connection
-      @connection_config.ip_aliases.clear
-      aliases.each_with_index do |h, i|
-        ip_addr = IPAddress.from_string(h[:ip])
-        if h[:prefixlen] && !h[:prefixlen].empty?
-          ip_addr.prefix = h[:prefixlen].delete("/").to_i
-        elsif h[:mask] && !h[:mask].empty?
-          ip_addr.netmask = h[:mask]
-        end
-        @connection_config.ip_aliases << ConnectionConfig::IPConfig.new(
-          ip_addr,
-          label: h[:label],
-          id:    "_#{i}" # TODO: remember original prefixes
-        )
-      end
-    end
-
     # Sets the interface for the builder
     #
     # @param iface [Interface] Interface to associate the builder with
@@ -474,6 +451,33 @@ module Y2Network
     # @return [Boolean]
     def driver_auto?
       :auto == driver
+    end
+
+    # Converts aliases in hash form to a list of IPConfig objects
+    #
+    # @return [Array<IPConfig>]
+    def aliases_to_ip_configs
+      last_id = 0
+      used_ids = aliases.select { |a| a[:id] && a[:id] =~ /\A\d+\z/ }.map { |a| a[:id].to_i }
+      aliases.each_with_object([]) do |map, result|
+        ipaddr = IPAddress.from_string(map[:ip])
+        ipaddr.prefix = map[:prefixlen].delete("/").to_i if map[:prefixlen]
+        id = map[:id]
+        last_id = id = find_free_alias_id(used_ids, last_id) if id.nil? || id.empty?
+        result << ConnectionConfig::IPConfig.new(ipaddr, label: map[:label], id: id.to_s)
+      end
+    end
+
+    # Returns a free numeric ID for an IP aliases
+    #
+    # @param used_ids   [Array<Integer>] Already used IDs
+    # @param current_id [Integer] Current used ID
+    def find_free_alias_id(used_ids, last_id)
+      loop do
+        last_id += 1
+        break unless used_ids.include?(last_id)
+      end
+      last_id
     end
   end
 end
