@@ -19,6 +19,7 @@
 
 require "yast"
 require "cwm/custom_widget"
+require "ipaddr"
 
 Yast.import "IP"
 Yast.import "Popup"
@@ -100,8 +101,7 @@ module Y2Network
       def refresh_table
         table_items = @settings.aliases.each_with_index.map do |data, i|
 
-          mask = data[:prefixlen].empty? ? data[:mask] : "/#{data[:prefixlen]}"
-          Item(Id(i), data[:label], data[:ip], mask)
+          Item(Id(i), data[:label], data[:ip], "/#{data[:prefixlen]}")
         end
 
         Yast::UI.ChangeWidget(Id(:address_table), :Items, table_items)
@@ -158,11 +158,8 @@ module Y2Network
         label = entry ? entry[:label] : ""
         ip = entry ? entry[:ip] : ""
         id = entry ? entry[:id] : ""
-        mask = if entry
-          entry[:prefixlen].empty? ? entry[:mask] : "/#{entry[:prefixlen]}"
-        else
-          ""
-        end
+        mask = entry ? "/#{entry[:prefixlen]}" : ""
+
         Yast::UI.OpenDialog(
           Opt(:decorated),
           VBox(
@@ -230,6 +227,7 @@ module Y2Network
             Yast::UI.SetFocus(Id(:netmask))
             next
           end
+
           netmask = ""
           prefixlen = ""
           if val.start_with?("/")
@@ -239,7 +237,12 @@ module Y2Network
           else
             netmask = val
           end
-          res[:mask] = netmask
+
+          if prefixlen.empty?
+            res[:prefixlen] = IPAddr.new("#{netmask}/#{netmask}")
+          else
+            res[:prefixlen] = prefixlen
+          end
           res[:prefixlen] = prefixlen
           res[:id] = id
 
