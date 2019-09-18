@@ -457,22 +457,6 @@ module Yast
       nil
     end
 
-    # initializates @Items
-    #
-    # It does:
-    # (1) read hardware present on the system
-    # (2) read known configurations (e.g. ifcfg-eth0)
-    # (3) joins together. Join is done via device name (e.g. eth0) as key.
-    # It is full outer join in -> you can have hwinfo part with no coresponding
-    # netconfig part (or vice versa) in @Items when the method is done.
-    def Read
-      reset_cache
-
-      system_config = Y2Network::Config.from(:sysconfig)
-      Yast::Lan.add_config(:system, system_config)
-      Yast::Lan.add_config(:yast, system_config.copy)
-    end
-
     # Clears internal cache of the module to default values
     #
     # TODO: LanItems consists of several sets of internal variables.

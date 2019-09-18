@@ -265,10 +265,6 @@ module Yast
         return true
       end
 
-      system_config = Y2Network::Config.from(:sysconfig)
-      add_config(:system, system_config)
-      add_config(:yast, system_config.copy)
-
       # Read dialog caption
       caption = _("Initializing Network Configuration")
 
@@ -334,7 +330,7 @@ module Yast
 
       return false if Abort()
       ProgressNextStage(_("Reading device configuration...")) if @gui
-      LanItems.Read
+      read_config
 
       Builtins.sleep(sl)
 
@@ -1041,16 +1037,21 @@ module Yast
       true
     end
 
+    # Refreshes YaST network configuration
+    #
+    # It does not modified the system configuration that was already read.
     def refresh_lan_items
-      LanItems.force_restart = true
-      # re-read configuration to see new items in UI
-      LanItems.Read
+      yast_config = Y2Network::Config.from(:sysconfig)
+      Yast::Lan.add_config(:yast, yast_config)
+    end
 
-      # note: LanItems.Read resets modification flag
-      # the Read is used as a trick how to update LanItems' internal
-      # cache according NetworkInterfaces' one. As NetworkInterfaces'
-      # cache was edited directly, LanItems is not aware of changes.
-      LanItems.SetModified
+    # Reads system configuration
+    #
+    # It clears already read configuration.
+    def read_config
+      system_config = Y2Network::Config.from(:sysconfig)
+      Yast::Lan.add_config(:system, system_config)
+      Yast::Lan.add_config(:yast, system_config.copy)
     end
 
     # Returns the routing summary
