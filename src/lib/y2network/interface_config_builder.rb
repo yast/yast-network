@@ -263,6 +263,7 @@ module Y2Network
           label:     data.label.to_s,
           ip:        data.address.address.to_s,
           prefixlen: data.address.prefix.to_s,
+          id:        data.id.to_s
           # NOTE: new API does not have netmask at all, we need to adapt UI to clearly mention only prefix
         }
       end
@@ -459,7 +460,7 @@ module Y2Network
     def aliases_to_ip_configs
       last_id = 0
       used_ids = aliases
-        .select { |a| a[:id] && a[:id] =~ /\A_?\d+\z/ }
+        .select { |a| a[:id] && a[:id] =~ /\A_\d+\z/ }
         .map { |a| a[:id].sub("_", "").to_i }
       aliases.each_with_object([]) do |map, result|
         ipaddr = IPAddress.from_string(map[:ip])
