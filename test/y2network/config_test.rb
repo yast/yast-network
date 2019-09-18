@@ -151,6 +151,13 @@ describe Y2Network::Config do
       end
     end
 
+    context "when connection list is different" do
+      it "returns false" do
+        copy.connections = Y2Network::ConnectionConfigsCollection.new([])
+        expect(copy).to_not eq(config)
+      end
+    end
+
     context "when routing information is different" do
       it "returns false" do
         copy.routing.forward_ipv4 = !config.routing.forward_ipv4
