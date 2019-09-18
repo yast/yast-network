@@ -247,7 +247,8 @@ module Y2Network
       def validate
         return true if !layer2? || valid_mac?(mac_address_widget.value)
 
-        report_mac_error && false
+        report_mac_error
+        false
       end
 
     private
@@ -258,24 +259,36 @@ module Y2Network
         Yast::Popup.Error(msg)
       end
 
+      # Convenience method to check whether layer2 support is enabled or not
+      #
+      # @return [Boolean] true if enabled; false otherwise
       def layer2?
         !!support_widget.value
       end
 
+      # Convenience method to check whether the MAC address provided is valid
+      # or not
+      #
+      # @return [Boolean] true when valid; false otherwise
+      # @param mac_address [String]
       def valid_mac?(mac_address)
         return false if mac_address.to_s.empty?
         return false if mac_address == "00:00:00:00:00:00"
         !!(mac_address =~ /^([0-9a-fA-F]{2}[:-]){5}[0-9a-fA-F]{2}$/i)
       end
 
+      # Convenience method to enable or disable the mac address widget when the
+      # layer2 support is modified
       def refresh
         support_widget.checked? ? mac_address_widget.enable : mac_address_widget.disable
       end
 
+      # @return [S390Layer2Support]
       def support_widget
         @support_widget ||= S390Layer2Support.new(@settings)
       end
 
+      # @return [S390Layer2Address]
       def mac_address_widget
         @mac_address_widget ||= S390Layer2Address.new(@settings)
       end
