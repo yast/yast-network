@@ -181,7 +181,7 @@ module Y2Network
     #   @return [String,nil]
     [
       { name: "dev_name", default: "" },
-      { name: "mac", default: nil },
+      { name: "permanent_mac", default: nil },
       { name: "busid", default: nil },
       { name: "link", default: false },
       { name: "driver", default: "" },
@@ -248,6 +248,25 @@ module Y2Network
     # @return [Boolean]
     def present?
       !!type
+    end
+
+    # Returns the MAC adress
+    #
+    # It usually returns the permanent MAC address (defined in the firmware).  However, when
+    # missing, it will use the current MAC. See bsc#1136929 and bsc#1149234 for the reasons
+    # behind preferring the permanent MAC address.
+    #
+    # @return [String,nil] MAC address
+    def mac
+      return permanent_mac unless permanent_mac.nil? || permanent_mac.empty?
+      used_mac
+    end
+
+    # MAC address which is being used by the device
+    #
+    # @return [String,nil] MAC address
+    def used_mac
+      @hwinfo["mac"]
     end
 
     # Determines whether two objects are equivalent

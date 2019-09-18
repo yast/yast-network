@@ -431,7 +431,7 @@ module Yast
 
       hardware.each do |hw|
         hw_dev_name = hw["dev_name"] || ""
-        hw_dev_mac = hw["permanent_mac"] || ""
+        hw_dev_mac = hw["permanent_mac"] || hw["mac"] || ""
         hw_dev_busid = hw["busid"] || ""
 
         case oldname

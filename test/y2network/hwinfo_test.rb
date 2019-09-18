@@ -167,4 +167,34 @@ describe Y2Network::Hwinfo do
       end
     end
   end
+
+  describe "#mac" do
+    before do
+      allow(hwinfo).to receive(:permanent_mac).and_return(permanent_mac)
+    end
+
+    context "when the permanent MAC is defined" do
+      let(:permanent_mac) { "00:11:22:33:44:55" }
+
+      it "returns the permanent MAC" do
+        expect(hwinfo.mac).to eq(hwinfo.permanent_mac)
+      end
+    end
+
+    context "when the permanent MAC is empty" do
+      let(:permanent_mac) { "" }
+
+      it "returns the current MAC" do
+        expect(hwinfo.mac).to eq(hwinfo.used_mac)
+      end
+    end
+
+    context "when the permanent MAC is not defined" do
+      let(:permanent_mac) { nil }
+
+      it "returns the current MAC" do
+        expect(hwinfo.mac).to eq(hwinfo.used_mac)
+      end
+    end
+  end
 end
