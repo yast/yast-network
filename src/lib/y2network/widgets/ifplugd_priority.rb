@@ -58,7 +58,7 @@ module Y2Network
       end
 
       def store
-        @config.ifplugd_priority = value.to_i
+        @config.ifplugd_priority = value.to_i if enabled?
       end
     end
   end
