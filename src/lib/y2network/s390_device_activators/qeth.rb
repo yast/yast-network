@@ -28,6 +28,7 @@ module Y2Network
         :read_channel, :read_channel=,
         :write_channel, :write_channel=,
         :data_channel, :data_channel=,
+        :layer2, :port_number,
         :hwinfo, :attributes
 
       def device_id
@@ -40,7 +41,7 @@ module Y2Network
       def configure_attributes
         return [] unless attributes
 
-        attributes.split(" ")
+        attributes.split(" ").concat([layer2_attribute, port_ttribute])
       end
 
       # Modifies the read, write and data channel from the the device id
@@ -53,6 +54,24 @@ module Y2Network
       def proposal
         propose_channels unless device_id
       end
+    end
+
+  private
+
+    # Convenience method to obtain the layer2 attribute
+    #
+    # @return [String]
+    def layer2_attribute
+      return "" unless layer2
+
+      "layer2=#{layer2 ? 1 : 0}"
+    end
+
+    # Convenience method to obtain the port number attribute
+    #
+    # @return [String]
+    def port_attribute
+      "port_number=#{port_number}"
     end
   end
 end
