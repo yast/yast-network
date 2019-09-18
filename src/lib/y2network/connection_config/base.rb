@@ -71,6 +71,19 @@ module Y2Network
         @firewall_zone = ""
       end
 
+      # Compares ConnectionConfigs
+      #
+      # @return [Boolean] true when both connections are same
+      #                   false otherwise
+      def ==(other)
+        [:name, :interface, :bootproto, :ip, :ip_aliases, :mtu, :startmode,
+         :description, :lladdress, :ethtool_options, :firewall_zone].all? do |method|
+          public_send(method) == other.public_send(method)
+        end
+      end
+
+      alias_method :eql?, :==
+
       PROPOSED_PPPOE_MTU = 1492 # suggested value for PPPoE
 
       # Propose reasonable defaults for given config. Useful for newly created devices.

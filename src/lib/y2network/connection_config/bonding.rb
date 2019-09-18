@@ -35,6 +35,12 @@ module Y2Network
         @slaves = []
         @options = "mode=active-backup miimon=100"
       end
+
+      def ==(other)
+        return false unless super
+
+        options == other.options && ((slaves - other.slaves) + (other.slaves - slaves)).empty?
+      end
     end
   end
 end

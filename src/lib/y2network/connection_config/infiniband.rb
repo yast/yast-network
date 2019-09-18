@@ -34,6 +34,14 @@ module Y2Network
 
         self.ipoib_mode = IpoibMode::DEFAULT
       end
+
+      def ==(other)
+        return false unless super
+
+        [:ipoib_mode].all? do |method|
+          public_send(method) == other.public_send(method)
+        end
+      end
     end
   end
 end

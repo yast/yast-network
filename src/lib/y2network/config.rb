@@ -130,7 +130,7 @@ module Y2Network
     # @return [Boolean] true if both configurations are equal; false otherwise
     def ==(other)
       source == other.source && interfaces == other.interfaces &&
-        routing == other.routing && dns == other.dns
+        routing == other.routing && dns == other.dns && connections == other.connections
     end
 
     # Renames a given interface and the associated connections

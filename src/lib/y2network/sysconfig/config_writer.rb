@@ -31,11 +31,15 @@ module Y2Network
     # Ideally, it should be responsible of writing the changes to the underlying
     # system. But, for the time being, it just relies in {Yast::Routing}.
     class ConfigWriter
+      include Yast::Logger
+
       # Writes the configuration into YaST network related modules
       #
       # @param config     [Y2Network::Config] Configuration to write
       # @param old_config [Y2Network::Config] Old configuration
       def write(config, old_config = nil)
+        log.info "Writing configuration: #{config.inspect}"
+        log.info "Old configuration: #{old_config.inspect}"
         write_ip_forwarding(config.routing) if config.routing
         write_interface_changes(config, old_config)
 
@@ -46,7 +50,7 @@ module Y2Network
 
         write_drivers(config.drivers)
         write_interfaces(config.interfaces)
-        write_connections(config.connections)
+        write_connections(config.connections, old_config)
         write_dns_settings(config, old_config)
       end
 
@@ -183,8 +187,15 @@ module Y2Network
       # @todo Handle old connections (removing those that are needed, etc.)
       #
       # @param conns [Array<Y2Network::ConnectionConfig::Base>] Connections to write
-      def write_connections(conns)
+      # @param old_config [Y2Network::Config,nil] Old configuration; nil if it is unknown
+      def write_connections(conns, old_config)
         writer = Y2Network::Sysconfig::ConnectionConfigWriter.new
+        if old_config
+          old_connections = old_config.connections
+          to_remove = old_connections.map(&:name) - conns.map(&:name)
+          log.info "removing connections #{to_remove.inspect}"
+          to_remove.each { |name| writer.remove(name) }
+        end
         conns.each { |c| writer.write(c) }
       end
 

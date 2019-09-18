@@ -56,6 +56,7 @@ describe Y2Network::Widgets::IfplugdPriority do
   describe "#store" do
     it "sets IFPLUGD_PRIORITY according to widget value as string" do
       expect(subject).to receive(:value).and_return(20)
+      expect(subject).to receive(:enabled?).and_return(true)
 
       subject.store
 

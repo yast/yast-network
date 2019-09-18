@@ -36,6 +36,14 @@ module Y2Network
         file.save
       end
 
+      # Removes connection config from the underlying system
+      #
+      # @param name [String] Connection name to remove
+      def remove(name)
+        ifcfg = Y2Network::Sysconfig::InterfaceFile.find(name)
+        ifcfg && ifcfg.remove
+      end
+
     private
 
       # Returns the class to handle a given interface type
