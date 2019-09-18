@@ -91,27 +91,6 @@ require "yast"
 
 Yast.import "LanItems"
 
-describe "When querying netcard device name" do
-  before(:each) do
-    @lan_items = Yast::LanItems
-    @lan_items.main
-
-    # mocking only neccessary parts of Yast::LanItems so we need not to call
-    # and mock inputs for Yast::LanItems.Read here
-    @lan_items.Items = Yast.deep_copy(MOCKED_ITEMS)
-  end
-
-  it "returns empty list when querying device name with nil or empty input" do
-    [nil, []].each { |i| expect(@lan_items.GetDeviceNames(i)).to be_empty }
-  end
-
-  it "can return list of device names available in the system" do
-    expected_names = ["bond0", "br0", "eth1", "eth11", "enp0s3", "tap0", "tun0"].sort
-
-    expect(@lan_items.GetNetcardNames.sort).to eq expected_names
-  end
-end
-
 class NetworkComplexIncludeClass < Yast::Module
   def initialize
     Yast.include self, "network/complex.rb"
@@ -154,41 +133,6 @@ describe "NetworkComplexInclude#HardwareName" do
 
   it "returns empty string when querying unknown id" do
     expect(subject.HardwareName(@hwinfo, "unknown")).to be_empty
-  end
-end
-
-describe "LanItemsClass#DeleteItem" do
-  before(:each) do
-    @lan_items = Yast::LanItems
-    @lan_items.main
-    @lan_items.Items = Yast.deep_copy(MOCKED_ITEMS)
-  end
-
-  it "removes an existing item" do
-    before_items = nil
-
-    while before_items != @lan_items.Items && !@lan_items.Items.empty?
-      @lan_items.current = 0
-
-      item_name = @lan_items.GetCurrentName
-      before_items = @lan_items.Items
-
-      @lan_items.DeleteItem
-
-      expect(@lan_items.FindAndSelect(item_name)).to be false
-    end
-  end
-
-  xit "removes only the configuration if the item has hwinfo" do
-    before_size = @lan_items.Items.size
-    item_name = "enp0s3"
-
-    expect(@lan_items.FindAndSelect(item_name)).to be true
-
-    @lan_items.DeleteItem
-
-    expect(@lan_items.FindAndSelect(item_name)).to be false
-    expect(@lan_items.Items.size).to eql before_size
   end
 end
 

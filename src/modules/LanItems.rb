@@ -33,20 +33,6 @@ require "y2network/boot_protocol"
 require "shellwords"
 
 module Yast
-  # Does way too many things.
-  #
-  # 1. Aggregates data about network interfaces, both configured
-  # and unconfigured, in {#Items}, which see.
-  #
-  # 2. Provides direct access to individual items of ifcfg files.
-  # For example BOOTPROTO and STARTMODE are accessible in
-  # {#bootproto} and {#startmode} (set via {#SetDeviceVars}
-  # via {#Select} or {#SetItem}). The reverse direction (putting
-  # the individual values back to an item) is {#Commit}.
-  #
-  # 3. ...
-  #
-
   # FIXME: well this class really is not nice
   class LanItemsClass < Module
     include Logger
@@ -268,30 +254,6 @@ module Yast
       nil
     end
 
-    def AddNew
-      @current = @Items.to_h.size
-      # Items[@current] is expected to always exist
-      @Items[@current] = {}
-      @operation = :add
-
-      nil
-    end
-
-    # return list of available modules for current device
-    # with default default_module (on first possition)
-
-    def GetItemModules(default_module)
-      mods = []
-      mods = Builtins.add(mods, default_module) if IsNotEmpty(default_module)
-      Builtins.foreach(
-        Ops.get_list(@Items, [@current, "hwinfo", "drivers"], [])
-      ) do |row|
-        tmp_mod = Ops.get_string(row, ["modules", 0, 0], "")
-        mods = Builtins.add(mods, tmp_mod) if !Builtins.contains(mods, tmp_mod)
-      end
-      deep_copy(mods)
-    end
-
     # Creates list of all known netcard items
     #
     # It means list of item ids of all netcards which are detected and/or
@@ -395,29 +357,6 @@ module Yast
       !item_id.nil?
     end
 
-    # search all known devices to find it's index in Items array
-    #
-    # @param [String] device matched with item[ "hwinfo", "dev_name"]
-    # @return index in Items or -1 if not found
-    def FindDeviceIndex(device)
-      ret = -1
-
-      Builtins.foreach(
-        Convert.convert(
-          @Items,
-          from: "map <integer, any>",
-          to:   "map <integer, map <string, any>>"
-        )
-      ) do |i, a|
-        if Ops.get_string(a, ["hwinfo", "dev_name"], "") == device
-          ret = i
-          raise Break
-        end
-      end
-
-      ret
-    end
-
     # It finds a new style device name for device name in old fashioned format
     #
     # It goes through currently present devices and tries to mach it to given
@@ -496,39 +435,6 @@ module Yast
       SetModified() if !settings.empty?
 
       true
-    end
-
-    def GetDescr
-      descr = []
-      Builtins.foreach(
-        Convert.convert(
-          @Items,
-          from: "map <integer, any>",
-          to:   "map <integer, map <string, any>>"
-        )
-      ) do |key, value|
-        if Builtins.haskey(value, "table_descr") &&
-            Ops.greater_than(
-              Builtins.size(Ops.get_map(@Items, [key, "table_descr"], {})),
-              1
-            )
-          descr = Builtins.add(
-            descr,
-            "id"          => key,
-            "rich_descr"  => Ops.get_string(
-              @Items,
-              [key, "table_descr", "rich_descr"],
-              ""
-            ),
-            "table_descr" => Ops.get_list(
-              @Items,
-              [key, "table_descr", "table_descr"],
-              []
-            )
-          )
-        end
-      end
-      deep_copy(descr)
     end
 
     def needFirmwareCurrentItem
@@ -709,98 +615,6 @@ module Yast
       Y2Network::BootProtocol.from_name(devmap["BOOTPROTO"]).dhcp?
     end
 
-    def GetItemDescription
-      Ops.get_string(@Items, [@current, "table_descr", "rich_descr"], "")
-    end
-
-    # Select the hardware component
-    # @param hardware the component
-    def SelectHWMap(hardware)
-      hardware = deep_copy(hardware)
-      sel = SelectHardwareMap(hardware)
-
-      # common stuff
-      @description = Ops.get_string(sel, "name", "")
-      @type = Ops.get_string(sel, "type", "eth")
-      @hotplug = Ops.get_string(sel, "hotplug", "")
-
-      @Requires = Ops.get_list(sel, "requires", [])
-      # #44977: Requires now contain the appropriate kernel packages
-      # but they are handled differently due to multiple kernel flavors
-      # (see Package::InstallKernel)
-      # Leave only those not starting with "kernel".
-      @Requires = Builtins.filter(@Requires) do |r|
-        Builtins.search(r, "kernel") != 0
-      end
-      Builtins.y2milestone("requires=%1", @Requires)
-
-      # FIXME: devname
-      @hotplug = ""
-
-      Builtins.y2milestone("hw=%1", hardware)
-
-      @hw = deep_copy(hardware)
-      if Arch.s390 && @operation == :add
-        Builtins.y2internal("Propose chan_ids values for %1", @hw)
-        devid = 0
-        devstr = ""
-        s390chanid = "[0-9]+\\.[0-9]+\\."
-        if Builtins.regexpmatch(Ops.get_string(@hw, "busid", ""), s390chanid)
-          devid = Builtins.tointeger(
-            Ops.add(
-              "0x",
-              Builtins.regexpsub(
-                Ops.get_string(@hw, "busid", ""),
-                Ops.add(s390chanid, "(.*)"),
-                "\\1"
-              )
-            )
-          )
-          devstr = Builtins.regexpsub(
-            Ops.get_string(@hw, "busid", ""),
-            Ops.add(Ops.add("(", s390chanid), ").*"),
-            "\\1"
-          )
-        end
-
-        Builtins.y2milestone("devid=%1(%2)", devid, devstr)
-        devid = 0 if devid.nil?
-        devid0 = String.PadZeros(
-          Builtins.regexpsub(Builtins.tohexstring(devid), "0x(.*)", "\\1"),
-          4
-        )
-        devid1 = String.PadZeros(
-          Builtins.regexpsub(
-            Builtins.tohexstring(Ops.add(devid, 1)),
-            "0x(.*)",
-            "\\1"
-          ),
-          4
-        )
-        devid2 = String.PadZeros(
-          Builtins.regexpsub(
-            Builtins.tohexstring(Ops.add(devid, 2)),
-            "0x(.*)",
-            "\\1"
-          ),
-          4
-        )
-        @qeth_chanids = if DriverType(@type) == "ctc" || DriverType(@type) == "lcs"
-          Builtins.sformat("%1%2 %1%3", devstr, devid0, devid1)
-        else
-          Builtins.sformat(
-            "%1%2 %1%3 %1%4",
-            devstr,
-            devid0,
-            devid1,
-            devid2
-          )
-        end
-      end
-
-      nil
-    end
-
     #-------------------
     # PRIVATE FUNCTIONS
 
@@ -849,44 +663,6 @@ module Yast
       true
     end
 
-    # Deletes item and its configuration
-    #
-    # Item for deletion is searched using device name
-    def delete_dev(name)
-      FindAndSelect(name)
-      DeleteItem()
-    end
-
-    # Deletes the {#current} item and its configuration
-    def DeleteItem
-      return if @current < 0
-      return if @Items.nil? || @Items.empty?
-
-      log.info("DeleteItem: #{@Items[@current]}")
-
-      devmap = GetCurrentMap()
-      drop_hosts(devmap["IPADDR"]) if devmap
-      # We have to remove it from routing before deleting the item
-      remove_current_device_from_routing
-
-      current_item = @Items[@current]
-
-      if current_item["hwinfo"].nil? || current_item["hwinfo"].empty?
-        # size is always > 0 here and items are numbered 0, 1, ..., size -1
-        delete_index = @Items.size - 1
-
-        @Items[@current] = @Items[delete_index] if delete_index != @current
-        @Items.delete(delete_index)
-
-        # item was deleted, so original @current is invalid
-        @current = -1
-      end
-
-      SetModified()
-
-      nil
-    end
-
     def SetItem(*)
       @hotplug = ""
       Builtins.y2debug("type=%1", @type)
@@ -896,35 +672,6 @@ module Yast
       Builtins.y2debug("type=%1", @type)
 
       nil
-    end
-
-    def setDriver(driver)
-      Builtins.y2milestone(
-        "driver %1, %2",
-        driver,
-        Ops.get_string(getCurrentItem, ["hwinfo", "module"], "")
-      )
-      if Ops.get_string(getCurrentItem, ["hwinfo", "module"], "") == driver &&
-          IsEmpty(Ops.get_string(getCurrentItem, ["udev", "driver"], ""))
-        return
-      end
-      Ops.set(@Items, [@current, "udev", "driver"], driver)
-
-      nil
-    end
-
-    def enableCurrentEditButton
-      return true if needFirmwareCurrentItem
-      return true if Arch.s390
-      if IsEmpty(Ops.get_string(getCurrentItem, ["hwinfo", "dev_name"], "")) &&
-          Ops.greater_than(
-            Builtins.size(Ops.get_map(getCurrentItem, "hwinfo", {})),
-            0
-          )
-        return false
-      else
-        return true
-      end
     end
 
     # Creates eth emulation for s390 devices
@@ -1394,26 +1141,14 @@ module Yast
     publish function: :GetDeviceMap, type: "map <string, any> (integer)"
     publish function: :GetModified, type: "boolean ()"
     publish function: :SetModified, type: "void ()"
-    publish function: :AddNew, type: "void ()"
-    publish function: :GetItemModules, type: "list <string> (string)"
-    publish function: :GetNetcardNames, type: "list <string> ( list <integer>)"
     publish function: :FindAndSelect, type: "boolean (string)"
-    publish function: :FindDeviceIndex, type: "integer (string)"
     publish function: :ReadHw, type: "void ()"
     publish function: :Read, type: "void ()"
     publish function: :needFirmwareCurrentItem, type: "boolean ()"
-    publish function: :GetFirmwareForCurrentItem, type: "string ()"
-    publish function: :GetBondSlaves, type: "list <string> (string)"
     publish function: :isCurrentHotplug, type: "boolean ()"
     publish function: :isCurrentDHCP, type: "boolean ()"
-    publish function: :GetItemDescription, type: "string ()"
-    publish function: :SelectHWMap, type: "void (map)"
-    publish function: :SetDeviceVars, type: "void (map, map)"
-    publish function: :Select, type: "boolean (string)"
     publish function: :Commit, type: "boolean ()"
     publish function: :Rollback, type: "boolean ()"
-    publish function: :setDriver, type: "void (string)"
-    publish function: :enableCurrentEditButton, type: "boolean ()"
     publish function: :createS390Device, type: "boolean ()"
     publish function: :find_dhcp_ifaces, type: "list <string> ()"
   end

@@ -50,21 +50,6 @@ describe "LanItemsClass#IsItemConfigured" do
   end
 end
 
-describe "LanItemsClass#delete_dev" do
-  before(:each) do
-    Yast::LanItems.Items = {
-      0 => {
-        "ifcfg" => "enp0s3"
-      }
-    }
-  end
-
-  it "removes device config when found" do
-    Yast::LanItems.delete_dev("enp0s3")
-    expect(Yast::LanItems.Items).to be_empty
-  end
-end
-
 describe "LanItemsClass#getNetworkInterfaces" do
   NETCONFIG_ITEMS = {
     "eth"  => {
