@@ -56,7 +56,7 @@ module Y2Network
         yast_config.interfaces.to_a.each_with_object({}) do |interface, result|
           next if interface.type.vlan? # does not make sense to have vlan of vlan
 
-          result[interface.name] = if interface.hardware.present?
+          result[interface.name] = if interface.hardware && interface.hardware.present?
             "#{interface.name} - #{interface.hardware.description}"
           else
             interface.name
