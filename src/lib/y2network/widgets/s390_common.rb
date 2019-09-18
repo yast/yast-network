@@ -244,7 +244,29 @@ module Y2Network
         nil
       end
 
+      def validate
+        return true if !layer2? || valid_mac?(mac_address_widget.value)
+
+        report_mac_error && false
+      end
+
     private
+
+      def report_mac_error
+        # TRANSLATORS: Popup error about not valid MAC address provided
+        msg = _("The MAC address provided is not valid, please provide a valid one.")
+        Yast::Popup.Error(msg)
+      end
+
+      def layer2?
+        !!support_widget.value
+      end
+
+      def valid_mac?(mac_address)
+        return false if mac_address.to_s.empty?
+        return false if mac_address == "00:00:00:00:00:00"
+        !!(mac_address =~ /^([0-9a-fA-F]{2}[:-]){5}[0-9a-fA-F]{2}$/i)
+      end
 
       def refresh
         support_widget.checked? ? mac_address_widget.enable : mac_address_widget.disable
