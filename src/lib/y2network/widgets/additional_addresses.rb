@@ -238,10 +238,10 @@ module Y2Network
             netmask = val
           end
 
-          if prefixlen.empty?
-            res[:prefixlen] = IPAddr.new("#{netmask}/#{netmask}")
+          res[:prefixlen] = if prefixlen.empty?
+            IPAddr.new("#{netmask}/#{netmask}")
           else
-            res[:prefixlen] = prefixlen
+            prefixlen
           end
           res[:prefixlen] = prefixlen
           res[:id] = id

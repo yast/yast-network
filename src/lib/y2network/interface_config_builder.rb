@@ -460,8 +460,8 @@ module Y2Network
     def aliases_to_ip_configs
       last_id = 0
       used_ids = aliases
-        .select { |a| a[:id] && a[:id] =~ /\A_\d+\z/ }
-        .map { |a| a[:id].sub("_", "").to_i }
+                 .select { |a| a[:id] && a[:id] =~ /\A_\d+\z/ }
+                 .map { |a| a[:id].sub("_", "").to_i }
       aliases.each_with_object([]) do |map, result|
         ipaddr = IPAddress.from_string(map[:ip])
         ipaddr.prefix = map[:prefixlen].delete("/").to_i if map[:prefixlen]

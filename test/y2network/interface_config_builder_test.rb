@@ -139,20 +139,22 @@ describe Y2Network::InterfaceConfigBuilder do
 
       it "sets aliases for the connection config" do
         subject.save
-        expect(subject.connection_config.ip_aliases).to eq([
-          Y2Network::ConnectionConfig::IPConfig.new(
-            Y2Network::IPAddress.from_string("192.168.122.100/24"), id: "_1", label: "alias1"
-          ),
-          Y2Network::ConnectionConfig::IPConfig.new(
-            Y2Network::IPAddress.from_string("192.168.123.100/24"), id: "suffix1", label: "alias2"
-          ),
-          Y2Network::ConnectionConfig::IPConfig.new(
-            Y2Network::IPAddress.from_string("10.0.0.2"), id: "_2", label: "alias3"
-          ),
-          Y2Network::ConnectionConfig::IPConfig.new(
-            Y2Network::IPAddress.from_string("10.0.0.3"), id: "_3", label: "alias4"
-          )
-        ])
+        expect(subject.connection_config.ip_aliases).to eq(
+          [
+            Y2Network::ConnectionConfig::IPConfig.new(
+              Y2Network::IPAddress.from_string("192.168.122.100/24"), id: "_1", label: "alias1"
+            ),
+            Y2Network::ConnectionConfig::IPConfig.new(
+              Y2Network::IPAddress.from_string("192.168.123.100/24"), id: "suffix1", label: "alias2"
+            ),
+            Y2Network::ConnectionConfig::IPConfig.new(
+              Y2Network::IPAddress.from_string("10.0.0.2"), id: "_2", label: "alias3"
+            ),
+            Y2Network::ConnectionConfig::IPConfig.new(
+              Y2Network::IPAddress.from_string("10.0.0.3"), id: "_3", label: "alias4"
+            )
+          ]
+        )
       end
     end
   end
