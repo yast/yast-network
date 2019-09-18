@@ -81,9 +81,7 @@ module Y2Network
         master = conn.find_master(config.connections)
         return format(_("enslaved in %s"), master.name) if master
 
-        if conn.type.vlan?
-          return format(_("parent: %s"), conn.parent_device)
-        end
+        return format(_("parent: %s"), conn.parent_device) if conn.type.vlan?
 
         ""
       end
