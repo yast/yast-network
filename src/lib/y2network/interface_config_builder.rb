@@ -476,8 +476,8 @@ module Y2Network
 
     # Returns a free numeric ID for an IP aliases
     #
-    # @param used_ids   [Array<Integer>] Already used IDs
-    # @param current_id [Integer] Current used ID
+    # @param used_ids [Array<Integer>] Already used IDs
+    # @param last_id  [Integer] Last used ID
     def find_free_alias_id(used_ids, last_id)
       loop do
         last_id += 1
