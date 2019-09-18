@@ -41,7 +41,7 @@ describe Y2Network::Sysconfig::ConfigWriter do
         source:      :sysconfig
       )
     end
-    let(:old_config) { instance_double(Y2Network::Config, dns: double("dns"), interfaces: nil, connections: [] ) }
+    let(:old_config) { instance_double(Y2Network::Config, dns: double("dns"), interfaces: nil, connections: []) }
     let(:ip) { Y2Network::ConnectionConfig::IPConfig.new(address: IPAddr.new("192.168.122.2")) }
     let(:eth0) { Y2Network::Interface.new("eth0") }
     let(:eth0_conn) do
@@ -137,8 +137,8 @@ describe Y2Network::Sysconfig::ConfigWriter do
       let(:old_config) do
         instance_double(
           Y2Network::Config,
-          dns:        double("dns"),
-          interfaces: [eth0, eth1],
+          dns:         double("dns"),
+          interfaces:  [eth0, eth1],
           connections: []
         )
       end
