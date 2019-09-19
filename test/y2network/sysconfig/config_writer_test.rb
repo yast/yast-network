@@ -37,17 +37,24 @@ describe Y2Network::Sysconfig::ConfigWriter do
       allow(Yast::Host).to receive(:Write)
     end
 
-    let(:config) do
+    let(:old_config) do
       Y2Network::Config.new(
         interfaces:  Y2Network::InterfacesCollection.new([eth0]),
-        connections: Y2Network::ConnectionConfigsCollection.new([eth0_conn]),
-        routing:     routing,
-        source:      :sysconfig
+        connections: Y2Network::ConnectionConfigsCollection.new([old_eth0_conn]),
+        source:      :testing
       )
     end
-    let(:old_config) { Y2Network::Config.new(source: :testing) }
+
+    let(:config) do
+      old_config.copy.tap do |cfg|
+        cfg.add_or_update_connection_config(eth0_conn)
+        cfg.routing = routing
+      end
+    end
     let(:ip) { Y2Network::ConnectionConfig::IPConfig.new(address: IPAddr.new("192.168.122.2")) }
     let(:eth0) { Y2Network::Interface.new("eth0") }
+    let(:old_eth0_conn) { eth0_conn.clone }
+
     let(:eth0_conn) do
       Y2Network::ConnectionConfig::Ethernet.new.tap do |conn|
         conn.interface = "eth0"
@@ -163,11 +170,11 @@ describe Y2Network::Sysconfig::ConfigWriter do
 
     context "when a connection is deleted" do
       let(:config) do
-        Y2Network::Config.new(
-          interfaces:  Y2Network::InterfacesCollection.new([eth0]),
-          connections: Y2Network::ConnectionConfigsCollection.new([]),
-          source:      :testing
-        )
+        old_config.copy.tap do |cfg|
+          cfg.interfaces = Y2Network::InterfacesCollection.new([eth0])
+          cfg.connections = Y2Network::ConnectionConfigsCollection.new([])
+          cfg.source = :testing
+        end
       end
 
       let(:old_config) do
@@ -235,7 +242,8 @@ describe Y2Network::Sysconfig::ConfigWriter do
     end
 
     it "writes connections configurations" do
-      expect_any_instance_of(Y2Network::Sysconfig::ConnectionConfigWriter).to receive(:write).with(eth0_conn)
+      expect_any_instance_of(Y2Network::Sysconfig::ConnectionConfigWriter)
+        .to receive(:write).with(eth0_conn, old_eth0_conn)
       writer.write(config, old_config)
     end
 

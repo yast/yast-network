@@ -30,11 +30,15 @@ module Y2Network
 
       # Writes connection config to the underlying system
       #
+      # The method can receive the old configuration in order to perform clean-up tasks.
+      #
       # @param conn [Y2Network::ConnectionConfig::Base] Connection configuration to write
-      def write(conn)
+      # @param old_conn [Y2Network::ConnectionConfig::Base,nil] Connection configuration to write
+      def write(conn, old_conn = nil)
         file = Y2Network::Sysconfig::InterfaceFile.new(conn.interface)
         handler_class = find_handler_class(conn.type)
         return nil if handler_class.nil?
+        remove(old_conn) if old_conn
         file.clean
         handler_class.new(file).write(conn)
         file.save

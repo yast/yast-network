@@ -199,7 +199,10 @@ module Y2Network
         # FIXME: this code might live in its own class
         writer = Y2Network::Sysconfig::ConnectionConfigWriter.new
         remove_old_connections(conns, old_config.connections, writer) if old_config
-        conns.each { |c| writer.write(c) }
+        conns.each do |conn|
+          old_conn =  old_config ? old_config.connections.by_id(conn.id) : nil
+          writer.write(conn, old_conn)
+        end
       end
 
       # Writes drivers options
@@ -215,9 +218,9 @@ module Y2Network
       # @param old_conns [ConnectionConfigsCollection] Old connections
       # @param writer [Sysconfig::ConnectionConfigWriter] Writer instance to save changes
       def remove_old_connections(conns, old_conns, writer)
-        names_to_remove = old_conns.map(&:name) - conns.map(&:name)
-        to_remove = old_conns.select { |c| names_to_remove.include?(c.name) }
-        log.info "removing connections #{names_to_remove.inspect}"
+        ids_to_remove = old_conns.map(&:id) - conns.map(&:id)
+        to_remove = old_conns.by_ids(*ids_to_remove)
+        log.info "removing connections #{to_remove.map(&:name).inspect}"
         to_remove.each { |c| writer.remove(c) }
       end
     end

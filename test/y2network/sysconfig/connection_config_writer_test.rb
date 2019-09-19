@@ -36,6 +36,14 @@ describe Y2Network::Sysconfig::ConnectionConfigWriter do
     )
   end
 
+  let(:old_conn) do
+    instance_double(
+      Y2Network::ConnectionConfig::Ethernet,
+      interface: "eth0",
+      type:      Y2Network::InterfaceType::ETHERNET
+    )
+  end
+
   let(:ip_config) do
     Y2Network::ConnectionConfig::IPConfig.new(Y2Network::IPAddress.from_string("10.100.0.1/24"))
   end
@@ -71,6 +79,11 @@ describe Y2Network::Sysconfig::ConnectionConfigWriter do
       expect(file).to receive(:clean)
       expect(file).to receive(:save)
       writer.write(conn)
+    end
+
+    it "removes the old configuration if given" do
+      expect(writer).to receive(:remove).with(old_conn)
+      writer.write(conn, old_conn)
     end
   end
 
