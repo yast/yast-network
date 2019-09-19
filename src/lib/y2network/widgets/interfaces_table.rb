@@ -21,6 +21,11 @@ require "yast"
 require "cwm/table"
 require "y2network/presenters/interface_summary"
 
+Yast.import "NetworkService"
+Yast.import "Lan"
+Yast.import "Popup"
+Yast.import "UI"
+
 module Y2Network
   module Widgets
     class InterfacesTable < CWM::Table
@@ -65,6 +70,18 @@ module Y2Network
 
       # Workaround for usage in old CWM which also cache content of cwm items
       def init
+        if Yast::NetworkService.is_network_manager
+          Yast::Popup.Warning(
+            _(
+              "Network is currently handled by NetworkManager\n" \
+              "or completely disabled. YaST is unable to configure some options."
+            )
+          )
+          # switch to global tab
+          Yast::UI.FakeUserInput("ID" => "global")
+          return
+        end
+
         change_items(items)
         handle
       end

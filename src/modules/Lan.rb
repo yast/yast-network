@@ -813,42 +813,6 @@ module Yast
       nm_default && nm_installed
     end
 
-    def IfcfgsToSkipVirtualizedProposal
-      skipped = []
-      yast_config = Y2Network::Config.find(:yast)
-
-      LanItems.Items.each do |_current, config|
-        ifcfg = config["ifcfg"]
-        ifcfg_type = NetworkInterfaces.GetType(ifcfg)
-
-        case ifcfg_type
-        when "br"
-          skipped << ifcfg
-
-          yast_config.interfaces.bridge_slaves(ifcfg).each { |port| skipped << port }
-        when "bond"
-          yast_config.interfaces.bond_slaves(ifcfg).each do |slave|
-            log.info("For interface #{ifcfg} found slave #{slave}")
-            skipped << slave
-          end
-
-        # Skip also usb and wlan devices as they are not good for bridge proposal (bnc#710098)
-        when "usb", "wlan"
-          log.info("#{ifcfg_type} device #{ifcfg} skipped from bridge proposal")
-          skipped << ifcfg
-        end
-
-        next unless NetworkInterfaces.GetValue(ifcfg, "STARTMODE") == "nfsroot"
-
-        log.info("Skipped #{ifcfg} interface from bridge slaves because of nfsroot.")
-
-        skipped << ifcfg
-      end
-      log.info("Skipped interfaces : #{skipped}")
-
-      skipped
-    end
-
     def ProposeVirtualized
       # then each configuration (except bridges) move to the bridge
       # and add old device name into bridge_ports

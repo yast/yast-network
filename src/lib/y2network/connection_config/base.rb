@@ -65,6 +65,7 @@ module Y2Network
       def initialize
         @ip_aliases = []
         @bootproto = BootProtocol::STATIC # TODO: maybe do test query if physical interface is attached?
+        @ip = IPConfig.new(IPAddress.from_string("0.0.0.0/32"))
         @startmode = Startmode.create("manual")
         @description = ""
         @ethtool_options = ""

@@ -36,7 +36,7 @@ module Y2Network
         super()
         @ports = []
         @stp = false
-        @forward_delay = 0
+        @forward_delay = 15
       end
 
       def virtual?

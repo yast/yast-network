@@ -32,6 +32,7 @@ module Y2Network
         def update_file(conn)
           file.bonding_slaves = file_slaves(conn)
           file.bonding_module_opts = conn.options
+          file.bonding_master = "yes"
         end
 
         # Convenience method to obtain the map of bonding slaves in the file
