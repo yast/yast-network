@@ -50,21 +50,6 @@ describe "LanItemsClass#IsItemConfigured" do
   end
 end
 
-describe "LanItemsClass#delete_dev" do
-  before(:each) do
-    Yast::LanItems.Items = {
-      0 => {
-        "ifcfg" => "enp0s3"
-      }
-    }
-  end
-
-  it "removes device config when found" do
-    Yast::LanItems.delete_dev("enp0s3")
-    expect(Yast::LanItems.Items).to be_empty
-  end
-end
-
 describe "LanItemsClass#getNetworkInterfaces" do
   NETCONFIG_ITEMS = {
     "eth"  => {
@@ -127,32 +112,6 @@ describe "LanItemsClass#getNetworkInterfaces" do
       allow(Yast::NetworkInterfaces).to receive(:FilterDevices) { NETCONFIG_ITEMS }
       expect(Yast::LanItems.getNetworkInterfaces("br")).to eql(["br0"])
     end
-  end
-end
-
-describe "LanItemsClass#s390_correct_lladdr" do
-  Yast.import "Arch"
-
-  before(:each) do
-    allow(Yast::Arch)
-      .to receive(:s390)
-      .and_return(true)
-  end
-
-  it "fails if given lladdr is nil" do
-    expect(Yast::LanItems.send(:s390_correct_lladdr, nil)).to be false
-  end
-
-  it "fails if given lladdr is empty" do
-    expect(Yast::LanItems.send(:s390_correct_lladdr, "")).to be false
-  end
-
-  it "fails if given lladdr contains zeroes only" do
-    expect(Yast::LanItems.send(:s390_correct_lladdr, "00:00:00:00:00:00")).to be false
-  end
-
-  it "succeeds if given lladdr contains valid MAC" do
-    expect(Yast::LanItems.send(:s390_correct_lladdr, "0a:00:27:00:00:00")).to be true
   end
 end
 
@@ -328,39 +287,6 @@ describe "DHCLIENT_SET_HOSTNAME helpers" do
     end
   end
 
-  describe "LanItems#clear_set_hostname" do
-    let(:dhcp_yes_maps) do
-      {
-        "eth0" => { "DHCLIENT_SET_HOSTNAME" => "yes" }
-      }.freeze
-    end
-    let(:dhcp_no_maps) do
-      {
-        "eth1" => { "DHCLIENT_SET_HOSTNAME" => "no" }
-      }.freeze
-    end
-    let(:no_dhclient_maps) do
-      { "eth6" => { "BOOT" => "dhcp" } }.freeze
-    end
-
-    it "clears all DHCLIENT_SET_HOSTNAME options" do
-      dhclient_maps = dhcp_yes_maps.merge(dhcp_no_maps)
-      mock_items(dhclient_maps.merge(no_dhclient_maps))
-
-      expect(Yast::LanItems)
-        .to receive(:SetDeviceMap)
-        .with(kind_of(Integer), "DHCLIENT_SET_HOSTNAME" => nil)
-        .twice
-      expect(Yast::LanItems)
-        .to receive(:SetModified)
-        .at_least(:once)
-
-      ret = Yast::LanItems.clear_set_hostname
-
-      expect(ret).to eql dhclient_maps.keys
-    end
-  end
-
   describe "LanItems#valid_dhcp_cfg?" do
     def mock_dhcp_setup(ifaces, global)
       allow(Yast::LanItems)
@@ -457,78 +383,6 @@ describe "LanItems renaming methods" do
         Yast::LanItems.add_device_to_routing
         names = yast_config.interfaces.map(&:name)
         expect(names).to eq(["eth0", "wlan0"])
-      end
-    end
-  end
-
-  describe "LanItems.rename_current_device_in_routing" do
-    let(:eth0) { Y2Network::Interface.new("eth0") }
-    let(:wlan0) { Y2Network::Interface.new("wlan0") }
-    let(:interfaces) { Y2Network::InterfacesCollection.new([eth0, wlan0]) }
-    let(:yast_config) do
-      instance_double(Y2Network::Config, interfaces: interfaces, routing: double("routing"))
-    end
-
-    before do
-      allow(Y2Network::Config).to receive(:find).with(:yast).and_return(yast_config)
-      allow(Yast::LanItems).to receive(:current_name).and_return("wlan1")
-    end
-
-    it "updates the list of Routing devices with current device names" do
-      Yast::LanItems.rename_current_device_in_routing("wlan0")
-      new_names = yast_config.interfaces.map(&:name)
-      expect(new_names).to eq(["eth0", "wlan1"])
-    end
-  end
-
-  describe "LanItems.remove_current_device_from_routing" do
-    let(:eth0) { Y2Network::Interface.new("eth0") }
-    let(:wlan0) { Y2Network::Interface.new("wlan0") }
-    let(:interfaces) { Y2Network::InterfacesCollection.new([eth0, wlan0]) }
-
-    let(:yast_config) do
-      instance_double(Y2Network::Config, interfaces: interfaces, routing: double("routing"))
-    end
-
-    before do
-      allow(Y2Network::Config).to receive(:find).with(:yast).and_return(yast_config)
-      allow(Yast::LanItems).to receive(:current_name).and_return("wlan0")
-    end
-
-    it "removes the device" do
-      Yast::LanItems.remove_current_device_from_routing
-      names = yast_config.interfaces.map(&:name)
-      expect(names).to eq(["eth0"])
-    end
-  end
-
-  describe "LanItems.update_routing_devices?" do
-    let(:eth0) { Y2Network::Interface.new("eth0") }
-    let(:wlan0) { Y2Network::Interface.new("wlan0") }
-    let(:interfaces) { Y2Network::InterfacesCollection.new([eth0, wlan0]) }
-
-    let(:yast_config) do
-      instance_double(Y2Network::Config, interfaces: interfaces, routing: double("routing"))
-    end
-
-    before do
-      allow(Y2Network::Config).to receive(:find).with(:yast).and_return(yast_config)
-      allow(Yast::LanItems).to receive(:current_name).and_return(current_name)
-    end
-
-    context "when there are no changes in the device names" do
-      let(:current_name) { "eth0" }
-
-      it "returns false" do
-        expect(Yast::LanItems.update_routing_devices?).to eql(false)
-      end
-    end
-
-    context "when some interface have been renaming and Routing device names differs" do
-      let(:current_name) { "eth1" }
-
-      it "returns true" do
-        expect(Yast::LanItems.update_routing_devices?).to eql(true)
       end
     end
   end

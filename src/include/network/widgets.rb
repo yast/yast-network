@@ -116,7 +116,7 @@ module Yast
       end
 
       if NetworkService.Modified
-        LanItems.SetModified
+        Lan.SetModified
 
         if Stage.normal && NetworkService.is_network_manager
           Popup.AnyMessage(
