@@ -63,8 +63,15 @@ module Y2Network
       # @return [String] interface's hostname
       attr_accessor :hostname
 
+      # @return [String] Connection identifier
+      attr_reader :id
+
+      # @return [Integer] Connection identifier counter
+      @@last_id = 0
+
       # Constructor
       def initialize
+        @id = @@last_id += 1
         @ip_aliases = []
         @bootproto = BootProtocol::STATIC # TODO: maybe do test query if physical interface is attached?
         @ip = IPConfig.new(IPAddress.from_string("0.0.0.0/32"))
