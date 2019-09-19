@@ -19,6 +19,7 @@
 
 require "yast"
 require "y2network/interface"
+require "y2network/can_be_copied"
 require "forwardable"
 
 module Y2Network
@@ -41,6 +42,7 @@ module Y2Network
   class InterfacesCollection
     extend Forwardable
     include Yast::Logger
+    include CanBeCopied
 
     # @return [Array<Interface>] List of interfaces
     attr_reader :interfaces

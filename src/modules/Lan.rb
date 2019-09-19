@@ -870,7 +870,7 @@ module Yast
         builder.configure_as_slave
         builder.save
         LanItems.move_routes(builder.name, bridge_builder.name)
-        refresh_lan_items
+        refresh_interfaces
       end
 
       nil
@@ -1044,12 +1044,16 @@ module Yast
       true
     end
 
-    # Refreshes YaST network configuration
+    # Refreshes YaST network interfaces
     #
-    # It does not modified the system configuration that was already read.
-    def refresh_lan_items
-      yast_config = Y2Network::Config.from(:sysconfig)
-      Yast::Lan.add_config(:yast, yast_config)
+    # It refreshes system configuration and update the list of interfaces
+    # for the current YaST configuration. The rest of the configuration
+    # is not modified.
+    #
+    # TODO: consider adding an API to Y2Network::Config to do partial refreshes.
+    def refresh_interfaces
+      system_config = Y2Network::Config.from(:sysconfig)
+      yast_config.interfaces = system_config.interfaces.copy
     end
 
     # Reads system configuration
