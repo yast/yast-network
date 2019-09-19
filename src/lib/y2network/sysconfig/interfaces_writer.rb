@@ -105,8 +105,6 @@ module Y2Network
           set_interface_down(iface.old_name)
           ifcfg = Y2Network::Sysconfig::InterfaceFile.find(iface.old_name)
           ifcfg && ifcfg.remove
-          ifroute = Y2Network::Sysconfig::RoutesFile.find(iface.old_name)
-          ifroute && ifroute.remove
         end
       end
 

@@ -71,12 +71,9 @@ describe Y2Network::Sysconfig::InterfacesWriter do
 
       it "removes the old configuration files" do
         ifcfg_path = File.join(scr_root, "etc", "sysconfig", "network", "ifcfg-eth0")
-        ifroute_path = File.join(scr_root, "etc", "sysconfig", "network", "ifroute-eth0")
         expect(File).to exist(ifcfg_path)
-        expect(File).to exist(ifroute_path)
         subject.write(interfaces)
         expect(File).to_not exist(ifcfg_path)
-        expect(File).to_not exist(ifroute_path)
       end
 
       it "sets the interface down" do
