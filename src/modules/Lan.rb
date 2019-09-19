@@ -100,6 +100,8 @@ module Yast
 
       @backend = nil
 
+      @modified = false
+
       # Y2Network::Config objects
       @configs = {}
     end
@@ -111,13 +113,18 @@ module Yast
     # Return a modification status
     # @return true if data was modified
     def Modified
-      return true if LanItems.GetModified
+      return true if @modified
       return true unless system_config == yast_config
       return true if NetworkConfig.Modified
       return true if NetworkService.Modified
       return true if Host.GetModified
 
       false
+    end
+
+    def SetModified
+      @modified = true
+      nil
     end
 
     # function for use from autoinstallation (Fate #301032)
@@ -396,7 +403,7 @@ module Yast
       if @ipv6 != status
         @ipv6 = status
         Popup.Warning(_("To apply this change, a reboot is needed."))
-        LanItems.SetModified
+        Lan.SetModified
       end
 
       nil
