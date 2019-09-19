@@ -28,7 +28,7 @@ module Y2Network
         :read_channel, :read_channel=,
         :write_channel, :write_channel=,
         :data_channel, :data_channel=,
-        :layer2, :port_number,
+        :layer2, :port_number, :ipa_takeover,
         :hwinfo, :attributes
 
       def device_id
@@ -37,11 +37,25 @@ module Y2Network
         [read_channel, write_channel, data_channel].join(":")
       end
 
-      # @return [Array<String>]
+      # Return a list of the options to be set when activating the device. The
+      # list is composed by the attributes configured and the attributes that
+      # have their own variable (layer2, port_number and ipa_takeover).
+      #
+      # @example Qeth configuration
+      #   activator.layer2 #=> true
+      #   activator.port_number #=> 1
+      #   activator.ipa_takeover #=> true
+      #   activator.attributes #=> "bridge_role=secondary"
+      #   activator.configure_attributes #=> ["bridge_role=secondary",
+      #     "ipa_takeover/enable=1", "layer2=1", "portno=1"]
+      #
+      # @see [S390DeviceActivator#configure_attributes]
       def configure_attributes
-        return [] unless attributes
-
-        attributes.split(" ").concat([layer2_attribute, port_ttribute])
+        extra_attributes = []
+        extra_attributes.concat(attributes.split(" ")) if attributes
+        extra_attributes << ipa_takeover_attribute unless ipa_takeover.nil?
+        extra_attributes << layer2_attribute unless layer2.nil?
+        extra_attributes << port_attribute
       end
 
       # Modifies the read, write and data channel from the the device id
@@ -51,27 +65,35 @@ module Y2Network
         self.read_channel, self.write_channel, self.data_channel = id.split(":")
       end
 
-      def proposal
+      def propose!
         propose_channels unless device_id
       end
-    end
 
-  private
+    private
 
-    # Convenience method to obtain the layer2 attribute
-    #
-    # @return [String]
-    def layer2_attribute
-      return "" unless layer2
+      # Convenience method to obtain the layer2 attribute for the configuration
+      # command
+      #
+      # @return [String]
+      def layer2_attribute
+        "layer2=#{layer2 ? 1 : 0}"
+      end
 
-      "layer2=#{layer2 ? 1 : 0}"
-    end
+      # Convenience method to obtain the port number attribute for the
+      # configuration command
+      #
+      # @return [String]
+      def port_attribute
+        "portno=#{port_number}"
+      end
 
-    # Convenience method to obtain the port number attribute
-    #
-    # @return [String]
-    def port_attribute
-      "port_number=#{port_number}"
+      # Convenience method to obtain the port number attribute for the
+      # configuration command
+      #
+      # @return [String]
+      def ipa_takeover_attribute
+        "ipa_takeover/enable=#{ipa_takeover ? 1 : 0}"
+      end
     end
   end
 end

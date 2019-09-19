@@ -61,7 +61,7 @@ module Y2Network
         textdomain "network"
 
         @activator = activator
-        @activator.proposal
+        @activator.propose!
         @builder = activator.builder
       end
 
@@ -79,7 +79,7 @@ module Y2Network
           configured = activator.configure
           builder.name = activator.configured_interface if configured
           # TODO: Refresh the list of interfaces in yast_config. Take into
-          # account that the interface in yast_config does not have a nem so
+          # account that the interface in yast_config does not have a name so
           # the builder.interface is probably nil and should be obtained
           # through the busid.
           if !configured || builder.name.empty?

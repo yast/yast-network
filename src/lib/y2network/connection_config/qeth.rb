@@ -65,8 +65,8 @@ module Y2Network
       def ==(other)
         return false unless super
 
-        [:read_channel, :write_channel, :data_channel,
-         :layer2, :port_number, :attributes].all? do |method|
+        [:read_channel, :write_channel, :data_channel, :layer2,
+         :port_number, :ipa_takeover, :attributes].all? do |method|
           public_send(method) == other.public_send(method)
         end
       end

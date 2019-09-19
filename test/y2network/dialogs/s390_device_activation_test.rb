@@ -33,7 +33,7 @@ describe Y2Network::Dialogs::S390DeviceActivation do
 
   describe ".new" do
     it "creates a proposal for the configured device" do
-      expect(activator).to receive(:proposal)
+      expect(activator).to receive(:propose!)
       described_class.new(activator)
     end
   end

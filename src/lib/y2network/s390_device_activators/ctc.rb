@@ -47,7 +47,7 @@ module Y2Network
         self.read_channel, self.write_channel = id.split(":")
       end
 
-      def proposal
+      def propose!
         propose_channels unless device_id
       end
     end

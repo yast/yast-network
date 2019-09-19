@@ -24,6 +24,8 @@ module Y2Network
     # Dialog for activating a CTC device
     class S390CtcActivation < S390DeviceActivation
       def contents
+        # Already defined in the base class but added here just because of the
+        # pot check
         textdomain "network"
 
         HBox(

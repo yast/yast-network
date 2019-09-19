@@ -120,19 +120,19 @@ describe Y2Network::S390DeviceActivators::Ctc do
     end
   end
 
-  describe "#proposal" do
+  describe "#propose!" do
     context "when no device id has been initialized" do
       let(:initialize_channels) { false }
       it "proposes the channel device ids to be used" do
         expect(subject).to receive(:propose_channels)
-        subject.proposal
+        subject.propose!
       end
     end
 
     context "when the channel device ids have been set already" do
       it "does not propose anything" do
         expect(subject).to_not receive(:propose_channels)
-        subject.proposal
+        subject.propose!
       end
     end
   end

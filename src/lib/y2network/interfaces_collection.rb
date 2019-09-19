@@ -74,7 +74,7 @@ module Y2Network
     # @return [Interface,nil] Interface with the given busid or nil if not found
     def by_busid(busid)
       interfaces.find do |iface|
-        iface.hardware.busid == busid
+        iface.hardware && iface.hardware.busid == busid
       end
     end
 

@@ -26,6 +26,13 @@ module Y2Network
     extend Forwardable
     include Yast::Logger
 
+    # Command for configuring z Systems specific devices
+    CONFIGURE_CMD = "/sbin/chzdev".freeze
+    # Command for displaying configuration of z Systems specific devices
+    LIST_CMD = "/sbin/lszdev".freeze
+
+    def_delegators :@builder, :type
+
     attr_accessor :builder
 
     # Load fresh instace of device activator for given interface config builder
@@ -45,16 +52,21 @@ module Y2Network
       @builder = builder
     end
 
+    # Each s390 device type permits a set of attributes to be passed as extra
+    # options to the configuration command. This method return a list of each
+    # option in the form "attribute=value"
+    #
+    # @example qeth options
+    #   @activator.configure_attributes
+    #   #=> ["bridge_role=primary", "layer2=1", "portno=0", "ipa_takeover/enable=1"]
+    #
+    # @example ctc options
+    #   @activator.configure_attributes
+    #   #=> ["protocol=1"]
+    #
     # @return [Array<String>]
     def configure_attributes
       []
-    end
-
-    # Convenience method for obtaining the short name of the builder's type..
-    #
-    # @return string
-    def type
-      builder.type.short_name
     end
 
     # The device id to be used by lszdev or chzdev commands
@@ -69,7 +81,7 @@ module Y2Network
     # @param channel [String]
     # @return [String]
     def device_id_from(channel)
-      cmd = "/sbin/lszdev #{type} -c id -n".split(" ")
+      cmd = [LIST_CMD, type.short_name, "-c", "id", "-n"]
 
       Yast::Execute.stdout.on_target!(cmd).split("\n").find do |d|
         d.include? channel
@@ -81,7 +93,7 @@ module Y2Network
     # @return [Boolean] true when enabled
     def configure
       return false unless device_id
-      cmd = "/sbin/chzdev #{type} #{device_id} -e".split(" ").concat(configure_attributes)
+      cmd = [CONFIGURE_CMD, type.short_name, device_id, "-e"].concat(configure_attributes)
 
       Yast::Execute.on_target!(*cmd, allowed_exitstatus: 0..255).zero?
     end
@@ -91,13 +103,13 @@ module Y2Network
     # @return [String] device name
     def configured_interface
       return "" unless device_id
-      cmd = "/sbin/lszdev #{device_id} -c names -n".split(" ")
+      cmd = [LIST_CMD, device_id, "-c", "names", "-n"]
 
       Yast::Execute.stdout.on_target!(cmd).chomp
     end
 
     # Makes a new configuration proposal
-    def proposal
+    def propose!
     end
   end
 end

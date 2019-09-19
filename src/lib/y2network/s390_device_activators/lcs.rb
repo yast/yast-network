@@ -24,7 +24,7 @@ module Y2Network
     # The Lcs device activator is based in Ctc as both have two group device
     # channels (read and write).
     #
-    # In the past they shared also the configure command 'ctc_configure)' and
+    # In the past they shared also the configure command 'ctc_configure' and
     # the 'protocol' attribute was needed, but as the configuration has
     # been moved to 'chzdev' command it is not the case anymore.
     class Lcs < Ctc
