@@ -100,6 +100,8 @@ module Yast
 
       @backend = nil
 
+      @modified = false
+
       # Y2Network::Config objects
       @configs = {}
     end
@@ -111,13 +113,18 @@ module Yast
     # Return a modification status
     # @return true if data was modified
     def Modified
-      return true if LanItems.GetModified
+      return true if @modified
       return true unless system_config == yast_config
       return true if NetworkConfig.Modified
       return true if NetworkService.Modified
       return true if Host.GetModified
 
       false
+    end
+
+    def SetModified
+      @modified = true
+      nil
     end
 
     # function for use from autoinstallation (Fate #301032)
@@ -265,10 +272,6 @@ module Yast
         return true
       end
 
-      system_config = Y2Network::Config.from(:sysconfig)
-      add_config(:system, system_config)
-      add_config(:yast, system_config.copy)
-
       # Read dialog caption
       caption = _("Initializing Network Configuration")
 
@@ -334,7 +337,7 @@ module Yast
 
       return false if Abort()
       ProgressNextStage(_("Reading device configuration...")) if @gui
-      LanItems.Read
+      read_config
 
       Builtins.sleep(sl)
 
@@ -400,7 +403,7 @@ module Yast
       if @ipv6 != status
         @ipv6 = status
         Popup.Warning(_("To apply this change, a reboot is needed."))
-        LanItems.SetModified
+        Lan.SetModified
       end
 
       nil
@@ -831,7 +834,7 @@ module Yast
         builder.configure_as_slave
         builder.save
         LanItems.move_routes(builder.name, bridge_builder.name)
-        refresh_lan_items
+        refresh_interfaces
       end
 
       nil
@@ -1005,16 +1008,25 @@ module Yast
       true
     end
 
-    def refresh_lan_items
-      LanItems.force_restart = true
-      # re-read configuration to see new items in UI
-      LanItems.Read
+    # Refreshes YaST network interfaces
+    #
+    # It refreshes system configuration and update the list of interfaces
+    # for the current YaST configuration. The rest of the configuration
+    # is not modified.
+    #
+    # TODO: consider adding an API to Y2Network::Config to do partial refreshes.
+    def refresh_interfaces
+      system_config = Y2Network::Config.from(:sysconfig)
+      yast_config.interfaces = system_config.interfaces.copy
+    end
 
-      # note: LanItems.Read resets modification flag
-      # the Read is used as a trick how to update LanItems' internal
-      # cache according NetworkInterfaces' one. As NetworkInterfaces'
-      # cache was edited directly, LanItems is not aware of changes.
-      LanItems.SetModified
+    # Reads system configuration
+    #
+    # It clears already read configuration.
+    def read_config
+      system_config = Y2Network::Config.from(:sysconfig)
+      Yast::Lan.add_config(:system, system_config)
+      Yast::Lan.add_config(:yast, system_config.copy)
     end
 
     # Returns the routing summary

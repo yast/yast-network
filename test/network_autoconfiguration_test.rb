@@ -201,7 +201,6 @@ describe Yast::NetworkAutoconfiguration do
       allow(Y2Network::Config).to receive(:find).with(:yast).and_return(yast_config)
       allow(Y2Network::Config).to receive(:find).with(:system).and_return(system_config)
       allow(instance).to receive(:virtual_proposal_required?).and_return(proposal)
-      allow(Yast::LanItems).to receive(:Read)
       allow(yast_config).to receive(:write)
       allow(Yast::Lan).to receive(:connected_and_bridgeable?).and_return(true)
       allow(Yast::PackageSystem).to receive(:Installed).and_return(true)

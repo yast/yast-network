@@ -34,13 +34,13 @@ describe Yast::LanAutoClient do
     context "when func is GetModified" do
       let(:func) { "GetModified" }
 
-      it "returns true if LanItems.GetModified is true" do
-        expect(Yast::LanItems).to receive(:GetModified).and_return(true)
+      it "returns true if Lan.GetModified is true" do
+        expect(Yast::Lan).to receive(:Modified).and_return(true)
         expect(subject.main).to eq(true)
       end
 
-      it "returns false if LanItems.GetModified is false" do
-        expect(Yast::LanItems).to receive(:GetModified).and_return(false)
+      it "returns false if Lan.GetModified is false" do
+        expect(Yast::Lan).to receive(:Modified).and_return(false)
         expect(subject.main).to eq(false)
       end
     end

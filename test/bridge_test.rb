@@ -27,6 +27,7 @@ require "y2network/config"
 require "y2network/interface"
 require "y2network/type_detector"
 
+Yast.import "Lan"
 Yast.import "LanItems"
 
 describe Yast::LanItems do
@@ -119,7 +120,6 @@ describe Yast::LanItems do
       .to receive(:type_of)
       .with(/eth[0-9]/)
       .and_return(Y2Network::InterfaceType::ETHERNET)
-    Yast::LanItems.Read
   end
 
   describe "#GetBridgeableInterfaces" do

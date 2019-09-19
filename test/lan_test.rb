@@ -30,12 +30,8 @@ Yast.import "Lan"
 
 describe "LanClass" do
   subject { Yast::Lan }
-  let(:system_config) { instance_double(Y2Network::Config, "System") }
 
-  before do
-    Yast::Lan.clear_configs
-    allow(Yast::Lan).to receive(:system_config).and_call_original
-  end
+  let(:system_config) { Y2Network::Config.new(interfaces: [], source: :sysconfig) }
 
   describe "#Packages" do
     before(:each) do
@@ -164,11 +160,11 @@ describe "LanClass" do
 
     it "flushes internal state of LanItems correctly when asked for reset" do
       expect(Yast::Lan.Import(ay_profile)).to be true
-      expect(Yast::LanItems.GetModified).to be true
+      expect(Yast::Lan.GetModified).to be true
       expect(Yast::LanItems.Items).not_to be_empty
 
       expect(Yast::Lan.Import({})).to be true
-      expect(Yast::LanItems.GetModified).to be false
+      expect(Yast::Lan.GetModified).to be false
       expect(Yast::LanItems.Items).to be_empty
     end
 
@@ -180,56 +176,68 @@ describe "LanClass" do
   end
 
   describe "#Modified" do
-    def reset_modification_statuses
-      allow(Yast::LanItems).to receive(:GetModified).and_return false
-      allow(Yast::DNS).to receive(:modified).and_return false
+    let(:yast_config) { system_config.copy }
+
+    before do
+      allow(Yast::NetworkConfig).to receive(:Modified).and_return false
+      allow(Yast::NetworkService).to receive(:Modified).and_return false
+      allow(Yast::Host).to receive(:GetModified).and_return false
+
+      Yast::Lan.add_config(:system, system_config)
+      Yast::Lan.add_config(:yast, yast_config)
+    end
+
+    context "when the configuration was not changed" do
+      it "returns false" do
+        expect(Yast::Lan.Modified).to eq(false)
+      end
+    end
+
+    context "when the configuration was changed" do
+      before do
+        yast_config.routing.forward_ipv4 = !system_config.routing.forward_ipv4
+      end
+
+      it "returns true" do
+        expect(Yast::Lan.Modified).to eq(true)
+      end
+    end
+
+    context "when the NetworkConfig module was modified" do
+      before { allow(Yast::NetworkConfig).to receive(:Modified).and_return(true) }
+
+      it "returns true" do
+        expect(Yast::Lan.Modified).to eq(true)
+      end
+    end
+
+    context "when the NetworkService module was modified" do
+      before { allow(Yast::NetworkService).to receive(:Modified).and_return(true) }
+
+      it "returns true" do
+        expect(Yast::Lan.Modified).to eq(true)
+      end
+    end
+
+    context "when the Host module was modified" do
+      before { allow(Yast::Host).to receive(:GetModified).and_return(true) }
+
+      it "returns true" do
+        expect(Yast::Lan.Modified).to eq(true)
+      end
+    end
+  end
+
+  describe "#SetModified" do
+    before do
       allow(Yast::NetworkConfig).to receive(:Modified).and_return false
       allow(Yast::NetworkService).to receive(:Modified).and_return false
       allow(Yast::Host).to receive(:GetModified).and_return false
     end
 
-    def expect_modification_succeedes(modname, method)
-      reset_modification_statuses
-
-      allow(modname)
-        .to receive(method)
-        .and_return true
-
-      expect(modname.send(method)).to be true
-      expect(Yast::Lan.Modified).to be true
-    end
-
-    it "returns true when LanItems module was modified" do
-      expect_modification_succeedes(Yast::LanItems, :GetModified)
-    end
-
-    let(:config) do
-      Y2Network::Config.new(interfaces: [], routing: routing, source: :sysconfig)
-    end
-    let(:routing) { Y2Network::Routing.new(tables: []) }
-
-    it "returns true when Routing module was modified" do
-      Yast::Lan.add_config(:system, config)
-      yast_config = config.copy
-      yast_config.routing.forward_ipv4 = !config.routing.forward_ipv4
-      Yast::Lan.add_config(:yast, yast_config)
-
-      reset_modification_statuses
-      expect(Yast::Lan.Modified).to eq(true)
-      Yast::Lan.clear_configs
-    end
-
-    it "returns true when NetworkConfig module was modified" do
-      expect_modification_succeedes(Yast::NetworkConfig, :Modified)
-    end
-
-    it "returns true when NetworkService module was modified" do
-      expect_modification_succeedes(Yast::NetworkService, :Modified)
-    end
-
-    it "returns false when no module was modified" do
-      reset_modification_statuses
-      expect(Yast::Lan.Modified).to be false
+    it "changes Modified to true" do
+      subject.main
+      expect { subject.SetModified }.to change { subject.Modified }.from(false).to(true)
     end
   end
 
@@ -463,9 +471,8 @@ describe "LanClass" do
     end
 
     it "cleans the configurations list" do
-      expect { subject.clear_configs }
-        .to change { subject.find_config(:system) }
-        .from(system_config).to(nil)
+      subject.clear_configs
+      expect(subject.find_config(:system)).to be_nil
     end
   end
 

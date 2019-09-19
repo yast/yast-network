@@ -86,9 +86,9 @@ module Yast
       elsif @func == "Packages"
         @ret = Lan.AutoPackages
       elsif @func == "SetModified"
-        @ret = LanItems.SetModified
+        @ret = Lan.SetModified
       elsif @func == "GetModified"
-        @ret = LanItems.GetModified
+        @ret = Lan.Modified
       elsif @func == "Export"
         @settings2 = Lan.Export
         Builtins.y2debug("settings: %1", @settings2)
