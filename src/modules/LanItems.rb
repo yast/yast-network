@@ -39,15 +39,11 @@ module Yast
     include Wicked
 
     def main
-      Yast.import "UI"
       textdomain "network"
 
       Yast.import "NetworkInterfaces"
-      Yast.import "ProductFeatures"
       Yast.import "NetworkConfig"
-      Yast.import "Host"
       Yast.import "Directory"
-      Yast.import "Stage"
       Yast.include self, "network/complex.rb"
       Yast.include self, "network/routines.rb"
       Yast.include self, "network/lan/s390.rb"
@@ -640,8 +636,6 @@ module Yast
         end
       end
 
-      # TODO: is it still needed?
-      SetModified()
       true
     end
 
@@ -843,55 +837,6 @@ module Yast
       udev_rules
     end
 
-    # Configures available devices for obtaining hostname via specified device
-    #
-    # This is related to setting system's hostname via DHCP. Apart of global
-    # DHCLIENT_SET_HOSTNAME which is set in /etc/sysconfig/network/dhcp and is
-    # used as default, one can specify the option even per interface. To avoid
-    # collisions / undeterministic behavior the system should be configured so,
-    # that just one DHCP interface can update the hostname. E.g. global option
-    # can be set to "no" and just only one ifcfg can have the option set to "yes".
-    #
-    # @param [String] device name where should be hostname configuration active
-    # @return [Boolean] false when the configuration cannot be set for a device
-    def conf_set_hostname(device)
-      return false if !find_dhcp_ifaces.include?(device)
-
-      clear_set_hostname
-
-      ret = SetItemSysconfigOpt(find_configured(device), "DHCLIENT_SET_HOSTNAME", "yes")
-
-      SetModified()
-
-      ret
-    end
-
-    # Removes DHCLIENT_SET_HOSTNAME from all ifcfgs
-    #
-    # @return [Array<String>] list of names of cleared devices
-    def clear_set_hostname
-      log.info("Clearing DHCLIENT_SET_HOSTNAME flag from device configs")
-
-      ret = []
-
-      GetNetcardInterfaces().each do |item_id|
-        dev_map = GetDeviceMap(item_id)
-        next if dev_map.nil? || dev_map.empty?
-        next if !dev_map["DHCLIENT_SET_HOSTNAME"]
-
-        dev_map["DHCLIENT_SET_HOSTNAME"] = nil
-
-        SetDeviceMap(item_id, dev_map)
-        SetModified()
-
-        ret << GetDeviceName(item_id)
-      end
-
-      log.info("#{ret.inspect} use default DHCLIENT_SET_HOSTNAME")
-
-      ret
-    end
-
     # Returns unused name for device of given type
     #
     # When already having eth0, eth1, enp0s3 devices (eth type) and asks for new
@@ -948,45 +893,6 @@ module Yast
       publish variable: name, type: type
     end
 
-    # Returns a formated string with the interfaces that are part of a bridge
-    # or of a bond interface.
-    #
-    # @param [String] ifcfg_type
-    # @param [String] ifcfg_name
-    # @return [String] formated string with the interface type and the interfaces enslaved
-    def slaves_desc(ifcfg_type, ifcfg_name)
-      if ifcfg_type == "bond"
-        slaves = Y2Network::Config.find(:yast).interfaces.bond_slaves(ifcfg_name)
-        desc = _("Bonding slaves")
-      else
-        slaves = Y2Network::Config.find(:yast).interfaces.bridge_slaves(ifcfg_name)
-        desc = _("Bridge Ports")
-      end
-
-      format("%s: %s", desc, slaves.join(" "))
-    end
-
-    # Check if the given interface is enslaved in a bond or in a bridge
-    #
-    # @return [Boolean] true if enslaved
-    def enslaved?(ifcfg_name)
-      bond_index = Y2Network::Config.find(:yast).interfaces.bond_index
-      bridge_index = Y2Network::Config.find(:yast).interfaces.bridge_index
-
-      return true if bond_index[ifcfg_name] || bridge_index[ifcfg_name]
-
-      false
-    end
-
-    # Return wether the routing devices list needs to be updated or not to include
-    # the current interface name
-    #
-    # @return [Boolean] false if the current interface name is already present
-    def update_routing_devices?
-      device_names = yast_config.interfaces.map(&:name)
-      !device_names.include?(current_name)
-    end
-
     # Adds a new interface with the given name
     #
     # @todo This method exists just to keep some compatibility during
@@ -1013,54 +919,7 @@ module Yast
              .each { |r| r.interface = target_interface }
     end
 
-    # Renames an interface
-    #
-    # @todo This method exists just to keep some compatibility during
-    #       the migration to network-ng.
-
-    # @param old_name [String] Old device name
-    def rename_current_device_in_routing(old_name)
-      config = yast_config
-      return if config.nil?
-      interface = config.interfaces.by_name(old_name)
-      return unless interface
-      interface.name = current_name
-    end
-
-    # Removes the interface with the given name
-    #
-    # @todo This method exists just to keep some compatibility during
-    #       the migration to network-ng.
-    # @todo It does not check orphan routes.
-    def remove_current_device_from_routing
-      config = yast_config
-      return if config.nil?
-      name = current_name
-      return if name.empty?
-      config.interfaces.delete_if { |i| i.name == name }
-    end
-
   private
-
-    # Checks if given lladdr can be written into ifcfg
-    #
-    # @param lladdr [String] logical link address, usually MAC address in case
-    #                        of qeth device
-    # @return [true, false] check result
-    def s390_correct_lladdr(lladdr)
-      return false if !Arch.s390
-      return false if lladdr.nil?
-      return false if lladdr.empty?
-      return false if lladdr.strip == "00:00:00:00:00:00"
-
-      true
-    end
-
-    # Removes all records connected to the ip from /etc/hosts
-    def drop_hosts(ip)
-      log.info("Deleting hostnames assigned to #{ip} from /etc/hosts")
-      Host.remove_ip(ip)
-    end
 
     # Searches available items according sysconfig option
     #
