@@ -102,12 +102,6 @@ module Y2Network
         _("Assign to the default ZONE")
       end
 
-      # @return [String]
-      def no_zone_label
-        # TRANSLATORS: List item to no interface ZONE assignment
-        _("Do not assign ZONE")
-      end
-
       # @return [Yast::Term] zones select list
       def zones_widget
         ComboBox(Id(:zones), Opt(:notify, :hstretch), label)
@@ -140,7 +134,7 @@ module Y2Network
       # @return [Array <Array <String, String>>] list of names an description of
       # available zones
       def firewall_zones
-        zones = [[nil, no_zone_label], ["", default_label]]
+        zones = [["", default_label]]
         firewalld.zones.each { |z| zones << [z.name, z.name] }
         zones
       end
