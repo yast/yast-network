@@ -60,6 +60,8 @@ module Y2Network
       attr_accessor :ethtool_options
       # @return [String] assigned firewall zone to interface
       attr_accessor :firewall_zone
+      # @return [String] interface's hostname
+      attr_accessor :hostname
 
       # Constructor
       def initialize
@@ -78,7 +80,7 @@ module Y2Network
       #                   false otherwise
       def ==(other)
         [:name, :interface, :bootproto, :ip, :ip_aliases, :mtu, :startmode,
-         :description, :lladdress, :ethtool_options, :firewall_zone].all? do |method|
+         :description, :lladdress, :ethtool_options, :firewall_zone, :hostname].all? do |method|
           public_send(method) == other.public_send(method)
         end
       end
@@ -164,6 +166,13 @@ module Y2Network
             config.ports.include?(name)
           end
         end
+      end
+
+      # Returns whether the connection is configured as static
+      #
+      # @return [Boolean] return true if the connection is static; false otherwise
+      def static?
+        bootproto == BootProtocol::STATIC
       end
 
     private

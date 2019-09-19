@@ -61,5 +61,39 @@ describe Y2Network::Sysconfig::ConnectionConfigReaders::Ethernet do
         expect(eth.ip.address).to eq(Y2Network::IPAddress.from_string("10.0.0.1/8"))
       end
     end
+
+    context "when the configuration is static" do
+      before do
+        Yast::Host.main
+        Yast::Host.Read
+      end
+
+      context "and a hostname is specified" do
+        it "sets the hostname" do
+          eth = handler.connection_config
+          expect(eth.hostname).to eq("foo")
+        end
+      end
+
+      context "and a hostname is not specified" do
+        let(:interface_name) { "eth1" }
+
+        it "does not set the hostname" do
+          eth = handler.connection_config
+          expect(eth.hostname).to be_nil
+        end
+      end
+    end
+
+    context "when the configuration is not static" do
+      let(:interface_name) { "eth4" }
+
+      before { Yast::Host.Read }
+
+      it "does not set the hostname" do
+        eth = handler.connection_config
+        expect(eth.hostname).to be_nil
+      end
+    end
   end
 end

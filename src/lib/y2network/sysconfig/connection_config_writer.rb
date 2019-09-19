@@ -18,9 +18,13 @@
 # find current contact information at www.suse.com.
 
 require "y2network/sysconfig/interface_file"
+require "y2network/sysconfig/routes_file"
+
+Yast.import "Host"
 
 module Y2Network
   module Sysconfig
+    # This class is responsible for writing interfaces changes
     class ConnectionConfigWriter
       include Yast::Logger
 
@@ -38,10 +42,11 @@ module Y2Network
 
       # Removes connection config from the underlying system
       #
-      # @param name [String] Connection name to remove
-      def remove(name)
-        ifcfg = Y2Network::Sysconfig::InterfaceFile.find(name)
+      # @param conn [Y2Network::Conn] Connection name to remove
+      def remove(conn)
+        ifcfg = Y2Network::Sysconfig::InterfaceFile.find(conn.interface)
         ifcfg && ifcfg.remove
+        Yast::Host.remove_ip(conn.ip.address.address.to_s) if conn.ip
       end
 
     private

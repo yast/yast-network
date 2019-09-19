@@ -65,6 +65,7 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Ethernet do
       c.ip = ip
       c.ip_aliases = [ip_alias]
       c.startmode = Y2Network::Startmode.create("auto")
+      c.hostname = "foo"
     end
   end
 
@@ -100,6 +101,11 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Ethernet do
         expect(file.ipaddrs[""]).to be_nil
         expect(file.ipaddrs["_0"]).to eq(ip_alias.address)
       end
+    end
+
+    it "sets the hostname" do
+      expect(Yast::Host).to receive(:Update).with("", "foo", ip.address.address.to_s)
+      handler.write(conn)
     end
   end
 end
