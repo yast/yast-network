@@ -74,6 +74,13 @@ describe Y2Network::ConnectionConfigsCollection do
     end
   end
 
+  describe "#select" do
+    it "returns a collection containing those configs which satisfy the block" do
+      selected = collection.select { |c| c.name == "wlan0" }
+      expect(selected).to eq(described_class.new([wlan0]))
+    end
+  end
+
   describe "#remove" do
     context "when a connection configuration having the same name exists" do
       it "removes the configuration from the collection" do

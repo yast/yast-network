@@ -85,6 +85,14 @@ module Y2Network
       connection_configs.reject! { |c| c.name == name }
     end
 
+    # Selects connections which satisfy the given +block+
+    #
+    # @param block [Proc]
+    # @return [ConnectionConfigsCollection] Collection including the selected connections
+    def select(&block)
+      self.class.new(to_a.select(&block))
+    end
+
     # Compares ConnectionConfigsCollection
     #
     # @return [Boolean] true when both collections contain only equal connections,
