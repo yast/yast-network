@@ -183,7 +183,8 @@ module Y2Network
         # if interface is not there
         return true unless interface
 
-        interface.hardware.hotplug
+        false
+        # TODO: interface is just string so interface.hardware.hotplug does not work
       end
     end
   end

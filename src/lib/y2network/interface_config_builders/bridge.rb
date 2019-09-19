@@ -54,9 +54,9 @@ module Y2Network
         ports.each do |port|
           interface = yast_config.interfaces.by_name(port)
           connection = yast_config.connections.by_name(port)
-          next unless connection
-          next if connection.startmode.name == "none"
+          next if connection && connection.startmode.name == "none"
           builder = InterfaceConfigBuilder.for(interface.type, config: connection)
+          builder.name = interface.name
           builder.configure_as_slave
           builder.save
         end

@@ -23,6 +23,9 @@ module Y2Network
   module ConnectionConfig
     # Configuration for dummy connections
     class Dummy < Base
+      def virtual?
+        true
+      end
     end
   end
 end
