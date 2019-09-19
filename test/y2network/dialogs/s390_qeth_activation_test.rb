@@ -17,13 +17,15 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "yast/rake"
+require_relative "../../test_helper"
+require "cwm/rspec"
 
-Yast::Tasks.configuration do |conf|
-  conf.skip_license_check << /doc\//
-  conf.skip_license_check << /test\/data/
-  conf.skip_license_check << /\.desktop$/
-  conf.skip_license_check << /\.rnc$/
-  # ensure we are not getting worse with documentation
-  conf.documentation_minimal = 61 if conf.respond_to?(:documentation_minimal=)
+require "y2network/dialogs/s390_qeth_activation"
+require "y2network/interface_config_builder"
+
+describe Y2Network::Dialogs::S390QethActivation do
+  let(:builder) { Y2Network::InterfaceConfigBuilder.for("qeth") }
+  subject { described_class.for(builder) }
+
+  include_examples "CWM::Dialog"
 end

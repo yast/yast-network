@@ -289,4 +289,13 @@ describe Y2Network::InterfaceConfigBuilder do
       end
     end
   end
+
+  describe "#hwinfo_from" do
+    let(:hwinfo) { { "dev_name" => "", "busid" => "0.0.0700" } }
+
+    it "overrides the builder hwinfo with the given hardware info" do
+      config_builder.hwinfo_from(hwinfo)
+      expect(config_builder.hwinfo.busid).to eq("0.0.0700")
+    end
+  end
 end

@@ -17,13 +17,26 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "yast/rake"
+require "yast"
+require "y2network/interface_config_builder"
 
-Yast::Tasks.configuration do |conf|
-  conf.skip_license_check << /doc\//
-  conf.skip_license_check << /test\/data/
-  conf.skip_license_check << /\.desktop$/
-  conf.skip_license_check << /\.rnc$/
-  # ensure we are not getting worse with documentation
-  conf.documentation_minimal = 61 if conf.respond_to?(:documentation_minimal=)
+Yast.import "LanItems"
+Yast.import "NetworkInterfaces"
+
+module Y2Network
+  module InterfaceConfigBuilders
+    class Lcs < InterfaceConfigBuilder
+      extend Forwardable
+
+      def initialize(config: nil)
+        super(type: InterfaceType::LCS, config: config)
+      end
+
+      def_delegators :@connection_config,
+        :read_channel, :read_channel=,
+        :write_channel, :write_channel=,
+        :protocol, :protocol=,
+        :timeout, :timeout=
+    end
+  end
 end

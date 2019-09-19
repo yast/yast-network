@@ -378,11 +378,18 @@ module Y2Network
       self.aliases = []
     end
 
-  private
-
-    def hwinfo
-      @hwinfo ||= Hwinfo.new(name: name)
+    # @param info [Hash<String,Object>] Hardware information
+    # @return [Hwinfo]
+    def hwinfo_from(info)
+      @hwinfo = Hwinfo.new(info)
     end
+
+    # @return [Hwinfo]
+    def hwinfo
+      @hwinfo ||= Hwinfo.for(name)
+    end
+
+  private
 
     def ip_config_default
       return @connection_config.ip if @connection_config.ip
@@ -395,7 +402,7 @@ module Y2Network
     def connection_config_klass(type)
       ConnectionConfig.const_get(type.class_name)
     rescue NameError
-      log.error "Could not find a class to handle '#{type.name}' connections"
+      log.error "Could not find a class to handle '#{type.class_name}' connections"
       ConnectionConfig::Base
     end
 

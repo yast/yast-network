@@ -17,13 +17,22 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "yast/rake"
+require "y2network/s390_device_activators/ctc"
 
-Yast::Tasks.configuration do |conf|
-  conf.skip_license_check << /doc\//
-  conf.skip_license_check << /test\/data/
-  conf.skip_license_check << /\.desktop$/
-  conf.skip_license_check << /\.rnc$/
-  # ensure we are not getting worse with documentation
-  conf.documentation_minimal = 61 if conf.respond_to?(:documentation_minimal=)
+module Y2Network
+  module S390DeviceActivators
+    # The Lcs device activator is based in Ctc as both have two group device
+    # channels (read and write).
+    #
+    # In the past they shared also the configure command 'ctc_configure' and
+    # the 'protocol' attribute was needed, but as the configuration has
+    # been moved to 'chzdev' command it is not the case anymore.
+    class Lcs < Ctc
+      def configure_attributes
+        return [] unless builder.timeout
+
+        ["lancmd_timeout=#{builder.timeout}"]
+      end
+    end
+  end
 end

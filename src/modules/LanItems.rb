@@ -98,7 +98,6 @@ module Yast
       @Requires = []
 
       # s390 options
-      @qeth_portname = ""
       @qeth_portnumber = ""
       # * ctc as PROTOCOL (or ctc mode, number in { 0, 1, .., 4 }, default: 0)
       @chan_mode = "0"
@@ -961,7 +960,6 @@ module Yast
         @type = dev_attrs["type"] || ""
         @qeth_chanids = dev_attrs["chanids"] || ""
         @qeth_layer2 = dev_attrs.fetch("layer2", false)
-        @qeth_portname = dev_attrs["portname"] || ""
         @chan_mode = dev_attrs["protocol"] || ""
         @iucv_user = dev_attrs["router"] || ""
       end
@@ -978,11 +976,6 @@ module Yast
         else
           ""
         end
-        @portname_param = if Ops.greater_than(Builtins.size(@qeth_portname), 0)
-          Builtins.sformat("-p %1", @qeth_portname.shellescape)
-        else
-          ""
-        end
         @options_param = if Ops.greater_than(Builtins.size(@qeth_options), 0)
           Builtins.sformat("-o %1", @qeth_options.shellescape)
         else
@@ -992,7 +985,6 @@ module Yast
           "/sbin/qeth_configure %1 %2 %3 %4 %5 1",
           @options_param,
           @qeth_layer2 ? "-l" : "",
-          @portname_param,
           @portnumber_param,
           @qeth_chanids
         )
@@ -1386,7 +1378,6 @@ module Yast
     # @attribute Requires
     publish_variable :Requires, "list <string>"
     publish_variable :set_default_route, "boolean"
-    publish_variable :qeth_portname, "string"
     publish_variable :qeth_portnumber, "string"
     publish_variable :chan_mode, "string"
     publish_variable :qeth_options, "string"

@@ -47,20 +47,26 @@ module Y2Network
       attr_accessor :data_channel
       # @return [Boolean] whether layer2 is enabled or not
       attr_accessor :layer2
+      # @return [Boolean] whether ipa takeover is enabled or not
+      attr_accessor :ipa_takeover
       # @return [Integer] port number (0 or 1)
       attr_accessor :port_number
+      # @return [String] configuration extra attributes
+      attr_accessor :attributes
 
       # Constructor
       def initialize
         super()
         @layer2 = false
         @port_number = 0
+        @ipa_takeover = false
       end
 
       def ==(other)
         return false unless super
 
-        [:read_channel, :write_channel, :data_channel, :layer2, :port_number].all? do |method|
+        [:read_channel, :write_channel, :data_channel, :layer2,
+         :port_number, :ipa_takeover, :attributes].all? do |method|
           public_send(method) == other.public_send(method)
         end
       end

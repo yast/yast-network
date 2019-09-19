@@ -43,16 +43,6 @@ module Y2Network
       attr_accessor :read_channel
       # @return [String] write device bus id
       attr_accessor :write_channel
-      # @return [Integer] connection protocol (0, 1, 3, or 4)
-      #   0 Compatibility with peers other than OS/390®.
-      #   1 Enhanced package checking for Linux peers.
-      #   3 For compatibility with OS/390 or z/OS peers.
-      #   4 For MPC connections to VTAM on traditional mainframe operating systems.
-      # @see https://github.com/SUSE/s390-tools/blob/master/ctc_configure#L16
-      #
-      # # FIXME: At lease in linuxrc the protocol is not needed anymore for lcs
-      # interfaces (once replaced ctc_configure by chzdev)
-      attr_accessor :protocol
       # The time the driver wait for a reply issuing a LAN command.
       #
       # @return [Integer] lcs lancmd timeout (default 5s)
@@ -62,7 +52,6 @@ module Y2Network
       # Constructor
       def initialize
         super()
-        @protocol = 0
         @timeout = 5
       end
 

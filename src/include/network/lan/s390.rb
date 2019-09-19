@@ -58,7 +58,6 @@ module Yast
     #
     # Currently loaded attributes are:
     # QETH_LAYER2      yes/no string.
-    # QETH_PORTNAME    portname or empty string
     # QETH_PORTNUMBER  portnumber or empty string
     # QETH_CHANIDS     read/write/control channel ids separated by space (compatibility requirement)
     #
@@ -73,9 +72,6 @@ module Yast
 
       qeth_layer2 = s390_ReadQethAttribute(devname, "layer2") == "1" ? "yes" : "no"
       result = Builtins.add(result, "QETH_LAYER2", qeth_layer2)
-
-      qeth_portname = s390_ReadQethAttribute(devname, "portname")
-      result = Builtins.add(result, "QETH_PORTNAME", qeth_portname)
 
       qeth_portno = s390_ReadQethAttribute(devname, "portno")
       result = Builtins.add(result, "QETH_PORTNUMBER", qeth_portno)

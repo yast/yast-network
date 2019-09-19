@@ -67,6 +67,9 @@ module Y2Network
       def write_interface_changes(config, old_config)
         # Write ifroute files
         config.interfaces.each do |dev|
+          # S390 devices that have not been activated yet will be part of the
+          # collection but with an empty name.
+          next if dev.name.empty?
           routes = find_routes_for(dev, config.routing.routes)
           file = routes_file_for(dev)
 

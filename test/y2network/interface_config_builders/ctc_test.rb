@@ -1,3 +1,5 @@
+#!/usr/bin/env rspec
+
 # Copyright (c) [2019] SUSE LLC
 #
 # All Rights Reserved.
@@ -17,13 +19,22 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "yast/rake"
+require_relative "../../test_helper"
 
-Yast::Tasks.configuration do |conf|
-  conf.skip_license_check << /doc\//
-  conf.skip_license_check << /test\/data/
-  conf.skip_license_check << /\.desktop$/
-  conf.skip_license_check << /\.rnc$/
-  # ensure we are not getting worse with documentation
-  conf.documentation_minimal = 61 if conf.respond_to?(:documentation_minimal=)
+require "yast"
+require "y2network/interface_config_builders/ctc"
+require "y2network/interface_type"
+
+describe Y2Network::InterfaceConfigBuilders::Ctc do
+  subject(:builder) do
+    res = Y2Network::InterfaceConfigBuilders::Ctc.new
+    res.name = "ctc0"
+    res
+  end
+
+  describe "#type" do
+    it "returns ctc type" do
+      expect(subject.type).to eq Y2Network::InterfaceType::CTC
+    end
+  end
 end
