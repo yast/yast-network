@@ -40,6 +40,8 @@ module Y2Network
       def handle
         config = Yast::Lan.yast_config
         connection_config = config.connections.by_name(@table.value)
+        return nil unless connection_config # unconfigured physical device. Delete do nothing
+
         if connection_config.startmode.name == "nfsroot"
           if !Yast::Popup.YesNoHeadline(
             Label.WarningMsg,
