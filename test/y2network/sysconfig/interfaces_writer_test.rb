@@ -69,13 +69,6 @@ describe Y2Network::Sysconfig::InterfacesWriter do
         eth0.rename("eth1", renaming_mechanism)
       end
 
-      it "removes the old configuration files" do
-        ifcfg_path = File.join(scr_root, "etc", "sysconfig", "network", "ifcfg-eth0")
-        expect(File).to exist(ifcfg_path)
-        subject.write(interfaces)
-        expect(File).to_not exist(ifcfg_path)
-      end
-
       it "sets the interface down" do
         expect(Yast::Execute).to receive(:on_target).with("/sbin/ifdown", "eth0")
         subject.write(interfaces)
