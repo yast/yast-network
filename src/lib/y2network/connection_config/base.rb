@@ -90,6 +90,7 @@ module Y2Network
       # @return [Boolean] true when both connections are same
       #                   false otherwise
       def ==(other)
+        return false if other.nil?
         [:name, :interface, :bootproto, :ip, :ip_aliases, :mtu, :startmode,
          :description, :lladdress, :ethtool_options, :firewall_zone, :hostname].all? do |method|
           public_send(method) == other.public_send(method)
