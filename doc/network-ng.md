@@ -30,15 +30,22 @@ to support. At this point of time, only `Sysconfig` and `Autoinst` are supported
 ### The Configuration Classes
 
 {Y2Network::Config} offers and API to deal with network configuration, but it collaborates with
-other classes.
+other classes. These are the most relevant ones:
 
 * {Y2Network::InterfacesCollection}: this class holds a list of interfaces and offers a query API
   (e.g., find all the ethernet interfaces).
-* {Y2Network::Interface}: keeps interfaces information. There are three kind of interfaces at this
-  point of time: physical, virtual and fake (physical but not present) ones.
+* {Y2Network::Interface}: keeps interfaces information. There are one kind of interfaces at this
+  point of time: physical and virtual ones.
+* {Y2Network::ConnectionConfigsCollection}: this class holds a list of connection configurations
+  and offers a query API.
 * {Y2Network::ConnectionConfig}: describes a configuration that can be applied to an interface.
   Currently it is bound to an interface name, but we plan to provide more advanced matchers.
 * {Y2Network::Routing}: holds routing information, including IP forwarding settings, routing tables, etc.
+* {Y2Network::DNS}: holds the DNS configuration, including nameservers, search domains, etc.
+* {Y2Network::UdevRule} and {Y2Network::UdevRulePart}: these classes offer and API to handle
+  udev rules which are involved in interface renaming and driver assignment.
+* {Y2Network::Hwinfo} and {Y2Network::HardwareWrapper}: API to ask for hardware information.
+* {Y2Network::Driver}: offers information about available drivers and their options.
 
 ### Multi-Backend Support
 
@@ -85,26 +92,32 @@ to read the configuration for a connection (e.g., `ifcfg-eth0`, `ifcfg-wlan0`, e
 in a set of smaller classes (one for each time of connection) under
 {Y2Network::Sysconfig::ConnectionConfigReaders}.
 
-{Y2Network::Sysconfig::DNSWriter} and {Y2Network::Sysconfig::ConnectionConfigWriter}, including
-smaller classes under {Y2Network::Sysconfig::ConnectionConfigWriters}, are involved in writing the
-configuration. In this case, it does not exist a `InterfacesWriter` class, because when it comes to
-interfaces the configuration is handled through connection configuration files.
+{Y2Network::InterfacesWriter, }{Y2Network::Sysconfig::DNSWriter} and
+{Y2Network::Sysconfig::ConnectionConfigWriter}, including smaller classes under
+{Y2Network::Sysconfig::ConnectionConfigWriters}, are involved in writing the configuration.
 
 Last but not least, there are additional classes like {Y2Network::Sysconfig::RoutesFile} and
-{Y2Network::Sysconfig::InterfaceFile} which abstract the details of reading/writing `ifcfg` files.
+{Y2Network::Sysconfig::InterfaceFile} which abstract the details of reading/writing `ifroute` and
+`ifcfg` files.
 
 #### AutoYaST
 
 AutoYaST is a special case in the sense that it reads the information from a profile, instead of
 using the running system as reference. Additionally, it does not implement a writer because the
-configuration will be written using a different backend (like sysconfig).
+configuration will be written using a different backend (like `sysconfig`).
 
     src/lib/y2network/autoinst/
     ├── config_reader.rb
     ├── dns_reader.rb
-    └── routing_reader.rb
+    ├── interfaces_reader.rb
+    ├── routing_reader.rb
+    ├── type_detector.rb
+    └── udev_rules_reader.rb
 
-For the time being, it only implements support to read DNS and routing information.
+Another important aspect of the AutoYaST support is that, instead of using a big `Hash`, the
+information included in the profile is handled through a set of classes in
+{Y2Network::AutoinstProfile} (see {Y2Network::AutoinstProfile::NetworkingSection}). However, there
+is some preprocessing that is still done using the original `Hash`.
 
 ### Accessing the Configuration
 
@@ -140,7 +153,7 @@ namespace](https://github.com/yast/yast-network/tree/843f75bfdb71d4026b3f97facf1
 
 ### Widgets
 
-The user interaction is driven by a set of sequences, which determine which dialogs are shown to the
+The user interaction is driven by a set of sequences, which determines the dialogs are shown to the
 user. Each of those dialogs contain a set of widgets, usually grouped in tabs. The content of the
 dialog depends on the interface type.
 
@@ -152,27 +165,3 @@ Below you can find some pointers to relevant sequences, dialogs and widgets:
   * [Dialogs::AddInterface](https://github.com/yast/yast-network/blob/358bcd13b4e92e7c4e9c0e477c83196ca67b578e/src/lib/y2network/dialogs/add_interface.rb)
   * [Dialogs::EditInterface](https://github.com/yast/yast-network/blob/358bcd13b4e92e7c4e9c0e477c83196ca67b578e/src/lib/y2network/dialogs/edit_interface.rb)
 * [Y2Network::Widgets](https://github.com/yast/yast-network/tree/358bcd13b4e92e7c4e9c0e477c83196ca67b578e/src/lib/y2network/widgets)
-
-## Current Status
-
-### Reading/Writing Interfaces
-
-| Interface type  | read | write |
-|-----------------|------|-------|
-| Ethernet        |  ✓  |   ✓   |
-| Wireless        |  ✓  |   ✓   |
-| InfiniBand      |  ⌛   |       |
-| Bridge          |  ⌛   |       |
-| Bonding         |      |       |
-| VLAN            |      |       |
-| TAP             |      |       |
-| TUN             |      |       |
-| USB             |      |       |
-| Dummy           |      |       |
-| s390 types      |      |       |
-
-## (Short Term) Plan
-
-- [ ] Finish reading/writing interfaces
-- [ ] Move missing UI logic to interface configuration builders
-- [ ] Replace LanItems with the new data model
