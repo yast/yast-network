@@ -45,6 +45,7 @@ other classes. These are the most relevant ones:
 * {Y2Network::UdevRule} and {Y2Network::UdevRulePart}: these classes offer and API to handle
   udev rules which are involved in interface renaming and driver assignment.
 * {Y2Network::Hwinfo} and {Y2Network::HardwareWrapper}: API to ask for hardware information.
+* {Y2Network::Driver}: offers information about available drivers and their options.
 
 ### Multi-Backend Support
 
