@@ -52,6 +52,12 @@ describe Y2Network::ConnectionConfigsCollection do
     end
   end
 
+  describe "#by_ids" do
+    it "retuns the connection configurations with the given IDs" do
+      expect(collection.by_ids(eth0.id)).to eq(described_class.new([eth0]))
+    end
+  end
+
   describe "#add_or_update" do
     let(:eth0_1) { Y2Network::ConnectionConfig::Ethernet.new.tap { |c| c.name = "eth0" } }
 
@@ -71,6 +77,13 @@ describe Y2Network::ConnectionConfigsCollection do
         expect(collection.by_name("wlan1")).to be(wlan1)
         expect(collection.size).to eq(3)
       end
+    end
+  end
+
+  describe "#select" do
+    it "returns a collection containing those configs which satisfy the block" do
+      selected = collection.select { |c| c.name == "wlan0" }
+      expect(selected).to eq(described_class.new([wlan0]))
     end
   end
 

@@ -51,6 +51,7 @@ module Y2Network
           file.zone = conn.firewall_zone
           add_ips(conn)
           update_file(conn)
+          add_hostname(conn) if conn.bootproto.static?
         end
 
       private
@@ -81,6 +82,14 @@ module Y2Network
           file.labels[ip.id] = ip.label
           file.remote_ipaddrs[ip.id] = ip.remote_address
           file.broadcasts[ip.id] = ip.broadcast
+        end
+
+        # Adds the hostname to /etc/hosts
+        #
+        # @param conn [Y2Network::ConnectionConfig::Base] Connection to take settings from
+        def add_hostname(conn)
+          return unless conn.hostname && conn.ip
+          Yast::Host.Update("", conn.hostname, conn.ip.address.address.to_s)
         end
       end
     end

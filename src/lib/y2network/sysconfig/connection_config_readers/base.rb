@@ -22,6 +22,8 @@ require "y2network/ip_address"
 require "y2network/boot_protocol"
 require "y2network/startmode"
 
+Yast.import "Host"
+
 module Y2Network
   module Sysconfig
     module ConnectionConfigReaders
@@ -56,6 +58,7 @@ module Y2Network
             conn.startmode.priority = file.ifplugd_priority if conn.startmode.name == "ifplugd"
             conn.ethtool_options = file.ethtool_options
             conn.firewall_zone = file.zone
+            conn.hostname = hostname(conn)
             update_connection_config(conn)
           end
         end
@@ -111,6 +114,15 @@ module Y2Network
           ipaddr.netmask = netmask if netmask
           ipaddr.prefix = prefix if prefix
           ipaddr
+        end
+
+        # Returns the hostname for the given connection
+        #
+        # @return [String,nil]
+        def hostname(conn)
+          return nil unless conn.ip
+          Yast::Host.Read
+          Yast::Host.names(conn.ip.address.address.to_s).first
         end
       end
     end

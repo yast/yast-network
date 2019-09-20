@@ -29,6 +29,10 @@ module Y2Network
     # It holds a configuration (IP addresses, MTU, WIFI settings, etc.) that can be applied to an
     # interface. By comparison, it is the equivalent of the "Connection" concept in NetworkManager.
     # When it comes to sysconfig, a "ConnectionConfig" is defined using a "ifcfg-*" file.
+    #
+    # Additionally, each connection config gets an internal ID which makes easier to track changes
+    # between two different {Y2Network::Config} objects. When they are copied, the same IDs are
+    # kept, so it is easy to find out which connections have been added, removed or simply changed.
     class Base
       # A connection could belongs to a specific interface or not. In case of
       # no specific interface then it could be activated by the first available
@@ -60,9 +64,18 @@ module Y2Network
       attr_accessor :ethtool_options
       # @return [String] assigned firewall zone to interface
       attr_accessor :firewall_zone
+      # @return [String] interface's hostname
+      attr_accessor :hostname
+
+      # @return [String] Connection identifier
+      attr_reader :id
+
+      # @return [Integer] Connection identifier counter
+      @@last_id = 0
 
       # Constructor
       def initialize
+        @id = @@last_id += 1
         @ip_aliases = []
         @bootproto = BootProtocol::STATIC # TODO: maybe do test query if physical interface is attached?
         @ip = IPConfig.new(IPAddress.from_string("0.0.0.0/32"))
@@ -77,8 +90,9 @@ module Y2Network
       # @return [Boolean] true when both connections are same
       #                   false otherwise
       def ==(other)
+        return false if self.class != other.class
         [:name, :interface, :bootproto, :ip, :ip_aliases, :mtu, :startmode,
-         :description, :lladdress, :ethtool_options, :firewall_zone].all? do |method|
+         :description, :lladdress, :ethtool_options, :firewall_zone, :hostname].all? do |method|
           public_send(method) == other.public_send(method)
         end
       end

@@ -28,6 +28,7 @@ require "y2network/sysconfig/interfaces_reader"
 require "y2network/interfaces_collection"
 
 Yast.import "NetworkInterfaces"
+Yast.import "Host"
 
 module Y2Network
   module Sysconfig
@@ -40,6 +41,9 @@ module Y2Network
 
       # @return [Y2Network::Config] Network configuration
       def config
+        # NOTE: This code might be moved outside of the Sysconfig namespace, as it is generic.
+        Yast::Host.Read
+
         routing_tables = find_routing_tables(interfaces_reader.interfaces)
         routing = Routing.new(
           tables: routing_tables, forward_ipv4: forward_ipv4?, forward_ipv6: forward_ipv6?

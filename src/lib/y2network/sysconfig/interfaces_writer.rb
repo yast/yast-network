@@ -101,13 +101,7 @@ module Y2Network
       #
       # @param interfaces [InterfacesCollection] Interfaces
       def clean_up_old_interfaces(interfaces)
-        interfaces.to_a.select(&:old_name).each do |iface|
-          set_interface_down(iface.old_name)
-          ifcfg = Y2Network::Sysconfig::InterfaceFile.find(iface.old_name)
-          ifcfg && ifcfg.remove
-          ifroute = Y2Network::Sysconfig::RoutesFile.find(iface.old_name)
-          ifroute && ifroute.remove
-        end
+        interfaces.to_a.select(&:old_name).each { |i| set_interface_down(i.old_name) }
       end
 
       # Sets the interface down

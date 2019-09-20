@@ -36,7 +36,8 @@ module Y2Network
     attr_reader :connection_configs
     alias_method :to_a, :connection_configs
 
-    def_delegators :@connection_configs, :each, :find, :push, :<<, :reject!, :map, :flat_map, :any?, :size
+    def_delegators :@connection_configs, :each, :find, :push, :<<, :reject!, :map, :flat_map,
+      :any?, :size, :first
 
     # Constructor
     #
@@ -61,6 +62,14 @@ module Y2Network
       connection_configs.select { |c| c.interface == interface_name }
     end
 
+    # Returns connections with any of the given internal IDs
+    #
+    # @param ids [Array<Integer>] Internal IDs
+    # @return [Array<ConnectionConfig::Base>] Connection config with the given IDs
+    def by_ids(*ids)
+      select { |c| ids.include?(c.id) }
+    end
+
     # Adds or updates a connection configuration
     #
     # @note It uses the name to do the matching.
@@ -83,6 +92,14 @@ module Y2Network
     def remove(connection_config)
       name = connection_config.respond_to?(:name) ? connection_config.name : connection_config
       connection_configs.reject! { |c| c.name == name }
+    end
+
+    # Selects connections which satisfy the given +block+
+    #
+    # @param block [Proc]
+    # @return [ConnectionConfigsCollection] Collection including the selected connections
+    def select(&block)
+      self.class.new(to_a.select(&block))
     end
 
     # Compares ConnectionConfigsCollection

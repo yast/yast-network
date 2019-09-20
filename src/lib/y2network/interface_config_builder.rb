@@ -130,9 +130,6 @@ module Y2Network
       yast_config.rename_interface(@old_name, name, renaming_mechanism) if renamed_interface?
       yast_config.add_or_update_connection_config(@connection_config)
 
-      # write to ifcfg always and to firewalld only when available
-      save_hostname
-
       nil
     end
 
@@ -321,28 +318,12 @@ module Y2Network
 
     # @return [String]
     def hostname
-      return @hostname if @hostname
-      original_hostname
+      @connection_config.hostname || ""
     end
 
     # @param [String] value
     def hostname=(value)
-      @hostname = value
-    end
-
-    # Saves the hostname
-    #
-    # The hostname entry must be updated when the IP or the hostname change. Moreover, it must be
-    # removed when the hostname is empty or when the boot protocol is not STATIC (as there is no IP
-    # to associate with the name).
-    def save_hostname
-      if !required_ip_config?
-        Yast::Host.remove_ip(@original_ip_config.address.to_s)
-        return
-      end
-
-      return if @original_ip_config == connection_config.ip && original_hostname == hostname
-      Yast::Host.Update(original_hostname, hostname, @connection_config.ip.address.to_s)
+      @connection_config.hostname = value
     end
 
     # sets remote ip for ptp connections
@@ -443,15 +424,6 @@ module Y2Network
     # @return [Boolean]
     def required_ip_config?
       boot_protocol == BootProtocol::STATIC
-    end
-
-    # Returns the original hostname
-    #
-    # @return [String] Original hostname
-    def original_hostname
-      return @original_hostname if @original_hostname
-      names = Yast::Host.names(@original_ip_config.address.to_s)
-      @original_hostname = names.first || ""
     end
 
     # Determines whether the driver should be set automatically

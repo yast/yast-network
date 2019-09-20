@@ -33,17 +33,28 @@ describe Y2Network::Sysconfig::ConfigWriter do
   subject(:writer) { described_class.new }
 
   describe "#write" do
-    let(:config) do
+    before do
+      allow(Yast::Host).to receive(:Write)
+    end
+
+    let(:old_config) do
       Y2Network::Config.new(
         interfaces:  Y2Network::InterfacesCollection.new([eth0]),
-        connections: Y2Network::ConnectionConfigsCollection.new([eth0_conn]),
-        routing:     routing,
-        source:      :sysconfig
+        connections: Y2Network::ConnectionConfigsCollection.new([old_eth0_conn]),
+        source:      :testing
       )
     end
-    let(:old_config) { Y2Network::Config.new(source: :testing) }
+
+    let(:config) do
+      old_config.copy.tap do |cfg|
+        cfg.add_or_update_connection_config(eth0_conn)
+        cfg.routing = routing
+      end
+    end
     let(:ip) { Y2Network::ConnectionConfig::IPConfig.new(address: IPAddr.new("192.168.122.2")) }
     let(:eth0) { Y2Network::Interface.new("eth0") }
+    let(:old_eth0_conn) { eth0_conn.clone }
+
     let(:eth0_conn) do
       Y2Network::ConnectionConfig::Ethernet.new.tap do |conn|
         conn.interface = "eth0"
@@ -159,11 +170,11 @@ describe Y2Network::Sysconfig::ConfigWriter do
 
     context "when a connection is deleted" do
       let(:config) do
-        Y2Network::Config.new(
-          interfaces:  Y2Network::InterfacesCollection.new([eth0]),
-          connections: Y2Network::ConnectionConfigsCollection.new([]),
-          source:      :testing
-        )
+        old_config.copy.tap do |cfg|
+          cfg.interfaces = Y2Network::InterfacesCollection.new([eth0])
+          cfg.connections = Y2Network::ConnectionConfigsCollection.new([])
+          cfg.source = :testing
+        end
       end
 
       let(:old_config) do
@@ -174,23 +185,19 @@ describe Y2Network::Sysconfig::ConfigWriter do
         )
       end
 
-      let(:ifcfg_eth0) do
-        instance_double(Y2Network::Sysconfig::InterfaceFile).as_null_object
+      let(:conn_writer) { instance_double(Y2Network::Sysconfig::ConnectionConfigWriter) }
+      let(:ifroute_eth1) do
+        instance_double(Y2Network::Sysconfig::RoutesFile, save: nil, :routes= => nil, remove: nil)
       end
 
       before do
-        allow(Y2Network::Sysconfig::InterfaceFile).to receive(:find)
-          .with("eth0")
-          .and_return(ifcfg_eth0)
-
-        # unconfiguring device will also remove its routes file
-        allow(Y2Network::Sysconfig::RoutesFile).to receive(:new)
-          .with("/etc/sysconfig/network/ifroute-eth0")
-          .and_return(instance_double(Y2Network::Sysconfig::RoutesFile).as_null_object)
+        allow(Y2Network::Sysconfig::ConnectionConfigWriter).to receive(:new)
+          .and_return(conn_writer)
+        allow(Y2Network::Sysconfig::RoutesFile).to receive(:new).and_return(ifroute_eth1)
       end
 
-      it "removes the ifcfg file" do
-        expect(ifcfg_eth0).to receive(:remove)
+      it "removes the connection" do
+        expect(conn_writer).to receive(:remove).with(eth0_conn)
         writer.write(config, old_config)
       end
     end
@@ -235,12 +242,18 @@ describe Y2Network::Sysconfig::ConfigWriter do
     end
 
     it "writes connections configurations" do
-      expect_any_instance_of(Y2Network::Sysconfig::ConnectionConfigWriter).to receive(:write).with(eth0_conn)
+      expect_any_instance_of(Y2Network::Sysconfig::ConnectionConfigWriter)
+        .to receive(:write).with(eth0_conn, old_eth0_conn)
       writer.write(config, old_config)
     end
 
     it "writes interfaces configurations" do
       expect(interfaces_writer).to receive(:write).with(config.interfaces)
+      writer.write(config)
+    end
+
+    it "writes /etc/hosts changes" do
+      expect(Yast::Host).to receive(:Write).with(gui: false)
       writer.write(config)
     end
   end

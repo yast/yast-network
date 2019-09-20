@@ -27,25 +27,38 @@ require "y2network/interface_type"
 describe Y2Network::Sysconfig::ConnectionConfigWriter do
   subject(:writer) { described_class.new }
 
+  let(:conn) do
+    instance_double(
+      Y2Network::ConnectionConfig::Ethernet,
+      interface: "eth0",
+      type:      Y2Network::InterfaceType::ETHERNET,
+      ip:        ip_config
+    )
+  end
+
+  let(:old_conn) do
+    instance_double(
+      Y2Network::ConnectionConfig::Ethernet,
+      interface: "eth0",
+      type:      Y2Network::InterfaceType::ETHERNET
+    )
+  end
+
+  let(:ip_config) do
+    Y2Network::ConnectionConfig::IPConfig.new(Y2Network::IPAddress.from_string("10.100.0.1/24"))
+  end
+
+  let(:file) do
+    instance_double(
+      Y2Network::Sysconfig::InterfaceFile, save: nil, clean: nil, remove: nil
+    )
+  end
+
   describe "#write" do
     let(:handler) do
       instance_double(
         Y2Network::Sysconfig::ConnectionConfigWriters::Ethernet,
         write: nil
-      )
-    end
-
-    let(:conn) do
-      instance_double(
-        Y2Network::ConnectionConfig::Ethernet,
-        interface: "eth0",
-        type:      Y2Network::InterfaceType::ETHERNET
-      )
-    end
-
-    let(:file) do
-      instance_double(
-        Y2Network::Sysconfig::InterfaceFile, save: nil, clean: nil
       )
     end
 
@@ -66,6 +79,41 @@ describe Y2Network::Sysconfig::ConnectionConfigWriter do
       expect(file).to receive(:clean)
       expect(file).to receive(:save)
       writer.write(conn)
+    end
+
+    it "removes the old configuration if given" do
+      expect(writer).to receive(:remove).with(old_conn)
+      writer.write(conn, old_conn)
+    end
+
+    it "does nothing if the connection has not changed" do
+      expect(file).to_not receive(:save)
+      writer.write(conn, conn)
+    end
+  end
+
+  describe "#remove" do
+    before do
+      allow(Y2Network::Sysconfig::InterfaceFile).to receive(:find).and_return(file)
+    end
+
+    it "removes the configuration file" do
+      expect(file).to receive(:remove)
+      writer.remove(conn)
+    end
+
+    it "removes the hostname" do
+      expect(Yast::Host).to receive(:remove_ip).with(conn.ip.address.address.to_s)
+      writer.remove(conn)
+    end
+
+    context "if no IP address is defined" do
+      let(:ip_config) { nil }
+
+      it "does not try to remove the hostname" do
+        expect(Yast::Host).to_not receive(:remove_ip)
+        writer.remove(conn)
+      end
     end
   end
 end
