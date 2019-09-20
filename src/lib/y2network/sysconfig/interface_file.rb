@@ -65,6 +65,7 @@ module Y2Network
           Yast::SCR.Dir(Yast::Path.new(".network.section"))
                    .reject { |f| IGNORE_IFCFG_REGEX =~ f || f == "lo" }
                    .map { |f| find(f) }
+                   .compact
         end
 
         # Finds the ifcfg-* file for a given interface
