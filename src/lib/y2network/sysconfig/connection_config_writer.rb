@@ -35,7 +35,7 @@ module Y2Network
       # @param conn [Y2Network::ConnectionConfig::Base] Connection configuration to write
       # @param old_conn [Y2Network::ConnectionConfig::Base,nil] Connection configuration to write
       def write(conn, old_conn = nil)
-        return if conn == old_conn
+        return if old_conn && conn == old_conn
         file = Y2Network::Sysconfig::InterfaceFile.new(conn.interface)
         handler_class = find_handler_class(conn.type)
         return nil if handler_class.nil?
