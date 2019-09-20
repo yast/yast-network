@@ -85,6 +85,11 @@ describe Y2Network::Sysconfig::ConnectionConfigWriter do
       expect(writer).to receive(:remove).with(old_conn)
       writer.write(conn, old_conn)
     end
+
+    it "does nothing if the connection has not changed" do
+      expect(file).to_not receive(:save)
+      writer.write(conn, conn)
+    end
   end
 
   describe "#remove" do
