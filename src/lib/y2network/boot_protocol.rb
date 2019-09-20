@@ -52,8 +52,17 @@ module Y2Network
     end
 
     # checks if boot protocol is at least partially configured by dhcp
+    #
+    # @return [Boolean]
     def dhcp?
       [DHCP4, DHCP6, DHCP, DHCP_AUTOIP].include?(self)
+    end
+
+    # Checks if boot protocol is static
+    #
+    # @return [Boolean]
+    def static?
+      STATIC == self
     end
 
     # Determines whether two objects are equivalent

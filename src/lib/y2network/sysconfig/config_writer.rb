@@ -55,6 +55,7 @@ module Y2Network
         write_connections(config.connections, old_config)
         write_dns_settings(config, old_config)
 
+        # NOTE: This code might be moved outside of the Sysconfig namespace, as it is generic.
         Yast::Host.Write(gui: false)
       end
 
@@ -200,7 +201,7 @@ module Y2Network
         writer = Y2Network::Sysconfig::ConnectionConfigWriter.new
         remove_old_connections(conns, old_config.connections, writer) if old_config
         conns.each do |conn|
-          old_conn =  old_config ? old_config.connections.by_id(conn.id) : nil
+          old_conn =  old_config ? old_config.connections.by_ids(conn.id).first : nil
           writer.write(conn, old_conn)
         end
       end

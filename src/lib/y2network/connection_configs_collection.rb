@@ -36,7 +36,8 @@ module Y2Network
     attr_reader :connection_configs
     alias_method :to_a, :connection_configs
 
-    def_delegators :@connection_configs, :each, :find, :push, :<<, :reject!, :map, :flat_map, :any?, :size
+    def_delegators :@connection_configs, :each, :find, :push, :<<, :reject!, :map, :flat_map,
+      :any?, :size, :first
 
     # Constructor
     #
@@ -61,20 +62,12 @@ module Y2Network
       connection_configs.select { |c| c.interface == interface_name }
     end
 
-    # Returns connection with the given internal ID
-    #
-    # @param id [Integer] Internal ID
-    # @return [ConnectionConfig::Base] Connection config with the given ID
-    def by_id(id)
-      connection_configs.find { |c| c.id == id }
-    end
-
     # Returns connections with any of the given internal IDs
     #
-    # @param ids [Integer] Internal IDs
-    # @return [ConnectionConfig::Base] Connection config with the given IDs
+    # @param ids [Array<Integer>] Internal IDs
+    # @return [Array<ConnectionConfig::Base>] Connection config with the given IDs
     def by_ids(*ids)
-      connection_configs.select { |c| ids.include?(c.id) }
+      select { |c| ids.include?(c.id) }
     end
 
     # Adds or updates a connection configuration

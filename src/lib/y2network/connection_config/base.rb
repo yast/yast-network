@@ -29,6 +29,10 @@ module Y2Network
     # It holds a configuration (IP addresses, MTU, WIFI settings, etc.) that can be applied to an
     # interface. By comparison, it is the equivalent of the "Connection" concept in NetworkManager.
     # When it comes to sysconfig, a "ConnectionConfig" is defined using a "ifcfg-*" file.
+    #
+    # Additionally, each connection config gets an internal ID which makes easier to track changes
+    # between two different {Y2Network::Config} objects. When they are copied, the same IDs are
+    # kept, so it is easy to find out which connections have been added, removed or simply changed.
     class Base
       # A connection could belongs to a specific interface or not. In case of
       # no specific interface then it could be activated by the first available
@@ -173,13 +177,6 @@ module Y2Network
             config.ports.include?(name)
           end
         end
-      end
-
-      # Returns whether the connection is configured as static
-      #
-      # @return [Boolean] return true if the connection is static; false otherwise
-      def static?
-        bootproto == BootProtocol::STATIC
       end
 
     private

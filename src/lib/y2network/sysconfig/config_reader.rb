@@ -41,6 +41,7 @@ module Y2Network
 
       # @return [Y2Network::Config] Network configuration
       def config
+        # NOTE: This code might be moved outside of the Sysconfig namespace, as it is generic.
         Yast::Host.Read
 
         routing_tables = find_routing_tables(interfaces_reader.interfaces)

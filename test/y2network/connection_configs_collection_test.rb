@@ -52,15 +52,9 @@ describe Y2Network::ConnectionConfigsCollection do
     end
   end
 
-  describe "#by_id" do
-    it "retuns the connection configuration with the given ID" do
-      expect(collection.by_id(eth0.id)).to eq(eth0)
-    end
-  end
-
   describe "#by_ids" do
     it "retuns the connection configurations with the given IDs" do
-      expect(collection.by_ids(eth0.id)).to eq([eth0])
+      expect(collection.by_ids(eth0.id)).to eq(described_class.new([eth0]))
     end
   end
 

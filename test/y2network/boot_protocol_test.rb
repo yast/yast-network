@@ -49,6 +49,17 @@ describe Y2Network::BootProtocol do
     end
   end
 
+  describe "#static?" do
+    it "returns true for STATIC boot protocol" do
+      expect(Y2Network::BootProtocol::STATIC.static?).to eq(true)
+    end
+
+    it "returns false for non static boot protocols" do
+      non_static = Y2Network::BootProtocol.all - [Y2Network::BootProtocol::STATIC]
+      non_static.each { |b| expect(b.static?).to eq(false) }
+    end
+  end
+
   describe "#==" do
     context "when the other object refers to the same boot protocol" do
       it "returns true" do

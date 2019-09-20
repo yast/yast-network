@@ -51,7 +51,7 @@ module Y2Network
           file.zone = conn.firewall_zone
           add_ips(conn)
           update_file(conn)
-          add_hostname(conn) if conn.static?
+          add_hostname(conn) if conn.bootproto.static?
         end
 
       private
