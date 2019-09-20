@@ -38,7 +38,7 @@ module Y2Network
       #
       # @param interfaces [Y2Network::InterfacesCollection] Interfaces collection
       def write(interfaces)
-        clean_up_old_interfaces(interfaces)
+        set_old_interfaces_down(interfaces)
         update_udevd(interfaces)
       end
 
@@ -100,7 +100,7 @@ module Y2Network
       # Cleans and shutdowns renamed interfaces
       #
       # @param interfaces [InterfacesCollection] Interfaces
-      def clean_up_old_interfaces(interfaces)
+      def set_old_interfaces_down(interfaces)
         interfaces.to_a.select(&:old_name).each { |i| set_interface_down(i.old_name) }
       end
 
