@@ -92,7 +92,7 @@ to read the configuration for a connection (e.g., `ifcfg-eth0`, `ifcfg-wlan0`, e
 in a set of smaller classes (one for each time of connection) under
 {Y2Network::Sysconfig::ConnectionConfigReaders}.
 
-{Y2Network::InterfacesWriter, }{Y2Network::Sysconfig::DNSWriter} and
+{Y2Network::Sysconfig::InterfacesWriter}, {Y2Network::Sysconfig::DNSWriter} and
 {Y2Network::Sysconfig::ConnectionConfigWriter}, including smaller classes under
 {Y2Network::Sysconfig::ConnectionConfigWriters}, are involved in writing the configuration.
 
