@@ -23,17 +23,20 @@ require "forwardable"
 module Y2Network
   # This class represents an IP address
   #
-  # The IPAddr from the Ruby standard library drops the host part according to the netmask. The
-  # problem is that YaST uses a CIDR-like string, including the host part, to set IPADDR in ifcfg-*
+  # The IPAddr from the Ruby standard library drops the host bits according to the netmask. The
+  # problem is that YaST uses a CIDR-like string, including the host bits, to set IPADDR in ifcfg-*
   # files (see man 5 ifcfg for further details).
   #
-  # @example IPAddr from standard library behavior
+  # @see ConnectionConfig::IPConfig
+  # @see https://www.rubydoc.info/stdlib/ipaddr/IPAddr
+  #
+  # @example ::IPAddr from the standard library behavior
   #  ip = IPAddr.new("192.168.122.1/24")
   #  ip.to_s #=> "192.168.122.0/24"
   #
   # However, what we need is to be able to keep the host part
   #
-  # @example IPAddress behaviour
+  # @example Y2Network::IPAddress behavior
   #   ip = IPAddress.new("192.168.122.1/24")
   #   ip.to_s #=> "192.168.122.1/24"
   #
