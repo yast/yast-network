@@ -17,297 +17,452 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 require "yast"
+require "forwardable"
 
+require "y2network/connection_config"
 require "y2network/hwinfo"
+require "y2network/startmode"
+require "y2network/boot_protocol"
+require "y2network/ip_address"
 require "y2firewall/firewalld"
 require "y2firewall/firewalld/interface"
 
 Yast.import "LanItems"
 Yast.import "NetworkInterfaces"
+Yast.import "Host"
 
 module Y2Network
-  # Collects data from the UI until we have enough of it to create a {Y2Network::Interface}.
-  # {Yast::LanItemsClass#Commit Yast::LanItems.Commit(builder)} uses it.
+  # Collects data from the UI until we have enough of it to create a
+  # {Y2Network::ConnectionConfig::Base} object.
+  #
+  # {Yast::LanItemsClass#Commit Yast::LanItems.Commit(builder)} use it.
   class InterfaceConfigBuilder
     include Yast::Logger
+    extend Forwardable
 
     # Load fresh instance of interface config builder for given type.
     # It can be specialized type or generic, depending if specialized is needed.
-    # @param type [String] type of device
-    # TODO: it would be nice to have type of device as Enum and not pure string
-    def self.for(type)
-      require "y2network/interface_config_builders/#{type}"
-      InterfaceConfigBuilders.const_get(type.to_s.capitalize).new
+    # @param type [Y2Network::InterfaceType,String] type of device or its short name
+    # @param config [Y2Network::ConnectionConfig::Base, nil] existing configuration of device or nil
+    #   for newly created
+    def self.for(type, config: nil)
+      if !type.is_a?(InterfaceType)
+        type = InterfaceType.from_short_name(type) or raise "Unknown type #{type.inspect}"
+      end
+      require "y2network/interface_config_builders/#{type.file_name}"
+      InterfaceConfigBuilders.const_get(type.class_name).new(config: config)
     rescue LoadError => e
-      log.info "Specialed builder for #{type} not found. Fallbacking to default. #{e.inspect}"
-      new(type: type)
+      log.info "Specialized builder for #{type} not found. Falling back to default. #{e.inspect}"
+      new(type: type, config: config)
     end
 
     # @return [String] Device name (eth0, wlan0, etc.)
-    attr_accessor :name
-    # @return [String] type of @see Y2Network::Interface which is intended to be build (e.g. "eth")
-    attr_accessor :type
+    attr_reader :name
+    # @return [Y2Network::InterfaceType] type of @see Y2Network::Interface which is intended to be build
+    attr_reader :type
+    # @return [Y2Network::ConnectionConfig] connection config on which builder operates
+    attr_reader :connection_config
+    # @return [Symbol] Mechanism to rename the interface (:none -no hardware based-, :mac or :bus_id)
+    attr_writer :renaming_mechanism
+    # @return [Y2Network::Interface,nil] Underlying interface if it exists
+    attr_reader :interface
+
+    def_delegators :@connection_config,
+      :startmode, :ethtool_options, :ethtool_options=
 
     # Constructor
     #
     # Load with reasonable defaults
-    def initialize(type: nil)
+    # @param type [Y2Network::InterfaceType] type of device
+    # @param config [Y2Network::ConnectionConfig::Base, nil] existing configuration of device or nil
+    #   for newly created
+    def initialize(type:, config: nil)
       @type = type
-      @config = init_device_config({})
-      @s390_config = init_device_s390_config({})
+      # TODO: also config need to store it, as newly added can be later
+      # edited with option for not yet created interface
+      @newly_added = config.nil?
+      if config
+        self.name = config.name
+      else
+        config = connection_config_klass(type).new
+        config.propose
+      end
+      @connection_config = config
+      @original_ip_config = ip_config_default.copy
+    end
+
+    # Sets the interface name
+    #
+    # It initializes the interface using the given name if it exists
+    #
+    # @param value [String] Interface name
+    def name=(value)
+      @name = value
+      iface = find_interface
+      self.interface = iface if iface
     end
 
     def newly_added?
-      Yast::LanItems.operation == :add
+      @newly_added
     end
 
-    def []=(key, value)
-      @config[key] = value
-    end
-
-    def [](key)
-      @config[key]
-    end
-
+    # saves builder content to backend
+    # @ TODO now still LanItems actively query config attribute and write it
+    #   down, so here mainly workarounds, but ideally this save should change
+    #   completely backend
     def save
-      Yast::LanItems.Items[Yast::LanItems.current]["ifcfg"] = name
-      if !driver.empty?
-        Yast::LanItems.setDriver(driver)
-        Yast::LanItems.driver_options[driver] = driver_options
-      end
+      @connection_config.name = name
+      @connection_config.interface = name
+      @connection_config.ip_aliases = aliases_to_ip_configs
 
+      @connection_config.firewall_zone = firewall_zone
       # create new instance as name can change
       firewall_interface = Y2Firewall::Firewalld::Interface.new(name)
       if Y2Firewall::Firewalld.instance.installed?
-        Yast::LanItems.firewall_zone = firewall_zone
         # TODO: should change only if different, but maybe firewall_interface responsibility?
         firewall_interface.zone = firewall_zone if !firewall_interface.zone || firewall_zone != firewall_interface.zone.name
       end
 
-      save_aliases
+      if interface.respond_to?(:custom_driver)
+        interface.custom_driver = driver_auto? ? nil : driver.name
+        yast_config.add_or_update_driver(driver) unless driver_auto?
+      end
+      yast_config.rename_interface(@old_name, name, renaming_mechanism) if renamed_interface?
+      yast_config.add_or_update_connection_config(@connection_config)
 
       nil
     end
 
+    # Determines whether the interface has been renamed
+    #
+    # @return [Boolean] true if it was renamed; false otherwise
+    def renamed_interface?
+      return false unless interface
+      name != interface.name || @renaming_mechanism != interface.renaming_mechanism
+    end
+
+    # Renames the interface
+    #
+    # @param new_name [String] New interface's name
+    def rename_interface(new_name)
+      @old_name ||= name
+      @name = new_name
+    end
+
+    # Returns the current renaming mechanism
+    #
+    # @return [Symbol,nil] Mechanism to rename the interface (nil -no rename-, :mac or :bus_id)
+    def renaming_mechanism
+      @renaming_mechanism || interface.renaming_mechanism
+    end
+
     # how many device names is proposed
     NEW_DEVICES_COUNT = 10
-    # Propose bunch of possible names for interface
+    # Proposes bunch of possible names for interface
     # do not modify anything
     # @return [Array<String>]
     def proposed_names
-      Yast::LanItems.new_type_devices(type, NEW_DEVICES_COUNT)
+      interfaces.free_names(type.short_name, NEW_DEVICES_COUNT)
     end
 
+    # checks if passed name is valid as interface name
+    # TODO: looks sysconfig specific
     def valid_name?(name)
       !!(name =~ /^[[:alnum:]._:-]{1,15}\z/)
     end
 
+    # checks if interface name already exists
     def name_exists?(name)
-      Yast::NetworkInterfaces.List("").include?(name)
+      interfaces.known_names.include?(name)
     end
 
+    # gets valid characters that can be used in interface name
+    # TODO: looks sysconfig specific
     def name_valid_characters
       Yast::NetworkInterfaces.ValidCharsIfcfg
     end
 
-    def kernel_modules
-      Yast::LanItems.GetItemModules("")
+    # gets a list of available kernel modules for the interface
+    def drivers
+      return [] unless interface
+      yast_config.drivers_for_interface(interface.name)
     end
 
+    # gets currently assigned firewall zone
     def firewall_zone
       return @firewall_zone if @firewall_zone
 
       # TODO: handle renaming
       firewall_interface = Y2Firewall::Firewalld::Interface.new(name)
-      @firewall_zone = firewall_interface.zone && firewall_interface.zone.name
+      @firewall_zone = (firewall_interface.zone && firewall_interface.zone.name) || @connection_config.firewall_zone
     end
 
-    def firewall_zone=(value)
-      @firewall_zone = value
+    # sets assigned firewall zone
+    attr_writer :firewall_zone
+
+    # @return [Y2Network::BootProtocol]
+    def boot_protocol
+      @connection_config.bootproto
     end
 
+    # @param[String, Y2Network::BootProtocol]
+    def boot_protocol=(value)
+      value = value.name if value.is_a?(Y2Network::BootProtocol)
+      @connection_config.bootproto = Y2Network::BootProtocol.from_name(value)
+    end
+
+    # @param [String,Y2Network::Startmode] name startmode name used to create Startmode object
+    #   or object itself
+    def startmode=(name)
+      mode = name.is_a?(Startmode) ? name : Startmode.create(name)
+      # assign only if it is not already this value. This helps with ordering of ifplugd_priority
+      return if @connection_config.startmode && @connection_config.startmode.name == mode.name
+
+      @connection_config.startmode = mode
+    end
+
+    # @param [Integer] value priority value
+    def ifplugd_priority=(value)
+      if !@connection_config.startmode || @connection_config.startmode.name != "ifplugd"
+        log.info "priority set and startmode is not ifplugd. Adapting..."
+        @connection_config.startmode = Startmode.create("ifplugd")
+      end
+      @connection_config.startmode.priority = value.to_i
+    end
+
+    # @return [Integer]
+    def ifplugd_priority
+      startmode.name == "ifplugd" ? startmode.priority : 0
+    end
+
+    # gets currently assigned kernel module
     def driver
-      @driver ||= Yast::Ops.get_string(Yast::LanItems.getCurrentItem, ["udev", "driver"], "")
+      return @driver if @driver
+      @driver = yast_config.drivers.find { |d| d.name == @interface.custom_driver } if @interface.custom_driver
+      @driver ||= :auto
     end
 
+    # sets kernel module for interface
+    # @param value [Driver]
     def driver=(value)
       @driver = value
     end
 
-    def driver_options
-      target_driver = @driver
-      target_driver = hwinfo.module if target_driver.empty?
-      @driver_options ||= Yast::LanItems.driver_options[target_driver] || ""
-    end
-
-    def driver_options=(value)
-      @driver_options = value
-    end
-
+    # gets aliases for interface
+    # @return [Array<Hash>] hash values are `:label` for alias label,
+    #   `:ip` for ip address, `:mask` for netmask and `:prefixlen` for prefix.
+    #   Only one of `:mask` and `:prefixlen` is set.
     def aliases
-      @aliases ||= Yast::LanItems.aliases.each_value.map do |data|
+      return @aliases if @aliases
+
+      aliases = @connection_config.ip_aliases.map do |data|
         {
-          label:     data["LABEL"] || "",
-          ip:        data["IPADDR"] || "",
-          mask:      data["NETMASK"] || "",
-          prefixlen: data["PREFIXLEN"] || ""
+          label:     data.label.to_s,
+          ip:        data.address.address.to_s,
+          prefixlen: data.address.prefix.to_s,
+          id:        data.id.to_s
+          # NOTE: new API does not have netmask at all, we need to adapt UI to clearly mention only prefix
         }
       end
+      @aliases = aliases
     end
 
+    # sets aliases for interface
+    # @param value [Array<Hash>] see #aliases for hash values
     def aliases=(value)
       @aliases = value
     end
 
-    def udev_name
-      # cannot cache as EditNicName dialog can change it
-      Yast::LanItems.current_udev_name
+    # @return [String]
+    def ip_address
+      default = @connection_config.ip
+      if default
+        default.address.address.to_s
+      else
+        ""
+      end
     end
 
-    # Provides stored configuration in sysconfig format
-    #
-    # @return [Hash<String, String>] where key is sysconfig option and value is the option's value
-    def device_sysconfig
-      # initalize options which has to be known and was not set by the user explicitly
-      init_mandatory_options
-
-      # with naive implementation of filtering options by type
-      config = @config.dup
-
-      # filter out options which are not needed
-      config.delete_if { |k, _| k =~ /WIRELESS.*/ } if type != "wlan"
-      config.delete_if { |k, _| k =~ /BONDING.*/ } if type != "bond"
-      config.delete_if { |k, _| k =~ /BRIDGE.*/ } if type != "br"
-      config.delete_if { |k, _| k =~ /TUNNEL.*/ } if !["tun", "tap"].include?(type)
-      config.delete_if { |k, _| k == "VLAN_ID" || k == "ETHERDEVICE" } if type != "vlan"
-      config.delete_if { |k, _| k == "IPOIB_MODE" } if type != "ib"
-      config.delete_if { |k, _| k == "INTERFACE" } if type != "dummy"
-      config.delete_if { |k, _| k == "IFPLUGD_PRIORITY" } if config["STARTMODE"] != "ifplugd"
-
-      config.merge("_aliases" => lan_items_format_aliases)
+    # @param [String] value
+    def ip_address=(value)
+      if value.nil? || value.empty?
+        @connection_config.ip = nil
+      else
+        ip_config_default.address.address = value
+      end
     end
 
-    # Updates itself according to the given sysconfig configuration
-    #
-    # @param devmap [Hash<String, String>, nil] a key, value map where key is sysconfig option
-    #                                           and corresponding value is the option value
-    def load_sysconfig(devmap)
-      @config.merge!(devmap || {})
+    # @return [String] returns prefix or netmask. prefix in format "/<prefix>"
+    def subnet_prefix
+      if @connection_config.ip
+        "/" + @connection_config.ip.address.prefix.to_s
+      else
+        ""
+      end
     end
 
-    def load_s390_config(devmap)
-      @s390_config.merge!(devmap || {})
+    # @param [String] value prefix or netmask is accepted. prefix in format "/<prefix>"
+    def subnet_prefix=(value)
+      if value.empty?
+        ip_config_default.address.prefix = nil
+      elsif value.start_with?("/")
+        ip_config_default.address.prefix = value[1..-1].to_i
+      elsif value.size < 3 # one or two digits can be only prefixlen
+        ip_config_default.address.prefix = value.to_i
+      elsif value =~ /^\d{3}$/
+        ip_config_default.address.prefix = value.to_i
+      else
+        ip_config_default.address.netmask = value
+      end
+    end
+
+    # @return [String]
+    def hostname
+      @connection_config.hostname || ""
+    end
+
+    # @param [String] value
+    def hostname=(value)
+      @connection_config.hostname = value
+    end
+
+    # sets remote ip for ptp connections
+    # @return [String]
+    def remote_ip
+      default = @connection_config.ip
+      if default
+        default.remote_address.to_s
+      else
+        ""
+      end
+    end
+
+    # @param [String] value
+    def remote_ip=(value)
+      ip_config_default.remote_address = IPAddress.from_string(value)
+    end
+
+    # Gets Maximum Transition Unit
+    # @return [String]
+    def mtu
+      @connection_config.mtu.to_s
+    end
+
+    # Sets Maximum Transition Unit
+    # @param [String] value
+    def mtu=(value)
+      @connection_config.mtu = value.to_i
+    end
+
+    def configure_as_slave
+      self.boot_protocol = "none"
+      self.aliases = []
+    end
+
+    # @param info [Hash<String,Object>] Hardware information
+    # @return [Hwinfo]
+    def hwinfo_from(info)
+      @hwinfo = Hwinfo.new(info)
+    end
+
+    # @return [Hwinfo]
+    def hwinfo
+      @hwinfo ||= Hwinfo.for(name)
     end
 
   private
 
-    # Initializes device configuration map with default values when needed
-    #
-    # @param devmap [Hash<String, String>] current device configuration
-    #
-    # @return device configuration map where unspecified values were set
-    #                to reasonable defaults
-    def init_device_config(devmap)
-      # the defaults here are what sysconfig defaults to
-      # (as opposed to what a new interface gets, in {#Select)}
-      defaults = YAML.load_file(Yast::Directory.find_data_file("network/sysconfig_defaults.yml"))
-      defaults.merge(devmap)
+    def ip_config_default
+      return @connection_config.ip if @connection_config.ip
+      @connection_config.ip = ConnectionConfig::IPConfig.new(IPAddress.new("0.0.0.0"))
     end
 
-    def init_device_s390_config(devmap)
-      Yast.import "Arch"
-
-      return {} if !Yast::Arch.s390
-
-      # Default values used when creating an emulated NIC for physical s390 hardware.
-      s390_defaults = YAML.load_file(Yast::Directory.find_data_file("network/s390_defaults.yml"))
-      s390_defaults.merge(devmap)
-    end
-
-    # returns a map with device options for newly created item
-    def init_mandatory_options
-      # FIXME: NetHwDetection is done in Lan.Read
-      Yast.import "NetHwDetection"
-
-      # #104494 - always write IPADDR+NETMASK, even empty
-      # #50955 omit computable fields
-      @config["BROADCAST"] = ""
-      @config["NETWORK"] = ""
-
-      if !@config["NETMASK"] || @config["NETMASK"].empty?
-        @config["NETMASK"] = Yast::NetHwDetection.result["NETMASK"] || "255.255.255.0"
-      end
-
-      @config["STARTMODE"] = new_device_startmode if !@config["STARTMODE"] || @config["STARTMODE"].empty?
-    end
-
-    # returns default startmode for a new device
+    # Returns the connection config class for a given type
     #
-    # startmode is returned according product, Arch and current device type
-    def new_device_startmode
-      Yast.import "ProductFeatures"
+    # @param type [Y2Network::InterfaceType] type of device
+    def connection_config_klass(type)
+      ConnectionConfig.const_get(type.class_name)
+    rescue NameError
+      log.error "Could not find a class to handle '#{type.class_name}' connections"
+      ConnectionConfig::Base
+    end
 
-      product_startmode = Yast::ProductFeatures.GetStringFeature(
-        "network",
-        "startmode"
-      )
+    # Sets the interface for the builder
+    #
+    # @param iface [Interface] Interface to associate the builder with
+    def interface=(iface)
+      @interface = iface
+      @renaming_mechanism ||= @interface.renaming_mechanism
+    end
 
-      startmode = case product_startmode
-      when "ifplugd"
-        if replace_ifplugd?
-          hotplug_interface? ? "hotplug" : "auto"
-        else
-          product_startmode
+    # Returns the underlying interface
+    #
+    # @return [Y2Network::Interface,nil]
+    def find_interface
+      return nil unless yast_config # in some tests, it could return nil
+      interfaces.by_name(name)
+    end
+
+    # Returns the interfaces collection
+    #
+    # @return [Y2Network::InterfacesCollection]
+    def interfaces
+      yast_config.interfaces
+    end
+
+    # Helper method to access to the current configuration
+    #
+    # @return [Y2Network::Config]
+    def yast_config
+      Yast.import "Lan" # avoid circular dependency
+
+      Yast::Lan.yast_config
+    end
+
+    # Determines whether the IP configuration is required
+    #
+    # @return [Boolean]
+    def required_ip_config?
+      boot_protocol == BootProtocol::STATIC
+    end
+
+    # Determines whether the driver should be set automatically
+    #
+    # @return [Boolean]
+    def driver_auto?
+      :auto == driver
+    end
+
+    # Converts aliases in hash form to a list of IPConfig objects
+    #
+    # @return [Array<IPConfig>]
+    def aliases_to_ip_configs
+      last_id = 0
+      used_ids = aliases
+                 .select { |a| a[:id] && a[:id] =~ /\A_\d+\z/ }
+                 .map { |a| a[:id].sub("_", "").to_i }
+      aliases.each_with_object([]) do |map, result|
+        ipaddr = IPAddress.from_string(map[:ip])
+        ipaddr.prefix = map[:prefixlen].delete("/").to_i if map[:prefixlen]
+        id = map[:id]
+        if id.nil? || id.empty?
+          last_id = id = find_free_alias_id(used_ids, last_id) if id.nil? || id.empty?
+          id = "_#{id}"
         end
-      when "auto"
-        "auto"
-      else
-        hotplug_interface? ? "hotplug" : "auto"
-      end
-
-      startmode
-    end
-
-    def replace_ifplugd?
-      Yast.import "Arch"
-      Yast.import "NetworkService"
-
-      return true if !Yast::Arch.is_laptop
-      return true if Yast::NetworkService.is_network_manager
-      # virtual devices cannot expect any event from ifplugd
-      return true if ["bond", "vlan", "br"].include? type
-
-      false
-    end
-
-    def hotplug_interface?
-      hwinfo.hotplug
-    end
-
-    def hwinfo
-      @hwinfo ||= Hwinfo.new(name: name)
-    end
-
-    def lan_items_format_aliases
-      aliases.each_with_index.each_with_object({}) do |(a, i), res|
-        res[i] = {
-          "IPADDR"    => a[:ip],
-          "LABEL"     => a[:label],
-          "PREFIXLEN" => a[:prefixlen],
-          "NETMASK"   => a[:mask]
-
-        }
+        result << ConnectionConfig::IPConfig.new(ipaddr, label: map[:label], id: id)
       end
     end
 
-    def save_aliases
-      log.info "setting new aliases #{lan_items_format_aliases.inspect}"
-      aliases_to_delete = Yast::LanItems.aliases.dup # #48191
-      Yast::NetworkInterfaces.Current["_aliases"] = lan_items_format_aliases
-      Yast::LanItems.aliases = lan_items_format_aliases
-      aliases_to_delete.each_pair do |a, v|
-        Yast::NetworkInterfaces.DeleteAlias(Yast::NetworkInterfaces.Name, a) if v
+    # Returns a free numeric ID for an IP aliases
+    #
+    # @param used_ids [Array<Integer>] Already used IDs
+    # @param last_id  [Integer] Last used ID
+    def find_free_alias_id(used_ids, last_id)
+      loop do
+        last_id += 1
+        break unless used_ids.include?(last_id)
       end
+      last_id
     end
   end
 end

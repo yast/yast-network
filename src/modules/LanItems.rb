@@ -28,46 +28,25 @@ require "network/install_inf_convertor"
 require "network/wicked"
 require "network/lan_items_summary"
 require "y2network/config"
+require "y2network/boot_protocol"
 
 require "shellwords"
 
 module Yast
-  # Does way too many things.
-  #
-  # 1. Aggregates data about network interfaces, both configured
-  # and unconfigured, in {#Items}, which see.
-  #
-  # 2. Provides direct access to individual items of ifcfg files.
-  # For example BOOTPROTO and STARTMODE are accessible in
-  # {#bootproto} and {#startmode} (set via {#SetDeviceVars}
-  # via {#Select} or {#SetItem}). The reverse direction (putting
-  # the individual values back to an item) is {#Commit}.
-  #
-  # 3. ...
-  #
-
   # FIXME: well this class really is not nice
   class LanItemsClass < Module
-    attr_accessor :firewall_zone
-
     include Logger
     include Wicked
 
     def main
-      Yast.import "UI"
       textdomain "network"
 
       Yast.import "NetworkInterfaces"
-      Yast.import "ProductFeatures"
       Yast.import "NetworkConfig"
-      Yast.import "Host"
       Yast.import "Directory"
-      Yast.import "Stage"
       Yast.include self, "network/complex.rb"
       Yast.include self, "network/routines.rb"
       Yast.include self, "network/lan/s390.rb"
-      Yast.include self, "network/lan/udev.rb"
-      Yast.include self, "network/lan/bridge.rb"
 
       reset_cache
 
@@ -100,72 +79,7 @@ module Yast
 
       @Requires = []
 
-      # address options
-      # boot protocol: BOOTPROTO
-      @bootproto = "static"
-      @ipaddr = ""
-      @netmask = ""
-      @prefix = ""
-
-      @startmode = "auto"
-
-      # wireless options
-      @wl_mode = ""
-      @wl_essid = ""
-      @wl_nwid = ""
-      @wl_auth_mode = ""
-      # when adding another key, don't forget the chmod 600 in NetworkInterfaces
-      @wl_wpa_psk = ""
-      @wl_key_length = ""
-      @wl_key = []
-      @wl_default_key = 0
-      @wl_nick = ""
-      @firewall_zone = nil
-
-      # FIXME: We should unify bridge_ports and bond_slaves variables
-
-      # interfaces attached to bridge (list delimited by ' ')
-      @bridge_ports = ""
-
-      # bond options
-      @bond_slaves = []
-      @bond_option = ""
-
-      # VLAN option
-      @vlan_etherdevice = ""
-
-      # wl_wpa_eap aggregates the settings in a map for easier CWM access.
-      #
-      # **Structure:**
-      #
-      #     wpa_eap
-      #      WPA_EAP_MODE: string ("TTLS" "PEAP" or "TLS")
-      #      WPA_EAP_IDENTITY: string
-      #      WPA_EAP_PASSWORD: string (for TTLS and PEAP)
-      #      WPA_EAP_ANONID: string (for TTLS and PEAP)
-      #      WPA_EAP_CLIENT_CERT: string (for TLS, file name)
-      #      WPA_EAP_CLIENT_KEY: string (for TLS, file name)
-      #      WPA_EAP_CLIENT_KEY_PASSWORD: string (for TLS)
-      #      WPA_EAP_CA_CERT: string (file name)
-      #      WPA_EAP_AUTH: string ("", "MD5", "GTC", "CHAP"*, "PAP"*, "MSCHAP"*, "MSCHAPV2") (*: TTLS only)
-      #      WPA_EAP_PEAP_VERSION: string ("", "0", "1")
-      @wl_wpa_eap = {}
-      @wl_channel = ""
-      @wl_frequency = ""
-      @wl_bitrate = ""
-      @wl_accesspoint = ""
-      @wl_power = true
-      @wl_ap_scanmode = ""
-
-      # Card Features from hwinfo
-      # if not provided, we use the default full list
-      @wl_auth_modes = nil
-      @wl_enc_modes = nil
-      @wl_channels = nil
-      @wl_bitrates = nil
-
       # s390 options
-      @qeth_portname = ""
       @qeth_portnumber = ""
       # * ctc as PROTOCOL (or ctc mode, number in { 0, 1, .., 4 }, default: 0)
       @chan_mode = "0"
@@ -191,13 +105,6 @@ module Yast
       @tunnel_set_group = ""
 
       Yast.include self, "network/hardware.rb"
-
-      # Default values used when creating an emulated NIC for physical s390 hardware.
-      @s390_defaults = YAML.load_file(Directory.find_data_file("network/s390_defaults.yml")) if Arch.s390
-
-      # the defaults here are what sysconfig defaults to
-      # (as opposed to what a new interface gets, in {#Select)}
-      @SysconfigDefaults = YAML.load_file(Directory.find_data_file("network/sysconfig_defaults.yml"))
 
       # this is the map of kernel modules vs. requested firmware
       # non-empty keys are firmware packages shipped by SUSE
@@ -247,22 +154,6 @@ module Yast
 
       log.error("Item #{item_id} has no dev_name nor configuration associated")
       "" # this should never happen
-    end
-
-    # Convenience method to obtain the current Item udev rule
-    #
-    # @return [Array<String>] Item udev rule
-    def current_udev_rule
-      LanItems.GetItemUdevRule(LanItems.current)
-    end
-
-    # Returns name which is going to be used in the udev rule
-    def current_udev_name
-      if LanItems.current_renamed?
-        LanItems.current_renamed_to
-      else
-        LanItems.GetItemUdev("NAME")
-      end
     end
 
     # transforms given list of item ids onto device names
@@ -344,421 +235,6 @@ module Yast
       SetDeviceMap(item_id, devmap)
     end
 
-    # Returns udev rule known for particular item
-    #
-    # @param itemId [Integer] a key for {#Items}
-    def GetItemUdevRule(itemId)
-      Ops.get_list(GetLanItem(itemId), ["udev", "net"], [])
-    end
-
-    # Sets udev rule for given item
-    #
-    # @param itemId [Integer] a key for {#Items}
-    # @param rule   [String]  an udev rule
-    def SetItemUdevRule(itemId, rule)
-      GetLanItem(itemId)["udev"]["net"] = rule
-    end
-
-    # Returns item's mac
-    #
-    # hwinfo[permanent_mac] is prefered if exists. hwinfo[mac] is used otherwise
-    #
-    # @param item_id [Integer] a key for {#Items}
-    # @return [<String>, nil] mac address or nil
-    def item_mac(item_id)
-      hwinfo = GetLanItem(item_id).fetch("hwinfo", {})
-      hwinfo.fetch("permanent_mac", hwinfo.fetch("mac", nil))
-    end
-
-    # Inits item's udev rule to a default one if none is present
-    #
-    # @param item_id [Integer] a key for {#Items}
-    # @return [String] item's udev rule
-    def InitItemUdevRule(item_id)
-      udev = GetItemUdevRule(item_id)
-      return udev if !udev.empty?
-
-      default_mac = item_mac(item_id)
-      raise ArgumentError, "Cannot propose udev rule - NIC not present" if !default_mac
-
-      default_udev = GetDefaultUdevRule(
-        GetDeviceName(item_id),
-        default_mac
-      )
-      SetItemUdevRule(item_id, default_udev)
-
-      default_udev
-    end
-
-    def ReadUdevDriverRules
-      Builtins.y2milestone("Reading udev rules ...")
-      @udev_net_rules = Convert.convert(
-        SCR.Read(path(".udev_persistent.net")),
-        from: "any",
-        to:   "map <string, any>"
-      )
-
-      Builtins.y2milestone("Reading driver options ...")
-      Builtins.foreach(SCR.Dir(path(".modules.options"))) do |driver|
-        pth = Builtins.sformat(".modules.options.%1", driver)
-        Builtins.foreach(
-          Convert.convert(
-            SCR.Read(Builtins.topath(pth)),
-            from: "any",
-            to:   "map <string, string>"
-          )
-        ) do |key, value|
-          Ops.set(
-            @driver_options,
-            driver,
-            Builtins.sformat(
-              "%1%2%3=%4",
-              Ops.get_string(@driver_options, driver, ""),
-              if Ops.greater_than(
-                Builtins.size(Ops.get_string(@driver_options, driver, "")),
-                0
-              )
-                " "
-              else
-                ""
-              end,
-              key,
-              value
-            )
-          )
-        end
-      end
-
-      true
-    end
-
-    def getUdevFallback
-      udev_rules = Ops.get_list(getCurrentItem, ["udev", "net"], [])
-
-      if IsEmpty(udev_rules)
-        udev_rules = GetDefaultUdevRule(
-          GetCurrentName(),
-          item_mac(@current) || ""
-        )
-        Builtins.y2milestone(
-          "No Udev rules found, creating default: %1",
-          udev_rules
-        )
-      end
-
-      deep_copy(udev_rules)
-    end
-
-    # It returns a value for the particular key of udev rule belonging to the current item.
-    def GetItemUdev(key)
-      udev_key_value(getUdevFallback, key)
-    end
-
-    # It deletes the given key from the udev rule of the current item.
-    #
-    # @param key [string] udev key which identifies the tuple to be removed
-    # @return [Object, nil] the current item's udev rule without the given key; nil if
-    # there is not udev rules for the current item
-    def RemoveItemUdev(key)
-      return nil if current_udev_rule.empty?
-
-      log.info("Removing #{key} from #{current_udev_rule}")
-      Items()[@current]["udev"]["net"] =
-        LanItems.RemoveKeyFromUdevRule(current_udev_rule, key)
-    end
-
-    # Updates the udev rule of the current Lan Item based on the key given
-    # which currently could be mac or bus_id.
-    #
-    # In case of bus_id the dev_port will be always added to avoid cases where
-    # the interfaces shared the same bus_id (i.e. Multiport cards using the
-    # same function to all the ports) (bsc#1007172)
-    #
-    # @param based_on [Symbol] principal key to be matched, `:mac` or `:bus_id`
-    # @return [void]
-    def update_item_udev_rule!(based_on = :mac)
-      new_rule = current_udev_rule.empty?
-      LanItems.InitItemUdevRule(LanItems.current) if new_rule
-
-      case based_on
-      when :mac
-        return if new_rule
-
-        LanItems.RemoveItemUdev("ATTR{dev_port}")
-
-        # FIXME: While the user is able to modify the udev rule using the
-        # mac address instead of bus_id when bonding, could be that the
-        # mac in use was not the permanent one. We could read it with
-        # ethtool -P dev_name}
-        LanItems.ReplaceItemUdev(
-          "KERNELS",
-          "ATTR{address}",
-          item_mac(@current) || ""
-        )
-      when :bus_id
-        # Update or insert the dev_port if the sysfs dev_port attribute is present
-        LanItems.ReplaceItemUdev(
-          "ATTR{dev_port}",
-          "ATTR{dev_port}",
-          LanItems.dev_port(LanItems.GetCurrentName)
-        ) if LanItems.dev_port?(LanItems.GetCurrentName)
-
-        # If the current rule is mac based, overwrite to bus id. Don't touch otherwise.
-        LanItems.ReplaceItemUdev(
-          "ATTR{address}",
-          "KERNELS",
-          LanItems.getCurrentItem.fetch("hwinfo", {}).fetch("busid", "")
-        )
-      else
-        raise ArgumentError, "The key given for udev rule #{based_on} is not supported"
-      end
-    end
-
-    # It replaces a tuple identified by replace_key in current item's udev rule
-    #
-    # Note that the tuple is identified by key only. However modification flag is
-    # set only if value was changed (in case when replace_key == new_key)
-    #
-    # It also contain a logic on tuple operators. When the new_key is "NAME"
-    # then assignment operator (=) is used. Otherwise equality operator (==) is used.
-    # Thats bcs this function is currently used for touching "NAME", "KERNELS" and
-    # `ATTR{address}` keys only
-    #
-    # @param replace_key [string] udev key which identifies tuple to be replaced
-    # @param new_key     [string] new key to by used
-    # @param new_val     [string] value for new key
-    # @return updated rule when replace_key is found, current rule otherwise
-    def ReplaceItemUdev(replace_key, new_key, new_val)
-      # =    for assignment
-      # ==   for equality checks
-      operator = new_key == "NAME" ? "=" : "=="
-      rule = RemoveKeyFromUdevRule(getUdevFallback, replace_key)
-
-      # NAME="devname" has to be last in the rule.
-      # otherwise SCR agent .udev_persistent.net returns crap
-      # isn't that fun
-      name_tuple = rule.pop
-      new_rule = AddToUdevRule(rule, "#{new_key}#{operator}\"#{new_val}\"")
-      new_rule.push(name_tuple)
-
-      if current_udev_rule.sort != new_rule.sort
-        SetModified()
-
-        log.info("ReplaceItemUdev: new udev rule = #{new_rule}")
-
-        Items()[@current]["udev"] = { "net" => [] } if !Items()[@current]["udev"]
-        Items()[@current]["udev"]["net"] = new_rule
-      end
-
-      deep_copy(new_rule)
-    end
-
-    # Updates device name.
-    #
-    # It updates device's udev rules and config name.
-    # Updating config name means that old configuration is deleted from
-    # the system.
-    #
-    # @param itemId [Integer] a key for {#Items}
-    #
-    # Returns new name
-    def SetItemName(itemId, name)
-      lan_items = LanItems.Items
-
-      if name && !name.empty?
-        if lan_items[itemId]["udev"]
-          updated_rule = update_udev_rule_key(GetItemUdevRule(itemId), "NAME", name)
-          lan_items[itemId]["udev"]["net"] = updated_rule
-        end
-      else
-        # rewrite rule for empty name is meaningless
-        lan_items[itemId].delete("udev")
-      end
-
-      if lan_items[itemId].key?("ifcfg")
-        NetworkInterfaces.Delete2(lan_items[itemId]["ifcfg"])
-        lan_items[itemId]["ifcfg"] = name.to_s
-      end
-
-      name
-    end
-
-    # Updates current device name.
-    #
-    # It updates device's udev rules and config name.
-    # Updating config name means that old configuration is deleted from
-    # the system.
-    #
-    # Returns new name
-    def SetCurrentName(name)
-      SetItemName(@current, name)
-    end
-
-    # Sets new device name for current item
-    def rename(name)
-      if GetCurrentName() != name
-        @Items[@current]["renamed_to"] = name
-        SetModified()
-      else
-        @Items[@current].delete("renamed_to")
-      end
-    end
-
-    # Returns new name for current item
-    #
-    # @param item_id [Integer] a key for {#Items}
-    def renamed_to(item_id)
-      Items()[item_id]["renamed_to"]
-    end
-
-    def current_renamed_to
-      renamed_to(@current)
-    end
-
-    # Tells if current item was renamed
-    #
-    # @param item_id [Integer] a key for {#Items}
-    def renamed?(item_id)
-      return false if !renamed_to(item_id)
-      renamed_to(item_id) != GetDeviceName(item_id)
-    end
-
-    def current_renamed?
-      renamed?(@current)
-    end
-
-    # Writes udev rules for all items.
-    #
-    # Currently only interesting change is renaming interface.
-    def WriteUdevItemsRules
-      # loop over all items and checks if device name has changed
-      net_rules = []
-
-      Builtins.foreach(
-        Convert.convert(
-          Map.Keys(@Items),
-          from: "list",
-          to:   "list <integer>"
-        )
-      ) do |key|
-        item_udev_net = GetItemUdevRule(key)
-        next if IsEmpty(item_udev_net)
-        dev_name = Ops.get_string(@Items, [key, "hwinfo", "dev_name"], "")
-        @current = key
-        if dev_name != GetItemUdev("NAME")
-          # when changing device name you have a choice
-          # - change kernel "match rule", or
-          # - remove it completely
-          # removing is less error prone when tracking name changes, so it was chosen.
-          item_udev_net = RemoveKeyFromUdevRule(item_udev_net, "KERNEL")
-          # setting links down during AY is forbidden bcs it can freeze ssh installation
-          SetIfaceDown(dev_name) if !Mode.autoinst
-
-          @force_restart = true
-        end
-        net_rules = Builtins.add(
-          net_rules,
-          Builtins.mergestring(item_udev_net, ", ")
-        )
-      end
-
-      Builtins.y2milestone("write net udev rules: %1", net_rules)
-
-      write_update_udevd(net_rules)
-
-      true
-    end
-
-    def WriteUdevDriverRules
-      udev_drivers_rules = {}
-
-      Builtins.foreach(
-        Convert.convert(
-          Map.Keys(@Items),
-          from: "list",
-          to:   "list <integer>"
-        )
-      ) do |key|
-        driver = Ops.get_string(@Items, [key, "udev", "driver"], "")
-        if IsNotEmpty(driver)
-          modalias = Ops.get_string(@Items, [key, "hwinfo", "modalias"], "")
-          driver_rule = []
-
-          driver_rule = AddToUdevRule(
-            driver_rule,
-            Builtins.sformat("ENV{MODALIAS}==\"%1\"", modalias)
-          )
-          driver_rule = AddToUdevRule(
-            driver_rule,
-            Builtins.sformat("ENV{MODALIAS}=\"%1\"", driver)
-          )
-
-          Ops.set(udev_drivers_rules, driver, driver_rule)
-        end
-      end
-
-      Builtins.y2milestone("write drivers udev rules: %1", udev_drivers_rules)
-
-      SCR.Write(path(".udev_persistent.drivers"), udev_drivers_rules)
-
-      # write rules from driver
-      Builtins.foreach(
-        Convert.convert(
-          @driver_options,
-          from: "map <string, any>",
-          to:   "map <string, string>"
-        )
-      ) do |key, value|
-        val = {}
-        Builtins.foreach(Builtins.splitstring(value, " ")) do |k|
-          l = Builtins.splitstring(k, "=")
-          Ops.set(val, Ops.get(l, 0, ""), Ops.get(l, 1, ""))
-        end
-        val = nil if IsEmpty(value)
-        SCR.Write(Builtins.add(path(".modules.options"), key), val)
-      end
-
-      SCR.Write(path(".modules"), nil)
-
-      nil
-    end
-
-    def WriteUdevRules
-      WriteUdevItemsRules()
-      WriteUdevDriverRules()
-
-      # wait so that ifcfgs written in NetworkInterfaces are newer
-      # (1-second-wise) than netcontrol status files,
-      # and rcnetwork reload actually works (bnc#749365)
-      SCR.Execute(path(".target.bash"), "/usr/bin/udevadm settle")
-      sleep(1)
-
-      nil
-    end
-
-    def write
-      renamed_items = @Items.keys.select { |item_id| renamed?(item_id) }
-      renamed_items.each do |item_id|
-        devmap = GetDeviceMap(item_id)
-        # change configuration name if device is configured
-        NetworkInterfaces.Change2(renamed_to(item_id), devmap, false) if devmap
-        SetItemName(item_id, renamed_to(item_id))
-      end
-
-      LanItems.WriteUdevRules if !Stage.cont && InstallInfConvertor.instance.AllowUdevModify
-
-      # FIXME: hack: no "netcard" filter as biosdevname names it diferently (bnc#712232)
-      NetworkInterfaces.Write("")
-    end
-
-    # Exports configuration for use in AY profile
-    #
-    # TODO: it currently exports only udevs (as a consequence of dropping LanUdevAuto)
-    # so once it is extended, all references has to be checked
-    def export(devices)
-      export_udevs(devices)
-    end
-
     # Function which returns if the settings were modified
     # @return [Boolean]  settings were modified
     def GetModified
@@ -771,30 +247,6 @@ module Yast
       @modified = true
 
       nil
-    end
-
-    def AddNew
-      @current = @Items.to_h.size
-      # Items[@current] is expected to always exist
-      @Items[@current] = {}
-      @operation = :add
-
-      nil
-    end
-
-    # return list of available modules for current device
-    # with default default_module (on first possition)
-
-    def GetItemModules(default_module)
-      mods = []
-      mods = Builtins.add(mods, default_module) if IsNotEmpty(default_module)
-      Builtins.foreach(
-        Ops.get_list(@Items, [@current, "hwinfo", "drivers"], [])
-      ) do |row|
-        tmp_mod = Ops.get_string(row, ["modules", 0, 0], "")
-        mods = Builtins.add(mods, tmp_mod) if !Builtins.contains(mods, tmp_mod)
-      end
-      deep_copy(mods)
     end
 
     # Creates list of all known netcard items
@@ -900,29 +352,6 @@ module Yast
       !item_id.nil?
     end
 
-    # search all known devices to find it's index in Items array
-    #
-    # @param [String] device matched with item[ "hwinfo", "dev_name"]
-    # @return index in Items or -1 if not found
-    def FindDeviceIndex(device)
-      ret = -1
-
-      Builtins.foreach(
-        Convert.convert(
-          @Items,
-          from: "map <integer, any>",
-          to:   "map <integer, map <string, any>>"
-        )
-      ) do |i, a|
-        if Ops.get_string(a, ["hwinfo", "dev_name"], "") == device
-          ret = i
-          raise Break
-        end
-      end
-
-      ret
-    end
-
     # It finds a new style device name for device name in old fashioned format
     #
     # It goes through currently present devices and tries to mach it to given
@@ -959,87 +388,6 @@ module Yast
       @Items = {}
       @Hardware = ReadHardware("netcard")
       # Hardware = [$["active":true, "bus":"pci", "busid":"0000:02:00.0", "dev_name":"wlan0", "drivers":[$["active":true, "modprobe":true, "modules":[["ath5k" , ""]]]], "link":true, "mac":"00:22:43:37:55:c3", "modalias":"pci:v0000168Cd0000001Csv00001A3Bsd00001026bc02s c00i00", "module":"ath5k", "name":"AR242x 802.11abg Wireless PCI Express Adapter", "num":0, "options":"", "re quires":[], "sysfs_id":"/devices/pci0000:00/0000:00:1c.1/0000:02:00.0", "type":"wlan", "udi":"/org/freedeskto p/Hal/devices/pci_168c_1c", "wl_auth_modes":["open", "sharedkey", "wpa-psk", "wpa-eap"], "wl_bitrates":nil, " wl_channels":["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"], "wl_enc_modes":["WEP40", "WEP104", "T KIP", "CCMP"]], $["active":true, "bus":"pci", "busid":"0000:01:00.0", "dev_name":"eth0", "drivers":[$["active ":true, "modprobe":true, "modules":[["atl1e", ""]]]], "link":false, "mac":"00:23:54:3f:7c:c3", "modalias":"pc i:v00001969d00001026sv00001043sd00008324bc02sc00i00", "module":"atl1e", "name":"L1 Gigabit Ethernet Adapter", "num":1, "options":"", "requires":[], "sysfs_id":"/devices/pci0000:00/0000:00:1c.3/0000:01:00.0", "type":"et h", "udi":"/org/freedesktop/Hal/devices/pci_1969_1026", "wl_auth_modes":nil, "wl_bitrates":nil, "wl_channels" :nil, "wl_enc_modes":nil]];
-      ReadUdevDriverRules()
-
-      udev_drivers_rules = Convert.convert(
-        SCR.Read(path(".udev_persistent.drivers")),
-        from: "any",
-        to:   "map <string, any>"
-      )
-      Builtins.foreach(@Hardware) do |hwitem|
-        udev_net = if Ops.get_string(hwitem, "dev_name", "") != ""
-          Ops.get_list(
-            @udev_net_rules,
-            Ops.get_string(hwitem, "dev_name", ""),
-            []
-          )
-        else
-          []
-        end
-        mod = Builtins.deletechars(
-          Ops.get(
-            Builtins.splitstring(
-              Ops.get(
-                Ops.get_list(
-                  udev_drivers_rules,
-                  Ops.get_string(hwitem, "modalias", ""),
-                  []
-                ),
-                1,
-                ""
-              ),
-              "="
-            ),
-            1,
-            ""
-          ),
-          "\""
-        )
-        Ops.set(
-          @Items,
-          Builtins.size(@Items),
-          "hwinfo" => hwitem,
-          "udev"   => { "net" => udev_net, "driver" => mod }
-        )
-      end
-
-      nil
-    end
-
-    # initializates @Items
-    #
-    # It does:
-    # (1) read hardware present on the system
-    # (2) read known configurations (e.g. ifcfg-eth0)
-    # (3) joins together. Join is done via device name (e.g. eth0) as key.
-    # It is full outer join in -> you can have hwinfo part with no coresponding
-    # netconfig part (or vice versa) in @Items when the method is done.
-    def Read
-      reset_cache
-
-      ReadHw()
-      NetworkInterfaces.Read
-      NetworkInterfaces.adapt_old_config!
-      NetworkInterfaces.CleanHotplugSymlink
-
-      interfaces = getNetworkInterfaces
-      items = LanItems.Items
-      # match configurations to Items list with hwinfo
-      interfaces.each do |confname|
-        items.each do |key, value|
-          match = value.fetch("hwinfo", {}).fetch("dev_name", "") == confname
-          items[key]["ifcfg"] = confname if match
-        end
-      end
-
-      interfaces.each do |confname|
-        next if items.values.any? { |item| item && item["ifcfg"] == confname }
-
-        items[items.size] = { "ifcfg" => confname }
-      end
-
-      log.info "Read Configuration LanItems::Items #{@Items}"
-
       nil
     end
 
@@ -1067,12 +415,6 @@ module Yast
     def Import(settings)
       reset_cache
 
-      items = LanItems.Items
-      NetworkInterfaces.Import("netcard", settings["devices"] || {})
-      NetworkInterfaces.List("netcard").each do |device|
-        items[items.size] = { "ifcfg" => device }
-      end
-
       @autoinstall_settings["start_immediately"] = settings.fetch("start_immediately", false)
       @autoinstall_settings["strict_IP_check_timeout"] = settings.fetch("strict_IP_check_timeout", -1)
       @autoinstall_settings["keep_install_network"] = settings.fetch("keep_install_network", true)
@@ -1088,39 +430,6 @@ module Yast
       SetModified() if !settings.empty?
 
       true
-    end
-
-    def GetDescr
-      descr = []
-      Builtins.foreach(
-        Convert.convert(
-          @Items,
-          from: "map <integer, any>",
-          to:   "map <integer, map <string, any>>"
-        )
-      ) do |key, value|
-        if Builtins.haskey(value, "table_descr") &&
-            Ops.greater_than(
-              Builtins.size(Ops.get_map(@Items, [key, "table_descr"], {})),
-              1
-            )
-          descr = Builtins.add(
-            descr,
-            "id"          => key,
-            "rich_descr"  => Ops.get_string(
-              @Items,
-              [key, "table_descr", "rich_descr"],
-              ""
-            ),
-            "table_descr" => Ops.get_list(
-              @Items,
-              [key, "table_descr", "table_descr"],
-              []
-            )
-          )
-        end
-      end
-      deep_copy(descr)
     end
 
     def needFirmwareCurrentItem
@@ -1234,9 +543,9 @@ module Yast
     # It supports differents types of summaries depending on the options[:type]
     #
     # @see LanItemsSummary
-    # @param type [Hash] summary options
+    # @param type [String,Symbol] summary options, supported "one-line" and "proposal"
     # @return [String] summary of the configured items
-    def summary(type = "default")
+    def summary(type)
       LanItemsSummary.new.send(type)
     end
 
@@ -1277,126 +586,6 @@ module Yast
       bullets
     end
 
-    # FIXME: side effect: sets @type. No reason for that. It should only build item
-    #   overview. Check and remove.
-    def BuildLanOverview
-      overview = []
-      links = []
-
-      LanItems.Items.each_key do |key|
-        rich = ""
-
-        item_hwinfo = LanItems.Items[key]["hwinfo"] || {}
-        descr = item_hwinfo["name"] || ""
-
-        note = ""
-        bullets = []
-        ifcfg_name = LanItems.Items[key]["ifcfg"] || ""
-        ifcfg_type = NetworkInterfaces.GetType(ifcfg_name)
-
-        if !ifcfg_name.empty?
-          ifcfg_conf = GetDeviceMap(key)
-          log.error("BuildLanOverview: devmap for #{key}/#{ifcfg_name} is nil") if ifcfg_conf.nil?
-
-          ifcfg_desc = ifcfg_conf["NAME"]
-          descr = ifcfg_desc if !ifcfg_desc.nil? && !ifcfg_desc.empty?
-          descr = CheckEmptyName(ifcfg_type, descr)
-          status = DeviceStatus(ifcfg_type, ifcfg_name, ifcfg_conf)
-
-          bullets << _("Device Name: %s") % ifcfg_name
-          bullets += startmode_overview(key)
-          bullets += ip_overview(ifcfg_conf) if ifcfg_conf["STARTMODE"] != "managed"
-
-          if ifcfg_type == "wlan" &&
-              ifcfg_conf["WIRELESS_AUTH_MODE"] == "open" &&
-              IsEmpty(ifcfg_conf["WIRELESS_KEY_0"])
-
-            # avoid colons
-            ifcfg_name = ifcfg_name.tr(":", "/")
-            href = "lan--wifi-encryption-" + ifcfg_name
-            # interface summary: WiFi without encryption
-            warning = HTML.Colorize(_("Warning: no encryption is used."), "red")
-            # Hyperlink: Change the configuration of an interface
-            status << " " << warning << " " << Hyperlink(href, _("Change."))
-            links << href
-          end
-
-          if ifcfg_type == "bond" || ifcfg_type == "br"
-            bullets << slaves_desc(ifcfg_type, ifcfg_name)
-          end
-
-          if enslaved?(ifcfg_name)
-            if yast_config.interfaces.bond_index[ifcfg_name]
-              master = yast_config.interfaces.bond_index[ifcfg_name]
-              master_desc = _("Bonding master")
-            else
-              master = yast_config.interfaces.bridge_index[ifcfg_name]
-              master_desc = _("Bridge")
-            end
-            note = format(_("enslaved in %s"), master)
-            bullets << format("%s: %s", master_desc, master)
-          end
-
-          if renamed?(key)
-            note = format("%s -> %s", GetDeviceName(key), renamed_to(key))
-          end
-
-          overview << Summary.Device(descr, status)
-        else
-          descr = CheckEmptyName(ifcfg_type, descr)
-          overview << Summary.Device(descr, Summary.NotConfigured)
-        end
-        conn = ""
-        conn = HTML.Bold(format("(%s)", _("Not connected"))) if !item_hwinfo["link"]
-        conn = HTML.Bold(format("(%s)", _("No hwinfo"))) if item_hwinfo.empty?
-
-        mac_dev = HTML.Bold("MAC : ") + item_mac(key).to_s + "<br>"
-        bus_id  = HTML.Bold("BusID : ") + item_hwinfo["busid"].to_s + "<br>"
-        physical_port_id = HTML.Bold("PhysicalPortID : ") + physical_port_id(ifcfg_name) + "<br>"
-
-        rich << " " << conn << "<br>" << mac_dev if IsNotEmpty(item_mac(key))
-        rich << bus_id if IsNotEmpty(item_hwinfo["busid"])
-        rich << physical_port_id if physical_port_id?(ifcfg_name)
-        # display it only if we need it, don't duplicate "ifcfg_name" above
-        if IsNotEmpty(item_hwinfo["dev_name"]) && ifcfg_name.empty?
-          dev_name = _("Device Name: %s") % item_hwinfo["dev_name"]
-          rich << HTML.Bold(dev_name) << "<br>"
-        end
-        rich = HTML.Bold(descr) + rich
-        if IsEmpty(item_hwinfo["dev_name"]) && !item_hwinfo.empty? && !Arch.s390
-          rich << "<p>"
-          rich << _("Unable to configure the network card because the kernel device (eth0, wlan0) is not present. This is mostly caused by missing firmware (for wlan devices). See dmesg output for details.")
-          rich << "</p>"
-        elsif !ifcfg_name.empty?
-          rich << HTML.List(bullets)
-        else
-          rich << "<p>"
-          rich << _("The device is not configured. Press <b>Edit</b>\nto configure.\n")
-          rich << "</p>"
-
-          curr = @current
-          @current = key
-          if needFirmwareCurrentItem
-            fw = GetFirmwareForCurrentItem()
-            rich << format("%s : %s", _("Needed firmware"), !fw.empty? ? fw : _("unknown"))
-          end
-          @current = curr
-        end
-        LanItems.Items[key]["table_descr"] = {
-          "rich_descr"  => rich,
-          "table_descr" => [descr, DeviceProtocol(ifcfg_conf), ifcfg_name, note]
-        }
-      end
-      [Summary.DevicesList(overview), links]
-    end
-
-    # Create an overview table with all configured devices
-    # @return table items
-    def Overview
-      BuildLanOverview()
-      GetDescr()
-    end
-
     # Is current device hotplug or not? I.e. is connected via usb/pcmci?
     def isCurrentHotplug
       hotplugtype = Ops.get_string(getCurrentItem, ["hwinfo", "hotplug"], "")
@@ -1407,312 +596,22 @@ module Yast
     # from DHCP (v4, v6 or both)
     # @return true if it is
     def isCurrentDHCP
-      Builtins.regexpmatch(@bootproto, "dhcp[46]?")
+      return false unless @bootproto
+
+      Y2Network::BootProtocol.from_name(@bootproto).dhcp?
     end
 
     # Checks whether given device configuration is set to use a dhcp bootproto
     #
     # ideally should replace @see isCurrentDHCP
     def dhcp?(devmap)
-      ["dhcp4", "dhcp6", "dhcp", "dhcp+autoip"].include?(devmap["BOOTPROTO"])
-    end
+      return false unless devmap["BOOTPROTO"]
 
-    def GetItemDescription
-      Ops.get_string(@Items, [@current, "table_descr", "rich_descr"], "")
-    end
-
-    # Select the hardware component
-    # @param hardware the component
-    def SelectHWMap(hardware)
-      hardware = deep_copy(hardware)
-      sel = SelectHardwareMap(hardware)
-
-      # common stuff
-      @description = Ops.get_string(sel, "name", "")
-      @type = Ops.get_string(sel, "type", "eth")
-      @hotplug = Ops.get_string(sel, "hotplug", "")
-
-      @Requires = Ops.get_list(sel, "requires", [])
-      # #44977: Requires now contain the appropriate kernel packages
-      # but they are handled differently due to multiple kernel flavors
-      # (see Package::InstallKernel)
-      # Leave only those not starting with "kernel".
-      @Requires = Builtins.filter(@Requires) do |r|
-        Builtins.search(r, "kernel") != 0
-      end
-      Builtins.y2milestone("requires=%1", @Requires)
-
-      # FIXME: devname
-      @hotplug = ""
-
-      # Wireless Card Features
-      @wl_auth_modes = Builtins.prepend(
-        hardware["wl_auth_modes"],
-        "no-encryption"
-      )
-      @wl_enc_modes = hardware["wl_enc_modes"]
-      @wl_channels = hardware["wl_channels"]
-      @wl_bitrates = hardware["wl_bitrates"]
-
-      Builtins.y2milestone("hw=%1", hardware)
-
-      @hw = deep_copy(hardware)
-      if Arch.s390 && @operation == :add
-        Builtins.y2internal("Propose chan_ids values for %1", @hw)
-        devid = 0
-        devstr = ""
-        s390chanid = "[0-9]+\\.[0-9]+\\."
-        if Builtins.regexpmatch(Ops.get_string(@hw, "busid", ""), s390chanid)
-          devid = Builtins.tointeger(
-            Ops.add(
-              "0x",
-              Builtins.regexpsub(
-                Ops.get_string(@hw, "busid", ""),
-                Ops.add(s390chanid, "(.*)"),
-                "\\1"
-              )
-            )
-          )
-          devstr = Builtins.regexpsub(
-            Ops.get_string(@hw, "busid", ""),
-            Ops.add(Ops.add("(", s390chanid), ").*"),
-            "\\1"
-          )
-        end
-
-        Builtins.y2milestone("devid=%1(%2)", devid, devstr)
-        devid = 0 if devid.nil?
-        devid0 = String.PadZeros(
-          Builtins.regexpsub(Builtins.tohexstring(devid), "0x(.*)", "\\1"),
-          4
-        )
-        devid1 = String.PadZeros(
-          Builtins.regexpsub(
-            Builtins.tohexstring(Ops.add(devid, 1)),
-            "0x(.*)",
-            "\\1"
-          ),
-          4
-        )
-        devid2 = String.PadZeros(
-          Builtins.regexpsub(
-            Builtins.tohexstring(Ops.add(devid, 2)),
-            "0x(.*)",
-            "\\1"
-          ),
-          4
-        )
-        @qeth_chanids = if DriverType(@type) == "ctc" || DriverType(@type) == "lcs"
-          Builtins.sformat("%1%2 %1%3", devstr, devid0, devid1)
-        else
-          Builtins.sformat(
-            "%1%2 %1%3 %1%4",
-            devstr,
-            devid0,
-            devid1,
-            devid2
-          )
-        end
-      end
-
-      nil
+      Y2Network::BootProtocol.from_name(devmap["BOOTPROTO"]).dhcp?
     end
 
     #-------------------
     # PRIVATE FUNCTIONS
-
-    # Distributes an ifcfg hash to individual attributes.
-    # @param devmap   [Hash] an ifcfg, values are strings
-    # @param defaults [Hash] should provide defaults for devmap
-    # @return [Hash] devmap with used values
-    def SetDeviceVars(devmap, defaults)
-      d = defaults.merge(devmap)
-      # address options
-      @bootproto         = d["BOOTPROTO"]
-      @ipaddr            = d["IPADDR"]
-      @prefix            = d["PREFIXLEN"]
-      @netmask           = d["NETMASK"]
-      @firewall_zone     = d["ZONE"]
-      @set_default_route = case d["DHCLIENT_SET_DEFAULT_ROUTE"]
-      when "yes" then true
-      when "no" then  false
-        # all other values! count as unspecified which is default value
-      end
-
-      @startmode         = d["STARTMODE"]
-      @description       = d["NAME"]
-      @bond_option       = d["BONDING_MODULE_OPTS"]
-      @vlan_etherdevice  = d["ETHERDEVICE"]
-
-      @bridge_ports = d["BRIDGE_PORTS"]
-
-      @bond_slaves = []
-      Builtins.foreach(devmap) do |key, value|
-        if Builtins.regexpmatch(Convert.to_string(key), "BONDING_SLAVE[0-9]+")
-          if !Convert.to_string(value).nil?
-            @bond_slaves = Builtins.add(@bond_slaves, Convert.to_string(value))
-          end
-        end
-      end
-      d["BOND_SLAVES"] = @bond_slaves
-
-      # tun/tap settings
-      @tunnel_set_owner = d["TUNNEL_SET_OWNER"]
-      @tunnel_set_group = d["TUNNEL_SET_GROUP"]
-
-      # wireless options
-      @wl_mode            = d["WIRELESS_MODE"]
-      @wl_essid           = d["WIRELESS_ESSID"]
-      @wl_nwid            = d["WIRELESS_NWID"]
-      @wl_auth_mode       = d["WIRELESS_AUTH_MODE"]
-      @wl_wpa_psk         = d["WIRELESS_WPA_PSK"]
-      @wl_key_length      = d["WIRELESS_KEY_LENGTH"]
-      @wl_key             = [
-        d["WIRELESS_KEY_0"],
-        d["WIRELESS_KEY_1"],
-        d["WIRELESS_KEY_2"],
-        d["WIRELESS_KEY_3"]
-      ]
-      @wl_key[0]          = d["WIRELESS_KEY"] if (@wl_key[0] || "").empty?
-
-      @wl_default_key     = d["WIRELESS_DEFAULT_KEY"].to_i
-      @wl_nick            = d["WIRELESS_NICK"]
-      @wl_wpa_eap = {
-        "WPA_EAP_MODE"                => d["WIRELESS_EAP_MODE"],
-        "WPA_EAP_IDENTITY"            => d["WIRELESS_WPA_IDENTITY"],
-        "WPA_EAP_PASSWORD"            => d["WIRELESS_WPA_PASSWORD"],
-        "WPA_EAP_ANONID"              => d["WIRELESS_WPA_ANONID"],
-        "WPA_EAP_CLIENT_CERT"         => d["WIRELESS_CLIENT_CERT"],
-        "WPA_EAP_CLIENT_KEY"          => d["WIRELESS_CLIENT_KEY"],
-        "WPA_EAP_CLIENT_KEY_PASSWORD" => d["WIRELESS_CLIENT_KEY_PASSWORD"],
-        "WPA_EAP_CA_CERT"             => d["WIRELESS_CA_CERT"],
-        "WPA_EAP_AUTH"                => d["WIRELESS_EAP_AUTH"],
-        "WPA_EAP_PEAP_VERSION"        => d["WIRELESS_PEAP_VERSION"]
-      }
-      @wl_channel     = d["WIRELESS_CHANNEL"]
-      @wl_frequency   = d["WIRELESS_FREQUENCY"]
-      @wl_bitrate     = d["WIRELESS_BITRATE"]
-      @wl_accesspoint = d["WIRELESS_AP"]
-      @wl_power       = d["WIRELESS_POWER"] == "yes"
-      @wl_ap_scanmode = d["WIRELESS_AP_SCANMODE"]
-
-      @aliases = Ops.get_map(devmap, "_aliases", {})
-
-      d
-    end
-
-    # Initializes s390 specific device variables.
-    #
-    # @param [Hash] devmap    map with s390 specific attributes and its values
-    # @param [Hash] defaults  map with default values for attributes not found in devmap
-    # @return [Hash] devmap with used values
-    def SetS390Vars(devmap, defaults)
-      return if !Arch.s390
-      d = defaults.merge(devmap)
-
-      @qeth_portname   = d["QETH_PORTNAME"]
-      @qeth_portnumber = d["QETH_PORTNUMBER"]
-      @qeth_layer2     = d["QETH_LAYER2"] == "yes"
-      @qeth_chanids    = d["QETH_CHANIDS"]
-
-      # s/390 options
-      # We always have to set the MAC Address for qeth Layer2 support.
-      # It is used mainly as a hint for user that MAC is expected in case
-      # of Layer2 devices. Other devices do not need it. Simply
-      # because such devices do not emulate Layer2
-      @qeth_macaddress = d["LLADDR"] if @qeth_layer2
-
-      # qeth attribute. FIXME: currently not read from system.
-      @ipa_takeover = defaults["IPA_TAKEOVER"] == "yes"
-
-      # not device attribute
-      @qeth_options = defaults["QETH_OPTIONS"] || ""
-
-      # handle non qeth devices
-      @iucv_user = defaults["IUCV_USER"] || ""
-      @chan_mode = defaults["CHAN_MODE"] || ""
-
-      d
-    end
-
-    def InitS390VarsByDefaults
-      SetS390Vars({}, @s390_defaults)
-    end
-
-    # Select the given device
-    # FIXME: currently *dev* is always ""
-    # @param [String] dev device to select ("" for new device, default values)
-    # @return true if success
-    def Select(dev)
-      Builtins.y2debug("dev=%1", dev)
-
-      # FIXME: should be removed, it is genereated by builder
-      devmap = {}
-
-      # FIXME: encapsulate into LanItems.GetItemType ?
-      @type = Ops.get_string(@Items, [@current, "hwinfo", "type"], "eth")
-      @device = new_type_device(@type)
-
-      # TODO: instead of udev use hwinfo dev_name
-      NetworkInterfaces.Name = GetItemUdev("NAME")
-      if Ops.less_than(Builtins.size(@Items), @current)
-        Ops.set(@Items, @current, "ifcfg" => NetworkInterfaces.Name)
-      else
-        Ops.set(@Items, [@current, "ifcfg"], NetworkInterfaces.Name)
-      end
-
-      # general stuff
-      @description = BuildDescription(@type, @device, devmap, @Hardware)
-
-      SetDeviceVars(devmap, @SysconfigDefaults)
-      InitS390VarsByDefaults()
-
-      @hotplug = ""
-      Builtins.y2debug("type=%1", @type)
-      if Builtins.issubstring(@type, "-")
-        @type = Builtins.regexpsub(@type, "([^-]+)-.*$", "\\1")
-      end
-      Builtins.y2debug("type=%1", @type)
-
-      true
-    end
-
-    TRISTATE_TO_S = { nil => nil, false => "no", true => "yes" }.freeze
-
-    # Sets device map items related to dhclient
-    def setup_dhclient_options(devmap)
-      if dhcp?(devmap)
-        val = TRISTATE_TO_S.fetch(@set_default_route)
-        devmap["DHCLIENT_SET_DEFAULT_ROUTE"] = val if val
-      end
-      devmap
-    end
-
-    # Sets bonding specific sysconfig options in given device map
-    #
-    # If any bonding specific option is present already it gets overwritten
-    # by new ones in case of collision. If any BONDING_SLAVEx from devmap
-    # is not set, then its value is set to 'nil'
-    #
-    # @param devmap [Hash] hash of a device's sysconfig variables
-    # @param slaves [array] list of strings, each string is a bond slave name
-    #
-    # @return [Hash] updated copy of the device map
-    def setup_bonding(devmap, slaves, options)
-      raise ArgumentError, "Device map has to be provided." if devmap.nil?
-
-      devmap = deep_copy(devmap)
-      slaves ||= []
-
-      slave_opts = devmap.select { |k, _| k.start_with?("BONDING_SLAVE") }.keys
-      slave_opts.each { |s| devmap[s] = nil }
-      slaves.each_with_index { |s, i| devmap["BONDING_SLAVE#{i}"] = s }
-
-      devmap["BONDING_MODULE_OPTS"] = options || ""
-      devmap["BONDING_MASTER"] = "yes"
-
-      devmap
-    end
 
     # Commit pending operation
     #
@@ -1722,126 +621,11 @@ module Yast
     #
     # @return true if success
     def Commit(builder)
-      if @operation != :add && @operation != :edit
-        log.error("Unknown operation: #{@operation}")
-        raise ArgumentError, "Unknown operation: #{@operation}"
-      end
-
       log.info "committing builder #{builder.inspect}"
       builder.save # does all modification, later only things that is not yet converted
-      # FIXME: most of the following stuff should be moved into InterfaceConfigBuilder
-      # when generating sysconfig configuration
-      newdev = builder.device_sysconfig
 
-      # #50955 omit computable fields
-      newdev["BROADCAST"] = ""
-      newdev["NETWORK"] = ""
-
-      # set LLADDR to sysconfig only for device on layer2 and only these which needs it
-      # do not write incorrect LLADDR.
-      # FIXME: s390 - broken in network-ng
-      if @qeth_layer2 && s390_correct_lladdr(@qeth_macaddress)
-        busid = Ops.get_string(@Items, [@current, "hwinfo", "busid"], "")
-        # sysfs id has changed from css0...
-        sysfs_id = "/devices/qeth/#{busid}"
-        log.info("busid #{busid}")
-        if s390_device_needs_persistent_mac(sysfs_id, @Hardware)
-          newdev["LLADDR"] = @qeth_macaddress
-        end
-      end
-
-      newdev = setup_dhclient_options(newdev)
-
-      # FIXME: network-ng currently works for eth only
-      case builder.type
-      when "bond"
-        # we need current slaves - when some of them is not used anymore we need to
-        # configure it for deletion from ifcfg (SCR expects special value nil)
-        current_slaves = (GetCurrentMap() || {}).select { |k, _| k.start_with?("BONDING_SLAVE") }
-        newdev = setup_bonding(newdev.merge(current_slaves), @bond_slaves, builder.bond_options)
-
-      when "wlan"
-        newdev["WIRELESS_MODE"] = @wl_mode
-        newdev["WIRELESS_ESSID"] = @wl_essid
-        newdev["WIRELESS_NWID"] = @wl_nwid
-        newdev["WIRELESS_AUTH_MODE"] = @wl_auth_mode
-        newdev["WIRELESS_WPA_PSK"] = @wl_wpa_psk
-        newdev["WIRELESS_KEY_LENGTH"] = @wl_key_length
-        # obsoleted by WIRELESS_KEY_0
-        newdev["WIRELESS_KEY"] = "" # TODO: delete the varlable
-        newdev["WIRELESS_KEY_0"] = Ops.get(@wl_key, 0, "")
-        newdev["WIRELESS_KEY_1"] = Ops.get(@wl_key, 1, "")
-        newdev["WIRELESS_KEY_2"] = Ops.get(@wl_key, 2, "")
-        newdev["WIRELESS_KEY_3"] = Ops.get(@wl_key, 3, "")
-        Ops.set(
-          newdev,
-          "WIRELESS_DEFAULT_KEY",
-          Builtins.tostring(@wl_default_key)
-        )
-        Ops.set(newdev, "WIRELESS_NICK", @wl_nick)
-        Ops.set(newdev, "WIRELESS_AP_SCANMODE", @wl_ap_scanmode)
-
-        if @wl_wpa_eap != {}
-          Ops.set(
-            newdev,
-            "WIRELESS_EAP_MODE",
-            Ops.get_string(@wl_wpa_eap, "WPA_EAP_MODE", "")
-          )
-          Ops.set(
-            newdev,
-            "WIRELESS_WPA_IDENTITY",
-            Ops.get_string(@wl_wpa_eap, "WPA_EAP_IDENTITY", "")
-          )
-          Ops.set(
-            newdev,
-            "WIRELESS_WPA_PASSWORD",
-            Ops.get_string(@wl_wpa_eap, "WPA_EAP_PASSWORD", "")
-          )
-          Ops.set(
-            newdev,
-            "WIRELESS_WPA_ANONID",
-            Ops.get_string(@wl_wpa_eap, "WPA_EAP_ANONID", "")
-          )
-          Ops.set(
-            newdev,
-            "WIRELESS_CLIENT_CERT",
-            Ops.get_string(@wl_wpa_eap, "WPA_EAP_CLIENT_CERT", "")
-          )
-          Ops.set(
-            newdev,
-            "WIRELESS_CLIENT_KEY",
-            Ops.get_string(@wl_wpa_eap, "WPA_EAP_CLIENT_KEY", "")
-          )
-          Ops.set(
-            newdev,
-            "WIRELESS_CLIENT_KEY_PASSWORD",
-            Ops.get_string(@wl_wpa_eap, "WPA_EAP_CLIENT_KEY_PASSWORD", "")
-          )
-          Ops.set(
-            newdev,
-            "WIRELESS_CA_CERT",
-            Ops.get_string(@wl_wpa_eap, "WPA_EAP_CA_CERT", "")
-          )
-          Ops.set(
-            newdev,
-            "WIRELESS_EAP_AUTH",
-            Ops.get_string(@wl_wpa_eap, "WPA_EAP_AUTH", "")
-          )
-          Ops.set(
-            newdev,
-            "WIRELESS_PEAP_VERSION",
-            Ops.get_string(@wl_wpa_eap, "WPA_EAP_PEAP_VERSION", "")
-          )
-        end
-
-        newdev["WIRELESS_CHANNEL"] = @wl_channel
-        newdev["WIRELESS_FREQUENCY"] = @wl_frequency
-        newdev["WIRELESS_BITRATE"] = @wl_bitrate
-        newdev["WIRELESS_AP"] = @wl_accesspoint
-        newdev["WIRELESS_POWER"] = @wl_power ? "yes" : "no"
-      end
-
-      if DriverType(builder.type) == "ctc"
+      # TODO: still needed?
+      if DriverType(builder.type.short_name) == "ctc"
         if Ops.get(NetworkConfig.Config, "WAIT_FOR_INTERFACES").nil? ||
             Ops.less_than(
               Ops.get_integer(NetworkConfig.Config, "WAIT_FOR_INTERFACES", 0),
@@ -1851,37 +635,6 @@ module Yast
         end
       end
 
-      # ZONE uses an empty string as the default ZONE which means that is not
-      # the same than not defining the attribute
-      current_map = (GetCurrentMap() || {}).select { |k, v| !v.nil? && (k == "ZONE" || !v.empty?) }
-      # FIXME: move to config builder (might depend on some proposals above)
-      new_map = newdev.select { |k, v| !v.nil? && (k == "ZONE" || !v.empty?) }
-
-      log.info "current map #{current_map.inspect}"
-      log.info "new map #{newdev.inspect}"
-
-      # CanonicalizeIP is called to get new device map into the same shape as
-      # NetworkInterfaces provides the current one.
-      if current_map != NetworkInterfaces.CanonicalizeIP(new_map)
-        keep_existing = false
-        ifcfg_name = builder.name
-        ifcfg_name.replace("") if !NetworkInterfaces.Change2(ifcfg_name, newdev, keep_existing)
-
-        # bnc#752464 - can leak wireless passwords
-        # useful only for debugging. Writes huge struct mostly filled by defaults.
-        Builtins.y2debug("%1", NetworkInterfaces.ConcealSecrets1(newdev))
-
-        # configure bridge ports
-        bridge_ports = builder["BRIDGE_PORTS"]
-        if bridge_ports
-          log.info "Configuring bridge ports #{bridge_ports} for: #{ifcfg_name}"
-          bridge_ports.split.each { |bp| configure_as_bridge_port(bp) }
-        end
-
-        SetModified()
-      end
-
-      @operation = nil
       true
     end
 
@@ -1903,69 +656,7 @@ module Yast
       true
     end
 
-    # Deletes item and its configuration
-    #
-    # Item for deletion is searched using device name
-    def delete_dev(name)
-      FindAndSelect(name)
-      DeleteItem()
-    end
-
-    # Deletes the {#current} item and its configuration
-    def DeleteItem
-      return if @current < 0
-      return if @Items.nil? || @Items.empty?
-
-      log.info("DeleteItem: #{@Items[@current]}")
-
-      devmap = GetCurrentMap()
-      drop_hosts(devmap["IPADDR"]) if devmap
-      # We have to remove it from routing before deleting the item
-      remove_current_device_from_routing
-
-      SetCurrentName("")
-
-      current_item = @Items[@current]
-
-      if current_item["hwinfo"].nil? || current_item["hwinfo"].empty?
-        # size is always > 0 here and items are numbered 0, 1, ..., size -1
-        delete_index = @Items.size - 1
-
-        @Items[@current] = @Items[delete_index] if delete_index != @current
-        @Items.delete(delete_index)
-
-        # item was deleted, so original @current is invalid
-        @current = -1
-      end
-
-      SetModified()
-
-      nil
-    end
-
-    def SetItem(builder:)
-      @operation = :edit
-      @device = Ops.get_string(getCurrentItem, "ifcfg", "")
-
-      NetworkInterfaces.Edit(@device)
-      @type = Ops.get_string(getCurrentItem, ["hwinfo", "type"], "")
-
-      @type = NetworkInterfaces.GetType(@device) if @type.empty?
-
-      # general stuff
-      devmap = deep_copy(NetworkInterfaces.Current)
-      s390_devmap = s390_ReadQethConfig(
-        Ops.get_string(getCurrentItem, ["hwinfo", "dev_name"], "")
-      )
-
-      @description = BuildDescription(@type, @device, devmap, @Hardware)
-
-      devmap = SetDeviceVars(devmap, @SysconfigDefaults)
-      s390_devmap = SetS390Vars(s390_devmap, @s390_defaults)
-
-      builder.load_sysconfig(devmap)
-      builder.load_s390_config(s390_devmap)
-
+    def SetItem(*)
       @hotplug = ""
       Builtins.y2debug("type=%1", @type)
       if Builtins.issubstring(@type, "-")
@@ -1974,74 +665,6 @@ module Yast
       Builtins.y2debug("type=%1", @type)
 
       nil
-    end
-
-    # A default configuration for device when installer needs to configure it
-    def ProposeItem(item_id)
-      Builtins.y2milestone("Propose configuration for %1", GetDeviceName(item_id))
-      return false if Select("") != true
-
-      type = Items().fetch(item_id, {}).fetch("hwinfo", {})[type]
-      builder = Y2Network::InterfaceConfigBuilder.for(type)
-
-      builder["MTU"] = "1492" if Arch.s390 && Builtins.contains(["lcs", "eth"], type)
-      builder["IPADDR"] = ""
-      builder["NETMASK"] = ""
-      builder["BOOTPROTO"] = "dhcp"
-
-      # see bsc#176804
-      devicegraph = Y2Storage::StorageManager.instance.staging
-      if devicegraph.filesystem_in_network?("/")
-        builder["STARTMODE"] = "nfsroot"
-        Builtins.y2milestone("startmode nfsroot")
-      end
-
-      # FIXME: seems like a hack
-      NetworkInterfaces.Add
-      @operation = :edit
-      Ops.set(
-        @Items,
-        [item_id, "ifcfg"],
-        Ops.get_string(GetLanItem(item_id), ["hwinfo", "dev_name"], "")
-      )
-      # FIXME: is it needed?
-      @description = HardwareName(
-        [Ops.get_map(GetLanItem(item_id), "hwinfo", {})],
-        Ops.get_string(GetLanItem(item_id), ["hwinfo", "dev_name"], "")
-      )
-
-      Commit(builder)
-      Builtins.y2milestone("After configuration propose %1", GetLanItem(item_id))
-      true
-    end
-
-    def setDriver(driver)
-      Builtins.y2milestone(
-        "driver %1, %2",
-        driver,
-        Ops.get_string(getCurrentItem, ["hwinfo", "module"], "")
-      )
-      if Ops.get_string(getCurrentItem, ["hwinfo", "module"], "") == driver &&
-          IsEmpty(Ops.get_string(getCurrentItem, ["udev", "driver"], ""))
-        return
-      end
-      Ops.set(@Items, [@current, "udev", "driver"], driver)
-
-      nil
-    end
-
-    def enableCurrentEditButton
-      return true if needFirmwareCurrentItem
-      return true if Arch.s390
-      if IsEmpty(Ops.get_string(getCurrentItem, ["hwinfo", "dev_name"], "")) &&
-          Ops.greater_than(
-            Builtins.size(Ops.get_map(getCurrentItem, "hwinfo", {})),
-            0
-          )
-        return false
-      else
-        return true
-      end
     end
 
     # Creates eth emulation for s390 devices
@@ -2062,7 +685,6 @@ module Yast
         @type = dev_attrs["type"] || ""
         @qeth_chanids = dev_attrs["chanids"] || ""
         @qeth_layer2 = dev_attrs.fetch("layer2", false)
-        @qeth_portname = dev_attrs["portname"] || ""
         @chan_mode = dev_attrs["protocol"] || ""
         @iucv_user = dev_attrs["router"] || ""
       end
@@ -2079,11 +701,6 @@ module Yast
         else
           ""
         end
-        @portname_param = if Ops.greater_than(Builtins.size(@qeth_portname), 0)
-          Builtins.sformat("-p %1", @qeth_portname.shellescape)
-        else
-          ""
-        end
         @options_param = if Ops.greater_than(Builtins.size(@qeth_options), 0)
           Builtins.sformat("-o %1", @qeth_options.shellescape)
         else
@@ -2093,7 +710,6 @@ module Yast
           "/sbin/qeth_configure %1 %2 %3 %4 %5 1",
           @options_param,
           @qeth_layer2 ? "-l" : "",
-          @portname_param,
           @portnumber_param,
           @qeth_chanids
         )
@@ -2213,55 +829,6 @@ module Yast
       udev_rules
     end
 
-    # Configures available devices for obtaining hostname via specified device
-    #
-    # This is related to setting system's hostname via DHCP. Apart of global
-    # DHCLIENT_SET_HOSTNAME which is set in /etc/sysconfig/network/dhcp and is
-    # used as default, one can specify the option even per interface. To avoid
-    # collisions / undeterministic behavior the system should be configured so,
-    # that just one DHCP interface can update the hostname. E.g. global option
-    # can be set to "no" and just only one ifcfg can have the option set to "yes".
-    #
-    # @param [String] device name where should be hostname configuration active
-    # @return [Boolean] false when the configuration cannot be set for a device
-    def conf_set_hostname(device)
-      return false if !find_dhcp_ifaces.include?(device)
-
-      clear_set_hostname
-
-      ret = SetItemSysconfigOpt(find_configured(device), "DHCLIENT_SET_HOSTNAME", "yes")
-
-      SetModified()
-
-      ret
-    end
-
-    # Removes DHCLIENT_SET_HOSTNAME from all ifcfgs
-    #
-    # @return [Array<String>] list of names of cleared devices
-    def clear_set_hostname
-      log.info("Clearing DHCLIENT_SET_HOSTNAME flag from device configs")
-
-      ret = []
-
-      GetNetcardInterfaces().each do |item_id|
-        dev_map = GetDeviceMap(item_id)
-        next if dev_map.nil? || dev_map.empty?
-        next if !dev_map["DHCLIENT_SET_HOSTNAME"]
-
-        dev_map["DHCLIENT_SET_HOSTNAME"] = nil
-
-        SetDeviceMap(item_id, dev_map)
-        SetModified()
-
-        ret << GetDeviceName(item_id)
-      end
-
-      log.info("#{ret.inspect} use default DHCLIENT_SET_HOSTNAME")
-
-      ret
-    end
-
     # Returns unused name for device of given type
     #
     # When already having eth0, eth1, enp0s3 devices (eth type) and asks for new
@@ -2318,61 +885,6 @@ module Yast
       publish variable: name, type: type
     end
 
-    # Returns a formated string with the interfaces that are part of a bridge
-    # or of a bond interface.
-    #
-    # @param [String] ifcfg_type
-    # @param [String] ifcfg_name
-    # @return [String] formated string with the interface type and the interfaces enslaved
-    def slaves_desc(ifcfg_type, ifcfg_name)
-      if ifcfg_type == "bond"
-        slaves = Y2Network::Config.find(:yast).interfaces.bond_slaves(ifcfg_name)
-        desc = _("Bonding slaves")
-      else
-        slaves = Y2Network::Config.find(:yast).interfaces.bridge_slaves(ifcfg_name)
-        desc = _("Bridge Ports")
-      end
-
-      format("%s: %s", desc, slaves.join(" "))
-    end
-
-    # Check if the given interface is enslaved in a bond or in a bridge
-    #
-    # @return [Boolean] true if enslaved
-    def enslaved?(ifcfg_name)
-      bond_index = Y2Network::Config.find(:yast).interfaces.bond_index
-      bridge_index = Y2Network::Config.find(:yast).interfaces.bridge_index
-
-      return true if bond_index[ifcfg_name] || bridge_index[ifcfg_name]
-
-      false
-    end
-
-    # Return the current name of the {LanItems} given
-    #
-    # @param item_id [Integer] a key for {#Items}
-    def current_name_for(item_id)
-      renamed?(item_id) ? renamed_to(item_id) : GetDeviceName(item_id)
-    end
-
-    # Finds a LanItem which name is in collision to the provided name
-    #
-    # @param name [String] a device name (eth0, ...)
-    # @return [Integer, nil] item id (see LanItems::Items)
-    def colliding_item(name)
-      item_id, _item_map = Items().find { |i, _| name == current_name_for(i) }
-      item_id
-    end
-
-    # Return wether the routing devices list needs to be updated or not to include
-    # the current interface name
-    #
-    # @return [Boolean] false if the current interface name is already present
-    def update_routing_devices?
-      device_names = yast_config.interfaces.map(&:name)
-      !device_names.include?(current_name)
-    end
-
     # Adds a new interface with the given name
     #
     # @todo This method exists just to keep some compatibility during
@@ -2393,166 +905,13 @@ module Yast
       return unless config && config.routing
       routing = config.routing
       add_device_to_routing(to)
-      target_interface = config.interfaces.find { |i| i.name == to }
+      target_interface = config.interfaces.by_name(to)
       return unless target_interface
       routing.routes.select { |r| r.interface && r.interface.name == from }
              .each { |r| r.interface = target_interface }
     end
 
-    # Renames an interface
-    #
-    # @todo This method exists just to keep some compatibility during
-    #       the migration to network-ng.
-
-    # @param old_name [String] Old device name
-    def rename_current_device_in_routing(old_name)
-      config = yast_config
-      return if config.nil?
-      interface = config.interfaces.by_name(old_name)
-      return unless interface
-      interface.name = current_name
-    end
-
-    # Removes the interface with the given name
-    #
-    # @todo This method exists just to keep some compatibility during
-    #       the migration to network-ng.
-    # @todo It does not check orphan routes.
-    def remove_current_device_from_routing
-      config = yast_config
-      return if config.nil?
-      name = current_name
-      return if name.empty?
-      config.interfaces.delete_if { |i| i.name == name }
-    end
-
   private
-
-    # Checks if given lladdr can be written into ifcfg
-    #
-    # @param lladdr [String] logical link address, usually MAC address in case
-    #                        of qeth device
-    # @return [true, false] check result
-    def s390_correct_lladdr(lladdr)
-      return false if !Arch.s390
-      return false if lladdr.nil?
-      return false if lladdr.empty?
-      return false if lladdr.strip == "00:00:00:00:00:00"
-
-      true
-    end
-
-    # Removes all records connected to the ip from /etc/hosts
-    def drop_hosts(ip)
-      log.info("Deleting hostnames assigned to #{ip} from /etc/hosts")
-      Host.remove_ip(ip)
-    end
-
-    # Exports udev rules for AY profile
-    def export_udevs(devices)
-      devices = deep_copy(devices)
-      ay = { "s390-devices" => {}, "net-udev" => {} }
-      if Arch.s390
-        devs = []
-        Builtins.foreach(
-          Convert.convert(devices, from: "map", to: "map <string, any>")
-        ) do |_type, value|
-          devs = Convert.convert(
-            Builtins.union(devs, Map.Keys(Convert.to_map(value))),
-            from: "list",
-            to:   "list <string>"
-          )
-        end
-        Builtins.foreach(devs) do |device|
-          begin
-            driver = File.readlink("/sys/class/net/#{device}/device/driver")
-          rescue SystemCallError => e
-            Builtins.y2error("Failed to read driver #{e.inspect}")
-            next
-          end
-          driver = File.basename(driver)
-          device_type = ""
-          chanids = ""
-          case driver
-          when "qeth"
-            device_type = driver
-          when "ctcm"
-            device_type = "ctc"
-          when "netiucv"
-            device_type = "iucv"
-          else
-            Builtins.y2error("unknown driver type :#{driver}")
-          end
-          chan_ids = SCR.Execute(
-            path(".target.bash_output"),
-            Builtins.sformat(
-              "for i in $(seq 0 2); do chanid=$(/usr/bin/ls -l /sys/class/net/%1/device/cdev$i); /usr/bin/echo ${chanid##*/}; done | /usr/bin/tr '\n' ' '",
-              device.shellescape
-            )
-          )
-          if !chan_ids["stdout"].empty?
-            chanids = String.CutBlanks(Ops.get_string(chan_ids, "stdout", ""))
-          end
-
-          # we already know that kernel device exist, otherwise next above would apply
-          # FIXME: It seems that it is not always the case (bsc#1124002)
-          portname_file = "/sys/class/net/#{device}/device/portname"
-          portname = ::File.exist?(portname_file) ? ::File.read(portname_file).strip : ""
-
-          protocol_file = "/sys/class/net/#{device}/device/protocol"
-          protocol = ::File.exist?(protocol_file) ? ::File.read(protocol_file).strip : ""
-
-          layer2_ret = SCR.Execute(
-            path(".target.bash"),
-            Builtins.sformat(
-              "/usr/bin/grep -q 1 /sys/class/net/%1/device/layer2",
-              device.shellescape
-            )
-          )
-          layer2 = layer2_ret == 0
-          Ops.set(ay, ["s390-devices", device], "type" => device_type)
-          Ops.set(ay, ["s390-devices", device, "chanids"], chanids) if !chanids.empty?
-          Ops.set(ay, ["s390-devices", device, "portname"], portname) if !portname.empty?
-          Ops.set(ay, ["s390-devices", device, "protocol"], protocol) if !protocol.empty?
-          Ops.set(ay, ["s390-devices", device, "layer2"], true) if layer2
-          port0 = SCR.Execute(
-            path(".target.bash_output"),
-            Builtins.sformat(
-              "port0=$(/usr/bin/ls -l /sys/class/net/%1/device/cdev0); /usr/bin/echo ${port0##*/} | /usr/bin/tr -d '\n'",
-              device
-            )
-          )
-          Builtins.y2milestone("port0 %1", port0)
-          if !port0["stdout"].empty?
-            value = Ops.get_string(port0, "stdout", "")
-            Ops.set(
-              ay,
-              ["net-udev", device],
-              "rule" => "KERNELS", "name" => device, "value" => value
-            )
-          end
-        end
-      else
-        configured = Items().select { |i, _| IsItemConfigured(i) }
-        ay["net-udev"] = configured.keys.each_with_object({}) do |id, udev|
-          @current = id # for GetItemUdev
-
-          name = GetItemUdev("NAME").to_s
-          rule = ["ATTR{address}", "KERNELS"].find { |r| !GetItemUdev(r).to_s.empty? }
-
-          next if !rule || name.empty?
-
-          udev[name] = {
-            "rule"  => rule,
-            "name"  => name,
-            "value" => GetItemUdev(rule)
-          }
-        end
-      end
-
-      Builtins.y2milestone("AY profile %1", ay)
-      deep_copy(ay)
-    end
 
     # Searches available items according sysconfig option
     #
@@ -2608,37 +967,7 @@ module Yast
     publish_variable :hotplug, "string"
     # @attribute Requires
     publish_variable :Requires, "list <string>"
-    publish_variable :bootproto, "string"
-    publish_variable :ipaddr, "string"
-    publish_variable :netmask, "string"
     publish_variable :set_default_route, "boolean"
-    publish_variable :prefix, "string"
-    publish_variable :startmode, "string"
-    publish_variable :wl_mode, "string"
-    publish_variable :wl_essid, "string"
-    publish_variable :wl_nwid, "string"
-    publish_variable :wl_auth_mode, "string"
-    publish_variable :wl_wpa_psk, "string"
-    publish_variable :wl_key_length, "string"
-    publish_variable :wl_key, "list <string>"
-    publish_variable :wl_default_key, "integer"
-    publish_variable :wl_nick, "string"
-    publish_variable :bond_slaves, "list <string>"
-    publish_variable :bond_option, "string"
-    publish_variable :vlan_etherdevice, "string"
-    publish_variable :bridge_ports, "string"
-    publish_variable :wl_wpa_eap, "map <string, any>"
-    publish_variable :wl_channel, "string"
-    publish_variable :wl_frequency, "string"
-    publish_variable :wl_bitrate, "string"
-    publish_variable :wl_accesspoint, "string"
-    publish_variable :wl_power, "boolean"
-    publish_variable :wl_ap_scanmode, "string"
-    publish_variable :wl_auth_modes, "list <string>"
-    publish_variable :wl_enc_modes, "list <string>"
-    publish_variable :wl_channels, "list <string>"
-    publish_variable :wl_bitrates, "list <string>"
-    publish_variable :qeth_portname, "string"
     publish_variable :qeth_portnumber, "string"
     publish_variable :chan_mode, "string"
     publish_variable :qeth_options, "string"
@@ -2660,36 +989,16 @@ module Yast
     publish function: :GetCurrentName, type: "string ()"
     publish function: :GetDeviceType, type: "string (integer)"
     publish function: :GetDeviceMap, type: "map <string, any> (integer)"
-    publish function: :GetItemUdevRule, type: "list <string> (integer)"
-    publish function: :GetItemUdev, type: "string (string)"
-    publish function: :ReplaceItemUdev, type: "list <string> (string, string, string)"
-    publish function: :WriteUdevRules, type: "void ()"
     publish function: :GetModified, type: "boolean ()"
     publish function: :SetModified, type: "void ()"
-    publish function: :AddNew, type: "void ()"
-    publish function: :GetItemModules, type: "list <string> (string)"
-    publish function: :GetNetcardNames, type: "list <string> ( list <integer>)"
     publish function: :FindAndSelect, type: "boolean (string)"
-    publish function: :FindDeviceIndex, type: "integer (string)"
     publish function: :ReadHw, type: "void ()"
     publish function: :Read, type: "void ()"
     publish function: :needFirmwareCurrentItem, type: "boolean ()"
-    publish function: :GetFirmwareForCurrentItem, type: "string ()"
-    publish function: :GetBondSlaves, type: "list <string> (string)"
-    publish function: :BuildLanOverview, type: "list ()"
-    publish function: :Overview, type: "list ()"
     publish function: :isCurrentHotplug, type: "boolean ()"
     publish function: :isCurrentDHCP, type: "boolean ()"
-    publish function: :GetItemDescription, type: "string ()"
-    publish function: :SelectHWMap, type: "void (map)"
-    publish function: :SetDeviceVars, type: "void (map, map)"
-    publish function: :Select, type: "boolean (string)"
     publish function: :Commit, type: "boolean ()"
     publish function: :Rollback, type: "boolean ()"
-    publish function: :DeleteItem, type: "void ()"
-    publish function: :ProposeItem, type: "boolean ()"
-    publish function: :setDriver, type: "void (string)"
-    publish function: :enableCurrentEditButton, type: "boolean ()"
     publish function: :createS390Device, type: "boolean ()"
     publish function: :find_dhcp_ifaces, type: "list <string> ()"
   end

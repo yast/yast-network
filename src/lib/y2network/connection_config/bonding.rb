@@ -25,14 +25,25 @@ module Y2Network
     #
     # @see https://www.kernel.org/doc/Documentation/networking/bonding.txt
     class Bonding < Base
-      # @return [Array<Interface>]
+      # @return [Array<String>]
       attr_accessor :slaves
       # @return [String] bond driver options
       attr_accessor :options
 
       def initialize
+        super()
         @slaves = []
-        @options = ""
+        @options = "mode=active-backup miimon=100"
+      end
+
+      def ==(other)
+        return false unless super
+
+        options == other.options && ((slaves - other.slaves) + (other.slaves - slaves)).empty?
+      end
+
+      def virtual?
+        true
       end
     end
   end

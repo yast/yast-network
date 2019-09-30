@@ -42,8 +42,8 @@ describe Y2Network::InterfacesCollection do
       let(:eth0_hwinfo) { double("hwinfo", name: "eth0") }
 
       before do
-        allow(wlan0).to receive(:hwinfo).and_return(wlan0_hwinfo)
-        allow(eth0).to receive(:hwinfo).and_return(eth0_hwinfo)
+        allow(wlan0).to receive(:hardware).and_return(wlan0_hwinfo)
+        allow(eth0).to receive(:hardware).and_return(eth0_hwinfo)
       end
 
       it "returns the interface with the given name" do
@@ -89,6 +89,33 @@ describe Y2Network::InterfacesCollection do
       it "returns false" do
         expect(collection).to_not eq(other)
       end
+    end
+  end
+
+  describe "#physical" do
+    it "returns only physical interfaces" do
+      expect(collection.physical.map(&:name)).to eq(["eth0", "wlan0"])
+    end
+  end
+
+  describe "#known_names" do
+    it "returns the list of known interfaces" do
+      expect(collection.known_names).to eq(["eth0", "br0", "wlan0"])
+    end
+
+    context "when an interface was renamed" do
+      before do
+        eth0.rename("eth1", :mac)
+      end
+      it "returns the old and the new names" do
+        expect(collection.known_names).to eq(["eth0", "eth1", "br0", "wlan0"])
+      end
+    end
+  end
+
+  describe "#free_names" do
+    it "returns count of names with prefix that is not yet used" do
+      expect(collection.free_names("eth", 3)).to eq(["eth1", "eth2", "eth3"])
     end
   end
 end

@@ -378,27 +378,20 @@ module Yast
     # Init handler for DHCP_HOSTNAME
     def InitDhcpHostname(_key)
       UI.ChangeWidget(Id("DHCP_HOSTNAME"), :Enabled, has_dhcp? && NetworkService.is_wicked)
+      dhcp_hostname = DNS.dhcp_hostname
 
-      hostname_ifaces = LanItems.find_set_hostname_ifaces
-      selected = DNS.dhcp_hostname ? ANY_LABEL : NONE_LABEL
-      items = []
+      items = [
+        # translators: no device selected placeholder
+        Item(Id(:none), _("no"), dhcp_hostname == :none),
+        # translators: placeholder for "set hostname via any DHCP aware device"
+        Item(Id(:any), _("yes: any"), dhcp_hostname == :any)
+      ]
 
-      if !LanItems.valid_dhcp_cfg?
-        fix_dhclient_warning(LanItems.invalid_dhcp_cfgs)
-
-        selected = NO_CHANGE_LABEL
-        items << Item(Id(NO_CHANGE_LABEL), _("keep current settings"), true)
-      elsif hostname_ifaces.size == 1
-        selected = hostname_ifaces.first
-      end
-      # translators: no device selected placeholder
-      items << Item(Id(NONE_LABEL), _("no"), selected == NONE_LABEL)
-      # translators: placeholder for "set hostname via any DHCP aware device"
-      items << Item(Id(ANY_LABEL), _("yes: any"), selected == ANY_LABEL)
-
-      items += LanItems.find_dhcp_ifaces.sort.map do |iface|
+      config = Yast::Lan.yast_config
+      iface_names = config.connections.to_a.select { |c| c.bootproto.dhcp? }.map(&:interface)
+      items += iface_names.map do |iface|
         # translators: label is in form yes: <device name>
-        Item(Id(iface), format(_("yes: %s"), iface), iface == selected)
+        Item(Id(iface), format(_("yes: %s"), iface), dhcp_hostname == iface)
       end
 
       UI.ReplaceWidget(
@@ -410,7 +403,7 @@ module Yast
         )
       )
 
-      log.info("InitDhcpHostname: preselected item = #{selected}")
+      log.info("InitDhcpHostname: preselected item = #{dhcp_hostname}")
 
       nil
     end
@@ -418,25 +411,7 @@ module Yast
     # Store handler for DHCP_HOSTNAME
     def StoreDhcpHostname(_key, _event)
       return if !UI.QueryWidget(Id("DHCP_HOSTNAME"), :Enabled)
-
-      device = UI.QueryWidget(Id("DHCP_HOSTNAME"), :Value)
-
-      case device
-      when NONE_LABEL
-        LanItems.clear_set_hostname
-
-        DNS.dhcp_hostname = false
-      when ANY_LABEL
-        LanItems.clear_set_hostname
-
-        DNS.dhcp_hostname = true
-      when NO_CHANGE_LABEL
-        nil
-      else
-        LanItems.conf_set_hostname(device)
-
-        DNS.dhcp_hostname = false
-      end
+      DNS.dhcp_hostname = UI.QueryWidget(Id("DHCP_HOSTNAME"), :Value)
 
       nil
     end

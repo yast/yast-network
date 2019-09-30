@@ -1,5 +1,26 @@
+# Copyright (c) [2019] SUSE LLC
+#
+# All Rights Reserved.
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of version 2 of the GNU General Public License as published
+# by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, contact SUSE LLC.
+#
+# To contact SUSE LLC about this file by physical or electronic mail, you may
+# find current contact information at www.suse.com.
+
 require "yast"
 require "cwm/custom_widget"
+
+require "y2network/boot_protocol"
 
 Yast.import "DNS"
 Yast.import "Hostname"
@@ -87,7 +108,7 @@ module Y2Network
 
       def ibft_available?
         # IBFT only for eth, is it correct?
-        @settings.type == "eth"
+        @settings.type.ethernet?
       end
 
       def init
@@ -98,53 +119,45 @@ module Y2Network
           )
         end
 
-        case @settings["BOOTPROTO"]
-        when "static"
+        case @settings.boot_protocol
+        when Y2Network::BootProtocol::STATIC
           Yast::UI.ChangeWidget(Id(:bootproto), :CurrentButton, :bootproto_static)
           Yast::UI.ChangeWidget(
             Id(:bootproto_ipaddr),
             :Value,
-            @settings["IPADDR"] || ""
+            @settings.ip_address
           )
-          if @settings["PREFIXLEN"] && !@settings["PREFIXLEN"].empty?
-            Yast::UI.ChangeWidget(
-              Id(:bootproto_netmask),
-              :Value,
-              "/#{@settings["PREFIXLEN"]}"
-            )
-          else
-            Yast::UI.ChangeWidget(
-              Id(:bootproto_netmask),
-              :Value,
-              @settings["NETMASK"] || ""
-            )
-          end
+          Yast::UI.ChangeWidget(
+            Id(:bootproto_netmask),
+            :Value,
+            @settings.subnet_prefix
+          )
           Yast::UI.ChangeWidget(
             Id(:bootproto_hostname),
             :Value,
-            @settings["HOSTNAME"]
+            @settings.hostname
           )
-        when "dhcp"
+        when Y2Network::BootProtocol::DHCP
           Yast::UI.ChangeWidget(Id(:bootproto), :CurrentButton, :bootproto_dynamic)
           Yast::UI.ChangeWidget(Id(:bootproto_dhcp_mode), :Value, :bootproto_dhcp_both)
           Yast::UI.ChangeWidget(Id(:bootproto_dyn), :Value, :bootproto_dhcp)
-        when "dhcp4"
+        when Y2Network::BootProtocol::DHCP4
           Yast::UI.ChangeWidget(Id(:bootproto), :CurrentButton, :bootproto_dynamic)
           Yast::UI.ChangeWidget(Id(:bootproto_dhcp_mode), :Value, :bootproto_dhcp_v4)
           Yast::UI.ChangeWidget(Id(:bootproto_dyn), :Value, :bootproto_dhcp)
-        when "dhcp6"
+        when Y2Network::BootProtocol::DHCP6
           Yast::UI.ChangeWidget(Id(:bootproto), :CurrentButton, :bootproto_dynamic)
           Yast::UI.ChangeWidget(Id(:bootproto_dhcp_mode), :Value, :bootproto_dhcp_v6)
           Yast::UI.ChangeWidget(Id(:bootproto_dyn), :Value, :bootproto_dhcp)
-        when "dhcp+autoip"
+        when Y2Network::BootProtocol::DHCP_AUTOIP
           Yast::UI.ChangeWidget(Id(:bootproto), :CurrentButton, :bootproto_dynamic)
           Yast::UI.ChangeWidget(Id(:bootproto_dyn), :Value, :bootproto_dhcp_auto)
-        when "autoip"
+        when Y2Network::BootProtocol::AUTOIP
           Yast::UI.ChangeWidget(Id(:bootproto), :CurrentButton, :bootproto_dynamic)
           Yast::UI.ChangeWidget(Id(:bootproto_dyn), :Value, :bootproto_auto)
-        when "none"
+        when Y2Network::BootProtocol::NONE
           Yast::UI.ChangeWidget(Id(:bootproto), :CurrentButton, :bootproto_none)
-        when "ibft"
+        when Y2Network::BootProtocol::IBFT
           Yast::UI.ChangeWidget(Id(:bootproto), :CurrentButton, :bootproto_none)
           Yast::UI.ChangeWidget(Id(:bootproto_ibft), :Value, true)
         end
@@ -184,42 +197,37 @@ module Y2Network
 
       def store
         # FIXME: this value reset should be in backend in general not Yast::UI responsibility
-        @settings["IPADDR"] = @settings["NETMASK"] = @settings["PREFIXLEN"] = ""
+        @settings.ip_address = ""
+        @settings.subnet_prefix = ""
         case value
         when :bootproto_none
           bootproto = "none"
           if ibft_available?
             bootproto = Yast::UI.QueryWidget(Id(:bootproto_ibft), :Value) ? "ibft" : "none"
           end
-          @settings["BOOTPROTO"] = bootproto
+          @settings.boot_protocol = bootproto
         when :bootproto_static
-          @settings["BOOTPROTO"] = "static"
-          @settings["IPADDR"] = Yast::UI.QueryWidget(:bootproto_ipaddr, :Value)
-          mask = Yast::UI.QueryWidget(:bootproto_netmask, :Value)
-          if mask.start_with?("/")
-            @settings["PREFIXLEN"] = mask[1..-1]
-          else
-            param = Yast::Netmask.Check6(mask) ? "PREFIXLEN" : "NETMASK"
-            @settings[param] = mask
-          end
-          @settings["HOSTNAME"] = Yast::UI.QueryWidget(:bootproto_hostname, :Value)
+          @settings.boot_protocol = "static"
+          @settings.ip_address = Yast::UI.QueryWidget(:bootproto_ipaddr, :Value)
+          @settings.subnet_prefix = Yast::UI.QueryWidget(:bootproto_netmask, :Value)
+          @settings.hostname = Yast::UI.QueryWidget(:bootproto_hostname, :Value)
         when :bootproto_dynamic
           case Yast::UI.QueryWidget(:bootproto_dyn, :Value)
           when :bootproto_dhcp
             case Yast::UI.QueryWidget(:bootproto_dhcp_mode, :Value)
             when :bootproto_dhcp_both
-              @settings["BOOTPROTO"] = "dhcp"
+              @settings.boot_protocol = "dhcp"
             when :bootproto_dhcp_v4
-              @settings["BOOTPROTO"] = "dhcp4"
+              @settings.boot_protocol = "dhcp4"
             when :bootproto_dhcp_v6
-              @settings["BOOTPROTO"] = "dhcp6"
+              @settings.boot_protocol = "dhcp6"
             else
               raise "Unexpected dhcp mode value #{Yast::UI.QueryWidget(:bootproto_dhcp_mode, :Value).inspect}"
             end
           when :bootproto_dhcp_auto
-            @settings["BOOTPROTO"] = "dhcp+autoip"
+            @settings.boot_protocol = "dhcp+autoip"
           when :bootproto_auto
-            @settings["BOOTPROTO"] = "autoip"
+            @settings.boot_protocol = "autoip"
           else
             raise "Unexpected dynamic mode value #{Yast::UI.QueryWidget(:bootproto_dyn, :Value).inspect}"
           end
@@ -248,7 +256,7 @@ module Y2Network
         hname = Yast::UI.QueryWidget(:bootproto_hostname, :Value)
         if !hname.empty?
           if !Yast::Hostname.CheckFQ(hname)
-            Popup.Error(_("Invalid hostname."))
+            Yast::Popup.Error(_("Invalid hostname."))
             Yast::UI.SetFocus(:bootproto_hostname)
             return false
           end

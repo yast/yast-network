@@ -1,0 +1,7 @@
+BOOTPROTO='static'
+BROADCAST=''
+MTU=''
+IPADDR='172.16.0.1'
+PREFIXLEN='12'
+NAME='Ethernet Card 2'
+STARTMODE='auto'

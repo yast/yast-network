@@ -1,5 +1,24 @@
 #!/usr/bin/env rspec
 
+# Copyright (c) [2019] SUSE LLC
+#
+# All Rights Reserved.
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of version 2 of the GNU General Public License as published
+# by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, contact SUSE LLC.
+#
+# To contact SUSE LLC about this file by physical or electronic mail, you may
+# find current contact information at www.suse.com.
+
 require_relative "test_helper"
 require "network/lan_items_summary"
 
@@ -40,23 +59,6 @@ describe Yast::LanItemsSummary do
     allow(Y2Network::Config)
       .to receive(:find)
       .and_return(instance_double(Y2Network::Config, interfaces: interfaces))
-  end
-
-  describe "#default" do
-    it "returns a Richtext summary of the configured interfaces" do
-      expect(subject.default)
-        .to eql "<ul>" \
-                "<li><p>eth0<br>DHCP</p></li>" \
-                "<li><p>eth1<br>NONE</p></li>" \
-                "<li><p>br0<br>STATIC</p></li>" \
-                "</ul>"
-    end
-
-    it "returns Summary.NotConfigured in case of not configured interfaces" do
-      allow(Yast::LanItems).to receive(:IsItemConfigured).and_return(false)
-
-      expect(subject.default).to eql Yast::Summary.NotConfigured
-    end
   end
 
   describe "#proposal" do

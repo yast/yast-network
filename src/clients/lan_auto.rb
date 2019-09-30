@@ -86,9 +86,9 @@ module Yast
       elsif @func == "Packages"
         @ret = Lan.AutoPackages
       elsif @func == "SetModified"
-        @ret = LanItems.SetModified
+        @ret = Lan.SetModified
       elsif @func == "GetModified"
-        @ret = LanItems.GetModified
+        @ret = Lan.Modified
       elsif @func == "Export"
         @settings2 = Lan.Export
         Builtins.y2debug("settings: %1", @settings2)
@@ -133,64 +133,15 @@ module Yast
     # @return [Hash] autoyast network settings
     def ToAY(settings)
       settings = deep_copy(settings)
-      interfaces = []
-      discard = ["UDI", "_nm_name"]
-      Builtins.foreach(Ops.get_map(settings, "devices", {})) do |_type, devsmap|
-        Builtins.foreach(
-          Convert.convert(devsmap, from: "map", to: "map <string, map>")
-        ) do |device, devmap|
-          newmap = {}
-          Builtins.foreach(
-            Convert.convert(devmap, from: "map", to: "map <string, any>")
-          ) do |key, val|
-            Builtins.y2milestone("Adding: %1=%2", key, val)
-            if key != "_aliases"
-              if Ops.greater_than(Builtins.size(Convert.to_string(val)), 0) &&
-                  !Builtins.contains(discard, key) &&
-                  !Builtins.contains(discard, Builtins.tolower(key))
-                Ops.set(newmap, Builtins.tolower(key), Convert.to_string(val))
-              end
-            else
-              # handle aliases
-              Builtins.y2debug("val: %1", val)
-              # if aliases are empty, then ommit it
-              if Ops.greater_than(Builtins.size(Convert.to_map(val)), 0)
-                # replace key "0" into "alias0" (bnc#372678)
-                Builtins.foreach(
-                  Convert.convert(
-                    val,
-                    from: "any",
-                    to:   "map <string, map <string, any>>"
-                  )
-                ) do |k, v|
-                  Ops.set(
-                    newmap,
-                    Builtins.tolower("aliases"),
-                    Builtins.add(
-                      Ops.get_map(newmap, Builtins.tolower("aliases"), {}),
-                      Builtins.sformat("alias%1", k),
-                      v
-                    )
-                  )
-                end
-              end
-            end
-          end
-          newmap["device"] = device
-          interfaces = Builtins.add(interfaces, newmap)
-        end
-      end
+      interfaces = settings["interfaces"] || []
+      Builtins.y2milestone("interfaces: #{interfaces.inspect})")
+      net_udev = settings["net-udev"] || []
+      Builtins.y2milestone("net-udev: #{net_udev.inspect})")
 
       # Modules
-
       s390_devices = []
       Builtins.foreach(Ops.get_map(settings, "s390-devices", {})) do |_device, mod|
         s390_devices = Builtins.add(s390_devices, mod)
-      end
-
-      net_udev = []
-      Builtins.foreach(Ops.get_map(settings, "net-udev", {})) do |_device, mod|
-        net_udev = Builtins.add(net_udev, mod)
       end
 
       modules = []

@@ -18,6 +18,7 @@
 # find current contact information at www.suse.com.
 require "yast"
 require "yast2/execute"
+require "y2network/sysconfig/interface_file"
 
 module Y2Network
   module Sysconfig
@@ -44,27 +45,35 @@ module Y2Network
       # @return [String] Sendmail update script (included in "sendmail" package)
       SENDMAIL_UPDATE_PATH = "/usr/lib/sendmail.d/update".freeze
 
-      def update_sysconfig_dhcp(config, old_config)
-        if old_config && (old_config.dhcp_hostname == config.dhcp_hostname || config.dhcp_hostname.nil?)
+      # @param dns [Y2Network::DNS] DNS configuration
+      # @param old_dns [Y2Network::DNS] Old DNS configuration
+      def update_sysconfig_dhcp(dns, old_dns)
+        if old_dns.nil? || old_dns.dhcp_hostname == dns.dhcp_hostname
           log.info("No update for /etc/sysconfig/network/dhcp")
           return
         end
 
-        # dhcp_hostname can currently be nil only when not present in original file. So, do not
-        # add it in such a case.
         Yast::SCR.Write(
           Yast::Path.new(".sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME"),
-          config.dhcp_hostname ? "yes" : "no"
+          dns.dhcp_hostname == :any ? "yes" : "no"
         )
         Yast::SCR.Write(Yast::Path.new(".sysconfig.network.dhcp"), nil)
+
+        # Clean-up values from ifcfg-* values
+        Y2Network::Sysconfig::InterfaceFile.all.each do |file|
+          value = file.interface == dns.dhcp_hostname ? "yes" : nil
+          file.load
+          next if file.dhclient_set_hostname == value
+          file.dhclient_set_hostname = value
+          file.save
+        end
       end
 
       # Sets the hostname
       #
       # @param dns [Y2Network::DNS] DNS configuration
       def update_hostname(dns)
-        dns.ensure_hostname!
-        Yast::Execute.on_target!("/bin/hostname", dns.hostname.split(".")[0])
+        Yast::Execute.on_target!("/usr/bin/hostname", dns.hostname.split(".")[0])
         Yast::SCR.Write(Yast::Path.new(".target.string"), HOSTNAME_PATH, "#{dns.hostname}\n")
       end
 

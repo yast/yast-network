@@ -21,10 +21,14 @@ require_relative "../../test_helper"
 require "cwm/rspec"
 
 require "y2network/widgets/blink_button"
+require "y2network/interface_config_builder"
 
 describe Y2Network::Widgets::BlinkButton do
-  subject { described_class.new("IFCFG" => "eth0") }
+  let(:builder) { Y2Network::InterfaceConfigBuilder.for("eth") }
+  subject { described_class.new(builder) }
+
   before do
+    builder.name = "eth0"
     # no real blinking
     allow(Yast::SCR).to receive(:Execute)
   end

@@ -23,13 +23,50 @@ require "y2network/hwinfo"
 module Y2Network
   # Physical interface class (ethernet, wireless, infiniband...)
   class PhysicalInterface < Interface
-    attr_writer :hwinfo
     # @return [String]
     attr_accessor :ethtool_options
 
-    # @return [Hwinfo]
-    def hwinfo
-      @hwinfo ||= Hwinfo.new({})
+    # User selected driver
+    #
+    # This driver will be set using a udev rule.
+    #
+    # @return [String]
+    attr_accessor :custom_driver
+
+    # Constructor
+    #
+    # @param name [String] Interface name (e.g., "eth0")
+    # @param type [InterfaceType] Interface type
+    # @param hardware [Hwinfo] Hardware information
+    def initialize(name, type: InterfaceType::ETHERNET, hardware: nil)
+      super(name, type: type)
+      # @hardware and @name should not change during life of the object
+      @hardware = hardware || Hwinfo.for(name) || Hwinfo.new
+      @description = @hardware.name
+    end
+
+    # Returns interface modalias
+    #
+    # @return [String,nil] Modalias
+    def modalias
+      @hardware.modalias
+    end
+
+    # Returns the name of the current driver
+    #
+    # @return [String]
+    def current_driver
+      @hardware.module
+    end
+
+    # Determines whether the interface is present (attached)
+    #
+    # It relies in the hardware information
+    #
+    # @return [Boolean]
+    # @see Interface#present?
+    def present?
+      @hardware.present?
     end
   end
 end

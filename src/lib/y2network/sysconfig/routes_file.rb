@@ -39,12 +39,21 @@ module Y2Network
     #   file.routes.size #=> 1
     class RoutesFile
       DEFAULT_ROUTES_FILE = "/etc/sysconfig/network/routes".freeze
+      SYSCONFIG_NETWORK_DIR = "/etc/sysconfig/network".freeze
 
       # @return [Array<Route>] Routes
       attr_accessor :routes
 
       # @return [String] File path
       attr_reader :file_path
+
+      class << self
+        # @param interface [String] Interface's name
+        def find(interface)
+          file_path = File.join(SYSCONFIG_NETWORK_DIR, "ifroute-#{interface}")
+          new(file_path)
+        end
+      end
 
       # @param file_path [String] File path
       def initialize(file_path = DEFAULT_ROUTES_FILE)

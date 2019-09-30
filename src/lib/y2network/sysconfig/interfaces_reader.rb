@@ -19,13 +19,15 @@
 
 require "yast"
 require "y2network/interface"
+require "y2network/interface_type"
 require "y2network/virtual_interface"
 require "y2network/physical_interface"
-require "y2network/fake_interface"
 require "y2network/sysconfig/connection_config_reader"
-
-Yast.import "LanItems"
-Yast.import "NetworkInterfaces"
+require "y2network/sysconfig/interface_file"
+require "y2network/interfaces_collection"
+require "y2network/connection_configs_collection"
+require "y2network/sysconfig/type_detector"
+require "y2network/udev_rule"
 
 module Y2Network
   module Sysconfig
@@ -46,7 +48,8 @@ module Y2Network
         return @config if @config
         find_physical_interfaces
         find_connections
-        @config = { interfaces: @interfaces, connections: @connections }
+        find_drivers
+        @config = { interfaces: @interfaces, connections: @connections, drivers: @drivers }
       end
 
       # Convenience method to get connections configuration
@@ -64,14 +67,19 @@ module Y2Network
         config[:interfaces]
       end
 
+      # Convenience method to get the drivers list
+      #
+      # @return [Array<Y2Network::Driver>]
+      def drivers
+        config[:drivers]
+      end
+
     private
 
       # Finds the physical interfaces
-      #
-      # Physical interfaces are read from the old LanItems module
       def find_physical_interfaces
         return if @interfaces
-        physical_interfaces = Yast::LanItems.Hardware.map do |h|
+        physical_interfaces = Hwinfo.netcards.map do |h|
           build_physical_interface(h)
         end
         @interfaces = Y2Network::InterfacesCollection.new(physical_interfaces)
@@ -80,60 +88,85 @@ module Y2Network
       # Finds the connections configurations
       def find_connections
         @connections ||=
-          configured_devices.each_with_object([]) do |name, conns|
-            interface = @interfaces.by_name(name)
+          InterfaceFile.all.each_with_object(ConnectionConfigsCollection.new([])) do |file, conns|
+            interface = @interfaces.by_name(file.interface)
             connection = ConnectionConfigReader.new.read(
-              name,
+              file.interface,
               interface ? interface.type : nil
             )
             next unless connection
-            add_fake_interface(name, connection) if interface.nil?
+            add_interface(connection) if interface.nil?
             conns << connection
           end
       end
 
-      # Instantiates an interface given a hash containing hardware details
-      #
-      # If there is not information about the type, it will rely on NetworkInterfaces#GetTypeFromSysfs.
-      # This responsability could be moved to the PhysicalInterface class.
-      #
-      # @todo Improve detection logic according to NetworkInterfaces#GetTypeFromIfcfgOrName.
-      #
-      # @param data [Hash] hardware information
-      # @option data [String] "dev_name" Device name ("eth0")
-      # @option data [String] "name"     Device description
-      # @option data [String] "type"     Device type ("eth", "wlan", etc.)
-      def build_physical_interface(data)
-        Y2Network::PhysicalInterface.new(data["dev_name"]).tap do |iface|
-          iface.description = data["name"]
-          type = data["type"] || Yast::NetworkInterfaces.GetTypeFromSysfs(iface.name)
-          iface.type = type.nil? ? :eth : type.to_sym
+      # Finds the available drivers
+      def find_drivers
+        physical_interfaces = @interfaces.physical
+        drivers_names = physical_interfaces.flat_map(&:drivers).map(&:name)
+        drivers_names += @interfaces.physical.map(&:custom_driver).compact
+        drivers_names.uniq!
+
+        @drivers = drivers_names.map do |name|
+          Y2Network::Driver.from_system(name)
         end
       end
 
-      # @return [Regex] expression to filter out invalid ifcfg-* files
-      IGNORE_IFCFG_REGEX = /(\.bak|\.orig|\.rpmnew|\.rpmorig|-range|~|\.old|\.scpmbackup)$/
-
-      # List of devices which has a configuration file (ifcfg-*)
+      # Instantiates an interface given a hash containing hardware details
       #
-      # @return [Array<String>] List of configured devices
-      def configured_devices
-        files = Yast::SCR.Dir(Yast::Path.new(".network.section"))
-        files.reject { |f| IGNORE_IFCFG_REGEX =~ f || f == "lo" }
+      # @param hwinfo [Hash] hardware information
+      def build_physical_interface(hwinfo)
+        Y2Network::PhysicalInterface.new(hwinfo.dev_name, hardware: hwinfo).tap do |iface|
+          iface.renaming_mechanism = renaming_mechanism_for(iface)
+          iface.custom_driver = custom_driver_for(iface)
+          iface.type = InterfaceType.from_short_name(hwinfo.type) || TypeDetector.type_of(iface.name)
+        end
       end
 
-      # Adds a fake interface for a given connection
+      # Adds a fake or virtual interface for a given connection
       #
       # It may happen that a configured interface is not plugged
       # while reading the configuration. In such situations, a fake one
       # should be added.
       #
-      # @param name [String] Interface name
       # @param conn [ConnectionConfig] Connection configuration related to the
       #   network interface
-      def add_fake_interface(name, conn)
-        new_interface = Y2Network::FakeInterface.from_connection(name, conn)
-        @interfaces << new_interface
+      def add_interface(conn)
+        interface =
+          if conn.virtual?
+            VirtualInterface.from_connection(conn)
+          else
+            PhysicalInterface.new(conn.name, hardware: Hwinfo.for(conn.name))
+          end
+        @interfaces << interface
+      end
+
+      # Detects the renaming mechanism used by the interface
+      #
+      # @param iface [PhysicalInterface] Interface
+      # @return [Symbol] :mac (MAC address), :bus_id (BUS ID) or :none (no renaming)
+      def renaming_mechanism_for(iface)
+        rule = UdevRule.find_for(iface.name)
+        return :none unless rule
+        if rule.parts.any? { |p| p.key == "ATTR{address}" }
+          :mac
+        elsif rule.parts.any? { |p| p.key == "KERNELS" }
+          :bus_id
+        else
+          :none
+        end
+      end
+
+      # Detects the custom driver used by the interface
+      #
+      # A driver is considered "custom" is it was set by the user through a udev rule.
+      #
+      # @param iface [PhysicalInterface] Interface to fetch the custom driver
+      # @return [String,nil] Custom driver (or nil if not set)
+      def custom_driver_for(iface)
+        return nil unless iface.modalias
+        rule = UdevRule.drivers_rules.find { |r| r.original_modalias == iface.modalias }
+        rule ? rule.driver : nil
       end
     end
   end

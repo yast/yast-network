@@ -21,9 +21,11 @@ require_relative "../../test_helper"
 require "cwm/rspec"
 
 require "y2network/widgets/mtu"
+require "y2network/interface_config_builder"
 
 describe Y2Network::Widgets::MTU do
-  subject { described_class.new({}) }
+  let(:builder) { Y2Network::InterfaceConfigBuilder.for("eth") }
+  subject { described_class.new(builder) }
 
   include_examples "CWM::ComboBox"
 end

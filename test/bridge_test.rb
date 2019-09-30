@@ -1,12 +1,33 @@
 #! /usr/bin/env rspec
 
+# Copyright (c) [2019] SUSE LLC
+#
+# All Rights Reserved.
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of version 2 of the GNU General Public License as published
+# by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, contact SUSE LLC.
+#
+# To contact SUSE LLC about this file by physical or electronic mail, you may
+# find current contact information at www.suse.com.
+
 require_relative "test_helper"
 
 require "yast"
 
 require "y2network/config"
 require "y2network/interface"
+require "y2network/type_detector"
 
+Yast.import "Lan"
 Yast.import "LanItems"
 
 describe Yast::LanItems do
@@ -95,7 +116,10 @@ describe Yast::LanItems do
       end
     end
 
-    Yast::LanItems.Read
+    allow(Y2Network::TypeDetector)
+      .to receive(:type_of)
+      .with(/eth[0-9]/)
+      .and_return(Y2Network::InterfaceType::ETHERNET)
   end
 
   describe "#GetBridgeableInterfaces" do
@@ -103,9 +127,10 @@ describe Yast::LanItems do
     # for selecting bridgable devices but imports interfaces
     # from LanItems internally
     let(:config) { Y2Network::Config.new(source: :test) }
-    let(:builder) { Y2Network::InterfaceConfigBuilder.for("br") }
+    let(:builder) { Y2Network::InterfaceConfigBuilder.for(Y2Network::InterfaceType::BRIDGE) }
 
     it "returns list of slave candidates" do
+      pending "old API is dropped, so adapt it"
       allow(Y2Network::Config)
         .to receive(:find)
         .with(:yast)

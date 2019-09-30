@@ -1,3 +1,22 @@
+# Copyright (c) [2019] SUSE LLC
+#
+# All Rights Reserved.
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of version 2 of the GNU General Public License as published
+# by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, contact SUSE LLC.
+#
+# To contact SUSE LLC about this file by physical or electronic mail, you may
+# find current contact information at www.suse.com.
+
 require "yast"
 
 require "cwm/common_widgets"
@@ -5,9 +24,15 @@ require "cwm/common_widgets"
 module Y2Network
   module Widgets
     class KernelModule < CWM::ComboBox
-      def initialize(settings)
+      # Constructor
+      #
+      # @param names    [Array<String>] Drivers names
+      # @param selected [String,nil] Initially selected driver (nil if no driver is selected)
+      def initialize(names, selected)
         textdomain "network"
-        @settings = settings
+        @names = names
+        @selected = selected
+        self.widget_id = "kernel_module"
       end
 
       def label
@@ -21,21 +46,20 @@ module Y2Network
       end
 
       def opt
-        [:editable]
+        [:editable, :notify]
       end
 
       def items
-        @settings.kernel_modules.map do |i|
-          [i, i]
-        end
+        @items ||= [["", _("Auto")]] + @names.map { |n| [n, n] }
       end
 
       def init
-        self.value = @settings.driver unless @settings.driver.empty?
+        self.value = @selected if @selected
       end
 
-      def store
-        @settings.driver = value
+      def value
+        ret = super
+        ret == "" ? :auto : ret
       end
     end
   end

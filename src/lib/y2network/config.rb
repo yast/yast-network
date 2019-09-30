@@ -21,6 +21,9 @@ require "y2network/config_reader"
 require "y2network/routing"
 require "y2network/dns"
 require "y2network/interfaces_collection"
+require "y2network/connection_configs_collection"
+require "y2network/physical_interface"
+require "y2network/can_be_copied"
 
 module Y2Network
   # This class represents the current network configuration including interfaces,
@@ -36,23 +39,28 @@ module Y2Network
   #   config.routing.tables.first << route
   #   config.write
   class Config
+    include CanBeCopied
+    include Yast::Logger
+
     # @return [InterfacesCollection]
     attr_accessor :interfaces
-    # @return [Array<ConnectionConfig>]
+    # @return [ConnectionConfigsCollection]
     attr_accessor :connections
     # @return [Routing] Routing configuration
     attr_accessor :routing
     # @return [DNS] DNS configuration
     attr_accessor :dns
+    # @return [Array<Driver>] Available drivers
+    attr_accessor :drivers
     # @return [Symbol] Information source (see {Y2Network::Reader} and {Y2Network::Writer})
     attr_accessor :source
 
     class << self
       # @param source [Symbol] Source to read the configuration from
-      # @param opts   [Hash]   Reader options. Check readers documentation to find out
-      #                        supported options.
-      def from(source, opts = {})
-        reader = ConfigReader.for(source, opts)
+      # @param opts   [Array<Object>] Reader options. Check readers documentation to find out
+      #   supported options.
+      def from(source, *opts)
+        reader = ConfigReader.for(source, *opts)
         reader.config
       end
 
@@ -87,13 +95,17 @@ module Y2Network
 
     # Constructor
     #
-    # @param interfaces [InterfacesCollection] List of interfaces
-    # @param routing    [Routing] Object with routing configuration
-    # @param dns        [DNS] Object with DNS configuration
-    # @param source     [Symbol] Configuration source
-    def initialize(interfaces: InterfacesCollection.new, connections: [], routing: Routing.new, dns: DNS.new, source:)
+    # @param interfaces  [InterfacesCollection] List of interfaces
+    # @param connections [ConnectionConfigsCollection] List of connection configurations
+    # @param routing     [Routing] Object with routing configuration
+    # @param dns         [DNS] Object with DNS configuration
+    # @param source      [Symbol] Configuration source
+    # @param drivers     [Array<Driver>] List of available drivers
+    def initialize(interfaces: InterfacesCollection.new, connections: ConnectionConfigsCollection.new,
+      routing: Routing.new, dns: DNS.new, drivers: [], source:)
       @interfaces = interfaces
       @connections = connections
+      @drivers = drivers
       @routing = routing
       @dns = dns
       @source = source
@@ -101,21 +113,16 @@ module Y2Network
 
     # Writes the configuration into the YaST modules
     #
-    # Writes only changes agains original configuration if the original configuration
+    # Writes only changes against original configuration if the original configuration
     # is provided
     #
     # @param original [Y2Network::Config] configuration used for detecting changes
+    # @param target   [Symbol] Target to write the configuration to (:sysconfig)
     #
     # @see Y2Network::ConfigWriter
-    def write(original: nil)
-      Y2Network::ConfigWriter.for(source).write(self, original)
-    end
-
-    # Returns a deep-copy of the configuration
-    #
-    # @return [Config]
-    def copy
-      Marshal.load(Marshal.dump(self))
+    def write(original: nil, target: nil)
+      target ||= source
+      Y2Network::ConfigWriter.for(target).write(self, original)
     end
 
     # Determines whether two configurations are equal
@@ -123,7 +130,79 @@ module Y2Network
     # @return [Boolean] true if both configurations are equal; false otherwise
     def ==(other)
       source == other.source && interfaces == other.interfaces &&
-        routing == other.routing && dns == other.dns
+        routing == other.routing && dns == other.dns && connections == other.connections
+    end
+
+    # Renames a given interface and the associated connections
+    #
+    # @param old_name  [String] Old interface's name
+    # @param new_name  [String] New interface's name
+    # @param mechanism [Symbol] Property to base the rename on (:mac or :bus_id)
+    def rename_interface(old_name, new_name, mechanism)
+      log.info "Renaming #{old_name.inspect} to #{new_name.inspect} using #{mechanism.inspect}"
+      interface = interfaces.by_name(old_name || new_name)
+      interface.rename(new_name, mechanism)
+      return unless old_name # do not modify configurations if it is just renaming mechanism
+      connections.by_interface(old_name).each { |c| c.interface = new_name }
+      dns.dhcp_hostname = new_name if dns.dhcp_hostname == old_name
+    end
+
+    # deletes interface and all its config. If interface is physical,
+    # it is not removed as we cannot remove physical interface.
+    #
+    # @param name [String] Interface's name
+    def delete_interface(name)
+      connections.reject! { |c| c.interface == name }
+      interface = interfaces.by_name(name)
+      return if interface.is_a?(PhysicalInterface) && interface.present?
+
+      interfaces.reject! { |i| i.name == name }
+    end
+
+    # Adds or update a connection config
+    #
+    # If the interface which is associated to does not exist (because it is a virtual one or it is
+    # not present), it gets added.
+    def add_or_update_connection_config(connection_config)
+      log.info "add_update connection config #{connection_config.inspect}"
+      connections.add_or_update(connection_config)
+      interface = interfaces.by_name(connection_config.interface)
+      return if interface
+      log.info "Creating new interface"
+      interfaces << Interface.from_connection(connection_config)
+    end
+
+    # Returns the candidate drivers for a given interface
+    #
+    # @return [Array<Driver>]
+    def drivers_for_interface(name)
+      interface = interfaces.by_name(name)
+      names = interface.drivers.map(&:name)
+      names << interface.custom_driver if interface.custom_driver && !names.include?(interface.custom_driver)
+      drivers.select { |d| names.include?(d.name) }
+    end
+
+    # Adds or update a driver
+    #
+    # @param new_driver [Driver] Driver to add or update
+    def add_or_update_driver(new_driver)
+      idx = drivers.find_index { |d| d.name == new_driver.name }
+      if idx
+        drivers[idx] = new_driver
+      else
+        drivers << new_driver
+      end
+    end
+
+    # Determines whether a given interface is configured or not
+    #
+    # An interface is considered as configured when it has an associated collection.
+    #
+    # @param iface_name [String] Interface's name
+    # @return [Boolean]
+    def configured_interface?(iface_name)
+      return false if iface_name.nil? || iface_name.empty?
+      !connections.by_interface(iface_name).empty?
     end
 
     alias_method :eql?, :==

@@ -25,11 +25,19 @@ require "y2network/interface_config_builder"
 
 describe Y2Network::Widgets::InterfaceName do
   let(:builder) do
-    res = Y2Network::InterfaceConfigBuilder.new
-    res.type = "eth"
-    res
+    Y2Network::InterfaceConfigBuilder.for("eth")
   end
   subject { described_class.new(builder) }
+
+  let(:known_names) { [] }
+
+  before do
+    allow(Yast::Lan).to receive(:yast_config).and_return(
+      double(interfaces: double(known_names: known_names, free_names: ["eth1"]))
+    )
+    allow(builder).to receive(:find_interface)
+    builder.name = "eth0"
+  end
 
   include_examples "CWM::ComboBox"
 
@@ -39,7 +47,6 @@ describe Y2Network::Widgets::InterfaceName do
 
     it "passes for valid names only" do
       allow(subject).to receive(:value).and_return valid_name
-      allow(Yast::NetworkInterfaces).to receive(:List).and_return []
       expect(Yast::Popup).to_not receive(:Error)
 
       expect(subject.validate).to be true
@@ -48,18 +55,55 @@ describe Y2Network::Widgets::InterfaceName do
     # bnc#991486
     it "fails for long names" do
       allow(subject).to receive(:value).and_return long_name
-      allow(Yast::NetworkInterfaces).to receive(:List).and_return []
 
       expect(Yast::UI).to receive(:SetFocus)
       expect(subject.validate).to be false
     end
 
-    it "fails for already used names" do
-      allow(subject).to receive(:value).and_return valid_name
-      allow(Yast::NetworkInterfaces).to receive(:List).and_return [valid_name]
+    context "when the name is already used" do
+      let(:known_names) { [valid_name] }
+      before do
+        allow(subject).to receive(:value).and_return valid_name
+      end
 
-      expect(Yast::UI).to receive(:SetFocus)
-      expect(subject.validate).to be false
+      context "if the name was changed" do
+        let(:valid_name) { "eth1" }
+
+        it "fails" do
+          expect(Yast::UI).to receive(:SetFocus)
+          expect(subject.validate).to be false
+        end
+      end
+
+      context "if the name was not changed" do
+        it "passes" do
+          expect(subject.validate).to eq(true)
+        end
+      end
+    end
+  end
+
+  describe "#store" do
+    before do
+      allow(subject).to receive(:value).and_return(value)
+    end
+
+    context "when the name has changed" do
+      let(:value) { "eth1" }
+
+      it "renames the interface" do
+        expect(builder).to receive(:rename_interface).with(value)
+        subject.store
+      end
+    end
+
+    context "when the name has changed" do
+      let(:value) { builder.name }
+
+      it "does not rename the interface" do
+        expect(builder).to_not receive(:rename_interface)
+        subject.store
+      end
     end
   end
 end

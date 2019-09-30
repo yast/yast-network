@@ -29,6 +29,7 @@
 
 require "shellwords"
 require "y2network/interface_config_builder"
+require "y2network/boot_protocol"
 
 module Yast
   module NetworkLanCmdlineInclude
@@ -183,17 +184,14 @@ module Yast
     # Handler for action "add"
     # @param [Hash{String => String}] options action options
     def AddHandler(options)
-      LanItems.AddNew
-      Lan.Add
-      LanItems.Items[LanItems.current]["ifcfg"] = options.fetch("name", "")
-      LanItems.type = options.fetch("type", infered_type(options))
-      if LanItems.type.empty?
+      type = options.fetch("type", infered_type(options))
+      if type.empty?
         Report.Error(_("The device type is mandatory."))
         return false
       end
 
-      builder = Y2Network::InterfaceConfigBuilder.for(LanItems.type)
-      builder.name = LanItems.GetCurrentName()
+      builder = Y2Network::InterfaceConfigBuilder.for(Y2Network::InterfaceType.from_short_name(type))
+      builder.name = options.fetch("name")
       update_builder_from_options!(builder, options)
 
       return false unless validate_config(builder)
@@ -212,7 +210,10 @@ module Yast
       return false if validateId(options, config) == false
 
       LanItems.current = getItem(options, config)
-      builder = Y2Network::InterfaceConfigBuilder.for(LanItems.GetCurrentType())
+
+      config = Lan.yast_config.copy
+      connection_config = config.connections.by_name(LanItems.GetCurrentName)
+      builder = Y2Network::InterfaceConfigBuilder.for(LanItems.GetCurrentType(), config: connection_config)
       builder.name = LanItems.GetCurrentName()
       LanItems.SetItem(builder: builder)
       update_builder_from_options!(builder, options)
@@ -271,19 +272,19 @@ module Yast
     # @param builder [Y2Network::InterfaceConfigBuilder]
     # @return [Boolean] true when the options are valid; false otherwise
     def validate_config(builder)
-      unless ["none", "static", "dhcp"].include? builder["BOOTPROTO"]
+      if builder.boot_protocol.nil?
         Report.Error(_("Impossible value for bootproto."))
         return false
       end
 
-      if builder["BOOTPROTO"] == "static" && builder["IPADDR"].empty?
+      if builder.boot_protocol.name == "static" && builder.ip_address.empty?
         Report.Error(
           _("For static configuration, the \"ip\" option is needed.")
         )
         return false
       end
 
-      unless ["auto", "ifplugd", "nfsroot"].include? builder["STARTMODE"]
+      unless builder.startmode
         Report.Error(_("Impossible value for startmode."))
         return false
       end
@@ -297,26 +298,25 @@ module Yast
     # @param builder [Y2Network::InterfaceConfigBuilder]
     # @param options [Hash{String => String}] action options
     def update_builder_from_options!(builder, options)
-      case builder.type
+      case builder.type.short_name
       when "bond"
-        builder["BOND_SLAVES"] = options.fetch("slaves", "").split(" ")
+        builder.slaves = options.fetch("slaves", "").split(" ")
       when "vlan"
-        builder["ETHERDEVICE"] = options.fetch("ethdevice", "")
+        builder.etherdevice = options["ethdevice"]
       when "br"
-        builder["BRIDGE_PORTS"] = options.fetch("bridge_ports", "")
+        builder.ports = options["bridge_ports"]
       end
 
       default_bootproto = options.keys.include?("ip") ? "static" : "none"
-      builder["BOOTPROTO"] = options.fetch("bootproto", default_bootproto)
-      if builder["BOOTPROTO"] == "static"
-        builder["IPADDR"] = options.fetch("ip", "")
-        builder["PREFIX"] = options.fetch("prefix", "")
-        builder["NETMASK"] = options.fetch("netmask", "255.255.255.0") if builder["PREFIX"].empty?
+      builder.boot_protocol = options.fetch("bootproto", default_bootproto)
+      if builder.boot_protocol.name == "static"
+        builder.ip_address = options.fetch("ip", "")
+        builder.subnet_prefix = options.fetch("prefix", options.fetch("netmask", "255.255.255.0"))
       else
-        builder["IPADDR"] = ""
-        builder["NETMASK"] = ""
+        builder.ip_address = ""
+        builder.subnet_prefix = ""
       end
-      builder["STARTMODE"] = options.fetch("startmode", "auto")
+      builder.startmode = options.fetch("startmode", "auto")
     end
   end
 end

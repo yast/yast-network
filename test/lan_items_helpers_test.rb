@@ -1,5 +1,24 @@
 #!/usr/bin/env rspec
 
+# Copyright (c) [2019] SUSE LLC
+#
+# All Rights Reserved.
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of version 2 of the GNU General Public License as published
+# by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, contact SUSE LLC.
+#
+# To contact SUSE LLC about this file by physical or electronic mail, you may
+# find current contact information at www.suse.com.
+
 require_relative "test_helper"
 
 require "yast"
@@ -28,21 +47,6 @@ describe "LanItemsClass#IsItemConfigured" do
     allow(Yast::LanItems).to receive(:GetLanItem) { { "ifcfg" => nil } }
 
     expect(Yast::LanItems.IsItemConfigured(0)).to be false
-  end
-end
-
-describe "LanItemsClass#delete_dev" do
-  before(:each) do
-    Yast::LanItems.Items = {
-      0 => {
-        "ifcfg" => "enp0s3"
-      }
-    }
-  end
-
-  it "removes device config when found" do
-    Yast::LanItems.delete_dev("enp0s3")
-    expect(Yast::LanItems.Items).to be_empty
   end
 end
 
@@ -107,234 +111,6 @@ describe "LanItemsClass#getNetworkInterfaces" do
     it "returns the list of known interfaces of the given type" do
       allow(Yast::NetworkInterfaces).to receive(:FilterDevices) { NETCONFIG_ITEMS }
       expect(Yast::LanItems.getNetworkInterfaces("br")).to eql(["br0"])
-    end
-  end
-end
-
-describe "LanItemsClass#s390_correct_lladdr" do
-  Yast.import "Arch"
-
-  before(:each) do
-    allow(Yast::Arch)
-      .to receive(:s390)
-      .and_return(true)
-  end
-
-  it "fails if given lladdr is nil" do
-    expect(Yast::LanItems.send(:s390_correct_lladdr, nil)).to be false
-  end
-
-  it "fails if given lladdr is empty" do
-    expect(Yast::LanItems.send(:s390_correct_lladdr, "")).to be false
-  end
-
-  it "fails if given lladdr contains zeroes only" do
-    expect(Yast::LanItems.send(:s390_correct_lladdr, "00:00:00:00:00:00")).to be false
-  end
-
-  it "succeeds if given lladdr contains valid MAC" do
-    expect(Yast::LanItems.send(:s390_correct_lladdr, "0a:00:27:00:00:00")).to be true
-  end
-end
-
-describe "LanItems#InitItemUdev" do
-  def udev_rule(mac, name)
-    [
-      "SUBSYSTEM==\"net\"",
-      "ACTION==\"add\"",
-      "DRIVERS==\"?*\"",
-      "ATTR{address}==\"#{mac}\"",
-      "ATTR{type}==\"1\"",
-      "NAME=\"#{name}\""
-    ]
-  end
-
-  before(:each) do
-    allow(Yast::LanItems)
-      .to receive(:Items)
-      .and_return(
-        0 => {
-          "ifcfg" => "eth0",
-          "udev"  => {
-            "net" => udev_rule("24:be:05:ce:1e:91", "eth0")
-          }
-        },
-        1 => {
-          "hwinfo" => {
-            "permanent_mac" => "00:00:00:00:00:01",
-            "dev_name"      => "eth1"
-          },
-          # always exists
-          "udev"   => {
-            "net" => []
-          }
-        }
-      )
-  end
-
-  it "returns existing udev rule if there is any already" do
-    expect(Yast::LanItems.InitItemUdevRule(0)).to eql udev_rule("24:be:05:ce:1e:91", "eth0")
-  end
-
-  it "creates new udev rule if none is present" do
-    expect(Yast::LanItems.InitItemUdevRule(1)).to eql udev_rule("00:00:00:00:00:01", "eth1")
-  end
-end
-
-describe "LanItems#GetItemUdev" do
-  def check_GetItemUdev(key, expected_value)
-    expect(Yast::LanItems.GetItemUdev(key)).to eql expected_value
-  end
-
-  context "when current item has an udev rule associated" do
-    BUSID = "0000:00:00.0".freeze
-
-    before(:each) do
-      allow(Yast::LanItems)
-        .to receive(:getCurrentItem)
-        .and_return("udev" => { "net" => ["KERNELS==\"#{BUSID}\""] })
-    end
-
-    it "returns proper value when key exists" do
-      check_GetItemUdev("KERNELS", BUSID)
-    end
-
-    it "returns an empty string when key doesn't exist" do
-      check_GetItemUdev("NAME", "")
-    end
-  end
-
-  context "when current item doesn't have an udev rule associated" do
-    MAC = "00:11:22:33:44:55".freeze
-
-    before(:each) do
-      allow(Yast::LanItems)
-        .to receive(:GetLanItem)
-        .and_return("hwinfo" => { "permanent_mac" => MAC }, "ifcfg" => "eth0")
-    end
-
-    it "returns proper value when key exists" do
-      check_GetItemUdev("ATTR{address}", MAC)
-    end
-
-    it "returns an empty string when key doesn't exist" do
-      check_GetItemUdev("KERNELS", "")
-    end
-  end
-end
-
-describe "LanItems#RemoveItemUdev" do
-  let(:rule) { { 0 => { "udev" => { "net" => ["KEY_TO_DELETE==\"VALUE\"", "OTHER_KEY"] } } } }
-  before(:each) do
-    Yast::LanItems.Items = rule
-    Yast::LanItems.current = 0
-  end
-
-  context "when the current item has an udev rule associated" do
-    it "removes the given key from the current rule if exists" do
-      Yast::LanItems.RemoveItemUdev("KEY_TO_DELETE")
-
-      expect(Yast::LanItems.GetItemUdevRule(0)).to eql(["OTHER_KEY"])
-    end
-
-    it "the current rule keeps untouched if the given key does not exist" do
-      Yast::LanItems.RemoveItemUdev("NOT_PRESENT_KEY")
-
-      expect(Yast::LanItems.GetItemUdevRule(0))
-        .to eql(["KEY_TO_DELETE==\"VALUE\"", "OTHER_KEY"])
-    end
-  end
-
-  context "when the current item doesn't have an udev rule associated" do
-    let(:rule) { { 0 => { "ifcfg" => "eth0" } } }
-
-    it "returns nil" do
-      expect(Yast::LanItems.RemoveItemUdev("KEY_TO_DELETE")).to eql(nil)
-    end
-  end
-end
-
-describe "#current_udev_rule" do
-  let(:busid) { "0000:08:00.0" }
-  let(:hwinfo) { { "dev_name" => "test0", "busid" => busid, "permanent_mac" => "24:be:05:ce:1e:91" } }
-  let(:udev_net) { ["KERNELS==\"#{busid}\"", "NAME=\"test0\""] }
-  let(:rule) { { 0 => { "hwinfo" => hwinfo, "udev" => { "net" => udev_net } } } }
-
-  before do
-    Yast::LanItems.Items = rule
-    Yast::LanItems.current = 0
-  end
-
-  it "returns the current item udev rule" do
-    expect(Yast::LanItems.current_udev_rule).to contain_exactly("KERNELS==\"#{busid}\"", "NAME=\"test0\"")
-  end
-end
-
-describe "#update_item_udev_rule!" do
-  let(:hwinfo) { { "dev_name" => "test0", "busid" => "0000:08:00.0", "permanent_mac" => "24:be:05:ce:1e:91" } }
-  let(:udev_net) { ["ATTR{address}==\"24:be:05:ce:1e:91\"", "KERNEL==\"eth*\"", "NAME=\"test0\""] }
-  let(:rule) { { 0 => { "hwinfo" => hwinfo, "udev" => { "net" => udev_net } } } }
-
-  before do
-    Yast::LanItems.Items = rule
-    Yast::LanItems.current = 0
-    # The current item hasn't got a dev_port
-    allow(Yast::LanItems).to receive(:dev_port).and_return("")
-  end
-
-  context "when the given rule key is :bus_id" do
-    it "uses KERNELS attribute with busid match instead of mac address" do
-      expect(Yast::LanItems.Items[0]["udev"]["net"]).to eql(udev_net)
-      Yast::LanItems.update_item_udev_rule!(:bus_id)
-      expect(Yast::LanItems.Items[0]["udev"]["net"])
-        .to eql(["KERNEL==\"eth*\"", "KERNELS==\"0000:08:00.0\"", "NAME=\"test0\""])
-    end
-
-    context "and the dev_port is available via sysfs" do
-      it "also adds the dev_port to the current rule" do
-        allow(Yast::LanItems).to receive(:dev_port).and_return("0")
-        expect(Yast::LanItems.Items[0]["udev"]["net"]).to eql(udev_net)
-        Yast::LanItems.update_item_udev_rule!(:bus_id)
-        expect(Yast::LanItems.Items[0]["udev"]["net"])
-          .to eql(["KERNEL==\"eth*\"", "ATTR{dev_port}==\"0\"", "KERNELS==\"0000:08:00.0\"", "NAME=\"test0\""])
-      end
-    end
-  end
-
-  context "when the given rule key is :mac" do
-    let(:udev_net) { ["KERNEL==\"eth*\"", "KERNELS==\"0000:08:00.0\"", "NAME=\"test0\""] }
-
-    it "uses mac attribute" do
-      expect(Yast::LanItems.Items[0]["udev"]["net"]).to eql(udev_net)
-      Yast::LanItems.update_item_udev_rule!(:mac)
-      expect(Yast::LanItems.Items[0]["udev"]["net"])
-        .to eql(["KERNEL==\"eth*\"", "ATTR{address}==\"24:be:05:ce:1e:91\"", "NAME=\"test0\""])
-    end
-
-    context "and the current item has got a dev port" do
-      let(:udev_net) { ["KERNEL==\"eth*\"", "ATTR{dev_port}==\"0\"", "KERNELS==\"0000:08:00.0\"", "NAME=\"test0\""] }
-
-      it "removes the dev_port from current rule if present" do
-        expect(Yast::LanItems.Items[0]["udev"]["net"]).to eql(udev_net)
-        Yast::LanItems.update_item_udev_rule!(:mac)
-        expect(Yast::LanItems.Items[0]["udev"]["net"])
-          .to eql(["KERNEL==\"eth*\"", "ATTR{address}==\"24:be:05:ce:1e:91\"", "NAME=\"test0\""])
-      end
-    end
-  end
-
-  context "when not supported key is given" do
-    it "raises an ArgumentError exception" do
-      expect { Yast::LanItems.update_item_udev_rule!(:other) }.to raise_error(ArgumentError)
-    end
-  end
-
-  context "when no parameters is given" do
-    it "uses :mac as default" do
-      expect(Yast::LanItems).to receive(:RemoveItemUdev).with("ATTR{dev_port}")
-      expect(Yast::LanItems).to receive(:ReplaceItemUdev)
-
-      Yast::LanItems.update_item_udev_rule!
     end
   end
 end
@@ -511,39 +287,6 @@ describe "DHCLIENT_SET_HOSTNAME helpers" do
     end
   end
 
-  describe "LanItems#clear_set_hostname" do
-    let(:dhcp_yes_maps) do
-      {
-        "eth0" => { "DHCLIENT_SET_HOSTNAME" => "yes" }
-      }.freeze
-    end
-    let(:dhcp_no_maps) do
-      {
-        "eth1" => { "DHCLIENT_SET_HOSTNAME" => "no" }
-      }.freeze
-    end
-    let(:no_dhclient_maps) do
-      { "eth6" => { "BOOT" => "dhcp" } }.freeze
-    end
-
-    it "clears all DHCLIENT_SET_HOSTNAME options" do
-      dhclient_maps = dhcp_yes_maps.merge(dhcp_no_maps)
-      mock_items(dhclient_maps.merge(no_dhclient_maps))
-
-      expect(Yast::LanItems)
-        .to receive(:SetDeviceMap)
-        .with(kind_of(Integer), "DHCLIENT_SET_HOSTNAME" => nil)
-        .twice
-      expect(Yast::LanItems)
-        .to receive(:SetModified)
-        .at_least(:once)
-
-      ret = Yast::LanItems.clear_set_hostname
-
-      expect(ret).to eql dhclient_maps.keys
-    end
-  end
-
   describe "LanItems#valid_dhcp_cfg?" do
     def mock_dhcp_setup(ifaces, global)
       allow(Yast::LanItems)
@@ -601,40 +344,6 @@ describe "LanItems renaming methods" do
     allow(Yast::LanItems).to receive(:Items).and_return(0 => item_0)
   end
 
-  describe "LanItems#current_name_for" do
-    context "when the LanItem has not been renamed" do
-      it "returns the item name" do
-        expect(Yast::LanItems.current_name_for(0)).to eql "eth0"
-      end
-    end
-
-    context "when the LanItem has been renamed" do
-      let(:renamed_to) { "new1" }
-
-      it "returns the new name" do
-        expect(Yast::LanItems.current_name_for(0)).to eql "new1"
-      end
-    end
-  end
-
-  describe "LanItems#colliding_item" do
-    it "returns nothing if no collision was found" do
-      expect(Yast::LanItems.colliding_item("enp0s3")).to be nil
-    end
-
-    it "returns the Item index which is in collision" do
-      expect(Yast::LanItems.colliding_item("eth0")).to be 0
-    end
-
-    context "if some of the devices were renamed" do
-      let(:renamed_to) { "enp0s3" }
-
-      it "uses the new name to detect the collision" do
-        expect(Yast::LanItems.colliding_item("enp0s3")).to be 0
-      end
-    end
-  end
-
   describe "LanItems.add_device_to_routing" do
     let(:eth0) { Y2Network::Interface.new("eth0") }
     let(:wlan0) { Y2Network::Interface.new("wlan0") }
@@ -678,78 +387,6 @@ describe "LanItems renaming methods" do
     end
   end
 
-  describe "LanItems.rename_current_device_in_routing" do
-    let(:eth0) { Y2Network::Interface.new("eth0") }
-    let(:wlan0) { Y2Network::Interface.new("wlan0") }
-    let(:interfaces) { Y2Network::InterfacesCollection.new([eth0, wlan0]) }
-    let(:yast_config) do
-      instance_double(Y2Network::Config, interfaces: interfaces, routing: double("routing"))
-    end
-
-    before do
-      allow(Y2Network::Config).to receive(:find).with(:yast).and_return(yast_config)
-      allow(Yast::LanItems).to receive(:current_name).and_return("wlan1")
-    end
-
-    it "updates the list of Routing devices with current device names" do
-      Yast::LanItems.rename_current_device_in_routing("wlan0")
-      new_names = yast_config.interfaces.map(&:name)
-      expect(new_names).to eq(["eth0", "wlan1"])
-    end
-  end
-
-  describe "LanItems.remove_current_device_from_routing" do
-    let(:eth0) { Y2Network::Interface.new("eth0") }
-    let(:wlan0) { Y2Network::Interface.new("wlan0") }
-    let(:interfaces) { Y2Network::InterfacesCollection.new([eth0, wlan0]) }
-
-    let(:yast_config) do
-      instance_double(Y2Network::Config, interfaces: interfaces, routing: double("routing"))
-    end
-
-    before do
-      allow(Y2Network::Config).to receive(:find).with(:yast).and_return(yast_config)
-      allow(Yast::LanItems).to receive(:current_name).and_return("wlan0")
-    end
-
-    it "removes the device" do
-      Yast::LanItems.remove_current_device_from_routing
-      names = yast_config.interfaces.map(&:name)
-      expect(names).to eq(["eth0"])
-    end
-  end
-
-  describe "LanItems.update_routing_devices?" do
-    let(:eth0) { Y2Network::Interface.new("eth0") }
-    let(:wlan0) { Y2Network::Interface.new("wlan0") }
-    let(:interfaces) { Y2Network::InterfacesCollection.new([eth0, wlan0]) }
-
-    let(:yast_config) do
-      instance_double(Y2Network::Config, interfaces: interfaces, routing: double("routing"))
-    end
-
-    before do
-      allow(Y2Network::Config).to receive(:find).with(:yast).and_return(yast_config)
-      allow(Yast::LanItems).to receive(:current_name).and_return(current_name)
-    end
-
-    context "when there are no changes in the device names" do
-      let(:current_name) { "eth0" }
-
-      it "returns false" do
-        expect(Yast::LanItems.update_routing_devices?).to eql(false)
-      end
-    end
-
-    context "when some interface have been renaming and Routing device names differs" do
-      let(:current_name) { "eth1" }
-
-      it "returns true" do
-        expect(Yast::LanItems.update_routing_devices?).to eql(true)
-      end
-    end
-  end
-
   describe "LanItems.move_routes" do
     let(:routing) { Y2Network::Routing.new(tables: [table1]) }
     let(:table1) { Y2Network::RoutingTable.new(routes) }
@@ -761,8 +398,9 @@ describe "LanItems renaming methods" do
     end
     let(:eth0) { Y2Network::Interface.new("eth0") }
     let(:br0) { Y2Network::Interface.new("br0") }
+    let(:interfaces) { Y2Network::InterfacesCollection.new([eth0, br0]) }
     let(:yast_config) do
-      instance_double(Y2Network::Config, interfaces: [eth0, br0], routing: routing)
+      instance_double(Y2Network::Config, interfaces: interfaces, routing: routing)
     end
 
     before do

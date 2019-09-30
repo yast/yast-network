@@ -1,8 +1,28 @@
+# Copyright (c) [2019] SUSE LLC
+#
+# All Rights Reserved.
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of version 2 of the GNU General Public License as published
+# by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, contact SUSE LLC.
+#
+# To contact SUSE LLC about this file by physical or electronic mail, you may
+# find current contact information at www.suse.com.
+
 require "cwm/dialog"
 require "y2network/widgets/interface_type"
 require "y2network/interface_config_builder"
 
 Yast.import "Label"
+Yast.import "Lan"
 Yast.import "LanItems"
 Yast.import "NetworkInterfaces"
 
@@ -11,7 +31,7 @@ module Y2Network
     # Dialog which starts new device creation
     class AddInterface < CWM::Dialog
       def initialize(default: nil)
-        @type_widget = Widgets::InterfaceType.new(default: default)
+        @type_widget = Widgets::InterfaceType.new(default: default ? default.short_name : nil)
       end
 
       def contents
@@ -22,11 +42,6 @@ module Y2Network
 
       # initialize legacy stuff, that should be removed soon
       def legacy_init
-        # FIXME: can be mostly deleted
-        Yast::LanItems.AddNew
-        # FIXME: can be partly deleted and partly moved
-        Yast::Lan.Add
-
         # FIXME: This is for backward compatibility only
         # dhclient needs to set just one dhcp enabled interface to
         # DHCLIENT_SET_DEFAULT_ROUTE=yes. Otherwise interface is selected more
@@ -46,27 +61,22 @@ module Y2Network
         log.info "AddInterface result #{ret}"
         ret = :back if ret == :abort
 
-        # TODO: replace with builder initialization
-        if ret == :back
-          Yast::LanItems.Rollback
-          return nil
-        end
+        return if ret == :back
 
         # TODO: use factory to get proper builder
-        builder = InterfaceConfigBuilder.for(@type_widget.result)
-        proposed_name = Yast::LanItems.new_type_devices(@type_widget.result, 1).first
+        builder = InterfaceConfigBuilder.for(InterfaceType.from_short_name(@type_widget.result))
+        proposed_name = Yast::Lan.yast_config.interfaces.free_name(@type_widget.result)
         builder.name = proposed_name
-        Yast::NetworkInterfaces.Name = proposed_name
-        Yast::LanItems.Items[Yast::LanItems.current]["ifcfg"] = proposed_name
-        Yast::LanItems.Items[Yast::LanItems.current]["udev"] = {}
 
         builder
       end
 
+      # no back button for add dialog
       def back_button
         ""
       end
 
+      # as it is a sub dialog it can only cancel and cannot abort
       def abort_button
         Yast::Label.CancelButton
       end

@@ -1,5 +1,24 @@
 #!/usr/bin/env rspec
 
+# Copyright (c) [2019] SUSE LLC
+#
+# All Rights Reserved.
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of version 2 of the GNU General Public License as published
+# by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, contact SUSE LLC.
+#
+# To contact SUSE LLC about this file by physical or electronic mail, you may
+# find current contact information at www.suse.com.
+
 require_relative "test_helper"
 
 class DummyClass < Yast::Module
@@ -10,6 +29,10 @@ end
 
 describe "NetworkLanCmdlineInclude" do
   subject { DummyClass.new }
+
+  before do
+    allow(Yast::Lan).to receive(:yast_config).and_return(Y2Network::Config.new(source: :fake))
+  end
 
   describe "#ShowHandler" do
     it "creates plain text from formatted html" do
@@ -48,11 +71,13 @@ describe "NetworkLanCmdlineInclude" do
     context "when startmode is given" do
       context "but with an invalid option" do
         it "reports an error" do
+          pending "invalid option is not yet handled"
           expect(Yast::Report).to receive(:Error)
           subject.AddHandler(options.merge("startmode" => "wrong"))
         end
 
         it "returns false" do
+          pending "invalid option is not yet handled"
           expect(subject.AddHandler(options.merge("startmode" => "wrong"))).to eq false
         end
       end
@@ -86,6 +111,7 @@ describe "NetworkLanCmdlineInclude" do
 
     before do
       allow(Yast::LanItems).to receive(:Items).and_return(items)
+      allow(Yast::LanItems).to receive(:GetCurrentType).and_return("eth")
       richtext = "test<br><ul><li>item1</li></ul>"
       allow(subject).to receive(:getConfigList).and_return(["0" => { "rich_descr" => richtext }])
     end

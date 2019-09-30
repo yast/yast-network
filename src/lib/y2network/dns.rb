@@ -17,6 +17,8 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
+require "y2network/hostname_reader"
+
 module Y2Network
   # DNS configuration (hostname, nameservers, etc.).
   class DNS
@@ -32,7 +34,9 @@ module Y2Network
     # @return [String] resolv.conf update policy
     attr_accessor :resolv_conf_policy
 
-    # @return [Boolean] Whether to take the hostname from DHCP
+    # @return [String,Symbol] Whether to take the hostname from DHCP.
+    #   It can be an interface name (String), :any for any interface or :none from no taking
+    #   the hostname from DHCP.
     attr_accessor :dhcp_hostname
 
     # @todo receive an array instead all these arguments
@@ -49,17 +53,6 @@ module Y2Network
       @searchlist = opts[:searchlist] || []
       @resolv_conf_policy = opts[:resolv_conf_policy]
       @dhcp_hostname = opts[:dhcp_hostname]
-    end
-
-    # @return [Array<String>] Valid chars to be used in the random part of a hostname
-    HOSTNAME_CHARS = (("a".."z").to_a + ("0".."9").to_a).freeze
-    private_constant :HOSTNAME_CHARS
-
-    # Sets a hostname is none is present
-    def ensure_hostname!
-      return unless @hostname.nil? || @hostname.empty?
-      suffix = HOSTNAME_CHARS.sample(4).join
-      @hostname = "linux-#{suffix}"
     end
 
     # @return [Array<Symbol>] Methods to check when comparing two instances

@@ -1,5 +1,25 @@
+# Copyright (c) [2019] SUSE LLC
+#
+# All Rights Reserved.
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of version 2 of the GNU General Public License as published
+# by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, contact SUSE LLC.
+#
+# To contact SUSE LLC about this file by physical or electronic mail, you may
+# find current contact information at www.suse.com.
+
 require "yast"
 require "cwm/custom_widget"
+require "ipaddr"
 
 Yast.import "IP"
 Yast.import "Popup"
@@ -81,8 +101,7 @@ module Y2Network
       def refresh_table
         table_items = @settings.aliases.each_with_index.map do |data, i|
 
-          mask = data[:prefixlen].empty? ? data[:mask] : "/#{data[:prefixlen]}"
-          Item(Id(i), data[:label], data[:ip], mask)
+          Item(Id(i), data[:label], data[:ip], "/#{data[:prefixlen]}")
         end
 
         Yast::UI.ChangeWidget(Id(:address_table), :Items, table_items)
@@ -138,11 +157,9 @@ module Y2Network
       def dialog(name, entry)
         label = entry ? entry[:label] : ""
         ip = entry ? entry[:ip] : ""
-        mask = if entry
-          entry[:prefixlen].empty? ? entry[:mask] : "/#{entry[:prefixlen]}"
-        else
-          ""
-        end
+        id = entry ? entry[:id] : ""
+        mask = entry ? "/#{entry[:prefixlen]}" : ""
+
         Yast::UI.OpenDialog(
           Opt(:decorated),
           VBox(
@@ -210,6 +227,7 @@ module Y2Network
             Yast::UI.SetFocus(Id(:netmask))
             next
           end
+
           netmask = ""
           prefixlen = ""
           if val.start_with?("/")
@@ -219,8 +237,14 @@ module Y2Network
           else
             netmask = val
           end
-          res[:mask] = netmask
+
+          res[:prefixlen] = if prefixlen.empty?
+            IPAddr.new("#{netmask}/#{netmask}")
+          else
+            prefixlen
+          end
           res[:prefixlen] = prefixlen
+          res[:id] = id
 
           break
         end

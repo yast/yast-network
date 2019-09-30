@@ -47,7 +47,6 @@ module Yast
       Yast.include include_target, "network/lan/complex.rb"
       Yast.include include_target, "network/lan/dhcp.rb"
       Yast.include include_target, "network/lan/hardware.rb"
-      Yast.include include_target, "network/lan/wireless.rb"
       Yast.include include_target, "network/services/dns.rb"
       Yast.include include_target, "network/services/host.rb"
     end
@@ -119,10 +118,9 @@ module Yast
     end
 
     def MainSequence(mode)
-      iface_builder = Y2Network::InterfaceConfigBuilder.new
       aliases = {
-        "global"   => -> { MainDialog("global", builder: iface_builder) },
-        "overview" => -> { MainDialog("overview", builder: iface_builder) }
+        "global"   => -> { MainDialog("global") },
+        "overview" => -> { MainDialog("overview") }
       }
 
       start = "overview"
@@ -176,49 +174,26 @@ module Yast
       Sequencer.Run(aliases, sequence)
     end
 
-    def AddressSequence(which, builder:)
+    def AddressSequence(_which, builder:)
       # TODO: add builder wherever needed
       aliases = {
-        "address"     => -> { AddressDialog(builder: builder) },
-        "hosts"       => -> { HostsMainDialog(false) },
-        "s390"        => -> { S390Dialog(builder: builder) },
-        "wire"        => -> { WirelessDialog() },
-        "expert"      => -> { WirelessExpertDialog() },
-        "keys"        => -> { WirelessKeysDialog() },
-        "eap"         => -> { WirelessWpaEapDialog() },
-        "eap-details" => -> { WirelessWpaEapDetailsDialog() },
-        "commit"      => [-> { Commit(builder: builder) }, true]
+        "address" => -> { AddressDialog(builder: builder) },
+        "hosts"   => -> { HostsMainDialog(false) },
+        "s390"    => -> { S390Dialog(builder: builder) },
+        "commit"  => [-> { Commit(builder: builder) }, true]
       }
 
-      ws_start = which == "wire" ? "wire" : "address"
       sequence = {
-        "ws_start"    => ws_start,
-        "address"     => {
-          abort:    :abort,
-          next:     "commit",
-          wire:     "wire",
-          hosts:    "hosts",
-          s390:     "s390",
-          hardware: :hardware
+        "ws_start" => "address",
+        "address"  => {
+          abort: :abort,
+          next:  "commit",
+          hosts: "hosts",
+          s390:  "s390"
         },
-        "s390"        => { abort: :abort, next: "address" },
-        "hosts"       => { abort: :abort, next: "address" },
-        "wire"        => {
-          next:   "commit",
-          expert: "expert",
-          keys:   "keys",
-          eap:    "eap",
-          abort:  :abort
-        },
-        "expert"      => { next: "wire", abort: :abort },
-        "keys"        => { next: "wire", abort: :abort },
-        "eap"         => {
-          next:    "commit",
-          details: "eap-details",
-          abort:   :abort
-        },
-        "eap-details" => { next: "eap", abort: :abort },
-        "commit"      => { next: :next }
+        "s390"     => { abort: :abort, next: "address" },
+        "hosts"    => { abort: :abort, next: "address" },
+        "commit"   => { next: :next }
       }
 
       Sequencer.Run(aliases, sequence)

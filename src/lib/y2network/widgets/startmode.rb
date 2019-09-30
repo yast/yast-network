@@ -1,4 +1,24 @@
+# Copyright (c) [2019] SUSE LLC
+#
+# All Rights Reserved.
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of version 2 of the GNU General Public License as published
+# by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, contact SUSE LLC.
+#
+# To contact SUSE LLC about this file by physical or electronic mail, you may
+# find current contact information at www.suse.com.
+
 require "cwm/common_widgets"
+require "y2network/startmode"
 
 module Y2Network
   module Widgets
@@ -19,12 +39,12 @@ module Y2Network
       end
 
       def init
-        self.value = @config["STARTMODE"]
+        self.value = @config.startmode.name
         handle
       end
 
       def store
-        @config["STARTMODE"] = value
+        @config.startmode = value
       end
 
       def handle
@@ -78,21 +98,9 @@ module Y2Network
       end
 
       def items
-        [
-          # onboot, on and boot are aliases for auto
-          # See NetworkInterfaces::CanonicalizeStartmode
-          # TRANSLATORS: Combo box option for Device Activation
-          ["auto", _("At Boot Time")],
-          ["off", _("Never")],
-          # TRANSLATORS: Combo box option for Device Activation
-          ["manual", _("Manually")],
-          # TRANSLATORS: Combo box option for Device Activation
-          ["ifplugd", _("On Cable Connection")],
-          # TRANSLATORS: Combo box option for Device Activation
-          ["hotplug", _("On Hotplug")],
-          # TRANSLATORS: Combo box option for Device Activation
-          ["nfsroot", _("On NFSroot")]
-        ]
+        Y2Network::Startmode.all.map do |mode|
+          [mode.to_s, mode.to_human_string]
+        end
       end
     end
   end

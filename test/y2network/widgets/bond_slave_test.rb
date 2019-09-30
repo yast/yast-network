@@ -21,9 +21,15 @@ require_relative "../../test_helper"
 require "cwm/rspec"
 
 require "y2network/widgets/bond_slave"
+require "y2network/interface_config_builders/bonding"
 
 describe Y2Network::Widgets::BondSlave do
-  subject { described_class.new({}) }
+  let(:builder) { Y2Network::InterfaceConfigBuilders::Bonding.new }
+  subject { described_class.new(builder) }
+
+  before do
+    allow(builder).to receive(:yast_config).and_return(Y2Network::Config.new(source: :testing))
+  end
 
   include_examples "CWM::CustomWidget"
 
@@ -60,9 +66,9 @@ describe Y2Network::Widgets::BondSlave do
           allow(subject).to receive(:physical_port_id).with(i).and_return("00010486fd348")
         end
 
-        expect(Yast::Popup).to receive(:YesNoHeadline).and_return(:request_answer)
+        expect(Yast::Popup).to receive(:YesNoHeadline).and_return(false)
 
-        expect(subject.validate).to eql(:request_answer)
+        expect(subject.validate).to eql(false)
       end
     end
   end

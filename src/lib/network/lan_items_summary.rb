@@ -36,29 +36,6 @@ module Yast
     # Generates a summary in RichText format for the configured interfaces
     #
     # @example
-    #   LanItemsSummary.new.default
-    #   => "<ul><li><p>eth0<br>DHCP</p></li><li><p>eth1<br>NONE</p></li></ul>"
-    #
-    # @see Summary
-    # @return [String] summary in RichText
-    def default
-      items = []
-
-      LanItems.Items.each do |item, conf|
-        next if !Yast::LanItems.IsItemConfigured(item)
-
-        ifcfg = LanItems.GetDeviceMap(item) || {}
-        items << Summary.Device(conf["ifcfg"], ifcfg_protocol(ifcfg))
-      end
-
-      return Summary.NotConfigured if items.empty?
-
-      Summary.DevicesList(items)
-    end
-
-    # Generates a summary in RichText format for the configured interfaces
-    #
-    # @example
     #   LanItemsSummary.new.proposal
     #   => "<ul><li><p>Configured with DHCP: eth0, eth1<br></p></li>" \
     #      "<li><p>br0 (Bridge)<br>IP address: 192.168.122.60/24" \

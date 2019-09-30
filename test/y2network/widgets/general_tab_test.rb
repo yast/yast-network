@@ -25,8 +25,7 @@ require "y2network/interface_config_builder"
 
 describe Y2Network::Widgets::GeneralTab do
   let(:builder) do
-    res = Y2Network::InterfaceConfigBuilder.new
-    res.type = "eth"
+    res = Y2Network::InterfaceConfigBuilder.for("eth")
     res.name = "eth0"
     res
   end

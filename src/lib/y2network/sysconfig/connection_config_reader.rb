@@ -28,12 +28,13 @@ module Y2Network
       # Constructor
       #
       # @param name [String] Interface name
-      # @param type [Symbol,nil] Interface type (:eth, :wlan, etc.); if the type is unknown,
+      # @param type [InterfaceType, string, nil] Interface type; if the type is unknown,
       #   `nil` can be used and it will be guessed from the configuration file is possible.
       #
       # @return [Y2Network::ConnectionConfig::Base]
       def read(name, type)
         file = Y2Network::Sysconfig::InterfaceFile.new(name)
+        file.load
         handler_class = find_handler_class(type || file.type)
         return nil if handler_class.nil?
         handler_class.new(file).connection_config
@@ -43,11 +44,17 @@ module Y2Network
 
       # Returns the class to handle a given interface type
       #
-      # @param type [Symbol]
+      # @param type [String, InterfaceType, nil] interface type or its short name
       # @return [Class] A class which belongs to the ConnectionConfigReaders module
       def find_handler_class(type)
-        require "y2network/sysconfig/connection_config_readers/#{type}"
-        ConnectionConfigReaders.const_get(type.to_s.capitalize)
+        return unless type
+
+        if !type.is_a?(InterfaceType)
+          t = InterfaceType.from_short_name(type) or raise "Unknown type #{type.inspect} #{type.class.inspect}"
+          type = t
+        end
+        require "y2network/sysconfig/connection_config_readers/#{type.file_name}"
+        ConnectionConfigReaders.const_get(type.class_name)
       rescue LoadError, NameError => e
         log.info "Unknown connection type: '#{type}'. " \
                  "Connection handler could not be loaded: #{e.message}"

@@ -1,3 +1,22 @@
+# Copyright (c) [2019] SUSE LLC
+#
+# All Rights Reserved.
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of version 2 of the GNU General Public License as published
+# by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, contact SUSE LLC.
+#
+# To contact SUSE LLC about this file by physical or electronic mail, you may
+# find current contact information at www.suse.com.
+
 require "y2storage"
 require "network/install_inf_convertor"
 require "network/network_autoconfiguration"
@@ -181,7 +200,8 @@ module Yast
       # 1) udev agent doesn't support SetRoot
       # 2) original ifcfg file is copied otherwise too. It doesn't break things itself
       # but definitely not looking well ;-)
-      NetworkAutoYast.instance.create_udevs if Mode.autoinst
+      # TODO: implement support for create udev rules if needed
+      # NetworkAutoYast.instance.create_udevs if Mode.autoinst
 
       copy_dhcp_info
       copy_udev_rules

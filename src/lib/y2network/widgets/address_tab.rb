@@ -1,3 +1,22 @@
+# Copyright (c) [2019] SUSE LLC
+#
+# All Rights Reserved.
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of version 2 of the GNU General Public License as published
+# by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, contact SUSE LLC.
+#
+# To contact SUSE LLC about this file by physical or electronic mail, you may
+# find current contact information at www.suse.com.
+
 require "yast"
 require "cwm/tabs"
 
@@ -27,13 +46,13 @@ module Y2Network
       def contents
         type = @settings.type
 
-        drvtype = driver_type(type)
+        drvtype = driver_type(type.short_name)
         # TODO: check if this kind of device is still valid and used
         is_ptp = drvtype == "ctc" || drvtype == "iucv"
         # TODO: dynamic for dummy. or add dummy from outside?
         no_dhcp =
           is_ptp ||
-          type == "dummy"
+          type.dummy?
 
         address_p2p_contents = Frame(
           "", # labelless frame
@@ -61,10 +80,10 @@ module Y2Network
         end
 
         label = HBox(
-          type == "vlan" ? VBox(HBox(VlanInterface.new(@settings), VlanID.new(@settings))) : Empty()
+          type.vlan? ? VBox(HBox(VlanInterface.new(@settings), VlanID.new(@settings))) : Empty()
         )
 
-        address_contents = if ["tun", "tap"].include?(type)
+        address_contents = if type.tun? || type.tap?
           # TODO: move it to own tab or general as it does not fit here
           VBox(Left(label), Tunnel.new(@settings))
         else

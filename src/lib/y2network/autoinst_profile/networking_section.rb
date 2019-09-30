@@ -17,8 +17,10 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/autoinst_profile/routing_section"
 require "y2network/autoinst_profile/dns_section"
+require "y2network/autoinst_profile/interfaces_section"
+require "y2network/autoinst_profile/routing_section"
+require "y2network/autoinst_profile/udev_rules_section"
 
 module Y2Network
   module AutoinstProfile
@@ -36,6 +38,10 @@ module Y2Network
       attr_accessor :routing
       # @return [DNSSection]
       attr_accessor :dns
+      # @return [InterfacesSection]
+      attr_accessor :interfaces
+      # @return [UdevRulesSection]
+      attr_accessor :udev_rules
 
       # Creates an instance based on the profile representation used by the AutoYaST modules
       # (hash with nested hashes and arrays).
@@ -46,6 +52,8 @@ module Y2Network
         result = new
         result.routing = RoutingSection.new_from_hashes(hash["routing"]) if hash["routing"]
         result.dns = DNSSection.new_from_hashes(hash["dns"]) if hash["dns"]
+        result.interfaces = InterfacesSection.new_from_hashes(hash["interfaces"]) if hash["interfaces"]
+        result.udev_rules = UdevRulesSection.new_from_hashes(hash["net-udev"]) if hash["net-udev"]
         result
       end
 
@@ -58,6 +66,8 @@ module Y2Network
         return result unless config
         result.routing = RoutingSection.new_from_network(config.routing) if config.routing
         result.dns = DNSSection.new_from_network(config.dns) if config.dns
+        result.interfaces = InterfacesSection.new_from_network(config.connections)
+        result.udev_rules = UdevRulesSection.new_from_network(config.interfaces)
         result
       end
 
@@ -65,7 +75,12 @@ module Y2Network
       #
       # @return [Hash]
       def to_hashes
-        { "routing" => routing.to_hashes }
+        {
+          "routing"    => routing.to_hashes,
+          "dns"        => dns.to_hashes,
+          "interfaces" => interfaces.to_hashes,
+          "net-udev"   => udev_rules.to_hashes
+        }
       end
     end
   end

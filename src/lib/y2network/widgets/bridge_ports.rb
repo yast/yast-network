@@ -1,8 +1,28 @@
+# Copyright (c) [2019] SUSE LLC
+#
+# All Rights Reserved.
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of version 2 of the GNU General Public License as published
+# by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, contact SUSE LLC.
+#
+# To contact SUSE LLC about this file by physical or electronic mail, you may
+# find current contact information at www.suse.com.
+
 require "yast"
 require "cwm/common_widgets"
 require "y2network/widgets/slave_items"
 
 Yast.import "Label"
+Yast.import "Lan"
 Yast.import "Popup"
 Yast.import "UI"
 
@@ -11,6 +31,7 @@ module Y2Network
     class BridgePorts < CWM::MultiSelectionBox
       include SlaveItems
 
+      # @param [Y2Network::InterfaceConfigBuilders::Bridge] settings
       def initialize(settings)
         textdomain "network"
         @settings = settings
@@ -27,10 +48,11 @@ module Y2Network
 
       # Default function to init the value of slave devices box for bridging.
       def init
-        br_ports = @settings["BRIDGE_PORTS"].split
+        br_ports = @settings.ports
         items = slave_items_from(
           @settings.bridgeable_interfaces.map(&:name),
-          br_ports
+          br_ports,
+          Yast::Lan.yast_config # ideally get it from builder?
         )
 
         # it is list of Items, so cannot use `change_items` helper
@@ -39,8 +61,7 @@ module Y2Network
 
       # Default function to store the value of slave devices box.
       def store
-        # TODO: fix it in builder to use array and not space separated string
-        @settings["BRIDGE_PORTS"] = value.join(" ")
+        @settings.ports = value
       end
 
       # Validates created bridge. Currently just prevent the user to create a

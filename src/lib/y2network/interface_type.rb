@@ -21,26 +21,23 @@ require "yast"
 
 module Y2Network
   # This class represents the interface types which are supported.
-  #
-  # Constants may be defined using the {define_type} method.
+  # Class have helpers to check if given type is what needed. It check name and also short name:
+  # @example check for ethernet cards
+  #    type.ethernet?
+  # @example check for wifi
+  #    type.wlan?
   class InterfaceType
     extend Yast::I18n
     include Yast::I18n
 
     class << self
-      # @param const_name [String] Constant name
-      # @param name       [String] Type name ("Ethernet", "Wireless", etc.)
-      # @param short_name [String] Short name used in legacy code
-      def define_type(const_name, name, short_name)
-        const_set(const_name, new(name, short_name))
-        all << const_get(const_name)
-      end
-
       # Returns all the existing types
       #
       # @return [Array<InterfaceType>] Interface types
       def all
-        @types ||= []
+        @types ||= InterfaceType.constants
+                                .map { |c| InterfaceType.const_get(c) }
+                                .select { |c| c.is_a?(InterfaceType) }
       end
 
       # Returns the interface type with a given short name
@@ -60,6 +57,8 @@ module Y2Network
     # Constructor
     #
     # @param name [String] Type name
+    # @param short_name [String] short name as is used for prefixing of
+    #   interface name (e.g. bond, eth or wlan)
     def initialize(name, short_name)
       textdomain "network"
       @name = name
@@ -73,21 +72,85 @@ module Y2Network
       _(name)
     end
 
-    # Define types constants
-    define_type "ETHERNET", N_("Ethernet"), "eth"
-    define_type "WIRELESS", N_("Wireless"), "wlan"
-    define_type "INFINIBAND", N_("Infiniband"), "ib"
-    define_type "BONDING", N_("Bonding"), "bond"
-    define_type "BRIDGE", N_("Bridge"), "br"
-    define_type "DUMMY", N_("Dummy"), "dummy"
-    define_type "VLAN", N_("VLAN"), "vlan"
-    define_type "TUN", N_("TUN"), "tun"
-    define_type "TAP", N_("TAP"), "tap"
-    define_type "USB", N_("USB"), "usb"
-    # s390
-    define_type "QETH", N_("QETH"), "qeth"
-    define_type "LCS", N_("LCS"), "lcs"
-    define_type "HIPERSOCKETS", N_("HiperSockets"), "hsi"
-    define_type "FICON", N_("FICON"), "ficon"
+    # Returns name for specialized class for this type e.g. for reader, write or builder
+    # @return [String]
+    def class_name
+      name.capitalize
+    end
+
+    # Returns name for file without suffix for this type e.g. for reader, write or builder
+    # @return [String]
+    def file_name
+      name.downcase
+    end
+
+    def respond_to_missing?(method_name, _include_private = false)
+      return false unless method_name.to_s.end_with?("?")
+
+      target_name = method_name.to_s[0..-2]
+      InterfaceType.all.any? do |type|
+        type.name.downcase == target_name ||
+          type.short_name == target_name
+      end
+    end
+
+    def method_missing(method_name, *arguments, &block)
+      return super unless respond_to_missing?(method_name)
+
+      if !arguments.empty?
+        raise ArgumentError, "no params are accepted for method #{method_name}"
+      end
+
+      target_name = method_name.to_s[0..-2]
+      [name.downcase, short_name].include?(target_name)
+    end
+
+    # Ethernet card, integrated or attached
+    ETHERNET = new(N_("Ethernet"), "eth")
+    # Wireless card, integrated or attached
+    WIRELESS = new(N_("Wireless"), "wlan")
+    # Infiniband card
+    INFINIBAND = new(N_("Infiniband"), "ib")
+    # Infiniband card child device. Used in IPoIB (IP-over-InfiniBand)
+    INFINIBAND_CHILD = new(N_("Infiniband Child"), "ibchild")
+    # Bonding device
+    BONDING = new(N_("Bonding"), "bond")
+    # bridge device
+    BRIDGE = new(N_("Bridge"), "br")
+    # virtual dummy device provided by dummy kernel module
+    DUMMY = new(N_("Dummy"), "dummy")
+    # Virtual LAN
+    VLAN = new(N_("VLAN"), "vlan")
+    # TUN virtual device provided by kernel, operates on layer3 carrying IP packagets
+    TUN = new(N_("TUN"), "tun")
+    # TAP virtual device provided by kernel, operates on layer2 carrying Ethernet frames
+    TAP = new(N_("TAP"), "tap")
+    # ethernet over usb device provided by usbnet kernel module. Do not confuse
+    # with ethernet card attached to USB slot as it is common ETHERNET type.
+    USB = new(N_("USB"), "usb")
+    # device using qeth device driver for s390. Can operate on layer2 or layer3.
+    QETH = new(N_("QETH"), "qeth")
+    # LAN-Channel-Station (LCS) network devices. S390 specific.
+    LCS = new(N_("LCS"), "lcs")
+    # HiperSockets s390 network device
+    HSI = new(N_("HSI"), "hsi")
+    # Channel To Channel. S390 specific
+    CTC = new(N_("CTC"), "ctc")
+    # FICON-attached direct access storage devices. s390 specific
+    FICON = new(N_("FICON"), "ficon")
+    # Point-to-Point Protocol
+    PPP = new(N_("Point-to-Point Protocol"), "ppp")
+    # Ip in Ip protocol
+    IPIP = new(N_("Ip-in-ip"), "ipip")
+    # IPv6 Tunnel interface
+    IPV6TNL = new(N_("IPv6 Tunnel"), "ip6tnl")
+    # IPv6 over IPv4
+    SIT = new(N_("IPv6 over IPv4 Tunnel"), "sit")
+    # IP over IPv4
+    GRE = new(N_("IP over IPv4 Tunnel"), "gre")
+    # Infrared
+    IRDA = new(N_("Infrared"), "irda")
+    # Loopback
+    LO = new(N_("Loopback"), "lo")
   end
 end

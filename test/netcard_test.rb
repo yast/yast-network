@@ -1,5 +1,24 @@
 #! /usr/bin/env rspec
 
+# Copyright (c) [2019] SUSE LLC
+#
+# All Rights Reserved.
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of version 2 of the GNU General Public License as published
+# by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, contact SUSE LLC.
+#
+# To contact SUSE LLC about this file by physical or electronic mail, you may
+# find current contact information at www.suse.com.
+
 require_relative "test_helper"
 
 HWINFO_DEVICE_DESC = "Intel Ethernet controller".freeze
@@ -72,27 +91,6 @@ require "yast"
 
 Yast.import "LanItems"
 
-describe "When querying netcard device name" do
-  before(:each) do
-    @lan_items = Yast::LanItems
-    @lan_items.main
-
-    # mocking only neccessary parts of Yast::LanItems so we need not to call
-    # and mock inputs for Yast::LanItems.Read here
-    @lan_items.Items = Yast.deep_copy(MOCKED_ITEMS)
-  end
-
-  it "returns empty list when querying device name with nil or empty input" do
-    [nil, []].each { |i| expect(@lan_items.GetDeviceNames(i)).to be_empty }
-  end
-
-  it "can return list of device names available in the system" do
-    expected_names = ["bond0", "br0", "eth1", "eth11", "enp0s3", "tap0", "tun0"].sort
-
-    expect(@lan_items.GetNetcardNames.sort).to eq expected_names
-  end
-end
-
 class NetworkComplexIncludeClass < Yast::Module
   def initialize
     Yast.include self, "network/complex.rb"
@@ -138,91 +136,6 @@ describe "NetworkComplexInclude#HardwareName" do
   end
 end
 
-describe "LanItemsClass#BuildLanOverview" do
-  let(:interfaces) { Y2Network::InterfacesCollection.new([]) }
-
-  before(:each) do
-    @lan_items = Yast::LanItems
-    @lan_items.main
-    @lan_items.Items = Yast.deep_copy(MOCKED_ITEMS)
-
-    allow(Y2Network::Config)
-      .to receive(:find)
-      .and_return(instance_double(Y2Network::Config, interfaces: interfaces))
-  end
-
-  it "returns description and uses custom name if present" do
-    allow(@lan_items).to receive(:GetDeviceMap) { { "NAME" => "Custom name" } }
-
-    @lan_items.BuildLanOverview
-    @lan_items.Items.each_pair do |_key, value|
-      # it is not issue, really same index two times
-      desc = value["table_descr"]["table_descr"].first
-
-      if value["ifcfg"]
-        expect(desc).to eql "Custom name"
-      else
-        expect(desc).not_to be_empty
-      end
-    end
-  end
-
-  it "returns description and uses type based name if hwinfo is not present" do
-    allow(@lan_items).to receive(:GetDeviceMap) { { "NAME" => "" } }
-
-    @lan_items.BuildLanOverview
-    @lan_items.Items.each_pair do |_key, value|
-      desc = value["table_descr"]["table_descr"].first
-
-      if !value["hwinfo"]
-        dev_name = value["ifcfg"].to_s
-        dev_type = Yast::NetworkInterfaces.GetType(dev_name)
-        expected_dev_desc = Yast::NetworkInterfaces.GetDevTypeDescription(dev_type, true)
-      else
-        expected_dev_desc = value["hwinfo"]["name"]
-      end
-
-      expect(desc).not_to be_empty
-      expect(desc).to eql expected_dev_desc
-    end
-  end
-end
-
-describe "LanItemsClass#DeleteItem" do
-  before(:each) do
-    @lan_items = Yast::LanItems
-    @lan_items.main
-    @lan_items.Items = Yast.deep_copy(MOCKED_ITEMS)
-  end
-
-  it "removes an existing item" do
-    before_items = nil
-
-    while before_items != @lan_items.Items && !@lan_items.Items.empty?
-      @lan_items.current = 0
-
-      item_name = @lan_items.GetCurrentName
-      before_items = @lan_items.Items
-
-      @lan_items.DeleteItem
-
-      expect(@lan_items.FindAndSelect(item_name)).to be false
-    end
-  end
-
-  it "removes only the configuration if the item has hwinfo" do
-    before_size = @lan_items.Items.size
-    item_name = "enp0s3"
-
-    expect(@lan_items.FindAndSelect(item_name)).to be true
-
-    @lan_items.DeleteItem
-
-    expect(@lan_items.FindAndSelect(item_name)).to be false
-    expect(@lan_items.Items.size).to eql before_size
-  end
-end
-
 describe "LanItemsClass#GetItemName" do
   before(:each) do
     @lan_items = Yast::LanItems
@@ -240,21 +153,6 @@ describe "LanItemsClass#GetItemName" do
     MOCKED_ITEMS.select { |_k, v| v.key?("ifcfg") }.each_pair do |item_id, conf|
       expect(@lan_items.GetDeviceName(item_id)).to eql conf["ifcfg"]
     end
-  end
-end
-
-describe "LanItemsClass#SetItemName" do
-  subject { Yast::LanItems }
-  let(:new_name) { "new_name" }
-
-  # this test covers bnc#914833
-  it "doesn't try to update udev rules when none exists for the item" do
-    allow(subject)
-      .to receive(:Items)
-      .and_return(MOCKED_ITEMS)
-
-    item_id = subject.Items.find { |_k, v| !v.key?("udev") }.first
-    expect(subject.SetItemName(item_id, new_name)).to eql new_name
   end
 end
 

@@ -22,6 +22,8 @@ require "y2network/interface"
 require "y2network/config"
 require "y2network/autoinst/routing_reader"
 require "y2network/autoinst/dns_reader"
+require "y2network/autoinst/interfaces_reader"
+require "y2network/autoinst/udev_rules_reader"
 require "y2network/autoinst_profile/networking_section"
 require "y2network/sysconfig/interfaces_reader"
 
@@ -37,28 +39,28 @@ module Y2Network
       # Constructor
       #
       # @param section [AutoinstProfile::NetworkingSection]
-      def initialize(section)
+      # @param original_config [Config] system configuration
+      def initialize(section, original_config)
         @section = section
+        @original_config = original_config
       end
 
       # @return [Y2Network::Config] Network configuration
       def config
-        attrs = { source: :sysconfig }
-        # FIXME: implement proper readers for AutoYaST
-        attrs[:interfaces] =  interfaces_reader.interfaces
-        attrs[:connections] = interfaces_reader.connections
-        attrs[:routing] = RoutingReader.new(section.routing).config if section.routing
-        attrs[:dns] = DNSReader.new(section.dns).config if section.dns
-        Y2Network::Config.new(attrs)
-      end
+        config = @original_config.copy
+        # apply at first udev rules, so interfaces names are correct
+        UdevRulesReader.new(section.udev_rules).apply(config) if section.udev_rules
+        config.routing = RoutingReader.new(section.routing).config if section.routing
+        config.dns = DNSReader.new(section.dns).config if section.dns
+        if section.interfaces
+          interfaces = InterfacesReader.new(section.interfaces).config
+          interfaces.each do |interface|
+            # add or update system configuration, this will also create all missing interfaces
+            config.add_or_update_connection_config(interface)
+          end
+        end
 
-    private
-
-      # Returns an interfaces reader instance
-      #
-      # @return [SysconfigInterfaces] Interfaces reader
-      def interfaces_reader
-        @interfaces_reader ||= Y2Network::Sysconfig::InterfacesReader.new
+        config
       end
     end
   end

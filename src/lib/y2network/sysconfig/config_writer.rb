@@ -21,22 +21,28 @@ require "yast"
 require "y2network/sysconfig_paths"
 require "y2network/sysconfig/routes_file"
 require "y2network/sysconfig/dns_writer"
+require "y2network/sysconfig/connection_config_writer"
+require "y2network/sysconfig/interfaces_writer"
+
+Yast.import "Host"
 
 module Y2Network
   module Sysconfig
     # This class imports a configuration into YaST modules
     #
     # Ideally, it should be responsible of writing the changes to the underlying
-    # system. But, for the time being, it just relies in {Yast::Routing}.
+    # system.
     class ConfigWriter
+      include Yast::Logger
+
       # Writes the configuration into YaST network related modules
       #
       # @param config     [Y2Network::Config] Configuration to write
       # @param old_config [Y2Network::Config] Old configuration
       def write(config, old_config = nil)
-        return unless config.routing
-
-        write_ip_forwarding(config.routing)
+        log.info "Writing configuration: #{config.inspect}"
+        log.info "Old configuration: #{old_config.inspect}"
+        write_ip_forwarding(config.routing) if config.routing
         write_interface_changes(config, old_config)
 
         # update /etc/sysconfig/network/routes file
@@ -44,7 +50,13 @@ module Y2Network
         file.routes = find_routes_for(nil, config.routing.routes)
         file.save
 
+        write_drivers(config.drivers)
+        write_interfaces(config.interfaces)
+        write_connections(config.connections, old_config)
         write_dns_settings(config, old_config)
+
+        # NOTE: This code might be moved outside of the Sysconfig namespace, as it is generic.
+        Yast::Host.Write(gui: false)
       end
 
     private
@@ -60,11 +72,14 @@ module Y2Network
       def write_interface_changes(config, old_config)
         # Write ifroute files
         config.interfaces.each do |dev|
+          # S390 devices that have not been activated yet will be part of the
+          # collection but with an empty name.
+          next if dev.name.empty?
           routes = find_routes_for(dev, config.routing.routes)
           file = routes_file_for(dev)
 
           # Remove ifroutes-* if empty or interface is not configured
-          file.remove if routes.empty? || !dev.configured
+          file.remove if routes.empty? || !config.configured_interface?(dev.name)
 
           file.routes = routes
           file.save
@@ -164,6 +179,50 @@ module Y2Network
         old_dns = old_config.dns if old_config
         writer = Y2Network::Sysconfig::DNSWriter.new
         writer.write(config.dns, old_dns)
+      end
+
+      # Updates the interfaces configuration
+      #
+      # @param interfaces [Y2Network::InterfacesCollection]
+      # @see Y2Network::Sysconfig::InterfacesWriter
+      def write_interfaces(interfaces)
+        writer = Y2Network::Sysconfig::InterfacesWriter.new
+        writer.write(interfaces)
+      end
+
+      # Writes connections configuration
+      #
+      # @todo Handle old connections (removing those that are not needed, etc.)
+      #
+      # @param conns [Array<Y2Network::ConnectionConfig::Base>] Connections to write
+      # @param old_config [Y2Network::Config,nil] Old configuration; nil if it is unknown
+      def write_connections(conns, old_config)
+        # FIXME: this code might live in its own class
+        writer = Y2Network::Sysconfig::ConnectionConfigWriter.new
+        remove_old_connections(conns, old_config.connections, writer) if old_config
+        conns.each do |conn|
+          old_conn =  old_config ? old_config.connections.by_ids(conn.id).first : nil
+          writer.write(conn, old_conn)
+        end
+      end
+
+      # Writes drivers options
+      #
+      # @param drivers [Array<Y2Network::Driver>] Drivers to write options
+      def write_drivers(drivers)
+        Y2Network::Driver.write_options(drivers)
+      end
+
+      # Removes old connections files
+      #
+      # @param conns [ConnectionConfigsCollection] New connections
+      # @param old_conns [ConnectionConfigsCollection] Old connections
+      # @param writer [Sysconfig::ConnectionConfigWriter] Writer instance to save changes
+      def remove_old_connections(conns, old_conns, writer)
+        ids_to_remove = old_conns.map(&:id) - conns.map(&:id)
+        to_remove = old_conns.by_ids(*ids_to_remove)
+        log.info "removing connections #{to_remove.map(&:name).inspect}"
+        to_remove.each { |c| writer.remove(c) }
       end
     end
   end

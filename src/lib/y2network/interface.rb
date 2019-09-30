@@ -17,51 +17,62 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
+require "yast"
 require "y2network/interface_type"
-require "y2network/hwinfo"
 
 module Y2Network
   # Network interface.
+  #
+  # It represents network interfaces, no matter whether they are physical or virtual ones. This
+  # class (including its subclasses) are basically responsible for holding the hardware
+  # configuration (see {Hwinfo}), including naming and driver information.
+  #
+  # Logical configuration, like TCP/IP or WIFI settings, are handled through
+  # {Y2Network::ConnectionConfig::Base} classes. Actually, relationships with other interfaces (like
+  # bonding slaves) are kept in those configuration objects too.
+  #
+  # @see Y2Network::PhysicalInterface
+  # @see Y2Network::VirtualInterface
   class Interface
+    include Yast::Logger
+
     # @return [String] Device name ('eth0', 'wlan0', etc.)
     attr_accessor :name
     # @return [String] Interface description
     attr_accessor :description
-    # @return [Symbol] Interface type
+    # @return [InterfaceType] Interface type
     attr_accessor :type
-    # @return [Boolean]
-    attr_reader :configured
     # @return [HwInfo]
     attr_reader :hardware
+    # @return [Symbol] Mechanism to rename the interface (:none -no rename-, :bus_id or :mac)
+    attr_accessor :renaming_mechanism
+    # @return [String,nil]
+    attr_reader :old_name
 
-    # Shortcuts for accessing interfaces' ifcfg options
-    #
-    # TODO: this makes Interface class tighly couplet to netconfig backend
-    # once we have generic layer for accessing backends these methods has to be replaced
-    ["STARTMODE", "BOOTPROTO"].each do |ifcfg_option|
-      method_name = ifcfg_option.downcase
+    class << self
+      # Builds an interface based on a connection
+      #
+      # @param conn [ConnectionConfig] Connection configuration related to the network interface
+      def from_connection(conn)
+        # require here to avoid circular dependency
+        require "y2network/physical_interface"
+        require "y2network/virtual_interface"
 
-      define_method method_name do
-        # when switching to new backend we need as much guards as possible
-        if !configured || config.nil? || config.empty?
-          raise "Trying to read configuration of an unconfigured interface #{@name}"
-        end
-
-        config[ifcfg_option]
+        interface_class = conn.virtual? ? VirtualInterface : PhysicalInterface
+        interface_class.new(conn.interface || conn.name, type: conn.type)
       end
     end
 
     # Constructor
     #
     # @param name [String] Interface name (e.g., "eth0")
+    # @param type [InterfaceType] Interface type
     def initialize(name, type: InterfaceType::ETHERNET)
       @name = name
       @description = ""
       @type = type
-      # @hardware and @name should not change during life of the object
-      @hardware = Hwinfo.new(name: name)
-
-      init(name)
+      # TODO: move renaming logic to physical interfaces only
+      @renaming_mechanism = :none
     end
 
     # Determines whether two interfaces are equal
@@ -84,15 +95,23 @@ module Y2Network
       system_config(name)
     end
 
-  private
-
-    def system_config(name)
-      Yast::NetworkInterfaces.devmap(name)
+    # Returns the list of kernel modules
+    #
+    # @return [Array<Driver>]
+    # @see Hwinfo#drivers
+    def drivers
+      hardware.drivers
     end
 
-    def init(name)
-      @configured = false
-      @configured = !system_config(name).nil? if !(name.nil? || name.empty?)
+    # Renames the interface
+    #
+    # @param new_name  [String] New interface's name
+    # @param mechanism [Symbol] Property to base the rename on (:mac or :bus_id)
+    def rename(new_name, mechanism)
+      log.info "Rename interface '#{name}' to '#{new_name}' using the '#{mechanism}'"
+      @old_name = name if name != new_name # same name, just set different mechanism
+      @name = new_name
+      @renaming_mechanism = mechanism
     end
   end
 end

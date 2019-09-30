@@ -22,6 +22,7 @@ require "cwm/rspec"
 
 require "y2network/widgets/boot_protocol"
 require "y2network/interface_config_builder"
+require "y2network/connection_config/ethernet"
 
 describe Y2Network::Widgets::BootProtocol do
   let(:builder) { Y2Network::InterfaceConfigBuilder.for("eth") }
@@ -51,10 +52,10 @@ describe Y2Network::Widgets::BootProtocol do
 
     context "static configuration" do
       before do
-        builder["BOOTPROTO"] = "static"
-        builder["IPADDR"] = "10.5.0.6"
-        builder["PREFIXLEN"] = "24"
-        builder["HOSTNAME"] = "pepa"
+        builder.boot_protocol = "static"
+        builder.ip_address = "10.5.0.6"
+        builder.subnet_prefix = "24"
+        builder.hostname = "pepa"
         allow(subject).to receive(:value).and_return(:bootproto_static)
         allow(Yast::UI).to receive(:QueryWidget).and_return("pepa")
       end
@@ -86,7 +87,7 @@ describe Y2Network::Widgets::BootProtocol do
 
     context "dhcp configuration" do
       before do
-        builder["BOOTPROTO"] = "dhcp"
+        builder.boot_protocol = "dhcp"
         allow(subject).to receive(:value).and_return(:bootproto_dynamic)
       end
 
@@ -97,7 +98,7 @@ describe Y2Network::Widgets::BootProtocol do
 
     context "dhcp4 configuration" do
       before do
-        builder["BOOTPROTO"] = "dhcp4"
+        builder.boot_protocol = "dhcp4"
         allow(subject).to receive(:value).and_return(:bootproto_dynamic)
       end
 
@@ -108,7 +109,7 @@ describe Y2Network::Widgets::BootProtocol do
 
     context "dhcp6 configuration" do
       before do
-        builder["BOOTPROTO"] = "dhcp6"
+        builder.boot_protocol = "dhcp6"
         allow(subject).to receive(:value).and_return(:bootproto_dynamic)
       end
 
@@ -119,7 +120,7 @@ describe Y2Network::Widgets::BootProtocol do
 
     context "dhcp+autoip configuration" do
       before do
-        builder["BOOTPROTO"] = "dhcp+autoip"
+        builder.boot_protocol = "dhcp+autoip"
         allow(subject).to receive(:value).and_return(:bootproto_dynamic)
       end
 
@@ -130,7 +131,7 @@ describe Y2Network::Widgets::BootProtocol do
 
     context "autoip configuration" do
       before do
-        builder["BOOTPROTO"] = "autoip"
+        builder.boot_protocol = "autoip"
         allow(subject).to receive(:value).and_return(:bootproto_dynamic)
       end
 
@@ -141,7 +142,7 @@ describe Y2Network::Widgets::BootProtocol do
 
     context "none configuration" do
       before do
-        builder["BOOTPROTO"] = "none"
+        builder.boot_protocol = "none"
       end
 
       it "does not crash" do
@@ -151,7 +152,7 @@ describe Y2Network::Widgets::BootProtocol do
 
     context "ibft configuration" do
       before do
-        builder["BOOTPROTO"] = "ibft"
+        builder.boot_protocol = "ibft"
       end
 
       it "does not crash" do
@@ -173,7 +174,7 @@ describe Y2Network::Widgets::BootProtocol do
 
         subject.store
 
-        expect(builder["BOOTPROTO"]).to eq "ibft"
+        expect(builder.boot_protocol.name).to eq "ibft"
       end
 
       it "sets bootproto to none if ibft is not selected" do
@@ -181,7 +182,7 @@ describe Y2Network::Widgets::BootProtocol do
 
         subject.store
 
-        expect(builder["BOOTPROTO"]).to eq "none"
+        expect(builder.boot_protocol.name).to eq "none"
       end
     end
 
@@ -195,7 +196,7 @@ describe Y2Network::Widgets::BootProtocol do
       it "sets bootproto to static" do
         subject.store
 
-        expect(builder["BOOTPROTO"]).to eq "static"
+        expect(builder.boot_protocol.name).to eq "static"
       end
 
       it "sets ipaddr to value of ip address widget" do
@@ -203,7 +204,7 @@ describe Y2Network::Widgets::BootProtocol do
 
         subject.store
 
-        expect(builder["IPADDR"]).to eq "10.100.0.1"
+        expect(builder.ip_address).to eq "10.100.0.1"
       end
 
       it "sets hostname to value of hostname widget" do
@@ -211,7 +212,7 @@ describe Y2Network::Widgets::BootProtocol do
 
         subject.store
 
-        expect(builder["HOSTNAME"]).to eq "test.suse.cz"
+        expect(builder.hostname).to eq "test.suse.cz"
       end
 
       it "sets prefixlen when value of netmast start with '/'" do
@@ -219,7 +220,7 @@ describe Y2Network::Widgets::BootProtocol do
 
         subject.store
 
-        expect(builder["PREFIXLEN"]).to eq "24"
+        expect(builder.subnet_prefix).to eq "/24"
       end
 
       it "sets prefixlen for ipv6" do
@@ -227,15 +228,16 @@ describe Y2Network::Widgets::BootProtocol do
 
         subject.store
 
-        expect(builder["PREFIXLEN"]).to eq "124"
+        expect(builder.subnet_prefix).to eq "/124"
       end
 
       it "sets netmask for ipv4 netmask value" do
+        pending "drop netmask"
         allow(Yast::UI).to receive(:QueryWidget).with(:bootproto_netmask, :Value).and_return("255.255.0.0")
 
         subject.store
 
-        expect(builder["NETMASK"]).to eq "255.255.0.0"
+        expect(builder.subnet_prefix).to eq "255.255.0.0"
       end
     end
 
@@ -255,7 +257,7 @@ describe Y2Network::Widgets::BootProtocol do
 
         subject.store
 
-        expect(builder["BOOTPROTO"]).to eq "dhcp"
+        expect(builder.boot_protocol.name).to eq "dhcp"
       end
 
       it "sets bootproto to dhcp4 when dhcp for ipv4 only is selected" do
@@ -266,7 +268,7 @@ describe Y2Network::Widgets::BootProtocol do
 
         subject.store
 
-        expect(builder["BOOTPROTO"]).to eq "dhcp4"
+        expect(builder.boot_protocol.name).to eq "dhcp4"
       end
 
       it "sets bootproto to dhcp6 when dhcp for ipv6 only is selected" do
@@ -277,7 +279,7 @@ describe Y2Network::Widgets::BootProtocol do
 
         subject.store
 
-        expect(builder["BOOTPROTO"]).to eq "dhcp6"
+        expect(builder.boot_protocol.name).to eq "dhcp6"
       end
 
       it "sets bootproto to dhcp+autoip when dhcp and zeroconf is selected" do
@@ -286,7 +288,7 @@ describe Y2Network::Widgets::BootProtocol do
 
         subject.store
 
-        expect(builder["BOOTPROTO"]).to eq "dhcp+autoip"
+        expect(builder.boot_protocol.name).to eq "dhcp+autoip"
       end
 
       it "sets bootproto to autoip when zeroconf is selected" do
@@ -295,7 +297,7 @@ describe Y2Network::Widgets::BootProtocol do
 
         subject.store
 
-        expect(builder["BOOTPROTO"]).to eq "autoip"
+        expect(builder.boot_protocol.name).to eq "autoip"
       end
     end
   end

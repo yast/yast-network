@@ -1,0 +1,7 @@
+BOOTPROTO='static'
+BROADCAST=''
+MTU=''
+IPADDR='10.0.0.1'
+NETMASK='255.0.0.0'
+NAME='Ethernet Card 3'
+STARTMODE='auto'

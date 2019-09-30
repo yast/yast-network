@@ -1,9 +1,29 @@
+# Copyright (c) [2019] SUSE LLC
+#
+# All Rights Reserved.
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of version 2 of the GNU General Public License as published
+# by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, contact SUSE LLC.
+#
+# To contact SUSE LLC about this file by physical or electronic mail, you may
+# find current contact information at www.suse.com.
+
 require "ui/text_helpers"
 require "yast"
 require "cwm/custom_widget"
 require "y2network/widgets/slave_items"
 
 Yast.import "Label"
+Yast.import "Lan"
 Yast.import "Popup"
 Yast.import "UI"
 
@@ -68,11 +88,12 @@ module Y2Network
 
       # Default function to init the value of slave devices box for bonding.
       def init
-        slaves = @settings["BOND_SLAVES"] || []
+        slaves = @settings.slaves
         # TODO: use def items, but problem now is that slave_items returns term and not array
         items = slave_items_from(
           @settings.bondable_interfaces.map(&:name),
-          slaves
+          slaves,
+          Yast::Lan.yast_config # ideally get it from builder?
         )
 
         # reorder the items
@@ -95,7 +116,7 @@ module Y2Network
 
       # Default function to store the value of slave devices box.
       def store
-        @settings["BOND_SLAVES"] = selected_items
+        @settings.slaves = selected_items
       end
 
       # Validates created bonding. Currently just prevent the user to create a
@@ -105,7 +126,19 @@ module Y2Network
       def validate
         physical_ports = repeated_physical_port_ids(selected_items)
 
-        physical_ports.empty? ? true : continue_with_duplicates?(physical_ports)
+        if !physical_ports.empty?
+          return false unless continue_with_duplicates?(physical_ports)
+        end
+
+        if @settings.already_configured?(selected_items || [])
+          return Yast::Popup.ContinueCancel(
+            _(
+              "At least one selected device is already configured.\nAdapt the configuration for bonding?\n"
+            )
+          )
+        else
+          true
+        end
       end
 
       def value

@@ -30,18 +30,9 @@ describe Y2Network::Dialogs::AddInterface do
     before do
       allow(Y2Network::Widgets::InterfaceType).to receive(:new).and_return(double(result: "eth"))
       allow(subject).to receive(:cwm_show).and_return(:abort)
-    end
-
-    it "adds new interface to lan items" do
-      expect(Yast::LanItems).to receive(:AddNew)
-
-      subject.run
-    end
-
-    it "adds new interface to lan" do
-      expect(Yast::Lan).to receive(:Add)
-
-      subject.run
+      allow(Yast::Lan).to receive(:yast_config).and_return(
+        double(interfaces: double(free_name: "eth0", by_name: nil))
+      )
     end
 
     it "returns nil if canceled" do

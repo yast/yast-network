@@ -24,6 +24,56 @@ describe Y2Network::Interface do
     described_class.new("eth0")
   end
 
+  describe ".from_connection" do
+    context "when the connection is virtual" do
+      let(:conn) do
+        Y2Network::ConnectionConfig::Bridge.new.tap { |c| c.name = "br0" }
+      end
+
+      it "returns a virtual interface" do
+        interface = described_class.from_connection(conn)
+        expect(interface).to be_a(Y2Network::VirtualInterface)
+      end
+    end
+
+    context "when the connection is not virtual" do
+      let(:conn) do
+        Y2Network::ConnectionConfig::Wireless.new.tap { |c| c.name = "wlan0" }
+      end
+
+      it "returns a physical interface" do
+        interface = described_class.from_connection(conn)
+        expect(interface).to be_a(Y2Network::PhysicalInterface)
+      end
+    end
+  end
+
+  describe "#rename" do
+    it "assign name to new_name parameter" do
+      interface.rename("eth1", :mac)
+      expect(interface.name).to eq "eth1"
+    end
+
+    it "assign renaming_mechanism to mechanism parameter" do
+      interface.rename("eth1", :mac)
+      expect(interface.renaming_mechanism).to eq :mac
+    end
+
+    context "if new_name differs to old one" do
+      it "assign old name to old_name attribute" do
+        interface.rename("eth1", :mac)
+        expect(interface.old_name).to eq "eth0"
+      end
+    end
+
+    context "if new_name is same as old one" do
+      it "does not assign old_name attribute" do
+        interface.rename("eth0", :mac)
+        expect(interface.old_name).to eq nil
+      end
+    end
+  end
+
   describe "#==" do
     context "given two interfaces with the same name" do
       let(:other) { Y2Network::Interface.new(interface.name) }
@@ -39,6 +89,19 @@ describe Y2Network::Interface do
       it "returns false" do
         expect(interface).to_not eq(other)
       end
+    end
+  end
+
+  describe "#modules_names" do
+    let(:driver) { instance_double(Y2Network::Driver) }
+    let(:hwinfo) { instance_double(Y2Network::Hwinfo, drivers: [driver]) }
+
+    before do
+      allow(interface).to receive(:hardware).and_return(hwinfo)
+    end
+
+    it "returns modules names from hardware information" do
+      expect(interface.drivers).to eq([driver])
     end
   end
 end

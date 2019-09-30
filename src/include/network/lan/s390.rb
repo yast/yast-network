@@ -1,12 +1,24 @@
-# encoding: utf-8
-
-# File:        include/network/lan/s390.ycp
-# Package:     Network configuration
-# Summary:     Network card adresss configuration dialogs
-# Authors:     Michal Filka <mfilka@suse.cz>
+# Copyright (c) [2019] SUSE LLC
 #
-# Functions for accessing and handling s390 specific needs.
+# All Rights Reserved.
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of version 2 of the GNU General Public License as published
+# by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, contact SUSE LLC.
+#
+# To contact SUSE LLC about this file by physical or electronic mail, you may
+# find current contact information at www.suse.com.
+
 module Yast
+  # Functions for accessing and handling s390 specific needs.
   module NetworkLanS390Include
     SYS_DIR = "/sys/class/net".freeze
 
@@ -46,7 +58,6 @@ module Yast
     #
     # Currently loaded attributes are:
     # QETH_LAYER2      yes/no string.
-    # QETH_PORTNAME    portname or empty string
     # QETH_PORTNUMBER  portnumber or empty string
     # QETH_CHANIDS     read/write/control channel ids separated by space (compatibility requirement)
     #
@@ -61,9 +72,6 @@ module Yast
 
       qeth_layer2 = s390_ReadQethAttribute(devname, "layer2") == "1" ? "yes" : "no"
       result = Builtins.add(result, "QETH_LAYER2", qeth_layer2)
-
-      qeth_portname = s390_ReadQethAttribute(devname, "portname")
-      result = Builtins.add(result, "QETH_PORTNAME", qeth_portname)
 
       qeth_portno = s390_ReadQethAttribute(devname, "portno")
       result = Builtins.add(result, "QETH_PORTNUMBER", qeth_portno)
