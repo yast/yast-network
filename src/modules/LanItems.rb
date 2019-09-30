@@ -24,6 +24,7 @@
 require "yast"
 require "yaml"
 require "y2storage"
+require "network/network_autoyast"
 require "network/install_inf_convertor"
 require "network/wicked"
 require "network/lan_items_summary"
@@ -401,7 +402,7 @@ module Yast
       # - creates s390 device eth emulation
       # So, it belongs partly into Import and partly into Write. Note, that
       # the code is currently unable to revert already created emulated device.
-      settings.fetch("s390-devices", {}).each { |rule| createS390Device(rule) } if Arch.s390
+      NetworkAutoYast.instance.activate_s390_devices(settings.fetch("s390-devices", {}))
 
       # settings == {} has special meaning 'Reset' used by AY
       SetModified() if !settings.empty?

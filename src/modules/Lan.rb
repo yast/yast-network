@@ -30,6 +30,7 @@
 # Representation of the configuration of network cards.
 # Input and output routines.
 require "yast"
+require "network/network_autoyast"
 require "network/confirm_virt_proposal"
 require "ui/text_helpers"
 require "y2firewall/firewalld"

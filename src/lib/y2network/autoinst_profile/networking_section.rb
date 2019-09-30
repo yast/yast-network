@@ -21,6 +21,7 @@ require "y2network/autoinst_profile/dns_section"
 require "y2network/autoinst_profile/interfaces_section"
 require "y2network/autoinst_profile/routing_section"
 require "y2network/autoinst_profile/udev_rules_section"
+require "y2network/autoinst_profile/s390_devices_section"
 
 module Y2Network
   module AutoinstProfile
@@ -42,6 +43,8 @@ module Y2Network
       attr_accessor :interfaces
       # @return [UdevRulesSection]
       attr_accessor :udev_rules
+      # @return [S390DevicesSection]
+      attr_accessor :s390_devices
 
       # Creates an instance based on the profile representation used by the AutoYaST modules
       # (hash with nested hashes and arrays).
@@ -54,6 +57,7 @@ module Y2Network
         result.dns = DNSSection.new_from_hashes(hash["dns"]) if hash["dns"]
         result.interfaces = InterfacesSection.new_from_hashes(hash["interfaces"]) if hash["interfaces"]
         result.udev_rules = UdevRulesSection.new_from_hashes(hash["net-udev"]) if hash["net-udev"]
+        result.s390_devices = S390DevicesSection.new_from_hashes(hash["s390-devices"]) if hash["s390-devices"]
         result
       end
 
@@ -76,10 +80,11 @@ module Y2Network
       # @return [Hash]
       def to_hashes
         {
-          "routing"    => routing.to_hashes,
-          "dns"        => dns.to_hashes,
-          "interfaces" => interfaces.to_hashes,
-          "net-udev"   => udev_rules.to_hashes
+          "routing"      => routing.to_hashes,
+          "dns"          => dns.to_hashes,
+          "interfaces"   => interfaces.to_hashes,
+          "net-udev"     => udev_rules.to_hashes,
+          "s390-devices" => s390_devices.to_hashes
         }
       end
     end

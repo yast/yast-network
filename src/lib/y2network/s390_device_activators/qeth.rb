@@ -53,9 +53,12 @@ module Y2Network
       def configure_attributes
         extra_attributes = []
         extra_attributes.concat(attributes.split(" ")) if attributes
-        extra_attributes << ipa_takeover_attribute unless ipa_takeover.nil?
-        extra_attributes << layer2_attribute unless layer2.nil?
-        extra_attributes << port_attribute
+        # Only set if enable
+        extra_attributes << ipa_takeover_attribute if ipa_takeover
+        # Only set if enable
+        extra_attributes << layer2_attribute if layer2
+        extra_attributes << port_attribute if port_number.to_s != "0"
+        extra_attributes
       end
 
       # Modifies the read, write and data channel from the the device id

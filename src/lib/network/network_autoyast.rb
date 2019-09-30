@@ -18,6 +18,10 @@
 # find current contact information at www.suse.com.
 
 require "yast"
+require "y2network/autoinst_profile/s390_devices_section"
+require "y2network/autoinst/s390_devices_reader"
+require "y2network/interface_config_builder"
+require "y2network/s390_device_activator"
 
 module Yast
   # Provides functionality for network AutoYaST client(s)
@@ -111,6 +115,28 @@ module Yast
       ay_configuration = NetworkAutoYast.instance.merge_configs(ay_configuration) if keep_net_config?
 
       configure_submodule(Lan, ay_configuration, write: write)
+    end
+
+    # Takes care of activate s390 devices from the profile declaration
+    def activate_s390_devices(section = nil)
+      profile_devices = section || ay_networking_section["s390-devices"] || {}
+      devices_section = Y2Network::AutoinstProfile::S390DevicesSection.new_from_hashes(profile_devices)
+      connections = Y2Network::Autoinst::S390DevicesReader.new(devices_section).config
+      connections.each do |conn|
+        begin
+          builder = Y2Network::InterfaceConfigBuilder.for(conn.type, config: conn)
+          activator = Y2Network::S390DeviceActivator.for(builder)
+          if activator.configure
+            builder.name = activator.configured_interface
+            log.info "Created interface #{builder.name}"
+          end
+        rescue RuntimeError => e
+          log.error("An error ocurred when trying to activate the s390 device: #{conn.inspect}")
+          log.error("Error: #{e.sinpect}")
+        end
+      end
+
+      true
     end
 
     # Initializates /etc/hosts according AY profile

@@ -201,7 +201,9 @@ module Yast
       # 2) original ifcfg file is copied otherwise too. It doesn't break things itself
       # but definitely not looking well ;-)
       # TODO: implement support for create udev rules if needed
-      # NetworkAutoYast.instance.create_udevs if Mode.autoinst
+
+      # The s390 devices activation was part of the rules handling.
+      NetworkAutoYast.instance.activate_s390_devices if Mode.autoinst
 
       copy_dhcp_info
       copy_udev_rules
