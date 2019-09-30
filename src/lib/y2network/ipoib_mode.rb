@@ -21,6 +21,8 @@ require "yast"
 
 module Y2Network
   # This class represents the supported IPoIB transport modes.
+  # @see https://www.kernel.org/doc/html/latest/infiniband/ipoib.html
+  #      IP over InfiniBand
   class IpoibMode
     class << self
       # Returns all the existing modes

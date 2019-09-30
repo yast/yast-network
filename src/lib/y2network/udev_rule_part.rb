@@ -18,7 +18,7 @@
 # find current contact information at www.suse.com.
 
 module Y2Network
-  # Simple class to represent a key-value pair in a udev rule
+  # Simple class to represent a key-value pair in a {UdevRule}.
   #
   # This class does not check whether operators or keys/values are valid or not. We can implement
   # that logic later if required.
@@ -37,12 +37,12 @@ module Y2Network
       #
       # @example Using globs
       #   part = UdevRulePart.from_string('ATTR{address}=='"?*31:78:f2"')
-      #   part.key #=> "ATTR{æddress}"
+      #   part.key #=> "ATTR{address}"
       #   part.operator #=> "=="
       #   part.value #=> "\"?*31:78:f2\""
 
       # @param str [String] string form of an udev rule
-      # @return [UdevRule] udev rule object
+      # @return [UdevRulePart] udev rule object
       def from_string(str)
         match = PART_REGEXP.match(str)
         return if match.nil?

@@ -24,6 +24,7 @@ require "y2network/udev_rule"
 Yast.import "LanItems"
 
 module Y2Network
+  # A helper for {Hwinfo}.
   class HardwareWrapper
     def initialize
       Yast.include self, "network/routines.rb"
@@ -63,11 +64,12 @@ module Y2Network
     end
   end
 
-  # Stores useful (from networking POV) items of hwinfo for an interface
+  # Stores useful (from networking POV) items of hwinfo for an interface.
   # FIXME: decide whether it should read hwinfo (on demand or at once) for a network
   # device and store only necessary info or just parse provided hash
   class Hwinfo
     # TODO: this method should be private
+    # @return [Hash]
     attr_reader :hwinfo
 
     class << self
