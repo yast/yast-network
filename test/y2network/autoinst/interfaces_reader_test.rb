@@ -38,8 +38,7 @@ describe Y2Network::Autoinst::InterfacesReader do
         "name"      => "",
         "ipaddr"    => "192.168.10.10",
         "netmask"   => "255.255.255.0",
-        "prefixlen" => "24"
-      },
+        "prefixlen" => "24" },
       {
         "bootproto" => "dhcp",
         "name"      => "eth0",
