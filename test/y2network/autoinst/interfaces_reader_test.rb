@@ -32,6 +32,13 @@ describe Y2Network::Autoinst::InterfacesReader do
 
   let(:interfaces_profile) do
     [
+      { "startmode" => "auto",
+        "bootproto" => "static",
+        "device"    => "eth1",
+        "name"      => "",
+        "ipaddr"    => "192.168.10.10",
+        "netmask"   => "255.255.255.0",
+        "prefixlen" => "24" },
       {
         "bootproto" => "dhcp",
         "name"      => "eth0",
@@ -55,14 +62,17 @@ describe Y2Network::Autoinst::InterfacesReader do
   describe "#config" do
     it "builds a new Y2Network::ConnectionConfigsCollection" do
       expect(subject.config).to be_a Y2Network::ConnectionConfigsCollection
-      expect(subject.config.size).to eq(1)
+      expect(subject.config.size).to eq(2)
     end
 
     it "assign properly all values in profile" do
-      config = subject.config.by_name("eth0")
-      expect(config.startmode).to eq Y2Network::Startmode.create("auto")
-      expect(config.bootproto).to eq Y2Network::BootProtocol.from_name("dhcp")
-      expect(config.ip_aliases.size).to eq 2
+      eth0_config = subject.config.by_name("eth0")
+      expect(eth0_config.startmode).to eq Y2Network::Startmode.create("auto")
+      expect(eth0_config.bootproto).to eq Y2Network::BootProtocol.from_name("dhcp")
+      expect(eth0_config.ip_aliases.size).to eq 2
+      eth1_config = subject.config.by_name("eth1")
+      expect(eth1_config.name).to eq("eth1")
+      expect(eth1_config.ip.address.to_s).to eq("192.168.10.10/24")
     end
   end
 end
