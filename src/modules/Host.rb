@@ -34,7 +34,6 @@ module Yast
       Yast.import "UI"
       textdomain "network"
 
-      Yast.import "DNS"
       Yast.import "Hostname"
       Yast.import "NetworkInterfaces"
       Yast.import "String"
@@ -77,30 +76,6 @@ module Yast
     def add_name(address, name)
       canonical, *aliases = name.split(" ")
       @hosts.add_entry(address, canonical, aliases)
-    end
-
-    def NeedDummyIP
-      DNS.write_hostname
-    end
-
-    def EnsureHostnameResolvable
-      local_ip = "127.0.0.2"
-      if NeedDummyIP()
-        Builtins.y2milestone("Dummy 127.0.0.2 IP will be added")
-        # Add 127.0.0.2 entry to /etc/hosts,if product default says so
-        # or user requests it otherwise some desktop apps may hang,
-        # being unable to resolve hostname (bnc#304632)
-
-        fqhostname = Hostname.MergeFQ(DNS.hostname, DNS.domain)
-        set_names(local_ip, ["#{fqhostname} #{DNS.hostname}"])
-      elsif @hosts.include_ip?(local_ip)
-        # Do not add it if product default says no
-        # and remove 127.0.02 entry if it exists
-
-        @hosts.delete_by_ip(local_ip)
-      end
-
-      nil
     end
 
     # Reads /etc/hosts settings
@@ -293,6 +268,8 @@ module Yast
     #
     # Originally implemented as a fix for bnc#664929, later extended for bnc#1039532
     def ResolveHostnameToStaticIPs
+      Yast.import "DNS"
+
       # reject those static ips which have particular hostnames already configured
       static_ips = StaticIPs().reject { |sip| @hosts.include_ip?(sip) }
       return if static_ips.empty?
@@ -312,8 +289,6 @@ module Yast
       @initial_hosts && (@hosts.hosts != @initial_hosts.hosts)
     end
 
-    publish function: :NeedDummyIP, type: "boolean ()"
-    publish function: :EnsureHostnameResolvable, type: "void ()"
     publish function: :Read, type: "boolean ()"
     publish function: :Write, type: "boolean ()"
     publish function: :Import, type: "boolean (map)"

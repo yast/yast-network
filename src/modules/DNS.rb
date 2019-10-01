@@ -162,16 +162,6 @@ module Yast
       GetHostnameFromGetent(Ops.get_string(getent, "stdout", ""))
     end
 
-    def DefaultWriteHostname
-      # FaTe#303875: Introduce a switch regarding 127.0.0.2 entry in /etc/hosts
-      whth = ProductFeatures.GetBooleanFeature(
-        "globals",
-        "write_hostname_to_hosts"
-      )
-      Builtins.y2milestone("write_hostname_to_hosts default value: %1", whth)
-      whth
-    end
-
     # Default value for #dhcp_hostname based on ProductFeatures and Arch
     #
     # @return [Boolean] value set in features or, if none is set, false just
@@ -188,17 +178,6 @@ module Yast
       else
         ProductFeatures.GetBooleanFeature(*feature_index)
       end
-    end
-
-    # Determines whether the hostname should be written to /etc/hosts
-    #
-    # This method stays just for compatibility reasons and it always returns `false`.
-    # It should be removed when `WRITE_HOSTNAME_TO_HOSTS` related stuff is dropped.
-    #
-    # @return [false]
-    # @see https://features.opensuse.org/308824
-    def write_hostname
-      false
     end
 
     # Reads DNS settings
@@ -308,14 +287,6 @@ module Yast
       SYSCFG_TO_BOOL[SCR.Read(path(".sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME"))]
     end
 
-    # Reads value of WRITE_HOSTNAME_TO_HOSTS and translates it to boolean
-    #
-    # return {true, false, nil} "yes" => true, "no" => false, otherwise or not
-    # present => nil
-    def get_write_hostname_to_hosts
-      SYSCFG_TO_BOOL[SCR.Read(path(".sysconfig.network.dhcp.WRITE_HOSTNAME_TO_HOSTS"))]
-    end
-
     # Returns the YaST configuration
     #
     # @return [Y2Network::Config] LAN configuration
@@ -331,7 +302,6 @@ module Yast
 
     publish variable: :domain, type: "string"
     publish function: :ReadNameserver, type: "boolean (string)"
-    publish function: :DefaultWriteHostname, type: "boolean ()"
     publish function: :ReadHostname, type: "void ()"
     publish function: :ProposeHostname, type: "void ()"
     publish function: :Read, type: "boolean ()"

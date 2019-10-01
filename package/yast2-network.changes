@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Tue Oct  1 09:24:57 UTC 2019 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
+
+- boo#1152627
+  - Fix circular dependency between DNS and Host modules
+  - Remove unneeded code related to the already dropped feature to write the hostname
+    to /etc/hosts.
+- 4.2.14
+
+-------------------------------------------------------------------
 Fri Sep 20 13:29:30 UTC 2019 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
 
 - bsc#1151491
