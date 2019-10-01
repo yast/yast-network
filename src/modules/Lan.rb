@@ -539,7 +539,6 @@ module Yast
       # write resolv.conf after change from dhcp to static (#327074)
       # reload/restart network before this to put correct resolv.conf from dhcp-backup
       orig = Progress.set(false)
-      Host.EnsureHostnameResolvable
       Host.Write(gui: gui)
       Progress.set(orig)
 
