@@ -31,21 +31,58 @@ describe "NetworkLanCmdlineInclude" do
   subject { DummyClass.new }
 
   before do
-    allow(Yast::Lan).to receive(:yast_config).and_return(Y2Network::Config.new(source: :fake))
+    allow(Yast::Lan).to receive(:yast_config).and_return(
+      Y2Network::Config.new(source: :fake,
+        interfaces: Y2Network::InterfacesCollection.new([Y2Network::Interface.new("eth0")])
+      )
+    )
+  end
+
+  describe "#validateId" do
+    it "reports error and returns false if options missing \"id\"" do
+      expect(Yast::Report).to receive(:Error)
+
+      expect(subject.validateId({}, [])).to eq false
+    end
+
+    it "reports error and returns false if options \"id\" is not number" do
+      expect(Yast::Report).to receive(:Error)
+
+      expect(subject.validateId({ "id" => "zzz" }, [])).to eq false
+    end
+
+    it "reports error and returns false if options \"id\" do not fit config size" do
+      expect(Yast::Report).to receive(:Error)
+
+      expect(subject.validateId({ "id" => "5" }, [])).to eq false
+    end
+
+    it "returns true otherwise" do
+      expect(Yast::Report).to_not receive(:Error)
+
+      expect(subject.validateId({ "id" => "0" }, ["0" => { "id" => "0" }])).to eq true
+    end
   end
 
   describe "#ShowHandler" do
-    it "creates plain text from formatted html" do
-      richtext = "test<br><ul><li>item1</li><li>item2</li></ul>"
-      allow(subject).to receive(:getConfigList).and_return(["0" => { "rich_descr" => richtext }])
-
-      expect(Yast::CommandLine).to receive(:Print).with("test\nitem1\nitem2\n\n")
+    it "prints to command line" do
+      expect(Yast::CommandLine).to receive(:Print)
+      expect(Yast::Report).to_not receive(:Error)
 
       expect(subject.ShowHandler("id" => "0")).to eq true
     end
   end
 
-  describe "#AddHandler" do
+  describe "#ListHandler" do
+    it "prints to command line" do
+      expect(Yast::CommandLine).to receive(:Print).at_least(:once)
+      expect(Yast::Report).to_not receive(:Error)
+
+      expect(subject.ListHandler({})).to eq true
+    end
+  end
+
+  xdescribe "#AddHandler" do
     let(:options) { { "name" => "vlan0", "ethdevice" => "eth0", "bootproto" => "dhcp" } }
 
     before do
@@ -105,7 +142,7 @@ describe "NetworkLanCmdlineInclude" do
     end
   end
 
-  describe "#EditHandler" do
+  xdescribe "#EditHandler" do
     let(:items) { { 0 => { "ifcfg" => "eth0" } } }
     let(:options) { { "id" => 0, "ip" => "192.168.0.40" } }
 

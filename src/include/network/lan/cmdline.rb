@@ -30,6 +30,7 @@
 require "shellwords"
 require "y2network/interface_config_builder"
 require "y2network/boot_protocol"
+require "y2network/presenters/interface_summary"
 
 module Yast
   module NetworkLanCmdlineInclude
@@ -125,58 +126,37 @@ module Yast
     # Handler for action "show"
     # @param [Hash{String => String}] options action options
     def ShowHandler(options)
-      config = getConfigList("")
-      return false unless validateId(options, config)
+      config = Yast::Lan.yast_config
+      return false unless validateId(options, config.interfaces)
 
-      required_id = options["id"]
-      config.each do |row|
-        row.each_pair do |key, value|
-          next if key != required_id
+      presenter = Y2Network::Presenters::InterfaceSummary.new(config.interfaces.to_a[options["id"].to_i].name, config)
+      text = presenter.text
+      # create plain text from formated HTML
+      text.gsub!(/(<br>)|(<\/li>)/, "\n")
+      text.gsub!(/<[^>]+>/, "")
+      CommandLine.Print(text)
 
-          # create plain text from formated HTML
-          descr = value["rich_descr"]
-          descr.gsub!(/(<br>)|(<\/li>)/, "\n")
-          descr.gsub!(/<[^>]+>/, "")
-
-          # to keep it backward compatible. Previously echo was called which adds additional new line"
-          descr << "\n"
-
-          CommandLine.Print(descr)
-        end
-      end
       true
     end
 
     def ListHandler(options)
-      options = deep_copy(options)
-      config_filter = ""
-      if Builtins.contains(Map.Keys(options), "configured")
-        config_filter = "configured"
-      end
-      if Builtins.contains(Map.Keys(options), "unconfigured")
-        config_filter = "unconfigured"
-      end
-      confList = getConfigList(config_filter)
-      if Ops.greater_than(Builtins.size(confList), 0)
-        CommandLine.Print("id\tname, \t\t\tbootproto")
-      end
-      Builtins.foreach(confList) do |row|
-        Builtins.foreach(
-          Convert.convert(
-            row,
-            from: "map <string, any>",
-            to:   "map <string, map <string, any>>"
-          )
-        ) do |id, detail|
-          CommandLine.Print(
-            Builtins.sformat(
-              "%1\t%2, %3",
-              id,
-              Ops.get_string(detail, "descr", ""),
-              Ops.get_string(detail, "addr", "")
-            )
-          )
+      config = Yast::Lan.yast_config
+      CommandLine.Print("id\tname\tbootproto")
+      config.interfaces.to_a.each_with_index do |interface, index|
+        connection = config.connections.by_name(interface.name)
+        next if connection && options.include?("unconfigured")
+        next if !connection && options.include?("configured")
+
+        status = if !connection
+          "Not configured"
+        elsif connection.bootproto == Y2Network::BootProtocol::STATIC
+          connection.ip.address.to_s
+        else
+          connection.bootproto.name
         end
+        CommandLine.Print(
+          "#{index}\t#{interface.name}\t#{status}"
+        )
       end
       true
     end
@@ -228,8 +208,8 @@ module Yast
     # Handler for action "delete"
     # @param [Hash{String => String}] options action options
     def DeleteHandler(options)
-      config = getConfigList("")
-      return false if validateId(options, config) == false
+      config = Yast::Lan.yast_config
+      return false unless validateId(options, config.interfaces)
       Builtins.foreach(config) do |row|
         Builtins.foreach(
           Convert.convert(
