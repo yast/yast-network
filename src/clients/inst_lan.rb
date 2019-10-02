@@ -35,7 +35,7 @@ module Yast
 
     def main
       Yast.import "UI"
-      Yast.import "LanItems"
+      Yast.import "Lan"
       Yast.import "GetInstArgs"
 
       Yast.include self, "network/lan/wizards.rb"
@@ -51,7 +51,8 @@ module Yast
       # keep network configuration state in @@conf_net to gurantee same
       # behavior when walking :back in installation workflow
       if !defined?(@@network_configured)
-        @@network_configured = LanItems.Items.keys.any? { |i| LanItems.IsItemConfigured(i) }
+        @@network_configured = !Yast::Lan.yast_config.connections.empty?
+
       end
 
       log.info("Configured network found: #{@@network_configured}")

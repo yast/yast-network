@@ -69,8 +69,15 @@ module Y2Network
 
     private
 
+      def name_from_section(interface_section)
+        # device is just fallback
+        return interface_section.device if interface_section.name.to_s.empty?
+
+        interface_section.name
+      end
+
       def create_config(interface_section)
-        name = interface_section.name || interface_section.device
+        name = name_from_section(interface_section)
         type = TypeDetector.type_of(name, interface_section)
         # TODO: TUN/TAP interface missing for autoyast?
         ConnectionConfig.const_get(type.class_name).new
@@ -78,7 +85,7 @@ module Y2Network
 
       def load_generic(config, interface_section)
         config.bootproto = BootProtocol.from_name(interface_section.bootproto)
-        config.name = interface_section.name || interface_section.device # device is just fallback
+        config.name = name_from_section(interface_section)
         config.interface = config.name # in autoyast name and interface is same
         if config.bootproto == BootProtocol::STATIC
           # TODO: report if ipaddr missing for static config
