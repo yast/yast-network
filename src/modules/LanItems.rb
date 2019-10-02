@@ -134,12 +134,6 @@ module Yast
       ret
     end
 
-    # Returns true if current (see LanItems::current) has
-    # configuration
-    def IsCurrentConfigured
-      IsItemConfigured(@current)
-    end
-
     # Returns device name for given lan item.
     #
     # First it looks into the item's netconfig and if it doesn't exist
@@ -179,21 +173,11 @@ module Yast
       GetNetcardInterfaces().map { |i| current_name_for(i) }.reject(&:empty?)
     end
 
-    # Returns device name for current lan item (see LanItems::current)
-    def GetCurrentName
-      GetDeviceName(@current)
-    end
-
     # Returns device type for particular lan item
     #
     # @param itemId [Integer] a key for {#Items}
     def GetDeviceType(itemId)
       NetworkInterfaces.GetType(GetDeviceName(itemId))
-    end
-
-    # Returns device type for current lan item (see LanItems::current)
-    def GetCurrentType
-      GetDeviceType(@current)
     end
 
     # Returns ifcfg configuration for particular item
@@ -345,13 +329,6 @@ module Yast
       @Items.select { |_k, v| v["ifcfg"] == device }.keys.first
     end
 
-    def FindAndSelect(device)
-      item_id = find_configured(device)
-      @current = item_id if item_id
-
-      !item_id.nil?
-    end
-
     # It finds a new style device name for device name in old fashioned format
     #
     # It goes through currently present devices and tries to mach it to given
@@ -430,112 +407,6 @@ module Yast
       SetModified() if !settings.empty?
 
       true
-    end
-
-    def needFirmwareCurrentItem
-      need = false
-      if IsNotEmpty(Ops.get_string(@Items, [@current, "hwinfo", "driver"], ""))
-        if Builtins.haskey(
-          @request_firmware,
-          Ops.get_string(@Items, [@current, "hwinfo", "driver"], "")
-        )
-          need = true
-        end
-      else
-        Builtins.foreach(
-          Ops.get_list(@Items, [@current, "hwinfo", "drivers"], [])
-        ) do |driver|
-          if Builtins.haskey(
-            @request_firmware,
-            Ops.get_string(driver, ["modules", 0, 0], "")
-          )
-            Builtins.y2milestone(
-              "driver %1 needs firmware",
-              Ops.get_string(driver, ["modules", 0, 0], "")
-            )
-            need = true
-          end
-        end
-      end
-      Builtins.y2milestone("item %1 needs firmware:%2", @current, need)
-      need
-    end
-
-    def GetFirmwareForCurrentItem
-      kernel_module = ""
-      if IsNotEmpty(Ops.get_string(@Items, [@current, "hwinfo", "driver"], ""))
-        if Builtins.haskey(
-          @request_firmware,
-          Ops.get_string(@Items, [@current, "hwinfo", "driver"], "")
-        )
-          kernel_module = Ops.get_string(
-            @Items,
-            [@current, "hwinfo", "driver"],
-            ""
-          )
-        end
-      else
-        Builtins.foreach(
-          Ops.get_list(@Items, [@current, "hwinfo", "drivers"], [])
-        ) do |driver|
-          if Builtins.haskey(
-            @request_firmware,
-            Ops.get_string(driver, ["modules", 0, 0], "")
-          )
-            kernel_module = Ops.get_string(driver, ["modules", 0, 0], "")
-            raise Break
-          end
-        end
-      end
-      firmware = Ops.get(@request_firmware, kernel_module, "")
-      Builtins.y2milestone(
-        "driver %1 needs firmware %2",
-        kernel_module,
-        firmware
-      )
-
-      firmware
-    end
-
-    # Creates item's startmode human description
-    #
-    # @param item_id [Integer] a key for {#Items}
-    def startmode_overview(item_id)
-      startmode_descrs = {
-        # summary description of STARTMODE=auto
-        "auto"    => _(
-          "Started automatically at boot"
-        ),
-        # summary description of STARTMODE=auto
-        "onboot"  => _(
-          "Started automatically at boot"
-        ),
-        # summary description of STARTMODE=hotplug
-        "hotplug" => _(
-          "Started automatically at boot"
-        ),
-        # summary description of STARTMODE=nfsroot
-        "nfsroot" => _(
-          "Started automatically at boot"
-        ),
-        # summary description of STARTMODE=ifplugd
-        "ifplugd" => _(
-          "Started automatically on cable connection"
-        ),
-        # summary description of STARTMODE=managed
-        "managed" => _(
-          "Managed by NetworkManager"
-        ),
-        # summary description of STARTMODE=off
-        "off"     => _(
-          "Will not be started at all"
-        )
-      }
-
-      ifcfg = GetDeviceMap(item_id) || {}
-      startmode_descr = startmode_descrs[ifcfg["STARTMODE"].to_s] || _("Started manually")
-
-      [startmode_descr]
     end
 
     # Creates a summary of the configured items.
@@ -632,24 +503,6 @@ module Yast
               40
             )
           Ops.set(NetworkConfig.Config, "WAIT_FOR_INTERFACES", 40)
-        end
-      end
-
-      true
-    end
-
-    # Remove a half-configured item.
-    # @return [true] so that this can be used for the :abort callback
-    def Rollback
-      log.info "rollback item #{@current}"
-      # Do not delete elements that are :edited but does not contain hwinfo
-      # yet (Add a virtual device and then edit it canceling the process during the
-      # edition)
-      if LanItems.operation == :add && getCurrentItem.fetch("hwinfo", {}).empty?
-        LanItems.Items.delete(@current)
-      elsif IsCurrentConfigured()
-        if !getNetworkInterfaces.include?(getCurrentItem["ifcfg"])
-          LanItems.Items[@current].delete("ifcfg")
         end
       end
 
@@ -984,21 +837,16 @@ module Yast
     publish function: :GetLanItem, type: "map (integer)"
     publish function: :getCurrentItem, type: "map ()"
     publish function: :IsItemConfigured, type: "boolean (integer)"
-    publish function: :IsCurrentConfigured, type: "boolean ()"
     publish function: :GetDeviceName, type: "string (integer)"
-    publish function: :GetCurrentName, type: "string ()"
     publish function: :GetDeviceType, type: "string (integer)"
     publish function: :GetDeviceMap, type: "map <string, any> (integer)"
     publish function: :GetModified, type: "boolean ()"
     publish function: :SetModified, type: "void ()"
-    publish function: :FindAndSelect, type: "boolean (string)"
     publish function: :ReadHw, type: "void ()"
     publish function: :Read, type: "void ()"
-    publish function: :needFirmwareCurrentItem, type: "boolean ()"
     publish function: :isCurrentHotplug, type: "boolean ()"
     publish function: :isCurrentDHCP, type: "boolean ()"
     publish function: :Commit, type: "boolean ()"
-    publish function: :Rollback, type: "boolean ()"
     publish function: :createS390Device, type: "boolean ()"
     publish function: :find_dhcp_ifaces, type: "list <string> ()"
   end

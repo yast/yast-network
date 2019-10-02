@@ -30,61 +30,19 @@
 require "shellwords"
 require "y2network/interface_config_builder"
 require "y2network/boot_protocol"
+require "y2network/presenters/interface_summary"
 
 module Yast
   module NetworkLanCmdlineInclude
+    include Yast::Logger
+
     def initialize_network_lan_cmdline(_include_target)
       textdomain "network"
 
       Yast.import "CommandLine"
-      Yast.import "Label"
       Yast.import "Lan"
-      Yast.import "NetworkInterfaces"
-      Yast.import "RichText"
       Yast.import "Report"
       Yast.import "LanItems"
-      Yast.import "Map"
-    end
-
-    def getConfigList(config_filter)
-      confList = []
-      count = -1
-      LanItems.BuildLanOverview
-      # list<map<string,any> > overview = (list<map<string,any> >)LanItems::Overview();
-      Builtins.foreach(LanItems.Items) do |position, _row|
-        LanItems.current = position
-        count = Ops.add(count, 1)
-        if Ops.greater_than(
-          Builtins.size(Ops.get_string(LanItems.getCurrentItem, "ifcfg", "")),
-          0
-        )
-          next if config_filter == "unconfigured"
-        elsif config_filter == "configured"
-          next
-        end
-        confList = Builtins.add(
-          confList,
-          Builtins.tostring(count) => {
-            "id"         => position,
-            "rich_descr" => Ops.get_string(
-              LanItems.getCurrentItem,
-              ["table_descr", "rich_descr"],
-              ""
-            ),
-            "descr"      => Ops.get_string(
-              LanItems.getCurrentItem,
-              ["table_descr", "table_descr", 0],
-              ""
-            ),
-            "addr"       => Ops.get_string(
-              LanItems.getCurrentItem,
-              ["table_descr", "table_descr", 1],
-              ""
-            )
-          }
-        )
-      end
-      deep_copy(confList)
     end
 
     def validateId(options, config)
@@ -109,74 +67,40 @@ module Yast
       true
     end
 
-    def getItem(options, config)
-      options = deep_copy(options)
-      config = deep_copy(config)
-      ret = -1
-      Builtins.foreach(config) do |row|
-        if Ops.get(options, "id", "0") == Ops.get_string(Map.Keys(row), 0, "")
-          ret = Builtins.tointeger(Ops.get_string(Map.Keys(row), 0, "-1"))
-        end
-      end
-      Builtins.y2error("Device not matched!") if ret == -1
-      ret
-    end
-
     # Handler for action "show"
     # @param [Hash{String => String}] options action options
     def ShowHandler(options)
-      config = getConfigList("")
-      return false unless validateId(options, config)
+      config = Yast::Lan.yast_config
+      return false unless validateId(options, config.interfaces)
 
-      required_id = options["id"]
-      config.each do |row|
-        row.each_pair do |key, value|
-          next if key != required_id
+      presenter = Y2Network::Presenters::InterfaceSummary.new(config.interfaces.to_a[options["id"].to_i].name, config)
+      text = presenter.text
+      # create plain text from formated HTML
+      text.gsub!(/(<br>)|(<\/li>)/, "\n")
+      text.gsub!(/<[^>]+>/, "")
+      CommandLine.Print(text)
 
-          # create plain text from formated HTML
-          descr = value["rich_descr"]
-          descr.gsub!(/(<br>)|(<\/li>)/, "\n")
-          descr.gsub!(/<[^>]+>/, "")
-
-          # to keep it backward compatible. Previously echo was called which adds additional new line"
-          descr << "\n"
-
-          CommandLine.Print(descr)
-        end
-      end
       true
     end
 
     def ListHandler(options)
-      options = deep_copy(options)
-      config_filter = ""
-      if Builtins.contains(Map.Keys(options), "configured")
-        config_filter = "configured"
-      end
-      if Builtins.contains(Map.Keys(options), "unconfigured")
-        config_filter = "unconfigured"
-      end
-      confList = getConfigList(config_filter)
-      if Ops.greater_than(Builtins.size(confList), 0)
-        CommandLine.Print("id\tname, \t\t\tbootproto")
-      end
-      Builtins.foreach(confList) do |row|
-        Builtins.foreach(
-          Convert.convert(
-            row,
-            from: "map <string, any>",
-            to:   "map <string, map <string, any>>"
-          )
-        ) do |id, detail|
-          CommandLine.Print(
-            Builtins.sformat(
-              "%1\t%2, %3",
-              id,
-              Ops.get_string(detail, "descr", ""),
-              Ops.get_string(detail, "addr", "")
-            )
-          )
+      config = Yast::Lan.yast_config
+      CommandLine.Print("id\tname\tbootproto")
+      config.interfaces.to_a.each_with_index do |interface, index|
+        connection = config.connections.by_name(interface.name)
+        next if connection && options.include?("unconfigured")
+        next if !connection && options.include?("configured")
+
+        status = if !connection
+          "Not configured"
+        elsif connection.bootproto == Y2Network::BootProtocol::STATIC
+          connection.ip.address.to_s
+        else
+          connection.bootproto.name
         end
+        CommandLine.Print(
+          "#{index}\t#{interface.name}\t#{status}"
+        )
       end
       true
     end
@@ -194,59 +118,47 @@ module Yast
       builder.name = options.fetch("name")
       update_builder_from_options!(builder, options)
 
-      return false unless validate_config(builder)
-
       LanItems.Commit(builder)
       ListHandler({})
 
       true
+    rescue InvalidOption => e
+      Report.Error(e.message)
+      false
     end
 
     # Handler for action "edit"
     # @param [Hash{String => String}] options action options
     def EditHandler(options)
-      config = getConfigList("")
-
-      return false if validateId(options, config) == false
-
-      LanItems.current = getItem(options, config)
-
+      log.info "calling edit handler with #{options}"
       config = Lan.yast_config.copy
-      connection_config = config.connections.by_name(LanItems.GetCurrentName)
-      builder = Y2Network::InterfaceConfigBuilder.for(LanItems.GetCurrentType(), config: connection_config)
-      builder.name = LanItems.GetCurrentName()
-      LanItems.SetItem(builder: builder)
-      update_builder_from_options!(builder, options)
 
-      return false unless validate_config(builder)
+      return false unless validateId(options, config.interfaces)
+
+      interface = config.interfaces.to_a[options["id"].to_i]
+
+      connection_config = config.connections.by_name(interface.name)
+      builder = Y2Network::InterfaceConfigBuilder.for(interface.type, config: connection_config)
+      builder.name = interface.name
+      update_builder_from_options!(builder, options)
 
       LanItems.Commit(builder)
       ShowHandler(options)
       true
+    rescue InvalidOption => e
+      Report.Error(e.message)
+      false
     end
 
     # Handler for action "delete"
     # @param [Hash{String => String}] options action options
     def DeleteHandler(options)
-      config = getConfigList("")
-      return false if validateId(options, config) == false
-      Builtins.foreach(config) do |row|
-        Builtins.foreach(
-          Convert.convert(
-            row,
-            from: "map <string, any>",
-            to:   "map <string, map <string, any>>"
-          )
-        ) do |key, value|
-          if key == Ops.get(options, "id", "0")
-            LanItems.current = Builtins.tointeger(
-              Ops.get_integer(value, "id", -1)
-            )
-            Lan.Delete
-            CommandLine.Print(_("The device was deleted."))
-          end
-        end
-      end
+      config = Yast::Lan.yast_config
+      return false unless validateId(options, config.interfaces)
+
+      interface = config.interfaces.to_a[options["id"].to_i]
+
+      config.delete_interface(interface.name)
 
       true
     end
@@ -266,30 +178,22 @@ module Yast
       ""
     end
 
-    # Convenience method to validate some specific options like the STARTMODE,
-    # BOOTPROTO and the IPADDR reporting an error in case of invalid
-    #
-    # @param builder [Y2Network::InterfaceConfigBuilder]
-    # @return [Boolean] true when the options are valid; false otherwise
-    def validate_config(builder)
-      if builder.boot_protocol.nil?
-        Report.Error(_("Impossible value for bootproto."))
-        return false
-      end
+    def check_boot_protocol(boot_protocol)
+      return if Y2Network::BootProtocol.from_name(boot_protocol)
 
-      if builder.boot_protocol.name == "static" && builder.ip_address.empty?
-        Report.Error(
-          _("For static configuration, the \"ip\" option is needed.")
-        )
-        return false
-      end
+      message = _("Invalid value for bootproto. Possible values: ")
+      message += Y2Network::BootProtocol.all.map(&:name).join(", ")
+      log.warn "Invalid boot protocol #{boot_protocol}"
+      raise InvalidOption, message
+    end
 
-      unless builder.startmode
-        Report.Error(_("Impossible value for startmode."))
-        return false
-      end
+    def check_startmode(startmode)
+      return if Y2Network::Startmode.create(startmode)
 
-      true
+      message = _("Invalid value for startmode. Possible values: ")
+      message += Y2Network::Startmode.all.map(&:name).join(", ")
+      log.warn "Invalid startmode #{startmode}"
+      raise InvalidOption, message
     end
 
     # Convenience method to update the builder internal state taking in account
@@ -300,23 +204,37 @@ module Yast
     def update_builder_from_options!(builder, options)
       case builder.type.short_name
       when "bond"
-        builder.slaves = options.fetch("slaves", "").split(" ")
+        builder.slaves = options["slaves"].split(" ") if options["slaves"] # change only if user specify it
       when "vlan"
-        builder.etherdevice = options["ethdevice"]
+        builder.etherdevice = options["ethdevice"] if options["ethdevice"] # change only if user specify it
       when "br"
-        builder.ports = options["bridge_ports"]
+        builder.ports = options["bridge_ports"] if options["bridge_ports"] # change only if user specify it
       end
 
       default_bootproto = options.keys.include?("ip") ? "static" : "none"
-      builder.boot_protocol = options.fetch("bootproto", default_bootproto)
+      boot_protocol = options.fetch("bootproto", default_bootproto)
+      # check for valid value
+      check_boot_protocol(boot_protocol)
+      builder.boot_protocol = boot_protocol
       if builder.boot_protocol.name == "static"
-        builder.ip_address = options.fetch("ip", "")
+        ip_address = options.fetch("ip", "")
+        raise InvalidOption, _("For static configuration, the \"ip\" option is needed.") if ip_address.empty?
+        builder.ip_address = ip_address
         builder.subnet_prefix = options.fetch("prefix", options.fetch("netmask", "255.255.255.0"))
       else
         builder.ip_address = ""
         builder.subnet_prefix = ""
       end
-      builder.startmode = options.fetch("startmode", "auto")
+      startmode = options.fetch("startmode", "auto")
+      check_startmode(startmode)
+      builder.startmode = startmode
+    rescue IPAddr::InvalidAddressError => e
+      log.warn "Invalid address #{e.inspect}"
+      raise InvalidOption, _("Invalid ip address, prefix or netmask")
+    end
+
+    # exception for invalid options
+    class InvalidOption < RuntimeError
     end
   end
 end

@@ -155,19 +155,3 @@ describe "LanItemsClass#GetItemName" do
     end
   end
 end
-
-describe "LanItemsClass#FindAndSelect" do
-  before(:each) do
-    @lan_items = Yast::LanItems
-    @lan_items.main
-    @lan_items.Items = Yast.deep_copy(MOCKED_ITEMS)
-  end
-
-  it "finds configured device" do
-    expect(@lan_items.FindAndSelect("enp0s3")).to be true
-  end
-
-  it "fails to find unconfigured device" do
-    expect(@lan_items.FindAndSelect("nonexistent")).to be false
-  end
-end
