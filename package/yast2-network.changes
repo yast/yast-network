@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Oct  2 05:57:45 UTC 2019 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
+
+- boo#1152748:
+  - Fix detection of the network status during installation.
+
+-------------------------------------------------------------------
 Tue Oct  1 14:24:42 UTC 2019 - Knut Anderssen <kanderssen@suse.com>
 
 - AY: Fix interface name check for using the fallback when not set.
