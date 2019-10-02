@@ -40,54 +40,9 @@ module Yast
       textdomain "network"
 
       Yast.import "CommandLine"
-      Yast.import "Label"
       Yast.import "Lan"
-      Yast.import "NetworkInterfaces"
-      Yast.import "RichText"
       Yast.import "Report"
       Yast.import "LanItems"
-      Yast.import "Map"
-    end
-
-    def getConfigList(config_filter)
-      confList = []
-      count = -1
-      LanItems.BuildLanOverview
-      # list<map<string,any> > overview = (list<map<string,any> >)LanItems::Overview();
-      Builtins.foreach(LanItems.Items) do |position, _row|
-        LanItems.current = position
-        count = Ops.add(count, 1)
-        if Ops.greater_than(
-          Builtins.size(Ops.get_string(LanItems.getCurrentItem, "ifcfg", "")),
-          0
-        )
-          next if config_filter == "unconfigured"
-        elsif config_filter == "configured"
-          next
-        end
-        confList = Builtins.add(
-          confList,
-          Builtins.tostring(count) => {
-            "id"         => position,
-            "rich_descr" => Ops.get_string(
-              LanItems.getCurrentItem,
-              ["table_descr", "rich_descr"],
-              ""
-            ),
-            "descr"      => Ops.get_string(
-              LanItems.getCurrentItem,
-              ["table_descr", "table_descr", 0],
-              ""
-            ),
-            "addr"       => Ops.get_string(
-              LanItems.getCurrentItem,
-              ["table_descr", "table_descr", 1],
-              ""
-            )
-          }
-        )
-      end
-      deep_copy(confList)
     end
 
     def validateId(options, config)
@@ -110,19 +65,6 @@ module Yast
         return false
       end
       true
-    end
-
-    def getItem(options, config)
-      options = deep_copy(options)
-      config = deep_copy(config)
-      ret = -1
-      Builtins.foreach(config) do |row|
-        if Ops.get(options, "id", "0") == Ops.get_string(Map.Keys(row), 0, "")
-          ret = Builtins.tointeger(Ops.get_string(Map.Keys(row), 0, "-1"))
-        end
-      end
-      Builtins.y2error("Device not matched!") if ret == -1
-      ret
     end
 
     # Handler for action "show"
