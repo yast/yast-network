@@ -32,9 +32,8 @@ describe "NetworkLanCmdlineInclude" do
 
   before do
     allow(Yast::Lan).to receive(:yast_config).and_return(
-      Y2Network::Config.new(source: :fake,
-        interfaces: Y2Network::InterfacesCollection.new([Y2Network::Interface.new("eth0")])
-      )
+      Y2Network::Config.new(source:     :fake,
+                            interfaces: Y2Network::InterfacesCollection.new([Y2Network::Interface.new("eth0")]))
     )
   end
 
@@ -82,7 +81,7 @@ describe "NetworkLanCmdlineInclude" do
     end
   end
 
-  xdescribe "#AddHandler" do
+  describe "#AddHandler" do
     let(:options) { { "name" => "vlan0", "ethdevice" => "eth0", "bootproto" => "dhcp" } }
 
     before do
@@ -105,17 +104,15 @@ describe "NetworkLanCmdlineInclude" do
       end
     end
 
-    context "when startmode is given" do
+    context "when bootproto is given" do
       context "but with an invalid option" do
         it "reports an error" do
-          pending "invalid option is not yet handled"
           expect(Yast::Report).to receive(:Error)
-          subject.AddHandler(options.merge("startmode" => "wrong"))
+          subject.AddHandler(options.merge("bootproto" => "wrong"))
         end
 
         it "returns false" do
-          pending "invalid option is not yet handled"
-          expect(subject.AddHandler(options.merge("startmode" => "wrong"))).to eq false
+          expect(subject.AddHandler(options.merge("bootproto" => "wrong"))).to eq false
         end
       end
     end
@@ -142,23 +139,16 @@ describe "NetworkLanCmdlineInclude" do
     end
   end
 
-  xdescribe "#EditHandler" do
-    let(:items) { { 0 => { "ifcfg" => "eth0" } } }
+  describe "#EditHandler" do
     let(:options) { { "id" => 0, "ip" => "192.168.0.40" } }
 
     before do
-      allow(Yast::LanItems).to receive(:Items).and_return(items)
-      allow(Yast::LanItems).to receive(:GetCurrentType).and_return("eth")
-      richtext = "test<br><ul><li>item1</li></ul>"
-      allow(subject).to receive(:getConfigList).and_return(["0" => { "rich_descr" => richtext }])
+      allow(subject).to receive(:ShowHandler)
+      allow(Yast::Report).to receive(:Error)
+      allow(Yast::LanItems).to receive(:Commit)
     end
 
     context "when a valid configuration is providen" do
-      before do
-        allow(subject).to receive(:ListHandler)
-        allow(Yast::LanItems).to receive(:Commit)
-      end
-
       it "commits the configuration changes" do
         expect(Yast::LanItems).to receive(:Commit).with(anything)
         subject.EditHandler(options)
@@ -166,6 +156,27 @@ describe "NetworkLanCmdlineInclude" do
 
       it "shows the configuration of the edited interface" do
         expect(subject).to receive(:ShowHandler)
+        subject.EditHandler(options)
+      end
+
+      it "returns true" do
+        expect(Yast::Report).to_not receive(:Error)
+        expect(subject.EditHandler(options)).to eq true
+      end
+    end
+  end
+
+  describe "#DeleteHandler" do
+    let(:options) { { "id" => 0 } }
+
+    before do
+      allow(Yast::Report).to receive(:Error)
+      allow(Yast::LanItems).to receive(:Commit)
+    end
+
+    context "when a valid configuration is providen" do
+      it "removes given interface" do
+        expect(Yast::LanItems).to receive(:Commit).with(anything)
         subject.EditHandler(options)
       end
 
