@@ -20,7 +20,6 @@
 require "yast"
 require "y2network/interface_config_builder"
 
-
 module Y2Network
   module InterfaceConfigBuilders
     class Ctc < InterfaceConfigBuilder

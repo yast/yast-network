@@ -31,7 +31,7 @@ require "y2network/dialogs/s390_device_activation"
 
 module Yast
   module NetworkLanHardwareInclude
-    def initialize_network_lan_hardware(include_target)
+    def initialize_network_lan_hardware(_include_target)
       textdomain "network"
 
       Yast.import "Arch"
