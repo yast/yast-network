@@ -23,6 +23,7 @@ require "y2network/sysconfig/routes_file"
 require "y2network/sysconfig/dns_writer"
 require "y2network/sysconfig/connection_config_writer"
 require "y2network/sysconfig/interfaces_writer"
+require "yast2/cfa/sysctl"
 
 Yast.import "Host"
 
@@ -99,42 +100,29 @@ module Y2Network
       #
       # @param routing [Y2Network::Routing] routing configuration
       def write_ip_forwarding(routing)
-        write_ipv4_forwarding(routing.forward_ipv4)
-        write_ipv6_forwarding(routing.forward_ipv6)
+        sysctl = Yast2::CFA::Sysctl.new
+        sysctl.load
+        sysctl.forward_ipv4 = routing.forward_ipv4 ? "1" : "0"
+        sysctl.forward_ipv6 = routing.forward_ipv6 ? "1" : "0"
+        sysctl.save
 
+        update_ip_forwarding(sysctl.forward_ipv4, :ipv4)
+        update_ip_forwarding(sysctl.forward_ipv6, :ipv6)
         nil
       end
 
-      # Configures system for IPv4 forwarding
+      IP_SYSCTL = {
+        :ipv4 => IPV4_SYSCTL,
+        :ipv6 => IPV6_SYSCTL
+      }.freeze
+
+      # Updates the IP forwarding configuration of the running kernel
       #
-      # @param forward_ipv4 [Boolean] true when forwarding should be enabled
-      # @return [Boolean] true on success
-      def write_ipv4_forwarding(forward_ipv4)
-        sysctl_val = forward_ipv4 ? "1" : "0"
-
-        Yast::SCR.Write(
-          Yast::Path.new(SYSCTL_IPV4_PATH),
-          sysctl_val
-        )
-        Yast::SCR.Write(Yast::Path.new(SYSCTL_AGENT_PATH), nil)
-
-        Yast::SCR.Execute(Yast::Path.new(".target.bash"), "/usr/sbin/sysctl -w #{IPV4_SYSCTL}=#{sysctl_val.shellescape}") == 0
-      end
-
-      # Configures system for IPv6 forwarding
-      #
-      # @param forward_ipv6 [Boolean] true when forwarding should be enabled
-      # @return [Boolean] true on success
-      def write_ipv6_forwarding(forward_ipv6)
-        sysctl_val = forward_ipv6 ? "1" : "0"
-
-        Yast::SCR.Write(
-          Yast::Path.new(SYSCTL_IPV6_PATH),
-          sysctl_val
-        )
-        Yast::SCR.Write(Yast::Path.new(SYSCTL_AGENT_PATH), nil)
-
-        Yast::SCR.Execute(Yast::Path.new(".target.bash"), "/usr/sbin/sysctl -w #{IPV6_SYSCTL}=#{sysctl_val.shellescape}") == 0
+      # @param value [String] "1" (enable) or "0" (disable).
+      # @param type  [Symbol] :ipv4 or :ipv6
+      def update_ip_forwarding(value, type)
+        key = IP_SYSCTL[type]
+        Yast::SCR.Execute(Yast::Path.new(".target.bash"), "/usr/sbin/sysctl -w #{key}=#{value.shellescape}")
       end
 
       # Finds routes for a given interface or the routes not tied to any

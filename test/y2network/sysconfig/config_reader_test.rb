@@ -84,34 +84,50 @@ describe Y2Network::Sysconfig::ConfigReader do
   end
 
   describe "#forward_ipv4?" do
+    let(:sysctl_file) { instance_double(Yast2::CFA::Sysctl, forward_ipv4: forward_ipv4).as_null_object }
+
     before do
-      allow(Y2Network::Sysconfig::RoutesFile).to receive(:new).and_return(routes_file)
+      allow(Yast2::CFA::Sysctl).to receive(:new).and_return(sysctl_file)
     end
 
-    it "returns true when IPv4 forwarding is allowed" do
-      expect(reader.config.routing.forward_ipv4).to be true
+    context "when IPv4 forwarding is allowed" do
+      let(:forward_ipv4) { "1" }
+
+      it "returns true" do
+        expect(reader.config.routing.forward_ipv4).to be true
+      end
     end
 
-    it "returns false when IPv4 forwarding is disabled" do
-      allow(Yast::SCR).to receive(:Read).and_return("0")
+    context "when IPv4 forwarding is disabled" do
+      let(:forward_ipv4) { "0" }
 
-      expect(reader.config.routing.forward_ipv4).to be false
+      it "returns false" do
+        expect(reader.config.routing.forward_ipv4).to be false
+      end
     end
   end
 
   describe "#forward_ipv6?" do
+    let(:sysctl_file) { instance_double(Yast2::CFA::Sysctl, forward_ipv6: forward_ipv6).as_null_object }
+
     before do
-      allow(Y2Network::Sysconfig::RoutesFile).to receive(:new).and_return(routes_file)
+      allow(Yast2::CFA::Sysctl).to receive(:new).and_return(sysctl_file)
     end
 
-    it "returns false when IPv6 forwarding is disabled" do
-      allow(Yast::SCR).to receive(:Read).and_return("1")
+    context "when IPv6 forwarding is allowed" do
+      let(:forward_ipv6) { "1" }
 
-      expect(reader.config.routing.forward_ipv6).to be true
+      it "returns true" do
+        expect(reader.config.routing.forward_ipv6).to be true
+      end
     end
 
-    it "returns false when IPv6 forwarding is disabled" do
-      expect(reader.config.routing.forward_ipv6).to be false
+    context "when IPv6 forwarding is disabled" do
+      let(:forward_ipv6) { "0" }
+
+      it "returns false" do
+        expect(reader.config.routing.forward_ipv6).to be false
+      end
     end
   end
 end
