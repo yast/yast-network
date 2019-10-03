@@ -46,7 +46,7 @@ module Y2Network
             ),
             VBox(
               VSpacing(),
-              PushButton(Id(:blink_button), _("Blink")),
+              PushButton(Id(:blink_button), _("Blink"))
             )
           )
         )
