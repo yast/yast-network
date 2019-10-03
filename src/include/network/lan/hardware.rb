@@ -27,29 +27,14 @@
 # Authors:	Michal Svec <msvec@suse.cz>
 #
 
-include Yast::UIShortcuts
-
 require "y2network/dialogs/s390_device_activation"
 
 module Yast
   module NetworkLanHardwareInclude
     def initialize_network_lan_hardware(include_target)
-      Yast.import "UI"
-
       textdomain "network"
 
       Yast.import "Arch"
-      Yast.import "CWM"
-      Yast.import "Label"
-      Yast.import "Lan"
-      Yast.import "NetworkInterfaces"
-      Yast.import "Popup"
-      Yast.import "Wizard"
-      Yast.import "LanItems"
-      Yast.include include_target, "network/routines.rb"
-      Yast.include include_target, "network/lan/cards.rb"
-
-      @hardware = nil
     end
 
     # Dynamic initialization of help text.
