@@ -20,9 +20,6 @@
 require "yast"
 require "y2network/interface_config_builder"
 
-Yast.import "LanItems"
-Yast.import "NetworkInterfaces"
-
 module Y2Network
   module InterfaceConfigBuilders
     class Lcs < InterfaceConfigBuilder

@@ -19,8 +19,6 @@
 
 require "yast"
 
-Yast.import "NetworkInterfaces"
-Yast.import "LanItems"
 
 module Y2Network
   module Widgets
@@ -28,6 +26,10 @@ module Y2Network
     module SlaveItems
       include Yast::Logger
       include Yast::I18n
+
+      def initialize
+        Yast.import "NetworkInterfaces"
+      end
 
       # Builds content for slave configuration dialog (used e.g. when configuring
       # bond slaves) according the given list of item_ids (see LanItems::Items)

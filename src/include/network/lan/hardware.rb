@@ -37,25 +37,6 @@ module Yast
       Yast.import "Arch"
     end
 
-    # Dynamic initialization of help text.
-    #
-    # @return content of the help
-    def initHelp
-      if Arch.s390
-        # overwrite help
-        # Manual dialog help 5/4
-        hw_help = _(
-          "<p>Here, set up your networking device. The values will be\nwritten to <i>/etc/modprobe.conf</i> or <i>/etc/chandev.conf</i>.</p>\n"
-        ) +
-          # Manual dialog help 6/4
-          _(
-            "<p>Options for the module should be written in the format specified\nin the <b>IBM Device Drivers and Installation Commands</b> manual.</p>"
-          )
-      end
-
-      hw_help
-    end
-
     # S/390 devices configuration dialog
     # @return dialog result
     def S390Dialog(builder:)
