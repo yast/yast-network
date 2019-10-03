@@ -27,48 +27,14 @@
 # Authors:	Michal Svec <msvec@suse.cz>
 #
 
-include Yast::UIShortcuts
-
 require "y2network/dialogs/s390_device_activation"
 
 module Yast
   module NetworkLanHardwareInclude
-    def initialize_network_lan_hardware(include_target)
-      Yast.import "UI"
-
+    def initialize_network_lan_hardware(_include_target)
       textdomain "network"
 
       Yast.import "Arch"
-      Yast.import "CWM"
-      Yast.import "Label"
-      Yast.import "Lan"
-      Yast.import "NetworkInterfaces"
-      Yast.import "Popup"
-      Yast.import "Wizard"
-      Yast.import "LanItems"
-      Yast.include include_target, "network/routines.rb"
-      Yast.include include_target, "network/lan/cards.rb"
-
-      @hardware = nil
-    end
-
-    # Dynamic initialization of help text.
-    #
-    # @return content of the help
-    def initHelp
-      if Arch.s390
-        # overwrite help
-        # Manual dialog help 5/4
-        hw_help = _(
-          "<p>Here, set up your networking device. The values will be\nwritten to <i>/etc/modprobe.conf</i> or <i>/etc/chandev.conf</i>.</p>\n"
-        ) +
-          # Manual dialog help 6/4
-          _(
-            "<p>Options for the module should be written in the format specified\nin the <b>IBM Device Drivers and Installation Commands</b> manual.</p>"
-          )
-      end
-
-      hw_help
     end
 
     # S/390 devices configuration dialog

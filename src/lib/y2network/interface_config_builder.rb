@@ -27,10 +27,6 @@ require "y2network/ip_address"
 require "y2firewall/firewalld"
 require "y2firewall/firewalld/interface"
 
-Yast.import "LanItems"
-Yast.import "NetworkInterfaces"
-Yast.import "Host"
-
 module Y2Network
   # Collects data from the UI until we have enough of it to create a
   # {Y2Network::ConnectionConfig::Base} object.
@@ -179,6 +175,8 @@ module Y2Network
     # gets valid characters that can be used in interface name
     # TODO: looks sysconfig specific
     def name_valid_characters
+      Yast.import "NetworkInterfaces"
+
       Yast::NetworkInterfaces.ValidCharsIfcfg
     end
 

@@ -20,7 +20,6 @@
 require "yast"
 
 Yast.import "NetworkInterfaces"
-Yast.import "LanItems"
 
 module Y2Network
   module Widgets

@@ -21,8 +21,6 @@ require "yast"
 require "y2network/driver"
 require "y2network/udev_rule"
 
-Yast.import "LanItems"
-
 module Y2Network
   # A helper for {Hwinfo}.
   class HardwareWrapper
@@ -60,6 +58,8 @@ module Y2Network
 
     # Makes sure that the hardware information was read
     def read_hardware
+      Yast.import "LanItems"
+
       Yast::LanItems.ReadHw if Yast::LanItems.Hardware.empty?
     end
   end
