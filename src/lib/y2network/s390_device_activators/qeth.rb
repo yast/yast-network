@@ -29,13 +29,7 @@ module Y2Network
         :write_channel, :write_channel=,
         :data_channel, :data_channel=,
         :layer2, :port_number, :ipa_takeover,
-        :hwinfo, :attributes
-
-      def device_id
-        return if read_channel.to_s.empty?
-
-        [read_channel, write_channel, data_channel].join(":")
-      end
+        :hwinfo, :attributes, :device_id
 
       # Return a list of the options to be set when activating the device. The
       # list is composed by the attributes configured and the attributes that

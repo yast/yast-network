@@ -72,6 +72,7 @@ module Y2Network
         result.dns = DNSSection.new_from_network(config.dns) if config.dns
         result.interfaces = InterfacesSection.new_from_network(config.connections)
         result.udev_rules = UdevRulesSection.new_from_network(config.interfaces)
+        result.s390_devices = S390DevicesSection.new_from_network(config.connections)
         result
       end
 

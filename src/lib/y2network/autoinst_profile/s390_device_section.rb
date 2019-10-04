@@ -60,6 +60,34 @@ module Y2Network
 
       # @!attribute router
       #   @return [String] IUCV router/user
+
+      # Clones a network s390 connection config into an AutoYaST s390 device section
+      #
+      # @param connection_config [Y2Network::ConnectionConfig] Network connection config
+      # @return [InterfacesSection]
+      def self.new_from_network(connection_config)
+        result = new
+        result.init_from_config(connection_config)
+        result
+      end
+
+      # Method used by {.new_from_network} to populate the attributes when cloning a network s390
+      # device
+      #
+      # @param config [Y2Network::ConnectionConfig]
+      # @return [Boolean]
+      def init_from_config(config)
+        @type = config.type.short_name
+        case config
+        when ConnectionConfig::Qeth
+          @chanids = config.device_id
+          @layer2 = config.layer2
+        when ConnectionConfig::Ctc
+          @protocol = config.protocol
+        end
+
+        true
+      end
     end
   end
 end

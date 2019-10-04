@@ -35,6 +35,8 @@ module Y2Network
     class S390DevicesSection < SectionWithAttributes
       include Yast::Logger
 
+      SUPPORTED_TYPES = ["qeth", "ctc"].freeze
+
       def self.attributes
         [
           { name: :devices }
@@ -94,7 +96,13 @@ module Y2Network
       end
 
       def s390_devices_section(connection_configs)
-        connection_configs.map { |c| Y2Network::AutoinstProfile::S390DeviceSection.new_from_network(c) }
+        connection_configs
+          .select { |c| supported_device?(c) }
+          .map { |c| Y2Network::AutoinstProfile::S390DeviceSection.new_from_network(c) }
+      end
+
+      def supported_device?(connection)
+        connection.type && SUPPORTED_TYPES.include?(connection.type.short_name)
       end
     end
   end

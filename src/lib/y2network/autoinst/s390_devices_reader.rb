@@ -50,7 +50,7 @@ module Y2Network
           when ConnectionConfig::Ctc
             load_ctc(config, device_section)
           end
-          conns << config
+          connections << config
         end
 
         connections
