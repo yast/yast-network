@@ -13,7 +13,8 @@ system to run such tests.
   way), so use them in a scratch VM.
 
 ```sh
-prove
+# run in top level directory as prove searching for 't' directory
+prove --verbose
 ```
 
 `prove` is a runner for the [Test Anything Protocol](http://testanything.org/),
