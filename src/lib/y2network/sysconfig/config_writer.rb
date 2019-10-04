@@ -23,7 +23,7 @@ require "y2network/sysconfig/routes_file"
 require "y2network/sysconfig/dns_writer"
 require "y2network/sysconfig/connection_config_writer"
 require "y2network/sysconfig/interfaces_writer"
-require "yast2/cfa/sysctl"
+require "cfa/sysctl"
 
 Yast.import "Host"
 
@@ -100,20 +100,20 @@ module Y2Network
       #
       # @param routing [Y2Network::Routing] routing configuration
       def write_ip_forwarding(routing)
-        sysctl = Yast2::CFA::Sysctl.new
+        sysctl = CFA::Sysctl.new
         sysctl.load
-        sysctl.forward_ipv4 = routing.forward_ipv4 ? "1" : "0"
-        sysctl.forward_ipv6 = routing.forward_ipv6 ? "1" : "0"
+        sysctl.forward_ipv4 = routing.forward_ipv4
+        sysctl.forward_ipv6 = routing.forward_ipv6
         sysctl.save
 
-        update_ip_forwarding(sysctl.forward_ipv4, :ipv4)
-        update_ip_forwarding(sysctl.forward_ipv6, :ipv6)
+        update_ip_forwarding(sysctl.raw_forward_ipv4, :ipv4)
+        update_ip_forwarding(sysctl.raw_forward_ipv6, :ipv6)
         nil
       end
 
       IP_SYSCTL = {
-        :ipv4 => IPV4_SYSCTL,
-        :ipv6 => IPV6_SYSCTL
+        ipv4: IPV4_SYSCTL,
+        ipv6: IPV6_SYSCTL
       }.freeze
 
       # Updates the IP forwarding configuration of the running kernel

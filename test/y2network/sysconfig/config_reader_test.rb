@@ -84,14 +84,14 @@ describe Y2Network::Sysconfig::ConfigReader do
   end
 
   describe "#forward_ipv4?" do
-    let(:sysctl_file) { instance_double(Yast2::CFA::Sysctl, forward_ipv4: forward_ipv4).as_null_object }
+    let(:sysctl_file) { instance_double(CFA::Sysctl, forward_ipv4?: forward_ipv4).as_null_object }
 
     before do
-      allow(Yast2::CFA::Sysctl).to receive(:new).and_return(sysctl_file)
+      allow(CFA::Sysctl).to receive(:new).and_return(sysctl_file)
     end
 
     context "when IPv4 forwarding is allowed" do
-      let(:forward_ipv4) { "1" }
+      let(:forward_ipv4) { true }
 
       it "returns true" do
         expect(reader.config.routing.forward_ipv4).to be true
@@ -99,7 +99,7 @@ describe Y2Network::Sysconfig::ConfigReader do
     end
 
     context "when IPv4 forwarding is disabled" do
-      let(:forward_ipv4) { "0" }
+      let(:forward_ipv4) { false }
 
       it "returns false" do
         expect(reader.config.routing.forward_ipv4).to be false
@@ -108,14 +108,14 @@ describe Y2Network::Sysconfig::ConfigReader do
   end
 
   describe "#forward_ipv6?" do
-    let(:sysctl_file) { instance_double(Yast2::CFA::Sysctl, forward_ipv6: forward_ipv6).as_null_object }
+    let(:sysctl_file) { instance_double(CFA::Sysctl, forward_ipv6?: forward_ipv6).as_null_object }
 
     before do
-      allow(Yast2::CFA::Sysctl).to receive(:new).and_return(sysctl_file)
+      allow(CFA::Sysctl).to receive(:new).and_return(sysctl_file)
     end
 
     context "when IPv6 forwarding is allowed" do
-      let(:forward_ipv6) { "1" }
+      let(:forward_ipv6) { true }
 
       it "returns true" do
         expect(reader.config.routing.forward_ipv6).to be true
@@ -123,7 +123,7 @@ describe Y2Network::Sysconfig::ConfigReader do
     end
 
     context "when IPv6 forwarding is disabled" do
-      let(:forward_ipv6) { "0" }
+      let(:forward_ipv6) { false }
 
       it "returns false" do
         expect(reader.config.routing.forward_ipv6).to be false
