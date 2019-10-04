@@ -26,7 +26,7 @@ module Y2Network
     #    <chanids>0.0.0700 0.0.0701 0.0.0702</chanids>
     #    <layer2 config:type="boolean>true</layer2>
     #    <type>qeth</type>
-    #  </interface>
+    #  </device>
     #
     # @see S390DevicesSection
     class S390DeviceSection < SectionWithAttributes
@@ -64,7 +64,7 @@ module Y2Network
       # Clones a network s390 connection config into an AutoYaST s390 device section
       #
       # @param connection_config [Y2Network::ConnectionConfig] Network connection config
-      # @return [InterfacesSection]
+      # @return [S390DeviceSection]
       def self.new_from_network(connection_config)
         result = new
         result.init_from_config(connection_config)
