@@ -30,6 +30,7 @@
 # Representation of the configuration of network cards.
 # Input and output routines.
 require "yast"
+require "cfa/sysctl"
 require "network/confirm_virt_proposal"
 require "ui/text_helpers"
 require "y2firewall/firewalld"
@@ -222,22 +223,10 @@ module Yast
     #
     # return [Boolean] true when IPv6 is enabled in the system
     def readIPv6
-      ipv6 = true
-
-      sysctl_path = "/etc/sysctl.conf"
-      ipv6_regexp = /^[[:space:]]*(net.ipv6.conf.all.disable_ipv6)[[:space:]]*=[[:space:]]*1/
-
-      # sysctl.conf is kind of "mandatory" config file, use default
-      if !FileUtils.Exists(sysctl_path)
-        log.error("readIPv6: #{sysctl_path} is missing")
-        return true
-      end
-
-      lines = (SCR.Read(path(".target.string"), sysctl_path) || []).split("\n")
-      ipv6 = false if lines.any? { |row| row =~ ipv6_regexp }
-
+      sysctl_file = CFA::Sysctl.new
+      sysctl_file.load
+      ipv6 = !sysctl_file.disable_ipv6?
       log.info("readIPv6: IPv6 is #{ipv6 ? "enabled" : "disabled"}")
-
       ipv6
     end
 
@@ -411,32 +400,10 @@ module Yast
 
     def writeIPv6
       log.info("writeIPv6: IPv6 is #{@ipv6 ? "enabled" : "disabled"}")
-      filename = "/etc/sysctl.conf"
-      sysctl = Convert.to_string(SCR.Read(path(".target.string"), filename))
-      sysctl_row = Builtins.sformat(
-        "%1net.ipv6.conf.all.disable_ipv6 = 1",
-        @ipv6 ? "# " : ""
-      )
-      found = false
-      file = []
-      Builtins.foreach(Builtins.splitstring(sysctl, "\n")) do |row|
-        if Ops.greater_than(
-          Builtins.size(
-            Builtins.regexptokenize(row, "(net.ipv6.conf.all.disable_ipv6)")
-          ),
-          0
-        )
-          row = sysctl_row
-          found = true
-        end
-        file = Builtins.add(file, row)
-      end
-      file = Builtins.add(file, sysctl_row) if !found
-      SCR.Write(
-        path(".target.string"),
-        filename,
-        Builtins.mergestring(file, "\n")
-      )
+      sysctl_file = CFA::Sysctl.new
+      sysctl_file.load
+      sysctl_file.disable_ipv6 = !@ipv6
+      sysctl_file.save
       SCR.Execute(
         path(".target.bash"),
         Builtins.sformat(

@@ -242,17 +242,67 @@ describe "LanClass" do
   end
 
   describe "#readIPv6" do
-    it "reads IPv6 setup from /etc/sysctl.conf" do
-      allow(Yast::FileUtils).to receive(:Exists).and_return(true)
-      string_stub_scr_read("/etc/sysctl.conf")
+    let(:sysctl_file) { CFA::Sysctl.new }
 
-      expect(Yast::Lan.readIPv6).to be false
+    before do
+      allow(CFA::Sysctl).to receive(:new).and_return(sysctl_file)
+      allow(sysctl_file).to receive(:load)
+      sysctl_file.disable_ipv6 = disable_ipv6
     end
 
-    it "returns true when /etc/sysctl.conf is missing" do
-      allow(Yast::FileUtils).to receive(:Exists).and_return(false)
+    context "when IPv6 is disabled" do
+      let(:disable_ipv6) { true }
 
-      expect(Yast::Lan.readIPv6).to be true
+      it "returns false" do
+        expect(Yast::Lan.readIPv6).to eq(false)
+      end
+    end
+
+    context "when IPv6 is not disabled" do
+      let(:disable_ipv6) { false }
+
+      it "returns true" do
+        expect(Yast::Lan.readIPv6).to eq(true)
+      end
+    end
+  end
+
+  describe "#readIPv6" do
+    let(:sysctl_file) { CFA::Sysctl.new }
+
+    before do
+      allow(CFA::Sysctl).to receive(:new).and_return(sysctl_file)
+      allow(sysctl_file).to receive(:load)
+      allow(sysctl_file).to receive(:save)
+      Yast::Lan.ipv6 = ipv6
+    end
+
+    context "when IPv6 is enabled" do
+      let(:ipv6) { true }
+
+      it "enables IPv6 in the sysctl configuration" do
+        expect(sysctl_file).to receive(:disable_ipv6=).with(false)
+        Yast::Lan.writeIPv6
+      end
+
+      it "enables IPv6 in the running system" do
+        expect(Yast::SCR).to receive(:Execute).with(anything, /sysctl .+disable_ipv6=0/)
+        Yast::Lan.writeIPv6
+      end
+    end
+
+    context "when IPv6 is disabled" do
+      let(:ipv6) { false }
+
+      it "disables IPv6 in the sysctl configuration" do
+        expect(sysctl_file).to receive(:disable_ipv6=).with(true)
+        Yast::Lan.writeIPv6
+      end
+
+      it "disables IPv6 in the running system" do
+        expect(Yast::SCR).to receive(:Execute).with(anything, /sysctl .+disable_ipv6=1/)
+        Yast::Lan.writeIPv6
+      end
     end
   end
 
