@@ -83,7 +83,10 @@ module Y2Network
           @chanids = config.device_id
           @layer2 = config.layer2
         when ConnectionConfig::Ctc
+          @chanids = config.device_id
           @protocol = config.protocol
+        when ConnectionConfig::Lcs
+          @chanids = config.device_id
         end
 
         true

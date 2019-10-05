@@ -35,7 +35,7 @@ module Y2Network
     class S390DevicesSection < SectionWithAttributes
       include Yast::Logger
 
-      SUPPORTED_TYPES = ["qeth", "ctc"].freeze
+      SUPPORTED_TYPES = ["qeth", "ctc", "lcs"].freeze
 
       def self.attributes
         [

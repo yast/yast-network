@@ -126,10 +126,7 @@ module Yast
         begin
           builder = Y2Network::InterfaceConfigBuilder.for(conn.type, config: conn)
           activator = Y2Network::S390DeviceActivator.for(builder)
-          if activator.configure
-            builder.name = activator.configured_interface
-            log.info "Created interface #{builder.name}"
-          end
+          log.info "Created interface #{activator.configured_interface}" if activator.configure
         rescue RuntimeError => e
           log.error("An error ocurred when trying to activate the s390 device: #{conn.inspect}")
           log.error("Error: #{e.sinpect}")

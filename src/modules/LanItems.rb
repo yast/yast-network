@@ -42,6 +42,7 @@ module Yast
     def main
       textdomain "network"
 
+      Yast.import "Arch"
       Yast.import "NetworkInterfaces"
       Yast.import "NetworkConfig"
       Yast.import "Directory"
@@ -402,7 +403,7 @@ module Yast
       # - creates s390 device eth emulation
       # So, it belongs partly into Import and partly into Write. Note, that
       # the code is currently unable to revert already created emulated device.
-      NetworkAutoYast.instance.activate_s390_devices(settings.fetch("s390-devices", {}))
+      NetworkAutoYast.instance.activate_s390_devices(settings.fetch("s390-devices", {})) if Arch.s390
 
       # settings == {} has special meaning 'Reset' used by AY
       SetModified() if !settings.empty?

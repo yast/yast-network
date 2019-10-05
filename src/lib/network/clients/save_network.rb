@@ -136,12 +136,13 @@ module Yast
       dest_root = String.Quote(Installation.destdir)
 
       if Arch.s390
-        log.info("Copy S390 specific udev rule files (/etc/udev/rules/51*)")
+        # chzdev creates the rules starting with "41-"
+        log.info("Copy S390 specific udev rule files (/etc/udev/rules/41*)")
 
         WFM.Execute(
           path(".local.bash"),
           Builtins.sformat(
-            "/bin/cp -p %1/51-* '%2%1'",
+            "/bin/cp -p %1/41-* '%2%1'",
             "/etc/udev/rules.d",
             dest_root.shellescape
           )
@@ -203,7 +204,7 @@ module Yast
       # TODO: implement support for create udev rules if needed
 
       # The s390 devices activation was part of the rules handling.
-      NetworkAutoYast.instance.activate_s390_devices if Mode.autoinst
+      NetworkAutoYast.instance.activate_s390_devices if Mode.autoinst && Arch.s390
 
       copy_dhcp_info
       copy_udev_rules

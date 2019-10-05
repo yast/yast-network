@@ -31,7 +31,7 @@ module Y2Network
           return unless update_device_id(conn)
           update_layer2(conn)
           update_portno(conn)
-          update_ipa_takeover
+          update_ipa_takeover(conn)
         end
 
       private
