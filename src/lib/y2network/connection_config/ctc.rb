@@ -66,6 +66,16 @@ module Y2Network
           public_send(method) == other.public_send(method)
         end
       end
+
+      # Returns the complete device id which contains the read ad write
+      # channels joined by ':'
+      #
+      # @return [String, nil]
+      def device_id
+        return if read_channel.to_s.empty?
+
+        [read_channel, write_channel].join(":")
+      end
     end
   end
 end
