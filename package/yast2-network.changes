@@ -2,7 +2,7 @@
 Mon Oct  7 06:05:22 UTC 2019 - Knut Anderssen <kanderssen@suse.com>
 
 - AutoYaST: Added back the activation of s390 devices during the
-  first stage.
+  first stage as it was removed when switched to the new data model
 
 -------------------------------------------------------------------
 Fri Oct  4 13:51:42 UTC 2019 - Josef Reidinger <jreidinger@suse.com>
