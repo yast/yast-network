@@ -17,6 +17,7 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 require "yast"
+require "cfa/sysctl"
 require "y2network/config"
 require "y2network/interface"
 require "y2network/routing"
@@ -46,7 +47,9 @@ module Y2Network
 
         routing_tables = find_routing_tables(interfaces_reader.interfaces)
         routing = Routing.new(
-          tables: routing_tables, forward_ipv4: forward_ipv4?, forward_ipv6: forward_ipv6?
+          tables:       routing_tables,
+          forward_ipv4: sysctl_file.forward_ipv4?,
+          forward_ipv6: sysctl_file.forward_ipv6?
         )
 
         result = Config.new(
@@ -102,20 +105,6 @@ module Y2Network
         file.routes
       end
 
-      # Reads IPv4 forwarding status
-      #
-      # return [Boolean] true when IPv4 forwarding is allowed
-      def forward_ipv4?
-        Yast::SCR.Read(Yast::Path.new(SYSCTL_IPV4_PATH)) == "1"
-      end
-
-      # Reads IPv6 forwarding status
-      #
-      # return [Boolean] true when IPv6 forwarding is allowed
-      def forward_ipv6?
-        Yast::SCR.Read(Yast::Path.new(SYSCTL_IPV6_PATH)) == "1"
-      end
-
       # Links routes to interfaces objects
       #
       # {Y2Network::Sysconfig::RoutesFile} knows nothing about the already detected interfaces, so it
@@ -137,6 +126,16 @@ module Y2Network
       # @return [Y2Network::DNS]
       def dns
         Y2Network::Sysconfig::DNSReader.new.config
+      end
+
+      # Returns the Sysctl file class
+      #
+      # @return [CFA::Sysctl]
+      def sysctl_file
+        return @sysctl_file if @sysctl_file
+        @sysctl_file = CFA::Sysctl.new
+        @sysctl_file.load
+        @sysctl_file
       end
     end
   end

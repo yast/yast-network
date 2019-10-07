@@ -35,6 +35,7 @@ describe Y2Network::Sysconfig::ConfigWriter do
   describe "#write" do
     before do
       allow(Yast::Host).to receive(:Write)
+      allow(Yast::SCR).to receive(:Write)
     end
 
     let(:old_config) do
@@ -97,6 +98,12 @@ describe Y2Network::Sysconfig::ConfigWriter do
 
     let(:dns_writer) { instance_double(Y2Network::Sysconfig::DNSWriter, write: nil) }
     let(:interfaces_writer) { instance_double(Y2Network::Sysconfig::InterfacesWriter, write: nil) }
+    let(:sysctl_file) do
+      CFA::Sysctl.new do |f|
+        f.forward_ipv4 = false
+        f.forward_ipv6 = false
+      end
+    end
 
     before do
       allow(Y2Network::Sysconfig::RoutesFile).to receive(:new)
@@ -110,6 +117,9 @@ describe Y2Network::Sysconfig::ConfigWriter do
       allow_any_instance_of(Y2Network::Sysconfig::ConnectionConfigWriter).to receive(:write)
       allow(Y2Network::Sysconfig::InterfacesWriter).to receive(:new)
         .and_return(interfaces_writer)
+      allow(CFA::Sysctl).to receive(:new).and_return(sysctl_file)
+      allow(sysctl_file).to receive(:load)
+      allow(sysctl_file).to receive(:save)
     end
 
     it "saves general routes to main routes file" do
@@ -206,15 +216,9 @@ describe Y2Network::Sysconfig::ConfigWriter do
       let(:forward_ipv4) { true }
 
       it "Writes ip forwarding setup for IPv4" do
-        allow(Yast::SCR).to receive(:Write)
-
-        expect(Yast::SCR)
-          .to receive(:Write)
-          .with(Yast::Path.new(Y2Network::SysconfigPaths::SYSCTL_IPV4_PATH), "1")
-        expect(Yast::SCR)
-          .to receive(:Write)
-          .with(Yast::Path.new(Y2Network::SysconfigPaths::SYSCTL_IPV6_PATH), "0")
-
+        expect(sysctl_file).to receive(:forward_ipv4=).with(true).and_call_original
+        expect(sysctl_file).to receive(:forward_ipv6=).with(false).and_call_original
+        expect(sysctl_file).to receive(:save)
         writer.write(config)
       end
     end
@@ -223,14 +227,9 @@ describe Y2Network::Sysconfig::ConfigWriter do
       let(:forward_ipv6) { true }
 
       it "Writes ip forwarding setup for IPv6" do
-        allow(Yast::SCR).to receive(:Write)
-
-        expect(Yast::SCR)
-          .to receive(:Write)
-          .with(Yast::Path.new(Y2Network::SysconfigPaths::SYSCTL_IPV4_PATH), "0")
-        expect(Yast::SCR)
-          .to receive(:Write)
-          .with(Yast::Path.new(Y2Network::SysconfigPaths::SYSCTL_IPV6_PATH), "1")
+        expect(sysctl_file).to receive(:forward_ipv4=).with(false).and_call_original
+        expect(sysctl_file).to receive(:forward_ipv6=).with(true).and_call_original
+        expect(sysctl_file).to receive(:save)
 
         writer.write(config)
       end
