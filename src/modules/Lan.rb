@@ -30,6 +30,7 @@
 # Representation of the configuration of network cards.
 # Input and output routines.
 require "yast"
+require "network/network_autoyast"
 require "network/confirm_virt_proposal"
 require "ui/text_helpers"
 require "y2firewall/firewalld"
@@ -747,6 +748,7 @@ module Yast
       ay = {
         "dns"                  => profile.dns ? profile.dns.to_hashes : {},
         "net-udev"             => profile.udev_rules ? profile.udev_rules.udev_rules.map(&:to_hashes) : [],
+        "s390-devices"         => profile.s390_devices ? profile.s390_devices.to_hashes["devices"] : [],
         "config"               => NetworkConfig.Export,
         "interfaces"           => profile.interfaces ? profile.interfaces.interfaces.map(&:to_hashes) : [],
         "ipv6"                 => @ipv6,

@@ -139,10 +139,8 @@ module Yast
       Builtins.y2milestone("net-udev: #{net_udev.inspect})")
 
       # Modules
-      s390_devices = []
-      Builtins.foreach(Ops.get_map(settings, "s390-devices", {})) do |_device, mod|
-        s390_devices = Builtins.add(s390_devices, mod)
-      end
+      s390_devices = settings["s390-devices"] || []
+      Builtins.y2milestone("s390-devices: #{s390_devices.inspect})")
 
       modules = []
       Builtins.foreach(Ops.get_map(settings, "hwcfg", {})) do |device, mod|

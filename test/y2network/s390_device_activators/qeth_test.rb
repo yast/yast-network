@@ -48,7 +48,6 @@ describe Y2Network::S390DeviceActivators::Qeth do
     it "tries to activate the group device associated with the defined device id" do
       expect(Yast::Execute).to receive(:on_target!)
         .with("/sbin/chzdev", "qeth", subject.device_id, "-e",
-          "ipa_takeover/enable=0", "layer2=0", "portno=0",
           allowed_exitstatus: 0..255)
         .and_return(0)
       subject.configure

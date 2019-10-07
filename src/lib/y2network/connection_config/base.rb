@@ -18,6 +18,7 @@
 # find current contact information at www.suse.com.
 
 require "y2storage"
+require "y2network/ip_address"
 require "y2network/interface_type"
 require "y2network/boot_protocol"
 require "y2network/startmode"

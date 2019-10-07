@@ -43,7 +43,8 @@ module Y2Network
         :port_number, :port_number=,
         :lladdress, :lladdress=,
         :ipa_takeover, :ipa_takeover=,
-        :attributes, :attributes=
+        :attributes, :attributes=,
+        :device_id
     end
   end
 end

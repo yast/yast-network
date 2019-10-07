@@ -25,6 +25,32 @@ module Y2Network
       # This class is able to build a ConnectionConfig::Ctc object given a
       # Sysconfig::InterfaceFile object.
       class Ctc < Base
+        LIST_CMD = "/sbin/lszdev".freeze
+
+        def update_connection_config(conn)
+          update_protocol(conn) if update_device_id(conn)
+        end
+
+      private
+
+        def device_id_from(conn)
+          return if conn.interface.to_s.empty?
+          cmd = [LIST_CMD, "ctc", "-c", "id", "-n", "--by-interface=#{conn.interface}"]
+
+          id = Yast::Execute.stdout.on_target!(cmd).chomp
+          id.to_s.empty? ? nil : id
+        end
+
+        def update_device_id(conn)
+          id = device_id_from(conn)
+          return unless id
+          conn.read_channel, conn.write_channel = id.split(":")
+        end
+
+        def update_protocol(conn)
+          protocol_file = "/sys/class/net/#{conn.interface}/device/protocol"
+          conn.protocol = ::File.exist?(protocol_file) ? ::File.read(protocol_file).strip.to_i : nil
+        end
       end
     end
   end
