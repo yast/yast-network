@@ -19,6 +19,7 @@
 
 require "yast"
 require "cwm/common_widgets"
+require "yast2/popup"
 
 Yast.import "Label"
 Yast.import "Lan"
@@ -44,9 +45,24 @@ module Y2Network
 
         if connection_config.startmode.name == "nfsroot"
           if !Yast::Popup.YesNoHeadline(
-            Label.WarningMsg,
+            Yast::Label.WarningMsg,
             _("Device you select has STARTMODE=nfsroot. Really delete?")
           )
+            return nil
+          end
+        end
+
+        others = all_modify(config, connection_config)
+        if !others.empty?
+          delete, modify = others.partition { |c| c.type.vlan? }
+          message = format(_("Device you select has been used in other devices.<br>" \
+            "When deleted these devices will be modified<ul>%s</ul><br>" \
+            "and these devices deleted: <ul>%s</ul><br>" \
+            "Really delete?"),
+            modify.map { |m| "<li>#{m.name}</li>" }.join("\n"),
+            delete.map { |m| "<li>#{m.name}</li>" }.join("\n"))
+
+          if Yast2::Popup.show(message, richtext: :yes, buttons: :yes_no, headline: :warning) == :no
             return nil
           end
         end
@@ -54,6 +70,17 @@ module Y2Network
         config.delete_interface(@table.value)
 
         :redraw
+      end
+
+    private
+
+      # @return [Array]
+      def all_modify(config, connection_config)
+        all = config.connections_to_modify(connection_config).to_a
+        vlans = all.select { |c| c.type.vlan? }
+        vlans.each_with_object(all) { |c, a| a.concat(all_modify(config, c)) }
+
+        all
       end
     end
   end

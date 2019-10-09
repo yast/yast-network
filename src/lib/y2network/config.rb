@@ -143,7 +143,10 @@ module Y2Network
       interface = interfaces.by_name(old_name || new_name)
       interface.rename(new_name, mechanism)
       return unless old_name # do not modify configurations if it is just renaming mechanism
-      connections.by_interface(old_name).each { |c| c.interface = new_name }
+      connections.by_interface(old_name).each do |connection|
+        connection.interface = new_name
+        rename_dependencies(old_name, new_name, connection)
+      end
       dns.dhcp_hostname = new_name if dns.dhcp_hostname == old_name
     end
 
@@ -152,7 +155,11 @@ module Y2Network
     #
     # @param name [String] Interface's name
     def delete_interface(name)
+      delete_dependents(name)
+
       connections.reject! { |c| c.interface == name }
+      # do not use no longer existing device name
+      dns.dhcp_hostname = :none if dns.dhcp_hostname == name
       interface = interfaces.by_name(name)
       return if interface.is_a?(PhysicalInterface) && interface.present?
 
@@ -205,6 +212,54 @@ module Y2Network
       !connections.by_interface(iface_name).empty?
     end
 
+    # @note does not work recursively. So for delete it needs to be called for all modified vlans.
+    # @return [ConnectionConfigsCollection] returns collection of interfaces that needs
+    #   to be modified or deleted if `connection_config` is deleted or renamed
+    def connections_to_modify(connection_config)
+      result = []
+      bond_bridge = connection_config.find_master(connections)
+      result << bond_bridge if bond_bridge
+      vlans = connections.to_a.select { |c| c.type.vlan? && c.parent_device == connection_config.name }
+      result.concat(vlans)
+      ConnectionConfigsCollection.new(result)
+    end
+
     alias_method :eql?, :==
+
+  private
+
+    def delete_dependents(name)
+      connection = connections.by_name(name)
+
+      to_modify = connections_to_modify(connection)
+      to_modify.each do |dependency|
+        case dependency.type
+        when InterfaceType::BRIDGE
+          dependency.ports.delete(name)
+        when InterfaceType::BONDING
+          dependency.slaves.delete(name)
+        when InterfaceType::VLAN
+          delete_interface(dependency.interface)
+        else
+          raise "Unexpected type of interface to modify #{dependency.inspect}"
+        end
+      end
+    end
+
+    def rename_dependencies(old_name, new_name, connection)
+      to_modify = connections_to_modify(connection)
+      to_modify.each do |dependency|
+        case dependency.type
+        when InterfaceType::BRIDGE
+          dependency.ports.map! { |e| e == old_name ? new_name : e }
+        when InterfaceType::BONDING
+          dependency.slaves.map! { |e| e == old_name ? new_name : e }
+        when InterfaceType::VLAN
+          dependency.parent_device = new_name
+        else
+          raise "Unexpected type of interface to modify #{dependency.inspect}"
+        end
+      end
+    end
   end
 end
