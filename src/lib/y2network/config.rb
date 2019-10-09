@@ -152,6 +152,8 @@ module Y2Network
     #
     # @param name [String] Interface's name
     def delete_interface(name)
+      delete_dependents(name)
+
       connections.reject! { |c| c.interface == name }
       interface = interfaces.by_name(name)
       return if interface.is_a?(PhysicalInterface) && interface.present?
@@ -205,6 +207,38 @@ module Y2Network
       !connections.by_interface(iface_name).empty?
     end
 
+    # @note does not work recursivelly. So for delete it needs to be called for all modified vlans.
+    # @return [ConnectionConfigsCollection] returns collection of interfaces that needs
+    #   to be modified or deleted if `connection_config` is deleted or renamed
+    def connections_to_modify(connection_config)
+      result = []
+      bond_bridge = connection_config.find_master(connections)
+      result << bond_bridge if bond_bridge
+      vlans = connections.to_a.select { |c| c.type.vlan? && c.parent_device == connection_config.name }
+      result.concat(vlans)
+      ConnectionConfigsCollection.new(result)
+    end
+
     alias_method :eql?, :==
+
+  private
+
+    def delete_dependents(name)
+      connection = connections.by_name(name)
+
+      to_modify = connections_to_modify(connection)
+      to_modify.each do |connection|
+        case connection.type
+        when InterfaceType::BRIDGE
+          connection.ports.delete(name)
+        when InterfaceType::BONDING
+          connection.slaves.delete(name)
+        when InterfaceType::VLAN
+          delete_interface(connection.interface)
+        else
+          raise "Unexpected type of interface to modify #{connection.inspect}"
+        end
+      end
+    end
   end
 end
