@@ -45,7 +45,7 @@ module Y2Network
 
         if connection_config.startmode.name == "nfsroot"
           if !Yast::Popup.YesNoHeadline(
-            Label.WarningMsg,
+            Yast::Label.WarningMsg,
             _("Device you select has STARTMODE=nfsroot. Really delete?")
           )
             return nil
