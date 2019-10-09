@@ -60,8 +60,7 @@ module Y2Network
             "and these devices deleted: <ul>%s</ul><br>" \
             "Really delete?"),
             modify.map { |m| "<li>#{m.name}</li>" }.join("\n"),
-            delete.map { |m| "<li>#{m.name}</li>" }.join("\n")
-          )
+            delete.map { |m| "<li>#{m.name}</li>" }.join("\n"))
 
           if Yast2::Popup.show(message, richtext: :yes, buttons: :yes_no, headline: :warning) == :no
             return nil

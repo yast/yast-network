@@ -52,6 +52,7 @@ describe Y2Network::Config do
   let(:eth0_conn) do
     Y2Network::ConnectionConfig::Ethernet.new.tap do |conn|
       conn.interface = "eth0"
+      conn.name = "eth0"
     end
   end
   let(:connections) { Y2Network::ConnectionConfigsCollection.new([eth0_conn]) }
@@ -290,8 +291,9 @@ describe Y2Network::Config do
   describe "#delete_interface" do
     let(:br0) { Y2Network::VirtualInterface.new("br0") }
     let(:br0_conn) do
-      Y2Network::ConnectionConfig::Ethernet.new.tap do |conn|
+      Y2Network::ConnectionConfig::Bridge.new.tap do |conn|
         conn.interface = "br0"
+        conn.name = "br0"
       end
     end
     let(:interfaces) { Y2Network::InterfacesCollection.new([eth0, br0]) }
@@ -306,6 +308,61 @@ describe Y2Network::Config do
       it "removes the interface" do
         expect { config.delete_interface(br0.name) }.to change { config.interfaces.to_a }
           .from([eth0, br0]).to([eth0])
+      end
+    end
+
+    context "when interface is used in bridge" do
+      let(:br0) { Y2Network::VirtualInterface.new("br0") }
+      let(:br0_conn) do
+        Y2Network::ConnectionConfig::Bridge.new.tap do |conn|
+          conn.interface = "br0"
+          conn.name = "br0"
+          conn.ports = ["eth0"]
+        end
+      end
+      let(:interfaces) { Y2Network::InterfacesCollection.new([eth0, br0]) }
+      let(:connections) { Y2Network::ConnectionConfigsCollection.new([eth0_conn, br0_conn]) }
+
+      it "removes interface from its ports" do
+        expect { config.delete_interface(eth0.name) }.to change { br0_conn.ports }
+          .from(["eth0"]).to([])
+      end
+    end
+
+    context "when interface is used in bonding" do
+      let(:bond0) { Y2Network::VirtualInterface.new("bond0") }
+      let(:bond0_conn) do
+        Y2Network::ConnectionConfig::Bonding.new.tap do |conn|
+          conn.interface = "bond0"
+          conn.name = "bond0"
+          conn.slaves = ["eth0"]
+        end
+      end
+      let(:interfaces) { Y2Network::InterfacesCollection.new([eth0, bond0]) }
+      let(:connections) { Y2Network::ConnectionConfigsCollection.new([eth0_conn, bond0_conn]) }
+
+      it "removes interface from its ports" do
+        expect { config.delete_interface(eth0.name) }.to change { bond0_conn.slaves }
+          .from(["eth0"]).to([])
+      end
+    end
+
+    context "when interface is used in vlan" do
+      let(:vlan0) { Y2Network::VirtualInterface.new("vlan0") }
+      let(:vlan0_conn) do
+        Y2Network::ConnectionConfig::Vlan.new.tap do |conn|
+          conn.interface = "vlan0"
+          conn.name = "vlan0"
+          conn.parent_device = "eth0"
+        end
+      end
+      let(:interfaces) { Y2Network::InterfacesCollection.new([eth0, vlan0]) }
+      let(:connections) { Y2Network::ConnectionConfigsCollection.new([eth0_conn, vlan0_conn]) }
+
+      it "removes that vlan" do
+        expect(config).to receive(:delete_interface).with("vlan0")
+        allow(config).to receive(:delete_interface).and_call_original # allow initial call to delete eth
+        config.delete_interface(eth0.name)
       end
     end
 

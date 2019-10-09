@@ -230,16 +230,16 @@ module Y2Network
       connection = connections.by_name(name)
 
       to_modify = connections_to_modify(connection)
-      to_modify.each do |connection|
-        case connection.type
+      to_modify.each do |dependency|
+        case dependency.type
         when InterfaceType::BRIDGE
-          connection.ports.delete(name)
+          dependency.ports.delete(name)
         when InterfaceType::BONDING
-          connection.slaves.delete(name)
+          dependency.slaves.delete(name)
         when InterfaceType::VLAN
-          delete_interface(connection.interface)
+          delete_interface(dependency.interface)
         else
-          raise "Unexpected type of interface to modify #{connection.inspect}"
+          raise "Unexpected type of interface to modify #{dependency.inspect}"
         end
       end
     end
@@ -255,7 +255,7 @@ module Y2Network
         when InterfaceType::VLAN
           dependency.parent_device = new_name
         else
-          raise "Unexpected type of interface to modify #{connection.inspect}"
+          raise "Unexpected type of interface to modify #{dependency.inspect}"
         end
       end
     end
