@@ -158,6 +158,8 @@ module Y2Network
       delete_dependents(name)
 
       connections.reject! { |c| c.interface == name }
+      # do not use no longer existing device name
+      dns.dhcp_hostname = :none if dns.dhcp_hostname == name
       interface = interfaces.by_name(name)
       return if interface.is_a?(PhysicalInterface) && interface.present?
 
