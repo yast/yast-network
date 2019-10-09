@@ -212,7 +212,7 @@ module Y2Network
       !connections.by_interface(iface_name).empty?
     end
 
-    # @note does not work recursivelly. So for delete it needs to be called for all modified vlans.
+    # @note does not work recursively. So for delete it needs to be called for all modified vlans.
     # @return [ConnectionConfigsCollection] returns collection of interfaces that needs
     #   to be modified or deleted if `connection_config` is deleted or renamed
     def connections_to_modify(connection_config)
