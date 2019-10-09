@@ -232,6 +232,60 @@ describe Y2Network::Config do
         config.rename_interface("eth0", "eth1", :mac)
       end
     end
+
+    context "when interface is used in bridge" do
+      let(:br0) { Y2Network::VirtualInterface.new("br0") }
+      let(:br0_conn) do
+        Y2Network::ConnectionConfig::Bridge.new.tap do |conn|
+          conn.interface = "br0"
+          conn.name = "br0"
+          conn.ports = ["eth0"]
+        end
+      end
+      let(:interfaces) { Y2Network::InterfacesCollection.new([eth0, br0]) }
+      let(:connections) { Y2Network::ConnectionConfigsCollection.new([eth0_conn, br0_conn]) }
+
+      it "updates interface name in its ports" do
+        expect { config.rename_interface("eth0", "eth1", :mac) }.to change { br0_conn.ports }
+          .from(["eth0"]).to(["eth1"])
+      end
+    end
+
+    context "when interface is used in bonding" do
+      let(:bond0) { Y2Network::VirtualInterface.new("bond0") }
+      let(:bond0_conn) do
+        Y2Network::ConnectionConfig::Bonding.new.tap do |conn|
+          conn.interface = "bond0"
+          conn.name = "bond0"
+          conn.slaves = ["eth0"]
+        end
+      end
+      let(:interfaces) { Y2Network::InterfacesCollection.new([eth0, bond0]) }
+      let(:connections) { Y2Network::ConnectionConfigsCollection.new([eth0_conn, bond0_conn]) }
+
+      it "updates interface name in its slaves" do
+        expect { config.rename_interface("eth0", "eth1", :mac) }.to change { bond0_conn.slaves }
+          .from(["eth0"]).to(["eth1"])
+      end
+    end
+
+    context "when interface is used in vlan" do
+      let(:vlan0) { Y2Network::VirtualInterface.new("vlan0") }
+      let(:vlan0_conn) do
+        Y2Network::ConnectionConfig::Vlan.new.tap do |conn|
+          conn.interface = "vlan0"
+          conn.name = "vlan0"
+          conn.parent_device = "eth0"
+        end
+      end
+      let(:interfaces) { Y2Network::InterfacesCollection.new([eth0, vlan0]) }
+      let(:connections) { Y2Network::ConnectionConfigsCollection.new([eth0_conn, vlan0_conn]) }
+
+      it "updates interface name in its parent device" do
+        expect { config.rename_interface("eth0", "eth1", :mac) }.to change { vlan0_conn.parent_device }
+          .from("eth0").to("eth1")
+      end
+    end
   end
 
   describe "#add_or_update_connection_config" do
@@ -341,7 +395,7 @@ describe Y2Network::Config do
       let(:interfaces) { Y2Network::InterfacesCollection.new([eth0, bond0]) }
       let(:connections) { Y2Network::ConnectionConfigsCollection.new([eth0_conn, bond0_conn]) }
 
-      it "removes interface from its ports" do
+      it "removes interface from its slaves" do
         expect { config.delete_interface(eth0.name) }.to change { bond0_conn.slaves }
           .from(["eth0"]).to([])
       end
@@ -363,6 +417,17 @@ describe Y2Network::Config do
         expect(config).to receive(:delete_interface).with("vlan0")
         allow(config).to receive(:delete_interface).and_call_original # allow initial call to delete eth
         config.delete_interface(eth0.name)
+      end
+    end
+
+    context "when interface is used in dns" do
+      before do
+        config.dns.dhcp_hostname = eth0.name
+      end
+
+      it "sets dns dhcp hostname to :none" do
+        expect { config.delete_interface(eth0.name) }.to change { config.dns.dhcp_hostname }
+          .from("eth0").to(:none)
       end
     end
 
