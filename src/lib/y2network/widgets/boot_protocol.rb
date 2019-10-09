@@ -261,8 +261,7 @@ module Y2Network
             return false
           end
         # There'll be no 127.0.0.2 -> remind user to define some hostname
-        elsif !Yast::Host.NeedDummyIP &&
-            !Yast::Popup.YesNo(
+        elsif !Yast::Popup.YesNo(
               _(
                 "No hostname has been specified. We recommend to associate \n" \
                   "a hostname with a static IP, otherwise the machine name will \n" \
