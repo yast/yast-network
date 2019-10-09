@@ -143,7 +143,10 @@ module Y2Network
       interface = interfaces.by_name(old_name || new_name)
       interface.rename(new_name, mechanism)
       return unless old_name # do not modify configurations if it is just renaming mechanism
-      connections.by_interface(old_name).each { |c| c.interface = new_name }
+      connections.by_interface(old_name).each do |connection|
+        connection.interface = new_name
+        rename_dependencies(old_name, new_name, connection)
+      end
       dns.dhcp_hostname = new_name if dns.dhcp_hostname == old_name
     end
 
@@ -235,6 +238,22 @@ module Y2Network
           connection.slaves.delete(name)
         when InterfaceType::VLAN
           delete_interface(connection.interface)
+        else
+          raise "Unexpected type of interface to modify #{connection.inspect}"
+        end
+      end
+    end
+
+    def rename_dependencies(old_name, new_name, connection)
+      to_modify = connections_to_modify(connection)
+      to_modify.each do |dependency|
+        case dependency.type
+        when InterfaceType::BRIDGE
+          dependency.ports.map! { |e| e == old_name ? new_name : e }
+        when InterfaceType::BONDING
+          dependency.slaves.map! { |e| e == old_name ? new_name : e }
+        when InterfaceType::VLAN
+          dependency.parent_device = new_name
         else
           raise "Unexpected type of interface to modify #{connection.inspect}"
         end
