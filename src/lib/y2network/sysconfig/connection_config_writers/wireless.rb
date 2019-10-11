@@ -25,8 +25,6 @@ module Y2Network
       # This class is responsible for writing the information from a ConnectionConfig::Wireless
       # object to the underlying system.
       class Wireless < Base
-      private
-
         # @see Y2Network::ConnectionConfigWriters::Base#update_file
         def update_file(conn)
           file.wireless_ap = conn.ap
@@ -38,6 +36,8 @@ module Y2Network
           file.wireless_rate = conn.bitrate
           write_auth_settings(conn) if conn.auth_mode
         end
+
+      private
 
         # Writes authentication settings
         #

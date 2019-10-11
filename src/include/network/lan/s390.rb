@@ -70,7 +70,7 @@ module Yast
 
       result = {}
 
-      qeth_layer2 = s390_ReadQethAttribute(devname, "layer2") == "1" ? "yes" : "no"
+      qeth_layer2 = (s390_ReadQethAttribute(devname, "layer2") == "1") ? "yes" : "no"
       result = Builtins.add(result, "QETH_LAYER2", qeth_layer2)
 
       qeth_portno = s390_ReadQethAttribute(devname, "portno")

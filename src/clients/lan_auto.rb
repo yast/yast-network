@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
@@ -65,9 +63,7 @@ module Yast
         Yast::Lan.clear_configs
         @ret = {}
       elsif @func == "Change"
-        unless Yast::Lan.yast_config
-          Yast::Lan.add_config(:yast, Y2Network::Config.from(:defaults))
-        end
+        Yast::Lan.add_config(:yast, Y2Network::Config.from(:defaults)) unless Yast::Lan.yast_config
         @ret = LanAutoSequence("")
       elsif @func == "Import"
         @new = Lan.FromAY(@param)
@@ -181,36 +177,24 @@ module Yast
 
       ret = {}
       Ops.set(ret, "managed", Ops.get_boolean(settings, "managed", false))
-      if Builtins.haskey(settings, "ipv6")
-        Ops.set(ret, "ipv6", Ops.get_boolean(settings, "ipv6", true))
-      end
+      Ops.set(ret, "ipv6", Ops.get_boolean(settings, "ipv6", true)) if Builtins.haskey(settings, "ipv6")
       Ops.set(
         ret,
         "keep_install_network",
         Ops.get_boolean(settings, "keep_install_network", true)
       )
-      if Ops.greater_than(Builtins.size(modules), 0)
-        Ops.set(ret, "modules", modules)
-      end
+      Ops.set(ret, "modules", modules) if Ops.greater_than(Builtins.size(modules), 0)
       Ops.set(ret, "dns", dns) if Ops.greater_than(Builtins.size(dns), 0)
-      if Ops.greater_than(Builtins.size(dhcpopts), 0)
-        Ops.set(ret, "dhcp_options", dhcpopts)
-      end
+      Ops.set(ret, "dhcp_options", dhcpopts) if Ops.greater_than(Builtins.size(dhcpopts), 0)
       if Ops.greater_than(
         Builtins.size(Ops.get_map(settings, "routing", {})),
         0
       )
         Ops.set(ret, "routing", Ops.get_map(settings, "routing", {}))
       end
-      if Ops.greater_than(Builtins.size(interfaces), 0)
-        Ops.set(ret, "interfaces", interfaces)
-      end
-      if Ops.greater_than(Builtins.size(s390_devices), 0)
-        Ops.set(ret, "s390-devices", s390_devices)
-      end
-      if Ops.greater_than(Builtins.size(net_udev), 0)
-        Ops.set(ret, "net-udev", net_udev)
-      end
+      Ops.set(ret, "interfaces", interfaces) if Ops.greater_than(Builtins.size(interfaces), 0)
+      Ops.set(ret, "s390-devices", s390_devices) if Ops.greater_than(Builtins.size(s390_devices), 0)
+      Ops.set(ret, "net-udev", net_udev) if Ops.greater_than(Builtins.size(net_udev), 0)
       deep_copy(ret)
     end
   end

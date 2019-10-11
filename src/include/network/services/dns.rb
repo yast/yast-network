@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
@@ -21,10 +19,10 @@
 # you may find current contact information at www.novell.com
 #
 # **************************************************************************
-# File:	include/network/lan/dialogs.ycp
-# Package:	Network configuration
-# Summary:	Summary, overview and IO dialogs for network cards config
-# Authors:	Michal Svec <msvec@suse.cz>
+# File:  include/network/lan/dialogs.ycp
+# Package:  Network configuration
+# Summary:  Summary, overview and IO dialogs for network cards config
+# Authors:  Michal Svec <msvec@suse.cz>
 #
 module Yast
   module NetworkServicesDnsInclude
@@ -248,9 +246,7 @@ module Yast
       searchstring = Builtins.mergestring(DNS.searchlist, "\n")
       # #49094: populate the search list
       # #437759: discard 'site', nobody really wants that pre-set
-      if searchstring == "" && Ops.get_string(settings, "DOMAIN", "") != "site"
-        searchstring = Ops.get_string(settings, "DOMAIN", "")
-      end
+      searchstring = Ops.get_string(settings, "DOMAIN", "") if searchstring == "" && Ops.get_string(settings, "DOMAIN", "") != "site"
       Ops.set(settings, "SEARCHLIST_S", searchstring)
       Ops.set(settings, "NAMESERVER_1", DNS.nameservers[0].to_s)
       Ops.set(settings, "NAMESERVER_2", DNS.nameservers[1].to_s)
@@ -411,6 +407,7 @@ module Yast
     # Store handler for DHCP_HOSTNAME
     def StoreDhcpHostname(_key, _event)
       return if !UI.QueryWidget(Id("DHCP_HOSTNAME"), :Enabled)
+
       DNS.dhcp_hostname = UI.QueryWidget(Id("DHCP_HOSTNAME"), :Value)
 
       nil
@@ -442,6 +439,7 @@ module Yast
       value = Convert.to_string(UI.QueryWidget(Id(key), :Value))
 
       return Hostname.Check(value) if !dhn || value != ""
+
       true
     end
 
@@ -497,9 +495,7 @@ module Yast
       )
       if UI.QueryWidget(Id("MODIFY_RESOLV"), :Value) == :custom
         UI.ChangeWidget(Id("PLAIN_POLICY"), :Enabled, true)
-        if UI.QueryWidget(Id("PLAIN_POLICY"), :Value) == ""
-          UI.ChangeWidget(Id("PLAIN_POLICY"), :Value, DNS.resolv_conf_policy)
-        end
+        UI.ChangeWidget(Id("PLAIN_POLICY"), :Value, DNS.resolv_conf_policy) if UI.QueryWidget(Id("PLAIN_POLICY"), :Value) == ""
       else
         UI.ChangeWidget(Id("PLAIN_POLICY"), :Value, "")
         UI.ChangeWidget(Id("PLAIN_POLICY"), :Enabled, false)

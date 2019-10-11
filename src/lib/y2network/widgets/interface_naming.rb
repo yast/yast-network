@@ -41,8 +41,10 @@ module Y2Network
 
       def udev_based_rename?
         return false unless @builder.interface
+
         hardware = @builder.interface.hardware
         return false unless hardware
+
         !!(hardware.mac || hardware.busid)
       end
 

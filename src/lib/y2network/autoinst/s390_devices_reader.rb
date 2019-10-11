@@ -61,6 +61,7 @@ module Y2Network
       def create_config(device_section)
         type = InterfaceType.from_short_name(device_section.type)
         return unless type
+
         ConnectionConfig.const_get(type.class_name).new
       end
 

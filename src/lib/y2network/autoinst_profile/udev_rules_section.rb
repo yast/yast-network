@@ -92,8 +92,8 @@ module Y2Network
       # @param interfaces [Y2Network::InterfacesCollection] interfaces to detect udev rules
       def udev_rules_section(interfaces)
         result = interfaces
-                 .map { |i| Y2Network::AutoinstProfile::UdevRuleSection.new_from_network(i) }
-                 .compact
+          .map { |i| Y2Network::AutoinstProfile::UdevRuleSection.new_from_network(i) }
+          .compact
 
         log.info "udev rules for interfaces: #{interfaces.inspect} => #{result.inspect}"
 

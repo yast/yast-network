@@ -28,8 +28,8 @@ module Y2Network
       # @return [Array<BootProtocol>]
       def all
         @all ||= BootProtocol.constants
-                             .map { |c| BootProtocol.const_get(c) }
-                             .select { |c| c.is_a?(BootProtocol) }
+          .map { |c| BootProtocol.const_get(c) }
+          .select { |c| c.is_a?(BootProtocol) }
       end
 
       # Returns the boot protocol with a given name

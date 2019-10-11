@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
@@ -21,10 +19,10 @@
 # you may find current contact information at www.novell.com
 #
 # **************************************************************************
-# File:	include/network/routines.ycp
-# Package:	Network configuration
-# Summary:	Miscellaneous routines
-# Authors:	Michal Svec <msvec@suse.cz>
+# File:  include/network/routines.ycp
+# Package:  Network configuration
+# Summary:  Miscellaneous routines
+# Authors:  Michal Svec <msvec@suse.cz>
 #
 
 require "shellwords"
@@ -154,7 +152,7 @@ module Yast
         end
       end
 
-      ret == true ? :next : :abort
+      (ret == true) ? :next : :abort
     end
 
     # Checks if given value is emtpy.
@@ -191,6 +189,7 @@ module Yast
 
     def sysfs_card_type(sysfs_id, _hardware)
       return "none" if sysfs_id == ""
+
       filename = Ops.add(Ops.add("/sys", sysfs_id), "/card_type")
       card_type = Convert.to_string(SCR.Read(path(".target.string"), filename))
       String.FirstChunk(card_type, "\n")
@@ -312,9 +311,9 @@ module Yast
           # Check for the specific known boards with bad subclass.
           #
           # Concerned devices are:
-          # 15b3:1003	MT27500 Family [ConnectX-3]
-          # 15b3:1004	MT27500/MT27520 Family [ConnectX-3/ConnectX-3 Pro Virtual Function]
-          # 15b3:1007	MT27520 Family [ConnectX-3 Pro]
+          # 15b3:1003  MT27500 Family [ConnectX-3]
+          # 15b3:1004  MT27500/MT27520 Family [ConnectX-3/ConnectX-3 Pro Virtual Function]
+          # 15b3:1007  MT27520 Family [ConnectX-3 Pro]
           if hwdevice["vendor_id"] == 71_091
             return "ib" if [69_635, 69_636, 69_639].include?(hwdevice["device_id"])
           end
@@ -528,9 +527,7 @@ module Yast
             module0 = Ops.get_list(d, ["modules", 0], []) # [module, options]
             brk = broken_modules.include?(module0[0])
 
-            if brk
-              Builtins.y2milestone("In BrokenModules, skipping: %1", module0)
-            end
+            Builtins.y2milestone("In BrokenModules, skipping: %1", module0) if brk
 
             !brk
           end
@@ -569,9 +566,7 @@ module Yast
 
           one["bus"] = bus
           one["busid"] = card["sysfs_bus_id"] || ""
-          if one["busid"].start_with?("virtio")
-            one["parent_busid"] = one["sysfs_id"].split("/")[-2]
-          end
+          one["parent_busid"] = one["sysfs_id"].split("/")[-2] if one["busid"].start_with?("virtio")
           one["mac"] = Ops.get_string(resource, ["hwaddr", 0, "addr"], "")
           one["permanent_mac"] = Ops.get_string(resource, ["phwaddr", 0, "addr"], "")
           # is the cable plugged in? nil = don't know
@@ -629,9 +624,7 @@ module Yast
     # @param command [String] Shell command to run
     # @return Hash in form $[ "exit": <command-exit-status>, "output": [ <1st line>, <2nd line>, ... ] ]
     def RunAndRead(command)
-      if !command.lstrip.start_with?("/")
-        log.warn("Command does not have an absolute path: #{command}")
-      end
+      log.warn("Command does not have an absolute path: #{command}") if !command.lstrip.start_with?("/")
       ret = { "exit" => false, "output" => [] }
       result = Convert.to_map(SCR.Execute(path(".target.bash_output"), command))
       output = Ops.get_string(result, "stdout", "")
@@ -666,9 +659,7 @@ module Yast
     # @param command [String] Shell command to run
     # @return whether command execution succeeds
     def Run(command)
-      if !command.lstrip.start_with?("/")
-        log.warn("Command does not have an absolute path: #{command}")
-      end
+      log.warn("Command does not have an absolute path: #{command}") if !command.lstrip.start_with?("/")
       ret = SCR.Execute(path(".target.bash"), command).zero?
 
       Builtins.y2error("Run <%1>: Command execution failed.", command) if !ret

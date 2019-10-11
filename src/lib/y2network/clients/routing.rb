@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
@@ -21,10 +19,10 @@
 # you may find current contact information at www.novell.com
 #
 # **************************************************************************
-# File:	clients/routing.ycp
-# Package:	Network configuration
-# Summary:	Routing client
-# Authors:	Michal Svec <msvec@suse.cz>
+# File:  clients/routing.ycp
+# Package:  Network configuration
+# Summary:  Routing client
+# Authors:  Michal Svec <msvec@suse.cz>
 #
 #
 # Main file for routing configuration.
@@ -103,7 +101,7 @@ module Y2Network
         table_items =
           routes.map do |route|
             route_hash = serializer.to_hash(route)
-            %w(destination gateway netmask device extrapara).map { |attr| route_hash[attr] }
+            %w[destination gateway netmask device extrapara].map { |attr| route_hash[attr] }
           end
 
         headline = String.UnderlinedHeader(_("Routing Table"), 0)
@@ -389,7 +387,7 @@ module Y2Network
       #
       # @return [Array<Y2Network::Route>]
       def current_routes
-        return [] unless yast_config && yast_config.routing
+        return [] unless yast_config&.routing
 
         yast_config.routing.routes
       end

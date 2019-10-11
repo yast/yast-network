@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
@@ -21,10 +19,10 @@
 # you may find current contact information at www.novell.com
 #
 # **************************************************************************
-# File:	include/network/lan/dialogs.ycp
-# Package:	Network configuration
-# Summary:	Summary, overview and IO dialogs for network cards config
-# Authors:	Michal Svec <msvec@suse.cz>
+# File:  include/network/lan/dialogs.ycp
+# Package:  Network configuration
+# Summary:  Summary, overview and IO dialogs for network cards config
+# Authors:  Michal Svec <msvec@suse.cz>
 #
 
 require "y2network/interface_config_builder"
@@ -71,6 +69,7 @@ module Yast
 
     def wd
       return @wd if @wd
+
       @wd = {
         "MANAGED"                       => managed_widget,
         "IPV6"                          => ipv6_widget,

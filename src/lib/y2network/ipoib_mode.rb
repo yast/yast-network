@@ -30,8 +30,8 @@ module Y2Network
       # @return [Array<IpoibMode>]
       def all
         @all ||= IpoibMode.constants
-                          .map { |c| IpoibMode.const_get(c) }
-                          .select { |c| c.is_a?(IpoibMode) }
+          .map { |c| IpoibMode.const_get(c) }
+          .select { |c| c.is_a?(IpoibMode) }
       end
 
       # Returns the transport mode with a given name

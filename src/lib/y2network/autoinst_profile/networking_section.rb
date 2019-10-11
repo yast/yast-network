@@ -68,6 +68,7 @@ module Y2Network
       def self.new_from_network(config)
         result = new
         return result unless config
+
         result.routing = RoutingSection.new_from_network(config.routing) if config.routing
         result.dns = DNSSection.new_from_network(config.dns) if config.dns
         result.interfaces = InterfacesSection.new_from_network(config.connections)

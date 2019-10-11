@@ -53,11 +53,11 @@ module Y2Network
         ).to_s.split
 
         servers.each_with_object([]) do |str, ips|
-          begin
-            ips << IPAddr.new(str)
-          rescue IPAddr::InvalidAddressError
-            log.warn "Invalid IP address: #{str}"
-          end
+
+          ips << IPAddr.new(str)
+        rescue IPAddr::InvalidAddressError
+          log.warn "Invalid IP address: #{str}"
+
         end
       end
 
@@ -68,7 +68,7 @@ module Y2Network
         value = Yast::SCR.Read(
           Yast::Path.new(".sysconfig.network.config.NETCONFIG_DNS_POLICY")
         )
-        value.nil? || value.empty? ? "default" : value
+        (value.nil? || value.empty?) ? "default" : value
       end
 
       # Returns the hostname
@@ -94,6 +94,7 @@ module Y2Network
       def dhcp_hostname
         value = Yast::SCR.Read(Yast::Path.new(".sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME"))
         return :any if value == "yes"
+
         files = InterfaceFile.all
         file = files.find do |f|
           f.load

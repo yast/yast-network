@@ -30,6 +30,7 @@ module Y2Network
       # @return [S390DeviceActivation, nil]
       def self.for(builder)
         return nil unless builder.type
+
         case builder.type.short_name
         # Both interfaces uses the qeth driver and uses the same configuration
         # for activating the group device.

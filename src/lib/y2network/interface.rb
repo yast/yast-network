@@ -81,6 +81,7 @@ module Y2Network
     # @return [Boolean]
     def ==(other)
       return false unless other.is_a?(Interface)
+
       name == other.name
     end
 

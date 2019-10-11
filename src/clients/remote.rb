@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ------------------------------------------------------------------------------
 # Copyright (c) 2017 SUSE LLC
 #
@@ -166,7 +164,7 @@ module Yast
         "Setting AllowRemoteAdministration to '%1'",
         allow_ra
       )
-      allow_ra == "yes" ? remote.enable! : remote.disable!
+      (allow_ra == "yes") ? remote.enable! : remote.disable!
 
       remote.write
     end

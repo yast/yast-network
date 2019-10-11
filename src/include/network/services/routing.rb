@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
@@ -21,10 +19,10 @@
 # you may find current contact information at www.novell.com
 #
 # **************************************************************************
-# File:	include/network/services/routing.ycp
-# Package:	Network configuration
-# Summary:	Routing configuration dialogs
-# Authors:	Michal Svec <msvec@suse.cz>
+# File:  include/network/services/routing.ycp
+# Package:  Network configuration
+# Summary:  Routing configuration dialogs
+# Authors:  Michal Svec <msvec@suse.cz>
 #
 #
 # Routing configuration dialogs

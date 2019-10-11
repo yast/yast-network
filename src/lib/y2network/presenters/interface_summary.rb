@@ -99,7 +99,7 @@ module Y2Network
         if connection
           rich << Yast::HTML.List(bullets)
         else
-          if hardware && hardware.name && !hardware.name.empty?
+          if hardware&.name && !hardware.name.empty?
             dev_name = _("Device Name: %s") % hardware.name
             rich << Yast::HTML.Bold(dev_name) << "<br>"
           end

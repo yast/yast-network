@@ -59,7 +59,7 @@ module Y2Network
 
       def value
         ret = super
-        ret == "" ? :auto : ret
+        (ret == "") ? :auto : ret
       end
     end
   end

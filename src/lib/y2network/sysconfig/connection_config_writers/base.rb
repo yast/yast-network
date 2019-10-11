@@ -45,9 +45,7 @@ module Y2Network
           file.lladdr = conn.lladdress
           file.startmode = conn.startmode.to_s
           file.ifplugd_priority = conn.startmode.priority if conn.startmode.name == "ifplugd"
-          if conn.ethtool_options && !conn.ethtool_options.empty?
-            file.ethtool_options = conn.ethtool_options
-          end
+          file.ethtool_options = conn.ethtool_options if conn.ethtool_options && !conn.ethtool_options.empty?
           file.zone = conn.firewall_zone
           add_ips(conn)
           update_file(conn)
@@ -61,8 +59,7 @@ module Y2Network
         # @note This method should be redefined by derived classes.
         #
         # @param _conn [Y2Network::ConnectionConfig::Base]
-        def update_file(_conn)
-        end
+        def update_file(_conn); end
 
         # Adds IP addresses
         #
@@ -89,6 +86,7 @@ module Y2Network
         # @param conn [Y2Network::ConnectionConfig::Base] Connection to take settings from
         def add_hostname(conn)
           return unless conn.hostname && conn.ip
+
           Yast::Host.Update("", conn.hostname, conn.ip.address.address.to_s)
         end
       end

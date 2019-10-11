@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
@@ -21,10 +19,10 @@
 # you may find current contact information at www.novell.com
 #
 # **************************************************************************
-# File:	include/network/lan/hardware.ycp
-# Package:	Network configuration
-# Summary:	Hardware dialogs
-# Authors:	Michal Svec <msvec@suse.cz>
+# File:  include/network/lan/hardware.ycp
+# Package:  Network configuration
+# Summary:  Hardware dialogs
+# Authors:  Michal Svec <msvec@suse.cz>
 #
 
 require "y2network/dialogs/s390_device_activation"

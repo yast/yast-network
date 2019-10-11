@@ -61,7 +61,7 @@ module Y2Network
       # @return [Integer] (0, 1, 2)
       attr_accessor :ap_scanmode
       # @return [String]
-      attr_accessor :wpa_password # TODO unify psk and password and write correct one depending on mode
+      attr_accessor :wpa_password # TODO: unify psk and password and write correct one depending on mode
       # @return [String]
       attr_accessor :wpa_identity
       # @return [String] initial identity used for creating tunnel

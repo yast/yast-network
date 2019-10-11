@@ -42,9 +42,7 @@ module Y2Network
     #
     # @return [String]
     def hostname
-      if (Yast::Mode.installation || Yast::Mode.autoinst) && Yast::FileUtils.Exists("/etc/install.inf")
-        fqdn = hostname_from_install_inf
-      end
+      fqdn = hostname_from_install_inf if (Yast::Mode.installation || Yast::Mode.autoinst) && Yast::FileUtils.Exists("/etc/install.inf")
 
       fqdn || hostname_from_system || random_hostname
     end

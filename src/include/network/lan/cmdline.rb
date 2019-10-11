@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
@@ -21,10 +19,10 @@
 # you may find current contact information at www.novell.com
 #
 # **************************************************************************
-# File:	lan/cmdline.ycp
-# Package:	Network configuration
-# Summary:	Network cards cmdline handlers
-# Authors:	Michal Svec <msvec@suse.cz>
+# File:  lan/cmdline.ycp
+# Package:  Network configuration
+# Summary:  Network cards cmdline handlers
+# Authors:  Michal Svec <msvec@suse.cz>
 #
 
 require "shellwords"
@@ -219,6 +217,7 @@ module Yast
       if builder.boot_protocol.name == "static"
         ip_address = options.fetch("ip", "")
         raise InvalidOption, _("For static configuration, the \"ip\" option is needed.") if ip_address.empty?
+
         builder.ip_address = ip_address
         builder.subnet_prefix = options.fetch("prefix", options.fetch("netmask", "255.255.255.0"))
       else

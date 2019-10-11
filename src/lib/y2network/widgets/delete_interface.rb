@@ -62,9 +62,7 @@ module Y2Network
             modify.map { |m| "<li>#{m.name}</li>" }.join("\n"),
             delete.map { |m| "<li>#{m.name}</li>" }.join("\n"))
 
-          if Yast2::Popup.show(message, richtext: :yes, buttons: :yes_no, headline: :warning) == :no
-            return nil
-          end
+          return nil if Yast2::Popup.show(message, richtext: :yes, buttons: :yes_no, headline: :warning) == :no
         end
 
         config.delete_interface(@table.value)

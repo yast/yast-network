@@ -68,7 +68,7 @@ module Y2Network
 
       def store
         gw = value
-        @route.gateway = gw == "-" ? nil : IPAddr.new(gw)
+        @route.gateway = (gw == "-") ? nil : IPAddr.new(gw)
       end
     end
   end

@@ -70,7 +70,7 @@ module Y2Network
         return nil if ip_str == MISSING_VALUE
 
         ip = IPAddr.new(ip_str)
-        netmask_str == MISSING_VALUE ? ip : ip.mask(netmask_str)
+        (netmask_str == MISSING_VALUE) ? ip : ip.mask(netmask_str)
       end
 
       # @return [Y2Network::Interface, nil]
@@ -84,6 +84,7 @@ module Y2Network
       # "netmask" key
       def destination_from(hash)
         return :default if hash["destination"] == DEFAULT_DEST
+
         netmask = hash.fetch("netmask", MISSING_VALUE).delete("/")
         build_ip(hash["destination"], netmask)
       end

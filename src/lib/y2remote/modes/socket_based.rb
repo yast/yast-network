@@ -47,6 +47,7 @@ module Y2Remote
       # @return [Boolean] true if the socket is enabled; false otherwise
       def enabled?
         return false unless socket
+
         socket.enabled?
       end
 
@@ -60,7 +61,7 @@ module Y2Remote
 
         if !socket.enable
           Yast::Report.Error(
-            _("Enabling systemd socket %{socket} has failed") % { socket: socket_name }
+            format(_("Enabling systemd socket %{socket} has failed"), socket: socket_name)
           )
           return false
         end
@@ -78,7 +79,7 @@ module Y2Remote
 
         if enabled? && !socket.disable
           Yast::Report.Error(
-            _("Disabling systemd socket %{socket} has failed") % { socket: socket_name }
+            format(_("Disabling systemd socket %{socket} has failed"), socket: socket_name)
           )
           return false
         end
@@ -96,7 +97,7 @@ module Y2Remote
 
         if !socket.stop
           Yast::Report.Error(
-            _("Stopping systemd socket %{socket} has failed") % { socket: socket_name }
+            format(_("Stopping systemd socket %{socket} has failed"), socket: socket_name)
           )
           return false
         end
@@ -114,7 +115,7 @@ module Y2Remote
 
         if !socket.start
           Yast::Report.Error(
-            _("Restarting systemd socket %{socket} has failed") % { socket: socket_name }
+            format(_("Restarting systemd socket %{socket} has failed"), socket: socket_name)
           )
           return false
         end

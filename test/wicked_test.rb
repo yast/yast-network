@@ -52,12 +52,12 @@ describe Yast::Wicked do
     before do
       allow(Yast::NetworkService).to receive(:is_wicked).and_return(true)
       allow(::File).to receive(:file?).and_return(true, false)
-      allow(Yast::SCR).to receive("Execute").and_return("stdout" => <<WICKED_OUTPUT
-10.100.2.10
-10.100.2.11
-10.100.2.12
-WICKED_OUTPUT
-      )
+      allow(Yast::SCR).to receive("Execute").and_return("stdout" => <<~WICKED_OUTPUT
+        10.100.2.10
+        10.100.2.11
+        10.100.2.12
+      WICKED_OUTPUT
+                                                       )
     end
 
     it "returns list of ntp servers defined in dhcp lease" do

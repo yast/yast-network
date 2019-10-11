@@ -36,7 +36,7 @@ require "yaml"
 #     end
 #
 module SCRStub
-  DATA_PATH = File.join(File.expand_path(File.dirname(__FILE__)), "data")
+  DATA_PATH = File.join(__dir__, "data")
 
   # Ensures that non-stubbed SCR calls still work as expected after including
   # the module in the testsuite

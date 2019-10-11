@@ -68,6 +68,7 @@ module Y2Network
       # @return [String,nil] Text representation of the gateway IP; nil if no gateway is found
       def gateways_string(routing)
         return nil if routing.default_routes.empty?
+
         text = Yast::Summary.OpenList("")
         routing.default_routes.each do |route|
           text = Yast::Summary.AddListItem(text, gateway_string_for(route))
@@ -83,6 +84,7 @@ module Y2Network
         gateway = route.gateway.to_s
         hostname = Yast::NetHwDetection.ResolveIP(gateway)
         return gateway if hostname.empty?
+
         "#{gateway} (#{hostname})"
       end
 

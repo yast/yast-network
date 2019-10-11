@@ -46,6 +46,7 @@ module Y2Network
       #   and an array of connection config objects.
       def config
         return @config if @config
+
         find_physical_interfaces
         find_connections
         find_drivers
@@ -79,6 +80,7 @@ module Y2Network
       # Finds the physical interfaces
       def find_physical_interfaces
         return if @interfaces
+
         physical_interfaces = Hwinfo.netcards.map do |h|
           build_physical_interface(h)
         end
@@ -95,6 +97,7 @@ module Y2Network
               interface ? interface.type : nil
             )
             next unless connection
+
             add_interface(connection) if interface.nil?
             conns << connection
           end
@@ -148,6 +151,7 @@ module Y2Network
       def renaming_mechanism_for(iface)
         rule = UdevRule.find_for(iface.name)
         return :none unless rule
+
         if rule.parts.any? { |p| p.key == "ATTR{address}" }
           :mac
         elsif rule.parts.any? { |p| p.key == "KERNELS" }
@@ -165,6 +169,7 @@ module Y2Network
       # @return [String,nil] Custom driver (or nil if not set)
       def custom_driver_for(iface)
         return nil unless iface.modalias
+
         rule = UdevRule.drivers_rules.find { |r| r.original_modalias == iface.modalias }
         rule ? rule.driver : nil
       end

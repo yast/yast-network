@@ -144,7 +144,7 @@ describe "LanItemsClass#GetItemName" do
   end
 
   it "returns name provided by hwinfo if not configured" do
-    MOCKED_ITEMS.select { |_k, v| !v.key?("ifcfg") }.each_pair do |item_id, conf|
+    MOCKED_ITEMS.reject { |_k, v| v.key?("ifcfg") }.each_pair do |item_id, conf|
       expect(@lan_items.GetDeviceName(item_id)).to eql conf["hwinfo"]["dev_name"]
     end
   end

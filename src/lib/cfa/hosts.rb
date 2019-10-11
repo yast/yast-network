@@ -103,9 +103,7 @@ module CFA
         return
       end
 
-      if entries.size > 1
-        log.info "delete host with ip '#{ip}' removes more then one entry"
-      end
+      log.info "delete host with ip '#{ip}' removes more then one entry" if entries.size > 1
 
       entries.each do |e|
         log.info "deleting record #{e.inspect}"
@@ -127,9 +125,7 @@ module CFA
         return
       end
 
-      if entries.size > 1
-        log.info "more then one entry with ip '#{ip}'. Replacing last one."
-      end
+      log.info "more then one entry with ip '#{ip}'. Replacing last one." if entries.size > 1
 
       entry = entries.last[:value]
       entry["ipaddr"] = ip

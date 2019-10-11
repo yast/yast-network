@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
@@ -114,9 +112,7 @@ module Yast
       end
 
       # backup if exists
-      if SCR.Read(path(".target.size"), CFA::Hosts::PATH) >= 0
-        Yast::Execute.on_target("cp", CFA::Hosts::PATH, "#{CFA::Hosts::PATH}.YaST2save")
-      end
+      Yast::Execute.on_target("cp", CFA::Hosts::PATH, "#{CFA::Hosts::PATH}.YaST2save") if SCR.Read(path(".target.size"), CFA::Hosts::PATH) >= 0
 
       @hosts.save
 
@@ -204,9 +200,7 @@ module Yast
       @hosts.delete_hostname(oldhn) if !oldhn.empty?
 
       # Add localhost if missing
-      if @hosts.host("127.0.0.1").empty?
-        @hosts.add_entry("127.0.0.1", "localhost")
-      end
+      @hosts.add_entry("127.0.0.1", "localhost") if @hosts.host("127.0.0.1").empty?
 
       # Omit some IP addresses
       return true if ["127.0.0.1", "", nil].include?(ip)
@@ -214,7 +208,7 @@ module Yast
       return true if [nil, ""].include?(newhn)
 
       nick = Hostname.SplitFQ(newhn)[0] || ""
-      nick = nick.empty? || nick == newhn ? [] : [nick]
+      nick = (nick.empty? || nick == newhn) ? [] : [nick]
       hosts = @hosts.host(ip)
       if hosts.empty?
         @hosts.add_entry(ip, newhn, nick)
@@ -236,6 +230,7 @@ module Yast
       summary = Summary.OpenList("")
       @hosts.hosts.each do |k, v|
         next if GetSystemHosts().include?(k)
+
         # currently all names are placed as a one string in first array item
         summary = Summary.AddListItem(summary, "#{k} - #{v.first}")
       end
@@ -286,6 +281,7 @@ module Yast
     # @return [Boolean]  settings were modified
     def GetModified
       return true if @configuration_imported # hosts section has been imported.
+
       @initial_hosts && (@hosts.hosts != @initial_hosts.hosts)
     end
 
@@ -329,8 +325,8 @@ module Yast
 
   # rescuing only those exceptions which are related to /etc/hosts access
   # (e.g. corrupted file, file access error, ...)
-  rescue IOError, SystemCallError, RuntimeError => error
-    log.error("Loading /etc/hosts failed with exception #{error.inspect}")
+  rescue IOError, SystemCallError, RuntimeError => e
+    log.error("Loading /etc/hosts failed with exception #{e.inspect}")
 
     # get clean environment, crashing due to exception is no option here
     @hosts = CFA::Hosts.new

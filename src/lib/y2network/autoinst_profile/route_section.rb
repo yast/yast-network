@@ -100,7 +100,7 @@ module Y2Network
     private
 
       def destination_from_hash(hash)
-        hash["destination"] == "default" ? :default : hash["destination"]
+        (hash["destination"] == "default") ? :default : hash["destination"]
       end
 
       def gateway_from_hash(hash)
@@ -132,6 +132,7 @@ module Y2Network
       # @return [String] Route netmask
       def netmask_from_route(route)
         return "-" if route.default?
+
         mask = route.to.ipv4? ? IPV4_MASK : IPV6_MASK
         IPAddr.new(mask).mask(route.to.prefix).to_s
       end
@@ -142,6 +143,7 @@ module Y2Network
       # @return [String] Device name
       def device_from_route(route)
         return "-" unless route.interface.respond_to?(:name)
+
         route.interface.name
       end
 
@@ -151,6 +153,7 @@ module Y2Network
       # @return [String] Gateway address
       def gateway_from_route(route)
         return "-" unless route.gateway
+
         route.gateway.to_s
       end
 

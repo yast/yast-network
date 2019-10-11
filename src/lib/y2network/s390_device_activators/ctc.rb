@@ -44,6 +44,7 @@ module Y2Network
       def propose_channels
         id = device_id_from(hwinfo.busid)
         return unless id
+
         self.read_channel, self.write_channel = id.split(":")
       end
 

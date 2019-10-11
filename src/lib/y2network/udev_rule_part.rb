@@ -46,6 +46,7 @@ module Y2Network
       def from_string(str)
         match = PART_REGEXP.match(str)
         return if match.nil?
+
         new(match[:key], match[:operator], match[:value])
       end
     end

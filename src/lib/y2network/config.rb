@@ -143,6 +143,7 @@ module Y2Network
       interface = interfaces.by_name(old_name || new_name)
       interface.rename(new_name, mechanism)
       return unless old_name # do not modify configurations if it is just renaming mechanism
+
       connections.by_interface(old_name).each do |connection|
         connection.interface = new_name
         rename_dependencies(old_name, new_name, connection)
@@ -175,6 +176,7 @@ module Y2Network
       connections.add_or_update(connection_config)
       interface = interfaces.by_name(connection_config.interface)
       return if interface
+
       log.info "Creating new interface"
       interfaces << Interface.from_connection(connection_config)
     end
@@ -209,6 +211,7 @@ module Y2Network
     # @return [Boolean]
     def configured_interface?(iface_name)
       return false if iface_name.nil? || iface_name.empty?
+
       !connections.by_interface(iface_name).empty?
     end
 
@@ -251,9 +254,9 @@ module Y2Network
       to_modify.each do |dependency|
         case dependency.type
         when InterfaceType::BRIDGE
-          dependency.ports.map! { |e| e == old_name ? new_name : e }
+          dependency.ports.map! { |e| (e == old_name) ? new_name : e }
         when InterfaceType::BONDING
-          dependency.slaves.map! { |e| e == old_name ? new_name : e }
+          dependency.slaves.map! { |e| (e == old_name) ? new_name : e }
         when InterfaceType::VLAN
           dependency.parent_device = new_name
         else

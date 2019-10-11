@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # Copyright (c) [2019] SUSE LLC
 #
 # All Rights Reserved.
@@ -164,6 +162,7 @@ module Y2Network
       def attribute_name(key)
         attribute = attributes.detect { |a| a[:xml_name] == key.to_sym || a[:name] == key.to_sym }
         return nil unless attribute
+
         attribute[:name]
       end
 

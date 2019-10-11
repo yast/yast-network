@@ -59,6 +59,7 @@ module Yast
       #   (it speeds up the initialization phase of installer - bnc#872319)
       dhcp_cards = config.interfaces.select do |c|
         next false if config.connections.by_name(c.name)
+
         phy_connected?(c.name)
       end
       log.info "Candidates for enabling DHCP: #{dhcp_cards.inspect}"
@@ -69,7 +70,7 @@ module Yast
       activate_changes(dhcp_cards.map(&:name))
 
       # drop devices without dhcp lease
-      inactive_devices = dhcp_cards.select { |c| !active_config?(c.name) }
+      inactive_devices = dhcp_cards.reject { |c| active_config?(c.name) }
       log.info "Inactive devices: #{inactive_devices}"
 
       inactive_devices.each { |c| delete_config(c) }
@@ -105,6 +106,7 @@ module Yast
       # Moreover virtual devices are not needed during first stage. So, it can
       # wait for rebooting into just installed target
       return if Lan.yast_config == Lan.system_config
+
       Lan.yast_config.write
     end
 

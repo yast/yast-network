@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
@@ -21,11 +19,11 @@
 # you may find current contact information at www.novell.com
 #
 # **************************************************************************
-# File:	modules/ISDN.ycp
-# Package:	Network configuration
-# Summary:	ISDN data
-# Authors:	Michal Svec  <msvec@suse.cz>
-#		Karsten Keil <kkeil@suse.de>
+# File:  modules/ISDN.ycp
+# Package:  Network configuration
+# Summary:  ISDN data
+# Authors:  Michal Svec  <msvec@suse.cz>
+#    Karsten Keil <kkeil@suse.de>
 #
 #
 # Representation of the configuration of ISDN.

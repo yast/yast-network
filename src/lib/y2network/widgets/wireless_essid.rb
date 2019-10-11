@@ -118,6 +118,7 @@ module Y2Network
         end
 
         return unless @update_widget
+
         @update_widget.update_essid_list(networks)
         nil
       end

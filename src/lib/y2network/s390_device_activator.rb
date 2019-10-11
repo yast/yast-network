@@ -93,6 +93,7 @@ module Y2Network
     # @return [Boolean] true when enabled
     def configure
       return false unless device_id
+
       cmd = [CONFIGURE_CMD, type.short_name, device_id, "-e"].concat(configure_attributes)
 
       log.info("Activating s390 device: #{device_id}")
@@ -104,13 +105,13 @@ module Y2Network
     # @return [String] device name
     def configured_interface
       return "" unless device_id
+
       cmd = [LIST_CMD, device_id, "-c", "names", "-n"]
 
       Yast::Execute.stdout.on_target!(cmd).chomp
     end
 
     # Makes a new configuration proposal
-    def propose!
-    end
+    def propose!; end
   end
 end

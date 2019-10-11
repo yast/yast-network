@@ -250,6 +250,7 @@ module Yast
       dest_dir = ::File.join(Installation.destdir, path)
       glob_files = ::Dir.glob(files.map { |f| File.join(path, f) })
       return false if glob_files.empty?
+
       ::FileUtils.mkdir_p(dest_dir)
       ::FileUtils.cp(glob_files, dest_dir, preserve: true)
       true

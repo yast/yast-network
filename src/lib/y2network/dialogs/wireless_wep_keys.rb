@@ -178,7 +178,8 @@ module Y2Network
           @settings.keys ||= [] # TODO: should be fixed by proper initialize of settings object
           table_items = @settings.keys.each_with_index.map do |key, i|
             next unless key
-            Item(Id(i), i.to_s, key, i == @settings.default_key ? "X" : "")
+
+            Item(Id(i), i.to_s, key, (i == @settings.default_key) ? "X" : "")
           end
 
           compact_keys = @settings.keys.compact
@@ -260,6 +261,7 @@ module Y2Network
           while (ret = Yast::UI.UserInput) == :ok
             val = Yast::UI.QueryWidget(Id(:key), :Value)
             break if valid_key?(val)
+
             # Popup::Error text
             Yast::Popup.Error(
               _(

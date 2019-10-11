@@ -52,6 +52,7 @@ module Y2Network
         dialog = Y2Network::Dialogs::RenameInterface.new(@settings)
         ret = dialog.run
         return unless ret == :ok
+
         self.value = @settings.name
 
         nil

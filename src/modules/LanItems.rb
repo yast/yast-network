@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
@@ -514,9 +512,7 @@ module Yast
     def SetItem(*)
       @hotplug = ""
       Builtins.y2debug("type=%1", @type)
-      if Builtins.issubstring(@type, "-")
-        @type = Builtins.regexpsub(@type, "([^-]+)-.*$", "\\1")
-      end
+      @type = Builtins.regexpsub(@type, "([^-]+)-.*$", "\\1") if Builtins.issubstring(@type, "-")
       Builtins.y2debug("type=%1", @type)
 
       nil
@@ -748,6 +744,7 @@ module Yast
       config = yast_config
       return if config.nil?
       return if config.interfaces.any? { |i| i.name == name }
+
       yast_config.interfaces << Y2Network::Interface.new(name)
     end
 
@@ -757,13 +754,15 @@ module Yast
     # @param to [String] target interface
     def move_routes(from, to)
       config = yast_config
-      return unless config && config.routing
+      return unless config&.routing
+
       routing = config.routing
       add_device_to_routing(to)
       target_interface = config.interfaces.by_name(to)
       return unless target_interface
+
       routing.routes.select { |r| r.interface && r.interface.name == from }
-             .each { |r| r.interface = target_interface }
+        .each { |r| r.interface = target_interface }
     end
 
   private

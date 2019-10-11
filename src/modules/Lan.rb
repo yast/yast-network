@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
@@ -21,10 +19,10 @@
 # you may find current contact information at www.novell.com
 #
 # **************************************************************************
-# File:	modules/Lan.ycp
-# Package:	Network configuration
-# Summary:	Network card data
-# Authors:	Michal Svec <msvec@suse.cz>
+# File:  modules/Lan.ycp
+# Package:  Network configuration
+# Summary:  Network card data
+# Authors:  Michal Svec <msvec@suse.cz>
 #
 #
 # Representation of the configuration of network cards.
@@ -171,17 +169,14 @@ module Yast
         Builtins.foreach(row) do |column|
           tmp_col = Builtins.splitstring(column, " ")
           next if Ops.less_than(Builtins.size(tmp_col), 2)
-          if Builtins.issubstring(Ops.get(tmp_col, 0, ""), "link/ether")
-            tmp_mac = Ops.get(tmp_col, 1, "")
-          end
+
+          tmp_mac = Ops.get(tmp_col, 1, "") if Builtins.issubstring(Ops.get(tmp_col, 0, ""), "link/ether")
           if Builtins.issubstring(Ops.get(tmp_col, 0, ""), "inet") &&
               !Builtins.issubstring(Ops.get(tmp_col, 0, ""), "inet6")
             addr = true
           end
         end
-        if Ops.greater_than(Builtins.size(tmp_mac), 0)
-          Ops.set(link_status, tmp_mac, addr)
-        end
+        Ops.set(link_status, tmp_mac, addr) if Ops.greater_than(Builtins.size(tmp_mac), 0)
         Builtins.y2debug("link_status %1", link_status)
       end
 
@@ -280,6 +275,7 @@ module Yast
       end
 
       return false if Abort()
+
       ProgressNextStage(_("Detecting ndiswrapper...")) if @gui
       # modprobe ndiswrapper before hwinfo when needed (#343893)
       if !Mode.autoinst && PackageSystem.Installed("ndiswrapper")
@@ -319,6 +315,7 @@ module Yast
       Builtins.sleep(sl)
 
       return false if Abort()
+
       ProgressNextStage(_("Detecting network devices...")) if @gui
       # Dont read hardware data in config mode
       NetHwDetection.Start if !Mode.config
@@ -326,12 +323,14 @@ module Yast
       Builtins.sleep(sl)
 
       return false if Abort()
+
       ProgressNextStage(_("Reading device configuration...")) if @gui
       read_config
 
       Builtins.sleep(sl)
 
       return false if Abort()
+
       ProgressNextStage(_("Reading network configuration...")) if @gui
       begin
         NetworkConfig.Read
@@ -344,11 +343,13 @@ module Yast
         Builtins.sleep(sl)
 
         return false if Abort()
+
         ProgressNextStage(_("Detecting current status...")) if @gui
         NetworkService.Read
         Builtins.sleep(sl)
 
         return false if Abort()
+
         if firewalld.installed? && !firewalld.read?
           ProgressNextStage(_("Reading firewall configuration...")) if @gui
           firewalld.read
@@ -356,10 +357,10 @@ module Yast
         end
 
         return false if Abort()
-      rescue IOError, SystemCallError, RuntimeError => error
+      rescue IOError, SystemCallError, RuntimeError => e
         msg = format(_("Network configuration is corrupted.\n"\
                 "If you continue resulting configuration can be malformed."\
-                "\n\n%s"), wrap_text(error.message))
+                "\n\n%s"), wrap_text(e.message))
         return false if !@gui
         return false if !Popup.ContinueCancel(msg)
       end
@@ -369,6 +370,7 @@ module Yast
       Builtins.sleep(sl)
 
       return false if Abort()
+
       @initialized = true
 
       fix_dhclient_warning(LanItems.invalid_dhcp_cfgs) if @gui && !LanItems.valid_dhcp_cfg?
@@ -409,7 +411,7 @@ module Yast
         path(".target.bash"),
         Builtins.sformat(
           "/usr/sbin/sysctl -w net.ipv6.conf.all.disable_ipv6=%1",
-          !@ipv6 ? "1" : "0"
+          (!@ipv6) ? "1" : "0"
         )
       )
       SCR.Write(
@@ -460,9 +462,7 @@ module Yast
       step_labels << _("Writing firewall configuration") if firewalld.installed?
 
       # Progress stage 9
-      if !@write_only
-        step_labels = Builtins.add(step_labels, _("Activate network services"))
-      end
+      step_labels = Builtins.add(step_labels, _("Activate network services")) if !@write_only
       # Progress stage 10
       step_labels = Builtins.add(step_labels, _("Update configuration"))
 
@@ -476,22 +476,26 @@ module Yast
       )
 
       return false if Abort()
+
       # Progress step 2
       ProgressNextStage(_("Writing /etc/modprobe.conf..."))
       Builtins.sleep(sl)
 
       return false if Abort()
+
       # Progress step 3 - multiple devices may be present, really plural
       ProgressNextStage(_("Writing device configuration..."))
       Builtins.sleep(sl)
 
       return false if Abort()
+
       # Progress step 4
       ProgressNextStage(_("Writing network configuration..."))
       NetworkConfig.Write
       Builtins.sleep(sl)
 
       return false if Abort()
+
       # Progress step 5
       ProgressNextStage(_("Writing routing configuration..."))
       orig = Progress.set(false)
@@ -502,6 +506,7 @@ module Yast
       Builtins.sleep(sl)
 
       return false if Abort()
+
       # Progress step 6
       ProgressNextStage(_("Writing hostname and DNS configuration..."))
       # write resolv.conf after change from dhcp to static (#327074)
@@ -513,6 +518,7 @@ module Yast
       Builtins.sleep(sl)
 
       return false if Abort()
+
       # Progress step 7
       ProgressNextStage(_("Setting up network services..."))
       writeIPv6
@@ -520,6 +526,7 @@ module Yast
 
       if firewalld.installed?
         return false if Abort()
+
         # Progress step 7
         ProgressNextStage(_("Writing firewall configuration..."))
         firewalld.write
@@ -528,6 +535,7 @@ module Yast
 
       if !@write_only
         return false if Abort()
+
         # Progress step 9
         ProgressNextStage(_("Activating network services..."))
 
@@ -537,6 +545,7 @@ module Yast
       end
 
       return false if Abort()
+
       # Progress step 10
       ProgressNextStage(_("Updating configuration..."))
       update_mta_config if !@write_only
@@ -565,6 +574,7 @@ module Yast
       Progress.Finish
 
       return false if Abort()
+
       true
     end
 
@@ -584,9 +594,7 @@ module Yast
     def UpcaseCondSet(ret, m, key)
       ret = deep_copy(ret)
       m = deep_copy(m)
-      if Builtins.haskey(m, key)
-        Ops.set(ret, Builtins.toupper(key), Ops.get(m, key))
-      end
+      Ops.set(ret, Builtins.toupper(key), Ops.get(m, key)) if Builtins.haskey(m, key)
       deep_copy(ret)
     end
 
@@ -670,9 +678,7 @@ module Yast
       dhcp = UpcaseCondSet(dhcp, dhcpopts, "dhclient_hostname_option")
 
       Ops.set(input, "config", "dhcp" => dhcp)
-      if !Ops.get(input, "strict_IP_check_timeout").nil?
-        Ops.set(input, ["config", "config"], "CHECK_DUPLICATE_IP" => true)
-      end
+      Ops.set(input, ["config", "config"], "CHECK_DUPLICATE_IP" => true) if !Ops.get(input, "strict_IP_check_timeout").nil?
 
       Builtins.y2milestone("input=%1", input)
       input
@@ -1002,7 +1008,8 @@ module Yast
     # @return [String]
     def routing_summary
       config = find_config(:yast)
-      return "" unless config && config.routing
+      return "" unless config&.routing
+
       presenter = Y2Network::Presenters::RoutingSummary.new(config.routing)
       presenter.text
     end
@@ -1012,7 +1019,8 @@ module Yast
     # @return [String]
     def dns_summary
       config = find_config(:yast)
-      return "" unless config && config.dns
+      return "" unless config&.dns
+
       presenter = Y2Network::Presenters::DNSSummary.new(config.dns)
       presenter.text
     end
@@ -1023,6 +1031,7 @@ module Yast
     def interfaces_summary
       config = find_config(:yast)
       return "" unless config
+
       presenter = Y2Network::Presenters::InterfacesSummary.new(config)
       presenter.text
     end

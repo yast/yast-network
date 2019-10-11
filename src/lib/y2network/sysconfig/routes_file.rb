@@ -77,9 +77,7 @@ module Y2Network
       # @return [Boolean] true on success
       def save
         # create if not exists, otherwise backup
-        if Yast::FileUtils.Exists(file_path)
-          Yast::Execute.on_target("/bin/cp", file_path, file_path + ".YaST2save")
-        end
+        Yast::Execute.on_target("/bin/cp", file_path, file_path + ".YaST2save") if Yast::FileUtils.Exists(file_path)
 
         with_registered_ifroute_agent(file_path) do |scr|
           # work around bnc#19476
@@ -91,6 +89,7 @@ module Y2Network
       # Removes the file
       def remove
         return unless Yast::FileUtils.Exists(file_path)
+
         Yast::SCR.Execute(Yast::Path.new(".target.remove"), file_path)
       end
 
@@ -197,6 +196,7 @@ module Y2Network
       # @return [Yast::Path]
       def ifroute_agent_scr_path(file_path)
         return Yast::Path.new(".routes") unless register_agent?
+
         register_ifroute_agent_for_path(file_path)
       end
 

@@ -42,9 +42,7 @@ module Y2Network
     # @param config [Y2Network::ConnectionConfig::Base, nil] existing configuration of device or nil
     #   for newly created
     def self.for(type, config: nil)
-      if !type.is_a?(InterfaceType)
-        type = InterfaceType.from_short_name(type) or raise "Unknown type #{type.inspect}"
-      end
+      type = InterfaceType.from_short_name(type) or raise "Unknown type #{type.inspect}" if !type.is_a?(InterfaceType)
       require "y2network/interface_config_builders/#{type.file_name}"
       InterfaceConfigBuilders.const_get(type.class_name).new(config: config)
     rescue LoadError => e
@@ -134,6 +132,7 @@ module Y2Network
     # @return [Boolean] true if it was renamed; false otherwise
     def renamed_interface?
       return false unless interface
+
       name != interface.name || @renaming_mechanism != interface.renaming_mechanism
     end
 
@@ -183,6 +182,7 @@ module Y2Network
     # gets a list of available kernel modules for the interface
     def drivers
       return [] unless interface
+
       yast_config.drivers_for_interface(interface.name)
     end
 
@@ -192,7 +192,7 @@ module Y2Network
 
       # TODO: handle renaming
       firewall_interface = Y2Firewall::Firewalld::Interface.new(name)
-      @firewall_zone = (firewall_interface.zone && firewall_interface.zone.name) || @connection_config.firewall_zone
+      @firewall_zone = (firewall_interface.zone&.name) || @connection_config.firewall_zone
     end
 
     # sets assigned firewall zone
@@ -230,12 +230,13 @@ module Y2Network
 
     # @return [Integer]
     def ifplugd_priority
-      startmode.name == "ifplugd" ? startmode.priority : 0
+      (startmode.name == "ifplugd") ? startmode.priority : 0
     end
 
     # gets currently assigned kernel module
     def driver
       return @driver if @driver
+
       @driver = yast_config.drivers.find { |d| d.name == @interface.custom_driver } if @interface.custom_driver
       @driver ||= :auto
     end
@@ -372,6 +373,7 @@ module Y2Network
 
     def ip_config_default
       return @connection_config.ip if @connection_config.ip
+
       @connection_config.ip = ConnectionConfig::IPConfig.new(IPAddress.new("0.0.0.0"))
     end
 
@@ -398,6 +400,7 @@ module Y2Network
     # @return [Y2Network::Interface,nil]
     def find_interface
       return nil unless yast_config # in some tests, it could return nil
+
       interfaces.by_name(name)
     end
 
@@ -437,8 +440,8 @@ module Y2Network
     def aliases_to_ip_configs
       last_id = 0
       used_ids = aliases
-                 .select { |a| a[:id] && a[:id] =~ /\A_\d+\z/ }
-                 .map { |a| a[:id].sub("_", "").to_i }
+        .select { |a| a[:id] && a[:id] =~ /\A_\d+\z/ }
+        .map { |a| a[:id].sub("_", "").to_i }
       aliases.each_with_object([]) do |map, result|
         ipaddr = IPAddress.from_string(map[:ip])
         ipaddr.prefix = map[:prefixlen].delete("/").to_i if map[:prefixlen]

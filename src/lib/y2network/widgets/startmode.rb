@@ -48,7 +48,7 @@ module Y2Network
       end
 
       def handle
-        value == "ifplugd" ? @plug_priority_widget.enable : @plug_priority_widget.disable
+        (value == "ifplugd") ? @plug_priority_widget.enable : @plug_priority_widget.disable
 
         nil
       end
