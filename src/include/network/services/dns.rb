@@ -246,7 +246,9 @@ module Yast
       searchstring = Builtins.mergestring(DNS.searchlist, "\n")
       # #49094: populate the search list
       # #437759: discard 'site', nobody really wants that pre-set
-      searchstring = Ops.get_string(settings, "DOMAIN", "") if searchstring == "" && Ops.get_string(settings, "DOMAIN", "") != "site"
+      if searchstring == "" && Ops.get_string(settings, "DOMAIN", "") != "site"
+        searchstring = Ops.get_string(settings, "DOMAIN", "")
+      end
       Ops.set(settings, "SEARCHLIST_S", searchstring)
       Ops.set(settings, "NAMESERVER_1", DNS.nameservers[0].to_s)
       Ops.set(settings, "NAMESERVER_2", DNS.nameservers[1].to_s)
@@ -495,7 +497,9 @@ module Yast
       )
       if UI.QueryWidget(Id("MODIFY_RESOLV"), :Value) == :custom
         UI.ChangeWidget(Id("PLAIN_POLICY"), :Enabled, true)
-        UI.ChangeWidget(Id("PLAIN_POLICY"), :Value, DNS.resolv_conf_policy) if UI.QueryWidget(Id("PLAIN_POLICY"), :Value) == ""
+        if UI.QueryWidget(Id("PLAIN_POLICY"), :Value) == ""
+          UI.ChangeWidget(Id("PLAIN_POLICY"), :Value, DNS.resolv_conf_policy)
+        end
       else
         UI.ChangeWidget(Id("PLAIN_POLICY"), :Value, "")
         UI.ChangeWidget(Id("PLAIN_POLICY"), :Enabled, false)
@@ -582,7 +586,8 @@ module Yast
       nil
     end
 
-    # Used in GUI mode - updates and stores actuall hostname settings according dialog widgets content.
+    # Used in GUI mode - updates and stores actuall hostname settings according dialog
+    # widgets content.
     # It calls store handler for every widget from hn_settings with event as an option.
     # @param _key [String] ignored
     # @param event [Hash] user generated event

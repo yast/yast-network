@@ -49,7 +49,9 @@ describe Y2Network::Hwinfo do
 
     context "when there is no info from hardware" do
       let(:hardware) { [] }
-      let(:udev_rule) { Y2Network::UdevRule.new_mac_based_rename(interface_name, "01:23:45:67:89:ab") }
+      let(:udev_rule) do
+        Y2Network::UdevRule.new_mac_based_rename(interface_name, "01:23:45:67:89:ab")
+      end
 
       it "returns info from udev rules" do
         hwinfo = described_class.for(interface_name)

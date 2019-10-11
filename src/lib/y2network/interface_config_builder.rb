@@ -42,7 +42,9 @@ module Y2Network
     # @param config [Y2Network::ConnectionConfig::Base, nil] existing configuration of device or nil
     #   for newly created
     def self.for(type, config: nil)
-      type = InterfaceType.from_short_name(type) or raise "Unknown type #{type.inspect}" if !type.is_a?(InterfaceType)
+      if !type.is_a?(InterfaceType)
+        type = InterfaceType.from_short_name(type) or raise "Unknown type #{type.inspect}"
+      end
       require "y2network/interface_config_builders/#{type.file_name}"
       InterfaceConfigBuilders.const_get(type.class_name).new(config: config)
     rescue LoadError => e
@@ -52,11 +54,13 @@ module Y2Network
 
     # @return [String] Device name (eth0, wlan0, etc.)
     attr_reader :name
-    # @return [Y2Network::InterfaceType] type of @see Y2Network::Interface which is intended to be build
+    # @return [Y2Network::InterfaceType] type of @see Y2Network::Interface which
+    #   is intended to be build
     attr_reader :type
     # @return [Y2Network::ConnectionConfig] connection config on which builder operates
     attr_reader :connection_config
-    # @return [Symbol] Mechanism to rename the interface (:none -no hardware based-, :mac or :bus_id)
+    # @return [Symbol] Mechanism to rename the interface (:none -no hardware based-,
+    #   :mac or :bus_id)
     attr_writer :renaming_mechanism
     # @return [Y2Network::Interface,nil] Underlying interface if it exists
     attr_reader :interface
@@ -114,7 +118,9 @@ module Y2Network
       firewall_interface = Y2Firewall::Firewalld::Interface.new(name)
       if Y2Firewall::Firewalld.instance.installed?
         # TODO: should change only if different, but maybe firewall_interface responsibility?
-        firewall_interface.zone = firewall_zone if !firewall_interface.zone || firewall_zone != firewall_interface.zone.name
+        if !firewall_interface.zone || firewall_zone != firewall_interface.zone.name
+          firewall_interface.zone = firewall_zone
+        end
       end
 
       if interface.respond_to?(:custom_driver)
@@ -237,7 +243,9 @@ module Y2Network
     def driver
       return @driver if @driver
 
-      @driver = yast_config.drivers.find { |d| d.name == @interface.custom_driver } if @interface.custom_driver
+      if @interface.custom_driver
+        @driver = yast_config.drivers.find { |d| d.name == @interface.custom_driver }
+      end
       @driver ||= :auto
     end
 
@@ -260,7 +268,8 @@ module Y2Network
           ip:        data.address.address.to_s,
           prefixlen: data.address.prefix.to_s,
           id:        data.id.to_s
-          # NOTE: new API does not have netmask at all, we need to adapt UI to clearly mention only prefix
+          # NOTE: new API does not have netmask at all, we need to adapt UI to clearly mention
+          #       only prefix
         }
       end
       @aliases = aliases
@@ -391,8 +400,8 @@ module Y2Network
     #
     # @param iface [Interface] Interface to associate the builder with
     def interface=(iface)
+      @renaming_mechanism ||= iface.renaming_mechanism
       @interface = iface
-      @renaming_mechanism ||= @interface.renaming_mechanism
     end
 
     # Returns the underlying interface

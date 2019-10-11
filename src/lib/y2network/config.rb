@@ -101,7 +101,8 @@ module Y2Network
     # @param dns         [DNS] Object with DNS configuration
     # @param source      [Symbol] Configuration source
     # @param drivers     [Array<Driver>] List of available drivers
-    def initialize(interfaces: InterfacesCollection.new, connections: ConnectionConfigsCollection.new,
+    def initialize(interfaces: InterfacesCollection.new,
+      connections: ConnectionConfigsCollection.new,
       routing: Routing.new, dns: DNS.new, drivers: [], source:)
       @interfaces = interfaces
       @connections = connections
@@ -187,7 +188,9 @@ module Y2Network
     def drivers_for_interface(name)
       interface = interfaces.by_name(name)
       names = interface.drivers.map(&:name)
-      names << interface.custom_driver if interface.custom_driver && !names.include?(interface.custom_driver)
+      if interface.custom_driver && !names.include?(interface.custom_driver)
+        names << interface.custom_driver
+      end
       drivers.select { |d| names.include?(d.name) }
     end
 
@@ -222,7 +225,9 @@ module Y2Network
       result = []
       bond_bridge = connection_config.find_master(connections)
       result << bond_bridge if bond_bridge
-      vlans = connections.to_a.select { |c| c.type.vlan? && c.parent_device == connection_config.name }
+      vlans = connections.to_a.select do |c|
+        c.type.vlan? && c.parent_device == connection_config.name
+      end
       result.concat(vlans)
       ConnectionConfigsCollection.new(result)
     end

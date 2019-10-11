@@ -134,7 +134,8 @@ module Y2Network
       #  @return [String] network mask. Deprecated `prefix` should be used instead.
 
       # @!attribute network
-      #  @return [String] network ip after prefix applied. Deprecated as it can be computed from ipaddr and prefixlen.
+      #  @return [String] network ip after prefix applied. Deprecated as it can
+      #    be computed from ipaddr and prefixlen.
 
       # @!attribute prefixlen
       #  @return [String] size of network prefix.
@@ -273,7 +274,8 @@ module Y2Network
         self.aliases = hash["aliases"] if hash["aliases"]
       end
 
-      # Method used by {.new_from_network} to populate the attributes when cloning a network interface
+      # Method used by {.new_from_network} to populate the attributes when cloning a network
+      # interface
       #
       # @param config [Y2Network::ConnectionConfig]
       # @return [Boolean]

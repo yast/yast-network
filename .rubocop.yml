@@ -10,6 +10,11 @@ Metrics/AbcSize:
 Metrics/BlockNesting:
   Max: 5
 
+Metrics/BlockLength:
+  Max: 150
+  Exclude:
+    - "test/**/*"
+
 # Offense count: 5
 # Configuration parameters: CountComments.
 Metrics/ClassLength:
@@ -26,7 +31,7 @@ Metrics/CyclomaticComplexity:
 # Offense count: 321
 # Configuration parameters: CountComments.
 Metrics/MethodLength:
-  Max: 494
+  Max: 501
 
 # Offense count: 1
 # Configuration parameters: CountKeywordArgs.
@@ -41,6 +46,15 @@ Metrics/PerceivedComplexity:
 # Configuration parameters: EnforcedStyle, SupportedStyles.
 Naming/MethodName:
   Enabled: false
+
+# very inconsistent params in old API
+Naming/UncommunicativeMethodParamName:
+  Enabled: false
+
+# very inconsistent params in old API
+Naming/UncommunicativeBlockParamName:
+  Enabled: false
+
 
 # Offense count: 94
 Style/Documentation:

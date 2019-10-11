@@ -25,8 +25,6 @@ require "yast"
 
 Yast.import "LanItems"
 
-include Yast::I18n
-
 describe "LanItemsClass#ip_overview" do
   # smoke test for bnc#1013684
   it "do not crash when devmap for staticaly configured device do not contain PREFIXLEN" do

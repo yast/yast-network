@@ -177,7 +177,9 @@ module Yast
 
       ret = {}
       Ops.set(ret, "managed", Ops.get_boolean(settings, "managed", false))
-      Ops.set(ret, "ipv6", Ops.get_boolean(settings, "ipv6", true)) if Builtins.haskey(settings, "ipv6")
+      if Builtins.haskey(settings, "ipv6")
+        Ops.set(ret, "ipv6", Ops.get_boolean(settings, "ipv6", true))
+      end
       Ops.set(
         ret,
         "keep_install_network",

@@ -49,7 +49,9 @@ module Y2Network
         return summary if routing.nil?
 
         gateways = gateways_string(routing)
-        summary = Yast::Summary.AddListItem(summary, format(_("Gateways: %s"), gateways)) if gateways
+        if gateways
+          summary = Yast::Summary.AddListItem(summary, format(_("Gateways: %s"), gateways))
+        end
         summary = Yast::Summary.AddListItem(
           summary, format(_("IP Forwarding for IPv4: %s"), boolean_to_human(routing.forward_ipv4))
         )

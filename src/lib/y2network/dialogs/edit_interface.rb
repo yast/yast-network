@@ -64,7 +64,8 @@ module Y2Network
         when "wlan"
           wireless = Widgets::WirelessTab.new(@settings)
           wireless.initial = true
-          [Widgets::GeneralTab.new(@settings), wireless, addr_tab, Widgets::HardwareTab.new(@settings)]
+          [Widgets::GeneralTab.new(@settings), wireless, addr_tab,
+           Widgets::HardwareTab.new(@settings)]
         else
           [Widgets::GeneralTab.new(@settings), addr_tab, Widgets::HardwareTab.new(@settings)]
         end

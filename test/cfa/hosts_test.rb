@@ -73,7 +73,7 @@ describe CFA::Hosts do
       let(:ip) { "10.10.10.10" }
 
       it "returns an empty array" do
-        expect { hosts.delete_by_ip(ip) }.to_not change { hosts.hosts }
+        expect { hosts.delete_by_ip(ip) }.to_not(change { hosts.hosts })
       end
     end
   end
@@ -88,7 +88,8 @@ describe CFA::Hosts do
 
     context "if the entry does not exist" do
       it "adds the entry" do
-        expect(hosts).to receive(:add_entry).with("10.10.10.10", "new-host", ["new-host.localdomain"])
+        expect(hosts).to receive(:add_entry)
+          .with("10.10.10.10", "new-host", ["new-host.localdomain"])
         hosts.set_entry("10.10.10.10", "new-host", ["new-host.localdomain"])
       end
     end

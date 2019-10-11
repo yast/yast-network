@@ -41,11 +41,13 @@ module Y2Network
   #     Y2Network::UdevRulePart.new("ATTR{address}", "==", "?*31:78:f2"),
   #     Y2Network::UdevRulePart.new("NAME", "=", "mlx4_ib3")
   #   )
-  #   rule.to_s #=> "ACTION==\"add\", SUBSYSTEM==\"net\", ATTR{address}==\"?*31:78:f2\", NAME=\"eth0\""
+  #   rule.to_s #=> "ACTION==\"add\", SUBSYSTEM==\"net\", ATTR{address}==\"?*31:78:f2\",
+  #                  NAME=\"eth0\""
   #
   # @example Create a rule from a string
   #   rule = UdevRule.find_for("eth0")
-  #   rule.to_s #=> "ACTION==\"add\", SUBSYSTEM==\"net\", ATTR{address}==\"?*31:78:f2\", NAME=\"eth0\""
+  #   rule.to_s #=> "ACTION==\"add\", SUBSYSTEM==\"net\", ATTR{address}==\"?*31:78:f2\",
+  #                  NAME=\"eth0\""
   #
   # @example Writing renaming rules
   #   rule = UdevRule.new_mac_based_rename("00:12:34:56:78:ab", "eth0")
@@ -156,7 +158,8 @@ module Y2Network
       # @param udev_rules [Array<UdevRule>] List of udev rules
       def write_net_rules(udev_rules)
         Yast::SCR.Write(Yast::Path.new(".udev_persistent.rules"), udev_rules.map(&:to_s))
-        Yast::SCR.Write(Yast::Path.new(".udev_persistent.nil"), []) # Writes changes to the rules file
+        # Writes changes to the rules file
+        Yast::SCR.Write(Yast::Path.new(".udev_persistent.nil"), [])
       end
 
       # Writes drivers specific udev rules to the filesystem
@@ -172,7 +175,8 @@ module Y2Network
           hash[driver] = rule.parts.map(&:to_s)
         end
         Yast::SCR.Write(Yast::Path.new(".udev_persistent.drivers"), rules_hash)
-        Yast::SCR.Write(Yast::Path.new(".udev_persistent.nil"), []) # Writes changes to the rules file
+        # Writes changes to the rules file
+        Yast::SCR.Write(Yast::Path.new(".udev_persistent.nil"), [])
       end
 
       # Clears rules cache map

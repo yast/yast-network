@@ -29,7 +29,8 @@ module Y2Network
       #
       # @param iface [String] interface name
       #
-      # @return [Y2Network::InterfaceType, nil] type of given interface or nil if cannot be recognized
+      # @return [Y2Network::InterfaceType, nil] type of given interface or
+      #   nil if cannot be recognized
       def type_of(iface)
         type_by_sys(iface) || type_by_config(iface) || nil
       end

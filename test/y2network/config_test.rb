@@ -282,8 +282,9 @@ describe Y2Network::Config do
       let(:connections) { Y2Network::ConnectionConfigsCollection.new([eth0_conn, vlan0_conn]) }
 
       it "updates interface name in its parent device" do
-        expect { config.rename_interface("eth0", "eth1", :mac) }.to change { vlan0_conn.parent_device }
-          .from("eth0").to("eth1")
+        expect { config.rename_interface("eth0", "eth1", :mac) }.to(
+          change { vlan0_conn.parent_device }.from("eth0").to("eth1")
+        )
       end
     end
   end
@@ -336,7 +337,7 @@ describe Y2Network::Config do
 
         it "does not add any interface" do
           expect { config.add_or_update_connection_config(new_conn) }
-            .to_not change { config.interfaces.size }
+            .to_not(change { config.interfaces.size })
         end
       end
     end
@@ -415,7 +416,8 @@ describe Y2Network::Config do
 
       it "removes that vlan" do
         expect(config).to receive(:delete_interface).with("vlan0")
-        allow(config).to receive(:delete_interface).and_call_original # allow initial call to delete eth
+        # allow initial call to delete eth
+        allow(config).to receive(:delete_interface).and_call_original
         config.delete_interface(eth0.name)
       end
     end
@@ -444,7 +446,9 @@ describe Y2Network::Config do
       end
 
       it "does not remove the interface" do
-        expect { config.delete_interface(eth0.name) }.to_not change { config.interfaces.to_a }
+        expect { config.delete_interface(eth0.name) }.to_not(
+          change { config.interfaces.to_a }
+        )
       end
 
       context "when the interface is not present" do

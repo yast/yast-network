@@ -89,18 +89,18 @@ module Yast
 
     def config
       # TODO: get it from some config holder
-      @routing_config ||= Yast::Lan.yast_config
+      @config ||= Yast::Lan.yast_config
     end
 
-    def routing_table
+    def routing_table_widget
       @routing_table_widget ||= Y2Network::Widgets::RoutingTable.new(config.routing.tables.first)
     end
 
-    def ip4_forwarding
+    def ip4_forwarding_widget
       @ip4_forwarding_widget ||= Y2Network::Widgets::IP4Forwarding.new(config)
     end
 
-    def ip6_forwarding
+    def ip6_forwarding_widget
       @ip6_forwarding_widget ||= Y2Network::Widgets::IP6Forwarding.new(config)
     end
 
@@ -118,8 +118,8 @@ module Yast
 
     def content
       VBox(
-        Left(ip4_forwarding.widget_id),
-        Left(ip6_forwarding.widget_id),
+        Left(ip4_forwarding_widget.widget_id),
+        Left(ip6_forwarding_widget.widget_id),
         VSpacing(),
         # Frame label
         Frame(
@@ -138,12 +138,12 @@ module Yast
 
     def widgets
       {
-        routing_table.widget_id  => routing_table.cwm_definition,
-        ip4_forwarding.widget_id => ip4_forwarding.cwm_definition,
-        ip6_forwarding.widget_id => ip6_forwarding.cwm_definition,
-        add_button.widget_id     => add_button.cwm_definition,
-        edit_button.widget_id    => edit_button.cwm_definition,
-        delete_button.widget_id  => delete_button.cwm_definition
+        routing_table_widget.widget_id  => routing_table_widget.cwm_definition,
+        ip4_forwarding_widget.widget_id => ip4_forwarding_widget.cwm_definition,
+        ip6_forwarding_widget.widget_id => ip6_forwarding_widget.cwm_definition,
+        add_button.widget_id            => add_button.cwm_definition,
+        edit_button.widget_id           => edit_button.cwm_definition,
+        delete_button.widget_id         => delete_button.cwm_definition
       }
     end
   end

@@ -39,7 +39,9 @@ describe "NetworkServicesHostInclude" do
 
       result = subject.encode_hosts_line(canonical, aliases.split)
 
-      expect(result).to eql "xn--ala-qma83eb.xn--jlinka-3mb.go.home xn--ala-qma83eb xn--jlinka-3mb earthworm"
+      expect(result).to eql(
+        "xn--ala-qma83eb.xn--jlinka-3mb.go.home xn--ala-qma83eb xn--jlinka-3mb earthworm"
+      )
     end
 
     it "returns empty string when invalid arguments were passed" do

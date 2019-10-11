@@ -53,7 +53,8 @@ module Yast
 
     # Reads attributes for particular qeth based network device.
     #
-    # Returned map is compatible with similar map used for storing sysconfig values used elswhere in the code.
+    # Returned map is compatible with similar map used for storing sysconfig
+    # values used elswhere in the code.
     # As a consequence, boolean values are stored as strings with yes/no value.
     #
     # Currently loaded attributes are:

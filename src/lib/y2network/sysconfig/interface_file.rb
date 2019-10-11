@@ -46,7 +46,8 @@ module Y2Network
     #
     # @example Reading multivalued variables
     #   file = Y2Network::Sysconfig::InterfaceFile.find("wlan0")
-    #   file.ipaddrs #=> { default: #<IPAddr: ...>, "_EXTRA" => #<IPAddr: ...>, "_ALT" => #<IPAddr: ...> }
+    #   file.ipaddrs #=> { default: #<IPAddr: ...>,
+    #     "_EXTRA" => #<IPAddr: ...>, "_ALT" => #<IPAddr: ...> }
     class InterfaceFile
       # Auxiliar class to hold variables definition information
       Variable = Struct.new(:name, :type, :collection?)
@@ -73,7 +74,9 @@ module Y2Network
         # @param interface [String] Interface name
         # @return [Sysconfig::InterfaceFile,nil] Sysconfig
         def find(interface)
-          return nil unless Yast::FileUtils.Exists(SYSCONFIG_NETWORK_DIR.join("ifcfg-#{interface}").to_s)
+          if !Yast::FileUtils.Exists(SYSCONFIG_NETWORK_DIR.join("ifcfg-#{interface}").to_s)
+            return nil
+          end
 
           new(interface)
         end
@@ -489,7 +492,8 @@ module Y2Network
       #
       # @return [Array<String>] name of keys that are included in the file
       def defined_variables
-        @defined_variables ||= Yast::SCR.Dir(Yast::Path.new(".network.value.\"#{interface}\"")) || []
+        @defined_variables ||= Yast::SCR.Dir(Yast::Path.new(".network.value.\"#{interface}\"")) ||
+          []
       end
 
       # Fetches the value for a given key

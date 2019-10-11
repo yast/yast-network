@@ -68,7 +68,8 @@ module Y2Network
     # Determines whether two drivers are equal
     #
     # @param other [Object] Driver to compare with
-    # @return [Boolean] true if +other+ is a Driver instance with the same name and params; false otherwise.
+    # @return [Boolean] true if +other+ is a Driver instance with the same name and params;
+    #   false otherwise.
     def ==(other)
       return false unless other.is_a?(Driver)
 

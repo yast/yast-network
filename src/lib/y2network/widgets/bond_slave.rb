@@ -133,7 +133,8 @@ module Y2Network
         if @settings.already_configured?(selected_items || [])
           return Yast::Popup.ContinueCancel(
             _(
-              "At least one selected device is already configured.\nAdapt the configuration for bonding?\n"
+              "At least one selected device is already configured.\n" \
+                "Adapt the configuration for bonding?\n"
             )
           )
         else

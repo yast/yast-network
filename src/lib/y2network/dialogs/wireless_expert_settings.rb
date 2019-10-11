@@ -81,11 +81,13 @@ module Y2Network
           ) +
           # Wireless expert dialog help 3/5
           _(
-            "<p>In some rare cases, you may want to set a transmission\n<b>Bit Rate</b> explicitly. The default is to go as fast as possible.</p>"
+            "<p>In some rare cases, you may want to set a transmission\n" \
+              "<b>Bit Rate</b> explicitly. The default is to go as fast as possible.</p>"
           ) +
           # Wireless expert dialog help 4/5
           _(
-            "<p>In an environment with multiple <b>Access Points</b>, you may want to\ndefine the one to which to connect by entering its MAC address.</p>"
+            "<p>In an environment with multiple <b>Access Points</b>, you may want to\n " \
+              "define the one to which to connect by entering its MAC address.</p>"
           ) +
           # Wireless expert dialog help 5/5
           _(
@@ -115,7 +117,7 @@ module Y2Network
       end
 
       def power_management_widget
-        @access_power_widget ||= Y2Network::Widgets::WirelessPowerManagement.new(@settings)
+        @power_management_widget ||= Y2Network::Widgets::WirelessPowerManagement.new(@settings)
       end
 
       def ap_scan_mode_widget

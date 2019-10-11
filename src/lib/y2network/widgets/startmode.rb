@@ -78,8 +78,10 @@ module Y2Network
             ),
             # TRANSLATORS: help text for Device Activation
             _(
-              "Using <b>On NFSroot</b> is similar to <tt>auto</tt>. Interfaces with this startmode will never\n" \
-                "be shut down via <tt>rcnetwork stop</tt>. <tt>ifdown <iface></tt> is still available.\n" \
+              "Using <b>On NFSroot</b> is similar to <tt>auto</tt>. " \
+                "Interfaces with this startmode will never\n" \
+                "be shut down via <tt>rcnetwork stop</tt>. <tt>ifdown <iface></tt> " \
+                "is still available.\n" \
                 "Use this if you have an NFS or iSCSI root filesystem.\n"
             )
           ]
@@ -89,7 +91,8 @@ module Y2Network
         Yast::Builtins.sformat(
           _(
             "<p><b><big>Device Activation</big></b></p> \n" \
-              "<p>Choose when to bring up the network interface. <b>At Boot Time</b> activates it during system boot, \n" \
+              "<p>Choose when to bring up the network interface. <b>At Boot Time</b> " \
+              "activates it during system boot, \n" \
               "<b>Never</b> does not start the device.\n" \
               "%1</p>\n"
           ),

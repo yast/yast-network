@@ -48,7 +48,9 @@ module Yast
 
       # keep network configuration state in @@conf_net to gurantee same
       # behavior when walking :back in installation workflow
-      @@network_configured = !Yast::Lan.yast_config.connections.empty? if !defined?(@@network_configured)
+      if !defined?(@@network_configured)
+        @@network_configured = !Yast::Lan.yast_config.connections.empty?
+      end
 
       log.info("Configured network found: #{@@network_configured}")
 

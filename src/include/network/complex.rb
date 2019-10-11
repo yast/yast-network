@@ -173,7 +173,8 @@ module Yast
     def DeviceStatus(devtype, devname, devmap)
       devmap = deep_copy(devmap)
       # Modem and DSL
-      if devtype == "ppp" || devtype == "modem" || devtype == "dsl"
+      case devtype
+      when "ppp", "modem", "dsl"
         nam = ProviderName(Ops.get_string(devmap, "PROVIDER", ""))
 
         # Modem status (%1 is device)
@@ -186,11 +187,11 @@ module Yast
           nam
         )
       # ISDN card
-      elsif devtype == "isdn" || devtype == "contr"
+      when "isdn", "contr"
         # ISDN device status (%1 is device)
         return Builtins.sformat(_("Configured as %1"), devname)
       # ISDN stuff
-      elsif devtype == "net"
+      when "net"
         nam = ProviderName(Ops.get_string(devmap, "PROVIDER", ""))
         # Connection protocol (syncppp|rawip)
         proto = Ops.get_string(devmap, "PROTOCOL", "")
@@ -207,7 +208,8 @@ module Yast
 
         proto = Ops.get_string(devmap, "BOOTPROTO", "static")
 
-        if proto == "" || proto == "static" || proto == "none" || proto.nil?
+        case proto
+        when "", "static", "none", nil
           addr = Ops.get_string(devmap, "IPADDR", "")
           host = NetHwDetection.ResolveIP(addr)
           remip = Ops.get_string(devmap, "REMOTE_IPADDR", "")
@@ -234,37 +236,6 @@ module Yast
             Builtins.toupper(proto)
           )
         end
-
-        # This is the old version of the above code, including the
-        # configuration name. But the name is long and cryptic so wen
-        # don't use it.
-        # FIXME: dropped interface name
-        if proto == "" || proto == "static" || proto == "none" || proto.nil?
-          addr = Ops.get_string(devmap, "IPADDR", "")
-          remip = Ops.get_string(devmap, "REMOTE_IPADDR", "")
-          # Network card status (%1 is device)
-          return Builtins.sformat(_("Configured as %1"), devname) if addr == "" || addr.nil?
-
-          if remip == "" || remip.nil?
-            # Network card status (%1 is device, %2 is address)
-            return Builtins.sformat(_("Configured as %1 with address %2"), devname, addr)
-          end
-
-          # Network card status (%1 is device, %2 is address, %3 is address)
-          return Builtins.sformat(
-            _("Configured as %1 with address %2 (remote %3)"),
-            devname,
-            addr,
-            remip
-          )
-        end
-
-        # Network card status (%1 is device, %2 is protocol)
-        return Builtins.sformat(
-          _("Configured as %1 with %2"),
-          devname,
-          Builtins.toupper(proto)
-        )
       end
     end
 

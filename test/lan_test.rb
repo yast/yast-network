@@ -344,7 +344,7 @@ describe "LanClass" do
       it "does not configure the interface if it is not connected" do
         allow(Yast::Lan).to receive(:connected_and_bridgeable?).and_return(false)
 
-        expect { Yast::Lan.ProposeVirtualized }.to_not change { yast_config.connections.size }
+        expect { Yast::Lan.ProposeVirtualized }.to_not(change { yast_config.connections.size })
       end
 
       it "configures the interface with defaults before anything if not configured" do

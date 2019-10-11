@@ -123,7 +123,8 @@ module Y2Network
       # @param type  [Symbol] :ipv4 or :ipv6
       def update_ip_forwarding(value, type)
         key = IP_SYSCTL[type]
-        Yast::SCR.Execute(Yast::Path.new(".target.bash"), "/usr/sbin/sysctl -w #{key}=#{value.shellescape}")
+        Yast::SCR.Execute(Yast::Path.new(".target.bash"),
+          "/usr/sbin/sysctl -w #{key}=#{value.shellescape}")
       end
 
       # Finds routes for a given interface or the routes not tied to any

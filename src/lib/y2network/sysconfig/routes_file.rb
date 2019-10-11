@@ -64,8 +64,8 @@ module Y2Network
       # Loads routes from system
       #
       # @return [Array<Hash<String, String>>] list of hashes representing routes
-      #                                       as provided by SCR agent.
-      #                                       keys: destination, gateway, netmask, [device, [extrapara]]
+      #   as provided by SCR agent.
+      #   keys: destination, gateway, netmask, [device, [extrapara]]
       def load
         entries = with_registered_ifroute_agent(file_path) { |a| Yast::SCR.Read(a) }
         entries = entries ? normalize_entries(entries.uniq) : []
@@ -77,7 +77,9 @@ module Y2Network
       # @return [Boolean] true on success
       def save
         # create if not exists, otherwise backup
-        Yast::Execute.on_target("/bin/cp", file_path, file_path + ".YaST2save") if Yast::FileUtils.Exists(file_path)
+        if Yast::FileUtils.Exists(file_path)
+          Yast::Execute.on_target("/bin/cp", file_path, file_path + ".YaST2save")
+        end
 
         with_registered_ifroute_agent(file_path) do |scr|
           # work around bnc#19476

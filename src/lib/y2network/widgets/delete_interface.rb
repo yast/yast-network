@@ -61,8 +61,9 @@ module Y2Network
             "Really delete?"),
             modify.map { |m| "<li>#{m.name}</li>" }.join("\n"),
             delete.map { |m| "<li>#{m.name}</li>" }.join("\n"))
-
-          return nil if Yast2::Popup.show(message, richtext: :yes, buttons: :yes_no, headline: :warning) == :no
+          if Yast2::Popup.show(message, richtext: :yes, buttons: :yes_no, headline: :warning) == :no
+            return nil
+          end
         end
 
         config.delete_interface(@table.value)

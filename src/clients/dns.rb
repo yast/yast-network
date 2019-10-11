@@ -49,10 +49,10 @@ module Yast
 
       Yast.include self, "network/services/dns.rb"
 
-      @HOSTNAME = "hostname"
-      @NAMESERVER_1 = "nameserver1"
-      @NAMESERVER_2 = "nameserver2"
-      @NAMESERVER_3 = "nameserver3"
+      @hostname = "hostname"
+      @nameserver1 = "nameserver1"
+      @nameserver2 = "nameserver2"
+      @nameserver3 = "nameserver3"
 
       # Command line definition
       @cmdline = {
@@ -82,29 +82,29 @@ module Yast
           }
         },
         "options"    => {
-          @HOSTNAME     => {
+          @hostname    => {
             "help"    => _("Used machine hostname"),
             "type"    => "string",
             "example" => "dns edit hostname=SUSE-host"
           },
-          @NAMESERVER_1 => {
+          @nameserver1 => {
             "help"    => _("IP address of first nameserver."),
             "type"    => "string",
             "example" => "dns edit nameserver1=192.168.0.1"
           },
-          @NAMESERVER_2 => {
+          @nameserver2 => {
             "help"    => _("IP address of second nameserver."),
             "type"    => "string",
             "example" => "dns edit nameserver2=192.168.0.1"
           },
-          @NAMESERVER_3 => {
+          @nameserver3 => {
             "help"    => _("IP address of third nameserver."),
             "type"    => "string",
             "example" => "dns edit nameserver3=192.168.0.1"
           }
         },
         "mappings"   => {
-          "edit" => [@HOSTNAME, @NAMESERVER_1, @NAMESERVER_2, @NAMESERVER_3]
+          "edit" => [@hostname, @nameserver1, @nameserver2, @nameserver3]
         }
       }
 
@@ -177,12 +177,12 @@ module Yast
       # setter: a reference to void( any) is expected
       # fail message: a string is expected
       option_handlers = {
-        @HOSTNAME     => {
+        @hostname    => {
           "validator"    => fun_ref(Hostname.method(:Check), "boolean (string)"),
           "setter"       => fun_ref(method(:SetHostname), "void (any)"),
           "fail_message" => Ops.add(_("InvalidHostname. "), Hostname.ValidHost)
         },
-        @NAMESERVER_1 => {
+        @nameserver1 => {
           "validator"    => fun_ref(IP.method(:Check), "boolean (string)"),
           "setter"       => fun_ref(method(:SetNameserver1), "void (any)"),
           "fail_message" => Ops.add(
@@ -190,7 +190,7 @@ module Yast
             IP.Valid6
           )
         },
-        @NAMESERVER_2 => {
+        @nameserver2 => {
           "validator"    => fun_ref(IP.method(:Check), "boolean (string)"),
           "setter"       => fun_ref(method(:SetNameserver2), "void (any)"),
           "fail_message" => Ops.add(
@@ -198,7 +198,7 @@ module Yast
             IP.Valid6
           )
         },
-        @NAMESERVER_3 => {
+        @nameserver3 => {
           "validator"    => fun_ref(IP.method(:Check), "boolean (string)"),
           "setter"       => fun_ref(method(:SetNameserver3), "void (any)"),
           "fail_message" => Ops.add(
@@ -208,7 +208,7 @@ module Yast
         }
       }
 
-      unmanaged_only_options = [@NAMESERVER_1, @NAMESERVER_2, @NAMESERVER_3]
+      unmanaged_only_options = [@nameserver1, @nameserver2, @nameserver3]
 
       ret = true
 

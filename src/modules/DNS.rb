@@ -219,10 +219,8 @@ module Yast
       #     - aliases in /etc/hosts
       #   - IPADDR=IP/24
 
-      # loopback interface
-      return true if check_host == "127.0.0.1" || check_host == "::1"
-      # localhost hostname
-      return true if check_host == "localhost" || check_host == "localhost.localdomain"
+      # loopback interface or localhost hostname
+      return true if ["127.0.0.1", "::1", "localhost", "localhost.localdomain"].include?(check_host)
 
       # IPv4 address
       if IP.Check4(check_host)

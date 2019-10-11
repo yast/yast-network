@@ -87,7 +87,8 @@ module Yast
 
       # Network dialog help
       help = _(
-        "<p>Choose one of the available network modules to configure\n the corresponding devices and press <b>Launch</b>.</p>"
+        "<p>Choose one of the available network modules to configure\n" \
+        " the corresponding devices and press <b>Launch</b>.</p>"
       )
 
       # Network dialog contents

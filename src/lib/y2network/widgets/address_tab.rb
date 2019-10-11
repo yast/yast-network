@@ -48,7 +48,7 @@ module Y2Network
 
         drvtype = driver_type(type.short_name)
         # TODO: check if this kind of device is still valid and used
-        is_ptp = drvtype == "ctc" || drvtype == "iucv"
+        is_ptp = ["ctc", "iucv"].include?(drvtype)
         # TODO: dynamic for dummy. or add dummy from outside?
         no_dhcp =
           is_ptp ||
@@ -106,13 +106,14 @@ module Y2Network
       def driver_type(type)
         drvtype = type
         # handle HSI like qeth, bsc#55692 #c15
-        if type == "hsi"
+        case type
+        when "hsi"
           drvtype = "qeth"
         # Should eth occur on s390?
-        elsif type == "tr" || type == "eth"
+        when "tr",  "eth"
           drvtype = "lcs"
         # N#82891
-        elsif type == "escon" || type == "ficon"
+        when "escon", "ficon"
           drvtype = "ctc"
         end
         drvtype

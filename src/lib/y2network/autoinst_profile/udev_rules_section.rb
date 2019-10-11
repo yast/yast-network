@@ -69,7 +69,8 @@ module Y2Network
         @udev_rules = udev_rules_from_hash(hash)
       end
 
-      # Method used by {.new_from_network} to populate the attributes when cloning udev rules settings
+      # Method used by {.new_from_network} to populate the attributes when cloning udev rules
+      # settings
       #
       # @param interfaces [Y2Network::InterfacesCollection] Network settings
       def init_from_network(interfaces)

@@ -52,7 +52,8 @@ module Y2Network
 
     private
 
-      # find according to udev rule interface that match given hardware specification or nil if not exist
+      # find according to udev rule interface that match given hardware specification or
+      #   nil if not exist
       # @param config [Config]
       # @param udev_rule [AutoinstSection::UdevRuleSection]
       def interface_for(config, udev_rule)

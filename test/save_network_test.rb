@@ -70,8 +70,8 @@ describe Yast::SaveNetworkClient do
 
   describe "#copy_dhcp_info" do
     let(:wicked_path) { described_class::WICKED_DHCP_PATH }
-    let(:dhcpv4_path) { described_class::DHCPv4_PATH }
-    let(:dhcpv6_path) { described_class::DHCPv6_PATH }
+    let(:dhcpv4_path) { described_class::DHCPV4_PATH }
+    let(:dhcpv6_path) { described_class::DHCPV6_PATH }
     let(:wicked_files) do
       described_class::WICKED_DHCP_FILES.map { |f| File.join(wicked_path, f) }
     end

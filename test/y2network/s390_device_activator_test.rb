@@ -32,7 +32,9 @@ describe Y2Network::S390DeviceActivator do
   describe ".for" do
     context "specialized class for given known builder" do
       it "returns new instance of that class" do
-        expect(described_class.for(known_builder).class.to_s).to eq "Y2Network::S390DeviceActivators::Qeth"
+        expect(described_class.for(known_builder).class.to_s).to eq(
+          "Y2Network::S390DeviceActivators::Qeth"
+        )
       end
     end
 

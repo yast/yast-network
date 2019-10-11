@@ -175,13 +175,14 @@ module Yast
     def DriverType(type)
       drvtype = type
       # handle HSI like qeth, S#40692#c15
-      if type == "hsi"
+      case type
+      when "hsi"
         drvtype = "qeth"
       # Should eth occur on s390?
-      elsif type == "tr" || type == "eth"
+      when "tr", "eth"
         drvtype = "lcs"
       # N#82891
-      elsif type == "escon" || type == "ficon"
+      when "escon", "ficon"
         drvtype = "ctc"
       end
       drvtype
@@ -547,9 +548,10 @@ module Yast
           # FIXME: this should be also done for modems and others
           # FIXME: #13571
           hp = card["hotplug"] || ""
-          if hp == "pcmcia" || hp == "cardbus"
+          case hp
+          when "pcmcia", "cardbus"
             one["hotplug"] = "pcmcia"
-          elsif hp == "usb"
+          when "usb"
             one["hotplug"] = "usb"
           end
 
@@ -622,9 +624,12 @@ module Yast
     # shellescape()).
 
     # @param command [String] Shell command to run
-    # @return Hash in form $[ "exit": <command-exit-status>, "output": [ <1st line>, <2nd line>, ... ] ]
+    # @return Hash in form $[ "exit": <command-exit-status>,
+    #   "output": [ <1st line>, <2nd line>, ... ] ]
     def RunAndRead(command)
-      log.warn("Command does not have an absolute path: #{command}") if !command.lstrip.start_with?("/")
+      if !command.lstrip.start_with?("/")
+        log.warn("Command does not have an absolute path: #{command}")
+      end
       ret = { "exit" => false, "output" => [] }
       result = Convert.to_map(SCR.Execute(path(".target.bash_output"), command))
       output = Ops.get_string(result, "stdout", "")
@@ -659,7 +664,9 @@ module Yast
     # @param command [String] Shell command to run
     # @return whether command execution succeeds
     def Run(command)
-      log.warn("Command does not have an absolute path: #{command}") if !command.lstrip.start_with?("/")
+      if !command.lstrip.start_with?("/")
+        log.warn("Command does not have an absolute path: #{command}")
+      end
       ret = SCR.Execute(path(".target.bash"), command).zero?
 
       Builtins.y2error("Run <%1>: Command execution failed.", command) if !ret
@@ -795,7 +802,8 @@ module Yast
         return true
       end
 
-      # filter out device with chelsio Driver and no Device File or which cannot networking(bnc#711432)
+      # filter out device with chelsio Driver and no Device File or which cannot
+      # networking (bnc#711432)
       if driver == "cxgb4" &&
           (device_info["dev_name"] || "") == "" ||
           device_info["vendor_id"] == 70_693 &&

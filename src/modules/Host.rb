@@ -112,7 +112,9 @@ module Yast
       end
 
       # backup if exists
-      Yast::Execute.on_target("cp", CFA::Hosts::PATH, "#{CFA::Hosts::PATH}.YaST2save") if SCR.Read(path(".target.size"), CFA::Hosts::PATH) >= 0
+      if SCR.Read(path(".target.size"), CFA::Hosts::PATH) >= 0
+        Yast::Execute.on_target("cp", CFA::Hosts::PATH, "#{CFA::Hosts::PATH}.YaST2save")
+      end
 
       @hosts.save
 

@@ -42,11 +42,14 @@ module Yast
     # @return [Array<String>] list of NTP servers
     def parse_ntp_servers(iface)
       raise ArgumentError, "A network device has to be specified" if iface.nil? || iface.empty?
-      raise "Parsing NTP Servers not supported for network service in use" if !NetworkService.is_wicked
+      if !NetworkService.is_wicked
+        raise "Parsing NTP Servers not supported for network service in use"
+      end
 
       lease_files = ["ipv4", "ipv6"].map { |ip| "/var/lib/wicked/lease-#{iface}-dhcp-#{ip}.xml" }
       lease_files.find_all { |f| File.file?(f) }.reduce([]) do |stack, file|
-        result = SCR.Execute(BASH_OUTPUT_PATH, "/usr/sbin/wicked xpath --file #{file.shellescape} \"%{//ntp/server}\"")
+        result = SCR.Execute(BASH_OUTPUT_PATH,
+          "/usr/sbin/wicked xpath --file #{file.shellescape} \"%{//ntp/server}\"")
 
         stack + result.fetch("stdout", "").split("\n")
       end

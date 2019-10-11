@@ -145,7 +145,8 @@ end
 context "When proposing device names candidates" do
   before(:each) do
     allow(Yast::LanItems).to receive(:find_type_ifaces).and_return([])
-    allow(Yast::LanItems).to receive(:find_type_ifaces).with("eth").and_return(["eth0", "eth2", "eth3"])
+    allow(Yast::LanItems).to receive(:find_type_ifaces).with("eth")
+      .and_return(["eth0", "eth2", "eth3"])
   end
 
   describe "LanItems#new_type_device" do

@@ -99,15 +99,16 @@ module Y2Network
 
       # Load a set of routes for a given path
       def load_routes_from(path = nil)
-        file = path ? Y2Network::Sysconfig::RoutesFile.new(path) : Y2Network::Sysconfig::RoutesFile.new
+        klass = Y2Network::Sysconfig::RoutesFile
+        file = path ? klass.new(path) : klass.new
         file.load
         file.routes
       end
 
       # Links routes to interfaces objects
       #
-      # {Y2Network::Sysconfig::RoutesFile} knows nothing about the already detected interfaces, so it
-      # instantiates a new object for each interface found. This method links the routes
+      # {Y2Network::Sysconfig::RoutesFile} knows nothing about the already detected interfaces, so
+      # it instantiates a new object for each interface found. This method links the routes
       # with the interfaces found in #interfaces.
       #
       # @param routes     [Array<Route>] Routes to link

@@ -89,7 +89,7 @@ module Y2Network
 
       # Finds the connections configurations
       def find_connections
-        @connections ||=
+        @connections =
           InterfaceFile.all.each_with_object(ConnectionConfigsCollection.new([])) do |file, conns|
             interface = @interfaces.by_name(file.interface)
             connection = ConnectionConfigReader.new.read(
@@ -122,7 +122,8 @@ module Y2Network
         Y2Network::PhysicalInterface.new(hwinfo.dev_name, hardware: hwinfo).tap do |iface|
           iface.renaming_mechanism = renaming_mechanism_for(iface)
           iface.custom_driver = custom_driver_for(iface)
-          iface.type = InterfaceType.from_short_name(hwinfo.type) || TypeDetector.type_of(iface.name)
+          iface.type = InterfaceType.from_short_name(hwinfo.type) ||
+            TypeDetector.type_of(iface.name)
         end
       end
 

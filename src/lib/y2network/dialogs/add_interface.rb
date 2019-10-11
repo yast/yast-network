@@ -53,7 +53,8 @@ module Y2Network
         Yast::LanItems.set_default_route = true
       end
 
-      # @return [Y2Network::InterfaceConfigBuilder, nil] returns new builder when type selected or nil if canceled
+      # @return [Y2Network::InterfaceConfigBuilder, nil] returns new builder when type selected
+      #   or nil if canceled
       def run
         legacy_init
 

@@ -22,7 +22,8 @@ require "yast"
 module Y2Network
   # Base class for startmode. It allows to create new one according to name or anlist all.
   # Its child have to define `to_human_string` method and possibly its own specialized attributes.
-  # TODO: as backends differs, we probably also need to have flag there to which backends mode exists
+  # TODO: as backends differs, we probably also need to have flag there to which backends
+  #   mode exists
   class Startmode
     include Yast::Logger
 

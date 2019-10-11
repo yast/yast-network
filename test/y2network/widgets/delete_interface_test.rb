@@ -45,7 +45,9 @@ describe Y2Network::Widgets::DeleteInterface do
       c.interface = "br0"
     end
   end
-  let(:config) { Y2Network::Config.new(interfaces: interfaces, connections: connections, source: :testing) }
+  let(:config) do
+    Y2Network::Config.new(interfaces: interfaces, connections: connections, source: :testing)
+  end
 
   let(:interface_to_delete) { "eth0" }
 

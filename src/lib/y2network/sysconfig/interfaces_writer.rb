@@ -53,7 +53,8 @@ module Y2Network
         when :mac
           Y2Network::UdevRule.new_mac_based_rename(iface.name, iface.hardware.mac)
         when :bus_id
-          Y2Network::UdevRule.new_bus_id_based_rename(iface.name, iface.hardware.busid, iface.hardware.dev_port)
+          Y2Network::UdevRule.new_bus_id_based_rename(iface.name, iface.hardware.busid,
+            iface.hardware.dev_port)
         end
       end
 
@@ -79,7 +80,9 @@ module Y2Network
       def update_renaming_udev_rules(interfaces)
         udev_rules = interfaces.map { |i| renaming_udev_rule_for(i) }.compact
         known_names = interfaces.known_names
-        custom_rules = Y2Network::UdevRule.naming_rules.reject { |u| known_names.include?(u.device) }
+        custom_rules = Y2Network::UdevRule.naming_rules.reject do |u|
+          known_names.include?(u.device)
+        end
         Y2Network::UdevRule.write_net_rules(custom_rules + udev_rules)
       end
 
@@ -90,7 +93,8 @@ module Y2Network
 
       def reload_udev_rules
         Yast::Execute.on_target("/usr/bin/udevadm", "control", "--reload")
-        Yast::Execute.on_target("/usr/bin/udevadm", "trigger", "--subsystem-match=net", "--action=add")
+        Yast::Execute.on_target("/usr/bin/udevadm", "trigger", "--subsystem-match=net",
+          "--action=add")
         # wait so that ifcfgs written in NetworkInterfaces are newer
         # (1-second-wise) than netcontrol status files,
         # and rcnetwork reload actually works (bnc#749365)

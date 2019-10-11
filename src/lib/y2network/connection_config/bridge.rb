@@ -46,7 +46,8 @@ module Y2Network
       def ==(other)
         return false unless super
 
-        stp == other.stp && forward_delay == other.forward_delay && ((ports - other.ports) + (other.ports - ports)).empty?
+        stp == other.stp && forward_delay == other.forward_delay &&
+          ((ports - other.ports) + (other.ports - ports)).empty?
       end
     end
   end

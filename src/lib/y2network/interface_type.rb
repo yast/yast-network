@@ -35,7 +35,7 @@ module Y2Network
       #
       # @return [Array<InterfaceType>] Interface types
       def all
-        @types ||= InterfaceType.constants
+        @all ||= InterfaceType.constants
           .map { |c| InterfaceType.const_get(c) }
           .select { |c| c.is_a?(InterfaceType) }
       end
@@ -89,8 +89,7 @@ module Y2Network
 
       target_name = method_name.to_s[0..-2]
       InterfaceType.all.any? do |type|
-        type.name.downcase == target_name ||
-          type.short_name == target_name
+        [type.name.downcase, type.short_name].include?(target_name)
       end
     end
 

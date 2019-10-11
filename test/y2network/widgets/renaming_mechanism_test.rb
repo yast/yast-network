@@ -28,7 +28,8 @@ describe Y2Network::Widgets::RenamingMechanism do
   subject { described_class.new(builder) }
 
   let(:builder) do
-    instance_double(Y2Network::InterfaceConfigBuilder, interface: interface, renaming_mechanism: mechanism)
+    instance_double(Y2Network::InterfaceConfigBuilder, interface:          interface,
+                                                       renaming_mechanism: mechanism)
   end
 
   let(:interface) { Y2Network::PhysicalInterface.new("eth0") }

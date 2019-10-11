@@ -29,8 +29,12 @@ describe Y2Network::Widgets::InterfacesTable do
 
   let(:description) { double(:value= => nil) }
 
-  let(:eth0) { instance_double(Y2Network::Interface, name: "eth0", hardware: hwinfo, old_name: "eth1") }
-  let(:br0) { instance_double(Y2Network::VirtualInterface, name: "br0", hardware: nil, old_name: nil) }
+  let(:eth0) do
+    instance_double(Y2Network::Interface, name: "eth0", hardware: hwinfo, old_name: "eth1")
+  end
+  let(:br0) do
+    instance_double(Y2Network::VirtualInterface, name: "br0", hardware: nil, old_name: nil)
+  end
   let(:interfaces) { Y2Network::InterfacesCollection.new([eth0, br0]) }
   let(:hwinfo) do
     instance_double(Y2Network::Hwinfo, link: link, mac: mac, busid: busid,
@@ -49,7 +53,8 @@ describe Y2Network::Widgets::InterfacesTable do
   end
 
   before do
-    allow(Yast::Lan).to receive(:yast_config).and_return(double(interfaces: interfaces, connections: connections))
+    allow(Yast::Lan).to receive(:yast_config)
+      .and_return(double(interfaces: interfaces, connections: connections))
     allow(Yast::UI).to receive(:QueryWidget).and_return([])
     allow(subject).to receive(:value).and_return("eth0")
   end

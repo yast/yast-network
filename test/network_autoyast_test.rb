@@ -131,7 +131,8 @@ describe "NetworkAutoYast" do
     it "uses values from instsys, when nothing else is defined" do
       result = network_autoyast.send(:merge_dns, instsys_dns_setup, {})
 
-      expect(result).to eql instsys_dns_setup.delete_if { |k, _v| k == "write_hostname" }
+      instsys_dns_setup.delete("write_hostname")
+      expect(result).to eql instsys_dns_setup
     end
 
     it "ignores instsys values, when AY provides ones" do

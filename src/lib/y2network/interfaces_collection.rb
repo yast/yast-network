@@ -48,7 +48,8 @@ module Y2Network
     attr_reader :interfaces
     alias_method :to_a, :interfaces
 
-    def_delegators :@interfaces, :each, :push, :<<, :reject!, :map, :flat_map, :any?, :size, :select, :find
+    def_delegators :@interfaces, :each, :push, :<<, :reject!, :map, :flat_map, :any?, :size,
+      :select, :find
 
     # Constructor
     #
@@ -138,7 +139,8 @@ module Y2Network
     # @return list of names of interfaces enslaved in the bond_iface
     # TODO: move to class of interface type bond, also change return type to InterfaceCollection
     def bond_slaves(bond_iface)
-      bond_map = Yast::NetworkInterfaces::FilterDevices("netcard").fetch("bond", {}).fetch(bond_iface, {})
+      bond_map = Yast::NetworkInterfaces::FilterDevices("netcard")
+        .fetch("bond", {}).fetch(bond_iface, {})
 
       bond_map.select { |k, _| k.start_with?("BONDING_SLAVE") }.values
     end

@@ -278,7 +278,8 @@ module Y2Network
         if options.size < 2
           CommandLine.Error(
             _(
-              "At least one of the following parameters (gateway, netmask, device, options) must be specified"
+              "At least one of the following parameters (gateway, netmask, " \
+                "device, options) must be specified"
             )
           )
           return false

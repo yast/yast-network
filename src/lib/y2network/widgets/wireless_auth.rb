@@ -79,11 +79,12 @@ module Y2Network
       end
 
       def replace_widget
-        @replace_widget ||= CWM::ReplacePoint.new(id: "wireless_replace_point", widget: empty_auth_widget)
+        @replace_widget ||= CWM::ReplacePoint.new(id:     "wireless_replace_point",
+                                                  widget: empty_auth_widget)
       end
 
       def empty_auth_widget
-        @empty_auth ||= CWM::Empty.new("wireless_empty")
+        @empty_auth_widget ||= CWM::Empty.new("wireless_empty")
       end
 
       def auth_mode_widget

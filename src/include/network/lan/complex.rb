@@ -116,9 +116,16 @@ module Yast
           "contents"     => VBox(
             interfaces_table.widget_id,
             interface_description.widget_id,
-            Left(HBox(add_interface.widget_id, edit_interface.widget_id, delete_interface.widget_id))
+            Left(
+              HBox(
+                add_interface.widget_id, edit_interface.widget_id, delete_interface.widget_id
+              )
+            )
           ),
-          "widget_names" => [interfaces_table.widget_id, interface_description.widget_id, add_interface.widget_id, edit_interface.widget_id, delete_interface.widget_id]
+          "widget_names" => [
+            interfaces_table.widget_id, interface_description.widget_id, add_interface.widget_id,
+            edit_interface.widget_id, delete_interface.widget_id
+          ]
         }
       }
       @tabs_descr = Builtins.union(@tabs_descr, route_td)
@@ -164,7 +171,8 @@ module Yast
       Wizard.RestoreHelp(Ops.get_string(@help, "read", ""))
       Lan.AbortFunction = -> { PollAbort() }
       ret = Lan.Read(:cache)
-      # Currently just a smoketest for new config storage - something what should replace Lan module in the bright future
+      # Currently just a smoketest for new config storage -
+      # something what should replace Lan module in the bright future
       # TODO: find a suitable place for this config storage
       Y2Network::Config.from(:sysconfig)
 

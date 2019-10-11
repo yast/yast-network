@@ -155,7 +155,8 @@ module Yast
             SCR.Execute(
               path(".target.bash_output"),
               Builtins.sformat(
-                "/usr/sbin/ip address show dev %1 | /usr/bin/grep 'inet\\|link' | /usr/bin/sed 's/^ \\+//g'| /usr/bin/cut -d' ' -f-2",
+                "/usr/sbin/ip address show dev %1 | /usr/bin/grep 'inet\\|link' | " \
+                  "/usr/bin/sed 's/^ \\+//g'| /usr/bin/cut -d' ' -f-2",
                 net_dev.shellescape
               )
             ),
@@ -170,7 +171,9 @@ module Yast
           tmp_col = Builtins.splitstring(column, " ")
           next if Ops.less_than(Builtins.size(tmp_col), 2)
 
-          tmp_mac = Ops.get(tmp_col, 1, "") if Builtins.issubstring(Ops.get(tmp_col, 0, ""), "link/ether")
+          if Builtins.issubstring(Ops.get(tmp_col, 0, ""), "link/ether")
+            tmp_mac = Ops.get(tmp_col, 1, "")
+          end
           if Builtins.issubstring(Ops.get(tmp_col, 0, ""), "inet") &&
               !Builtins.issubstring(Ops.get(tmp_col, 0, ""), "inet6")
             addr = true
@@ -249,7 +252,8 @@ module Yast
     end
 
     # Read all network settings from the SCR
-    # @param cache [Symbol] :cache=use cached data, :nocache=reread from disk TODO pass to submodules
+    # @param cache [Symbol] :cache=use cached data, :nocache=reread from disk
+    #  TODO: pass to submodules
     # @return true on success
     def Read(cache)
       if cache == :cache && @initialized
@@ -589,12 +593,12 @@ module Yast
       Write()
     end
 
-    # If there's key in m, upcase key and assign the value to ret
+    # If there's key in modify, upcase key and assign the value to ret
     # @return ret
-    def UpcaseCondSet(ret, m, key)
+    def UpcaseCondSet(ret, modify, key)
       ret = deep_copy(ret)
-      m = deep_copy(m)
-      Ops.set(ret, Builtins.toupper(key), Ops.get(m, key)) if Builtins.haskey(m, key)
+      modify = deep_copy(modify)
+      Ops.set(ret, Builtins.toupper(key), Ops.get(modify, key)) if Builtins.haskey(modify, key)
       deep_copy(ret)
     end
 
@@ -678,7 +682,9 @@ module Yast
       dhcp = UpcaseCondSet(dhcp, dhcpopts, "dhclient_hostname_option")
 
       Ops.set(input, "config", "dhcp" => dhcp)
-      Ops.set(input, ["config", "config"], "CHECK_DUPLICATE_IP" => true) if !Ops.get(input, "strict_IP_check_timeout").nil?
+      if !Ops.get(input, "strict_IP_check_timeout").nil?
+        Ops.set(input, ["config", "config"], "CHECK_DUPLICATE_IP" => true)
+      end
 
       Builtins.y2milestone("input=%1", input)
       input
@@ -719,13 +725,13 @@ module Yast
     def Export
       profile = Y2Network::AutoinstProfile::NetworkingSection.new_from_network(yast_config)
       ay = {
-        "dns"                  => profile.dns ? profile.dns.to_hashes : {},
-        "net-udev"             => profile.udev_rules ? profile.udev_rules.udev_rules.map(&:to_hashes) : [],
-        "s390-devices"         => profile.s390_devices ? profile.s390_devices.to_hashes["devices"] : [],
+        "dns"                  => profile.dns&.to_hashes || {},
+        "net-udev"             => profile.udev_rules.udev_rules&.map(&:to_hashes) || [],
+        "s390-devices"         => profile.s390_devices&.to_hashes&.fetch("devices", []) || [],
         "config"               => NetworkConfig.Export,
-        "interfaces"           => profile.interfaces ? profile.interfaces.interfaces.map(&:to_hashes) : [],
+        "interfaces"           => profile.interfaces.interfaces&.map(&:to_hashes) || [],
         "ipv6"                 => @ipv6,
-        "routing"              => profile.routing ? profile.routing.to_hashes : {},
+        "routing"              => profile.routing&.to_hashes || {},
         "managed"              => NetworkService.is_network_manager,
         "start_immediately"    => Ops.get_boolean(
           LanItems.autoinstall_settings,
@@ -943,7 +949,8 @@ module Yast
         NetworkService.Restart
 
       when :reload_restart
-        log.info("Attempting to reload network service, normal stage #{Stage.normal}, ssh: #{Linuxrc.usessh}")
+        log.info("Attempting to reload network service, normal stage #{Stage.normal}, " \
+          "ssh: #{Linuxrc.usessh}")
 
         NetworkService.ReloadOrRestart if Stage.normal || !Linuxrc.usessh
 

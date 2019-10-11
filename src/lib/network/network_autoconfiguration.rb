@@ -168,7 +168,8 @@ module Yast
     #
     # active device <=> a device which is reported as "up" by wicked
     def active_config?(devname)
-      wicked_query = "/usr/sbin/wicked ifstatus --brief #{devname.shellescape} | /usr/bin/grep 'up$'"
+      wicked_query = "/usr/sbin/wicked ifstatus --brief #{devname.shellescape} |" \
+        " /usr/bin/grep 'up$'"
       SCR.Execute(BASH_PATH, wicked_query).zero?
     end
 

@@ -49,7 +49,8 @@ module Y2Network
           next unless interface
 
           if interface.type.tun? || interface.type.tap?
-            description = Yast::NetworkInterfaces.GetDevTypeDescription(interface.type.short_name, true)
+            description = Yast::NetworkInterfaces.GetDevTypeDescription(interface.type.short_name,
+              true)
           else
             description = interface.name
 
@@ -62,8 +63,9 @@ module Y2Network
           end
 
           selected = enslaved_ifaces.include?(interface.name)
-
-          description << " (Port ID: #{physical_port_id(interface.name)})" if physical_port_id?(interface.name)
+          if physical_port_id?(interface.name)
+            description << " (Port ID: #{physical_port_id(interface.name)})"
+          end
 
           result << Yast::Term.new(:item,
             Yast::Term.new(:id, interface.name),

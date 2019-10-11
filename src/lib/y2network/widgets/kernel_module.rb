@@ -40,9 +40,13 @@ module Y2Network
       end
 
       def help
-        "<p><b>Kernel Module</b>. Enter the kernel module (driver) name \n" \
-          "for your network device here. If the device is already configured, see if there is more than one driver available for\n" \
-          "your device in the drop-down list. If necessary, choose a driver from the list, but usually the default value works.</p>\n"
+        _(
+          "<p><b>Kernel Module</b>. Enter the kernel module (driver) name \n" \
+            "for your network device here. If the device is already configured, " \
+            "see if there is more than one driver available for\n" \
+            "your device in the drop-down list. If necessary, choose a driver " \
+            "from the list, but usually the default value works.</p>\n"
+        )
       end
 
       def opt

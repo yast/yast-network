@@ -66,7 +66,8 @@ module Y2Network
       end
 
       def load_qeth(config, device_section)
-        config.read_channel, config.write_channel, config.data_channel = device_section.chanids.split(" ")
+        chanids = device_section.chanids
+        config.read_channel, config.write_channel, config.data_channel = chanids.split(" ")
         config.layer2 = device_section.layer2
       end
 
