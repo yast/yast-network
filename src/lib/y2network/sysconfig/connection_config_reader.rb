@@ -37,6 +37,7 @@ module Y2Network
         file.load
         handler_class = find_handler_class(type || file.type)
         return nil if handler_class.nil?
+
         handler_class.new(file).connection_config
       end
 

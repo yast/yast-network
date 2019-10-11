@@ -85,6 +85,7 @@ module Y2Network
 
       def kernel_module_widget
         return @kernel_module_widget if @kernel_module_widget
+
         drivers_names = @builder.drivers.map(&:name)
         selected_driver = @builder.driver.name if @builder.driver != :auto
         @kernel_module_widget = KernelModule.new(drivers_names, selected_driver)
@@ -92,7 +93,8 @@ module Y2Network
 
       def kernel_options_widget
         return @kernel_options_widget if @kernel_options_widget
-        options = @builder.driver != :auto ? @builder.driver.params : ""
+
+        options = (@builder.driver != :auto) ? @builder.driver.params : ""
         @kernel_options_widget ||= KernelOptions.new(options)
       end
 

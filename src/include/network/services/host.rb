@@ -74,8 +74,8 @@ module Yast
     # @return [String] space separated list of hostnames encoded using puny codes
     #                  canonical name is the first one
     def encode_hosts_line(canonical, aliases)
-      encoded_aliases = (!aliases.nil?) ? Punycode.EncodePunycodes(aliases) : []
-      encoded_canonical = (!canonical.nil?) ? Punycode.EncodeDomainName(canonical) : ""
+      encoded_aliases = aliases.nil ? Punycode.EncodePunycodes(aliases) : []
+      encoded_canonical = canonical.nil ? Punycode.EncodeDomainName(canonical) : ""
 
       encoded = ""
       encoded << encoded_canonical if !encoded_canonical.empty?

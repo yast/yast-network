@@ -56,16 +56,16 @@ module Y2Network
         SYSCONFIG_NETWORK_DIR = Pathname.new("/etc/sysconfig/network").freeze
 
         # @return [Regex] expression to filter out invalid ifcfg-* files
-        IGNORE_IFCFG_REGEX = /(\.bak|\.orig|\.rpmnew|\.rpmorig|-range|~|\.old|\.scpmbackup)$/
+        IGNORE_IFCFG_REGEX = /(\.bak|\.orig|\.rpmnew|\.rpmorig|-range|~|\.old|\.scpmbackup)$/.freeze
 
         # Returns all configuration files
         #
         # @return [Array<InterfaceFile>]
         def all
           Yast::SCR.Dir(Yast::Path.new(".network.section"))
-                   .reject { |f| IGNORE_IFCFG_REGEX =~ f || f == "lo" }
-                   .map { |f| find(f) }
-                   .compact
+            .reject { |f| IGNORE_IFCFG_REGEX =~ f || f == "lo" }
+            .map { |f| find(f) }
+            .compact
         end
 
         # Finds the ifcfg-* file for a given interface
@@ -74,6 +74,7 @@ module Y2Network
         # @return [Sysconfig::InterfaceFile,nil] Sysconfig
         def find(interface)
           return nil unless Yast::FileUtils.Exists(SYSCONFIG_NETWORK_DIR.join("ifcfg-#{interface}").to_s)
+
           new(interface)
         end
 
@@ -422,6 +423,7 @@ module Y2Network
       # Removes the file
       def remove
         return unless Yast::FileUtils.Exists(path.to_s)
+
         Yast::SCR.Execute(Yast::Path.new(".target.remove"), path.to_s)
       end
 
@@ -469,6 +471,7 @@ module Y2Network
       #                                    value if recognized, nil otherwise
       def type_from_interfacetype
         return InterfaceType.from_short_name(interfacetype) if interfacetype
+
         nil
       end
 
@@ -536,7 +539,7 @@ module Y2Network
       # @param [String] value
       # @return [String,nil]
       def value_as_string(value)
-        value.nil? || value.empty? ? nil : value
+        (value.nil? || value.empty?) ? nil : value
       end
 
       # Converts the value into an integer (or nil if empty)
@@ -544,7 +547,7 @@ module Y2Network
       # @param [String] value
       # @return [Integer,nil]
       def value_as_integer(value)
-        value.nil? || value.empty? ? nil : value.to_i
+        (value.nil? || value.empty?) ? nil : value.to_i
       end
 
       # Converts the value into an float (or nil if empty)
@@ -552,7 +555,7 @@ module Y2Network
       # @param [String] value
       # @return [Float,nil]
       def value_as_float(value)
-        value.nil? || value.empty? ? nil : value.to_f
+        (value.nil? || value.empty?) ? nil : value.to_f
       end
 
       # Converts the value into a symbol (or nil if empty)
@@ -560,7 +563,7 @@ module Y2Network
       # @param [String] value
       # @return [Symbol,nil]
       def value_as_symbol(value)
-        value.nil? || value.empty? ? nil : value.downcase.to_sym
+        (value.nil? || value.empty?) ? nil : value.downcase.to_sym
       end
 
       # Converts the value into a IPAddress (or nil if empty)
@@ -568,7 +571,7 @@ module Y2Network
       # @param [String] value
       # @return [Y2Network::IPAddress,nil]
       def value_as_ipaddr(value)
-        value.nil? || value.empty? ? nil : Y2Network::IPAddress.from_string(value)
+        (value.nil? || value.empty?) ? nil : Y2Network::IPAddress.from_string(value)
       end
 
       # Writes an array as a value for a given key
@@ -579,7 +582,7 @@ module Y2Network
       def write_collection(key, values)
         clean_collection(key)
         values.each do |suffix, value|
-          write_key = suffix == :default ? key : "#{key}#{suffix}"
+          write_key = (suffix == :default) ? key : "#{key}#{suffix}"
           write_scalar(write_key, value)
         end
       end

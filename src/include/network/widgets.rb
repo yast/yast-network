@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
@@ -53,6 +51,7 @@ module Yast
     def ValidateIP(key, _event)
       value = Convert.to_string(UI.QueryWidget(Id(key), :Value))
       return IP.Check(value) if value != ""
+
       true
     end
 

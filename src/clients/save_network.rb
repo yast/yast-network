@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
@@ -21,10 +19,10 @@
 # you may find current contact information at www.novell.com
 #
 # **************************************************************************
-# File:	clients/save_network.ycp
-# Package:	Network configuration
-# Summary:	Installation routines
-# Authors:	Michal Zugec <mzugec@suse.cz>
+# File:  clients/save_network.ycp
+# Package:  Network configuration
+# Summary:  Installation routines
+# Authors:  Michal Zugec <mzugec@suse.cz>
 #
 #
 require "network/clients/save_network"

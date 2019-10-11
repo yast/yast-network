@@ -411,7 +411,7 @@ module Yast
         path(".target.bash"),
         Builtins.sformat(
           "/usr/sbin/sysctl -w net.ipv6.conf.all.disable_ipv6=%1",
-          (!@ipv6) ? "1" : "0"
+          @ipv6 ? "0" : "1"
         )
       )
       SCR.Write(

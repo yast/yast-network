@@ -151,7 +151,7 @@ describe Yast::NetworkAutoconfiguration do
                       interfaces:  Y2Network::InterfacesCollection.new([double(name: IFACE)]),
                       connections: Y2Network::ConnectionConfigsCollection.new([double(name: IFACE)]),
                       source:      :testing
-        ))
+                    ))
       allow(Yast::SCR)
         .to receive(:Execute)
         .and_return(0)

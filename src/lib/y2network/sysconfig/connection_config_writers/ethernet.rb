@@ -25,11 +25,8 @@ module Y2Network
       # This class is responsible for writing the information from a ConnectionConfig::Ethernet
       # object to the underlying system.
       class Ethernet < Base
-      private
-
         # @see Y2Network::ConnectionConfigWriters::Base#update_file
-        def update_file(_conn)
-        end
+        def update_file(_conn); end
       end
     end
   end

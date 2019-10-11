@@ -127,7 +127,7 @@ module Y2Network
       # @return [String] Friendly name for the interface (description or name)
       def friendly_name(interface)
         hwinfo = interface.hardware
-        hwinfo && hwinfo.present? ? hwinfo.description : interface.name
+        (hwinfo&.present?) ? hwinfo.description : interface.name
       end
     end
   end

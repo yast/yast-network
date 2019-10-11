@@ -36,12 +36,12 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Tap do
   let(:scr_root) { Dir.mktmpdir }
 
   around do |example|
-    begin
-      FileUtils.cp_r(File.join(DATA_PATH, "scr_read", "etc"), scr_root)
-      change_scr_root(scr_root, &example)
-    ensure
-      FileUtils.remove_entry(scr_root)
-    end
+
+    FileUtils.cp_r(File.join(DATA_PATH, "scr_read", "etc"), scr_root)
+    change_scr_root(scr_root, &example)
+  ensure
+    FileUtils.remove_entry(scr_root)
+
   end
 
   let(:conn) do

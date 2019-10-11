@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
@@ -21,10 +19,10 @@
 # you may find current contact information at www.novell.com
 #
 # **************************************************************************
-# File:	include/network/complex.ycp
-# Package:	Network configuration
-# Summary:	Summary and overview functions
-# Authors:	Michal Svec <msvec@suse.cz>
+# File:  include/network/complex.ycp
+# Package:  Network configuration
+# Summary:  Summary and overview functions
+# Authors:  Michal Svec <msvec@suse.cz>
 #
 #
 module Yast
@@ -51,8 +49,10 @@ module Yast
     def BuildDescription(devtype, devnum, devmap, hardware)
       descr = devmap["NAME"] || ""
       return descr if descr != ""
+
       descr = HardwareName(hardware, devnum)
       return descr if descr != ""
+
       descr = HardwareName(hardware, devmap["UNIQUE"] || "")
       return descr if descr != ""
 
@@ -166,6 +166,7 @@ module Yast
       Provider.Select(provider)
       nam = Ops.get_string(Provider.Current, "PROVIDER", provider)
       return provider if nam.nil? || nam == ""
+
       nam
     end
 
@@ -213,6 +214,7 @@ module Yast
           return _("Configured without address (NONE)").dup if proto == "none"
           # Network card status
           return HTML.Colorize(_("Configured without an address"), "red") if IsEmpty(addr)
+
           if remip == "" || remip.nil?
             # Network card status (%1 is address)
             return Builtins.sformat(_("Configured with address %1"),

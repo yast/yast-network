@@ -25,8 +25,6 @@ module Y2Network
       # This class is responsible for writing the information from a
       # ConnectionConfig::Bridge object to the underlying system.
       class Bridge < Base
-      private
-
         # @see Y2Network::ConnectionConfigWriters::Base#update_file
         # @param conn [Y2Network::ConnectionConfig::Bridge] Configuration to
         #   write

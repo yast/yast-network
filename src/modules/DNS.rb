@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
@@ -21,10 +19,10 @@
 # you may find current contact information at www.novell.com
 #
 # **************************************************************************
-# File:	modules/DNS.ycp
-# Package:	Network configuration
-# Summary:	Hostname and DNS data
-# Authors:	Michal Svec <msvec@suse.cz>
+# File:  modules/DNS.ycp
+# Package:  Network configuration
+# Summary:  Hostname and DNS data
+# Authors:  Michal Svec <msvec@suse.cz>
 #
 #
 # Manages resolv.conf and (fully qualified) hostname, also
@@ -217,16 +215,14 @@ module Yast
         Builtins.y2milestone("Got DHCP-configured data: %1", dhcp_data)
       end
       # FIXME: May not work properly in following situations:
-      # 	- multiple addresses per interface
+      #   - multiple addresses per interface
       #     - aliases in /etc/hosts
-      # 	- IPADDR=IP/24
+      #   - IPADDR=IP/24
 
       # loopback interface
       return true if check_host == "127.0.0.1" || check_host == "::1"
       # localhost hostname
-      if check_host == "localhost" || check_host == "localhost.localdomain"
-        return true
-      end
+      return true if check_host == "localhost" || check_host == "localhost.localdomain"
 
       # IPv4 address
       if IP.Check4(check_host)

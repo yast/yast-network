@@ -25,8 +25,6 @@ module Y2Network
       # This class is able to build a ConnectionConfig::Bridge object given a
       # SysconfigInterfaceFile object.
       class Bridge < Base
-      private
-
         # @see Y2Network::Sysconfig::ConnectionConfigReaders::Base#update_connection_config
         def update_connection_config(conn)
           conn.ports = file.bridge_ports ? file.bridge_ports.split(" ") : []

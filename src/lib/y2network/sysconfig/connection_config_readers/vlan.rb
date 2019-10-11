@@ -26,8 +26,6 @@ module Y2Network
       # This class is able to build a ConnectionConfig::Vlan object given a
       # SysconfigInterfaceFile object.
       class Vlan < Base
-      private
-
         # @param conn [Y2Network::ConnectionConfig::Vlan]
         # @see Y2Network::Sysconfig::ConnectionConfigReaders::Base#update_connection_config
         def update_connection_config(conn)

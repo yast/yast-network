@@ -63,6 +63,7 @@ module Y2Network
       # @return [UdevRule,nil] udev rule or nil if it is not needed
       def driver_udev_rule_for(iface)
         return nil unless iface.respond_to?(:custom_driver) && iface.custom_driver
+
         Y2Network::UdevRule.new_driver_assignment(iface.modalias, iface.custom_driver)
       end
 

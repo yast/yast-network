@@ -25,13 +25,13 @@ module Y2Network
       # This class is able to build a ConnectionConfig::Bonding object given a
       # SysconfigInterfaceFile object.
       class Bonding < Base
-      private
-
         # @see Y2Network::Sysconfig::ConnectionConfigReaders::Base#update_connection_config
         def update_connection_config(conn)
           conn.slaves = slaves
           conn.options = file.bonding_module_opts
         end
+
+      private
 
         # Convenience method to obtain the bonding slaves defined in the file
         #
