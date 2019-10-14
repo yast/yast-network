@@ -18,6 +18,7 @@
 # find current contact information at www.suse.com.
 
 require "y2network/can_be_copied"
+require "y2network/ip_address"
 
 module Y2Network
   module ConnectionConfig

@@ -17,11 +17,13 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
+require "yast"
 require "y2storage"
 require "y2network/ip_address"
 require "y2network/interface_type"
 require "y2network/boot_protocol"
 require "y2network/startmode"
+require "y2network/connection_config/ip_config"
 
 module Y2Network
   module ConnectionConfig
@@ -35,6 +37,7 @@ module Y2Network
     # between two different {Y2Network::Config} objects. When they are copied, the same IDs are
     # kept, so it is easy to find out which connections have been added, removed or simply changed.
     class Base
+      include Yast::Logger
       # A connection could belongs to a specific interface or not. In case of
       # no specific interface then it could be activated by the first available
       # device.
