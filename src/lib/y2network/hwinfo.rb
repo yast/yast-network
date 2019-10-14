@@ -33,6 +33,7 @@ module Y2Network
     # @return [Array<Hwinfo>] Hardware information for netword devices
     def netcards
       return @netcards if @netcards
+
       read_hardware
       @netcards = ReadHardware("netcard").map do |attrs|
         name = attrs["dev_name"]
@@ -132,6 +133,7 @@ module Y2Network
       def hwinfo_from_udev(name)
         udev_rule = UdevRule.find_for(name)
         return nil if udev_rule.nil?
+
         info = {
           udev:     udev_rule.bus_id,
           mac:      udev_rule.mac,
@@ -237,6 +239,7 @@ module Y2Network
     def drivers
       driver = @hwinfo.fetch("drivers", []).first
       return [] unless driver
+
       modules = driver.fetch("modules", [])
       modules.map { |m| Driver.new(*m) }
     end
@@ -261,6 +264,7 @@ module Y2Network
     # @return [String,nil] MAC address
     def mac
       return permanent_mac unless permanent_mac.nil? || permanent_mac.empty?
+
       used_mac
     end
 

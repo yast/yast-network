@@ -29,13 +29,21 @@ describe Y2Network::UdevRule do
 
   let(:udev_persistent_net) do
     {
-      "eth0" => ["SUBSYSTEM==\"net\"", "ACTION==\"add\"", "ATTR{address}==\"?*31:78:f2\"", "NAME=\"eth0\""]
+      "eth0" => [
+        "SUBSYSTEM==\"net\"",
+        "ACTION==\"add\"",
+        "ATTR{address}==\"?*31:78:f2\"",
+        "NAME=\"eth0\""
+      ]
     }
   end
 
   let(:udev_persistent_drivers) do
     {
-      "virtio:d00000001v00001AF4" => ["ENV{MODALIAS}==\"virtio:d00000001v00001AF4\"", "ENV{MODALIAS}=\"e1000\""]
+      "virtio:d00000001v00001AF4" => [
+        "ENV{MODALIAS}==\"virtio:d00000001v00001AF4\"",
+        "ENV{MODALIAS}=\"e1000\""
+      ]
     }
   end
 

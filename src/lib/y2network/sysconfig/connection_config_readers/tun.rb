@@ -25,8 +25,6 @@ module Y2Network
       # This class is able to build a ConnectionConfig::Tun object given a
       # Sysconfig::InterfaceFile object.
       class Tun < Base
-      private
-
         # @param conn [Y2Network::ConnectionConfig::Tun]
         # @see Y2Network::Sysconfig::ConnectionConfigReaders::Base#update_connection_config
         def update_connection_config(conn)

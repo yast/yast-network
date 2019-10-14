@@ -37,8 +37,7 @@ module Y2Network
     class ConfigReader
       include Yast::Logger
 
-      def initialize(_opts = {})
-      end
+      def initialize(_opts = {}); end
 
       # @return [Y2Network::Config] Network configuration
       def config
@@ -100,15 +99,16 @@ module Y2Network
 
       # Load a set of routes for a given path
       def load_routes_from(path = nil)
-        file = path ? Y2Network::Sysconfig::RoutesFile.new(path) : Y2Network::Sysconfig::RoutesFile.new
+        klass = Y2Network::Sysconfig::RoutesFile
+        file = path ? klass.new(path) : klass.new
         file.load
         file.routes
       end
 
       # Links routes to interfaces objects
       #
-      # {Y2Network::Sysconfig::RoutesFile} knows nothing about the already detected interfaces, so it
-      # instantiates a new object for each interface found. This method links the routes
+      # {Y2Network::Sysconfig::RoutesFile} knows nothing about the already detected interfaces, so
+      # it instantiates a new object for each interface found. This method links the routes
       # with the interfaces found in #interfaces.
       #
       # @param routes     [Array<Route>] Routes to link
@@ -116,6 +116,7 @@ module Y2Network
       def link_routes_to_interfaces(routes, interfaces)
         routes.each do |route|
           next unless route.interface
+
           interface = interfaces.by_name(route.interface.name)
           route.interface = interface if interface
         end
@@ -133,6 +134,7 @@ module Y2Network
       # @return [CFA::Sysctl]
       def sysctl_file
         return @sysctl_file if @sysctl_file
+
         @sysctl_file = CFA::Sysctl.new
         @sysctl_file.load
         @sysctl_file

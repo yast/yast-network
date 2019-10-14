@@ -78,7 +78,8 @@ module Y2Network
       def initialize
         @id = @@last_id += 1
         @ip_aliases = []
-        @bootproto = BootProtocol::STATIC # TODO: maybe do test query if physical interface is attached?
+        # TODO: maybe do test query if physical interface is attached to proposal?
+        @bootproto = BootProtocol::STATIC
         @ip = IPConfig.new(IPAddress.from_string("0.0.0.0/32"))
         @startmode = Startmode.create("manual")
         @description = ""
@@ -92,6 +93,7 @@ module Y2Network
       #                   false otherwise
       def ==(other)
         return false if self.class != other.class
+
         [:name, :interface, :bootproto, :ip, :ip_aliases, :mtu, :startmode,
          :description, :lladdress, :ethtool_options, :firewall_zone, :hostname].all? do |method|
           public_send(method) == other.public_send(method)
@@ -103,8 +105,8 @@ module Y2Network
       PROPOSED_PPPOE_MTU = 1492 # suggested value for PPPoE
 
       # Propose reasonable defaults for given config. Useful for newly created devices.
-      # @note difference between constructor and propose is that initialize should set simple defaults
-      #   and propose have more tricky config that depends on env, product, etc.
+      # @note difference between constructor and propose is that initialize should set simple
+      #   defaults and propose have more tricky config that depends on env, product, etc.
       def propose
         propose_startmode
         self.mtu = PROPOSED_PPPOE_MTU if Yast::Arch.s390 && (type.lcs? || type.ethernet?)

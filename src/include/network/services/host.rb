@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
@@ -21,10 +19,10 @@
 # you may find current contact information at www.novell.com
 #
 # **************************************************************************
-# File:	include/network/services/host.ycp
-# Module:	Network configuration
-# Summary:	Hosts configuration dialogs
-# Authors:	Michal Svec <msvec@suse.cz>
+# File:  include/network/services/host.ycp
+# Module:  Network configuration
+# Summary:  Hosts configuration dialogs
+# Authors:  Michal Svec <msvec@suse.cz>
 #
 #
 # Hosts configuration dialogs
@@ -76,8 +74,8 @@ module Yast
     # @return [String] space separated list of hostnames encoded using puny codes
     #                  canonical name is the first one
     def encode_hosts_line(canonical, aliases)
-      encoded_aliases = !aliases.nil? ? Punycode.EncodePunycodes(aliases) : []
-      encoded_canonical = !canonical.nil? ? Punycode.EncodeDomainName(canonical) : ""
+      encoded_aliases = aliases ? Punycode.EncodePunycodes(aliases) : []
+      encoded_canonical = canonical ? Punycode.EncodeDomainName(canonical) : ""
 
       encoded = ""
       encoded << encoded_canonical if !encoded_canonical.empty?
@@ -97,7 +95,8 @@ module Yast
       help = _("<p>The hosts can be set up in this dialog.</p>") +
         # Hosts dialog help 2/2
         _(
-          "<p>Enter a host <b>IP Address</b>, a <b>Hostname</b>, and optional\n<b>Host Aliases</b>, separated by spaces.</p>\n"
+          "<p>Enter a host <b>IP Address</b>, a <b>Hostname</b>, and optional\n" \
+            "<b>Host Aliases</b>, separated by spaces.</p>\n"
         )
 
       table_items = []
@@ -199,10 +198,11 @@ module Yast
         ret = UI.UserInput
 
         # abort?
-        if ret == :abort || ret == :cancel
+        case ret
+        when :abort, :cancel
           ret = nil if !ReallyAbortCond(modified)
         # add host
-        elsif ret == :add
+        when :add
           new_item_position = table_items.size
           item = HostDialog(new_item_position, term(:empty))
 
@@ -214,7 +214,7 @@ module Yast
           UI.ChangeWidget(Id(:table), :CurrentItem, new_item_position)
           modified = true
         # edit host
-        elsif ret == :edit || ret == :table
+        when :edit, :table
           cur = Convert.to_integer(UI.QueryWidget(Id(:table), :CurrentItem))
           cur_item = Builtins.filter(table_items) do |e|
             cur == Ops.get(e, [0, 0])
@@ -223,6 +223,7 @@ module Yast
           olditem = Ops.get(cur_item, 0)
 
           next if !HostSystemPopup(Ops.get_string(olditem, 1, ""), false)
+
           item = HostDialog(cur, olditem)
 
           next if item.nil?
@@ -243,7 +244,7 @@ module Yast
           UI.ChangeWidget(Id(:table), :CurrentItem, cur)
           modified = true
         # delete host
-        elsif ret == :delete
+        when :delete
           cur = Convert.to_integer(UI.QueryWidget(Id(:table), :CurrentItem))
           cur_item = Builtins.filter(table_items) do |e|
             cur == Ops.get(e, [0, 0])
@@ -265,8 +266,9 @@ module Yast
           end
           UI.ChangeWidget(Id(:table), :Items, table_items)
           modified = true
-        elsif ret == :next
+        when :next
           next if !modified
+
           Host.clear
 
           table_items.each do |row|

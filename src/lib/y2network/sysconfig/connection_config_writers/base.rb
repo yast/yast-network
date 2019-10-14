@@ -61,8 +61,7 @@ module Y2Network
         # @note This method should be redefined by derived classes.
         #
         # @param _conn [Y2Network::ConnectionConfig::Base]
-        def update_file(_conn)
-        end
+        def update_file(_conn); end
 
         # Adds IP addresses
         #
@@ -89,6 +88,7 @@ module Y2Network
         # @param conn [Y2Network::ConnectionConfig::Base] Connection to take settings from
         def add_hostname(conn)
           return unless conn.hostname && conn.ip
+
           Yast::Host.Update("", conn.hostname, conn.ip.address.address.to_s)
         end
       end

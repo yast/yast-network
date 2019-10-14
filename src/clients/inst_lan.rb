@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
@@ -21,10 +19,10 @@
 # you may find current contact information at www.novell.com
 #
 # **************************************************************************
-# File:	clients/lan.ycp
-# Package:	Network configuration
-# Summary:	Network cards main file
-# Authors:	Michal Svec <msvec@suse.cz>
+# File:  clients/lan.ycp
+# Package:  Network configuration
+# Summary:  Network cards main file
+# Authors:  Michal Svec <msvec@suse.cz>
 #
 #
 # Main file for network card configuration.
@@ -52,7 +50,6 @@ module Yast
       # behavior when walking :back in installation workflow
       if !defined?(@@network_configured)
         @@network_configured = !Yast::Lan.yast_config.connections.empty?
-
       end
 
       log.info("Configured network found: #{@@network_configured}")

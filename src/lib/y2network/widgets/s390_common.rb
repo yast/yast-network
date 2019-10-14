@@ -274,6 +274,7 @@ module Y2Network
       def valid_mac?(mac_address)
         return false if mac_address.to_s.empty?
         return false if mac_address == "00:00:00:00:00:00"
+
         !!(mac_address =~ /^([0-9a-fA-F]{2}[:-]){5}[0-9a-fA-F]{2}$/i)
       end
 

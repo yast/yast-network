@@ -29,8 +29,8 @@ module Y2Network
 
       # Constructor
       #
-      # @param config [Y2Network::ConnectionConfig::Base, nil] existing configuration of device or nil
-      #   for newly created
+      # @param config [Y2Network::ConnectionConfig::Base, nil] existing configuration of device or
+      #   nil for newly created
       def initialize(config: nil)
         super(type: InterfaceType::QETH, config: config)
       end

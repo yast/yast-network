@@ -54,11 +54,13 @@ module Y2Network
 
     # @return [String] Device name (eth0, wlan0, etc.)
     attr_reader :name
-    # @return [Y2Network::InterfaceType] type of @see Y2Network::Interface which is intended to be build
+    # @return [Y2Network::InterfaceType] type of @see Y2Network::Interface which
+    #   is intended to be build
     attr_reader :type
     # @return [Y2Network::ConnectionConfig] connection config on which builder operates
     attr_reader :connection_config
-    # @return [Symbol] Mechanism to rename the interface (:none -no hardware based-, :mac or :bus_id)
+    # @return [Symbol] Mechanism to rename the interface (:none -no hardware based-,
+    #   :mac or :bus_id)
     attr_writer :renaming_mechanism
     # @return [Y2Network::Interface,nil] Underlying interface if it exists
     attr_reader :interface
@@ -116,7 +118,9 @@ module Y2Network
       firewall_interface = Y2Firewall::Firewalld::Interface.new(name)
       if Y2Firewall::Firewalld.instance.installed?
         # TODO: should change only if different, but maybe firewall_interface responsibility?
-        firewall_interface.zone = firewall_zone if !firewall_interface.zone || firewall_zone != firewall_interface.zone.name
+        if !firewall_interface.zone || firewall_zone != firewall_interface.zone.name
+          firewall_interface.zone = firewall_zone
+        end
       end
 
       if interface.respond_to?(:custom_driver)
@@ -134,6 +138,7 @@ module Y2Network
     # @return [Boolean] true if it was renamed; false otherwise
     def renamed_interface?
       return false unless interface
+
       name != interface.name || @renaming_mechanism != interface.renaming_mechanism
     end
 
@@ -183,6 +188,7 @@ module Y2Network
     # gets a list of available kernel modules for the interface
     def drivers
       return [] unless interface
+
       yast_config.drivers_for_interface(interface.name)
     end
 
@@ -192,7 +198,7 @@ module Y2Network
 
       # TODO: handle renaming
       firewall_interface = Y2Firewall::Firewalld::Interface.new(name)
-      @firewall_zone = (firewall_interface.zone && firewall_interface.zone.name) || @connection_config.firewall_zone
+      @firewall_zone = (firewall_interface.zone&.name) || @connection_config.firewall_zone
     end
 
     # sets assigned firewall zone
@@ -230,13 +236,16 @@ module Y2Network
 
     # @return [Integer]
     def ifplugd_priority
-      startmode.name == "ifplugd" ? startmode.priority : 0
+      (startmode.name == "ifplugd") ? startmode.priority : 0
     end
 
     # gets currently assigned kernel module
     def driver
       return @driver if @driver
-      @driver = yast_config.drivers.find { |d| d.name == @interface.custom_driver } if @interface.custom_driver
+
+      if @interface.custom_driver
+        @driver = yast_config.drivers.find { |d| d.name == @interface.custom_driver }
+      end
       @driver ||= :auto
     end
 
@@ -259,7 +268,8 @@ module Y2Network
           ip:        data.address.address.to_s,
           prefixlen: data.address.prefix.to_s,
           id:        data.id.to_s
-          # NOTE: new API does not have netmask at all, we need to adapt UI to clearly mention only prefix
+          # NOTE: new API does not have netmask at all, we need to adapt UI to clearly mention
+          #       only prefix
         }
       end
       @aliases = aliases
@@ -372,6 +382,7 @@ module Y2Network
 
     def ip_config_default
       return @connection_config.ip if @connection_config.ip
+
       @connection_config.ip = ConnectionConfig::IPConfig.new(IPAddress.new("0.0.0.0"))
     end
 
@@ -389,8 +400,8 @@ module Y2Network
     #
     # @param iface [Interface] Interface to associate the builder with
     def interface=(iface)
+      @renaming_mechanism ||= iface.renaming_mechanism
       @interface = iface
-      @renaming_mechanism ||= @interface.renaming_mechanism
     end
 
     # Returns the underlying interface
@@ -398,6 +409,7 @@ module Y2Network
     # @return [Y2Network::Interface,nil]
     def find_interface
       return nil unless yast_config # in some tests, it could return nil
+
       interfaces.by_name(name)
     end
 
@@ -437,8 +449,8 @@ module Y2Network
     def aliases_to_ip_configs
       last_id = 0
       used_ids = aliases
-                 .select { |a| a[:id] && a[:id] =~ /\A_\d+\z/ }
-                 .map { |a| a[:id].sub("_", "").to_i }
+        .select { |a| a[:id] && a[:id] =~ /\A_\d+\z/ }
+        .map { |a| a[:id].sub("_", "").to_i }
       aliases.each_with_object([]) do |map, result|
         ipaddr = IPAddress.from_string(map[:ip])
         ipaddr.prefix = map[:prefixlen].delete("/").to_i if map[:prefixlen]

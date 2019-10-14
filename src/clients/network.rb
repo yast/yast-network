@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
@@ -21,10 +19,10 @@
 # you may find current contact information at www.novell.com
 #
 # **************************************************************************
-# File:	clients/network.ycp
-# Package:	Network configuration
-# Summary:	Main network client
-# Authors:	Michal Svec <msvec@suse.cz>
+# File:  clients/network.ycp
+# Package:  Network configuration
+# Summary:  Main network client
+# Authors:  Michal Svec <msvec@suse.cz>
 #
 #
 # Main file for the network configuration.
@@ -89,7 +87,8 @@ module Yast
 
       # Network dialog help
       help = _(
-        "<p>Choose one of the available network modules to configure\n the corresponding devices and press <b>Launch</b>.</p>"
+        "<p>Choose one of the available network modules to configure\n" \
+        " the corresponding devices and press <b>Launch</b>.</p>"
       )
 
       # Network dialog contents
@@ -159,7 +158,7 @@ module Yast
       Builtins.y2milestone("Network module finished")
       Builtins.y2milestone("----------------------------------------")
 
-      ret == :next ? WFM.CallFunction(launch, WFM.Args) : :back
+      (ret == :next) ? WFM.CallFunction(launch, WFM.Args) : :back
     end
 
     def runHandler(_options)

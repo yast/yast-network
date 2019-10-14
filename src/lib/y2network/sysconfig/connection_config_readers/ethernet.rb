@@ -25,11 +25,8 @@ module Y2Network
       # This class is able to build a ConnectionConfig::Ethernet object given a
       # Sysconfig::InterfaceFile object.
       class Ethernet < Base
-      private
-
         # @see Y2Network::Sysconfig::ConnectionConfigReaders::Base#update_connection_config
-        def update_connection_config(_conn)
-        end
+        def update_connection_config(_conn); end
       end
     end
   end

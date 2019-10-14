@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
@@ -366,7 +364,6 @@ module Yast
     def ReadHw
       @Items = {}
       @Hardware = ReadHardware("netcard")
-      # Hardware = [$["active":true, "bus":"pci", "busid":"0000:02:00.0", "dev_name":"wlan0", "drivers":[$["active":true, "modprobe":true, "modules":[["ath5k" , ""]]]], "link":true, "mac":"00:22:43:37:55:c3", "modalias":"pci:v0000168Cd0000001Csv00001A3Bsd00001026bc02s c00i00", "module":"ath5k", "name":"AR242x 802.11abg Wireless PCI Express Adapter", "num":0, "options":"", "re quires":[], "sysfs_id":"/devices/pci0000:00/0000:00:1c.1/0000:02:00.0", "type":"wlan", "udi":"/org/freedeskto p/Hal/devices/pci_168c_1c", "wl_auth_modes":["open", "sharedkey", "wpa-psk", "wpa-eap"], "wl_bitrates":nil, " wl_channels":["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"], "wl_enc_modes":["WEP40", "WEP104", "T KIP", "CCMP"]], $["active":true, "bus":"pci", "busid":"0000:01:00.0", "dev_name":"eth0", "drivers":[$["active ":true, "modprobe":true, "modules":[["atl1e", ""]]]], "link":false, "mac":"00:23:54:3f:7c:c3", "modalias":"pc i:v00001969d00001026sv00001043sd00008324bc02sc00i00", "module":"atl1e", "name":"L1 Gigabit Ethernet Adapter", "num":1, "options":"", "requires":[], "sysfs_id":"/devices/pci0000:00/0000:00:1c.3/0000:01:00.0", "type":"et h", "udi":"/org/freedesktop/Hal/devices/pci_1969_1026", "wl_auth_modes":nil, "wl_bitrates":nil, "wl_channels" :nil, "wl_enc_modes":nil]];
       nil
     end
 
@@ -395,7 +392,8 @@ module Yast
       reset_cache
 
       @autoinstall_settings["start_immediately"] = settings.fetch("start_immediately", false)
-      @autoinstall_settings["strict_IP_check_timeout"] = settings.fetch("strict_IP_check_timeout", -1)
+      @autoinstall_settings["strict_IP_check_timeout"] = settings.fetch("strict_IP_check_timeout",
+        -1)
       @autoinstall_settings["keep_install_network"] = settings.fetch("keep_install_network", true)
 
       # FIXME: createS390Device does two things, it
@@ -403,7 +401,9 @@ module Yast
       # - creates s390 device eth emulation
       # So, it belongs partly into Import and partly into Write. Note, that
       # the code is currently unable to revert already created emulated device.
-      NetworkAutoYast.instance.activate_s390_devices(settings.fetch("s390-devices", {})) if Arch.s390
+      if Arch.s390
+        NetworkAutoYast.instance.activate_s390_devices(settings.fetch("s390-devices", {}))
+      end
 
       # settings == {} has special meaning 'Reset' used by AY
       SetModified() if !settings.empty?
@@ -462,7 +462,7 @@ module Yast
     # Is current device hotplug or not? I.e. is connected via usb/pcmci?
     def isCurrentHotplug
       hotplugtype = Ops.get_string(getCurrentItem, ["hwinfo", "hotplug"], "")
-      hotplugtype == "usb" || hotplugtype == "pcmci"
+      ["usb", "pcmci"].include?(hotplugtype)
     end
 
     # Check if currently edited device gets its IP address
@@ -514,9 +514,7 @@ module Yast
     def SetItem(*)
       @hotplug = ""
       Builtins.y2debug("type=%1", @type)
-      if Builtins.issubstring(@type, "-")
-        @type = Builtins.regexpsub(@type, "([^-]+)-.*$", "\\1")
-      end
+      @type = Builtins.regexpsub(@type, "([^-]+)-.*$", "\\1") if Builtins.issubstring(@type, "-")
       Builtins.y2debug("type=%1", @type)
 
       nil
@@ -748,6 +746,7 @@ module Yast
       config = yast_config
       return if config.nil?
       return if config.interfaces.any? { |i| i.name == name }
+
       yast_config.interfaces << Y2Network::Interface.new(name)
     end
 
@@ -757,13 +756,15 @@ module Yast
     # @param to [String] target interface
     def move_routes(from, to)
       config = yast_config
-      return unless config && config.routing
+      return unless config&.routing
+
       routing = config.routing
       add_device_to_routing(to)
       target_interface = config.interfaces.by_name(to)
       return unless target_interface
+
       routing.routes.select { |r| r.interface && r.interface.name == from }
-             .each { |r| r.interface = target_interface }
+        .each { |r| r.interface = target_interface }
     end
 
   private

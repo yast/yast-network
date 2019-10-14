@@ -117,7 +117,9 @@ describe Yast::DNS do
     let(:ip) { "10.111.66.75" }
     let(:hostname_short) { "test" }
     let(:hostname_fq) { "test.test.de" }
-    let(:output) { { "ip" => ip, "hostname_short" => hostname_short, "hostname_fq" => hostname_fq } }
+    let(:output) do
+      { "ip" => ip, "hostname_short" => hostname_short, "hostname_fq" => hostname_fq }
+    end
     let(:ipv4) { false }
     let(:ipv6) { false }
     let(:stdout) { double }

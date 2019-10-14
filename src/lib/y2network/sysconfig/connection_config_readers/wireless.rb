@@ -25,8 +25,6 @@ module Y2Network
       # This class is able to build a ConnectionConfig::Wireless object given a
       # Sysconfig::InterfaceFile object.
       class Wireless < Base
-      private
-
         # @see Y2Network::Sysconfig::ConnectionConfigReaders::Base#update_connection_config
         def update_connection_config(conn)
           conn.ap = file.wireless_ap
@@ -50,6 +48,8 @@ module Y2Network
           conn.channel = file.wireless_channel
           conn.bitrate = file.wireless_rate
         end
+
+      private
 
         # Max number of wireless keys
         MAX_WIRELESS_KEYS = 4

@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
@@ -21,10 +19,10 @@
 # you may find current contact information at www.novell.com
 #
 # **************************************************************************
-# File:	clients/host.ycp
-# Package:	Network configuration
-# Summary:	Hosts client
-# Authors:	Michal Svec <msvec@suse.cz>
+# File:  clients/host.ycp
+# Package:  Network configuration
+# Summary:  Hosts client
+# Authors:  Michal Svec <msvec@suse.cz>
 #
 #
 # Main file for hosts configuration.

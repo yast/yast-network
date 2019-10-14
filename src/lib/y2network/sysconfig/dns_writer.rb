@@ -32,6 +32,7 @@ module Y2Network
       # @param old_dns [Y2Network::DNS] Old DNS configuration
       def write(dns, old_dns)
         return if old_dns && dns == old_dns
+
         update_sysconfig_dhcp(dns, old_dns)
         update_hostname(dns)
         update_mta_config
@@ -55,15 +56,16 @@ module Y2Network
 
         Yast::SCR.Write(
           Yast::Path.new(".sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME"),
-          dns.dhcp_hostname == :any ? "yes" : "no"
+          (dns.dhcp_hostname == :any) ? "yes" : "no"
         )
         Yast::SCR.Write(Yast::Path.new(".sysconfig.network.dhcp"), nil)
 
         # Clean-up values from ifcfg-* values
         Y2Network::Sysconfig::InterfaceFile.all.each do |file|
-          value = file.interface == dns.dhcp_hostname ? "yes" : nil
+          value = (file.interface == dns.dhcp_hostname) ? "yes" : nil
           file.load
           next if file.dhclient_set_hostname == value
+
           file.dhclient_set_hostname = value
           file.save
         end
@@ -82,6 +84,7 @@ module Y2Network
       # It executes the Sendmail update script which is included in the `sendmail` package.
       def update_mta_config
         return unless Yast::FileUtils.Exists(SENDMAIL_UPDATE_PATH)
+
         log.info "Updating sendmail configuration."
         Yast::Execute.on_target!(SENDMAIL_UPDATE_PATH)
       end

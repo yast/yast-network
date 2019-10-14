@@ -17,7 +17,7 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-srcdir = File.expand_path("../../src", __FILE__)
+srcdir = File.expand_path("../src", __dir__)
 y2dirs = ENV.fetch("Y2DIR", "").split(":")
 ENV["Y2DIR"] = y2dirs.unshift(srcdir).join(":")
 
@@ -52,7 +52,7 @@ Yast.import "Lan"
 
 require "y2storage"
 
-require_relative "SCRStub"
+require_relative "scr_stub"
 
 RSpec.configure do |c|
   c.extend Yast::I18n # available in context/describe
@@ -70,7 +70,7 @@ RSpec.configure do |c|
   end
 end
 
-DATA_PATH = File.join(File.expand_path(File.dirname(__FILE__)), "data")
+DATA_PATH = File.join(__dir__, "data")
 
 # stub module to prevent its Import
 # Useful for modules from different yast packages, to avoid build dependencies

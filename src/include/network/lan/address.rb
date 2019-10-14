@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
@@ -21,10 +19,10 @@
 # you may find current contact information at www.novell.com
 #
 # **************************************************************************
-# File:	include/network/lan/address.ycp
-# Package:	Network configuration
-# Summary:	Network card adresss configuration dialogs
-# Authors:	Michal Svec <msvec@suse.cz>
+# File:  include/network/lan/address.ycp
+# Package:  Network configuration
+# Summary:  Network card adresss configuration dialogs
+# Authors:  Michal Svec <msvec@suse.cz>
 #
 require "y2firewall/helpers/interfaces"
 require "y2network/dialogs/edit_interface"
@@ -65,10 +63,10 @@ module Yast
         if LanItems.isCurrentDHCP && !LanItems.isCurrentHotplug
           # fixed bug #73739 - if dhcp is used, dont set default gw statically
           # but also: reset default gw only if DHCP* is used, this branch covers
-          #		 "No IP address" case, then default gw must stay (#460262)
+          #     "No IP address" case, then default gw must stay (#460262)
           # and also: don't delete default GW for usb/pcmcia devices (#307102)
           yast_config = Y2Network::Config.find(:yast)
-          if yast_config && yast_config.routing && yast_config.routing.default_route
+          if yast_config&.routing&.default_route
             remove_gw = Popup.YesNo(
               _(
                 "A static default route is defined.\n" \

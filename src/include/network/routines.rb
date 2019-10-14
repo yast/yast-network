@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
@@ -21,10 +19,10 @@
 # you may find current contact information at www.novell.com
 #
 # **************************************************************************
-# File:	include/network/routines.ycp
-# Package:	Network configuration
-# Summary:	Miscellaneous routines
-# Authors:	Michal Svec <msvec@suse.cz>
+# File:  include/network/routines.ycp
+# Package:  Network configuration
+# Summary:  Miscellaneous routines
+# Authors:  Michal Svec <msvec@suse.cz>
 #
 
 require "shellwords"
@@ -154,7 +152,7 @@ module Yast
         end
       end
 
-      ret == true ? :next : :abort
+      (ret == true) ? :next : :abort
     end
 
     # Checks if given value is emtpy.
@@ -177,13 +175,14 @@ module Yast
     def DriverType(type)
       drvtype = type
       # handle HSI like qeth, S#40692#c15
-      if type == "hsi"
+      case type
+      when "hsi"
         drvtype = "qeth"
       # Should eth occur on s390?
-      elsif type == "tr" || type == "eth"
+      when "tr", "eth"
         drvtype = "lcs"
       # N#82891
-      elsif type == "escon" || type == "ficon"
+      when "escon", "ficon"
         drvtype = "ctc"
       end
       drvtype
@@ -191,6 +190,7 @@ module Yast
 
     def sysfs_card_type(sysfs_id, _hardware)
       return "none" if sysfs_id == ""
+
       filename = Ops.add(Ops.add("/sys", sysfs_id), "/card_type")
       card_type = Convert.to_string(SCR.Read(path(".target.string"), filename))
       String.FirstChunk(card_type, "\n")
@@ -312,9 +312,9 @@ module Yast
           # Check for the specific known boards with bad subclass.
           #
           # Concerned devices are:
-          # 15b3:1003	MT27500 Family [ConnectX-3]
-          # 15b3:1004	MT27500/MT27520 Family [ConnectX-3/ConnectX-3 Pro Virtual Function]
-          # 15b3:1007	MT27520 Family [ConnectX-3 Pro]
+          # 15b3:1003  MT27500 Family [ConnectX-3]
+          # 15b3:1004  MT27500/MT27520 Family [ConnectX-3/ConnectX-3 Pro Virtual Function]
+          # 15b3:1007  MT27520 Family [ConnectX-3 Pro]
           if hwdevice["vendor_id"] == 71_091
             return "ib" if [69_635, 69_636, 69_639].include?(hwdevice["device_id"])
           end
@@ -528,9 +528,7 @@ module Yast
             module0 = Ops.get_list(d, ["modules", 0], []) # [module, options]
             brk = broken_modules.include?(module0[0])
 
-            if brk
-              Builtins.y2milestone("In BrokenModules, skipping: %1", module0)
-            end
+            Builtins.y2milestone("In BrokenModules, skipping: %1", module0) if brk
 
             !brk
           end
@@ -550,9 +548,10 @@ module Yast
           # FIXME: this should be also done for modems and others
           # FIXME: #13571
           hp = card["hotplug"] || ""
-          if hp == "pcmcia" || hp == "cardbus"
+          case hp
+          when "pcmcia", "cardbus"
             one["hotplug"] = "pcmcia"
-          elsif hp == "usb"
+          when "usb"
             one["hotplug"] = "usb"
           end
 
@@ -569,9 +568,7 @@ module Yast
 
           one["bus"] = bus
           one["busid"] = card["sysfs_bus_id"] || ""
-          if one["busid"].start_with?("virtio")
-            one["parent_busid"] = one["sysfs_id"].split("/")[-2]
-          end
+          one["parent_busid"] = one["sysfs_id"].split("/")[-2] if one["busid"].start_with?("virtio")
           one["mac"] = Ops.get_string(resource, ["hwaddr", 0, "addr"], "")
           one["permanent_mac"] = Ops.get_string(resource, ["phwaddr", 0, "addr"], "")
           # is the cable plugged in? nil = don't know
@@ -627,7 +624,8 @@ module Yast
     # shellescape()).
 
     # @param command [String] Shell command to run
-    # @return Hash in form $[ "exit": <command-exit-status>, "output": [ <1st line>, <2nd line>, ... ] ]
+    # @return Hash in form $[ "exit": <command-exit-status>,
+    #   "output": [ <1st line>, <2nd line>, ... ] ]
     def RunAndRead(command)
       if !command.lstrip.start_with?("/")
         log.warn("Command does not have an absolute path: #{command}")
@@ -696,7 +694,7 @@ module Yast
     # Checks if given device has carrier
     #
     # @return [boolean] true if device has carrier
-    def has_carrier?(dev_name)
+    def carrier?(dev_name)
       SCR.Read(
         path(".target.string"),
         "/sys/class/net/#{dev_name}/carrier"
@@ -748,7 +746,7 @@ module Yast
     #
     # @return [boolean] true if physical layer is connected
     def phy_connected?(dev_name)
-      return true if has_carrier?(dev_name)
+      return true if carrier?(dev_name)
 
       # SetLinkUp ensures that driver is loaded
       SetLinkUp(dev_name)
@@ -760,7 +758,7 @@ module Yast
       # https://github.com/yast/yast-network/pull/202
       sleep(5)
 
-      has_carrier?(dev_name)
+      carrier?(dev_name)
     end
 
     def unconfigureable_service?
@@ -804,7 +802,8 @@ module Yast
         return true
       end
 
-      # filter out device with chelsio Driver and no Device File or which cannot networking(bnc#711432)
+      # filter out device with chelsio Driver and no Device File or which cannot
+      # networking (bnc#711432)
       if driver == "cxgb4" &&
           (device_info["dev_name"] || "") == "" ||
           device_info["vendor_id"] == 70_693 &&

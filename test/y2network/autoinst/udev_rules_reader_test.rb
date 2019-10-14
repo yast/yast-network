@@ -42,7 +42,12 @@ describe Y2Network::Autoinst::UdevRulesReader do
 
   describe "#apply" do
     let(:config) do
-      double(interfaces: Y2Network::InterfacesCollection.new([double(name: "eth0", hardware: double(busid: "bus1"))]), rename_interface: nil)
+      double(
+        interfaces:       Y2Network::InterfacesCollection.new(
+          [double(name: "eth0", hardware: double(busid: "bus1"))]
+        ),
+        rename_interface: nil
+      )
     end
 
     it "renames interface with matching hardware properties" do
@@ -71,7 +76,12 @@ describe Y2Network::Autoinst::UdevRulesReader do
 
     context "when there is no interface with matching hardware" do
       let(:config) do
-        double(interfaces: Y2Network::InterfacesCollection.new([double(name: "eth0", hardware: double(busid: "bus2"))]), rename_interface: nil)
+        double(
+          interfaces:       Y2Network::InterfacesCollection.new(
+            [double(name: "eth0", hardware: double(busid: "bus2"))]
+          ),
+          rename_interface: nil
+        )
       end
 
       it "do nothing" do

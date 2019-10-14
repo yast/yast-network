@@ -33,10 +33,16 @@ describe Y2Network::AutoinstProfile::InterfaceSection do
         c.firewall_zone = "DMZ"
         c.ethtool_options = "test=1"
         c.interface = "eth0"
-        c.ip = Y2Network::ConnectionConfig::IPConfig.new(Y2Network::IPAddress.from_string("10.100.0.1/24"))
+        c.ip = Y2Network::ConnectionConfig::IPConfig.new(
+          Y2Network::IPAddress.from_string("10.100.0.1/24")
+        )
         c.ip_aliases = [
-          Y2Network::ConnectionConfig::IPConfig.new(Y2Network::IPAddress.from_string("10.100.0.1/24"), label: "test"),
-          Y2Network::ConnectionConfig::IPConfig.new(Y2Network::IPAddress.from_string("10.100.0.2/24"), label: "test1")
+          Y2Network::ConnectionConfig::IPConfig.new(
+            Y2Network::IPAddress.from_string("10.100.0.1/24"), label: "test"
+          ),
+          Y2Network::ConnectionConfig::IPConfig.new(
+            Y2Network::IPAddress.from_string("10.100.0.2/24"), label: "test1"
+          )
         ]
       end
     end

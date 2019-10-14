@@ -41,11 +41,13 @@ module Y2Network
   #     Y2Network::UdevRulePart.new("ATTR{address}", "==", "?*31:78:f2"),
   #     Y2Network::UdevRulePart.new("NAME", "=", "mlx4_ib3")
   #   )
-  #   rule.to_s #=> "ACTION==\"add\", SUBSYSTEM==\"net\", ATTR{address}==\"?*31:78:f2\", NAME=\"eth0\""
+  #   rule.to_s #=> "ACTION==\"add\", SUBSYSTEM==\"net\", ATTR{address}==\"?*31:78:f2\",
+  #                  NAME=\"eth0\""
   #
   # @example Create a rule from a string
   #   rule = UdevRule.find_for("eth0")
-  #   rule.to_s #=> "ACTION==\"add\", SUBSYSTEM==\"net\", ATTR{address}==\"?*31:78:f2\", NAME=\"eth0\""
+  #   rule.to_s #=> "ACTION==\"add\", SUBSYSTEM==\"net\", ATTR{address}==\"?*31:78:f2\",
+  #                  NAME=\"eth0\""
   #
   # @example Writing renaming rules
   #   rule = UdevRule.new_mac_based_rename("00:12:34:56:78:ab", "eth0")
@@ -156,7 +158,8 @@ module Y2Network
       # @param udev_rules [Array<UdevRule>] List of udev rules
       def write_net_rules(udev_rules)
         Yast::SCR.Write(Yast::Path.new(".udev_persistent.rules"), udev_rules.map(&:to_s))
-        Yast::SCR.Write(Yast::Path.new(".udev_persistent.nil"), []) # Writes changes to the rules file
+        # Writes changes to the rules file
+        Yast::SCR.Write(Yast::Path.new(".udev_persistent.nil"), [])
       end
 
       # Writes drivers specific udev rules to the filesystem
@@ -168,10 +171,12 @@ module Y2Network
         rules_hash = udev_rules.each_with_object({}) do |rule, hash|
           driver = rule.part_value_for("ENV{MODALIAS}", "=")
           next unless driver
+
           hash[driver] = rule.parts.map(&:to_s)
         end
         Yast::SCR.Write(Yast::Path.new(".udev_persistent.drivers"), rules_hash)
-        Yast::SCR.Write(Yast::Path.new(".udev_persistent.nil"), []) # Writes changes to the rules file
+        # Writes changes to the rules file
+        Yast::SCR.Write(Yast::Path.new(".udev_persistent.nil"), [])
       end
 
       # Clears rules cache map
@@ -184,6 +189,7 @@ module Y2Network
       def find_rules(group)
         @all ||= {}
         return @all[group] if @all[group]
+
         rules_map = Yast::SCR.Read(Yast::Path.new(".udev_persistent.#{group}")) || {}
         @all[group] = rules_map.values.map do |parts|
           udev_parts = parts.map { |p| UdevRulePart.from_string(p) }
@@ -234,6 +240,7 @@ module Y2Network
     def part_value_for(key, operator = nil)
       part = part_by_key(key, operator)
       return nil unless part
+
       part.value
     end
 

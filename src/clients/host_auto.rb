@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
@@ -21,10 +19,10 @@
 # you may find current contact information at www.novell.com
 #
 # **************************************************************************
-# File:	clients/host_auto.ycp
-# Package:	Network configuration
-# Summary:	Client for autoinstallation
-# Authors:	Michal Svec <msvec@suse.cz>
+# File:  clients/host_auto.ycp
+# Package:  Network configuration
+# Summary:  Client for autoinstallation
+# Authors:  Michal Svec <msvec@suse.cz>
 #
 #
 # This is a client for autoinstallation. It takes its arguments,
@@ -154,6 +152,7 @@ module Yast
       # Checking for empty hostnames
       imported_hosts.each do |ip, hosts|
         next unless hosts.any? { |host| host.strip.empty? }
+
         AutoInstall.issues_list.add(:invalid_value, "host", "names",
           "",
           # TRANSLATORS: %s is host address

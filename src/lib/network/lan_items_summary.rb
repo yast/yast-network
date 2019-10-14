@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ------------------------------------------------------------------------------
 # Copyright (c) 2017 SUSE LLC
 #
@@ -49,8 +47,12 @@ module Yast
 
       items << "<li>#{dhcp_summary}</li>" unless LanItems.find_dhcp_ifaces.empty?
       items << "<li>#{static_summary}</li>" unless LanItems.find_static_ifaces.empty?
-      items << "<li>#{bridge_summary}</li>" unless config.interfaces.by_type(Y2Network::InterfaceType::BRIDGE).to_a.empty?
-      items << "<li>#{bonding_summary}</li>" unless config.interfaces.by_type(Y2Network::InterfaceType::BONDING).to_a.empty?
+      unless config.interfaces.by_type(Y2Network::InterfaceType::BRIDGE).to_a.empty?
+        items << "<li>#{bridge_summary}</li>"
+      end
+      unless config.interfaces.by_type(Y2Network::InterfaceType::BONDING).to_a.empty?
+        items << "<li>#{bonding_summary}</li>"
+      end
 
       return Summary.NotConfigured if items.empty?
 

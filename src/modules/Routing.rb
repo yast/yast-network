@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
@@ -21,10 +19,10 @@
 # you may find current contact information at www.novell.com
 #
 # **************************************************************************
-# File:	modules/Routing.ycp
-# Package:	Network configuration
-# Summary:	Routing data (/etc/sysconfig/network/routes)
-# Authors:	Michal Svec <msvec@suse.cz>
+# File:  modules/Routing.ycp
+# Package:  Network configuration
+# Summary:  Routing data (/etc/sysconfig/network/routes)
+# Authors:  Michal Svec <msvec@suse.cz>
 #
 #
 # See routes(5)

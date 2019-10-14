@@ -222,14 +222,16 @@ module Y2Network
             when :bootproto_dhcp_v6
               @settings.boot_protocol = "dhcp6"
             else
-              raise "Unexpected dhcp mode value #{Yast::UI.QueryWidget(:bootproto_dhcp_mode, :Value).inspect}"
+              raise "Unexpected dhcp mode value " \
+                "#{Yast::UI.QueryWidget(:bootproto_dhcp_mode, :Value).inspect}"
             end
           when :bootproto_dhcp_auto
             @settings.boot_protocol = "dhcp+autoip"
           when :bootproto_auto
             @settings.boot_protocol = "autoip"
           else
-            raise "Unexpected dynamic mode value #{Yast::UI.QueryWidget(:bootproto_dyn, :Value).inspect}"
+            raise "Unexpected dynamic mode value " \
+              "#{Yast::UI.QueryWidget(:bootproto_dyn, :Value).inspect}"
           end
         else
           raise "Unexpected boot protocol value #{Yast::UI.QueryWidget(:bootproto, :Value).inspect}"
@@ -292,17 +294,21 @@ module Y2Network
       def help
         res = _(
           "<p><b><big>Address Setup</big></b></p>\n" \
-            "<p>Select <b>No Address Setup</b> if you do not want to assign an IP address to this device.\n" \
+            "<p>Select <b>No Address Setup</b> if you do not want " \
+            "to assign an IP address to this device.\n" \
             "This is particularly useful for bonding ethernet devices.</p>\n"
         ) +
-          # FIXME: old CWM does not allow this, but for future this should be dynamic and printed only if iBFT is available
-          # and future means when type cannot be changed and when cwm object tabs are used, as it has limited lifetime of cwm definition
+          # FIXME: old CWM does not allow this, but for future this should be dynamic and
+          # printed only if iBFT is available
+          # and future means when type cannot be changed and when cwm object tabs are used,
+          # as it has limited lifetime of cwm definition
           _(
             "<p>Check <b>iBFT</b> if you want to keep the network configured in your BIOS.</p>\n"
           ) +
           # Address dialog help 2/8
           _(
-            "<p>Select <b>Dynamic Address</b> if you do not have a static IP address \nassigned by the system administrator or your Internet provider.</p>\n"
+            "<p>Select <b>Dynamic Address</b> if you do not have a static IP address \n" \
+              "assigned by the system administrator or your Internet provider.</p>\n"
           ) +
           # Address dialog help 3/8
           _(
@@ -313,13 +319,15 @@ module Y2Network
           # Address dialog help 4/8
           _(
             "<p>To search for an IP address and assign it statically, select \n" \
-              "<b>Zeroconf</b>. To use DHCP and fall back to zeroconf, select <b>DHCP + Zeroconf\n" \
+              "<b>Zeroconf</b>. To use DHCP and fall back to zeroconf, " \
+              "select <b>DHCP + Zeroconf\n" \
               "</b>. Otherwise, the network addresses must be assigned <b>Statically</b>.</p>\n"
           )
 
         if Yast::ProductFeatures.GetBooleanFeature("network", "force_static_ip")
           res += _(
-            "<p>DHCP configuration is not recommended for this product.\nComponents of this product might not work with DHCP.</p>"
+            "<p>DHCP configuration is not recommended for this product.\n" \
+              "Components of this product might not work with DHCP.</p>"
           )
         end
 

@@ -80,8 +80,7 @@ module Y2Network
         # @note This method should be redefined by derived classes.
         #
         # @param _conn [Y2Network::ConnectionConfig::Base]
-        def update_connection_config(_conn)
-        end
+        def update_connection_config(_conn); end
 
         # Returns the IPs configuration from the file
         #
@@ -90,6 +89,7 @@ module Y2Network
         def all_ips
           @all_ips ||= file.ipaddrs.each_with_object([]) do |(id, ip), all|
             next unless ip.is_a?(Y2Network::IPAddress)
+
             ip_address = build_ip(ip, file.prefixlens[id], file.netmasks[id])
             all << Y2Network::ConnectionConfig::IPConfig.new(
               ip_address,
@@ -111,6 +111,7 @@ module Y2Network
         def build_ip(ip, prefix, netmask)
           ipaddr = ip.clone
           return ipaddr if ip.prefix?
+
           ipaddr.netmask = netmask if netmask
           ipaddr.prefix = prefix if prefix
           ipaddr
@@ -121,6 +122,7 @@ module Y2Network
         # @return [String,nil]
         def hostname(conn)
           return nil unless conn.ip
+
           Yast::Host.Read
           Yast::Host.names(conn.ip.address.address.to_s).first
         end

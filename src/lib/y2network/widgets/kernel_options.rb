@@ -40,7 +40,8 @@ module Y2Network
       def help
         _(
           "<p>Additionally, specify <b>Options</b> for the kernel module. Use this\n" \
-            "format: <i>option</i>=<i>value</i>. Each entry should be space-separated, for example: <i>io=0x300 irq=5</i>. <b>Note:</b> If two cards are \n" \
+            "format: <i>option</i>=<i>value</i>. Each entry should be space-separated, " \
+            "for example: <i>io=0x300 irq=5</i>. <b>Note:</b> If two cards are \n" \
             "configured with the same module name, the options will be merged while saving.</p>\n"
         )
       end

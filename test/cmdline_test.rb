@@ -32,8 +32,10 @@ describe "NetworkLanCmdlineInclude" do
 
   before do
     allow(Yast::Lan).to receive(:yast_config).and_return(
-      Y2Network::Config.new(source:     :fake,
-                            interfaces: Y2Network::InterfacesCollection.new([Y2Network::Interface.new("eth0")]))
+      Y2Network::Config.new(
+        source:     :fake,
+        interfaces: Y2Network::InterfacesCollection.new([Y2Network::Interface.new("eth0")])
+      )
     )
   end
 

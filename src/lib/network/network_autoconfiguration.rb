@@ -59,6 +59,7 @@ module Yast
       #   (it speeds up the initialization phase of installer - bnc#872319)
       dhcp_cards = config.interfaces.select do |c|
         next false if config.connections.by_name(c.name)
+
         phy_connected?(c.name)
       end
       log.info "Candidates for enabling DHCP: #{dhcp_cards.inspect}"
@@ -69,7 +70,7 @@ module Yast
       activate_changes(dhcp_cards.map(&:name))
 
       # drop devices without dhcp lease
-      inactive_devices = dhcp_cards.select { |c| !active_config?(c.name) }
+      inactive_devices = dhcp_cards.reject { |c| active_config?(c.name) }
       log.info "Inactive devices: #{inactive_devices}"
 
       inactive_devices.each { |c| delete_config(c) }
@@ -105,6 +106,7 @@ module Yast
       # Moreover virtual devices are not needed during first stage. So, it can
       # wait for rebooting into just installed target
       return if Lan.yast_config == Lan.system_config
+
       Lan.yast_config.write
     end
 
@@ -166,7 +168,8 @@ module Yast
     #
     # active device <=> a device which is reported as "up" by wicked
     def active_config?(devname)
-      wicked_query = "/usr/sbin/wicked ifstatus --brief #{devname.shellescape} | /usr/bin/grep 'up$'"
+      wicked_query = "/usr/sbin/wicked ifstatus --brief #{devname.shellescape} |" \
+        " /usr/bin/grep 'up$'"
       SCR.Execute(BASH_PATH, wicked_query).zero?
     end
 
@@ -178,6 +181,7 @@ module Yast
     end
 
     # Check if given device can reach some of reference servers
+    # rubocop:disable Naming/AccessorMethodName
     def set_default_route_flag_if_wan_dev?(devname)
       set_default_route_flag(devname, "yes")
 
@@ -203,6 +207,7 @@ module Yast
 
       reached
     end
+    # rubocop:enable Naming/AccessorMethodName
 
     # Sets sysconfig's DHCLIENT_SET_DEFAULT_ROUTE option for given device
     #

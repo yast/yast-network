@@ -72,7 +72,9 @@ describe Y2Network::Widgets::RoutingTable do
 
     it "replaces currently selected route with new one" do
       route = Y2Network::Route.new(to: IPAddr.new("10.100.0.0/24"))
-      expect { subject.replace_route(route) }.to_not change { routing_table.routes.size }
+      expect { subject.replace_route(route) }.to_not(
+        change { routing_table.routes.size }
+      )
 
       expect(routing_table.routes.first).to eq route
     end

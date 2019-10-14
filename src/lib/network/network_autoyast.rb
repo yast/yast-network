@@ -112,7 +112,9 @@ module Yast
       log.info("NetworkAutoYast: Lan configuration")
 
       ay_configuration = Lan.FromAY(ay_networking_section)
-      ay_configuration = NetworkAutoYast.instance.merge_configs(ay_configuration) if keep_net_config?
+      if keep_net_config?
+        ay_configuration = NetworkAutoYast.instance.merge_configs(ay_configuration)
+      end
 
       configure_submodule(Lan, ay_configuration, write: write)
     end
@@ -120,17 +122,18 @@ module Yast
     # Takes care of activate s390 devices from the profile declaration
     def activate_s390_devices(section = nil)
       profile_devices = section || ay_networking_section["s390-devices"] || {}
-      devices_section = Y2Network::AutoinstProfile::S390DevicesSection.new_from_hashes(profile_devices)
+      devices_section = Y2Network::AutoinstProfile::S390DevicesSection
+        .new_from_hashes(profile_devices)
       connections = Y2Network::Autoinst::S390DevicesReader.new(devices_section).config
       connections.each do |conn|
-        begin
-          builder = Y2Network::InterfaceConfigBuilder.for(conn.type, config: conn)
-          activator = Y2Network::S390DeviceActivator.for(builder)
-          log.info "Created interface #{activator.configured_interface}" if activator.configure
-        rescue RuntimeError => e
-          log.error("An error ocurred when trying to activate the s390 device: #{conn.inspect}")
-          log.error("Error: #{e.sinpect}")
-        end
+
+        builder = Y2Network::InterfaceConfigBuilder.for(conn.type, config: conn)
+        activator = Y2Network::S390DeviceActivator.for(builder)
+        log.info "Created interface #{activator.configured_interface}" if activator.configure
+      rescue RuntimeError => e
+        log.error("An error ocurred when trying to activate the s390 device: #{conn.inspect}")
+        log.error("Error: #{e.sinpect}")
+
       end
 
       true
@@ -244,6 +247,7 @@ module Yast
       ay_profile = Profile.current
 
       return {} if ay_profile.nil? || ay_profile.empty?
+
       ay_profile
     end
 

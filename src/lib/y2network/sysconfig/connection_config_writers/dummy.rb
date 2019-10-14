@@ -25,8 +25,6 @@ module Y2Network
       # This class is responsible for writing the information from a ConnectionConfig::Dummy
       # object to the underlying system.
       class Dummy < Base
-      private
-
         # @see Y2Network::ConnectionConfigWriters::Base#update_file
         def update_file(_conn)
           # Force the interfacetype otherwise there is no way to infer the type

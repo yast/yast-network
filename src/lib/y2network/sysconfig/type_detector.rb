@@ -28,8 +28,6 @@ module Y2Network
     # @see Yast::NetworkInterfaces.GetType
     class TypeDetector < Y2Network::TypeDetector
       class << self
-      private
-
         # Checks wheter iface type can be recognized by interface configuration
         def type_by_config(iface)
           iface_file = Y2Network::Sysconfig::InterfaceFile.find(iface)

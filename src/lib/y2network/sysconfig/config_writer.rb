@@ -76,6 +76,7 @@ module Y2Network
           # S390 devices that have not been activated yet will be part of the
           # collection but with an empty name.
           next if dev.name.empty?
+
           routes = find_routes_for(dev, config.routing.routes)
           file = routes_file_for(dev)
 
@@ -122,7 +123,8 @@ module Y2Network
       # @param type  [Symbol] :ipv4 or :ipv6
       def update_ip_forwarding(value, type)
         key = IP_SYSCTL[type]
-        Yast::SCR.Execute(Yast::Path.new(".target.bash"), "/usr/sbin/sysctl -w #{key}=#{value.shellescape}")
+        Yast::SCR.Execute(Yast::Path.new(".target.bash"),
+          "/usr/sbin/sysctl -w #{key}=#{value.shellescape}")
       end
 
       # Finds routes for a given interface or the routes not tied to any
@@ -135,7 +137,7 @@ module Y2Network
       #
       # @see #find_routes_for_iface
       def find_routes_for(iface, routes)
-        iface ? find_routes_for_iface(iface, routes) : routes.select { |r| !r.interface }
+        iface ? find_routes_for_iface(iface, routes) : routes.reject(&:interface)
       end
 
       # Finds routes for a given interface
@@ -156,6 +158,7 @@ module Y2Network
       # @return [Y2Network::Sysconfig::RoutesFile]
       def routes_file_for(iface)
         return Y2Network::Sysconfig::RoutesFile.new unless iface
+
         Y2Network::Sysconfig::RoutesFile.new("/etc/sysconfig/network/ifroute-#{iface.name}")
       end
 

@@ -55,9 +55,13 @@ module Y2Network
         result = new
         result.routing = RoutingSection.new_from_hashes(hash["routing"]) if hash["routing"]
         result.dns = DNSSection.new_from_hashes(hash["dns"]) if hash["dns"]
-        result.interfaces = InterfacesSection.new_from_hashes(hash["interfaces"]) if hash["interfaces"]
+        if hash["interfaces"]
+          result.interfaces = InterfacesSection.new_from_hashes(hash["interfaces"])
+        end
         result.udev_rules = UdevRulesSection.new_from_hashes(hash["net-udev"]) if hash["net-udev"]
-        result.s390_devices = S390DevicesSection.new_from_hashes(hash["s390-devices"]) if hash["s390-devices"]
+        if hash["s390-devices"]
+          result.s390_devices = S390DevicesSection.new_from_hashes(hash["s390-devices"])
+        end
         result
       end
 
@@ -68,6 +72,7 @@ module Y2Network
       def self.new_from_network(config)
         result = new
         return result unless config
+
         result.routing = RoutingSection.new_from_network(config.routing) if config.routing
         result.dns = DNSSection.new_from_network(config.dns) if config.dns
         result.interfaces = InterfacesSection.new_from_network(config.connections)

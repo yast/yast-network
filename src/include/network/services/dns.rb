@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
@@ -21,10 +19,10 @@
 # you may find current contact information at www.novell.com
 #
 # **************************************************************************
-# File:	include/network/lan/dialogs.ycp
-# Package:	Network configuration
-# Summary:	Summary, overview and IO dialogs for network cards config
-# Authors:	Michal Svec <msvec@suse.cz>
+# File:  include/network/lan/dialogs.ycp
+# Package:  Network configuration
+# Summary:  Summary, overview and IO dialogs for network cards config
+# Authors:  Michal Svec <msvec@suse.cz>
 #
 module Yast
   module NetworkServicesDnsInclude
@@ -377,7 +375,7 @@ module Yast
 
     # Init handler for DHCP_HOSTNAME
     def InitDhcpHostname(_key)
-      UI.ChangeWidget(Id("DHCP_HOSTNAME"), :Enabled, has_dhcp? && NetworkService.is_wicked)
+      UI.ChangeWidget(Id("DHCP_HOSTNAME"), :Enabled, dhcp? && NetworkService.is_wicked)
       dhcp_hostname = DNS.dhcp_hostname
 
       items = [
@@ -411,6 +409,7 @@ module Yast
     # Store handler for DHCP_HOSTNAME
     def StoreDhcpHostname(_key, _event)
       return if !UI.QueryWidget(Id("DHCP_HOSTNAME"), :Enabled)
+
       DNS.dhcp_hostname = UI.QueryWidget(Id("DHCP_HOSTNAME"), :Value)
 
       nil
@@ -435,13 +434,14 @@ module Yast
     # @param _event [Hash] the event being handled
     # @return whether valid
     def ValidateHostname(key, _event)
-      dhn = has_dhcp? && use_dhcp_hostname?
+      dhn = dhcp? && use_dhcp_hostname?
       # If the names are set by dhcp, the user may enter backup values
       # here - N#28427. That is, host and domain name are optional then.
       # For static config, they are mandatory.
       value = Convert.to_string(UI.QueryWidget(Id(key), :Value))
 
       return Hostname.Check(value) if !dhn || value != ""
+
       true
     end
 
@@ -586,7 +586,8 @@ module Yast
       nil
     end
 
-    # Used in GUI mode - updates and stores actuall hostname settings according dialog widgets content.
+    # Used in GUI mode - updates and stores actuall hostname settings according dialog
+    # widgets content.
     # It calls store handler for every widget from hn_settings with event as an option.
     # @param _key [String] ignored
     # @param event [Hash] user generated event
@@ -633,7 +634,7 @@ module Yast
     # Checks if any interface is configured to use DHCP
     #
     # @return [Boolean] true when an interface uses DHCP config
-    def has_dhcp?
+    def dhcp?
       !LanItems.find_dhcp_ifaces.empty?
     end
   end

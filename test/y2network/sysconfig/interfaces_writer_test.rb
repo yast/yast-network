@@ -56,12 +56,12 @@ describe Y2Network::Sysconfig::InterfacesWriter do
     end
 
     around do |example|
-      begin
-        FileUtils.cp_r(File.join(DATA_PATH, "scr_read", "etc"), scr_root)
-        change_scr_root(scr_root, &example)
-      ensure
-        FileUtils.remove_entry(scr_root)
-      end
+
+      FileUtils.cp_r(File.join(DATA_PATH, "scr_read", "etc"), scr_root)
+      change_scr_root(scr_root, &example)
+    ensure
+      FileUtils.remove_entry(scr_root)
+
     end
 
     context "when the interface is renamed" do
@@ -115,7 +115,9 @@ describe Y2Network::Sysconfig::InterfacesWriter do
       end
 
       context "when there is some rule for an unknown interface" do
-        let(:unknown_rule) { Y2Network::UdevRule.new_mac_based_rename("unknown", "00:11:22:33:44:55:66") }
+        let(:unknown_rule) do
+          Y2Network::UdevRule.new_mac_based_rename("unknown", "00:11:22:33:44:55:66")
+        end
 
         before do
           allow(Y2Network::UdevRule).to receive(:naming_rules).and_return([unknown_rule])
@@ -146,7 +148,9 @@ describe Y2Network::Sysconfig::InterfacesWriter do
 
       it "writes an udev driver rule" do
         expect(Y2Network::UdevRule).to receive(:write_drivers_rules) do |rules|
-          expect(rules.first.to_s).to eq("ENV{MODALIAS}==\"#{hardware.modalias}\", ENV{MODALIAS}=\"#{driver}\"")
+          expect(rules.first.to_s).to eq(
+            "ENV{MODALIAS}==\"#{hardware.modalias}\", ENV{MODALIAS}=\"#{driver}\""
+          )
         end
         subject.write(interfaces)
       end

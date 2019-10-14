@@ -102,7 +102,8 @@ describe Yast::Host do
     end
 
     # FIXME: better API
-    it "returns single element array with string containing canonical name and aliases separated by space" do
+    it "returns single element array with string containing canonical name and " \
+      "aliases separated by space" do
       Yast::Host.Read
 
       expect(Yast::Host.names("10.100.128.72")).to eq(["pepa.labs.suse.cz pepa pepa2"])
@@ -246,7 +247,9 @@ describe Yast::Host do
     end
 
     it "removes empty name lists" do
-      Yast::Host.Import("hosts" => { "127.0.0.1" => ["localhost localhost.localdomain"], "10.20.1.29" => [] })
+      Yast::Host.Import(
+        "hosts" => { "127.0.0.1" => ["localhost localhost.localdomain"], "10.20.1.29" => [] }
+      )
       etc_hosts.delete("10.20.1.29")
 
       expect(Yast::Host.Export).to eql("hosts" => etc_hosts)

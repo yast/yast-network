@@ -32,7 +32,7 @@ describe Y2Network::Sysconfig::DNSReader do
     end
 
     let(:netconfig_dhcp) do
-      { "DHCLIENT_SET_HOSTNAME"   => "yes" }
+      { "DHCLIENT_SET_HOSTNAME" => "yes" }
     end
 
     let(:netconfig) do

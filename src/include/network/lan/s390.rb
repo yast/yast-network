@@ -53,7 +53,8 @@ module Yast
 
     # Reads attributes for particular qeth based network device.
     #
-    # Returned map is compatible with similar map used for storing sysconfig values used elswhere in the code.
+    # Returned map is compatible with similar map used for storing sysconfig
+    # values used elswhere in the code.
     # As a consequence, boolean values are stored as strings with yes/no value.
     #
     # Currently loaded attributes are:
@@ -70,7 +71,7 @@ module Yast
 
       result = {}
 
-      qeth_layer2 = s390_ReadQethAttribute(devname, "layer2") == "1" ? "yes" : "no"
+      qeth_layer2 = (s390_ReadQethAttribute(devname, "layer2") == "1") ? "yes" : "no"
       result = Builtins.add(result, "QETH_LAYER2", qeth_layer2)
 
       qeth_portno = s390_ReadQethAttribute(devname, "portno")

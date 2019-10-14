@@ -76,21 +76,26 @@ module Y2Network
 
       def help
         _(
-          "<p><b><big>Additional Addresses</big></b></p>\n<p>Configure additional addresses of an interface in this table.</p>\n"
+          "<p><b><big>Additional Addresses</big></b></p>\n" \
+            "<p>Configure additional addresses of an interface in this table.</p>\n"
         ) +
           # Aliases dialog help 2/4
           _(
-            "<p>Enter an <b>IPv4 Address Label</b>, an <b>IP Address</b>, and\nthe <b>Netmask</b>.</p>"
+            "<p>Enter an <b>IPv4 Address Label</b>, an <b>IP Address</b>, and\n" \
+              "the <b>Netmask</b>.</p>"
           ) +
           # Aliases dialog help 3/4
           _(
-            "<p><b>IPv4 Address Label</b>, formerly known as Alias Name, is optional and legacy. The total\n" \
+            "<p><b>IPv4 Address Label</b>, formerly known as Alias Name, is " \
+            "optional and legacy. The total\n" \
             "length of interface name (inclusive of the colon and label) is\n" \
-            "limited to 15 characters. The obsolete ifconfig utility truncates it after 9 characters.</p>"
+            "limited to 15 characters. The obsolete ifconfig utility truncates " \
+            "it after 9 characters.</p>"
           ) +
           # Aliases dialog help 3/4, #83766
           _(
-            "<p>Do not include the interface name in the label. For example, enter <b>foo</b> instead of <b>eth0:foo</b>.</p>"
+            "<p>Do not include the interface name in the label. For example, " \
+              "enter <b>foo</b> instead of <b>eth0:foo</b>.</p>"
           )
       end
 

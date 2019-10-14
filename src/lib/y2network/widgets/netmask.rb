@@ -66,11 +66,7 @@ module Y2Network
         mask = value
         mask = mask[1..-1] if mask.start_with?("/")
 
-        if Yast::Netmask.Check4(mask) || Yast::Netmask.CheckPrefix4(mask) || Yast::Netmask.Check6(mask)
-          return true
-        end
-
-        false
+        Yast::Netmask.Check4(mask) || Yast::Netmask.CheckPrefix4(mask) || Yast::Netmask.Check6(mask)
       end
     end
   end

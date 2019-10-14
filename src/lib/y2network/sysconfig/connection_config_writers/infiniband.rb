@@ -25,8 +25,6 @@ module Y2Network
       # This class is responsible for writing the information from a ConnectionConfig::Infiniband
       # object to the underlying system.
       class Infiniband < Base
-      private
-
         # @see Y2Network::ConnectionConfigWriters::Base#update_file
         def update_file(conn)
           file.ipoib_mode = conn.ipoib_mode.name

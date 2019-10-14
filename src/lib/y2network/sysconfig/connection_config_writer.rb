@@ -36,9 +36,11 @@ module Y2Network
       # @param old_conn [Y2Network::ConnectionConfig::Base,nil] Connection configuration to write
       def write(conn, old_conn = nil)
         return if conn == old_conn
+
         file = Y2Network::Sysconfig::InterfaceFile.new(conn.interface)
         handler_class = find_handler_class(conn.type)
         return nil if handler_class.nil?
+
         remove(old_conn) if old_conn
         file.clean
         handler_class.new(file).write(conn)
@@ -50,7 +52,7 @@ module Y2Network
       # @param conn [Y2Network::Conn] Connection name to remove
       def remove(conn)
         ifcfg = Y2Network::Sysconfig::InterfaceFile.find(conn.interface)
-        ifcfg && ifcfg.remove
+        ifcfg&.remove
         Yast::Host.remove_ip(conn.ip.address.address.to_s) if conn.ip
       end
 

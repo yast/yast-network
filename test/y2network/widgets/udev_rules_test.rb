@@ -77,7 +77,8 @@ describe Y2Network::Widgets::UdevRules do
 
   describe "#value" do
     before do
-      expect(Yast::UI).to receive(:QueryWidget).with(Id(:udev_rules_name), :Value).and_return("eth1")
+      expect(Yast::UI).to receive(:QueryWidget)
+        .with(Id(:udev_rules_name), :Value).and_return("eth1")
     end
 
     it "returns the value from the input field" do

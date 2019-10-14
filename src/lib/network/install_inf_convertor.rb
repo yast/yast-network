@@ -71,6 +71,7 @@ module Yast
 
       # do not have numeric hostname, #152218
       return "" if hostname.empty? || IP.Check(hostname)
+
       hostname
     end
 

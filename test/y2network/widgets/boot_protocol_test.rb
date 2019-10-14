@@ -200,7 +200,8 @@ describe Y2Network::Widgets::BootProtocol do
       end
 
       it "sets ipaddr to value of ip address widget" do
-        allow(Yast::UI).to receive(:QueryWidget).with(:bootproto_ipaddr, :Value).and_return("10.100.0.1")
+        allow(Yast::UI).to receive(:QueryWidget).with(:bootproto_ipaddr, :Value)
+          .and_return("10.100.0.1")
 
         subject.store
 
@@ -208,7 +209,8 @@ describe Y2Network::Widgets::BootProtocol do
       end
 
       it "sets hostname to value of hostname widget" do
-        allow(Yast::UI).to receive(:QueryWidget).with(:bootproto_hostname, :Value).and_return("test.suse.cz")
+        allow(Yast::UI).to receive(:QueryWidget).with(:bootproto_hostname, :Value)
+          .and_return("test.suse.cz")
 
         subject.store
 
@@ -233,7 +235,8 @@ describe Y2Network::Widgets::BootProtocol do
 
       it "sets netmask for ipv4 netmask value" do
         pending "drop netmask"
-        allow(Yast::UI).to receive(:QueryWidget).with(:bootproto_netmask, :Value).and_return("255.255.0.0")
+        allow(Yast::UI).to receive(:QueryWidget).with(:bootproto_netmask, :Value)
+          .and_return("255.255.0.0")
 
         subject.store
 

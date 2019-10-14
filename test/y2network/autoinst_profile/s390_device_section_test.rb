@@ -30,7 +30,9 @@ describe Y2Network::AutoinstProfile::S390DeviceSection do
         c.bootproto = Y2Network::BootProtocol::STATIC
         c.firewall_zone = "public"
         c.interface = "eth0"
-        c.ip = Y2Network::ConnectionConfig::IPConfig.new(Y2Network::IPAddress.from_string("10.100.0.1/24"))
+        c.ip = Y2Network::ConnectionConfig::IPConfig.new(
+          Y2Network::IPAddress.from_string("10.100.0.1/24")
+        )
         # s390 specific
         c.read_channel = "0.0.0700"
         c.write_channel = "0.0.0701"

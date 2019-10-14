@@ -25,8 +25,6 @@ module Y2Network
       # This class is responsible for writing the information from a ConnectionConfig::Bonding
       # object to the underlying system.
       class Bonding < Base
-      private
-
         # @see Y2Network::ConnectionConfigWriters::Base#update_file
         # @param conn [Y2Network::ConnectionConfig::Bonding] Configuration to write
         def update_file(conn)

@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
@@ -21,10 +19,10 @@
 # you may find current contact information at www.novell.com
 #
 # **************************************************************************
-# File:	include/network/lan/dhcp.ycp
-# Package:	Network configuration
-# Summary:	Network card adresss configuration dialogs
-# Authors:	Michal Svec <msvec@suse.cz>
+# File:  include/network/lan/dhcp.ycp
+# Package:  Network configuration
+# Summary:  Network card adresss configuration dialogs
+# Authors:  Michal Svec <msvec@suse.cz>
 #
 module Yast
   module NetworkLanDhcpInclude

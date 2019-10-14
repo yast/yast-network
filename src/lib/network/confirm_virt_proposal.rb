@@ -39,7 +39,8 @@ module Yast
       ret = Popup.TimedAnyQuestion(
         _("Confirm Network Restart"),
         _(
-          "Because of the bridged network, YaST2 needs to restart the network to apply the settings."
+          "Because of the bridged network, YaST2 needs to " \
+            "restart the network to apply the settings."
         ),
         Label.OKButton,
         Label.CancelButton,

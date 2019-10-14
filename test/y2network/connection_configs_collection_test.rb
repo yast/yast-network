@@ -108,7 +108,7 @@ describe Y2Network::ConnectionConfigsCollection do
       let(:wlan1) { Y2Network::ConnectionConfig::Wireless.new.tap { |c| c.name = "wlan1" } }
 
       it "does not modify the collection" do
-        expect { collection.remove("wlan1") }.to_not change { collection.size }
+        expect { collection.remove("wlan1") }.to_not(change { collection.size })
       end
     end
   end

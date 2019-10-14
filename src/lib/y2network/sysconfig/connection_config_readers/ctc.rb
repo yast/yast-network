@@ -35,6 +35,7 @@ module Y2Network
 
         def device_id_from(conn)
           return if conn.interface.to_s.empty?
+
           cmd = [LIST_CMD, "ctc", "-c", "id", "-n", "--by-interface=#{conn.interface}"]
 
           id = Yast::Execute.stdout.on_target!(cmd).chomp
@@ -44,6 +45,7 @@ module Y2Network
         def update_device_id(conn)
           id = device_id_from(conn)
           return unless id
+
           conn.read_channel, conn.write_channel = id.split(":")
         end
 

@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
@@ -21,10 +19,10 @@
 # you may find current contact information at www.novell.com
 #
 # **************************************************************************
-# File:	include/network/lan/cards.ycp
-# Package:	Network configuration
-# Summary:	Network cards database
-# Authors:	Michal Svec <msvec@suse.cz>
+# File:  include/network/lan/cards.ycp
+# Package:  Network configuration
+# Summary:  Network cards database
+# Authors:  Michal Svec <msvec@suse.cz>
 #
 #
 # Originally copyied from yast1 NetCardDlg.cc.
@@ -36,10 +34,10 @@
 #   "fddi", "tr", "arc", "ci", "hippi", "eth", "escon", "iucv", "ctc", "air"
 #
 # <list> contains maps in format:
-#   "name"		<string>	user readable name of the card
-#   "module"		<string>	kernel module name
-#   "options"		<string>	kernel module options
-#   "architecture"	<list>		allowed architectures:
+#   "name"    <string>  user readable name of the card
+#   "module"    <string>  kernel module name
+#   "options"    <string>  kernel module options
+#   "architecture"  <list>    allowed architectures:
 #     "s390", "axp", "i386", "ix86", "x86_64", "ia64", "ppc", "sparc", ...
 module Yast
   module NetworkLanCardsInclude

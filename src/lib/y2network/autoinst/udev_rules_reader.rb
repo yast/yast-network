@@ -52,7 +52,8 @@ module Y2Network
 
     private
 
-      # find according to udev rule interface that match given hardware specification or nil if not exist
+      # find according to udev rule interface that match given hardware specification or
+      #   nil if not exist
       # @param config [Config]
       # @param udev_rule [AutoinstSection::UdevRuleSection]
       def interface_for(config, udev_rule)
@@ -70,7 +71,7 @@ module Y2Network
       def rename_interface(config, target_interface, udev_rule)
         solve_collision(config, target_interface, udev_rule)
 
-        old_name = target_interface.name == udev_rule.name ? nil : target_interface.name
+        old_name = (target_interface.name == udev_rule.name) ? nil : target_interface.name
         config.rename_interface(old_name, udev_rule.name, udev_rule.mechanism)
       end
 

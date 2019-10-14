@@ -38,7 +38,7 @@ module Y2Network
       #
       # @param interfaces [Y2Network::InterfacesCollection] Interfaces collection
       def write(interfaces)
-        set_old_interfaces_down(interfaces)
+        shut_down_old_interfaces(interfaces)
         update_udevd(interfaces)
       end
 
@@ -53,7 +53,8 @@ module Y2Network
         when :mac
           Y2Network::UdevRule.new_mac_based_rename(iface.name, iface.hardware.mac)
         when :bus_id
-          Y2Network::UdevRule.new_bus_id_based_rename(iface.name, iface.hardware.busid, iface.hardware.dev_port)
+          Y2Network::UdevRule.new_bus_id_based_rename(iface.name, iface.hardware.busid,
+            iface.hardware.dev_port)
         end
       end
 
@@ -63,6 +64,7 @@ module Y2Network
       # @return [UdevRule,nil] udev rule or nil if it is not needed
       def driver_udev_rule_for(iface)
         return nil unless iface.respond_to?(:custom_driver) && iface.custom_driver
+
         Y2Network::UdevRule.new_driver_assignment(iface.modalias, iface.custom_driver)
       end
 
@@ -78,7 +80,9 @@ module Y2Network
       def update_renaming_udev_rules(interfaces)
         udev_rules = interfaces.map { |i| renaming_udev_rule_for(i) }.compact
         known_names = interfaces.known_names
-        custom_rules = Y2Network::UdevRule.naming_rules.reject { |u| known_names.include?(u.device) }
+        custom_rules = Y2Network::UdevRule.naming_rules.reject do |u|
+          known_names.include?(u.device)
+        end
         Y2Network::UdevRule.write_net_rules(custom_rules + udev_rules)
       end
 
@@ -89,7 +93,8 @@ module Y2Network
 
       def reload_udev_rules
         Yast::Execute.on_target("/usr/bin/udevadm", "control", "--reload")
-        Yast::Execute.on_target("/usr/bin/udevadm", "trigger", "--subsystem-match=net", "--action=add")
+        Yast::Execute.on_target("/usr/bin/udevadm", "trigger", "--subsystem-match=net",
+          "--action=add")
         # wait so that ifcfgs written in NetworkInterfaces are newer
         # (1-second-wise) than netcontrol status files,
         # and rcnetwork reload actually works (bnc#749365)
@@ -100,14 +105,14 @@ module Y2Network
       # Cleans and shutdowns renamed interfaces
       #
       # @param interfaces [InterfacesCollection] Interfaces
-      def set_old_interfaces_down(interfaces)
-        interfaces.to_a.select(&:old_name).each { |i| set_interface_down(i.old_name) }
+      def shut_down_old_interfaces(interfaces)
+        interfaces.to_a.select(&:old_name).each { |i| shut_down_interface(i.old_name) }
       end
 
       # Sets the interface down
       #
       # @param iface_name [String] Interface's name
-      def set_interface_down(iface_name)
+      def shut_down_interface(iface_name)
         Yast::Execute.on_target("/sbin/ifdown", iface_name) unless Yast::Mode.autoinst
       end
     end

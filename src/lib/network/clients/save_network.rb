@@ -178,7 +178,8 @@ module Yast
         log.info("Copying #{net_srcfile} to the installed system ")
         WFM.Execute(
           path(".local.bash"),
-          "/bin/cp -p #{udev_rules_srcdir.shellescape}/#{net_srcfile.shellescape} #{net_destfile.shellescape}"
+          "/bin/cp -p #{udev_rules_srcdir.shellescape}/#{net_srcfile.shellescape} " \
+            "#{net_destfile.shellescape}"
         )
       else
         log.info("Not copying file #{net_destfile} - update mode")
@@ -223,16 +224,16 @@ module Yast
     # For copying dhcp-client leases
     # FIXME: We probably could omit the copy of these leases as we are using
     # wicked during the installation instead of dhclient.
-    DHCPv4_PATH = "/var/lib/dhcp/".freeze
-    DHCPv6_PATH = "/var/lib/dhcp6/".freeze
+    DHCPV4_PATH = "/var/lib/dhcp/".freeze
+    DHCPV6_PATH = "/var/lib/dhcp6/".freeze
     DHCP_FILES = ["*.leases"].freeze
 
     # Convenience method for copying dhcp files
     def copy_dhcp_info
       entries_to_copy = [
         { dir: WICKED_DHCP_PATH, files: WICKED_DHCP_FILES },
-        { dir: DHCPv4_PATH, files: DHCP_FILES },
-        { dir: DHCPv6_PATH, files: DHCP_FILES }
+        { dir: DHCPV4_PATH, files: DHCP_FILES },
+        { dir: DHCPV6_PATH, files: DHCP_FILES }
       ]
 
       entries_to_copy.each { |e| copy_files_to_target(e[:files], e[:dir]) }
@@ -250,6 +251,7 @@ module Yast
       dest_dir = ::File.join(Installation.destdir, path)
       glob_files = ::Dir.glob(files.map { |f| File.join(path, f) })
       return false if glob_files.empty?
+
       ::FileUtils.mkdir_p(dest_dir)
       ::FileUtils.cp(glob_files, dest_dir, preserve: true)
       true

@@ -48,7 +48,7 @@ module Y2Network
           [
             index,
             route.to.yield_self do |to|
-              to == :default ? "default" : (to.to_s + "/" + to.prefix.to_s)
+              (to == :default) ? "default" : (to.to_s + "/" + to.prefix.to_s)
             end,
             route.gateway.nil? ? "-" : route.gateway.to_s,
             route.interface.nil? ? "-" : route.interface.name,

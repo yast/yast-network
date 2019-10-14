@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
@@ -21,10 +19,10 @@
 # you may find current contact information at www.novell.com
 #
 # **************************************************************************
-# File:	modules/NetHwDetection.ycp
-# Package:	Network configuration
-# Summary:	Network detection
-# Authors:	Michal Svec <msvec@suse.cz>
+# File:  modules/NetHwDetection.ycp
+# Package:  Network configuration
+# Summary:  Network detection
+# Authors:  Michal Svec <msvec@suse.cz>
 #
 #
 # <p>Detects network settings, using dhcp or sniffing network traffic</p>
@@ -198,7 +196,8 @@ module Yast
       # floods logs.
       return false if ip.nil? || ip.empty?
 
-      command = "LC_ALL=C /usr/sbin/ip link show | /usr/bin/grep BROADCAST | /usr/bin/grep -v NOARP | /usr/bin/cut -d: -f2"
+      command = "LC_ALL=C /usr/sbin/ip link show | /usr/bin/grep BROADCAST | " \
+        "/usr/bin/grep -v NOARP | /usr/bin/cut -d: -f2"
       exe = SCR.Execute(path(".target.bash_output"), command)
       ifs = Ops.get_string(exe, "stdout", "")
       ifsl = Builtins.filter(Builtins.splitstring(ifs, " \t\n")) { |i| i != "" }

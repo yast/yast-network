@@ -29,6 +29,7 @@ module Y2Network
 
         def update_connection_config(conn)
           return unless update_device_id(conn)
+
           update_layer2(conn)
           update_portno(conn)
           update_ipa_takeover(conn)
@@ -38,6 +39,7 @@ module Y2Network
 
         def device_id_from(conn)
           return if conn.interface.to_s.empty?
+
           cmd = [LIST_CMD, "qeth", "-c", "id", "-n", "--by-interface=#{conn.interface}"]
 
           id = Yast::Execute.stdout.on_target!(cmd).chomp
@@ -47,6 +49,7 @@ module Y2Network
         def update_device_id(conn)
           id = device_id_from(conn)
           return unless id
+
           conn.read_channel, conn.write_channel, conn.data_channel = id.split(":")
         end
 

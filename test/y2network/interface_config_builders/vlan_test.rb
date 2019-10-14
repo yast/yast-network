@@ -33,7 +33,8 @@ describe Y2Network::InterfaceConfigBuilders::Vlan do
   end
 
   before do
-    allow(config_builder).to receive(:yast_config).and_return(Y2Network::Config.new(source: :testing))
+    allow(config_builder).to receive(:yast_config)
+      .and_return(Y2Network::Config.new(source: :testing))
   end
 
   describe "#type" do

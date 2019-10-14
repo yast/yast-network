@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
@@ -21,10 +19,10 @@
 # you may find current contact information at www.novell.com
 #
 # **************************************************************************
-# File:	lan/cmdline.ycp
-# Package:	Network configuration
-# Summary:	Network cards cmdline handlers
-# Authors:	Michal Svec <msvec@suse.cz>
+# File:  lan/cmdline.ycp
+# Package:  Network configuration
+# Summary:  Network cards cmdline handlers
+# Authors:  Michal Svec <msvec@suse.cz>
 #
 
 require "shellwords"
@@ -73,7 +71,9 @@ module Yast
       config = Yast::Lan.yast_config
       return false unless validateId(options, config.interfaces)
 
-      presenter = Y2Network::Presenters::InterfaceSummary.new(config.interfaces.to_a[options["id"].to_i].name, config)
+      presenter = Y2Network::Presenters::InterfaceSummary.new(
+        config.interfaces.to_a[options["id"].to_i].name, config
+      )
       text = presenter.text
       # create plain text from formated HTML
       text.gsub!(/(<br>)|(<\/li>)/, "\n")
@@ -114,7 +114,9 @@ module Yast
         return false
       end
 
-      builder = Y2Network::InterfaceConfigBuilder.for(Y2Network::InterfaceType.from_short_name(type))
+      builder = Y2Network::InterfaceConfigBuilder.for(
+        Y2Network::InterfaceType.from_short_name(type)
+      )
       builder.name = options.fetch("name")
       update_builder_from_options!(builder, options)
 
@@ -204,11 +206,14 @@ module Yast
     def update_builder_from_options!(builder, options)
       case builder.type.short_name
       when "bond"
-        builder.slaves = options["slaves"].split(" ") if options["slaves"] # change only if user specify it
+        # change only if user specify it
+        builder.slaves = options["slaves"].split(" ") if options["slaves"]
       when "vlan"
-        builder.etherdevice = options["ethdevice"] if options["ethdevice"] # change only if user specify it
+        # change only if user specify it
+        builder.etherdevice = options["ethdevice"] if options["ethdevice"]
       when "br"
-        builder.ports = options["bridge_ports"] if options["bridge_ports"] # change only if user specify it
+        # change only if user specify it
+        builder.ports = options["bridge_ports"] if options["bridge_ports"]
       end
 
       default_bootproto = options.keys.include?("ip") ? "static" : "none"
@@ -218,7 +223,10 @@ module Yast
       builder.boot_protocol = boot_protocol
       if builder.boot_protocol.name == "static"
         ip_address = options.fetch("ip", "")
-        raise InvalidOption, _("For static configuration, the \"ip\" option is needed.") if ip_address.empty?
+        if ip_address.empty?
+          raise InvalidOption, _("For static configuration, the \"ip\" option is needed.")
+        end
+
         builder.ip_address = ip_address
         builder.subnet_prefix = options.fetch("prefix", options.fetch("netmask", "255.255.255.0"))
       else

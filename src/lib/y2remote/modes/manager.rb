@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ------------------------------------------------------------------------------
 # Copyright (c) 2017 SUSE LLC
 #
@@ -78,6 +76,7 @@ module Y2Remote
       # restarted; true if restarted with success
       def restart
         return false unless installed?
+
         Yast::Service.Restart(SERVICE)
       end
 
@@ -108,7 +107,7 @@ module Y2Remote
         textdomain "network"
         if !Yast::Service.Enable(SERVICE)
           Yast::Report.Error(
-            _("Enabling service %{service} has failed") % { service: SERVICE }
+            format(_("Enabling service %{service} has failed"), service: SERVICE)
           )
           return false
         end
@@ -127,7 +126,7 @@ module Y2Remote
         textdomain "network"
         if !Yast::Service.Disable(SERVICE)
           Yast::Report.Error(
-            _("Disabling service %{service} has failed") % { service: SERVICE }
+            format(_("Disabling service %{service} has failed"), service: SERVICE)
           )
           return false
         end

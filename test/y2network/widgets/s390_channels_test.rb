@@ -72,7 +72,9 @@ describe Y2Network::Widgets::S390WriteChannel do
 
     it "modifies the device write channel with the widget value" do
       builder.write_channel = write_channel
-      expect { subject.store }.to change { builder.write_channel }.from(write_channel).to("0.0.0801")
+      expect { subject.store }.to(
+        change { builder.write_channel }.from(write_channel).to("0.0.0801")
+      )
     end
   end
 end

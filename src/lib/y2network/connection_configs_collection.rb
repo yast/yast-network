@@ -88,7 +88,8 @@ module Y2Network
     #
     # @note It uses the name to do the matching.
     #
-    # @param connection_config [ConnectionConfig::Base,String] Connection configuration object or name
+    # @param connection_config [ConnectionConfig::Base,String] Connection configuration object
+    #   or name
     def remove(connection_config)
       name = connection_config.respond_to?(:name) ? connection_config.name : connection_config
       connection_configs.reject! { |c| c.name == name }
@@ -107,7 +108,10 @@ module Y2Network
     # @return [Boolean] true when both collections contain only equal connections,
     #                   false otherwise
     def ==(other)
-      ((connection_configs - other.connection_configs) + (other.connection_configs - connection_configs)).empty?
+      (
+        (connection_configs - other.connection_configs) +
+        (other.connection_configs - connection_configs)
+      ).empty?
     end
 
     alias_method :eql?, :==

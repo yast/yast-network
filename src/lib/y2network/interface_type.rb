@@ -35,9 +35,9 @@ module Y2Network
       #
       # @return [Array<InterfaceType>] Interface types
       def all
-        @types ||= InterfaceType.constants
-                                .map { |c| InterfaceType.const_get(c) }
-                                .select { |c| c.is_a?(InterfaceType) }
+        @all ||= InterfaceType.constants
+          .map { |c| InterfaceType.const_get(c) }
+          .select { |c| c.is_a?(InterfaceType) }
       end
 
       # Returns the interface type with a given short name
@@ -89,17 +89,14 @@ module Y2Network
 
       target_name = method_name.to_s[0..-2]
       InterfaceType.all.any? do |type|
-        type.name.downcase == target_name ||
-          type.short_name == target_name
+        [type.name.downcase, type.short_name].include?(target_name)
       end
     end
 
     def method_missing(method_name, *arguments, &block)
       return super unless respond_to_missing?(method_name)
 
-      if !arguments.empty?
-        raise ArgumentError, "no params are accepted for method #{method_name}"
-      end
+      raise ArgumentError, "no params are accepted for method #{method_name}" if !arguments.empty?
 
       target_name = method_name.to_s[0..-2]
       [name.downcase, short_name].include?(target_name)

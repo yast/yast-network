@@ -51,7 +51,8 @@ describe Yast::LanItemsSummary do
   before do
     allow(Yast::LanItems).to receive(:Items).and_return(items)
     allow(Yast::LanItems).to receive(:IsItemConfigured).and_return(true)
-    allow(Yast::NetworkInterfaces).to receive(:FilterDevices).with("netcard").and_return("br" => { "br0" => dhcp_maps[2] })
+    allow(Yast::NetworkInterfaces).to receive(:FilterDevices).with("netcard")
+      .and_return("br" => { "br0" => dhcp_maps[2] })
     dhcp_maps.each_with_index do |item, index|
       allow(Yast::LanItems).to receive(:GetDeviceMap).with(index).and_return(item)
     end
@@ -63,11 +64,14 @@ describe Yast::LanItemsSummary do
 
   describe "#proposal" do
     let(:interfaces) { instance_double(Y2Network::InterfacesCollection) }
-    let(:br0) { instance_double(Y2Network::Interface, name: "br0", type: Y2Network::InterfaceType::BRIDGE) }
+    let(:br0) do
+      instance_double(Y2Network::Interface, name: "br0", type: Y2Network::InterfaceType::BRIDGE)
+    end
 
     it "returns a Richtext summary of the configured interfaces" do
       allow(interfaces).to receive(:by_type).and_return([])
-      allow(interfaces).to receive(:by_type).with(Y2Network::InterfaceType::BRIDGE).and_return([br0])
+      allow(interfaces).to receive(:by_type).with(Y2Network::InterfaceType::BRIDGE)
+        .and_return([br0])
       allow(interfaces).to receive(:bridge_slaves).and_return(["eth1"])
 
       expect(subject.proposal)

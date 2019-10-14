@@ -52,6 +52,7 @@ module Y2Network
       def add_hostname(summary)
         hostname_str = hostname
         return summary unless hostname_str
+
         Yast::Summary.AddListItem(summary, hostname_str)
       end
 
@@ -65,12 +66,14 @@ module Y2Network
 
       def add_nameservers(summary)
         return summary if dns.nameservers.empty?
+
         item = format(_("Name Servers: %s"), dns.nameservers.map(&:to_s).join(", "))
         Yast::Summary.AddListItem(summary, item)
       end
 
       def add_searchlist(summary)
         return summary if dns.searchlist.empty?
+
         item = format(_("Search List: %s"), dns.searchlist.join(", "))
         Yast::Summary.AddListItem(summary, item)
       end

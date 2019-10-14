@@ -37,6 +37,7 @@ module Y2Network
         file.load
         handler_class = find_handler_class(type || file.type)
         return nil if handler_class.nil?
+
         handler_class.new(file).connection_config
       end
 
@@ -50,7 +51,8 @@ module Y2Network
         return unless type
 
         if !type.is_a?(InterfaceType)
-          t = InterfaceType.from_short_name(type) or raise "Unknown type #{type.inspect} #{type.class.inspect}"
+          t = InterfaceType.from_short_name(type) or
+            raise "Unknown type #{type.inspect} #{type.class.inspect}"
           type = t
         end
         require "y2network/sysconfig/connection_config_readers/#{type.file_name}"

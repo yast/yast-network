@@ -57,7 +57,8 @@ module Y2Network
       # Clones a network interface into an AutoYaST udev rule section
       #
       # @param interface [Y2Network::Interface]
-      # @return [InterfacesSection, nil] Udev rule section or nil if udev naming is not implemented for interface
+      # @return [InterfacesSection, nil] Udev rule section or nil if udev naming is not implemented
+      #   for interface
       def self.new_from_network(interface)
         return if interface.renaming_mechanism == :none
         return unless interface.hardware

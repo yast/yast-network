@@ -22,7 +22,6 @@
 require_relative "test_helper"
 
 require "yast"
-include Yast::I18n
 
 Yast.import "LanItems"
 Yast.import "Stage"

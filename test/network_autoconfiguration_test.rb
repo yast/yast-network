@@ -147,11 +147,13 @@ describe Yast::NetworkAutoconfiguration do
 
     it "returns true if any of available interfaces has configuration and is up" do
       allow(Yast::Lan).to receive(:yast_config)
-        .and_return(Y2Network::Config.new(
-                      interfaces:  Y2Network::InterfacesCollection.new([double(name: IFACE)]),
-                      connections: Y2Network::ConnectionConfigsCollection.new([double(name: IFACE)]),
-                      source:      :testing
-        ))
+        .and_return(
+          Y2Network::Config.new(
+            interfaces:  Y2Network::InterfacesCollection.new([double(name: IFACE)]),
+            connections: Y2Network::ConnectionConfigsCollection.new([double(name: IFACE)]),
+            source:      :testing
+          )
+        )
       allow(Yast::SCR)
         .to receive(:Execute)
         .and_return(0)
@@ -222,7 +224,9 @@ describe Yast::NetworkAutoconfiguration do
 
       it "creates the virtulization proposal config" do
         expect(Yast::Lan).to receive(:ProposeVirtualized).and_call_original
-        expect { instance.configure_virtuals }.to change { yast_config.connections.size }.from(0).to(2)
+        expect { instance.configure_virtuals }.to(
+          change { yast_config.connections.size }.from(0).to(2)
+        )
       end
 
       it "writes the configuration of the interfaces" do

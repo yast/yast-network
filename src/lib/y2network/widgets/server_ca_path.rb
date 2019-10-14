@@ -27,7 +27,8 @@ module Y2Network
         @builder = builder
       end
 
-      # FIXME: label and help text is wrong, here it is certificate of CA that is used to sign server certificate
+      # FIXME: label and help text is wrong, here it is certificate of CA
+      #        that is used to sign server certificate
       def label
         _("&Server Certificate")
       end

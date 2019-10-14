@@ -28,7 +28,9 @@ describe Y2Network::Widgets::EditInterface do
 
   let(:selected) { "eth0" }
   let(:table) { double("table", value: selected) }
-  let(:config) { Y2Network::Config.new(interfaces: interfaces, connections: connections, source: :sysconfig) }
+  let(:config) do
+    Y2Network::Config.new(interfaces: interfaces, connections: connections, source: :sysconfig)
+  end
   let(:eth0) { Y2Network::PhysicalInterface.new("eth0") }
   let(:eth1) { Y2Network::PhysicalInterface.new("eth1") }
   let(:interfaces) { Y2Network::InterfacesCollection.new([eth0, eth1]) }

@@ -46,7 +46,9 @@ describe Y2Network::InterfaceConfigBuilder do
   describe ".for" do
     context "specialized class for given type exists" do
       it "returns new instance of that class" do
-        expect(described_class.for("ib").class.to_s).to eq "Y2Network::InterfaceConfigBuilders::Infiniband"
+        expect(described_class.for("ib").class.to_s).to eq(
+          "Y2Network::InterfaceConfigBuilders::Infiniband"
+        )
       end
     end
 
@@ -103,7 +105,8 @@ describe Y2Network::InterfaceConfigBuilder do
     end
 
     it "saves connection config" do
-      expect(config).to receive(:add_or_update_connection_config).with(Y2Network::ConnectionConfig::Base)
+      expect(config).to receive(:add_or_update_connection_config)
+        .with(Y2Network::ConnectionConfig::Base)
       subject.save
     end
 

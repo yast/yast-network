@@ -64,8 +64,8 @@ module Y2Network
       # Loads routes from system
       #
       # @return [Array<Hash<String, String>>] list of hashes representing routes
-      #                                       as provided by SCR agent.
-      #                                       keys: destination, gateway, netmask, [device, [extrapara]]
+      #   as provided by SCR agent.
+      #   keys: destination, gateway, netmask, [device, [extrapara]]
       def load
         entries = with_registered_ifroute_agent(file_path) { |a| Yast::SCR.Read(a) }
         entries = entries ? normalize_entries(entries.uniq) : []
@@ -91,6 +91,7 @@ module Y2Network
       # Removes the file
       def remove
         return unless Yast::FileUtils.Exists(file_path)
+
         Yast::SCR.Execute(Yast::Path.new(".target.remove"), file_path)
       end
 
@@ -197,6 +198,7 @@ module Y2Network
       # @return [Yast::Path]
       def ifroute_agent_scr_path(file_path)
         return Yast::Path.new(".routes") unless register_agent?
+
         register_ifroute_agent_for_path(file_path)
       end
 

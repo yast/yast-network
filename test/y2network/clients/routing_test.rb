@@ -81,7 +81,7 @@ describe Y2Network::Clients::Routing do
 
       context "and applied some modification in the routing dialog" do
         before do
-          allow(subject).to receive(:modified?).and_return(:true)
+          allow(subject).to receive(:modified?).and_return(true)
           allow(subject).to receive(:RoutingMainDialog).and_return(:next)
           allow(Yast::NetworkService).to receive(:StartStop)
         end

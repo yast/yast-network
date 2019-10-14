@@ -101,7 +101,8 @@ module Y2Network
     # @param dns         [DNS] Object with DNS configuration
     # @param source      [Symbol] Configuration source
     # @param drivers     [Array<Driver>] List of available drivers
-    def initialize(interfaces: InterfacesCollection.new, connections: ConnectionConfigsCollection.new,
+    def initialize(interfaces: InterfacesCollection.new,
+      connections: ConnectionConfigsCollection.new,
       routing: Routing.new, dns: DNS.new, drivers: [], source:)
       @interfaces = interfaces
       @connections = connections
@@ -143,6 +144,7 @@ module Y2Network
       interface = interfaces.by_name(old_name || new_name)
       interface.rename(new_name, mechanism)
       return unless old_name # do not modify configurations if it is just renaming mechanism
+
       connections.by_interface(old_name).each do |connection|
         connection.interface = new_name
         rename_dependencies(old_name, new_name, connection)
@@ -175,6 +177,7 @@ module Y2Network
       connections.add_or_update(connection_config)
       interface = interfaces.by_name(connection_config.interface)
       return if interface
+
       log.info "Creating new interface"
       interfaces << Interface.from_connection(connection_config)
     end
@@ -185,7 +188,9 @@ module Y2Network
     def drivers_for_interface(name)
       interface = interfaces.by_name(name)
       names = interface.drivers.map(&:name)
-      names << interface.custom_driver if interface.custom_driver && !names.include?(interface.custom_driver)
+      if interface.custom_driver && !names.include?(interface.custom_driver)
+        names << interface.custom_driver
+      end
       drivers.select { |d| names.include?(d.name) }
     end
 
@@ -209,6 +214,7 @@ module Y2Network
     # @return [Boolean]
     def configured_interface?(iface_name)
       return false if iface_name.nil? || iface_name.empty?
+
       !connections.by_interface(iface_name).empty?
     end
 
@@ -219,7 +225,9 @@ module Y2Network
       result = []
       bond_bridge = connection_config.find_master(connections)
       result << bond_bridge if bond_bridge
-      vlans = connections.to_a.select { |c| c.type.vlan? && c.parent_device == connection_config.name }
+      vlans = connections.to_a.select do |c|
+        c.type.vlan? && c.parent_device == connection_config.name
+      end
       result.concat(vlans)
       ConnectionConfigsCollection.new(result)
     end
@@ -251,9 +259,9 @@ module Y2Network
       to_modify.each do |dependency|
         case dependency.type
         when InterfaceType::BRIDGE
-          dependency.ports.map! { |e| e == old_name ? new_name : e }
+          dependency.ports.map! { |e| (e == old_name) ? new_name : e }
         when InterfaceType::BONDING
-          dependency.slaves.map! { |e| e == old_name ? new_name : e }
+          dependency.slaves.map! { |e| (e == old_name) ? new_name : e }
         when InterfaceType::VLAN
           dependency.parent_device = new_name
         else

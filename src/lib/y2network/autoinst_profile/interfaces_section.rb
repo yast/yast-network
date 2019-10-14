@@ -61,7 +61,8 @@ module Y2Network
 
       # Clones network interfaces settings into an AutoYaST interfaces section
       #
-      # @param config [Y2Network::Config] whole config as it need both interfaces and connection configs
+      # @param config [Y2Network::Config] whole config as it need both interfaces and
+      #   connection configs
       # @return [InterfacesSection]
       def self.new_from_network(config)
         result = new
@@ -106,7 +107,9 @@ module Y2Network
       end
 
       def interfaces_section(connection_configs)
-        connection_configs.map { |c| Y2Network::AutoinstProfile::InterfaceSection.new_from_network(c) }
+        connection_configs.map do |c|
+          Y2Network::AutoinstProfile::InterfaceSection.new_from_network(c)
+        end
       end
     end
   end

@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
@@ -21,10 +19,10 @@
 # you may find current contact information at www.novell.com
 #
 # **************************************************************************
-# File:	include/network/lan/dialogs.ycp
-# Package:	Network configuration
-# Summary:	Summary, overview and IO dialogs for network cards config
-# Authors:	Michal Svec <msvec@suse.cz>
+# File:  include/network/lan/dialogs.ycp
+# Package:  Network configuration
+# Summary:  Summary, overview and IO dialogs for network cards config
+# Authors:  Michal Svec <msvec@suse.cz>
 #
 
 require "y2network/interface_config_builder"
@@ -71,6 +69,7 @@ module Yast
 
     def wd
       return @wd if @wd
+
       @wd = {
         "MANAGED"                       => managed_widget,
         "IPV6"                          => ipv6_widget,
@@ -117,9 +116,16 @@ module Yast
           "contents"     => VBox(
             interfaces_table.widget_id,
             interface_description.widget_id,
-            Left(HBox(add_interface.widget_id, edit_interface.widget_id, delete_interface.widget_id))
+            Left(
+              HBox(
+                add_interface.widget_id, edit_interface.widget_id, delete_interface.widget_id
+              )
+            )
           ),
-          "widget_names" => [interfaces_table.widget_id, interface_description.widget_id, add_interface.widget_id, edit_interface.widget_id, delete_interface.widget_id]
+          "widget_names" => [
+            interfaces_table.widget_id, interface_description.widget_id, add_interface.widget_id,
+            edit_interface.widget_id, delete_interface.widget_id
+          ]
         }
       }
       @tabs_descr = Builtins.union(@tabs_descr, route_td)
@@ -165,7 +171,8 @@ module Yast
       Wizard.RestoreHelp(Ops.get_string(@help, "read", ""))
       Lan.AbortFunction = -> { PollAbort() }
       ret = Lan.Read(:cache)
-      # Currently just a smoketest for new config storage - something what should replace Lan module in the bright future
+      # Currently just a smoketest for new config storage -
+      # something what should replace Lan module in the bright future
       # TODO: find a suitable place for this config storage
       Y2Network::Config.from(:sysconfig)
 
