@@ -66,7 +66,7 @@ module Yast
           #     "No IP address" case, then default gw must stay (#460262)
           # and also: don't delete default GW for usb/pcmcia devices (#307102)
           yast_config = Y2Network::Config.find(:yast)
-          if yast_config&.routing && yast_config.routing.default_route
+          if yast_config&.routing&.default_route
             remove_gw = Popup.YesNo(
               _(
                 "A static default route is defined.\n" \
