@@ -181,6 +181,7 @@ module Yast
     end
 
     # Check if given device can reach some of reference servers
+    # rubocop:disable Naming/AccessorMethodName
     def set_default_route_flag_if_wan_dev?(devname)
       set_default_route_flag(devname, "yes")
 
@@ -206,6 +207,7 @@ module Yast
 
       reached
     end
+    # rubocop:enable Naming/AccessorMethodName
 
     # Sets sysconfig's DHCLIENT_SET_DEFAULT_ROUTE option for given device
     #

@@ -79,10 +79,6 @@ Naming/FileName:
 Naming/PredicateName:
   Enabled: false
 
-# Offense count: 1
-Naming/AccessorMethodName:
-  Enabled: false
-
 # Offense count: 7
 # Cop supports --auto-correct.
 # Configuration parameters: ExactNameMatch, AllowPredicates, AllowDSLWriters, Whitelist.

@@ -38,7 +38,7 @@ module Y2Network
       #
       # @param interfaces [Y2Network::InterfacesCollection] Interfaces collection
       def write(interfaces)
-        set_old_interfaces_down(interfaces)
+        shut_down_old_interfaces(interfaces)
         update_udevd(interfaces)
       end
 
@@ -105,14 +105,14 @@ module Y2Network
       # Cleans and shutdowns renamed interfaces
       #
       # @param interfaces [InterfacesCollection] Interfaces
-      def set_old_interfaces_down(interfaces)
-        interfaces.to_a.select(&:old_name).each { |i| set_interface_down(i.old_name) }
+      def shut_down_old_interfaces(interfaces)
+        interfaces.to_a.select(&:old_name).each { |i| shut_down_interface(i.old_name) }
       end
 
       # Sets the interface down
       #
       # @param iface_name [String] Interface's name
-      def set_interface_down(iface_name)
+      def shut_down_interface(iface_name)
         Yast::Execute.on_target("/sbin/ifdown", iface_name) unless Yast::Mode.autoinst
       end
     end
