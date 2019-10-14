@@ -725,13 +725,13 @@ module Yast
     def Export
       profile = Y2Network::AutoinstProfile::NetworkingSection.new_from_network(yast_config)
       ay = {
-        "dns"                  => profile.dns&.to_hashes || {},
-        "net-udev"             => profile.udev_rules.udev_rules&.map(&:to_hashes) || [],
-        "s390-devices"         => profile.s390_devices&.to_hashes&.fetch("devices", []) || [],
+        "dns"                  => profile&.dns&.to_hashes || {},
+        "net-udev"             => profile&.udev_rules&.udev_rules&.map(&:to_hashes) || [],
+        "s390-devices"         => profile&.s390_devices&.to_hashes&.fetch("devices", []) || [],
         "config"               => NetworkConfig.Export,
-        "interfaces"           => profile.interfaces.interfaces&.map(&:to_hashes) || [],
+        "interfaces"           => profile&.interfaces&.interfaces&.map(&:to_hashes) || [],
         "ipv6"                 => @ipv6,
-        "routing"              => profile.routing&.to_hashes || {},
+        "routing"              => profile&.routing&.to_hashes || {},
         "managed"              => NetworkService.is_network_manager,
         "start_immediately"    => Ops.get_boolean(
           LanItems.autoinstall_settings,
