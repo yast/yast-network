@@ -52,7 +52,7 @@ Yast.import "Lan"
 
 require "y2storage"
 
-require_relative "SCRStub"
+require_relative "scr_stub"
 
 RSpec.configure do |c|
   c.extend Yast::I18n # available in context/describe
