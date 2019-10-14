@@ -694,7 +694,7 @@ module Yast
     # Checks if given device has carrier
     #
     # @return [boolean] true if device has carrier
-    def has_carrier?(dev_name)
+    def carrier?(dev_name)
       SCR.Read(
         path(".target.string"),
         "/sys/class/net/#{dev_name}/carrier"
@@ -746,7 +746,7 @@ module Yast
     #
     # @return [boolean] true if physical layer is connected
     def phy_connected?(dev_name)
-      return true if has_carrier?(dev_name)
+      return true if carrier?(dev_name)
 
       # SetLinkUp ensures that driver is loaded
       SetLinkUp(dev_name)
@@ -758,7 +758,7 @@ module Yast
       # https://github.com/yast/yast-network/pull/202
       sleep(5)
 
-      has_carrier?(dev_name)
+      carrier?(dev_name)
     end
 
     def unconfigureable_service?

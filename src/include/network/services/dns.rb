@@ -375,7 +375,7 @@ module Yast
 
     # Init handler for DHCP_HOSTNAME
     def InitDhcpHostname(_key)
-      UI.ChangeWidget(Id("DHCP_HOSTNAME"), :Enabled, has_dhcp? && NetworkService.is_wicked)
+      UI.ChangeWidget(Id("DHCP_HOSTNAME"), :Enabled, dhcp? && NetworkService.is_wicked)
       dhcp_hostname = DNS.dhcp_hostname
 
       items = [
@@ -434,7 +434,7 @@ module Yast
     # @param _event [Hash] the event being handled
     # @return whether valid
     def ValidateHostname(key, _event)
-      dhn = has_dhcp? && use_dhcp_hostname?
+      dhn = dhcp? && use_dhcp_hostname?
       # If the names are set by dhcp, the user may enter backup values
       # here - N#28427. That is, host and domain name are optional then.
       # For static config, they are mandatory.
@@ -634,7 +634,7 @@ module Yast
     # Checks if any interface is configured to use DHCP
     #
     # @return [Boolean] true when an interface uses DHCP config
-    def has_dhcp?
+    def dhcp?
       !LanItems.find_dhcp_ifaces.empty?
     end
   end
