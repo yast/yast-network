@@ -105,15 +105,15 @@ module Yast
     end
 
     def add_button
-      @add_button ||= Y2Network::Widgets::AddRoute.new(routing_table, config)
+      @add_button ||= Y2Network::Widgets::AddRoute.new(routing_table_widget, config)
     end
 
     def edit_button
-      @edit_button ||= Y2Network::Widgets::EditRoute.new(routing_table, config)
+      @edit_button ||= Y2Network::Widgets::EditRoute.new(routing_table_widget, config)
     end
 
     def delete_button
-      @delete_button ||= Y2Network::Widgets::DeleteRoute.new(routing_table)
+      @delete_button ||= Y2Network::Widgets::DeleteRoute.new(routing_table_widget)
     end
 
     def content
@@ -125,7 +125,7 @@ module Yast
         Frame(
           _("Routing Table"),
           VBox(
-            routing_table.widget_id,
+            routing_table_widget.widget_id,
             HBox(
               add_button.widget_id,
               edit_button.widget_id,
