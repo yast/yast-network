@@ -38,19 +38,22 @@ module Y2Network
 
     # Returns the hostname
     #
-    # @note If the hostname cannot be determined, generate a random one.
+    # @note If the hostname cannot be determined, generate a random one
+    # in installed system (do not generate one in the installer).
     #
     # @return [String]
     def hostname
-      if (Yast::Mode.installation || Yast::Mode.autoinst) &&
-          Yast::FileUtils.Exists("/etc/install.inf")
-        fqdn = hostname_from_install_inf
+      if Yast::Mode.installation || Yast::Mode.autoinst
+        hostname_for_installer
+      else
+        hostname_for_running_system
       end
-
-      fqdn || hostname_from_system || random_hostname
     end
 
     # Reads the hostname from the /etc/install.inf file
+    #
+    # FIXME: seems that linuxrc is not writting hostname into /etc/install.inf
+    # any longer.
     #
     # @return [String,nil] Hostname
     def hostname_from_install_inf
@@ -71,11 +74,18 @@ module Y2Network
       host.empty? ? nil : host
     end
 
-    # Reads the hostname from the underlying system
+    # Reads the hostname known to the resolver
+    #
+    # @return [String] Hostname
+    def hostname_from_resolver
+      Yast::Execute.on_target!("/usr/bin/hostname", "--fqdn", stdout: :capture).strip
+    end
+
+    # Reads the system (local) hostname
     #
     # @return [String] Hostname
     def hostname_from_system
-      Yast::Execute.on_target!("/usr/bin/hostname", "--fqdn", stdout: :capture).strip
+      Yast::Execute.on_target!("/usr/bin/hostname", stdout: :capture).strip
     rescue Cheetah::ExecutionFailed
       name = Yast::SCR.Read(Yast::Path.new(".target.string"), "/etc/hostname").to_s.strip
       name.empty? ? nil : name
@@ -93,6 +103,27 @@ module Y2Network
     def random_hostname
       suffix = HOSTNAME_CHARS.sample(4).join
       "linux-#{suffix}"
+    end
+
+    private
+
+    # Runs workflow for querying hostname in the installer
+    #
+    # @return [String] Hostname
+    def hostname_for_installer
+      install_inf_hostname = hostname_from_install_inf if Yast::FileUtils.Exists("/etc/install.inf")
+
+      # the hostname was either explicitly set by the user or implicitly
+      # by the linuxrc (install). Do not generate random one as we did in the past.
+      # See FATE#319639 for details.
+      install_inf_hostname || hostname_from_system || hostname_from_resolver
+    end
+
+    # Runs workflow for querying hostname in the installed system
+    #
+    # @return [String] Hostname
+    def hostname_for_running_system
+      hostname_from_system || hostname_from_resolver || random_hostname
     end
   end
 end
