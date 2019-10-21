@@ -189,9 +189,11 @@ module Yast
     # Includes Host,NetworkConfig::Write
     # @todo Update GUI
     # @return true if success
-    def Write(_gui: true)
+    def Write(_gui: true, netconfig_update: true)
       writer = Y2Network::Sysconfig::DNSWriter.new
-      writer.write(Yast::Lan.yast_config.dns, Yast::Lan.system_config.dns)
+      writer.write(Yast::Lan.yast_config.dns,
+                   Yast::Lan.system_config.dns,
+                   netconfig_update: netconfig_update)
       true
     end
 

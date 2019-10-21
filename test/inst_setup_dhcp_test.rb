@@ -29,6 +29,7 @@ describe Yast::SetupDhcp do
   let(:lan_config) do
     double("lan_config").as_null_object
   end
+  let(:wicked_in_use) { true }
 
   before do
     allow(Yast::Lan).to receive(:Read).and_return(lan_config)
@@ -37,47 +38,69 @@ describe Yast::SetupDhcp do
 
   describe "#main" do
     let(:nac) { Yast::NetworkAutoconfiguration.instance }
-
-    it "returns :next when autoconfiguration is not performed" do
-      allow(nac)
-        .to receive(:any_iface_active?)
-        .and_return(true)
-
-      expect(subject.main).to eql :next
+    before do
+      allow(Yast::NetworkService).to receive(:Read)
+      allow(Yast::NetworkService).to receive(:wicked?).and_return(wicked_in_use)
     end
 
-    it "returns :next when autoconfiguration is performed" do
-      allow(nac)
-        .to receive(:any_iface_active?)
-        .and_return(false)
-      allow(nac)
-        .to receive(:configure_dhcp)
-        .and_return(true)
+    context "when wicked is not in use" do
+      let(:wicked_in_use) { false }
 
-      expect(subject.main).to eql :next
+      it "does not try to autoconfigure the network" do
+        expect(nac).to_not receive(:any_iface_active?)
+
+        subject.main
+      end
+
+      it "returns :next" do
+        expect(subject.main).to eql :next
+      end
     end
 
-    it "runs network dhcp autoconfiguration if no active interfaces" do
-      allow(nac)
-        .to receive(:any_iface_active?)
-        .and_return(false)
-
-      expect(nac)
-        .to receive(:configure_dhcp)
-
-      subject.main
-    end
-
-    context "in the initial Stage" do
-      it "writes DHCLIENT_SET_HOSTNAME in /etc/sysconfig/network/dhcp" do
+    context "when wicked is in use" do
+      it "returns :next when autoconfiguration is not performed" do
         allow(nac)
           .to receive(:any_iface_active?)
           .and_return(true)
 
-        expect(Yast::Stage).to receive(:initial).and_return(true)
-        expect(subject).to receive(:set_dhcp_hostname!)
+        expect(subject.main).to eql :next
+      end
+
+      it "returns :next when autoconfiguration is performed" do
+        allow(nac)
+          .to receive(:any_iface_active?)
+          .and_return(false)
+        allow(nac)
+          .to receive(:configure_dhcp)
+          .and_return(true)
+
+        expect(subject.main).to eql :next
+      end
+
+      it "runs network dhcp autoconfiguration if no active interfaces" do
+        allow(nac)
+          .to receive(:any_iface_active?)
+          .and_return(false)
+
+        expect(nac)
+          .to receive(:configure_dhcp)
 
         subject.main
+      end
+    end
+
+    context "in the initial Stage" do
+      context "and wicked in use" do
+        it "writes DHCLIENT_SET_HOSTNAME in /etc/sysconfig/network/dhcp" do
+          allow(nac)
+            .to receive(:any_iface_active?)
+            .and_return(true)
+
+          expect(Yast::Stage).to receive(:initial).and_return(true)
+          expect(subject).to receive(:set_dhcp_hostname!)
+
+          subject.main
+        end
       end
     end
   end

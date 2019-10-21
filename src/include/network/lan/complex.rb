@@ -55,6 +55,7 @@ module Yast
       Yast.import "CWMTab"
       Yast.import "Stage"
       Yast.import "LanItems"
+      Yast.import "Systemd"
 
       Yast.include include_target, "network/routines.rb"
       Yast.include include_target, "network/lan/help.rb"
@@ -258,7 +259,7 @@ module Yast
       caption = _("Network Settings")
       widget_descr = {
         "tab" => CWMTab.CreateWidget(
-          "tab_order"    => if Stage.normal
+          "tab_order"    => if Stage.normal || Systemd.Running
                               ["global", "overview", "resolv", "route"]
                             else
                               ["overview", "resolv", "route"]

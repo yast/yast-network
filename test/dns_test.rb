@@ -186,7 +186,7 @@ describe Yast::DNS do
     end
 
     it "writes DNS settings" do
-      expect(dns_writer).to receive(:write).with(yast_config.dns, system_config.dns)
+      expect(dns_writer).to receive(:write).with(yast_config.dns, system_config.dns, netconfig_update: true)
       subject.Write
     end
   end

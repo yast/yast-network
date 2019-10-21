@@ -30,13 +30,13 @@ module Y2Network
       #
       # @param dns [Y2Network::DNS] DNS configuration
       # @param old_dns [Y2Network::DNS] Old DNS configuration
-      def write(dns, old_dns)
+      def write(dns, old_dns, netconfig_update: true)
         return if old_dns && dns == old_dns
 
         update_sysconfig_dhcp(dns, old_dns)
         update_hostname(dns)
         update_mta_config
-        update_sysconfig_config(dns)
+        update_sysconfig_config(dns, netconfig: netconfig_update)
       end
 
     private
@@ -92,7 +92,7 @@ module Y2Network
       # Updates /etc/sysconfig/network/config
       #
       # @param dns [Y2Network::DNS]
-      def update_sysconfig_config(dns)
+      def update_sysconfig_config(dns, netconfig: true)
         Yast::SCR.Write(
           Yast::Path.new(".sysconfig.network.config.NETCONFIG_DNS_POLICY"),
           dns.resolv_conf_policy
@@ -107,7 +107,7 @@ module Y2Network
         )
         Yast::SCR.Write(Yast::Path.new(".sysconfig.network.config"), nil)
 
-        Yast::Execute.on_target!("/sbin/netconfig", "update")
+        Yast::Execute.on_target!("/sbin/netconfig", "update") if netconfig
       end
     end
   end

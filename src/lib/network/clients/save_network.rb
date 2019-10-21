@@ -81,6 +81,7 @@ module Yast
 
     ETC = "/etc/".freeze
     SYSCONFIG = "/etc/sysconfig/network/".freeze
+    NETWORK_MANAGER = "/etc/NetworkManager/".freeze
 
     def CopyConfiguredNetworkFiles
       return if Mode.autoinst && !NetworkAutoYast.instance.keep_net_config?
@@ -98,6 +99,10 @@ module Yast
         { dir: ETC + "wicked/", file: "common.xml" },
         { dir: ETC, file: DNSClass::HOSTNAME_FILE }
       ]
+
+      if Y2Network::ProposalSettings.instance.network_service == :network_manager
+        copy_recipes << { dir: NETWORK_MANAGER + "/system-connections/", file: "*" }
+      end
 
       # just copy files
       copy_recipes.each do |recipe|

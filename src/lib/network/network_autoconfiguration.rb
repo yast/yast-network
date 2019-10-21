@@ -34,6 +34,7 @@ module Yast
     Yast.import "Lan"
     Yast.import "LanItems"
     Yast.import "NetworkInterfaces"
+    Yast.import "NetworkService"
     Yast.import "Package"
     Yast.import "DNS"
     Yast.import "Arch"
@@ -45,11 +46,11 @@ module Yast
     #
     # returns [Boolean] true when at least one interface is active
     def any_iface_active?
+      Yast::Lan.Read(:cache)
       config.interfaces.any? { |c| config.connections.by_name(c.name) && active_config?(c.name) }
     end
 
     def configure_dhcp
-      Yast::Lan.Read(:cache)
       Yast.include self, "network/routines.rb" # TODO: needed only for phy_connected
 
       # find out network devices suitable for dhcp autoconfiguration.
@@ -114,7 +115,7 @@ module Yast
     def configure_dns
       DNS.Read # handles NetworkConfig too
       log.info("NetworkAutoconfiguration: proposing DNS / Hostname configuration")
-      DNS.Write
+      DNS.Write(netconfig_update: false)
     end
 
     # Proposes updates for /etc/hosts
