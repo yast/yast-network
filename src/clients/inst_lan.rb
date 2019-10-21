@@ -35,6 +35,7 @@ module Yast
       Yast.import "UI"
       Yast.import "Lan"
       Yast.import "GetInstArgs"
+      Yast.import "NetworkService"
 
       Yast.include self, "network/lan/wizards.rb"
 
@@ -49,7 +50,8 @@ module Yast
       # keep network configuration state in @@conf_net to gurantee same
       # behavior when walking :back in installation workflow
       if !defined?(@@network_configured)
-        @@network_configured = !Yast::Lan.yast_config.connections.empty?
+        @@network_configured =
+          NetworkService.network_manager? ? true : !Lan.yast_config.connections.empty?
       end
 
       log.info("Configured network found: #{@@network_configured}")
