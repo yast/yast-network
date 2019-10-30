@@ -259,7 +259,7 @@ module Yast
       caption = _("Network Settings")
       widget_descr = {
         "tab" => CWMTab.CreateWidget(
-          "tab_order"    => if Stage.normal || Systemd.Running
+          "tab_order"    => if Systemd.Running
                               ["global", "overview", "resolv", "route"]
                             else
                               ["overview", "resolv", "route"]

@@ -35,7 +35,7 @@ BuildRequires:  rubygem(%rb_default_ruby_abi:yast-rake)
 BuildRequires:  yast2-storage-ng
 # NetworkService check if Systemd is running for determining
 # the current network backend
-BuildRequires:  yast2 >= 4.2.29
+BuildRequires:  yast2 >= 4.2.28
 BuildRequires:  yast2-packager >= 4.0.18
 # Product control need xml agent
 BuildRequires:  yast2-xml
