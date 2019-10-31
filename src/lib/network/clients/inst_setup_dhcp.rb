@@ -33,7 +33,7 @@ module Yast
       nac = NetworkAutoconfiguration.instance
       set_dhcp_hostname! if Stage.initial
 
-      if wicked_backend?
+      if Yast::NetworkService.wicked?
         if !nac.any_iface_active?
           nac.configure_dhcp
         else
@@ -56,11 +56,6 @@ module Yast
       set_hostname = Linuxrc.InstallInf("SetHostname")
       log.info("SetHostname: #{set_hostname}")
       set_hostname != "0"
-    end
-
-    def wicked_backend?
-      Yast::NetworkService.Read
-      Yast::NetworkService.wicked?
     end
 
     # Write the DHCLIENT_SET_HOSTNAME in /etc/sysconfig/network/dhcp based on
