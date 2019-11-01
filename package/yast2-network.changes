@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Nov  1 08:43:31 UTC 2019 - Josef Reidinger <jreidinger@suse.com>
+
+- fix typo in remote desktop file (thanks for contribution 
+  to Markus S aka kamikazow) (bsc#1155584)
+- 4.2.24
+
+-------------------------------------------------------------------
 Tue Oct 15 08:48:26 UTC 2019 - Josef Reidinger <jreidinger@suse.com>
 
 - Fix crash caused by type in widget method (caused in 4.2.22 by
