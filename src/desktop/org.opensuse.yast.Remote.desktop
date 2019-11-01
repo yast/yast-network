@@ -19,6 +19,6 @@ Icon=yast-remote
 Exec=xdg-su -c "/sbin/yast2 remote"
 
 Name=YaST Remote Administration
-GenericName=Remove Administration (VNC)
+GenericName=Remote Administration (VNC)
 Comment=Set up remote administration
 StartupNotify=true
