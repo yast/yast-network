@@ -37,6 +37,8 @@ module Y2Network
   # @example Read hostname
   #   Y2Network::HostnameReader.new.hostname #=> "foo"
   class HostnameReader
+    attr_reader :install_inf_hostname
+
     include Yast::Logger
     include Yast::Wicked
 
@@ -127,12 +129,12 @@ module Y2Network
     #
     # @return [String] Hostname
     def hostname_for_installer
-      install_inf_hostname = hostname_from_install_inf if Yast::FileUtils.Exists("/etc/install.inf")
+      @install_inf_hostname = hostname_from_install_inf if Yast::FileUtils.Exists("/etc/install.inf")
 
       # the hostname was either explicitly set by the user, obtained from dhcp or implicitly
       # preconfigured by the linuxrc (install). Do not generate random one as we did in the past.
       # See FATE#319639 for details.
-      hostname_from_dhcp || install_inf_hostname || hostname_from_system
+      @install_inf_hostname || hostname_from_dhcp || hostname_from_system
     end
 
     # Runs workflow for querying hostname in the installed system

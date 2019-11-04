@@ -21,6 +21,8 @@ require "y2network/dns"
 require "y2network/sysconfig/interface_file"
 require "y2network/hostname_reader"
 
+Yast.import "Mode"
+
 module Y2Network
   module Sysconfig
     # Reads DNS configuration from sysconfig files
@@ -34,6 +36,7 @@ module Y2Network
         Y2Network::DNS.new(
           nameservers:        nameservers,
           hostname:           hostname,
+          save_hostname:      !(Yast::Mode.installation || Yast::Mode.autoinst) || hostname_from_install_inf?,
           searchlist:         searchlist,
           resolv_conf_policy: resolv_conf_policy,
           dhcp_hostname:      dhcp_hostname
@@ -75,7 +78,15 @@ module Y2Network
       #
       # @return [String]
       def hostname
-        HostnameReader.new.hostname
+        @hostname_reader = HostnameReader.new
+        @hostname_reader.hostname
+      end
+
+      # Checks whether the hostname was read from install.inf
+      #
+      # @return [Boolean]
+      def hostname_from_install_inf?
+        !@hostname_reader.install_inf_hostname.nil?
       end
 
       # Return the list of search domains
