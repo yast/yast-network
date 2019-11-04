@@ -33,10 +33,11 @@ module Y2Network
       #
       # @return [Y2Network::DnsConfig] DNS configuration
       def config
+        installer = Yast::Mode.installation || Yast::Mode.autoinst
         Y2Network::DNS.new(
           nameservers:        nameservers,
           hostname:           hostname,
-          save_hostname:      !(Yast::Mode.installation || Yast::Mode.autoinst) || hostname_from_install_inf?,
+          save_hostname:      !installer || hostname_from_install_inf?,
           searchlist:         searchlist,
           resolv_conf_policy: resolv_conf_policy,
           dhcp_hostname:      dhcp_hostname

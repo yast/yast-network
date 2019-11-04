@@ -53,8 +53,6 @@ describe Y2Network::HostnameReader do
 
       before do
         allow(Yast::Mode).to receive(:installation).and_return(true)
-        allow(Yast::FileUtils).to receive(:Exists).with("/etc/install.inf")
-          .and_return(install_inf_exists?)
       end
 
       it "reads the hostname from /etc/install.conf" do
@@ -62,7 +60,7 @@ describe Y2Network::HostnameReader do
       end
 
       context "when the /etc/install.inf file does not exists" do
-        let(:install_inf_exists?) { false }
+        let(:install_inf_hostname) { nil }
 
         it "reads the hostname from the system" do
           expect(reader.hostname).to eq("system")
@@ -166,7 +164,10 @@ describe Y2Network::HostnameReader do
     around { |e| change_scr_root(File.join(DATA_PATH, "scr_read"), &e) }
 
     it "returns name provided as part of dhcp configuration when available on any interface" do
-      allow(File).to receive(:file?).with("/var/lib/wicked/lease-eth4-dhcp-ipv4.xml").and_return(true)
+      allow(File)
+        .to receive(:file?)
+        .with("/var/lib/wicked/lease-eth4-dhcp-ipv4.xml")
+        .and_return(true)
       allow(Yast::SCR).to receive(:Execute).and_return("stdout" => "tumbleweed\n")
 
       expect(reader.hostname_from_dhcp).to eql "tumbleweed"

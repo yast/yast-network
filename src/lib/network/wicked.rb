@@ -65,9 +65,7 @@ module Yast
     # @return [String] result of the query
     def query_wicked(iface, query)
       raise ArgumentError, "A network device has to be specified" if iface.nil? || iface.empty?
-      if !NetworkService.is_wicked
-        raise "Parsing not supported for network service in use"
-      end
+      raise "Parsing not supported for network service in use" if !NetworkService.is_wicked
 
       lease_files = ["ipv4", "ipv6"].map { |ip| "/var/lib/wicked/lease-#{iface}-dhcp-#{ip}.xml" }
       lease_files.find_all { |f| File.file?(f) }.reduce([]) do |stack, file|
