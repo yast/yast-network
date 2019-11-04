@@ -102,7 +102,7 @@ module Y2Network
       # bcs this can be called during Y2Network::Config initialization and this is
       # acceptable replacement for this case.
       ifaces = Sysconfig::InterfaceFile.all.map(&:interface)
-      dhcp_hostname = ifaces.map { |i| parse_hostname(i) }.first
+      dhcp_hostname = ifaces.map { |i| parse_hostname(i) }.compact.first
 
       log.info("Hostname obtained from DHCP: #{dhcp_hostname}")
 

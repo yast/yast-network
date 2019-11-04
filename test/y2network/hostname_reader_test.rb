@@ -26,11 +26,13 @@ describe Y2Network::HostnameReader do
   describe "#hostname" do
     let(:install_inf_hostname) { "linuxrc" }
     let(:system_hostname) { "system" }
+    let(:resolver_hostname) { "system.suse.de" }
 
     before do
       allow(reader).to receive(:hostname_from_install_inf).and_return(install_inf_hostname)
       allow(reader).to receive(:hostname_from_system).and_return(system_hostname)
       allow(reader).to receive(:random_hostname).and_return("linux-abcd")
+      allow(reader).to receive(:hostname_from_resolver).and_return(resolver_hostname)
     end
 
     it "returns the system's hostname" do
@@ -39,6 +41,7 @@ describe Y2Network::HostnameReader do
 
     context "when the hostname cannot be determined" do
       let(:system_hostname) { nil }
+      let(:resolver_hostname) { nil }
 
       it "returns a random one" do
         expect(reader.hostname).to eq("linux-abcd")
@@ -70,8 +73,11 @@ describe Y2Network::HostnameReader do
         let(:install_inf_hostname) { nil }
         let(:system_hostname) { nil }
 
-        it "returns a random one" do
-          expect(reader.hostname).to eq("linux-abcd")
+        it "do not make any proposal" do
+          # linuxrc currently always set hostname to default "install"
+          # so this should never happen in real life as we should always
+          # read the "install" hostname from system
+          expect(reader.hostname).to be nil
         end
       end
     end
@@ -120,17 +126,17 @@ describe Y2Network::HostnameReader do
   describe "#hostname_from_system" do
     it "returns the systems' hostname" do
       expect(Yast::Execute).to receive(:on_target!)
-        .with("/usr/bin/hostname", "--fqdn", stdout: :capture)
+        .with("/usr/bin/hostname", stdout: :capture)
         .and_return("foo\n")
       expect(reader.hostname_from_system).to eq("foo")
     end
 
-    context "when the fqdn cannot be determined" do
+    context "when the hostname cannot be determined" do
       let(:hostname_content) { "bar\n" }
 
       before do
         allow(Yast::Execute).to receive(:on_target!)
-          .with("/usr/bin/hostname", "--fqdn", stdout: :capture)
+          .with("/usr/bin/hostname", stdout: :capture)
           .and_raise(Cheetah::ExecutionFailed.new([], "", nil, nil))
         allow(Yast::SCR).to receive(:Read).with(Yast::Path.new(".target.string"), "/etc/hostname")
           .and_return(hostname_content)
@@ -147,6 +153,27 @@ describe Y2Network::HostnameReader do
           expect(reader.hostname_from_system).to be_nil
         end
       end
+    end
+  end
+
+  describe "hostname_from_dhcp" do
+    before(:each) do
+      allow(Yast::NetworkService).to receive(:is_wicked).and_return(true)
+
+      allow(File).to receive(:file?).and_return(false)
+    end
+
+    around { |e| change_scr_root(File.join(DATA_PATH, "scr_read"), &e) }
+
+    it "returns name provided as part of dhcp configuration when available on any interface" do
+      allow(File).to receive(:file?).with("/var/lib/wicked/lease-eth4-dhcp-ipv4.xml").and_return(true)
+      allow(Yast::SCR).to receive(:Execute).and_return("stdout" => "tumbleweed\n")
+
+      expect(reader.hostname_from_dhcp).to eql "tumbleweed"
+    end
+
+    it "returns nil when no hostname was obtained from dhcp" do
+      expect(reader.hostname_from_dhcp).to be_nil
     end
   end
 
