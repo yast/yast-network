@@ -17,39 +17,43 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
+require "y2network/sysconfig/hostname_reader"
+
 module Y2Network
-  # DNS configuration (nameservers, search domains, etc.).
-  class DNS
-    # @return [Array<IPAddr>] List of nameservers
-    attr_accessor :nameservers
+  # Hostname configuration
+  class Hostname
+    # @return [String] Hostname (local part)
+    attr_accessor :hostname
 
-    # @return [Array<String>] List of search domains
-    attr_accessor :searchlist
+    # @return [Boolean] Controls if the hostname should be written or not
+    attr_accessor :save_hostname
 
-    # @return [String] resolv.conf update policy
-    attr_accessor :resolv_conf_policy
+    # @return [String,Symbol] Whether to take the hostname from DHCP.
+    #   It can be an interface name (String), :any for any interface or :none from no taking
+    #   the hostname from DHCP.
+    attr_accessor :dhcp_hostname
 
     # @todo receive an array instead all these arguments
     #
-    # @param opts [Hash] DNS configuration options
-    # @option opts [Array<String>] :nameservers
-    # @option opts [Array<String>] :searchlist
-    # @option opts [ResolvConfPolicy] :resolv_conf_policy
+    # @param opts [Hash] hostname configuration options
+    # @option opts [String] :hostname
+    # @option opts [Boolean] :dhcp_hostname
+    # @option opts [Boolean] :save_hostname checks whether hostname should be updated in write
     def initialize(opts = {})
-      @nameservers = opts[:nameservers] || []
-      @searchlist = opts[:searchlist] || []
-      @resolv_conf_policy = opts[:resolv_conf_policy]
+      @hostname = opts[:hostname]
+      @save_hostname = opts.fetch(:save_hostname, true)
+      @dhcp_hostname = opts[:dhcp_hostname]
     end
 
     # @return [Array<Symbol>] Methods to check when comparing two instances
     ATTRS = [
-      :nameservers, :searchlist, :resolv_conf_policy
+      :hostname, :dhcp_hostname, :save_hostname
     ].freeze
     private_constant :ATTRS
 
     # Determines whether two set of DNS settings are equal
     #
-    # @param other [DNS] DNS settings to compare with
+    # @param other [Hostname] Hostname settings to compare with
     # @return [Boolean]
     def ==(other)
       ATTRS.all? { |a| public_send(a) == other.public_send(a) }

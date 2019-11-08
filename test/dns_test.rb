@@ -33,10 +33,13 @@ Yast.import "Lan"
 
 describe Yast::DNS do
   let(:lan_config) do
-    Y2Network::Config.new(dns: dns_config, source: :sysconfig)
+    Y2Network::Config.new(dns: dns_config, hostname: hostname_config, source: :sysconfig)
   end
   let(:dns_config) do
-    Y2Network::DNS.new(dhcp_hostname: true)
+    Y2Network::DNS.new
+  end
+  let(:hostname_config) do
+    Y2Network::Hostname.new(hostname: "install", dhcp_hostname: true)
   end
 
   subject { Yast::DNS }

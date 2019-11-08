@@ -22,14 +22,15 @@ require "y2network/presenters/dns_summary"
 require "y2network/dns"
 
 describe Y2Network::Presenters::DNSSummary do
-  subject(:presenter) { described_class.new(dns) }
+  subject(:presenter) { described_class.new(dns, hostname) }
 
   let(:dns) do
     Y2Network::DNS.new(
-      hostname: hostname, nameservers: nameservers, searchlist: searchlist
+      nameservers: nameservers, searchlist: searchlist
     )
   end
-  let(:hostname) { "test" }
+  let(:hostname) { Y2Network::Hostname.new(hostname: system_hostname) }
+  let(:system_hostname) { "test" }
   let(:nameservers) { [IPAddr.new("1.1.1.1"), IPAddr.new("8.8.8.8")] }
   let(:searchlist) { ["example.net", "example.org"] }
 
@@ -42,7 +43,7 @@ describe Y2Network::Presenters::DNSSummary do
     end
 
     context "when no hostname is given" do
-      let(:hostname) { "" }
+      let(:system_hostname) { "" }
 
       it "does not show the hostname" do
         text = presenter.text

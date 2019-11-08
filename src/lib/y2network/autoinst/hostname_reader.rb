@@ -18,19 +18,17 @@
 # find current contact information at www.suse.com.
 
 require "yast"
-require "y2network/dns"
-require "ipaddr"
-Yast.import "IP"
+require "y2network/hostname"
+require "y2network/sysconfig/hostname_reader"
 
 module Y2Network
   module Autoinst
     # This class is responsible of importing the AutoYast dns section
-    class DNSReader
+    class HostnameReader
       # @return [AutoinstProfile::DNSSection]
       attr_reader :section
 
-      DEFAULT_RESOLV_CONF_POLICY = "auto".freeze
-
+      # NOTE: for historical reasons DNS section contains even hostname
       # @param section [AutoinstProfile::DNSSection]
       def initialize(section)
         @section = section
@@ -40,25 +38,19 @@ module Y2Network
       #
       # @return [DNS] the imported {DNS} config
       def config
-        Y2Network::DNS.new(
-          nameservers:        valid_ips(section.nameservers),
-          resolv_conf_policy: section.resolv_conf_policy || DEFAULT_RESOLV_CONF_POLICY,
-          searchlist:         section.searchlist
+        Y2Network::Hostname.new(
+          dhcp_hostname: section.dhcp_hostname,
+          hostname:      section.hostname || default_hostname
         )
       end
 
     private
 
-      # Given a list of IPs in string form, builds a list of valid IPAddr objects
+      # Returns a default hostname proposal for installer
       #
-      # Invalid IPs are filtered out.
-      #
-      # @param ips [Array<String>]
-      # @return [Array<IPAddr>]
-      def valid_ips(ips)
-        ips.each_with_object([]) do |ip_str, all|
-          all << IPAddr.new(ip_str) if Yast::IP.Check(ip_str)
-        end
+      # @return [String]
+      def default_hostname
+        Y2Network::Sysconfig::HostnameReader.new.hostname
       end
     end
   end

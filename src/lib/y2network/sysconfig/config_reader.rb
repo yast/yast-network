@@ -25,6 +25,7 @@ require "y2network/sysconfig_paths"
 require "y2network/routing_table"
 require "y2network/sysconfig/routes_file"
 require "y2network/sysconfig/dns_reader"
+require "y2network/sysconfig/hostname_reader"
 require "y2network/sysconfig/interfaces_reader"
 require "y2network/interfaces_collection"
 
@@ -42,6 +43,7 @@ module Y2Network
       # @return [Y2Network::Config] Network configuration
       def config
         # NOTE: This code might be moved outside of the Sysconfig namespace, as it is generic.
+        # NOTE: /etc/hosts cache - nothing to do with /etc/hostname
         Yast::Host.Read
 
         routing_tables = find_routing_tables(interfaces_reader.interfaces)
@@ -57,6 +59,7 @@ module Y2Network
           drivers:     interfaces_reader.drivers,
           routing:     routing,
           dns:         dns,
+          hostname:    hostname,
           source:      :sysconfig
         )
 
@@ -127,6 +130,13 @@ module Y2Network
       # @return [Y2Network::DNS]
       def dns
         Y2Network::Sysconfig::DNSReader.new.config
+      end
+
+      # Returns the Hostname configuration
+      #
+      # @return [Y2Network::Hostname]
+      def hostname
+        Y2Network::Sysconfig::HostnameReader.new.config
       end
 
       # Returns the Sysctl file class

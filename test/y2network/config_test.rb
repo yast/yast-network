@@ -166,9 +166,9 @@ describe Y2Network::Config do
       end
     end
 
-    context "when DNS information is different" do
+    context "when hostname information is different" do
       it "returns false" do
-        copy.dns.hostname = "dummy"
+        copy.hostname.hostname = "dummy"
         expect(copy).to_not eq(config)
       end
     end
@@ -213,22 +213,22 @@ describe Y2Network::Config do
 
     context "when dhcp_hostname points to the renamed interface" do
       before do
-        allow(config.dns).to receive(:dhcp_hostname).and_return("eth0")
+        allow(config.hostname).to receive(:dhcp_hostname).and_return("eth0")
       end
 
       it "adjusts the dhcp_hostname" do
-        expect(config.dns).to receive(:dhcp_hostname=).with("eth1")
+        expect(config.hostname).to receive(:dhcp_hostname=).with("eth1")
         config.rename_interface("eth0", "eth1", :mac)
       end
     end
 
     context "when dhcp_hostname does not point to the renamed interface" do
       before do
-        allow(config.dns).to receive(:dhcp_hostname).and_return(:any)
+        allow(config.hostname).to receive(:dhcp_hostname).and_return(:any)
       end
 
       it "does not adjust the dhcp_hostname" do
-        expect(config.dns).to_not receive(:dhcp_hostname=)
+        expect(config.hostname).to_not receive(:dhcp_hostname=)
         config.rename_interface("eth0", "eth1", :mac)
       end
     end
@@ -422,13 +422,13 @@ describe Y2Network::Config do
       end
     end
 
-    context "when interface is used in dns" do
+    context "when interface is used for configuring hostname via dhcp" do
       before do
-        config.dns.dhcp_hostname = eth0.name
+        config.hostname.dhcp_hostname = eth0.name
       end
 
       it "sets dns dhcp hostname to :none" do
-        expect { config.delete_interface(eth0.name) }.to change { config.dns.dhcp_hostname }
+        expect { config.delete_interface(eth0.name) }.to change { config.hostname.dhcp_hostname }
           .from("eth0").to(:none)
       end
     end

@@ -18,9 +18,9 @@
 # find current contact information at www.suse.com.
 
 require_relative "../test_helper"
-require "y2network/hostname_reader"
+require "y2network/sysconfig/hostname_reader"
 
-describe Y2Network::HostnameReader do
+describe Y2Network::Sysconfig::HostnameReader do
   subject(:reader) { described_class.new }
 
   describe "#hostname" do
