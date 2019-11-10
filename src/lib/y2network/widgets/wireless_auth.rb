@@ -71,8 +71,8 @@ module Y2Network
         case auth_mode_widget.value
         when "no-encryption" then replace_widget.replace(empty_auth_widget)
         when "sharedkey", "open" then replace_widget.replace(wep_keys_widget)
-        when "wpa-psk" then replace_widget.replace(encryption_widget)
-        when "wpa-eap" then replace_widget.replace(eap_widget)
+        when "psk" then replace_widget.replace(encryption_widget)
+        when "eap" then replace_widget.replace(eap_widget)
         else
           raise "invalid value #{auth_mode_widget.value.inspect}"
         end
