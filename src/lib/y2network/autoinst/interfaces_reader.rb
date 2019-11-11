@@ -123,6 +123,9 @@ module Y2Network
           config.ethtool_options = interface_section.ethtool_options
         end
         config.firewall_zone = interface_section.zone if interface_section.zone
+        if !interface_section.dhclient_set_hostname.empty?
+          config.dhclient_set_hostname = interface_section.dhclient_set_hostname == "yes"
+        end
       end
 
       def load_wireless(config, interface_section)

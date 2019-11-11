@@ -32,17 +32,21 @@ describe Y2Network::Autoinst::InterfacesReader do
 
   let(:interfaces_profile) do
     [
-      { "startmode" => "auto",
+      {
+        "startmode" => "auto",
         "bootproto" => "static",
         "device"    => "eth1",
         "name"      => "",
         "ipaddr"    => "192.168.10.10",
         "netmask"   => "255.255.255.0",
-        "prefixlen" => "24" },
+        "dhclient_set_hostname" => "no",
+        "prefixlen" => "24"
+      },
       {
         "bootproto" => "dhcp",
         "name"      => "eth0",
         "startmode" => "auto",
+        "dhclient_set_hostname" => "yes",
         "aliases"   => {
           "alias0" => {
             "IPADDR"    => "10.100.0.1",
@@ -70,9 +74,11 @@ describe Y2Network::Autoinst::InterfacesReader do
       expect(eth0_config.startmode).to eq Y2Network::Startmode.create("auto")
       expect(eth0_config.bootproto).to eq Y2Network::BootProtocol.from_name("dhcp")
       expect(eth0_config.ip_aliases.size).to eq 2
+      expect(eth0_config.dhclient_set_hostname).to eq true
       eth1_config = subject.config.by_name("eth1")
       expect(eth1_config.name).to eq("eth1")
       expect(eth1_config.ip.address.to_s).to eq("192.168.10.10/24")
+      expect(eth1_config.dhclient_set_hostname).to eq false
     end
   end
 end

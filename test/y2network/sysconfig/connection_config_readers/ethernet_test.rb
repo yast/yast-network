@@ -95,5 +95,9 @@ describe Y2Network::Sysconfig::ConnectionConfigReaders::Ethernet do
         expect(eth.hostname).to be_nil
       end
     end
+
+    it "reads dhclient set hostname value as boolean" do
+      expect(handler.connection_config.dhclient_set_hostname).to eq true
+    end
   end
 end

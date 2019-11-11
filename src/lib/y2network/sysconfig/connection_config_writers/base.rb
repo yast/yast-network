@@ -44,6 +44,7 @@ module Y2Network
           file.name = conn.description
           file.lladdr = conn.lladdress
           file.startmode = conn.startmode.to_s
+          file.dhclient_set_hostname = conn.dhclient_set_hostname ? "yes" : "no"
           file.ifplugd_priority = conn.startmode.priority if conn.startmode.name == "ifplugd"
           if conn.ethtool_options && !conn.ethtool_options.empty?
             file.ethtool_options = conn.ethtool_options

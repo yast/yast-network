@@ -58,6 +58,7 @@ module Y2Network
             conn.startmode.priority = file.ifplugd_priority if conn.startmode.name == "ifplugd"
             conn.ethtool_options = file.ethtool_options
             conn.firewall_zone = file.zone
+            conn.dhclient_set_hostname = file.dhclient_set_hostname == "yes"
             conn.hostname = hostname(conn)
             update_connection_config(conn)
           end

@@ -150,7 +150,7 @@ module Y2Network
       #  @return [String] no clue what it means, but it is ignored now.
 
       # @!attribute dhclient_set_hostname
-      #  @return [String] if dhcp sets hostname. It is plain text, values?
+      #  @return [String] if dhcp sets hostname. "yes" if sets
 
       # @!attribute bonding_master
       #  @return [String] ???
