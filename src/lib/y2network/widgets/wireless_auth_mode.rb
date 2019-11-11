@@ -45,8 +45,8 @@ module Y2Network
           ["no-encryption", _("No Encryption")],
           ["open", _("WEP - Open")],
           ["sharedkey", _("WEP - Shared Key")],
-          ["wpa-psk", _("WPA-PSK (\"home\")")],
-          ["wpa-eap", _("WPA-EAP (\"Enterprise\")")]
+          ["psk", _("WPA-PSK (\"home\")")],
+          ["eap", _("WPA-EAP (\"Enterprise\")")]
         ]
       end
 
