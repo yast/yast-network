@@ -21,6 +21,8 @@ require "network/network_autoconfiguration"
 
 Yast.import "Linuxrc"
 Yast.import "DNS"
+Yast.import "Systemd"
+Yast.import "NetworkService"
 
 module Yast
   class SetupDhcp
@@ -31,10 +33,14 @@ module Yast
       nac = NetworkAutoconfiguration.instance
       set_dhcp_hostname! if Stage.initial
 
-      if !nac.any_iface_active?
-        nac.configure_dhcp
+      if Yast::NetworkService.wicked?
+        if !nac.any_iface_active?
+          nac.configure_dhcp
+        else
+          log.info("Automatic DHCP configuration not started - an interface is already configured")
+        end
       else
-        log.info("Automatic DHCP configuration not started - an interface is already configured")
+        log.info("Network is not managed by wicked, skipping DHCP setup")
       end
 
       # if this is not wrapped in a def, ruby -cw says

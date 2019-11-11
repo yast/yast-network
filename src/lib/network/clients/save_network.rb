@@ -81,6 +81,7 @@ module Yast
 
     ETC = "/etc/".freeze
     SYSCONFIG = "/etc/sysconfig/network/".freeze
+    NETWORK_MANAGER = "/etc/NetworkManager/".freeze
 
     def CopyConfiguredNetworkFiles
       return if Mode.autoinst && !NetworkAutoYast.instance.keep_net_config?
@@ -98,6 +99,13 @@ module Yast
         { dir: ETC + "wicked/", file: "common.xml" },
         { dir: ETC, file: DNSClass::HOSTNAME_FILE }
       ]
+
+      # NetworkManager is usually the default in a live installation. Any
+      # configuration applied during the installation should be present in the
+      # target system.
+      if Y2Network::ProposalSettings.instance.network_service == :network_manager
+        copy_recipes << { dir: NETWORK_MANAGER + "/system-connections/", file: "*" }
+      end
 
       # just copy files
       copy_recipes.each do |recipe|
@@ -314,7 +322,13 @@ module Yast
 
       log.info("Setting network service according to product preferences")
 
-      case Y2Network::ProposalSettings.instance.network_service
+      backend = Y2Network::ProposalSettings.instance.network_service
+      # NetworkServices caches the selected backend. That is, it assumes the
+      # state in the inst-sys and the chroot is the same but that is not true
+      # at all specially in a live installation where NM is the backend by
+      # default. For detecting changes we should reset the cache first.
+      NetworkService.reset!
+      case backend
       when :network_manager
         log.info("- using NetworkManager")
         NetworkService.use_network_manager

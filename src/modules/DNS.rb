@@ -188,10 +188,14 @@ module Yast
     # Write new DNS and hostname settings
     # Includes Host,NetworkConfig::Write
     # @todo Update GUI
+    # @param netconfig_update [Boolean] Whether 'netconfig update' should be
+    #   called after writing the DNS configuration or not
     # @return true if success
-    def Write(_gui: true)
+    def Write(netconfig_update: true)
       writer = Y2Network::Sysconfig::DNSWriter.new
-      writer.write(Yast::Lan.yast_config.dns, Yast::Lan.system_config.dns)
+      writer.write(Yast::Lan.yast_config.dns,
+        Yast::Lan.system_config.dns,
+        netconfig_update: netconfig_update)
       true
     end
 
