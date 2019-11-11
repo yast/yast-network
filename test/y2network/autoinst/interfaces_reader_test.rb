@@ -33,21 +33,21 @@ describe Y2Network::Autoinst::InterfacesReader do
   let(:interfaces_profile) do
     [
       {
-        "startmode" => "auto",
-        "bootproto" => "static",
-        "device"    => "eth1",
-        "name"      => "",
-        "ipaddr"    => "192.168.10.10",
-        "netmask"   => "255.255.255.0",
+        "startmode"             => "auto",
+        "bootproto"             => "static",
+        "device"                => "eth1",
+        "name"                  => "",
+        "ipaddr"                => "192.168.10.10",
+        "netmask"               => "255.255.255.0",
         "dhclient_set_hostname" => "no",
-        "prefixlen" => "24"
+        "prefixlen"             => "24"
       },
       {
-        "bootproto" => "dhcp",
-        "name"      => "eth0",
-        "startmode" => "auto",
+        "bootproto"             => "dhcp",
+        "name"                  => "eth0",
+        "startmode"             => "auto",
         "dhclient_set_hostname" => "yes",
-        "aliases"   => {
+        "aliases"               => {
           "alias0" => {
             "IPADDR"    => "10.100.0.1",
             "PREFIXLEN" => "24",

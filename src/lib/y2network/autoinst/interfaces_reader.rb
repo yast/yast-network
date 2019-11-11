@@ -126,6 +126,8 @@ module Y2Network
         if !interface_section.dhclient_set_hostname.empty?
           config.dhclient_set_hostname = interface_section.dhclient_set_hostname == "yes"
         end
+
+        config
       end
 
       def load_wireless(config, interface_section)

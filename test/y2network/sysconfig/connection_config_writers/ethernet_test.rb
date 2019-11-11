@@ -76,9 +76,9 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Ethernet do
     it "updates common properties" do
       handler.write(conn)
       expect(file).to have_attributes(
-        name:      conn.description,
-        bootproto: "static",
-        startmode: "auto",
+        name:                  conn.description,
+        bootproto:             "static",
+        startmode:             "auto",
         dhclient_set_hostname: "yes"
       )
     end
