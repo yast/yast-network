@@ -150,7 +150,7 @@ module Y2Network
       #  @return [String] no clue what it means, but it is ignored now.
 
       # @!attribute dhclient_set_hostname
-      #  @return [String] if dhcp sets hostname. "yes" if sets
+      #  @return [String] if dhcp sets hostname. "yes" if sets, "no" not set and nil not specified
 
       # @!attribute bonding_master
       #  @return [String] ???
@@ -289,6 +289,11 @@ module Y2Network
           @broadcast = config.ip.broadcast.address.to_s if config.ip.broadcast
         end
 
+        @dhclient_set_hostname = case config.dhclient_set_hostname
+        when true then "yes"
+        when false then "no"
+        when nil then ""
+        end
         @startmode = config.startmode.name
         @ifplugd_priority = config.startmode.priority.to_s if config.startmode.name == "ifplugd"
         @mtu = config.mtu.to_s if config.mtu
