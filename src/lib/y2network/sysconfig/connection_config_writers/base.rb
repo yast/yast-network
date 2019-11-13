@@ -44,6 +44,7 @@ module Y2Network
           file.name = conn.description
           file.lladdr = conn.lladdress
           file.startmode = conn.startmode.to_s
+          file.dhclient_set_hostname = dhclient_set_hostname(conn)
           file.ifplugd_priority = conn.startmode.priority if conn.startmode.name == "ifplugd"
           if conn.ethtool_options && !conn.ethtool_options.empty?
             file.ethtool_options = conn.ethtool_options
@@ -62,6 +63,16 @@ module Y2Network
         #
         # @param _conn [Y2Network::ConnectionConfig::Base]
         def update_file(_conn); end
+
+        def dhclient_set_hostname(conn)
+          case conn.dhclient_set_hostname
+          when true then "yes"
+          when false then "no"
+          when nil then nil
+          else
+            raise "Unknown value #{conn.dhclient_set_hostname.inspect}"
+          end
+        end
 
         # Adds IP addresses
         #

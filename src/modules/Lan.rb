@@ -611,59 +611,6 @@ module Yast
       Builtins.y2debug("input %1", input)
 
       input["interfaces"] ||= []
-      # TODO: remove when s390 no longer need it
-      interfaces = Builtins.listmap(input["interfaces"]) do |interface|
-        # input: list of items $[ "device": "d", "foo": "f", "bar": "b"]
-        # output: map of items  "d": $["FOO": "f", "BAR": "b"]
-        new_interface = {}
-        # uppercase map keys
-        newk = nil
-        interface = Builtins.mapmap(interface) do |k, v|
-          newk = if k == "aliases"
-            "_aliases"
-          else
-            Builtins.toupper(k)
-          end
-          { newk => v }
-        end
-        Builtins.foreach(interface) do |k, v|
-          Ops.set(new_interface, k, v) if v != "" && k != "DEVICE"
-        end
-        new_device = Ops.get_string(interface, "DEVICE", "")
-        { new_device => new_interface }
-      end
-
-      # split to a two level map like NetworkInterfaces
-      devices = {}
-
-      Builtins.foreach(interfaces) do |devname, if_data|
-        # devname can be in old-style fashion (eth-bus-<pci_id>). So, convert it
-        devname = LanItems.getDeviceName(devname)
-        type = NetworkInterfaces.GetTypeFromIfcfgOrName(devname, if_data)
-        d = Ops.get(devices, type, {})
-        Ops.set(d, devname, if_data)
-        Ops.set(devices, type, d)
-      end
-
-      hwcfg = {}
-      if Ops.greater_than(Builtins.size(Ops.get_list(input, "modules", [])), 0)
-        hwcfg = Builtins.listmap(Ops.get_list(input, "modules", [])) do |mod|
-          options = Ops.get_string(mod, "options", "")
-          module_name = Ops.get_string(mod, "module", "")
-          start_mode = Ops.get_string(mod, "startmode", "auto")
-          device_name = Ops.get_string(mod, "device", "")
-          module_data = {
-            "MODULE"         => module_name,
-            "MODULE_OPTIONS" => options,
-            "STARTMODE"      => start_mode
-          }
-          { device_name => module_data }
-        end
-      end
-
-      Ops.set(input, "devices", devices)
-      Ops.set(input, "hwcfg", hwcfg)
-
       # DHCP:: config: some of it is in the DNS part of the profile
       dhcp = {}
       dhcpopts = Ops.get_map(input, "dhcp_options", {})

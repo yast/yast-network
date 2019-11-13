@@ -70,6 +70,9 @@ module Y2Network
       attr_accessor :firewall_zone
       # @return [String] interface's hostname
       attr_accessor :hostname
+      # @return [Boolean, nil] set to true if dhcp from this interface sets machine hostname,
+      #   false if not and nil if not specified
+      attr_accessor :dhclient_set_hostname
 
       # @return [String] Connection identifier
       attr_reader :id

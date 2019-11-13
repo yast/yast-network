@@ -66,6 +66,7 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Ethernet do
       c.ip_aliases = [ip_alias]
       c.startmode = Y2Network::Startmode.create("auto")
       c.hostname = "foo"
+      c.dhclient_set_hostname = true
     end
   end
 
@@ -75,9 +76,10 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Ethernet do
     it "updates common properties" do
       handler.write(conn)
       expect(file).to have_attributes(
-        name:      conn.description,
-        bootproto: "static",
-        startmode: "auto"
+        name:                  conn.description,
+        bootproto:             "static",
+        startmode:             "auto",
+        dhclient_set_hostname: "yes"
       )
     end
 

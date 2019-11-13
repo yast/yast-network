@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Nov 12 13:35:02 UTC 2019 - Josef Reidinger <jreidinger@suse.com>
+
+- fix importing dhclient_set_hostname key from autoyast profile
+  (bsc#1152021)
+- 4.2.27
+
+-------------------------------------------------------------------
 Sun Nov 10 09:28:14 UTC 2019 - Knut Anderssen <kanderssen@suse.com>
 
 - Wireless: Fix wpa auth modes selection removing the prefix from
