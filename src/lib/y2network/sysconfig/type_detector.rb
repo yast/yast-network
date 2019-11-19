@@ -31,6 +31,8 @@ module Y2Network
         # Checks wheter iface type can be recognized by interface configuration
         def type_by_config(iface)
           iface_file = Y2Network::Sysconfig::InterfaceFile.find(iface)
+          return unless iface_file
+
           iface_file.load
           iface_file.type
         end

@@ -149,5 +149,7 @@ module Y2Network
     IRDA = new(N_("Infrared"), "irda")
     # Loopback
     LO = new(N_("Loopback"), "lo")
+    # Not supported interfaces
+    UNSUPPORTED = new(N_("Unsupported"), "unsupported")
   end
 end
