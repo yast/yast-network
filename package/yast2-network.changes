@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Nov 19 12:05:21 UTC 2019 - David Diaz <dgonzalez@suse.com>
+
+- Do not crash when wrapping text (bsc#1157161)
+- 4.2.28
+
+-------------------------------------------------------------------
 Tue Nov 12 13:35:02 UTC 2019 - Josef Reidinger <jreidinger@suse.com>
 
 - fix importing dhclient_set_hostname key from autoyast profile
