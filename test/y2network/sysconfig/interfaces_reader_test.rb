@@ -24,13 +24,23 @@ require "y2network/udev_rule_part"
 describe Y2Network::Sysconfig::InterfacesReader do
   subject(:reader) { described_class.new }
 
-  let(:netcards) { [eth0] }
+  let(:netcards) { [eth0, iucv] }
 
   let(:eth0) do
     {
       "active" => true, "dev_name" => "eth0", "mac" => "00:12:34:56:78:90",
       "name" => "Ethernet Connection", "type" => "eth",
       "drivers" => [{ "modules" => [["virtio_net", ""]] }]
+    }
+  end
+
+  let(:iucv) do
+    {
+      "name" => "IUCV (netiucv)", "type" => "iucv", "sysfs_id" => "/bus/iucv/devices/netiucv",
+      "dev_name" => "", "modalias" => "", "unique" => "jPaU.W3A5djgRqRC", "driver" => "",
+      "drivers" => [{ "active" => true, "modprobe" => true, "modules" => [["netiucv", ""]] }],
+      "active" => true, "module" => "netiucv", "bus" => "iucv", "busid" => "netiucv",
+      "mac" => "", "link" => nil
     }
   end
 
@@ -52,8 +62,6 @@ describe Y2Network::Sysconfig::InterfacesReader do
   before do
     allow(hardware_wrapper).to receive(:ReadHardware).and_return(netcards)
     allow(Y2Network::HardwareWrapper).to receive(:new).and_return(hardware_wrapper)
-    allow(Yast::SCR).to receive(:Dir).with(Yast::Path.new(".network.section"))
-      .and_return(configured_interfaces)
     allow(Yast::SCR).to receive(:Dir).and_call_original
     allow(Yast::NetworkInterfaces).to receive(:GetTypeFromSysfs) { |n| TYPES[n] }
     allow(Y2Network::UdevRule).to receive(:find_for).and_return(udev_rule)
@@ -63,6 +71,7 @@ describe Y2Network::Sysconfig::InterfacesReader do
   around { |e| change_scr_root(File.join(DATA_PATH, "scr_read"), &e) }
 
   describe "#interfaces" do
+
     it "reads physical interfaces" do
       interfaces = reader.interfaces
       expect(interfaces.by_name("eth0")).to_not be_nil
@@ -77,6 +86,18 @@ describe Y2Network::Sysconfig::InterfacesReader do
     it "reads bridge interfaces"
     it "reads bonding interfaces"
     it "reads interfaces configuration"
+
+    context "when a physical interface type is unknown" do
+      before do
+        allow(Yast::SCR).to receive(:Dir).with(Yast::Path.new(".network.section"))
+          .and_return(configured_interfaces)
+      end
+
+      it "ignores that interface" do
+        interfaces = reader.interfaces
+        expect(interfaces.size).to eq(1)
+      end
+    end
 
     context "when a connection for a not existing device is found" do
       let(:configured_interfaces) { ["lo", "eth0", "eth1"] }
