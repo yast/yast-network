@@ -51,6 +51,7 @@ module Yast
     end
 
     def configure_dhcp
+      Yast::Lan.Read(:cache)
       Yast.include self, "network/routines.rb" # TODO: needed only for phy_connected
 
       # find out network devices suitable for dhcp autoconfiguration.
