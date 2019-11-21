@@ -36,7 +36,7 @@ module Y2Network
         return if old_dns && dns == old_dns
 
         update_sysconfig_dhcp(dns, old_dns)
-        update_hostname(dns)
+        update_hostname(dns) if dns.save_hostname
         update_mta_config
         update_sysconfig_config(dns, netconfig_update: netconfig_update)
       end

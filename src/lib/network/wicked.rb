@@ -41,15 +41,38 @@ module Yast
     # @param iface [String] network device
     # @return [Array<String>] list of NTP servers
     def parse_ntp_servers(iface)
+      query_wicked(iface, "%{//ntp/server}")
+    end
+
+    # Parses wicked runtime configuration and returns hostname if set
+    #
+    # @param iface [String] network device
+    # @return [String] hostname
+    def parse_hostname(iface)
+      result = query_wicked(iface, "%{//hostname}")
+
+      raise "Malformed wicked runtime configuration" if result.count > 1
+
+      result.first
+    end
+
+    # Parses wicked runtime dhcp lease file for the given query
+    #
+    # It parses both ipv4 and ipv6 lease files at once.
+    #
+    # @param iface [String] queried interface
+    # @param query [String] xpath query
+    # @return [String] result of the query
+    def query_wicked(iface, query)
       raise ArgumentError, "A network device has to be specified" if iface.nil? || iface.empty?
-      if !NetworkService.is_wicked
-        raise "Parsing NTP Servers not supported for network service in use"
-      end
+      raise "Parsing not supported for network service in use" if !NetworkService.is_wicked
 
       lease_files = ["ipv4", "ipv6"].map { |ip| "/var/lib/wicked/lease-#{iface}-dhcp-#{ip}.xml" }
       lease_files.find_all { |f| File.file?(f) }.reduce([]) do |stack, file|
-        result = SCR.Execute(BASH_OUTPUT_PATH,
-          "/usr/sbin/wicked xpath --file #{file.shellescape} \"%{//ntp/server}\"")
+        result = SCR.Execute(
+          BASH_OUTPUT_PATH,
+          "/usr/sbin/wicked xpath --file #{file.shellescape} \"#{query}\""
+        )
 
         stack + result.fetch("stdout", "").split("\n")
       end

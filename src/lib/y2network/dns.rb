@@ -25,6 +25,9 @@ module Y2Network
     # @return [String] Hostname (local part)
     attr_accessor :hostname
 
+    # @return [Boolean] Controls if the hostname should be written or not
+    attr_accessor :save_hostname
+
     # @return [Array<IPAddr>] List of nameservers
     attr_accessor :nameservers
 
@@ -49,6 +52,7 @@ module Y2Network
     # @option opts [Boolean] :dhcp_hostname
     def initialize(opts = {})
       @hostname = opts[:hostname]
+      @save_hostname = opts.fetch(:save_hostname, true)
       @nameservers = opts[:nameservers] || []
       @searchlist = opts[:searchlist] || []
       @resolv_conf_policy = opts[:resolv_conf_policy]
