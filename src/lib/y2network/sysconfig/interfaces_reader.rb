@@ -83,7 +83,7 @@ module Y2Network
 
         physical_interfaces = Hwinfo.netcards.each_with_object([]) do |hwinfo, interfaces|
           physical_interface = build_physical_interface(hwinfo)
-          next if physical_interface.type == InterfaceType::UNSUPPORTED
+          next if physical_interface.type == InterfaceType::UNKNOWN
 
           interfaces << physical_interface
         end
@@ -127,7 +127,7 @@ module Y2Network
           iface.renaming_mechanism = renaming_mechanism_for(iface)
           iface.custom_driver = custom_driver_for(iface)
           iface.type = InterfaceType.from_short_name(hwinfo.type) ||
-            TypeDetector.type_of(iface.name) || InterfaceType::UNSUPPORTED
+            TypeDetector.type_of(iface.name) || InterfaceType::UNKNOWN
         end
       end
 
