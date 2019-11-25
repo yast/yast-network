@@ -34,7 +34,7 @@ module Y2Network
       end
 
       def init
-        self.value = @config.mode
+        self.value = @config.mode.to_s if @config.mode
       end
 
       # notify when mode change as it affect other elements
@@ -43,13 +43,13 @@ module Y2Network
       end
 
       def store
-        @config.mode = value
+        @config.mode = value.to_sym
       end
 
       def items
         [
           ["ad-hoc", _("Ad-hoc")],
-          ["Managed", _("Managed")],
+          ["managed", _("Managed")],
           ["master", _("Master")]
         ]
       end
