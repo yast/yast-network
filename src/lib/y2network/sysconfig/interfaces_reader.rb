@@ -81,9 +81,13 @@ module Y2Network
       def find_physical_interfaces
         return if @interfaces
 
-        physical_interfaces = Hwinfo.netcards.map do |h|
-          build_physical_interface(h)
+        physical_interfaces = Hwinfo.netcards.each_with_object([]) do |hwinfo, interfaces|
+          physical_interface = build_physical_interface(hwinfo)
+          next if physical_interface.type == InterfaceType::UNKNOWN
+
+          interfaces << physical_interface
         end
+
         @interfaces = Y2Network::InterfacesCollection.new(physical_interfaces)
       end
 
@@ -123,7 +127,7 @@ module Y2Network
           iface.renaming_mechanism = renaming_mechanism_for(iface)
           iface.custom_driver = custom_driver_for(iface)
           iface.type = InterfaceType.from_short_name(hwinfo.type) ||
-            TypeDetector.type_of(iface.name)
+            TypeDetector.type_of(iface.name) || InterfaceType::UNKNOWN
         end
       end
 

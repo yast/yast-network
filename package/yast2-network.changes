@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Nov 25 09:36:43 UTC 2019 - Knut Anderssen <kanderssen@suse.com>
+
+- Added a special type for the "Unknown" interfaces omitting them
+  from the interfaces list (bsc#1156285)
+- 4.2.32
+
+-------------------------------------------------------------------
 Mon Nov 25 08:34:55 UTC 2019 - Knut Anderssen <kanderssen@suse.com>
 
 - Ignores invalid udev rules parts (bsc#1157361)
