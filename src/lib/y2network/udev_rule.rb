@@ -192,7 +192,7 @@ module Y2Network
 
         rules_map = Yast::SCR.Read(Yast::Path.new(".udev_persistent.#{group}")) || {}
         @all[group] = rules_map.values.map do |parts|
-          udev_parts = parts.map { |p| UdevRulePart.from_string(p) }
+          udev_parts = parts.map { |p| UdevRulePart.from_string(p) }.compact
           new(udev_parts)
         end
       end

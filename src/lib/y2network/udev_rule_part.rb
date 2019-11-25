@@ -17,12 +17,15 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
+require "yast"
+
 module Y2Network
   # Simple class to represent a key-value pair in a {UdevRule}.
   #
   # This class does not check whether operators or keys/values are valid or not. We can implement
   # that logic later if required.
   class UdevRulePart
+    include Yast::Logger
     # Regular expression to match a udev rule part
     PART_REGEXP = Regexp.new("\\A(?<key>[A-Za-z\{\}]+)(?<operator>[^\"]+)\"(?<value>.+)\"\\Z")
 
@@ -45,7 +48,11 @@ module Y2Network
       # @return [UdevRulePart] udev rule object
       def from_string(str)
         match = PART_REGEXP.match(str)
-        return if match.nil?
+
+        if match.nil?
+          log.info("Not matching udev rule: #{str}")
+          return
+        end
 
         new(match[:key], match[:operator], match[:value])
       end

@@ -34,6 +34,11 @@ describe Y2Network::UdevRulePart do
       expect(part.operator).to eq("==")
       expect(part.value).to eq("add")
     end
+
+    it "returns nil in case of an invalid udev rule" do
+      part = described_class.from_string("ENV{MODALIAS}==\"\"")
+      expect(part).to be_nil
+    end
   end
 
   describe "#to_s" do
