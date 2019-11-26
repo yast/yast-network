@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Nov 25 15:02:38 UTC 2019 - Knut Anderssen <kanderssen@suse.com>
+
+- Fix wireless mode and auth_mode initialization (bsc#1157394)
+- 4.2.33
+
+-------------------------------------------------------------------
 Mon Nov 25 09:36:43 UTC 2019 - Knut Anderssen <kanderssen@suse.com>
 
 - Added a special type for the "Unknown" interfaces omitting them

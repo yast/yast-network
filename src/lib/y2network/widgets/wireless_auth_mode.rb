@@ -29,7 +29,7 @@ module Y2Network
       end
 
       def init
-        self.value = @settings.auth_mode
+        self.value = @settings.auth_mode.to_s if @settings.auth_mode
       end
 
       def label
@@ -58,7 +58,7 @@ module Y2Network
       end
 
       def store
-        @settings.auth_mode = value
+        @settings.auth_mode = value.to_sym
       end
     end
   end

@@ -48,7 +48,7 @@ describe Y2Network::Sysconfig::ConnectionConfigReaders::Wireless do
       wlan = handler.connection_config
       expect(wlan).to have_attributes(
         interface:    "wlan0",
-        mode:         :managed,
+        mode:         "managed",
         essid:        "example_ssid",
         ap_scanmode:  "1",
         auth_mode:    :eap,
@@ -110,7 +110,7 @@ describe Y2Network::Sysconfig::ConnectionConfigReaders::Wireless do
       wlan = handler.connection_config
       expect(wlan).to have_attributes(
         auth_mode: :open,
-        mode:      :managed
+        mode:      "managed"
       )
     end
   end
