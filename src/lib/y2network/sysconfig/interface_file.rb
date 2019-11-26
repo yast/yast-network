@@ -228,8 +228,8 @@ module Y2Network
       define_variable(:wireless_auth_mode, :symbol)
 
       # @!attribute [r] wireless_mode
-      #  @return [Symbol] Operating mode for the device (:managed, :ad_hoc or :master)
-      define_variable(:wireless_mode, :symbol)
+      #  @return [String] Operating mode for the device (managed, ad-hoc or master)
+      define_variable(:wireless_mode, :string)
 
       # @!attribute [r] wireless_wpa_password
       #  @return [String] Password as configured on the RADIUS server (for WPA-EAP)

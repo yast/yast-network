@@ -1,7 +1,7 @@
 -------------------------------------------------------------------
 Mon Nov 25 15:02:38 UTC 2019 - Knut Anderssen <kanderssen@suse.com>
 
-- Use symbols for wireless mode (bsc#1157394)
+- Fix wireless mode and auth_mode initialization (bsc#1157394)
 - 4.2.33
 
 -------------------------------------------------------------------

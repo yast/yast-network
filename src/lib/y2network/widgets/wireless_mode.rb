@@ -34,7 +34,7 @@ module Y2Network
       end
 
       def init
-        self.value = @config.mode.to_s if @config.mode
+        self.value = @config.mode
       end
 
       # notify when mode change as it affect other elements
@@ -43,7 +43,7 @@ module Y2Network
       end
 
       def store
-        @config.mode = value.to_sym
+        @config.mode = value
       end
 
       def items

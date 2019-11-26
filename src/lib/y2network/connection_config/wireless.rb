@@ -26,8 +26,8 @@ module Y2Network
       # wireless options
       #
       # FIXME: Consider an enum
-      # @return [Symbol] (:ad-hoc, :managed, :master)
-      attr_accessor :mode
+      # @return [String] (ad-hoc, managed, master)
+      attr_reader :mode
       # @return [String]
       attr_accessor :essid
       # @return [String] Network ID
@@ -77,7 +77,7 @@ module Y2Network
       def initialize
         super
 
-        self.mode = :managed
+        self.mode = "managed"
         self.essid = ""
         self.nwid = ""
         self.auth_mode = :open
@@ -101,6 +101,11 @@ module Y2Network
          :client_key].all? do |method|
           public_send(method) == other.public_send(method)
         end
+      end
+
+      # @param wireless_mode [String]
+      def mode=(wireless_mode)
+        @mode = wireless_mode.to_s.downcase
       end
     end
   end
