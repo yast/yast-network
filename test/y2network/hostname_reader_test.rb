@@ -25,11 +25,13 @@ describe Y2Network::HostnameReader do
 
   describe "#hostname" do
     let(:install_inf_hostname) { "linuxrc" }
+    let(:dhcp_hostname) { "dhcp" }
     let(:system_hostname) { "system" }
     let(:resolver_hostname) { "system.suse.de" }
 
     before do
       allow(reader).to receive(:hostname_from_install_inf).and_return(install_inf_hostname)
+      allow(reader).to receive(:hostname_from_dhcp).and_return(dhcp_hostname)
       allow(reader).to receive(:hostname_from_system).and_return(system_hostname)
       allow(reader).to receive(:random_hostname).and_return("linux-abcd")
       allow(reader).to receive(:hostname_from_resolver).and_return(resolver_hostname)
@@ -62,13 +64,24 @@ describe Y2Network::HostnameReader do
       context "when the /etc/install.inf file does not exists" do
         let(:install_inf_hostname) { nil }
 
-        it "reads the hostname from the system" do
-          expect(reader.hostname).to eq("system")
+        context "but was set by dhcp" do
+          it "reads the hostname from dhcp" do
+            expect(reader.hostname).to eq("dhcp")
+          end
+        end
+
+        context "and was not set by dhcp" do
+          let(:dhcp_hostname) { nil }
+
+          it "reads the hostname from system" do
+            expect(reader.hostname).to eq("system")
+          end
         end
       end
 
       context "when the hostname cannot be determined" do
         let(:install_inf_hostname) { nil }
+        let(:dhcp_hostname) { nil }
         let(:system_hostname) { nil }
 
         it "do not make any proposal" do
