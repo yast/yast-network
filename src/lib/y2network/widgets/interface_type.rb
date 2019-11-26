@@ -19,8 +19,7 @@
 
 require "yast"
 require "cwm/common_widgets"
-
-Yast.import "NetworkInterfaces"
+require "y2network/interface_type"
 
 module Y2Network
   module Widgets
@@ -49,8 +48,8 @@ module Y2Network
       end
 
       def items
-        Yast::NetworkInterfaces.GetDeviceTypes.map do |type|
-          [type, Yast::NetworkInterfaces.GetDevTypeDescription(type, _long_desc = false)]
+        Y2Network::InterfaceType.supported.map do |type|
+          [type.short_name, type.to_human_string]
         end
       end
 

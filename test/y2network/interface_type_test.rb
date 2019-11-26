@@ -18,6 +18,7 @@
 # find current contact information at www.suse.com.
 
 require_relative "../test_helper"
+require "y2network/interface_type"
 
 describe Y2Network::InterfaceType do
   subject(:ethernet) { described_class.from_short_name("eth") }
@@ -33,6 +34,35 @@ describe Y2Network::InterfaceType do
     it "returns all known interface types" do
       expect(described_class.all).to_not be_empty
       expect(described_class.all.first).to be_a described_class
+    end
+  end
+
+  describe ".supported" do
+
+    before do
+      allow(Yast::Arch).to receive(:s390).and_return(on_s390)
+    end
+
+    context "when not running on s390 architecture" do
+      let(:on_s390) { false }
+
+      it "returns all supported interface types except the s390 specific" do
+        supported_interfaces = described_class.supported
+        expect(supported_interfaces).to include(Y2Network::InterfaceType::ETHERNET)
+        expect(supported_interfaces).to include(Y2Network::InterfaceType::DUMMY)
+        expect(supported_interfaces).to_not include(Y2Network::InterfaceType::QETH)
+      end
+    end
+
+    context "when running on s390 architecture" do
+      let(:on_s390) { true }
+
+      it "returns s390 supported interface types" do
+        supported_interfaces = described_class.supported
+        expect(supported_interfaces).to include(Y2Network::InterfaceType::QETH)
+        expect(supported_interfaces).to include(Y2Network::InterfaceType::VLAN)
+        expect(supported_interfaces).to_not include(Y2Network::InterfaceType::WIRELESS)
+      end
     end
   end
 

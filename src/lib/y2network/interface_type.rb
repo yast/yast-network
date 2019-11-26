@@ -19,6 +19,8 @@
 
 require "yast"
 
+Yast.import "Arch"
+
 module Y2Network
   # This class represents the interface types which are supported.
   # Class have helpers to check if given type is what needed. It check name and also short name:
@@ -38,6 +40,13 @@ module Y2Network
         @all ||= InterfaceType.constants
           .map { |c| InterfaceType.const_get(c) }
           .select { |c| c.is_a?(InterfaceType) }
+      end
+
+      # Returns all the supported interfaces for the current architecture
+      #
+      # @return [Array<InterfaceType>] Interface types
+      def supported
+        SUPPORTED_COMMON + (Yast::Arch.s390 ? SUPPORTED_S390 : UNSUPPORTED_S390)
       end
 
       # Returns the interface type with a given short name
@@ -151,5 +160,9 @@ module Y2Network
     LO = new(N_("Loopback"), "lo")
     # Unknown interfaces
     UNKNOWN = new(N_("Unknown"), "unknown")
+
+    SUPPORTED_COMMON = [ETHERNET, VLAN, BRIDGE, TUN, TAP, BONDING].freeze
+    SUPPORTED_S390 = [HSI, CTC, FICON, QETH, LCS].freeze
+    UNSUPPORTED_S390 = [DUMMY, WIRELESS, INFINIBAND].freeze
   end
 end
