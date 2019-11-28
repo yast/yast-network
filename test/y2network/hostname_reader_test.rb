@@ -33,21 +33,7 @@ describe Y2Network::Sysconfig::HostnameReader do
       allow(reader).to receive(:hostname_from_install_inf).and_return(install_inf_hostname)
       allow(reader).to receive(:hostname_from_dhcp).and_return(dhcp_hostname)
       allow(reader).to receive(:hostname_from_system).and_return(system_hostname)
-      allow(reader).to receive(:random_hostname).and_return("linux-abcd")
       allow(reader).to receive(:hostname_from_resolver).and_return(resolver_hostname)
-    end
-
-    it "returns the system's hostname" do
-      expect(reader.hostname).to eq("system")
-    end
-
-    context "when the hostname cannot be determined" do
-      let(:system_hostname) { nil }
-      let(:resolver_hostname) { nil }
-
-      it "returns a random one" do
-        expect(reader.hostname).to eq("linux-abcd")
-      end
     end
 
     context "during installation" do
@@ -58,37 +44,14 @@ describe Y2Network::Sysconfig::HostnameReader do
       end
 
       it "reads the hostname from /etc/install.conf" do
-        expect(reader.hostname).to eq("linuxrc")
+        expect(reader.hostname_from_install_inf).to eq("linuxrc")
       end
 
       context "when the /etc/install.inf file does not exists" do
         let(:install_inf_hostname) { nil }
 
-        context "but was set by dhcp" do
-          it "reads the hostname from dhcp" do
-            expect(reader.hostname).to eq("dhcp")
-          end
-        end
-
-        context "and was not set by dhcp" do
-          let(:dhcp_hostname) { nil }
-
-          it "reads the hostname from system" do
-            expect(reader.hostname).to eq("system")
-          end
-        end
-      end
-
-      context "when the hostname cannot be determined" do
-        let(:install_inf_hostname) { nil }
-        let(:dhcp_hostname) { nil }
-        let(:system_hostname) { nil }
-
-        it "do not make any proposal" do
-          # linuxrc currently always set hostname to default "install"
-          # so this should never happen in real life as we should always
-          # read the "install" hostname from system
-          expect(reader.hostname).to be nil
+        it "returns nil" do
+          expect(reader.hostname_from_install_inf).to be_nil
         end
       end
     end
@@ -188,12 +151,6 @@ describe Y2Network::Sysconfig::HostnameReader do
 
     it "returns nil when no hostname was obtained from dhcp" do
       expect(reader.hostname_from_dhcp).to be_nil
-    end
-  end
-
-  describe "#random_hostname" do
-    it "returns a random name" do
-      expect(reader.random_hostname).to match(/linux-\w{4}/)
     end
   end
 end

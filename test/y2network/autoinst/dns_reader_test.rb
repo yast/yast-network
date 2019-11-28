@@ -40,7 +40,7 @@ describe Y2Network::Autoinst::DNSReader do
       "resolv_conf_policy" => "some-policy"
     }
   end
-  let(:hostname_reader) { instance_double(Y2Network::Sysconfig::HostnameReader, hostname: "foo") }
+  let(:hostname_reader) { instance_double(Y2Network::Sysconfig::HostnameReader) }
 
   before do
     allow(Y2Network::Sysconfig::HostnameReader).to receive(:new).and_return(hostname_reader)

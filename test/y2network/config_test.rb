@@ -168,7 +168,7 @@ describe Y2Network::Config do
 
     context "when hostname information is different" do
       it "returns false" do
-        copy.hostname.hostname = "dummy"
+        copy.hostname.static = "dummy"
         expect(copy).to_not eq(config)
       end
     end

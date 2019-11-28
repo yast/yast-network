@@ -24,7 +24,7 @@ require "network/wicked"
 
 Yast.import "Hostname"
 Yast.import "IP"
-Yast.import "Mode"
+Yast.import "Stage"
 Yast.import "NetHwDetection"
 
 module Y2Network
@@ -45,11 +45,17 @@ module Y2Network
       #
       # @return [Y2Network::Hostname] Hostname configuration
       def config
-        installer = Yast::Mode.installation || Yast::Mode.autoinst
+        transient_hostname = if Yast::Stage.initial
+          hostname_from_dhcp
+        else
+          hostname_from_resolver
+        end
+
         Y2Network::Hostname.new(
-          hostname:           hostname,
-          save_hostname:      !installer || !@install_inf_hostname.nil?,
-          dhcp_hostname:      dhcp_hostname
+          installer:      hostname_from_install_inf,
+          static:         hostname_from_system,
+          transient:      transient_hostname,
+          dhcp_hostname:  dhcp_hostname
         )
       end
 
@@ -67,20 +73,6 @@ module Y2Network
           f.dhclient_set_hostname == "yes"
         end
         file ? file.interface : :none
-      end
-
-      # Returns the hostname
-      #
-      # @note If the hostname cannot be determined, generate a random one
-      # in installed system (do not generate one in the installer).
-      #
-      # @return [String]
-      def hostname
-        if Yast::Mode.installation || Yast::Mode.autoinst
-          hostname_for_installer
-        else
-          hostname_for_running_system
-        end
       end
 
       # Reads the hostname from the /etc/install.inf file
@@ -134,41 +126,6 @@ module Y2Network
         log.info("Hostname obtained from DHCP: #{dhcp_hostname}")
 
         dhcp_hostname
-      end
-
-      # @return [Array<String>] Valid chars to be used in the random part of a hostname
-      HOSTNAME_CHARS = (("a".."z").to_a + ("0".."9").to_a).freeze
-      private_constant :HOSTNAME_CHARS
-
-      # Returns a random hostname
-      #
-      # The idea is to use a name like this as fallback.
-      #
-      # @return [String]
-      def random_hostname
-        suffix = HOSTNAME_CHARS.sample(4).join
-        "linux-#{suffix}"
-      end
-
-    private
-
-      # Runs workflow for querying hostname in the installer
-      #
-      # @return [String] Hostname
-      def hostname_for_installer
-        @install_inf_hostname = hostname_from_install_inf
-
-        # the hostname was either explicitly set by the user, obtained from dhcp or implicitly
-        # preconfigured by the linuxrc (install). Do not generate random one as we did in the past.
-        # See FATE#319639 for details.
-        @install_inf_hostname || hostname_from_dhcp || hostname_from_system
-      end
-
-      # Runs workflow for querying hostname in the installed system
-      #
-      # @return [String] Hostname
-      def hostname_for_running_system
-        hostname_from_system || hostname_from_resolver || random_hostname
       end
     end
   end

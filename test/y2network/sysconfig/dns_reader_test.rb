@@ -40,7 +40,7 @@ describe Y2Network::Sysconfig::DNSReader do
       { "config" => netconfig_dns, "dhcp" => netconfig_dhcp }
     end
 
-    let(:hostname_reader) { instance_double(Y2Network::Sysconfig::HostnameReader, hostname: "foo") }
+    let(:hostname_reader) { instance_double(Y2Network::Sysconfig::HostnameReader) }
 
     let(:ifcfg_eth0) do
       instance_double(

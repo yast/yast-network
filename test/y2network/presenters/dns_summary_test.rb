@@ -29,7 +29,7 @@ describe Y2Network::Presenters::DNSSummary do
       nameservers: nameservers, searchlist: searchlist
     )
   end
-  let(:hostname) { Y2Network::Hostname.new(hostname: system_hostname) }
+  let(:hostname) { Y2Network::Hostname.new(static: system_hostname) }
   let(:system_hostname) { "test" }
   let(:nameservers) { [IPAddr.new("1.1.1.1"), IPAddr.new("8.8.8.8")] }
   let(:searchlist) { ["example.net", "example.org"] }

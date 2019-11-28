@@ -36,7 +36,7 @@ module Y2Network
         return if old_hostname && hostname == old_hostname
 
         update_sysconfig_dhcp(hostname, old_hostname)
-        update_hostname(hostname) if hostname.save_hostname
+        update_hostname(hostname) if hostname.save_hostname?
       end
 
     private
