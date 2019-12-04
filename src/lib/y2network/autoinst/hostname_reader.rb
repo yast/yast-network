@@ -23,7 +23,7 @@ require "y2network/sysconfig/hostname_reader"
 
 module Y2Network
   module Autoinst
-    # This class is responsible of importing the AutoYast dns section
+    # This class is responsible of importing hostname setup from the AutoYast dns section
     class HostnameReader
       # @return [AutoinstProfile::DNSSection]
       attr_reader :section
@@ -34,9 +34,9 @@ module Y2Network
         @section = section
       end
 
-      # Creates a new {DNS} config from the imported profile dns section
+      # Creates a new {Hostname} config from the imported profile dns section
       #
-      # @return [DNS] the imported {DNS} config
+      # @return [Hostname] the imported {Hostname} config
       def config
         Y2Network::Hostname.new(
           dhcp_hostname: section.dhcp_hostname,
