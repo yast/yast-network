@@ -73,8 +73,10 @@ module Y2Network
         result = new
         return result unless config
 
+        build_dns = config.dns || config.hostname
+
         result.routing = RoutingSection.new_from_network(config.routing) if config.routing
-        result.dns = DNSSection.new_from_network(config.dns, config.hostname) if config.dns && config.hostname
+        result.dns = DNSSection.new_from_network(config.dns, config.hostname) if build_dns
         result.interfaces = InterfacesSection.new_from_network(config.connections)
         result.udev_rules = UdevRulesSection.new_from_network(config.interfaces)
         result.s390_devices = S390DevicesSection.new_from_network(config.connections)

@@ -30,14 +30,14 @@ describe Y2Network::AutoinstProfile::DNSSection do
       instance_double(
         Y2Network::DNS,
         resolv_conf_policy: "auto",
-        nameservers: nameservers,
-        searchlist: searchlist
+        nameservers:        nameservers,
+        searchlist:         searchlist
       )
     end
     let(:hostname) do
       instance_double(
         Y2Network::Hostname,
-        hostname: "linux",
+        hostname:      "linux",
         dhcp_hostname: true
       )
     end

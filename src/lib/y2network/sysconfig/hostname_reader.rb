@@ -37,7 +37,6 @@ module Y2Network
     # @example Read hostname
     #   Y2Network::HostnameReader.new.hostname #=> "foo"
     class HostnameReader
-
       include Yast::Logger
       include Yast::Wicked
 
@@ -52,10 +51,10 @@ module Y2Network
         end
 
         Y2Network::Hostname.new(
-          installer:      hostname_from_install_inf,
-          static:         hostname_from_system,
-          transient:      transient_hostname,
-          dhcp_hostname:  dhcp_hostname
+          installer:     hostname_from_install_inf,
+          static:        hostname_from_system,
+          transient:     transient_hostname,
+          dhcp_hostname: dhcp_hostname
         )
       end
 

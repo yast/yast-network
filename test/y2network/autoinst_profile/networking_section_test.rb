@@ -26,10 +26,10 @@ describe Y2Network::AutoinstProfile::NetworkingSection do
     let(:config) do
       Y2Network::Config.new(
         interfaces: [],
-        routing: routing,
-        dns: dns,
-        hostname: hostname,
-        source: :sysconfig
+        routing:    routing,
+        dns:        dns,
+        hostname:   hostname,
+        source:     :sysconfig
       )
     end
     let(:routing) { double("Y2Network::Routing") }

@@ -30,9 +30,7 @@ module Y2Network
       #
       # @param hostname [Y2Network::Hostname] Hostname configuration
       # @param old_hostname [Y2Network::Hostname] Old Hostname configuration
-      # @param netconfig_update [Boolean] Whether 'netconfig update' should be
-      #   called after writing the Hostname configuration or not
-      def write(hostname, old_hostname, netconfig_update: true)
+      def write(hostname, old_hostname)
         return if old_hostname && hostname == old_hostname
 
         update_sysconfig_dhcp(hostname, old_hostname)

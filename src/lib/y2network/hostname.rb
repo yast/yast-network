@@ -65,7 +65,7 @@ module Y2Network
       end
     end
 
-    alias hostname proposal
+    alias_method :hostname, :proposal
 
     # Checks whether the hostname should be stored when writing configuration
     #

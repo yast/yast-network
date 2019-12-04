@@ -98,8 +98,9 @@ module Y2Network
 
       # Method used by {.new_from_network} to populate the attributes when cloning DNS options
       #
-      # @param dns [Y2Network::DNS] DNS settings
-      # @param dns [Y2Network::Hostname] Hostname settings
+      # @param dns      [Y2Network::DNS] DNS settings
+      # @param hostname [Y2Network::Hostname] Hostname settings
+      #
       # @return [Boolean] Result true on success or false otherwise
       def init_from_network(dns, hostname)
         @dhcp_hostname = hostname.dhcp_hostname

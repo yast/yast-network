@@ -98,22 +98,21 @@ module Y2Network
 
     # Constructor
     #
-    # @param interfaces  [InterfacesCollection] List of interfaces
-    # @param connections [ConnectionConfigsCollection] List of connection configurations
-    # @param routing     [Routing] Object with routing configuration
-    # @param dns         [DNS] Object with DNS configuration
-    # @param hostname    [Hostname] Object with Hostname configuration
-    # @param source      [Symbol] Configuration source
-    # @param drivers     [Array<Driver>] List of available drivers
-    def initialize(interfaces: InterfacesCollection.new,
-      connections: ConnectionConfigsCollection.new,
-      routing: Routing.new, dns: DNS.new, hostname: Hostname.new, drivers: [], source:)
-      @interfaces = interfaces
-      @connections = connections
-      @drivers = drivers
-      @routing = routing
-      @dns = dns
-      @hostname = hostname
+    # @param source [Symbol] Configuration source
+    # @param opts   [Hash] configuration options
+    # @option opts  [InterfacesCollection] :interfaces List of interfaces
+    # @option opts  [ConnectionConfigsCollection] :connections List of connection configurations
+    # @option opts  [Routing] :routing Object with routing configuration
+    # @option opts  [DNS] :dns Object with DNS configuration
+    # @option opts  [Hostname] :hostname Object with Hostname configuration
+    # @option opts  [Array<Driver>] :drivers List of available drivers
+    def initialize(source:, **opts)
+      @interfaces = opts.fetch(:interfaces, InterfacesCollection.new)
+      @connections = opts.fetch(:connections, ConnectionConfigsCollection.new)
+      @drivers = opts.fetch(:drivers, [])
+      @routing = opts.fetch(:routing, Routing.new)
+      @dns = opts.fetch(:dns, DNS.new)
+      @hostname = opts.fetch(:hostname, Hostname.new)
       @source = source
     end
 
@@ -136,11 +135,11 @@ module Y2Network
     # @return [Boolean] true if both configurations are equal; false otherwise
     def ==(other)
       source == other.source &&
-      interfaces == other.interfaces &&
-      routing == other.routing &&
-      dns == other.dns &&
-      hostname == other.hostname &&
-      connections == other.connections
+        interfaces == other.interfaces &&
+        routing == other.routing &&
+        dns == other.dns &&
+        hostname == other.hostname &&
+        connections == other.connections
     end
 
     # Renames a given interface and the associated connections
