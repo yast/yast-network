@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Dec  4 09:51:38 UTC 2019 - Michal Filka <mfilka@suse.com>
+
+- bnc#1158122
+  - fixed internal error when incorrectly querying for hostname in
+    AY's second stage
+- 4.2.35 
+
+-------------------------------------------------------------------
 Tue Nov 26 15:16:04 UTC 2019 - Knut Anderssen <kanderssen@suse.com>
 
 - Drop support for obsolete network device types (jsc#SLE-7753)
