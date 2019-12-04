@@ -25,7 +25,7 @@ require "network/wicked"
 Yast.import "FileUtils"
 Yast.import "Hostname"
 Yast.import "IP"
-Yast.import "Mode"
+Yast.import "Stage"
 Yast.import "NetHwDetection"
 
 module Y2Network
@@ -49,7 +49,7 @@ module Y2Network
     #
     # @return [String]
     def hostname
-      if Yast::Mode.installation || Yast::Mode.autoinst
+      if Yast::Stage.initial
         hostname_for_installer
       else
         hostname_for_running_system

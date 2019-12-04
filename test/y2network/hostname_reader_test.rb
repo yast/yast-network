@@ -54,7 +54,7 @@ describe Y2Network::HostnameReader do
       let(:install_inf_exists?) { true }
 
       before do
-        allow(Yast::Mode).to receive(:installation).and_return(true)
+        allow(Yast::Stage).to receive(:initial).and_return(true)
       end
 
       it "reads the hostname from /etc/install.conf" do
