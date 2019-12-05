@@ -17,7 +17,7 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "cwm/dialog"
+require "cwm/popup"
 require "y2network/widgets/interface_type"
 require "y2network/interface_config_builder"
 
@@ -29,13 +29,17 @@ Yast.import "NetworkInterfaces"
 module Y2Network
   module Dialogs
     # Dialog which starts new device creation
-    class AddInterface < CWM::Dialog
+    class AddInterface < CWM::Popup
       def initialize(default: nil)
         @type_widget = Widgets::InterfaceType.new(default: default ? default.short_name : nil)
       end
 
+      def title
+        _("Add interface configuration")
+      end
+
       def contents
-        HBox(
+        MarginBox(1, 0.4,
           @type_widget
         )
       end
