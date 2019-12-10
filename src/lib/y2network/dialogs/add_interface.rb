@@ -34,9 +34,17 @@ module Y2Network
         @type_widget = Widgets::InterfaceType.new(default: default ? default.short_name : nil)
       end
 
+      def title
+        _("Add interface configuration")
+      end
+
       def contents
-        HBox(
-          @type_widget
+        HVCenter(
+          HSquash(
+            HBox(
+              @type_widget
+            )
+          )
         )
       end
 
