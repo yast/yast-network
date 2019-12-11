@@ -111,8 +111,6 @@ module Y2Network
     #
     # @return [String] Hostname
     def hostname_for_installer
-      @install_inf_hostname = hostname_from_install_inf
-
       # the hostname was either explicitly set by the user, obtained from dhcp or implicitly
       # preconfigured by the linuxrc (install). Do not generate random one as we did in the past.
       # See FATE#319639 for details.
