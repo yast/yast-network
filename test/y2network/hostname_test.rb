@@ -108,7 +108,7 @@ describe Y2Network::Hostname do
       context "without explicitly set hostname" do
         let(:installer_hostname) { nil }
 
-        it "fails" do
+        it "do not propose the hostname to be stored" do
           expect(hostname.save_hostname?).to be false
         end
       end
@@ -116,7 +116,7 @@ describe Y2Network::Hostname do
       context "with explicitly set hostname" do
         let(:installer_hostname) { "install_inf_hostname" }
 
-        it "succeedes" do
+        it "proposese the hostname to be saved" do
           expect(hostname.save_hostname?).to be true
         end
       end
@@ -129,7 +129,7 @@ describe Y2Network::Hostname do
 
       let(:installer_hostname) { nil }
 
-      it "always succeedes" do
+      it "always proposes the hostname to be saved" do
         expect(hostname.save_hostname?).to be true
       end
     end
