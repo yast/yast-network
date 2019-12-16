@@ -209,13 +209,6 @@ module Yast
       ret ? :next : :abort
     end
 
-    # Returns true if the device can be used (means handled as normal linux device)
-    # or false otherwise (it is used mainly at s390 based systems where a special
-    # handling is needed to run linux device emulation)
-    def DeviceReady(devname)
-      !Arch.s390 || s390_DriverLoaded(devname)
-    end
-
     # Evaluates if user should be asked again according dialogs result value
     #
     # it is basically useful if user aborts dialog and he has done some
