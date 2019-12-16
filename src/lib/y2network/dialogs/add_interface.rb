@@ -32,9 +32,12 @@ module Y2Network
     class AddInterface < CWM::Dialog
       def initialize(default: nil)
         @type_widget = Widgets::InterfaceType.new(default: default ? default.short_name : nil)
+
+        textdomain "network"
       end
 
       def title
+        # Translators: Add interface dialog label
         _("Add interface configuration")
       end
 
