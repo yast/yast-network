@@ -37,7 +37,7 @@ module Y2Network
       end
 
       def title
-        # Translators: Add interface dialog label
+        # Translators: Dialog headline: adding a configuration of a network interface
         _("Add Interface Configuration")
       end
 
