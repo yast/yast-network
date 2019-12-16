@@ -32,11 +32,22 @@ module Y2Network
     class AddInterface < CWM::Dialog
       def initialize(default: nil)
         @type_widget = Widgets::InterfaceType.new(default: default ? default.short_name : nil)
+
+        textdomain "network"
+      end
+
+      def title
+        # Translators: Dialog headline: adding a configuration of a network interface
+        _("Add Interface Configuration")
       end
 
       def contents
-        HBox(
-          @type_widget
+        HVCenter(
+          HSquash(
+            HBox(
+              @type_widget
+            )
+          )
         )
       end
 
