@@ -169,11 +169,11 @@ describe Yast::NetworkAutoconfiguration do
     let(:route) do
       Y2Network::Route.new(to:        :default,
                            gateway:   IPAddr.new("192.168.122.1"),
-                           interface: eth0)
+                           interface: eth5)
     end
-    let(:eth0) { Y2Network::Interface.new("eth0") }
+    let(:eth5) { Y2Network::Interface.new("eth5") }
     let(:br0) { Y2Network::Interface.new("br0") }
-    let(:interfaces) { Y2Network::InterfacesCollection.new([eth0, br0]) }
+    let(:interfaces) { Y2Network::InterfacesCollection.new([eth5, br0]) }
     let(:yast_config) do
       Y2Network::Config.new(interfaces: interfaces, routing: routing, source: :testing)
     end
@@ -219,7 +219,7 @@ describe Yast::NetworkAutoconfiguration do
     end
 
     context "when the proposal is required" do
-      let(:interfaces) { Y2Network::InterfacesCollection.new([eth0]) }
+      let(:interfaces) { Y2Network::InterfacesCollection.new([eth5]) }
       let(:proposal) { true }
 
       it "creates the virtulization proposal config" do
@@ -236,7 +236,7 @@ describe Yast::NetworkAutoconfiguration do
 
       context "and the routing config was modified" do
         it "moves the routes from the enslaved interface to the bridge" do
-          expect { instance.configure_virtuals }.to change { route.interface }.from(eth0).to(br0)
+          expect { instance.configure_virtuals }.to change { route.interface }.from(eth5).to(br0)
         end
 
         it "writes the routing config" do

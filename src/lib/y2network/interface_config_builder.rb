@@ -347,7 +347,13 @@ module Y2Network
 
     # @param [String] value
     def remote_ip=(value)
-      ip_config_default.remote_address = IPAddress.from_string(value)
+      return unless ip_config_default
+
+      ip_config_default.remote_address = if value.nil? || value.empty?
+        nil
+      else
+        IPAddress.from_string(value)
+      end
     end
 
     # Gets Maximum Transition Unit
@@ -365,6 +371,9 @@ module Y2Network
     def configure_as_slave
       self.boot_protocol = "none"
       self.aliases = []
+      self.ip_address = nil
+      self.subnet_prefix = ""
+      self.remote_ip = ""
     end
 
     # @param info [Hash<String,Object>] Hardware information

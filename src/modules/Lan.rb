@@ -741,27 +741,35 @@ module Yast
     end
 
     def ProposeVirtualized
-      # then each configuration (except bridges) move to the bridge
-      # and add old device name into bridge_ports
-      yast_config.interfaces.each do |interface|
+      # Use the names as the interfaces list is modified when added the new
+      # bridges and we do not want to iterater over them
+      interface_names = yast_config.interfaces.map(&:name)
+
+      interface_names.each do |interface_name|
+        interface = yast_config.interfaces.by_name(interface_name)
         bridge_builder = Y2Network::InterfaceConfigBuilder.for("br")
         bridge_builder.name = yast_config.interfaces.free_name("br")
 
         next unless connected_and_bridgeable?(bridge_builder, interface)
 
-        next if yast_config.connections.by_name(interface.name)
+        connection = yast_config.connections.by_name(interface.name)
 
-        bridge_builder.stp = false
         bridge_builder.ports = [interface.name]
         bridge_builder.startmode = "auto"
-        bridge_builder.save
+        bridge_builder.boot_protocol = "dhcp"
+        # The configuration of the connection being slaved is copied to the
+        # bridge when exist
+        bridge_builder.configure_from(connection) if connection
 
-        builder = Y2Network::InterfaceConfigBuilder.for(interface.type)
+        builder = Y2Network::InterfaceConfigBuilder.for(interface.type, config: connection)
         builder.name = interface.name
         builder.configure_as_slave
         builder.save
+
+        # It adds the connection and the virtual interface
+        bridge_builder.save
+
         LanItems.move_routes(builder.name, bridge_builder.name)
-        refresh_interfaces
       end
 
       nil

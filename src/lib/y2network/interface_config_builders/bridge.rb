@@ -52,6 +52,7 @@ module Y2Network
       def save
         ports.each do |port|
           interface = yast_config.interfaces.by_name(port)
+
           connection = yast_config.connections.by_name(port)
           next if connection && connection.startmode.name == "none"
 
@@ -62,6 +63,13 @@ module Y2Network
         end
 
         super
+      end
+
+      def configure_from(connection)
+        [:bootproto, :ip, :ip_aliases, :startmode, :description,
+         :firewall_zone, :hostname].all? do |method|
+          @connection_config.public_send("#{method}=", connection.public_send(method))
+        end
       end
 
       def_delegators :@connection_config,
