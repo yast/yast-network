@@ -45,7 +45,7 @@ module Yast
     # be removed in the future, when the widgets are adapted to the new API.
     #
     # @param name [Symbol]       Public method's name
-    def self.define_config_method(name)
+    def self.define_dns_config_method(name)
       define_method(name) do
         yast_dns_config.public_send(name)
       end
@@ -55,11 +55,21 @@ module Yast
       end
     end
 
-    define_config_method :hostname
-    define_config_method :nameservers
-    define_config_method :searchlist
-    define_config_method :dhcp_hostname
-    define_config_method :resolv_conf_policy
+    def self.define_hostname_config_method(name)
+      define_method(name) do
+        yast_hostname_config.public_send(name)
+      end
+
+      define_method("#{name}=") do |value|
+        yast_hostname_config.public_send("#{name}=", value)
+      end
+    end
+
+    define_hostname_config_method :hostname
+    define_dns_config_method :nameservers
+    define_dns_config_method :searchlist
+    define_hostname_config_method :dhcp_hostname
+    define_dns_config_method :resolv_conf_policy
 
     def main
       Yast.import "UI"
@@ -291,6 +301,11 @@ module Yast
     def yast_dns_config
       Yast::Lan.Read(:cache)
       Yast::Lan.yast_config.dns
+    end
+
+    def yast_hostname_config
+      Yast::Lan.Read(:cache)
+      Yast::Lan.yast_config.hostname
     end
 
     def system_dns_config

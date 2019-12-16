@@ -18,6 +18,7 @@
 # find current contact information at www.suse.com.
 require_relative "../../test_helper"
 require "y2network/sysconfig/dns_reader"
+require "y2network/sysconfig/hostname_reader"
 
 describe Y2Network::Sysconfig::DNSReader do
   subject(:reader) { described_class.new }
@@ -39,7 +40,7 @@ describe Y2Network::Sysconfig::DNSReader do
       { "config" => netconfig_dns, "dhcp" => netconfig_dhcp }
     end
 
-    let(:hostname_reader) { instance_double(Y2Network::HostnameReader, hostname: "foo") }
+    let(:hostname_reader) { instance_double(Y2Network::Sysconfig::HostnameReader) }
 
     let(:ifcfg_eth0) do
       instance_double(
@@ -53,18 +54,13 @@ describe Y2Network::Sysconfig::DNSReader do
         key_parts = arg.to_s.split(".")
         netconfig.dig(*key_parts[3..-1])
       end
-      allow(Y2Network::HostnameReader).to receive(:new).and_return(hostname_reader)
+      allow(Y2Network::Sysconfig::HostnameReader).to receive(:new).and_return(hostname_reader)
       allow(Y2Network::Sysconfig::InterfaceFile).to receive(:all).and_return([ifcfg_eth0])
     end
 
     it "returns the DNS configuration" do
       config = reader.config
       expect(config).to be_a(Y2Network::DNS)
-    end
-
-    it "includes the hostname" do
-      config = reader.config
-      expect(config.hostname).to eq("foo")
     end
 
     it "includes the list of name servers" do
@@ -112,67 +108,6 @@ describe Y2Network::Sysconfig::DNSReader do
       it "sets the policy to the 'default' value" do
         config = reader.config
         expect(config.resolv_conf_policy).to eq("default")
-      end
-    end
-
-    context "when DHCLIENT_SET_HOSTNAME is set to 'yes'" do
-      let(:netconfig_dhcp) do
-        { "DHCLIENT_SET_HOSTNAME" => "yes" }
-      end
-
-      it "sets dhcp_hostname to :any" do
-        config = reader.config
-        expect(config.dhcp_hostname).to eq(:any)
-      end
-    end
-
-    context "when DHCLIENT_SET_HOSTNAME is set to 'no'" do
-      let(:netconfig_dhcp) do
-        { "DHCLIENT_SET_HOSTNAME" => "no" }
-      end
-
-      it "sets dhcp_hostname to :none" do
-        config = reader.config
-        expect(config.dhcp_hostname).to eq(:none)
-      end
-
-      context "when a interface configuration file has DHCLIENT_SET_HOSTNAME set to 'yes'" do
-        let(:ifcfg_eth0) do
-          instance_double(
-            Y2Network::Sysconfig::InterfaceFile, interface: "eth0", dhclient_set_hostname: "yes",
-            load: nil
-          )
-        end
-
-        it "returns the interface name" do
-          config = reader.config
-          expect(config.dhcp_hostname).to eq("eth0")
-        end
-      end
-    end
-
-    context "when DHCLIENT_SET_HOSTNAME is missing" do
-      let(:netconfig_dhcp) do
-        { "DHCLIENT_SET_HOSTNAME" => nil }
-      end
-
-      it "sets dhcp_hostname to :none" do
-        config = reader.config
-        expect(config.dhcp_hostname).to eq(:none)
-      end
-
-      context "when a interface configuration file has DHCLIENT_SET_HOSTNAME set to 'yes'" do
-        let(:ifcfg_eth0) do
-          instance_double(
-            Y2Network::Sysconfig::InterfaceFile, interface: "eth0", dhclient_set_hostname: "yes",
-            load: nil
-          )
-        end
-
-        it "returns the interface name" do
-          config = reader.config
-          expect(config.dhcp_hostname).to eq("eth0")
-        end
       end
     end
   end

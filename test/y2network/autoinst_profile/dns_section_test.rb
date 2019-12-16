@@ -20,6 +20,7 @@
 require_relative "../../test_helper"
 require "y2network/autoinst_profile/dns_section"
 require "y2network/dns"
+require "y2network/hostname"
 
 describe Y2Network::AutoinstProfile::DNSSection do
   subject(:section) { described_class.new }
@@ -27,8 +28,17 @@ describe Y2Network::AutoinstProfile::DNSSection do
   describe ".new_from_network" do
     let(:dns) do
       instance_double(
-        Y2Network::DNS, hostname: "linux", dhcp_hostname: true, resolv_conf_policy: "auto",
-        nameservers: nameservers, searchlist: searchlist
+        Y2Network::DNS,
+        resolv_conf_policy: "auto",
+        nameservers:        nameservers,
+        searchlist:         searchlist
+      )
+    end
+    let(:hostname) do
+      instance_double(
+        Y2Network::Hostname,
+        hostname:      "linux",
+        dhcp_hostname: true
       )
     end
 
@@ -36,27 +46,27 @@ describe Y2Network::AutoinstProfile::DNSSection do
     let(:searchlist) { ["example.net"] }
 
     it "sets the hostname attribute" do
-      section = described_class.new_from_network(dns)
+      section = described_class.new_from_network(dns, hostname)
       expect(section.hostname).to eq("linux")
     end
 
     it "sets the dhcp_hostname attribute" do
-      section = described_class.new_from_network(dns)
+      section = described_class.new_from_network(dns, hostname)
       expect(section.dhcp_hostname).to eq(true)
     end
 
     it "sets the resolv_conf_policy attribute" do
-      section = described_class.new_from_network(dns)
+      section = described_class.new_from_network(dns, hostname)
       expect(section.resolv_conf_policy).to eq("auto")
     end
 
     it "sets the nameservers attribute" do
-      section = described_class.new_from_network(dns)
+      section = described_class.new_from_network(dns, hostname)
       expect(section.nameservers).to eq(["1.1.1.1"])
     end
 
     it "sets the searchlist attribute" do
-      section = described_class.new_from_network(dns)
+      section = described_class.new_from_network(dns, hostname)
       expect(section.searchlist).to eq(["example.net"])
     end
   end

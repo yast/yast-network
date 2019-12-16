@@ -32,12 +32,17 @@ module Y2Network
       # @return [Y2Network::DNS]
       attr_reader :dns
 
+      # @return [Y2Network::Hostname]
+      attr_reader :hostname
+
       # Constructor
       #
       # @param dns [Y2Network::DNS]
-      def initialize(dns)
+      # @param hostname [Y2Network::Hostname]
+      def initialize(dns, hostname)
         textdomain "network"
         @dns = dns
+        @hostname = hostname
       end
 
       def text
@@ -50,17 +55,17 @@ module Y2Network
     private
 
       def add_hostname(summary)
-        hostname_str = hostname
+        hostname_str = format_hostname
         return summary unless hostname_str
 
         Yast::Summary.AddListItem(summary, hostname_str)
       end
 
-      def hostname
-        if dhcp? && dns.dhcp_hostname
+      def format_hostname
+        if dhcp? && hostname.dhcp_hostname
           _("Hostname: Set by DHCP")
-        elsif dns.hostname && !dns.hostname.empty?
-          format(_("Hostname: %s"), dns.hostname)
+        elsif hostname.hostname && !hostname.hostname.empty?
+          format(_("Hostname: %s"), hostname.hostname)
         end
       end
 

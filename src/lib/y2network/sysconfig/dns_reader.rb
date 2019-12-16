@@ -18,8 +18,6 @@
 # find current contact information at www.suse.com.
 require "yast"
 require "y2network/dns"
-require "y2network/sysconfig/interface_file"
-require "y2network/hostname_reader"
 
 Yast.import "Mode"
 
@@ -33,14 +31,10 @@ module Y2Network
       #
       # @return [Y2Network::DnsConfig] DNS configuration
       def config
-        installer = Yast::Mode.installation || Yast::Mode.autoinst
         Y2Network::DNS.new(
           nameservers:        nameservers,
-          hostname:           hostname,
-          save_hostname:      !installer || hostname_from_install_inf?,
           searchlist:         searchlist,
-          resolv_conf_policy: resolv_conf_policy,
-          dhcp_hostname:      dhcp_hostname
+          resolv_conf_policy: resolv_conf_policy
         )
       end
 
@@ -75,21 +69,6 @@ module Y2Network
         (value.nil? || value.empty?) ? "default" : value
       end
 
-      # Returns the hostname
-      #
-      # @return [String]
-      def hostname
-        @hostname_reader = HostnameReader.new
-        @hostname_reader.hostname
-      end
-
-      # Checks whether the hostname was read from install.inf
-      #
-      # @return [Boolean]
-      def hostname_from_install_inf?
-        !@hostname_reader.install_inf_hostname.nil?
-      end
-
       # Return the list of search domains
       #
       # @return [Array<String>]
@@ -97,22 +76,6 @@ module Y2Network
         Yast::SCR.Read(
           Yast::Path.new(".sysconfig.network.config.NETCONFIG_DNS_STATIC_SEARCHLIST")
         ).to_s.split
-      end
-
-      # Returns whether the hostname should be taken from DHCP
-      #
-      # @return [String,:any,:none] Interface to set the hostname based on DHCP settings;
-      #   :any for any interface; :none for ignoring the hostname assigned via DHCP
-      def dhcp_hostname
-        value = Yast::SCR.Read(Yast::Path.new(".sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME"))
-        return :any if value == "yes"
-
-        files = InterfaceFile.all
-        file = files.find do |f|
-          f.load
-          f.dhclient_set_hostname == "yes"
-        end
-        file ? file.interface : :none
       end
     end
   end

@@ -24,18 +24,25 @@ require "y2network/config"
 describe Y2Network::AutoinstProfile::NetworkingSection do
   describe ".new_from_network" do
     let(:config) do
-      Y2Network::Config.new(interfaces: [], routing: routing, dns: dns, source: :sysconfig)
+      Y2Network::Config.new(
+        interfaces: [],
+        routing:    routing,
+        dns:        dns,
+        hostname:   hostname,
+        source:     :sysconfig
+      )
     end
     let(:routing) { double("Y2Network::Routing") }
     let(:routing_section) { double("RoutingSection") }
     let(:dns) { double("Y2Network::DNS") }
+    let(:hostname) { double("Y2Network::Hostname") }
     let(:dns_section) { double("DNSSection") }
 
     before do
       allow(Y2Network::AutoinstProfile::RoutingSection).to receive(:new_from_network)
         .with(routing).and_return(routing_section)
       allow(Y2Network::AutoinstProfile::DNSSection).to receive(:new_from_network)
-        .with(dns).and_return(dns_section)
+        .with(dns, hostname).and_return(dns_section)
     end
 
     it "initializes the routing section" do

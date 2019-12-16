@@ -21,6 +21,7 @@ require "yast"
 require "y2network/sysconfig_paths"
 require "y2network/sysconfig/routes_file"
 require "y2network/sysconfig/dns_writer"
+require "y2network/sysconfig/hostname_writer"
 require "y2network/sysconfig/connection_config_writer"
 require "y2network/sysconfig/interfaces_writer"
 require "cfa/sysctl"
@@ -55,6 +56,7 @@ module Y2Network
         write_interfaces(config.interfaces)
         write_connections(config.connections, old_config)
         write_dns_settings(config, old_config)
+        write_hostname_settings(config, old_config)
 
         # NOTE: This code might be moved outside of the Sysconfig namespace, as it is generic.
         Yast::Host.Write(gui: false)
@@ -170,6 +172,16 @@ module Y2Network
         old_dns = old_config.dns if old_config
         writer = Y2Network::Sysconfig::DNSWriter.new
         writer.write(config.dns, old_dns)
+      end
+
+      # Updates the Hostname configuration
+      #
+      # @param config     [Y2Network::Config] Current config object
+      # @param old_config [Y2Network::Config,nil] Config object with original configuration
+      def write_hostname_settings(config, old_config)
+        old_hostname = old_config.hostname if old_config
+        writer = Y2Network::Sysconfig::HostnameWriter.new
+        writer.write(config.hostname, old_hostname)
       end
 
       # Updates the interfaces configuration

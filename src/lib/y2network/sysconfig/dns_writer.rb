@@ -35,51 +35,14 @@ module Y2Network
       def write(dns, old_dns, netconfig_update: true)
         return if old_dns && dns == old_dns
 
-        update_sysconfig_dhcp(dns, old_dns)
-        update_hostname(dns) if dns.save_hostname
         update_mta_config
         update_sysconfig_config(dns, netconfig_update: netconfig_update)
       end
 
     private
 
-      # @return [String] Hostname executable
-      HOSTNAME_PATH = "/etc/hostname".freeze
       # @return [String] Sendmail update script (included in "sendmail" package)
       SENDMAIL_UPDATE_PATH = "/usr/lib/sendmail.d/update".freeze
-
-      # @param dns [Y2Network::DNS] DNS configuration
-      # @param old_dns [Y2Network::DNS] Old DNS configuration
-      def update_sysconfig_dhcp(dns, old_dns)
-        if old_dns.nil? || old_dns.dhcp_hostname == dns.dhcp_hostname
-          log.info("No update for /etc/sysconfig/network/dhcp")
-          return
-        end
-
-        Yast::SCR.Write(
-          Yast::Path.new(".sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME"),
-          (dns.dhcp_hostname == :any) ? "yes" : "no"
-        )
-        Yast::SCR.Write(Yast::Path.new(".sysconfig.network.dhcp"), nil)
-
-        # Clean-up values from ifcfg-* values
-        Y2Network::Sysconfig::InterfaceFile.all.each do |file|
-          value = (file.interface == dns.dhcp_hostname) ? "yes" : nil
-          file.load
-          next if file.dhclient_set_hostname == value
-
-          file.dhclient_set_hostname = value
-          file.save
-        end
-      end
-
-      # Sets the hostname
-      #
-      # @param dns [Y2Network::DNS] DNS configuration
-      def update_hostname(dns)
-        Yast::Execute.on_target!("/usr/bin/hostname", dns.hostname.split(".")[0])
-        Yast::SCR.Write(Yast::Path.new(".target.string"), HOSTNAME_PATH, "#{dns.hostname}\n")
-      end
 
       # Updates the MTA configuration
       #

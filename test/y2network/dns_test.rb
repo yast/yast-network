@@ -26,7 +26,9 @@ describe Y2Network::DNS do
   end
 
   let(:attrs) do
-    { hostname: "linux", resolv_conf_policy: "auto", dhcp_hostname: true }
+    {
+      resolv_conf_policy: "auto"
+    }
   end
 
   describe "#==" do
@@ -38,24 +40,8 @@ describe Y2Network::DNS do
       end
     end
 
-    context "when the hostnames are different" do
-      let(:other) { described_class.new(attrs.merge(hostname: "another")) }
-
-      it "returns false" do
-        expect(dns).to_not eq(other)
-      end
-    end
-
     context "when the resolv.conf policies are different" do
       let(:other) { described_class.new(attrs.merge(resolv_conf_policy: "another")) }
-
-      it "returns false" do
-        expect(dns).to_not eq(other)
-      end
-    end
-
-    context "when the dhcp_hostname settings are different" do
-      let(:other) { described_class.new(attrs.merge(dhcp_hostname: !attrs[:dhcp_hostname])) }
 
       it "returns false" do
         expect(dns).to_not eq(other)

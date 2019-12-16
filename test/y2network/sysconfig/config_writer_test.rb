@@ -97,6 +97,7 @@ describe Y2Network::Sysconfig::ConfigWriter do
     let(:routes) { [route, default_route] }
 
     let(:dns_writer) { instance_double(Y2Network::Sysconfig::DNSWriter, write: nil) }
+    let(:hostname_writer) { instance_double(Y2Network::Sysconfig::HostnameWriter, write: nil) }
     let(:interfaces_writer) { instance_double(Y2Network::Sysconfig::InterfacesWriter, write: nil) }
     let(:sysctl_file) do
       CFA::Sysctl.new do |f|
@@ -114,6 +115,8 @@ describe Y2Network::Sysconfig::ConfigWriter do
         .and_return(routes_file)
       allow(Y2Network::Sysconfig::DNSWriter).to receive(:new)
         .and_return(dns_writer)
+      allow(Y2Network::Sysconfig::HostnameWriter).to receive(:new)
+        .and_return(hostname_writer)
       allow_any_instance_of(Y2Network::Sysconfig::ConnectionConfigWriter).to receive(:write)
       allow(Y2Network::Sysconfig::InterfacesWriter).to receive(:new)
         .and_return(interfaces_writer)

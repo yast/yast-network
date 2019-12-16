@@ -67,55 +67,6 @@ describe Y2Network::Sysconfig::DNSWriter do
         .and_return([ifcfg_eth0, ifcfg_eth1])
     end
 
-    context "when dhcp_hostname is changed to :any" do
-      let(:old_dhcp_hostname) { :none }
-      let(:dhcp_hostname) { :any }
-
-      it "sets DHCLIENT_SET_HOSTNAME to 'yes'" do
-        expect(Yast::SCR).to receive(:Write)
-          .with(Yast::Path.new(".sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME"), "yes")
-        writer.write(dns, old_dns)
-      end
-    end
-
-    context "when dhcp_hostname is changed to :none" do
-      let(:old_dhcp_hostname) { :any }
-      let(:dhcp_hostname) { :none }
-
-      it "writes DHCLIENT_SET_HOSTNAME to 'no'" do
-        expect(Yast::SCR).to receive(:Write)
-          .with(Yast::Path.new(".sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME"), "no")
-        writer.write(dns, old_dns)
-      end
-    end
-
-    context "when dhcp_hostname is not changed" do
-      let(:old_dhcp_hostname) { dhcp_hostname }
-
-      it "does not write DHCLIENT_SET_HOSTNAME" do
-        expect(Yast::SCR).to_not receive(:Write)
-          .with(Yast::Path.new(".sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME"), anything)
-        writer.write(dns, old_dns)
-      end
-    end
-
-    context "when dhcp_hostname is set to an interface name" do
-      let(:dhcp_hostname) { "eth1" }
-
-      it "sets the DHCLIENT_SET_HOSTNAME in the corresponding ifcfg-* file" do
-        expect(ifcfg_eth0).to receive(:dhclient_set_hostname=).with(nil)
-        expect(ifcfg_eth1).to receive(:dhclient_set_hostname=).with("yes")
-        writer.write(dns, old_dns)
-      end
-    end
-
-    it "updates the hostname" do
-      expect(Yast::Execute).to receive(:on_target!).with("/usr/bin/hostname", "myhost")
-      expect(Yast::SCR).to receive(:Write)
-        .with(Yast::Path.new(".target.string"), "/etc/hostname", "myhost.example.net\n")
-      writer.write(dns, old_dns)
-    end
-
     context "when sendmail update script is installed" do
       before do
         allow(Yast::FileUtils).to receive(:Exists).with(/sendmail/).and_return(true)

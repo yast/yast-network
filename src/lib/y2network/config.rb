@@ -20,6 +20,7 @@ require "y2network/config_writer"
 require "y2network/config_reader"
 require "y2network/routing"
 require "y2network/dns"
+require "y2network/hostname"
 require "y2network/interfaces_collection"
 require "y2network/connection_configs_collection"
 require "y2network/physical_interface"
@@ -50,6 +51,8 @@ module Y2Network
     attr_accessor :routing
     # @return [DNS] DNS configuration
     attr_accessor :dns
+    # @return [Hostname] Hostname configuration
+    attr_accessor :hostname
     # @return [Array<Driver>] Available drivers
     attr_accessor :drivers
     # @return [Symbol] Information source (see {Y2Network::Reader} and {Y2Network::Writer})
@@ -95,20 +98,21 @@ module Y2Network
 
     # Constructor
     #
-    # @param interfaces  [InterfacesCollection] List of interfaces
-    # @param connections [ConnectionConfigsCollection] List of connection configurations
-    # @param routing     [Routing] Object with routing configuration
-    # @param dns         [DNS] Object with DNS configuration
-    # @param source      [Symbol] Configuration source
-    # @param drivers     [Array<Driver>] List of available drivers
-    def initialize(interfaces: InterfacesCollection.new,
-      connections: ConnectionConfigsCollection.new,
-      routing: Routing.new, dns: DNS.new, drivers: [], source:)
-      @interfaces = interfaces
-      @connections = connections
-      @drivers = drivers
-      @routing = routing
-      @dns = dns
+    # @param source [Symbol] Configuration source
+    # @param opts   [Hash] configuration options
+    # @option opts  [InterfacesCollection] :interfaces List of interfaces
+    # @option opts  [ConnectionConfigsCollection] :connections List of connection configurations
+    # @option opts  [Routing] :routing Object with routing configuration
+    # @option opts  [DNS] :dns Object with DNS configuration
+    # @option opts  [Hostname] :hostname Object with Hostname configuration
+    # @option opts  [Array<Driver>] :drivers List of available drivers
+    def initialize(source:, **opts)
+      @interfaces = opts.fetch(:interfaces, InterfacesCollection.new)
+      @connections = opts.fetch(:connections, ConnectionConfigsCollection.new)
+      @drivers = opts.fetch(:drivers, [])
+      @routing = opts.fetch(:routing, Routing.new)
+      @dns = opts.fetch(:dns, DNS.new)
+      @hostname = opts.fetch(:hostname, Hostname.new)
       @source = source
     end
 
@@ -130,8 +134,12 @@ module Y2Network
     #
     # @return [Boolean] true if both configurations are equal; false otherwise
     def ==(other)
-      source == other.source && interfaces == other.interfaces &&
-        routing == other.routing && dns == other.dns && connections == other.connections
+      source == other.source &&
+        interfaces == other.interfaces &&
+        routing == other.routing &&
+        dns == other.dns &&
+        hostname == other.hostname &&
+        connections == other.connections
     end
 
     # Renames a given interface and the associated connections
@@ -149,7 +157,7 @@ module Y2Network
         connection.interface = new_name
         rename_dependencies(old_name, new_name, connection)
       end
-      dns.dhcp_hostname = new_name if dns.dhcp_hostname == old_name
+      hostname.dhcp_hostname = new_name if hostname.dhcp_hostname == old_name
     end
 
     # deletes interface and all its config. If interface is physical,
@@ -161,7 +169,7 @@ module Y2Network
 
       connections.reject! { |c| c.interface == name }
       # do not use no longer existing device name
-      dns.dhcp_hostname = :none if dns.dhcp_hostname == name
+      hostname.dhcp_hostname = :none if hostname.dhcp_hostname == name
       interface = interfaces.by_name(name)
       return if interface.is_a?(PhysicalInterface) && interface.present?
 

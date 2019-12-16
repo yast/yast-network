@@ -70,10 +70,13 @@ module Y2Network
       # Clones network dns settings into an AutoYaST dns section
       #
       # @param dns [Y2Network::DNS] DNS settings
+      # @param hostname [Y2Network::Hostname] Hostname settings
       # @return [DNSSection]
-      def self.new_from_network(dns)
+      # NOTE: we need both DNS and Hostname settings because of historical reasons
+      # when both used to be handled in one class / module
+      def self.new_from_network(dns, hostname)
         result = new
-        initialized = result.init_from_network(dns)
+        initialized = result.init_from_network(dns, hostname)
         initialized ? result : nil
       end
 
@@ -95,11 +98,13 @@ module Y2Network
 
       # Method used by {.new_from_network} to populate the attributes when cloning DNS options
       #
-      # @param dns [Y2Network::DNS] DNS settings
+      # @param dns      [Y2Network::DNS] DNS settings
+      # @param hostname [Y2Network::Hostname] Hostname settings
+      #
       # @return [Boolean] Result true on success or false otherwise
-      def init_from_network(dns)
-        @dhcp_hostname = dns.dhcp_hostname
-        @hostname = dns.hostname
+      def init_from_network(dns, hostname)
+        @dhcp_hostname = hostname.dhcp_hostname
+        @hostname = hostname.hostname
         @nameservers = dns.nameservers.map(&:to_s)
         @resolv_conf_policy = dns.resolv_conf_policy
         @searchlist = dns.searchlist

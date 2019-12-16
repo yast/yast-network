@@ -22,6 +22,7 @@
 require_relative "../../test_helper"
 require "y2network/autoinst_profile/dns_section"
 require "y2network/autoinst/dns_reader"
+require "y2network/sysconfig/hostname_reader"
 
 describe Y2Network::Autoinst::DNSReader do
   subject { described_class.new(dns_section) }
@@ -39,10 +40,10 @@ describe Y2Network::Autoinst::DNSReader do
       "resolv_conf_policy" => "some-policy"
     }
   end
-  let(:hostname_reader) { instance_double(Y2Network::HostnameReader, hostname: "foo") }
+  let(:hostname_reader) { instance_double(Y2Network::Sysconfig::HostnameReader) }
 
   before do
-    allow(Y2Network::HostnameReader).to receive(:new).and_return(hostname_reader)
+    allow(Y2Network::Sysconfig::HostnameReader).to receive(:new).and_return(hostname_reader)
   end
 
   describe "#config" do
@@ -50,14 +51,8 @@ describe Y2Network::Autoinst::DNSReader do
 
     it "builds a new Y2Network::DNS config from the profile" do
       expect(subject.config).to be_a Y2Network::DNS
-      expect(subject.config.hostname).to eq("linux.example.org")
       expect(subject.config.resolv_conf_policy).to eq("some-policy")
       expect(subject.config.nameservers.size).to eq(2)
-    end
-
-    it "falls back to the current hostname" do
-      config = described_class.new(EMPTY_DNS_SECTION).config
-      expect(config.hostname).to eq("foo")
     end
 
     it "falls back to 'auto' for resolv_conf_policy" do

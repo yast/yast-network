@@ -31,6 +31,7 @@ describe Y2Network::Sysconfig::ConfigReader do
   let(:drivers) { Y2Network::Driver.new("virtio_net", "") }
   let(:routes_file) { instance_double(Y2Network::Sysconfig::RoutesFile, load: nil, routes: []) }
   let(:dns_reader) { instance_double(Y2Network::Sysconfig::DNSReader, config: dns) }
+  let(:hostname_reader) { instance_double(Y2Network::Sysconfig::HostnameReader, config: hostname) }
   let(:interfaces_reader) do
     instance_double(
       Y2Network::Sysconfig::InterfacesReader,
@@ -41,9 +42,11 @@ describe Y2Network::Sysconfig::ConfigReader do
   end
 
   let(:dns) { double("Y2Network::Sysconfig::DNSReader") }
+  let(:hostname) { double("Y2Network::Sysconfig::HostnameReader") }
 
   before do
     allow(Y2Network::Sysconfig::DNSReader).to receive(:new).and_return(dns_reader)
+    allow(Y2Network::Sysconfig::HostnameReader).to receive(:new).and_return(hostname_reader)
     allow(Y2Network::Sysconfig::InterfacesReader).to receive(:new).and_return(interfaces_reader)
   end
 

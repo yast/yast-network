@@ -41,7 +41,7 @@ module Yast
     # @param iface [String] network device
     # @return [Array<String>] list of NTP servers
     def parse_ntp_servers(iface)
-      query_wicked(iface, "%{//ntp/server}")
+      query_wicked(iface, "//ntp/server")
     end
 
     # Parses wicked runtime configuration and returns hostname if set
@@ -49,7 +49,7 @@ module Yast
     # @param iface [String] network device
     # @return [String] hostname
     def parse_hostname(iface)
-      result = query_wicked(iface, "%{//hostname}")
+      result = query_wicked(iface, "//hostname")
 
       raise "Malformed wicked runtime configuration" if result.count > 1
 
@@ -61,7 +61,7 @@ module Yast
     # It parses both ipv4 and ipv6 lease files at once.
     #
     # @param iface [String] queried interface
-    # @param query [String] xpath query
+    # @param query [String] xpath query. See man wicked for info what is supported there.
     # @return [String] result of the query
     def query_wicked(iface, query)
       raise ArgumentError, "A network device has to be specified" if iface.nil? || iface.empty?
@@ -71,7 +71,7 @@ module Yast
       lease_files.find_all { |f| File.file?(f) }.reduce([]) do |stack, file|
         result = SCR.Execute(
           BASH_OUTPUT_PATH,
-          "/usr/sbin/wicked xpath --file #{file.shellescape} \"#{query}\""
+          "/usr/sbin/wicked xpath --file #{file.shellescape} \"%{#{query}}\""
         )
 
         stack + result.fetch("stdout", "").split("\n")

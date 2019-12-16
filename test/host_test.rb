@@ -29,7 +29,6 @@ require "cfa/hosts"
 require "y2network/sysconfig/type_detector"
 
 Yast.import "Host"
-Yast.import "DNS"
 
 describe Yast::Host do
   let(:file) do
