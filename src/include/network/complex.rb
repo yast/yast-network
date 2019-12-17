@@ -32,31 +32,9 @@ module Yast
 
       textdomain "network"
 
-      Yast.import "NetHwDetection"
-      Yast.import "HTML"
       Yast.import "NetworkInterfaces"
-      Yast.import "Popup"
-      Yast.import "String"
-      Yast.import "Summary"
 
       Yast.include include_target, "network/routines.rb"
-    end
-
-    # Used for initializing the description variable (ifcfg[NAME])
-    # The code is mostly moved from BuildSummaryDevs
-    # Take the NAME field from ifcfg
-    # If empty, identify the hardware and use its data
-    def BuildDescription(devtype, devnum, devmap, hardware)
-      descr = devmap["NAME"] || ""
-      return descr if descr != ""
-
-      descr = HardwareName(hardware, devnum)
-      return descr if descr != ""
-
-      descr = HardwareName(hardware, devmap["UNIQUE"] || "")
-      return descr if descr != ""
-
-      CheckEmptyName(devtype, descr)
     end
 
     # TODO: move to HTML.ycp
@@ -151,91 +129,6 @@ module Yast
         Builtins.y2milestone("HardwareName: hwname=#{hwname} for id=#{id}")
 
         return hwname
-      end
-    end
-
-    # Get aprovider name from the provider map
-    # @param [String] provider identifier
-    # @return provider name
-    # @example ProviderName("tonline") -> "T-Online"
-    def ProviderName(provider)
-      Yast.import "Provider"
-
-      return "" if provider.nil? || provider == ""
-
-      Provider.Select(provider)
-      nam = Ops.get_string(Provider.Current, "PROVIDER", provider)
-      return provider if nam.nil? || nam == ""
-
-      nam
-    end
-
-    def DeviceStatus(devtype, devname, devmap)
-      devmap = deep_copy(devmap)
-      # Modem and DSL
-      case devtype
-      when "ppp", "modem", "dsl"
-        nam = ProviderName(Ops.get_string(devmap, "PROVIDER", ""))
-
-        # Modem status (%1 is device)
-        return Builtins.sformat(_("Configured as %1"), devname) if nam == "" || nam.nil?
-
-        # Modem status (%1 is device, %2 is provider)
-        return Builtins.sformat(
-          _("Configured as %1 with provider %2"),
-          devname,
-          nam
-        )
-      # ISDN card
-      when "isdn", "contr"
-        # ISDN device status (%1 is device)
-        return Builtins.sformat(_("Configured as %1"), devname)
-      # ISDN stuff
-      when "net"
-        nam = ProviderName(Ops.get_string(devmap, "PROVIDER", ""))
-        # Connection protocol (syncppp|rawip)
-        proto = Ops.get_string(devmap, "PROTOCOL", "")
-
-        # ISDN status (%1 is device, %2 is provider, %3 protocol)
-        return Builtins.sformat(
-          _("Configured as %1 with provider %2 (protocol %3)"),
-          devname,
-          nam,
-          proto
-        )
-
-      else
-
-        proto = Ops.get_string(devmap, "BOOTPROTO", "static")
-
-        case proto
-        when "", "static", "none", nil
-          addr = Ops.get_string(devmap, "IPADDR", "")
-          host = NetHwDetection.ResolveIP(addr)
-          remip = Ops.get_string(devmap, "REMOTE_IPADDR", "")
-          return _("Configured without address (NONE)").dup if proto == "none"
-          # Network card status
-          return HTML.Colorize(_("Configured without an address"), "red") if IsEmpty(addr)
-
-          if remip == "" || remip.nil?
-            # Network card status (%1 is address)
-            return Builtins.sformat(_("Configured with address %1"),
-              Ops.add(addr, String.OptParens(host)))
-          end
-
-          # Network card status (%1 is address, %2 is address)
-          return Builtins.sformat(
-            _("Configured with address %1 (remote %2)"),
-            addr,
-            remip
-          )
-        else
-          # Network card status (%1 is protocol)
-          return Builtins.sformat(
-            _("Configured with %1"),
-            Builtins.toupper(proto)
-          )
-        end
       end
     end
 
