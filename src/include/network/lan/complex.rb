@@ -209,37 +209,6 @@ module Yast
       ret ? :next : :abort
     end
 
-    # Returns true if the device can be used (means handled as normal linux device)
-    # or false otherwise (it is used mainly at s390 based systems where a special
-    # handling is needed to run linux device emulation)
-    def DeviceReady(devname)
-      !Arch.s390 || s390_DriverLoaded(devname)
-    end
-
-    def ManagedDialog
-      contents = VBox(HSquash(VBox("MANAGED", VSpacing(0.5), "IPV6")))
-
-      functions = { abort: fun_ref(method(:ReallyAbort), "boolean ()") }
-
-      ret = CWM.ShowAndRun(
-        "widget_descr"       => wd,
-        "contents"           => contents,
-        # Network setup method dialog caption
-        "caption"            => _(
-          "Network Setup Method"
-        ),
-        "back_button"        => Label.BackButton,
-        "abort_button"       => Label.CancelButton,
-        "next_button"        => Label.OKButton,
-        # #54027
-        "disable_buttons"    => ["back_button"],
-        "fallback_functions" => functions
-      )
-
-      # #148485: always show the device overview
-      ret
-    end
-
     # Evaluates if user should be asked again according dialogs result value
     #
     # it is basically useful if user aborts dialog and he has done some
