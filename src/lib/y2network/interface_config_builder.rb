@@ -334,7 +334,6 @@ module Y2Network
       @connection_config.hostname = value
     end
 
-    # sets remote ip for ptp connections
     # @return [String]
     def remote_ip
       default = @connection_config.ip
@@ -345,7 +344,10 @@ module Y2Network
       end
     end
 
-    # @param [String] value
+    # Sets remote ip for ptp connections
+    #
+    # @param [String, nil] value
+    # @return [IPAddress, nil]
     def remote_ip=(value)
       return unless ip_config_default
 
