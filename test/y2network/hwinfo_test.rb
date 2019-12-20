@@ -170,6 +170,35 @@ describe Y2Network::Hwinfo do
     end
   end
 
+  describe "#connected?" do
+    context "when the interface is present" do
+      let(:link) { true }
+      subject(:hwinfo) { described_class.new("type" => "eth", "link" => link) }
+
+      context "and has link" do
+        it "return true if has link" do
+          expect(hwinfo.connected?).to eq(true)
+        end
+      end
+
+      context "and does not have link" do
+        let(:link) { false }
+        it "return false" do
+          expect(hwinfo.connected?).to eq(false)
+        end
+      end
+    end
+
+    context "when the interface is not present" do
+      subject(:hwinfo) { described_class.new({}) }
+
+      it "returns false" do
+        expect(hwinfo.connected?).to eq(false)
+      end
+    end
+
+  end
+
   describe "#mac" do
     before do
       allow(hwinfo).to receive(:permanent_mac).and_return(permanent_mac)

@@ -35,6 +35,7 @@ require "ui/text_helpers"
 require "y2firewall/firewalld"
 require "y2network/autoinst_profile/networking_section"
 require "y2network/config"
+require "y2network/virtualization_config"
 require "y2network/interface_config_builder"
 require "y2network/presenters/routing_summary"
 require "y2network/presenters/dns_summary"
@@ -741,30 +742,7 @@ module Yast
     end
 
     def ProposeVirtualized
-      # then each configuration (except bridges) move to the bridge
-      # and add old device name into bridge_ports
-      yast_config.interfaces.each do |interface|
-        bridge_builder = Y2Network::InterfaceConfigBuilder.for("br")
-        bridge_builder.name = yast_config.interfaces.free_name("br")
-
-        next unless connected_and_bridgeable?(bridge_builder, interface)
-
-        next if yast_config.connections.by_name(interface.name)
-
-        bridge_builder.stp = false
-        bridge_builder.ports = [interface.name]
-        bridge_builder.startmode = "auto"
-        bridge_builder.save
-
-        builder = Y2Network::InterfaceConfigBuilder.for(interface.type)
-        builder.name = interface.name
-        builder.configure_as_slave
-        builder.save
-        LanItems.move_routes(builder.name, bridge_builder.name)
-        refresh_interfaces
-      end
-
-      nil
+      Y2Network::VirtualizationConfig.new(yast_config).create
     end
 
     # Proposes additional packages when needed by current networking setup
@@ -911,41 +889,6 @@ module Yast
 
         LanItems.reload_config(ifaces)
       end
-    end
-
-    # Convenience method that returns true if the current item has link and can
-    # be enslaved in a bridge.
-    #
-    # @return [Boolean] true if it is bridgeable
-    def connected_and_bridgeable?(bridge_builder, interface)
-      if !bridge_builder.bridgeable_interfaces.map(&:name).include?(interface.name)
-        log.info "The interface #{interface.name} cannot be proposed as bridge."
-        return false
-      end
-
-      hwinfo = interface.hardware
-      if !hwinfo.present? || !hwinfo.link
-        log.warn("Lan item #{interface.inspect} has link:false detected")
-        return false
-      end
-
-      if interface.type.wireless?
-        log.warn("Not proposing WLAN interface for lan item: #{interface.inspect}")
-        return false
-      end
-      true
-    end
-
-    # Refreshes YaST network interfaces
-    #
-    # It refreshes system configuration and update the list of interfaces
-    # for the current YaST configuration. The rest of the configuration
-    # is not modified.
-    #
-    # TODO: consider adding an API to Y2Network::Config to do partial refreshes.
-    def refresh_interfaces
-      system_config = Y2Network::Config.from(:sysconfig)
-      yast_config.interfaces = system_config.interfaces.copy
     end
 
     # Reads system configuration

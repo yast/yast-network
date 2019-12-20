@@ -255,6 +255,13 @@ module Y2Network
       !!type
     end
 
+    # Return whether the interface has link
+    #
+    # @return [Boolean]
+    def connected?
+      present? && !!link
+    end
+
     # Returns the MAC adress
     #
     # It usually returns the permanent MAC address (defined in the firmware).  However, when

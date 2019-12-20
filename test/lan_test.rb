@@ -306,73 +306,16 @@ describe "LanClass" do
     end
   end
 
-  xdescribe "#ProposeVirtualized" do
-
+  describe "#ProposeVirtualized" do
+    let(:yast_config) { instance_double(Y2Network::Config, "YaST") }
     before do
-      allow(Yast::LanItems).to receive(:IsCurrentConfigured).and_return(true)
-      allow(Yast::Lan).to receive(:refresh_lan_items)
-
-      allow(Yast::LanItems).to receive(:Items)
-        .and_return(
-          0 => { "ifcfg" => "eth0" }, 1 => { "ifcfg" => "wlan0", 2 => { "ifcfg" => "br0" } }
-        )
+      subject.add_config(:yast, yast_config)
     end
 
-    context "when an interface is not bridgeable" do
-      let(:interfaces) { Y2Network::InterfacesCollection.new([]) }
+    it "creates a new configuration for virtualization" do
+      expect_any_instance_of(Y2Network::VirtualizationConfig).to receive(:create)
 
-      it "does not propose the interface" do
-        allow(Yast::LanItems).to receive(:IsCurrentConfigured).and_return(false)
-        allow(Y2Network::Config)
-          .to receive(:find)
-          .and_return(instance_double(Y2Network::Config, interfaces: interfaces))
-
-        Yast::Lan.ProposeVirtualized
-      end
-    end
-
-    context "when an interface is bridgeable" do
-      before do
-        allow(Yast::Lan).to receive(:connected_and_bridgeable?)
-          .with(anything, 0).and_return(true)
-        allow(Yast::Lan).to receive(:connected_and_bridgeable?)
-          .with(anything, 1, anything).and_return(false)
-        allow(Yast::Lan).to receive(:connected_and_bridgeable?)
-          .with(anything, 2, anything).and_return(false)
-      end
-
-      it "does not configure the interface if it is not connected" do
-        allow(Yast::Lan).to receive(:connected_and_bridgeable?).and_return(false)
-
-        expect { Yast::Lan.ProposeVirtualized }.to_not(change { yast_config.connections.size })
-      end
-
-      it "configures the interface with defaults before anything if not configured" do
-        allow(Yast::LanItems).to receive(:IsItemConfigured).and_return(false)
-
-        Yast::Lan.ProposeVirtualized
-      end
-
-      it "configures a new bridge with the given interface as a bridge port" do
-        expect(Yast::Lan).to receive(:configure_as_bridge!).with("eth0", "br0")
-
-        Yast::Lan.ProposeVirtualized
-      end
-
-      it "configures the given interface as a bridge port" do
-        expect(Yast::Lan).to receive(:configure_as_bridge!).with("eth0", "br0").and_return(true)
-        expect(Yast::Lan).to receive(:configure_as_bridge_port).with("eth0")
-
-        Yast::Lan.ProposeVirtualized
-      end
-
-      it "refreshes lan items with the new interfaces" do
-        expect(Yast::Lan).to receive(:configure_as_bridge!).with("eth0", "br0").and_return(true)
-        expect(Yast::Lan).to receive(:configure_as_bridge_port).with("eth0")
-        expect(Yast::Lan).to receive(:refresh_lan_items)
-
-        Yast::Lan.ProposeVirtualized
-      end
+      Yast::Lan.ProposeVirtualized
     end
   end
 
