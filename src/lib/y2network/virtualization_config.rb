@@ -79,19 +79,20 @@ module Y2Network
 
   private
 
-    # Convenience method that returns true if the current item has link and can
-    # be enslaved in a bridge.
+    # Convenience method that returns true if the interface given is connected
+    # and can be added as a bridge port.
     #
-    # @return [Boolean] true if it is bridgeable
+    # @param bridge_builder [Y2Network::InterfaceConfigBuilders::Bridge]
+    # @param interface [Y2Network::Interface] bridge candidate member
+    # @return [Boolean] true if it is connected and bridgeable
     def connected_and_bridgeable?(bridge_builder, interface)
       if !bridge_builder.bridgeable_interfaces.map(&:name).include?(interface.name)
         log.info "The interface #{interface.name} cannot be proposed as bridge."
         return false
       end
 
-      hwinfo = interface.hardware
-      if !hwinfo.present? || !hwinfo.link
-        log.warn("Lan item #{interface.inspect} has link:false detected")
+      unless interface.connected?
+        log.warn("The interface #{interface.inspect} does not have link")
         return false
       end
 
