@@ -95,11 +95,13 @@ module Y2Network
         host.empty? ? nil : host
       end
 
-      # Reads the hostname known to the resolver
+      # Reads the (transient) hostname known to the resolver
       #
-      # @return [String] Hostname
+      # @return [String, nil] Hostname or nil if transient hostname is not known
       def hostname_from_resolver
         Yast::Execute.on_target!("/usr/bin/hostname", "--fqdn", stdout: :capture).strip
+      rescue
+        nil
       end
 
       # Reads the system (local) hostname
