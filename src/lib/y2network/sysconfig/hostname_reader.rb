@@ -100,7 +100,7 @@ module Y2Network
       # @return [String, nil] Hostname or nil if transient hostname is not known
       def hostname_from_resolver
         Yast::Execute.on_target!("/usr/bin/hostname", "--fqdn", stdout: :capture).strip
-      rescue
+      rescue Cheetah::ExecutionFailed
         nil
       end
 
