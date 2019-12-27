@@ -60,10 +60,10 @@ module Y2Network
         end
 
         BACKWARD_MAPPING = {
-          :"wpa-eap" => :eap,
-          :"wpa-psk" => :psk,
-          :shared    => :sharedkey
-        }
+          "wpa-eap": :eap,
+          "wpa-psk": :psk,
+          shared:    :sharedkey
+        }.freeze
         # Transform old backwards compatible values to unified ones.
         #
         # @see https://github.com/openSUSE/wicked/blob/master/client/suse/compat-suse.c#L3708
