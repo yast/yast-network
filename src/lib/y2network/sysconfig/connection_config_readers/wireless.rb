@@ -66,7 +66,7 @@ module Y2Network
         }
         # Transform old backwards compatible values to unified ones.
         #
-        # @see https://github.com/openSUSE/wicked/blob/master/client/suse/compat-suse.c#L3708 for
+        # @see https://github.com/openSUSE/wicked/blob/master/client/suse/compat-suse.c#L3708
         #   for all aliases
         def transform_auth_mode(mode)
           BACKWARD_MAPPING[mode] || mode
