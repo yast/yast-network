@@ -65,12 +65,12 @@ module Y2Network
         wep_keys_widget.disable
         encryption_widget.enable
         case auth_mode_widget.value
-        when "wpa-eap"
+        when "eap"
           mode_widget.value = "managed"
           encryption_widget.disable
-        when "wpa-psk"
+        when "psk"
           mode_widget.value = "managed"
-        when "wep"
+        when "open", "sharedkey"
           encryption_widget.disable
           wep_keys_widget.enable
         when "no-encryption"
