@@ -224,7 +224,7 @@ module Y2Network
       define_variable(:wireless_essid)
 
       # !@attribute [r] wireless_auth_mode
-      #   @return [Symbol] Wireless authorization mode (:open, :shared, :psk, :eap)
+      #   @return [Symbol] Wireless authorization mode (:no-encryption, :open, :sharedkey, :psk, :eap)
       define_variable(:wireless_auth_mode, :symbol)
 
       # @!attribute [r] wireless_mode

@@ -29,7 +29,7 @@ module Y2Network
         def update_connection_config(conn)
           conn.ap = file.wireless_ap
           conn.ap_scanmode = file.wireless_ap_scanmode
-          conn.auth_mode = file.wireless_auth_mode
+          conn.auth_mode = transform_auth_mode(file.wireless_auth_mode)
           conn.default_key = file.wireless_default_key
           conn.eap_auth = file.wireless_eap_auth
           conn.eap_mode = file.wireless_eap_mode
@@ -57,6 +57,19 @@ module Y2Network
         # Reads the array of wireless keys from the file
         def wireless_keys
           (0..MAX_WIRELESS_KEYS - 1).map { |i| file.wireless_keys["_#{i}"] }
+        end
+
+        BACKWARD_MAPPING = {
+          :"wpa-eap" => :eap,
+          :"wpa-psk" => :psk,
+          :shared    => :sharedkey
+        }
+        # Transform old backwards compatible values to unified ones.
+        #
+        # @see https://github.com/openSUSE/wicked/blob/master/client/suse/compat-suse.c#L3708 for
+        #   for all aliases
+        def transform_auth_mode(mode)
+          BACKWARD_MAPPING[mode] || mode
         end
       end
     end

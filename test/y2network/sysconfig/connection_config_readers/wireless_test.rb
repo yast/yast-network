@@ -114,4 +114,15 @@ describe Y2Network::Sysconfig::ConnectionConfigReaders::Wireless do
       )
     end
   end
+
+  context "backward compatible auth mode" do
+    let(:interface_name) { "wlan4" }
+
+    it "sets auth mode to unified name" do
+      wlan = handler.connection_config
+      expect(wlan).to have_attributes(
+        auth_mode: :psk
+      )
+    end
+  end
 end
