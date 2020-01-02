@@ -39,7 +39,7 @@ describe Yast::DNS do
     Y2Network::DNS.new
   end
   let(:hostname_config) do
-    Y2Network::Hostname.new(hostname: "install", dhcp_hostname: true)
+    Y2Network::Hostname.new(static: "install", dhcp_hostname: true)
   end
 
   subject { Yast::DNS }
@@ -216,6 +216,23 @@ describe Yast::DNS do
       it "returns false" do
         expect(subject.modified).to eq(false)
       end
+    end
+  end
+
+  describe "#hostname" do
+    it "provides static hostname" do
+      expect(subject.hostname).to eq "install"
+    end
+  end
+
+  describe "#hostname=" do
+    let(:hostname_config) do
+      Y2Network::Hostname.new
+    end
+
+    it "sets static hostname" do
+      subject.hostname = "test"
+      expect(subject.hostname).to eq "test"
     end
   end
 end

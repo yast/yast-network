@@ -42,67 +42,6 @@ module Yast
       Builtins.sformat("<a href=\"%1\">%2</a>", href, text)
     end
 
-    def CheckEmptyName(devtype, hwname)
-      return hwname if !hwname.nil? && hwname != ""
-
-      device_names = {
-        # Device type label
-        "contr-pcmcia" => _("PCMCIA ISDN Card"),
-        # Device type label
-        "contr-usb"    => _("USB ISDN Card"),
-        # Device type label
-        "eth-pcmcia"   => _("PCMCIA Ethernet Network Card"),
-        # Device type label
-        "eth-usb"      => _("USB Ethernet Network Card"),
-        # Device type label
-        "fddi-pcmcia"  => _("PCMCIA FDDI Network Card"),
-        # Device type label
-        "fddi-usb"     => _("USB FDDI Network Card"),
-        # Device type label
-        "ippp-pcmcia"  => _("PCMCIA ISDN Connection"),
-        # Device type label
-        "ippp-usb"     => _("USB ISDN Connection"),
-        # Device type label
-        "isdn-pcmcia"  => _("PCMCIA ISDN Connection"),
-        # Device type label
-        "isdn-usb"     => _("USB ISDN Connection"),
-        # Device type label
-        "modem-pcmcia" => _("PCMCIA Modem"),
-        # Device type label
-        "modem-usb"    => _("USB Modem"),
-        # Device type label
-        "ppp-pcmcia"   => _("PCMCIA Modem"),
-        # Device type label
-        "ppp-usb"      => _("USB Modem"),
-        # Device type label
-        "tr-pcmcia"    => _(
-          "PCMCIA Token Ring Network Card"
-        ),
-        # Device type label
-        "tr-usb"       => _("USB Token Ring Network Card"),
-        # Device type label
-        "usb-usb"      => _("USB Network Device"),
-        # Device type label
-        "wlan-pcmcia"  => _("PCMCIA Wireless Network Card"),
-        # Device type label
-        "wlan-usb"     => _("USB Wireless Network Card")
-      }
-
-      return Ops.get_string(device_names, devtype, "") if Builtins.haskey(device_names, devtype)
-
-      descr = NetworkInterfaces.GetDevTypeDescription(devtype, true)
-      return descr if IsNotEmpty(descr)
-
-      if Builtins.haskey(device_names, Ops.add(devtype, "-"))
-        Builtins.y2warning("- device found: %1, %2", devtype, hwname)
-        return Ops.get_string(device_names, Ops.add(devtype, "-"), "")
-      end
-
-      Builtins.y2error("Unknown type: %1", devtype)
-      # Device type label
-      _("Unknown Network Device")
-    end
-
     def HardwareName(hardware, id)
       return "" if id.nil? || id.empty?
       return "" if hardware.nil? || hardware.empty?
