@@ -65,11 +65,16 @@ module Yast
       end
     end
 
-    define_hostname_config_method :hostname
+    define_hostname_config_method :static
     define_dns_config_method :nameservers
     define_dns_config_method :searchlist
     define_hostname_config_method :dhcp_hostname
     define_dns_config_method :resolv_conf_policy
+
+    # for backward compatibility as long as old DNS module is used as an API
+    # for new dns and hostname classes
+    alias_method :hostname, :static
+    alias_method :hostname=, :static=
 
     def main
       Yast.import "UI"
