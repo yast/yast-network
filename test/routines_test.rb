@@ -61,34 +61,6 @@ describe "#PackagesInstall" do
   end
 end
 
-describe "#ValidNicName" do
-  subject(:routines) { RoutinesTestClass.new }
-
-  it "succeedes for valid names" do
-    expect(routines.ValidNicName("eth0")).to be true
-    expect(routines.ValidNicName("eth_0")).to be true
-    expect(routines.ValidNicName("eth-0")).to be true
-    expect(routines.ValidNicName("eth.0")).to be true
-    expect(routines.ValidNicName("eth:0")).to be true
-  end
-
-  it "fails in case of long name" do
-    expect(routines.ValidNicName("0123456789012345")). to be false
-  end
-
-  it "fails when it contains invalid character" do
-    expect(routines.ValidNicName("eth0?")).to be false
-  end
-
-  it "fails for empty string" do
-    expect(routines.ValidNicName("")).to be false
-  end
-
-  it "fails for newline terminated string" do
-    expect(routines.ValidNicName("eth0\n")).to be false
-  end
-end
-
 describe "#DeviceName" do
   subject(:routines) { RoutinesTestClass.new }
   let(:hwinfo_details) do

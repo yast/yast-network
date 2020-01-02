@@ -161,12 +161,6 @@ module Yast
       TypeRepository.IsEmpty(value)
     end
 
-    # Checks if given value is non emtpy.
-    def IsNotEmpty(value)
-      value = deep_copy(value)
-      !IsEmpty(value)
-    end
-
     # For s390 hwinfo gives us a multitude of types but some are handled
     # the same, mostly acording to the driver which is used. So let's group
     # them under the name Driver Type.
@@ -194,27 +188,6 @@ module Yast
       filename = Ops.add(Ops.add("/sys", sysfs_id), "/card_type")
       card_type = Convert.to_string(SCR.Read(path(".target.string"), filename))
       String.FirstChunk(card_type, "\n")
-    end
-
-    def s390_device_needs_persistent_mac(sysfs_id, hardware)
-      hardware = deep_copy(hardware)
-      card_type = sysfs_card_type(sysfs_id, hardware)
-      types_needing_persistent = [
-        "OSD_100",
-        "OSD_1000",
-        "OSD_10GIG",
-        "OSD_FE_LANE",
-        "OSD_GbE_LANE",
-        "OSD_Express"
-      ]
-      needs_persistent = Builtins.contains(types_needing_persistent, card_type)
-      Builtins.y2milestone(
-        "Sysfs Device: %1, card type: %2, needs persistent MAC: %3",
-        sysfs_id,
-        card_type,
-        needs_persistent
-      )
-      needs_persistent
     end
 
     def DistinguishedName(name, hwdevice)
@@ -248,12 +221,6 @@ module Yast
       end
 
       "#{vendor} #{dev}".strip
-    end
-
-    # Validates given name for use as a nic name in sysconfig. See bnc#784952
-    def ValidNicName(name)
-      # 16 is the kernel limit on interface name size (IFNAMSIZ)
-      !(name =~ /^[[:alnum:]._:-]{1,15}\z/).nil?
     end
 
     # Simple convertor from subclass to controller type.
@@ -617,46 +584,6 @@ module Yast
       deep_copy(hardware)
     end
 
-    # TODO: begin:
-    # Following functions should be generalized and ported into yast-yast2
-    # and security-hardened in the process by making sure a command always uses
-    # an absolute path and all arguments are properly quoted (e.g. with
-    # shellescape()).
-
-    # @param command [String] Shell command to run
-    # @return Hash in form $[ "exit": <command-exit-status>,
-    #   "output": [ <1st line>, <2nd line>, ... ] ]
-    def RunAndRead(command)
-      if !command.lstrip.start_with?("/")
-        log.warn("Command does not have an absolute path: #{command}")
-      end
-      ret = { "exit" => false, "output" => [] }
-      result = Convert.to_map(SCR.Execute(path(".target.bash_output"), command))
-      output = Ops.get_string(result, "stdout", "")
-
-      if Builtins.regexpmatch(output, ".*\n$")
-        output = Builtins.substring(
-          output,
-          0,
-          Ops.subtract(Builtins.size(output), 1)
-        )
-      end
-
-      Ops.set(ret, "output", Builtins.splitstring(output, "\n"))
-      Ops.set(ret, "exit", Ops.get_integer(result, "exit", 1) == 0)
-
-      if Ops.get_boolean(ret, "exit", false) == false ||
-          IsEmpty(Ops.get_string(result, "stderr", "")) == false
-        Builtins.y2error(
-          "RunAndRead <%1>: Command execution failed.\n%2",
-          command,
-          Ops.get_string(result, "stderr", "")
-        )
-      end
-
-      deep_copy(ret)
-    end
-
     # Run an external command on the target machine and check if it was
     # successful. Remember to always use a full path for the command and to
     # quote the arguments. Using shellescape() is recommended.
@@ -681,14 +608,6 @@ module Yast
     def SetLinkUp(dev_name)
       log.info("Setting link up for interface #{dev_name}")
       Run("/sbin/ip link set #{dev_name.shellescape} up")
-    end
-
-    # Calls wicked ifdown with the given interface
-    #
-    # @param dev_name [String] name of interface to put down
-    def SetIfaceDown(dev_name)
-      log.info("Setting interface #{dev_name} down")
-      Run("/sbin/ifdown #{dev_name.shellescape}")
     end
 
     # Checks if given device has carrier
@@ -729,14 +648,6 @@ module Yast
         path(".target.string"),
         "/sys/class/net/#{dev_name}/dev_port"
       ).to_s.strip
-    end
-
-    # Checks if the given interface exports its dev port via sysfs
-    #
-    # @return [boolean] true if the dev port is not empty
-    # @see #physical_port_id
-    def dev_port?(dev_name)
-      !dev_port(dev_name).empty?
     end
 
     # Checks if device is physically connected to a network
