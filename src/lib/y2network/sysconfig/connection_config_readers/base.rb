@@ -62,6 +62,8 @@ module Y2Network
               conn.dhclient_set_hostname = file.dhclient_set_hostname == "yes"
             end
             conn.hostname = hostname(conn)
+            conn.mtu = file.mtu
+
             update_connection_config(conn)
           end
         end

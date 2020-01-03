@@ -126,6 +126,20 @@ describe Y2Network::Sysconfig::InterfaceFile do
     end
   end
 
+  describe "#mtu" do
+    let(:mtu) { "1500" }
+
+    it "returns the MTU as a string" do
+      expect(file.mtu).to eq("1500")
+    end
+  end
+
+  describe "#mtu=" do
+    it "sets the MTU" do
+      expect { file.mtu = "1234" }.to change { file.mtu }.from("1500").to("1234")
+    end
+  end
+
   describe "#startmode" do
     let(:startmode) { "auto" }
 

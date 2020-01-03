@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Jan  3 10:11:52 UTC 2020 - Michal Filka <mfilka@suse.com>
+
+- bnc#1159970 
+  - suppport for reading / writing MTU
+- 4.2.42
+
+-------------------------------------------------------------------
 Thu Jan  2 08:54:15 UTC 2020 - Michal Filka <mfilka@suse.com>
 
 - bnc#1153198, fate#319639

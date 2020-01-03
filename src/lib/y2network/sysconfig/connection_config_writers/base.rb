@@ -50,7 +50,9 @@ module Y2Network
             file.ethtool_options = conn.ethtool_options
           end
           file.zone = conn.firewall_zone
+          file.mtu = conn.mtu
           add_ips(conn)
+
           update_file(conn)
           add_hostname(conn) if conn.bootproto.static?
         end

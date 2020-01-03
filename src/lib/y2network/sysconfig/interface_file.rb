@@ -158,6 +158,10 @@ module Y2Network
       #   @return [String] Forced Interface's type (e.g., "dummy")
       define_variable(:interfacetype, :string)
 
+      # !@attribute [r] MTU
+      #   @return [String] Max Transmission Unit for the interface
+      define_variable(:mtu, :string)
+
       # !@attribute [r] bootproto
       #   return [String] Set up protocol (static, dhcp, dhcp4, dhcp6, autoip, dhcp+autoip,
       #                   auto6, 6to4, none)
