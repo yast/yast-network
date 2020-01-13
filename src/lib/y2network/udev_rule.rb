@@ -252,6 +252,45 @@ module Y2Network
       part_value_for("ATTR{address}")
     end
 
+    # Convenience method to replace a specific part by another one. In case
+    # that there is no part to be replaced then a new part is added.
+    #
+    # @param key      [String] Key name
+    # @param operator [String] Operator
+    # @param value    [String] Value to match or assign
+    # @see #add_part
+    def replace_part(key, operator, value)
+      part = part_by_key(key, operator)
+      if part
+        part.value = value
+      else
+        add_part(key, operator, value)
+      end
+    end
+
+    # Convenience method which takes care of modifing the udev rule using the
+    # MAC address as the naming mechanism
+    def rename_by_mac(name, address)
+      parts.delete_if(&:dev_port?)
+      part = part_by_key("KERNELS")
+      part.key = "ATTR{address}" if part
+
+      replace_part("ATTR{address}", "==", address) if mac != address
+      replace_part("NAME", "=", name) if device != name
+    end
+
+    # Convenience method which takes care of modifing the udev rule using the
+    # bus_id and the dev_port when needed as the naming mechanism
+    def rename_by_bus_id(name, bus_id_value, dev_port_value = nil)
+      parts.delete_if { |p| (p.dev_port? && dev_port_value.nil?) }
+      part = part_by_key("ATTR{address}")
+      part.key = "KERNELS" if part
+
+      replace_part("KERNELS", "==", bus_id_value) if bus_id != bus_id_value
+      replace_part("ATTR{dev_port}", "==", dev_port_value) if dev_port != dev_port_value
+      replace_part("NAME", "=", name) if device != name
+    end
+
     # Returns the BUS ID in the udev rule
     #
     # @return [String,nil] BUS ID or nil if not found

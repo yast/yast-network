@@ -45,6 +45,8 @@ module Y2Network
     attr_accessor :type
     # @return [HwInfo]
     attr_reader :hardware
+    # @return [UdevRule]
+    attr_accessor :udev_rule
     # @return [Symbol] Mechanism to rename the interface (:none -no rename-, :bus_id or :mac)
     attr_accessor :renaming_mechanism
     # @return [String,nil]
