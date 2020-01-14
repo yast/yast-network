@@ -276,7 +276,9 @@ module Y2Network
       part.key = "ATTR{address}" if part
 
       replace_part("ATTR{address}", "==", address) if mac != address
-      replace_part("NAME", "=", name) if device != name
+      ## Ensure the name is always at the end of the rule
+      parts.delete_if { |p| p.dev_port? || p.name? }
+      add_part("NAME", "=", name)
     end
 
     # Convenience method which takes care of modifing the udev rule using the
@@ -288,7 +290,9 @@ module Y2Network
 
       replace_part("KERNELS", "==", bus_id_value) if bus_id != bus_id_value
       replace_part("ATTR{dev_port}", "==", dev_port_value) if dev_port != dev_port_value
-      replace_part("NAME", "=", name) if device != name
+      ## Ensure the name is always at the end of the rule
+      parts.delete_if(&:name?)
+      add_part("NAME", "=", name)
     end
 
     # Returns the BUS ID in the udev rule

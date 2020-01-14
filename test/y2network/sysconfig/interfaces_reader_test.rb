@@ -82,6 +82,11 @@ describe Y2Network::Sysconfig::InterfacesReader do
       expect(eth0.renaming_mechanism).to eq(:mac)
     end
 
+    it "sets each interface udev rule" do
+      eth0 = reader.interfaces.by_name("eth0")
+      expect(eth0.udev_rule).to eq(udev_rule)
+    end
+
     it "reads wifi interfaces"
     it "reads bridge interfaces"
     it "reads bonding interfaces"

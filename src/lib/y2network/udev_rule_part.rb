@@ -112,5 +112,12 @@ module Y2Network
     def mac?
       (key == "ATTR{address}") && (operator == "==")
     end
+
+    # Return whether the udev rule part is the interface name or not
+    #
+    # @return [Boolean]
+    def name?
+      (key == "NAME") && (operator == "=")
+    end
   end
 end
