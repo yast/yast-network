@@ -1,4 +1,14 @@
 -------------------------------------------------------------------
+Wed Jan 15 09:55:05 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
+
+- bsc#1158025
+  - When touching existent udev rules, modify only the parts that
+    are relevant or have changed.
+  - When the hardware is read, use the parent_bus_id as the busid
+    for virtio netcards.
+- 4.2.45
+
+-------------------------------------------------------------------
 Wed Jan 15 08:14:48 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
 
 - bsc#1156106
