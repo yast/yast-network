@@ -62,13 +62,14 @@ module Yast
     # linuxrc sethostname cmdline option if provided or the default value
     # defined in the control file if not.
     def set_dhcp_hostname!
-      DNS.dhcp_hostname =
+      set_dhcp_hostname =
         set_hostname_used? ? set_dhcp_hostname? : DNS.default_dhcp_hostname
 
-      log.info("Write dhcp hostname default: #{DNS.dhcp_hostname}")
+      log.info("Write dhcp hostname default: #{set_dhcp_hostname}")
+      DNS.dhcp_hostname = set_dhcp_hostname ? :any : :none
       SCR.Write(
         Yast::Path.new(".sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME"),
-        DNS.dhcp_hostname ? "yes" : "no"
+        (DNS.dhcp_hostname == :any) ? "yes" : "no"
       )
       # Flush cache
       SCR.Write(
