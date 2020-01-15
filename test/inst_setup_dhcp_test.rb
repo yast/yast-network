@@ -121,7 +121,7 @@ describe Yast::SetupDhcp do
 
       it "sets DNS.dhcp_hostname according to the linuxrc sethosname value" do
         expect(subject).to receive(:set_dhcp_hostname?).and_return(false)
-        expect(Yast::DNS).to receive(:dhcp_hostname=).with(false)
+        expect(Yast::DNS).to receive(:dhcp_hostname=).with(:none)
 
         subject.set_dhcp_hostname!
       end
@@ -132,22 +132,44 @@ describe Yast::SetupDhcp do
         allow(subject).to receive(:set_hostname_used?).and_return(false)
       end
 
-      it "sets DNS.dhcp_hostname according to DNS.default_dhcp_hostname" do
-        expect(subject).to_not receive(:set_dhcp_hostname?)
-        expect(Yast::DNS).to receive(:default_dhcp_hostname).and_return(true)
-        expect(Yast::DNS).to receive(:dhcp_hostname=).with(true)
+      context "and the DNS.default_dhcp_hostname is true" do
+        it "sets the DNS.dhcp_hostname to :any" do
+          expect(subject).to_not receive(:set_dhcp_hostname?)
+          expect(Yast::DNS).to receive(:default_dhcp_hostname).and_return(true)
+          expect(Yast::DNS).to receive(:dhcp_hostname=).with(:any)
+          subject.set_dhcp_hostname!
+        end
+      end
 
-        subject.set_dhcp_hostname!
+      context "and the DNS.default_dhcp_hostname is false" do
+        it "sets the DNS.dhcp_hostname to :none" do
+          expect(subject).to_not receive(:set_dhcp_hostname?)
+          expect(Yast::DNS).to receive(:default_dhcp_hostname).and_return(false)
+          expect(Yast::DNS).to receive(:dhcp_hostname=).with(:none)
+          subject.set_dhcp_hostname!
+        end
       end
     end
 
     context "once initialized DNS.dhcp_hostname" do
-      it "writes global DHCLIENT_SET_HOSTNAME in /etc/sysconfig/network/dhcp with it" do
-        allow(Yast::DNS).to receive(:dhcp_hostname=)
-        allow(Yast::DNS).to receive(:dhcp_hostname).and_return(false)
-        expect(Yast::SCR).to receive(:Write).with(dhclient_set_hostname_path, "no")
+      context "when it is :any" do
+        it "writes global DHCLIENT_SET_HOSTNAME in /etc/sysconfig/network/dhcp as 'yes'" do
+          allow(Yast::DNS).to receive(:dhcp_hostname=)
+          allow(Yast::DNS).to receive(:dhcp_hostname).and_return(:any)
+          expect(Yast::SCR).to receive(:Write).with(dhclient_set_hostname_path, "yes")
 
-        subject.set_dhcp_hostname!
+          subject.set_dhcp_hostname!
+        end
+      end
+
+      context "when it is :none" do
+        it "writes global DHCLIENT_SET_HOSTNAME in /etc/sysconfig/network/dhcp as 'no'" do
+          allow(Yast::DNS).to receive(:dhcp_hostname=)
+          allow(Yast::DNS).to receive(:dhcp_hostname).and_return(:none)
+          expect(Yast::SCR).to receive(:Write).with(dhclient_set_hostname_path, "no")
+
+          subject.set_dhcp_hostname!
+        end
       end
     end
   end
