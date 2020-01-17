@@ -104,4 +104,55 @@ describe Y2Network::Interface do
       expect(interface.drivers).to eq([driver])
     end
   end
+
+  describe "#update_udev_rule" do
+    let(:udev_rule) { Y2Network::UdevRule.new_mac_based_rename("eth0", "01:23:45:67:89:ab") }
+    let(:renaming_mechanism) { :mac }
+    let(:driver) { nil }
+    subject(:interface) do
+      Y2Network::PhysicalInterface.new("eth0", hardware: hardware).tap do |i|
+        i.renaming_mechanism = renaming_mechanism
+        i.custom_driver = driver
+        i.udev_rule = udev_rule
+      end
+    end
+
+    let(:hardware) do
+      instance_double(
+        Y2Network::Hwinfo, name: "Ethernet Card 0", busid: "00:1c.0", mac: "01:23:45:67:89:ab",
+        dev_port: "1", modalias: "virtio:d00000001v00001AF4"
+      )
+    end
+
+    context "when the interface renaming mechanism is changed" do
+      context "and the interface already has an udev rule" do
+        let(:udev_rule) do
+          rule = Y2Network::UdevRule.new_bus_id_based_rename("eth0", "00:1c.0", "1")
+          rule.replace_part("DRIVERS", "==", "e1000e")
+          rule
+        end
+
+        it "updates the udev rule parts that have changed" do
+          expect(interface.udev_rule.bus_id).to eq("00:1c.0")
+          interface.update_udev_rule
+          expect(interface.udev_rule.mac).to eq("01:23:45:67:89:ab")
+          expect(interface.udev_rule.bus_id).to be_nil
+          expect(interface.udev_rule.drivers).to eq("e1000e")
+        end
+      end
+
+      context "and the interface does not have an udev rule" do
+        let(:udev_rule) { nil }
+        let(:renaming_mechanism) { :bus_id }
+        let(:new_busid_udev_rule) do
+          Y2Network::UdevRule.new_bus_id_based_rename("eth0", "00:1c.0", "1")
+        end
+
+        it "assigns a new udev rule based on the selected renaming mechanism" do
+          expect { interface.update_udev_rule }.to change { interface.udev_rule.to_s }
+            .from("").to(new_busid_udev_rule.to_s)
+        end
+      end
+    end
+  end
 end

@@ -169,7 +169,7 @@ module Y2Network
       # @param udev_rules [Array<UdevRule>] List of udev rules
       def write_drivers_rules(udev_rules)
         rules_hash = udev_rules.each_with_object({}) do |rule, hash|
-          driver = rule.part_value_for("ENV{MODALIAS}", "=")
+          driver = rule.driver
           next unless driver
 
           hash[driver] = rule.parts.map(&:to_s)
@@ -330,6 +330,13 @@ module Y2Network
     # @return [String,nil] Original modalias or nil if not found
     def driver
       part_value_for("ENV{MODALIAS}", "=")
+    end
+
+    # Returns the drivers mentioned in the rule (if any)
+    #
+    # @return [String,nil] drivers or nil if not found
+    def drivers
+      part_value_for("DRIVERS", "==")
     end
   end
 end

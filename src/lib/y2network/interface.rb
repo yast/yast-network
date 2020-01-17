@@ -19,6 +19,7 @@
 
 require "yast"
 require "y2network/interface_type"
+require "y2network/udev_rule"
 
 module Y2Network
   # Network interface.
@@ -110,6 +111,26 @@ module Y2Network
       @old_name = name if name != new_name # same name, just set different mechanism
       @name = new_name
       @renaming_mechanism = mechanism
+    end
+
+    # Updates or creates the associated udev rule depending on the renaming
+    # mechanism selected
+    #
+    # @return [UdevRule] udev rule
+    def update_udev_rule
+      log.info("Updating udev rule for #{name} based on: #{renaming_mechanism.inspect}")
+
+      case renaming_mechanism
+      when :mac
+        udev_rule&.rename_by_mac(name, hardware.mac)
+
+        @udev_rule ||= Y2Network::UdevRule.new_mac_based_rename(name, hardware.mac)
+      when :bus_id
+        udev_rule&.rename_by_bus_id(name, hardware.busid, hardware.dev_port)
+
+        @udev_rule ||=
+          Y2Network::UdevRule.new_bus_id_based_rename(name, hardware.busid, hardware.dev_port)
+      end
     end
   end
 end
