@@ -535,7 +535,12 @@ module Yast
 
           one["bus"] = bus
           one["busid"] = card["sysfs_bus_id"] || ""
-          one["parent_busid"] = one["sysfs_id"].split("/")[-2] if one["busid"].start_with?("virtio")
+
+          if one["busid"].start_with?("virtio")
+            one["sub_device_busid"] = one["busid"]
+            one["busid"] = one["sysfs_id"].split("/")[-2]
+          end
+
           one["mac"] = Ops.get_string(resource, ["hwaddr", 0, "addr"], "")
           one["permanent_mac"] = Ops.get_string(resource, ["phwaddr", 0, "addr"], "")
           # is the cable plugged in? nil = don't know

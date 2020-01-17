@@ -169,7 +169,7 @@ module Y2Network
       # @param udev_rules [Array<UdevRule>] List of udev rules
       def write_drivers_rules(udev_rules)
         rules_hash = udev_rules.each_with_object({}) do |rule, hash|
-          driver = rule.part_value_for("ENV{MODALIAS}", "=")
+          driver = rule.driver
           next unless driver
 
           hash[driver] = rule.parts.map(&:to_s)
@@ -252,6 +252,49 @@ module Y2Network
       part_value_for("ATTR{address}")
     end
 
+    # Convenience method to replace a specific part by another one. In case
+    # that there is no part to be replaced then a new part is added.
+    #
+    # @param key      [String] Key name
+    # @param operator [String] Operator
+    # @param value    [String] Value to match or assign
+    # @see #add_part
+    def replace_part(key, operator, value)
+      part = part_by_key(key, operator)
+      if part
+        part.value = value
+      else
+        add_part(key, operator, value)
+      end
+    end
+
+    # Convenience method which takes care of modifing the udev rule using the
+    # MAC address as the naming mechanism
+    def rename_by_mac(name, address)
+      parts.delete_if(&:dev_port?)
+      part = part_by_key("KERNELS")
+      part.key = "ATTR{address}" if part
+
+      replace_part("ATTR{address}", "==", address) if mac != address
+      ## Ensure the name is always at the end of the rule
+      parts.delete_if { |p| p.dev_port? || p.name? }
+      add_part("NAME", "=", name)
+    end
+
+    # Convenience method which takes care of modifing the udev rule using the
+    # bus_id and the dev_port when needed as the naming mechanism
+    def rename_by_bus_id(name, bus_id_value, dev_port_value = nil)
+      parts.delete_if { |p| (p.dev_port? && dev_port_value.nil?) }
+      part = part_by_key("ATTR{address}")
+      part.key = "KERNELS" if part
+
+      replace_part("KERNELS", "==", bus_id_value) if bus_id != bus_id_value
+      replace_part("ATTR{dev_port}", "==", dev_port_value) if dev_port != dev_port_value
+      ## Ensure the name is always at the end of the rule
+      parts.delete_if(&:name?)
+      add_part("NAME", "=", name)
+    end
+
     # Returns the BUS ID in the udev rule
     #
     # @return [String,nil] BUS ID or nil if not found
@@ -287,6 +330,13 @@ module Y2Network
     # @return [String,nil] Original modalias or nil if not found
     def driver
       part_value_for("ENV{MODALIAS}", "=")
+    end
+
+    # Returns the drivers mentioned in the rule (if any)
+    #
+    # @return [String,nil] drivers or nil if not found
+    def drivers
+      part_value_for("DRIVERS", "==")
     end
   end
 end

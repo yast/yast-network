@@ -19,8 +19,8 @@
   module: virtio_net
   options: ''
   bus: Virtio
-  busid: virtio0
-  parent_busid: '0000:01:00.0'
+  busid: '0000:01:00.0'
+  sub_device_busid: virtio0
   mac: 52:54:00:68:54:fb
   permanent_mac: 52:54:00:68:54:fb
   link: true

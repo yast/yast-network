@@ -80,4 +80,69 @@ describe Y2Network::UdevRulePart do
       end
     end
   end
+
+  describe "#mac?" do
+    context "when the part is a MAC address" do
+      let(:key) { "ATTR{address}" }
+
+      it "returns true" do
+        expect(part.mac?).to eq(true)
+      end
+    end
+
+    context "otherwise" do
+      it "returns false" do
+        expect(part.mac?).to eq(false)
+      end
+    end
+  end
+
+  describe "#bus_id?" do
+    context "when the part is a BUS ID" do
+      let(:key) { "KERNELS" }
+
+      it "returns true" do
+        expect(part.bus_id?).to eq(true)
+      end
+    end
+
+    context "otherwise" do
+      it "returns false" do
+        expect(part.bus_id?).to eq(false)
+      end
+    end
+  end
+
+  describe "#dev_port?" do
+    context "when the part is a dev port" do
+      let(:key) { "ATTR{dev_port}" }
+
+      it "returns true" do
+        expect(part.dev_port?).to eq(true)
+      end
+    end
+
+    context "otherwise" do
+      it "returns false" do
+        expect(part.dev_port?).to eq(false)
+      end
+    end
+  end
+
+  describe "#name?" do
+    context "when the part is a device name" do
+      let(:key) { "NAME" }
+      let(:operator) { "=" }
+
+      it "returns true" do
+        expect(part.name?).to eq(true)
+      end
+    end
+
+    context "otherwise" do
+      it "returns false" do
+        expect(part.name?).to eq(false)
+      end
+    end
+  end
 end

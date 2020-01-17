@@ -92,5 +92,32 @@ module Y2Network
     def to_s
       "#{key}#{operator}\"#{value}\""
     end
+
+    # Return whether the udev rule part is the interface bus_id or not
+    # @return [Boolean]
+    def bus_id?
+      (key == "KERNELS") && (operator == "==")
+    end
+
+    # Return whether the udev rule part is the interface dev_port or not
+    #
+    # @return [Boolean]
+    def dev_port?
+      (key == "ATTR{dev_port}") && (operator == "==")
+    end
+
+    # Return whether the udev rule part is the interface MAC address or not
+    #
+    # @return [Boolean]
+    def mac?
+      (key == "ATTR{address}") && (operator == "==")
+    end
+
+    # Return whether the udev rule part is the interface name or not
+    #
+    # @return [Boolean]
+    def name?
+      (key == "NAME") && (operator == "=")
+    end
   end
 end

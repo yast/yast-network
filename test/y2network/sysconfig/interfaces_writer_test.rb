@@ -44,6 +44,7 @@ describe Y2Network::Sysconfig::InterfacesWriter do
     end
     let(:renaming_mechanism) { :none }
     let(:driver) { nil }
+    let(:naming_rules) { [] }
     let(:scr_root) { Dir.mktmpdir }
 
     before do
@@ -51,7 +52,7 @@ describe Y2Network::Sysconfig::InterfacesWriter do
       allow(writer).to receive(:sleep)
 
       # prevent collision with real hardware
-      allow(Y2Network::UdevRule).to receive(:naming_rules).and_return([])
+      allow(Y2Network::UdevRule).to receive(:naming_rules).and_return(naming_rules)
       allow(Y2Network::UdevRule).to receive(:drivers_rules).and_return([])
     end
 
@@ -98,6 +99,26 @@ describe Y2Network::Sysconfig::InterfacesWriter do
           end
           subject.write(interfaces)
         end
+
+        context "and the interface already has an udev rule" do
+          let(:eth0_udev_rule) do
+            rule = Y2Network::UdevRule.new_bus_id_based_rename("eth0", "00:1c.0", "1")
+            rule.replace_part("DRIVERS", "==", "e1000e")
+            rule
+          end
+
+          it "touches only the udev keys affected by the change" do
+            eth0.udev_rule = eth0_udev_rule
+            expect(Y2Network::UdevRule).to receive(:write_net_rules) do |rules|
+              expect(rules.first.to_s).to eq(
+                "SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"e1000e\", " \
+                  "ATTR{type}==\"1\", ATTR{address}==\"01:23:45:67:89:ab\", " \
+                  "NAME=\"eth1\""
+              )
+            end
+            subject.write(interfaces)
+          end
+        end
       end
 
       context "when the interface is renamed using the BUS ID" do
@@ -107,21 +128,41 @@ describe Y2Network::Sysconfig::InterfacesWriter do
           expect(Y2Network::UdevRule).to receive(:write_net_rules) do |rules|
             expect(rules.first.to_s).to eq(
               "SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", " \
-                "ATTR{type}==\"1\", KERNELS==\"00:1c.0\", ATTR{dev_port}==\"1\", NAME=\"eth1\""
+                "ATTR{type}==\"1\", KERNELS==\"00:1c.0\", ATTR{dev_port}==\"1\", " \
+                "NAME=\"eth1\""
             )
           end
           subject.write(interfaces)
         end
+
+        context "and the interface already has an udev rule" do
+          let(:eth0_udev_rule) do
+            rule = Y2Network::UdevRule.new_mac_based_rename("eth0", "00:11:22:33:44:55:66")
+            rule.replace_part("DRIVERS", "==", "e1000e")
+            rule
+          end
+
+          it "touches only the udev keys affected by the change" do
+            eth0.udev_rule = eth0_udev_rule
+            expect(Y2Network::UdevRule).to receive(:write_net_rules) do |rules|
+              expect(rules.first.to_s).to eq(
+                "SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"e1000e\", " \
+                  "ATTR{type}==\"1\", ATTR{dev_id}==\"0x0\", KERNELS==\"00:1c.0\", " \
+                  "ATTR{dev_port}==\"1\", NAME=\"eth1\""
+              )
+            end
+
+            subject.write(interfaces)
+          end
+        end
+
       end
 
       context "when there is some rule for an unknown interface" do
         let(:unknown_rule) do
           Y2Network::UdevRule.new_mac_based_rename("unknown", "00:11:22:33:44:55:66")
         end
-
-        before do
-          allow(Y2Network::UdevRule).to receive(:naming_rules).and_return([unknown_rule])
-        end
+        let(:naming_rules) { [unknown_rule] }
 
         it "keeps the rule" do
           expect(Y2Network::UdevRule).to receive(:write_net_rules) do |rules|

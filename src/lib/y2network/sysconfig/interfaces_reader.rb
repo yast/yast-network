@@ -124,6 +124,7 @@ module Y2Network
       # @param hwinfo [Hash] hardware information
       def build_physical_interface(hwinfo)
         Y2Network::PhysicalInterface.new(hwinfo.dev_name, hardware: hwinfo).tap do |iface|
+          iface.udev_rule = UdevRule.find_for(iface.name)
           iface.renaming_mechanism = renaming_mechanism_for(iface)
           iface.custom_driver = custom_driver_for(iface)
           iface.type = InterfaceType.from_short_name(hwinfo.type) ||
@@ -154,7 +155,7 @@ module Y2Network
       # @param iface [PhysicalInterface] Interface
       # @return [Symbol] :mac (MAC address), :bus_id (BUS ID) or :none (no renaming)
       def renaming_mechanism_for(iface)
-        rule = UdevRule.find_for(iface.name)
+        rule = iface.udev_rule
         return :none unless rule
 
         if rule.parts.any? { |p| p.key == "ATTR{address}" }

@@ -152,6 +152,24 @@ describe Y2Network::UdevRule do
     end
   end
 
+  describe "#replace_part" do
+    let(:rule_part) { Y2Network::UdevRulePart.new("ATTR{address}", "==", "01:23:45:67:89:ab") }
+    context "when there is no udev part for the given 'key' and 'operator'" do
+      it "adds a new part with the given options" do
+        expect { udev_rule.replace_part("ATTR{address}", "==", "01:23:45:67:89:ab") }
+          .to change { udev_rule.parts }.from([]).to([rule_part])
+      end
+    end
+
+    context "when there is a udev part to be replaced by" do
+      it "replaces  the value of the part with the one given" do
+        udev_rule.add_part("NAME", "=", "eth0")
+        udev_rule.replace_part("NAME", "=", "eth1")
+        expect(udev_rule.device).to eq("eth1")
+      end
+    end
+  end
+
   describe "#to_s" do
     let(:parts) do
       [
