@@ -26,8 +26,8 @@ module Y2Network
   # This class is responsible for creating a bridge configuration for
   # virtualization from the interfaces that are connected and bridgeable.
   class VirtualizationConfig
-    # @return [Y2Network::Config]
     include Yast::Logger
+    # @return [Y2Network::Config]
     attr_reader :config
 
     # Constructor
