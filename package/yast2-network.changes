@@ -2,7 +2,8 @@
 Tue Jan 21 07:24:03 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
 
 - bsc#1156986
-  - Fix Yast::Logger dependency in Y2Network::VirtualizationConfig
+  - Fix crash when logging that an interface is not connected or
+    is not bridgeable when propising the virtualization config.
 - 4.2.46
 
 -------------------------------------------------------------------
