@@ -27,6 +27,7 @@ module Y2Network
   # virtualization from the interfaces that are connected and bridgeable.
   class VirtualizationConfig
     # @return [Y2Network::Config]
+    include Yast::Logger
     attr_reader :config
 
     # Constructor
