@@ -74,11 +74,8 @@ module Y2Network
         # @param interface [String] Interface name
         # @return [Sysconfig::InterfaceFile,nil] Sysconfig
         def find(interface)
-          if !Yast::FileUtils.Exists(SYSCONFIG_NETWORK_DIR.join("ifcfg-#{interface}").to_s)
-            return nil
-          end
-
-          new(interface)
+          file = new(interface)
+          file.exist? ? file : nil
         end
 
         # Defines a parameter
@@ -430,9 +427,16 @@ module Y2Network
 
       # Removes the file
       def remove
-        return unless Yast::FileUtils.Exists(path.to_s)
+        return unless exist?
 
         Yast::SCR.Execute(Yast::Path.new(".target.remove"), path.to_s)
+      end
+
+      # Determines whether the ifcfg-* file exists
+      #
+      # @return [Boolean] true if the file exists; false otherwise
+      def exist?
+        Yast::FileUtils.Exists(path.to_s)
       end
 
     private
@@ -497,8 +501,12 @@ module Y2Network
       #
       # @return [Array<String>] name of keys that are included in the file
       def defined_variables
-        @defined_variables ||= Yast::SCR.Dir(Yast::Path.new(".network.value.\"#{interface}\"")) ||
-          []
+        return @defined_variables if @defined_variables
+
+        if exist?
+          @defined_variables = Yast::SCR.Dir(Yast::Path.new(".network.value.\"#{interface}\""))
+        end
+        @defined_variables ||= []
       end
 
       # Fetches the value for a given key

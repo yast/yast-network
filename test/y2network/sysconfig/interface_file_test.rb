@@ -65,6 +65,26 @@ describe Y2Network::Sysconfig::InterfaceFile do
     end
   end
 
+  describe "#exist?" do
+    subject(:file) { described_class.new(interface) }
+
+    context "when the file for the given interface exists" do
+      let(:interface) { "eth0" }
+
+      it "returns true" do
+        expect(file.exist?).to eq(true)
+      end
+    end
+
+    context "when the file for the given interface exists" do
+      let(:interface) { "em1" }
+
+      it "returns false" do
+        expect(file.exist?).to eq(false)
+      end
+    end
+  end
+
   describe "#remove" do
     subject(:file) { described_class.find("eth0") }
 
