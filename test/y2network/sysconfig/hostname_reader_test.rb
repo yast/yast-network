@@ -89,10 +89,11 @@ describe Y2Network::Sysconfig::HostnameReader do
     end
 
     context "when an IP address is used instead of a hostname" do
-      let(:hostname) { "foo1.bar.cz" }
+      let(:hostname) { "192.168.1.1" }
+      let(:resolved_hostname) { "foo1.bar.cz" }
 
       before do
-        allow(Yast::NetHwDetection).to receive(:ResolveIP).and_return(hostname)
+        allow(Yast::NetHwDetection).to receive(:ResolveIP).and_return(resolved_hostname)
       end
 
       it "returns the associated hostname" do
@@ -100,7 +101,7 @@ describe Y2Network::Sysconfig::HostnameReader do
       end
 
       context "and it is not resolvable to an IP" do
-        let(:hostname) { nil }
+        let(:resolved_hostname) { nil }
 
         it "returns nil" do
           expect(reader.hostname_from_install_inf).to be_nil

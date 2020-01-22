@@ -92,7 +92,9 @@ module Y2Network
         end
 
         host, _domain = *Yast::Hostname.SplitFQ(fqdn)
-        host.empty? ? nil : host
+        return nil if host.nil? || host.empty?
+
+        host
       end
 
       # Reads the (transient) hostname known to the resolver
