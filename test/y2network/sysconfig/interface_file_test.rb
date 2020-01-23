@@ -76,7 +76,7 @@ describe Y2Network::Sysconfig::InterfaceFile do
       end
     end
 
-    context "when the file for the given interface exists" do
+    context "when the file for the given interface does not exist" do
       let(:interface) { "em1" }
 
       it "returns false" do
