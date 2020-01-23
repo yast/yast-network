@@ -17,13 +17,13 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require_relative "../test_helper"
+require_relative "../../test_helper"
 require "y2network/sysconfig/hostname_reader"
 
 describe Y2Network::Sysconfig::HostnameReader do
   subject(:reader) { described_class.new }
 
-  describe "#hostname" do
+  describe "#config" do
     let(:install_inf_hostname) { "linuxrc" }
     let(:dhcp_hostname) { "dhcp" }
     let(:system_hostname) { "system" }
@@ -34,25 +34,37 @@ describe Y2Network::Sysconfig::HostnameReader do
       allow(reader).to receive(:hostname_from_dhcp).and_return(dhcp_hostname)
       allow(reader).to receive(:hostname_from_system).and_return(system_hostname)
       allow(reader).to receive(:hostname_from_resolver).and_return(resolver_hostname)
+
+      allow(Yast::Stage).to receive(:initial).and_return(installation)
+    end
+
+    RSpec.shared_examples "installer and static" do
+      it "reads the installer hostname from /etc/install.conf" do
+        expect(reader.config.installer).to eq("linuxrc")
+      end
+
+      it "reads the static hostname from the system" do
+        expect(reader.config.static).to eq("system")
+      end
     end
 
     context "during installation" do
-      let(:install_inf_exists?) { true }
+      let(:installation) { true }
 
-      before do
-        allow(Yast::Stage).to receive(:initial).and_return(true)
+      include_examples "installer and static"
+
+      it "reads the transient hostname from DHCP" do
+        expect(reader.config.transient).to eq("dhcp")
       end
+    end
 
-      it "reads the hostname from /etc/install.conf" do
-        expect(reader.hostname_from_install_inf).to eq("linuxrc")
-      end
+    context "in an installed system" do
+      let(:installation) { false }
 
-      context "when the /etc/install.inf file does not exists" do
-        let(:install_inf_hostname) { nil }
+      include_examples "installer and static"
 
-        it "returns nil" do
-          expect(reader.hostname_from_install_inf).to be_nil
-        end
+      it "reads the transient hostname from the resolver" do
+        expect(reader.config.transient).to eq("system.suse.de")
       end
     end
   end
@@ -77,10 +89,11 @@ describe Y2Network::Sysconfig::HostnameReader do
     end
 
     context "when an IP address is used instead of a hostname" do
-      let(:hostname) { "foo1.bar.cz" }
+      let(:hostname) { "192.168.1.1" }
+      let(:resolved_hostname) { "foo1.bar.cz" }
 
       before do
-        allow(Yast::NetHwDetection).to receive(:ResolveIP).and_return(hostname)
+        allow(Yast::NetHwDetection).to receive(:ResolveIP).and_return(resolved_hostname)
       end
 
       it "returns the associated hostname" do
@@ -88,7 +101,7 @@ describe Y2Network::Sysconfig::HostnameReader do
       end
 
       context "and it is not resolvable to an IP" do
-        let(:hostname) { nil }
+        let(:resolved_hostname) { nil }
 
         it "returns nil" do
           expect(reader.hostname_from_install_inf).to be_nil
