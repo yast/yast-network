@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Jan 23 09:16:03 UTC 2020 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
+
+- Do not try to read an ifcfg-* file that does not exist
+  (bsc#1161234).
+
+-------------------------------------------------------------------
 Wed Jan 22 16:43:21 UTC 2020 - Ancor Gonzalez Sosa <ancor@suse.com>
 
 - Do not crash if install.inf contains an IP address that cannot
