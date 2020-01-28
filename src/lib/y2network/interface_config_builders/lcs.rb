@@ -33,7 +33,8 @@ module Y2Network
         :read_channel, :read_channel=,
         :write_channel, :write_channel=,
         :protocol, :protocol=,
-        :timeout, :timeout=
+        :timeout, :timeout=,
+        :device_id, :device_id=
     end
   end
 end

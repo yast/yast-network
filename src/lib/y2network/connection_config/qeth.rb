@@ -80,6 +80,13 @@ module Y2Network
 
         [read_channel, write_channel, data_channel].join(":")
       end
+
+      # Sets the read, write and data channel from the device id
+      #
+      # @param id [String] s390 group device id
+      def device_id=(id)
+        @read_channel, @write_channel, @data_channel = id.split(":")
+      end
     end
   end
 end

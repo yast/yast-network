@@ -56,7 +56,7 @@ module Y2Network
     # @param id [String] s390 group device id ("eth0", "br1", ...)
     # @return [S390GroupDevice,nil] S390GroupDevice with the given id or nil if not found
     def by_id(id)
-      devices.find { |device| device.id = id }
+      devices.find { |device| device.id == id }
     end
 
     # Returns list of devices of given type
