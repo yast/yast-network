@@ -22,12 +22,16 @@ require "y2network/interface"
 require "y2network/interface_type"
 require "y2network/virtual_interface"
 require "y2network/physical_interface"
+require "y2network/s390_group_device"
 require "y2network/sysconfig/connection_config_reader"
 require "y2network/sysconfig/interface_file"
 require "y2network/interfaces_collection"
 require "y2network/connection_configs_collection"
+require "y2network/s390_group_devices_collection"
 require "y2network/sysconfig/type_detector"
 require "y2network/udev_rule"
+
+Yast.import "Arch"
 
 module Y2Network
   module Sysconfig
@@ -47,10 +51,21 @@ module Y2Network
       def config
         return @config if @config
 
+        find_s390_devices
         find_physical_interfaces
         find_connections
         find_drivers
-        @config = { interfaces: @interfaces, connections: @connections, drivers: @drivers }
+        @config = { interfaces: @interfaces, connections: @connections,
+                    drivers: @drivers, s390_devices: @s390_devices }
+      end
+
+      # Convenience method to get the s390 group devices collection
+      #
+      # @return [Array<Y2Network::ConnectionConfig::Base>] Array of connection
+      #   config objects.
+
+      def s390_devices
+        config[:s390_devices]
       end
 
       # Convenience method to get connections configuration
@@ -77,6 +92,12 @@ module Y2Network
 
     private
 
+      # Finds the s390 group devices that are not active
+      def find_s390_devices
+        devices = Yast::Arch.s390 ? S390GroupDevice.all : []
+        @s390_devices = Y2Network::S390GroupDevicesCollection.new(devices)
+      end
+
       # Finds the physical interfaces
       def find_physical_interfaces
         return if @interfaces
@@ -84,6 +105,7 @@ module Y2Network
         physical_interfaces = Hwinfo.netcards.each_with_object([]) do |hwinfo, interfaces|
           physical_interface = build_physical_interface(hwinfo)
           next if physical_interface.type == InterfaceType::UNKNOWN
+          next if physical_interface.name.to_s.empty?
 
           interfaces << physical_interface
         end

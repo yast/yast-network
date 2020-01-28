@@ -47,6 +47,8 @@ module Y2Network
     attr_accessor :interfaces
     # @return [ConnectionConfigsCollection]
     attr_accessor :connections
+    # @return [S390GroupDevicesCollection]
+    attr_accessor :s390_devices
     # @return [Routing] Routing configuration
     attr_accessor :routing
     # @return [DNS] DNS configuration
@@ -109,6 +111,7 @@ module Y2Network
     def initialize(source:, **opts)
       @interfaces = opts.fetch(:interfaces, InterfacesCollection.new)
       @connections = opts.fetch(:connections, ConnectionConfigsCollection.new)
+      @s390_devices = opts.fetch(:s390_devices, S390GroupDevicesCollection.new)
       @drivers = opts.fetch(:drivers, [])
       @routing = opts.fetch(:routing, Routing.new)
       @dns = opts.fetch(:dns, DNS.new)
@@ -139,7 +142,8 @@ module Y2Network
         routing == other.routing &&
         dns == other.dns &&
         hostname == other.hostname &&
-        connections == other.connections
+        connections == other.connections &&
+        s390_devices == other.s390_devices
     end
 
     # Renames a given interface and the associated connections
