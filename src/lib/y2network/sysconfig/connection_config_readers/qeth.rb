@@ -50,7 +50,7 @@ module Y2Network
           id = device_id_from(conn)
           return unless id
 
-          conn.read_channel, conn.write_channel, conn.data_channel = id.split(":")
+          conn.device_id = id
         end
 
         def update_layer2(conn)

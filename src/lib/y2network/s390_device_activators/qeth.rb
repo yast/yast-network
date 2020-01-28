@@ -29,7 +29,7 @@ module Y2Network
         :write_channel, :write_channel=,
         :data_channel, :data_channel=,
         :layer2, :port_number, :ipa_takeover,
-        :hwinfo, :attributes, :device_id
+        :attributes
 
       # Return a list of the options to be set when activating the device. The
       # list is composed by the attributes configured and the attributes that
@@ -57,7 +57,7 @@ module Y2Network
 
       # Modifies the read, write and data channel from the the device id
       def propose_channels
-        id = device_id_from(hwinfo.busid)
+        id = builder.name
         return unless id
 
         self.read_channel, self.write_channel, self.data_channel = id.split(":")

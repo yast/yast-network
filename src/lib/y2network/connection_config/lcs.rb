@@ -79,7 +79,6 @@ module Y2Network
       def device_id=(id)
         @read_channel, @write_channel = id.split(":")
       end
-
     end
   end
 end

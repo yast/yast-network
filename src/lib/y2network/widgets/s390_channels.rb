@@ -63,6 +63,7 @@ module Y2Network
       # @see CWM::AbstractWidget
       def init
         self.value = @settings.read_channel
+        disable
       end
 
       # @see CWM::AbstractWidget
@@ -94,6 +95,7 @@ module Y2Network
       # @see CWM::AbstractWidget
       def init
         self.value = @settings.write_channel
+        disable
       end
 
       # @see CWM::AbstractWidget
@@ -125,6 +127,7 @@ module Y2Network
       # @see CWM::AbstractWidget
       def init
         self.value = @settings.data_channel
+        disable
       end
 
       # @see CWM::AbstractWidget

@@ -20,6 +20,8 @@
 require "yast"
 require "cwm/common_widgets"
 require "y2network/sequences/interface"
+require "y2network/s390_group_device"
+require "y2network/dialogs/s390_device_activation"
 
 Yast.import "Label"
 Yast.import "Lan"
@@ -41,19 +43,23 @@ module Y2Network
       def handle
         config = Yast::Lan.yast_config.copy
         connection_config = config.connections.by_name(@table.value)
+        item = connection_config || selected_interface(config)
 
-        name, type =
-          if connection_config
-            [connection_config.name, connection_config.type]
-          else
-            interface = config.interfaces.by_name(@table.value)
-            [interface.name, interface.type]
-          end
+        builder = Y2Network::InterfaceConfigBuilder.for(item.type, config: connection_config)
+        builder.name = item.name
 
-        builder = Y2Network::InterfaceConfigBuilder.for(type, config: connection_config)
-        builder.name = name
-        Y2Network::Sequences::Interface.new.edit(builder)
+        if item.is_a?(Y2Network::S390GroupDevice)
+          builder.device_id = builder.name
+          activation_dialog = Y2Network::Dialogs::S390DeviceActivation.for(builder)
+          return :redraw if activation_dialog.run != :next
+        end
+
+        Y2Network::Sequences::Interface.new.public_send(:edit, builder)
         :redraw
+      end
+
+      def selected_interface(config)
+        config.interfaces.by_name(@table.value) || config.s390_devices.by_id(@table.value)
       end
     end
   end

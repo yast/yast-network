@@ -21,6 +21,9 @@ require "cwm/dialog"
 require "y2network/s390_device_activator"
 require "y2network/widgets/s390_common"
 require "y2network/widgets/s390_channels"
+require "y2network/sysconfig/interfaces_reader"
+
+Yast.import "Lan"
 
 module Y2Network
   module Dialogs
@@ -64,6 +67,7 @@ module Y2Network
         @activator = activator
         @activator.propose!
         @builder = activator.builder
+        @builder.newly_added = false
       end
 
       def title
@@ -78,7 +82,12 @@ module Y2Network
         ret = super
         if ret == :next
           configured = activator.configure
-          builder.name = activator.configured_interface if configured
+          if configured
+            interface_name = activator.configured_interface
+            builder.name = interface_name
+            add_interface(interface_name)
+          end
+
           # TODO: Refresh the list of interfaces in yast_config. Take into
           # account that the interface in yast_config does not have a name so
           # the builder.interface is probably nil and should be obtained
@@ -99,6 +108,21 @@ module Y2Network
 
       def abort_handler
         Yast::Popup.ReallyAbort(true)
+      end
+
+    private
+
+      def reader
+        @reader ||= Y2Network::Sysconfig::InterfacesReader.new
+      end
+
+      def config
+        Yast::Lan.yast_config
+      end
+
+      def add_interface(name)
+        interface = reader.interfaces.by_name(name)
+        config.interfaces << interface if interface
       end
     end
   end

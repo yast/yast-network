@@ -28,12 +28,6 @@ module Y2Network
         :write_channel, :write_channel=,
         :hwinfo, :protocol
 
-      def device_id
-        return if read_channel.to_s.empty?
-
-        [read_channel, write_channel].join(":")
-      end
-
       def configure_attributes
         return [] unless builder.protocol
 
@@ -42,7 +36,7 @@ module Y2Network
 
       # Modifies the read and write channel from the the device id
       def propose_channels
-        id = device_id_from(hwinfo.busid)
+        id = builder.name
         return unless id
 
         self.read_channel, self.write_channel = id.split(":")

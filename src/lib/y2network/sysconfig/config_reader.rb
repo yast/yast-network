@@ -54,14 +54,14 @@ module Y2Network
         )
 
         result = Config.new(
-          interfaces:  interfaces_reader.interfaces,
-          connections: interfaces_reader.connections,
+          interfaces:   interfaces_reader.interfaces,
+          connections:  interfaces_reader.connections,
           s390_devices: interfaces_reader.s390_devices,
-          drivers:     interfaces_reader.drivers,
-          routing:     routing,
-          dns:         dns,
-          hostname:    hostname,
-          source:      :sysconfig
+          drivers:      interfaces_reader.drivers,
+          routing:      routing,
+          dns:          dns,
+          hostname:     hostname,
+          source:       :sysconfig
         )
 
         log.info "Sysconfig reader result: #{result.inspect}"
