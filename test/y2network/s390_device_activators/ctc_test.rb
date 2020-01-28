@@ -78,26 +78,8 @@ describe Y2Network::S390DeviceActivators::Ctc do
     end
   end
 
-  describe "#device_id_from" do
-    context "given the read or write device id" do
-      let(:device_id) { "0.0.0800:0.0.0801" }
-      let(:write_channel) { "0.0.0801" }
-      let(:hwinfo) { Y2Network::Hwinfo.new("busid" => write_channel) }
-      before do
-        allow(builder).to receive(:hwinfo).and_return(hwinfo)
-        allow(executor).to receive(:on_target!)
-          .with(["/sbin/lszdev", "ctc", "-c", "id", "-n"])
-          .and_return(device_id)
-      end
-
-      it "obtains the triplet device ids listed by lszdev" do
-        expect(subject.device_id_from(hwinfo.busid)).to eq(device_id)
-      end
-    end
-  end
-
   describe "#device_id" do
-    it "returns the read and write channel device ids joined by ':'" do
+    it "returns the s390 group device id" do
       expect(subject.device_id).to eql("0.0.0900:0.0.0901")
     end
   end
