@@ -78,7 +78,8 @@ module Y2Network
       cmd = [CONFIGURE_CMD, type.short_name, device_id, "-e"].concat(configure_attributes)
 
       log.info("Activating s390 device: #{device_id}")
-      Yast::Execute.on_target!(*cmd, allowed_exitstatus: 0..255).zero?
+      Yast::Execute.on_target!(*cmd, stdout: :capture, stderr: :capture,
+                               allowed_exitstatus: 0..255)
     end
 
     # Obtains the enabled interface name associated with the device id

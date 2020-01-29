@@ -35,6 +35,8 @@ describe Y2Network::S390DeviceActivators::Qeth do
 
   let(:executor) { double("Yast::Execute", on_target!: "") }
   let(:initialize_channels) { true }
+  let(:chzdev_output) { ["", "", 0] }
+
   before do
     allow(Yast::Execute).to receive(:stdout).and_return(executor)
     if initialize_channels
@@ -48,23 +50,17 @@ describe Y2Network::S390DeviceActivators::Qeth do
     it "tries to activate the group device associated with the defined device id" do
       expect(Yast::Execute).to receive(:on_target!)
         .with("/sbin/chzdev", "qeth", subject.device_id, "-e",
-          allowed_exitstatus: 0..255)
-        .and_return(0)
+          stdout: :capture, stderr: :capture, allowed_exitstatus: 0..255)
       subject.configure
     end
 
-    context "when activated succesfully" do
-      it "returns true" do
-        expect(Yast::Execute).to receive(:on_target!).and_return(0)
-        expect(subject.configure).to eq(true)
-      end
-    end
+    it "returns an array with the stdout, stderr, and command status" do
+      expect(Yast::Execute).to receive(:on_target!)
+        .with("/sbin/chzdev", "qeth", subject.device_id, "-e",
+          stdout: :capture, stderr: :capture, allowed_exitstatus: 0..255)
+        .and_return(chzdev_output)
 
-    context "when failed the activation and returned a non zero return code" do
-      it "returns false" do
-        expect(Yast::Execute).to receive(:on_target!).and_return(34)
-        expect(subject.configure).to eq(false)
-      end
+      expect(subject.configure).to eq(chzdev_output)
     end
   end
 
