@@ -77,7 +77,7 @@ module Y2Network
       #
       # @param id [String] s390 group device id
       def device_id=(id)
-        @read_channel, @write_channel = id.split(":")
+        @read_channel, @write_channel = id.to_s.split(":")
       end
     end
   end

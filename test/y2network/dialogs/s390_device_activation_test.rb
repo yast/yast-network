@@ -45,6 +45,7 @@ describe Y2Network::Dialogs::S390DeviceActivation do
     before do
       allow(activator).to receive(:configure).and_return(configured)
       allow(activator).to receive(:configured_interface).and_return("eth4")
+      allow(subject).to receive(:add_interface)
       allow(subject).to receive(:cwm_show).and_return(dialog_action)
     end
 
@@ -58,6 +59,11 @@ describe Y2Network::Dialogs::S390DeviceActivation do
         it "sets the builder name with the associated interface" do
           subject.run
           expect(builder.name).to eql("eth4")
+        end
+
+        it "adds the new interface to the config" do
+          expect(subject).to receive(:add_interface).with("eth4")
+          subject.run
         end
 
         it "returns :next" do

@@ -35,10 +35,10 @@ describe Y2Network::S390DeviceActivators::Ctc do
 
   let(:executor) { double("Yast::Execute", on_target!: "") }
   let(:initialize_channels) { true }
+
   before do
     allow(Yast::Execute).to receive(:stdout).and_return(executor)
-    builder.read_channel = "0.0.0900" if initialize_channels
-    builder.write_channel = "0.0.0901" if initialize_channels
+    builder.device_id = builder.name = "0.0.0900:0.0.0901" if initialize_channels
     builder.protocol = 0
   end
 
@@ -89,11 +89,12 @@ describe Y2Network::S390DeviceActivators::Ctc do
       let(:initialize_channels) { false }
       let(:device_id) { "0.0.0800:0.0.0801" }
       let(:write_channel) { "0.0.0801" }
+
       let(:hwinfo) { Y2Network::Hwinfo.new("busid" => write_channel) }
 
       before do
-        allow(subject).to receive(:device_id_from).with(write_channel).and_return(device_id)
         allow(builder).to receive(:hwinfo).and_return(hwinfo)
+        builder.name = device_id
       end
 
       it "initializes them from the given busid" do
@@ -105,6 +106,7 @@ describe Y2Network::S390DeviceActivators::Ctc do
   describe "#propose!" do
     context "when no device id has been initialized" do
       let(:initialize_channels) { false }
+
       it "proposes the channel device ids to be used" do
         expect(subject).to receive(:propose_channels)
         subject.propose!
@@ -118,5 +120,4 @@ describe Y2Network::S390DeviceActivators::Ctc do
       end
     end
   end
-
 end

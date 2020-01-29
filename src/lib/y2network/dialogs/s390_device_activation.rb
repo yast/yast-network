@@ -22,6 +22,7 @@ require "y2network/s390_device_activator"
 require "y2network/widgets/s390_common"
 require "y2network/widgets/s390_channels"
 require "y2network/sysconfig/interfaces_reader"
+require "yast2/popup"
 
 Yast.import "Lan"
 
@@ -79,28 +80,26 @@ module Y2Network
       end
 
       def run
-        ret = super
-        if ret == :next
-          configured = activator.configure
-          if configured
-            interface_name = activator.configured_interface
-            builder.name = interface_name
-            add_interface(interface_name)
+        ret = nil
+        loop do
+          ret = super
+          if ret == :next
+            _stdout, stderr, status = activator.configure
+            configured = status.zero?
+
+            if configured
+              interface_name = activator.configured_interface
+              builder.name = interface_name
+              add_interface(interface_name)
+            end
+
+            if !configured || builder.name.empty?
+              show_activation_error(stderr)
+              ret = :redraw
+            end
           end
 
-          # TODO: Refresh the list of interfaces in yast_config. Take into
-          # account that the interface in yast_config does not have a name so
-          # the builder.interface is probably nil and should be obtained
-          # through the busid.
-          if !configured || builder.name.empty?
-            Yast::Popup.Error(
-              _(
-                "An error occurred while creating device.\nSee YaST log for details."
-              )
-            )
-
-            ret = nil
-          end
+          break if ret != :redraw
         end
 
         ret
@@ -111,6 +110,16 @@ module Y2Network
       end
 
     private
+
+      def show_activation_error(message)
+        Yast2::Popup.show(
+          # TRANSLATORS: s390 group device activation error report. %s are the
+          # details of the error
+          _("An error occurred while activating the device.<br/><br/>" \
+            "<b>Details:<b/><br/>%s") % message,
+          richtext: true, headline: :error
+        )
+      end
 
       def reader
         @reader ||= Y2Network::Sysconfig::InterfacesReader.new

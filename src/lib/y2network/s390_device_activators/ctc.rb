@@ -36,10 +36,7 @@ module Y2Network
 
       # Modifies the read and write channel from the the device id
       def propose_channels
-        id = builder.name
-        return unless id
-
-        self.read_channel, self.write_channel = id.split(":")
+        builder.device_id = builder.name
       end
 
       def propose!

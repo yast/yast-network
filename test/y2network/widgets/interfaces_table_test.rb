@@ -54,7 +54,7 @@ describe Y2Network::Widgets::InterfacesTable do
 
   before do
     allow(Yast::Lan).to receive(:yast_config)
-      .and_return(double(interfaces: interfaces, connections: connections))
+      .and_return(double(interfaces: interfaces, connections: connections, s390_devices: []))
     allow(Yast::UI).to receive(:QueryWidget).and_return([])
     allow(subject).to receive(:value).and_return("eth0")
   end

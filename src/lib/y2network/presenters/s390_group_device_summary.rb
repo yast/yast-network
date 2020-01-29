@@ -45,12 +45,10 @@ module Y2Network
 
       def text
         device = @config.s390_devices.by_id(@name)
-        busid = device.id.split(":").first
-
         hardware = device.hardware
         descr = hardware ? hardware.description : ""
 
-        rich = Yast::HTML.Bold(descr) + "<br><br>"
+        rich = Yast::HTML.Bold(descr) + "<br>"
         rich << "<b>ID: </b>" << device.id << "<br>"
         rich << "<b>Type: </b>" << device.type.short_name << "<br><br>"
 

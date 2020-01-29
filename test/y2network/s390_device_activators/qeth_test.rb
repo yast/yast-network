@@ -80,24 +80,6 @@ describe Y2Network::S390DeviceActivators::Qeth do
     end
   end
 
-  describe "#device_id_from" do
-    context "given the read or write device id" do
-      let(:device_id) { "0.0.0800:0.0.0801:0.0.0802" }
-      let(:write_channel) { "0.0.0801" }
-      let(:hwinfo) { Y2Network::Hwinfo.new("busid" => write_channel) }
-      before do
-        allow(builder).to receive(:hwinfo).and_return(hwinfo)
-        allow(executor).to receive(:on_target!)
-          .with(["/sbin/lszdev", "qeth", "-c", "id", "-n"])
-          .and_return(device_id)
-      end
-
-      it "obtains the triplet device ids listed by lszdev" do
-        expect(subject.device_id_from(hwinfo.busid)).to eq(device_id)
-      end
-    end
-  end
-
   describe "#device_id" do
     it "returns the read and write channel device ids joined by ':'" do
       expect(subject.device_id).to eql("0.0.0700:0.0.0701:0.0.0702")
@@ -112,8 +94,8 @@ describe Y2Network::S390DeviceActivators::Qeth do
       let(:hwinfo) { Y2Network::Hwinfo.new("busid" => write_channel) }
 
       before do
-        allow(subject).to receive(:device_id_from).with(write_channel).and_return(device_id)
         allow(builder).to receive(:hwinfo).and_return(hwinfo)
+        builder.name = device_id
       end
 
       it "initializes them from the given busid" do

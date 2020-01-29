@@ -28,6 +28,7 @@ describe Y2Network::Sysconfig::ConfigReader do
   let(:interfaces) { [eth0, wlan0] }
   let(:eth0_config) { instance_double(Y2Network::ConnectionConfig::Ethernet) }
   let(:connections) { [eth0_config] }
+  let(:s390_devices) { [] }
   let(:drivers) { Y2Network::Driver.new("virtio_net", "") }
   let(:routes_file) { instance_double(Y2Network::Sysconfig::RoutesFile, load: nil, routes: []) }
   let(:dns_reader) { instance_double(Y2Network::Sysconfig::DNSReader, config: dns) }
@@ -35,9 +36,10 @@ describe Y2Network::Sysconfig::ConfigReader do
   let(:interfaces_reader) do
     instance_double(
       Y2Network::Sysconfig::InterfacesReader,
-      interfaces:  Y2Network::InterfacesCollection.new(interfaces),
-      connections: connections,
-      drivers:     drivers
+      interfaces:   Y2Network::InterfacesCollection.new(interfaces),
+      connections:  connections,
+      s390_devices: s390_devices,
+      drivers:      drivers
     )
   end
 
