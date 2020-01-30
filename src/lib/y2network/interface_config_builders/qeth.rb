@@ -44,7 +44,7 @@ module Y2Network
         :lladdress, :lladdress=,
         :ipa_takeover, :ipa_takeover=,
         :attributes, :attributes=,
-        :device_id
+        :device_id, :device_id=
     end
   end
 end

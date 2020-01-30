@@ -39,13 +39,17 @@ describe Y2Network::Dialogs::S390DeviceActivation do
   end
 
   describe "#run" do
-    let(:configured) { true }
+    let(:stderr) { "" }
+    let(:status) { 0 }
+    let(:configure_output) { ["", stderr, status] }
     let(:dialog_action) { :next }
 
     before do
-      allow(activator).to receive(:configure).and_return(configured)
+      allow(activator).to receive(:configure).and_return(configure_output)
       allow(activator).to receive(:configured_interface).and_return("eth4")
+      allow(subject).to receive(:add_interface)
       allow(subject).to receive(:cwm_show).and_return(dialog_action)
+      allow(Yast::Popup).to receive(:ReallyAbort)
     end
 
     context "when going :next" do
@@ -60,25 +64,35 @@ describe Y2Network::Dialogs::S390DeviceActivation do
           expect(builder.name).to eql("eth4")
         end
 
+        it "adds the new interface to the config" do
+          expect(subject).to receive(:add_interface).with("eth4")
+          subject.run
+        end
+
         it "returns :next" do
           expect(subject.run).to eql(:next)
         end
       end
 
       context "when failed the activation" do
-        let(:configured) { false }
+        before do
+          allow(subject).to receive(:cwm_show).twice.and_return(:next, :abort)
+          allow(Yast2::Popup).to receive(:show)
+        end
+
+        let(:stderr) { "activation error" }
+        let(:status) { 38 }
+
         it "popups an error" do
-          expect(Yast::Popup).to receive(:Error)
+          expect(Yast2::Popup).to receive(:show)
           subject.run
         end
 
-        it "returns nil" do
-          expect(subject.run).to be_nil
+        it "continues showing the dialog until going :next success or aborted" do
+          expect(subject).to receive(:cwm_show).twice.and_return(:next, :abort)
+          subject.run
         end
       end
-    end
-
-    context "when pressed :abort" do
     end
   end
 

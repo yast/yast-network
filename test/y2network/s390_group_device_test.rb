@@ -1,4 +1,4 @@
-# Copyright (c) [2019] SUSE LLC
+# Copyright (c) [2020] SUSE LLC
 #
 # All Rights Reserved.
 #
@@ -17,24 +17,20 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "yast"
-require "y2network/interface_config_builder"
+require_relative "../test_helper"
+require "y2network/s390_group_device"
 
-module Y2Network
-  module InterfaceConfigBuilders
-    class Lcs < InterfaceConfigBuilder
-      extend Forwardable
+describe Y2Network::S390GroupDevice do
+  subject(:device) do
+    described_class.new("qeth", "0.0.0700:0.0.0701:0.0.0702")
+  end
 
-      def initialize(config: nil)
-        super(type: InterfaceType::LCS, config: config)
-      end
+  describe "#offline?" do
+  end
 
-      def_delegators :@connection_config,
-        :read_channel, :read_channel=,
-        :write_channel, :write_channel=,
-        :protocol, :protocol=,
-        :timeout, :timeout=,
-        :device_id, :device_id=
-    end
+  describe ".all" do
+  end
+
+  describe ".list" do
   end
 end

@@ -20,6 +20,7 @@
 require "yast"
 require "cwm/table"
 require "y2network/presenters/interface_summary"
+require "y2network/presenters/s390_group_device_summary"
 
 Yast.import "NetworkService"
 Yast.import "Lan"
@@ -55,17 +56,11 @@ module Y2Network
       end
 
       def items
-        config = Yast::Lan.yast_config
-        config.interfaces.map do |interface|
-          conn = config.connections.by_name(interface.name)
-          [
-            interface.name, # first is ID in table
-            friendly_name(interface),
-            interface_protocol(conn),
-            interface.name,
-            note(interface, conn, config)
-          ]
-        end
+        items_list = []
+        config.interfaces.each { |i| items_list << interface_item(i) }
+        config.s390_devices.each { |d| items_list << device_item(d) unless d.online? }
+
+        items_list
       end
 
       # Workaround for usage in old CWM which also cache content of cwm items
@@ -88,7 +83,7 @@ module Y2Network
 
     private
 
-      def note(interface, conn, config)
+      def note(interface, conn)
         if interface.name != interface.old_name && interface.old_name
           return format("%s -> %s", interface.old_name, interface.name)
         end
@@ -101,6 +96,21 @@ module Y2Network
         return format(_("parent: %s"), conn.parent_device) if conn.type.vlan?
 
         ""
+      end
+
+      def device_item(device)
+        [device.id, friendly_name(device), _("Not activated"), device.id, ""]
+      end
+
+      def interface_item(interface)
+        conn = config.connections.by_name(interface.name)
+        [
+          interface.name, # first is ID in table
+          friendly_name(interface),
+          interface_protocol(conn),
+          interface.name,
+          note(interface, conn)
+        ]
       end
 
       def interface_protocol(connection)
@@ -116,9 +126,17 @@ module Y2Network
         end
       end
 
+      def selected_item
+        config.interfaces.by_name(value) || config.s390_devices.by_id(value)
+      end
+
+      def config
+        Yast::Lan.yast_config
+      end
+
       def create_description
-        config = Yast::Lan.yast_config
-        Presenters::InterfaceSummary.new(value, config).text
+        summary = Presenters.const_get("#{summary_class_name}Summary")
+        summary.new(value, config).text
       end
 
       # Returns a friendly name for a given interface
@@ -128,6 +146,10 @@ module Y2Network
       def friendly_name(interface)
         hwinfo = interface.hardware
         (hwinfo&.present?) ? hwinfo.description : interface.name
+      end
+
+      def summary_class_name
+        (selected_item.class.to_s == "Y2Network::S390GroupDevice") ? "S390GroupDevice" : "Interface"
       end
     end
   end

@@ -31,7 +31,7 @@ module Y2Network
     # Command for displaying configuration of z Systems specific devices
     LIST_CMD = "/sbin/lszdev".freeze
 
-    def_delegators :@builder, :type
+    def_delegators :@builder, :type, :device_id
 
     attr_accessor :builder
 
@@ -69,25 +69,6 @@ module Y2Network
       []
     end
 
-    # The device id to be used by lszdev or chzdev commands
-    #
-    # @return [String, nil]
-    def device_id
-      nil
-    end
-
-    # Returns the complete device id which contains the given channel
-    #
-    # @param channel [String]
-    # @return [String]
-    def device_id_from(channel)
-      cmd = [LIST_CMD, type.short_name, "-c", "id", "-n"]
-
-      Yast::Execute.stdout.on_target!(cmd).split("\n").find do |d|
-        d.include? channel
-      end
-    end
-
     # It tries to enable the interface with the configured device id
     #
     # @return [Boolean] true when enabled
@@ -97,7 +78,8 @@ module Y2Network
       cmd = [CONFIGURE_CMD, type.short_name, device_id, "-e"].concat(configure_attributes)
 
       log.info("Activating s390 device: #{device_id}")
-      Yast::Execute.on_target!(*cmd, allowed_exitstatus: 0..255).zero?
+      Yast::Execute.on_target!(*cmd, stdout: :capture, stderr: :capture,
+                               allowed_exitstatus: 0..255)
     end
 
     # Obtains the enabled interface name associated with the device id

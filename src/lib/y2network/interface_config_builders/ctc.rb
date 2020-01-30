@@ -32,7 +32,8 @@ module Y2Network
       def_delegators :@connection_config,
         :read_channel, :read_channel=,
         :write_channel, :write_channel=,
-        :protocol, :protocol=
+        :protocol, :protocol=,
+        :device_id, :device_id=
     end
   end
 end

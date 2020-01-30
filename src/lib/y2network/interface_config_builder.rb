@@ -64,6 +64,8 @@ module Y2Network
     attr_writer :renaming_mechanism
     # @return [Y2Network::Interface,nil] Underlying interface if it exists
     attr_reader :interface
+    # @return [Boolean] True when it is a new connection
+    attr_writer :newly_added
 
     def_delegators :@connection_config,
       :startmode, :ethtool_options, :ethtool_options=

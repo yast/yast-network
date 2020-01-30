@@ -35,34 +35,29 @@ describe Y2Network::S390DeviceActivators::Ctc do
 
   let(:executor) { double("Yast::Execute", on_target!: "") }
   let(:initialize_channels) { true }
+  let(:chzdev_output) { ["", "", 0] }
+
   before do
     allow(Yast::Execute).to receive(:stdout).and_return(executor)
-    builder.read_channel = "0.0.0900" if initialize_channels
-    builder.write_channel = "0.0.0901" if initialize_channels
+    builder.device_id = builder.name = "0.0.0900:0.0.0901" if initialize_channels
     builder.protocol = 0
   end
 
   describe "#configure" do
     it "tries to activate the group device associated with the defined device id" do
       expect(Yast::Execute).to receive(:on_target!)
-        .with("/sbin/chzdev", "ctc", subject.device_id, "-e",
-          "protocol=#{builder.protocol}", allowed_exitstatus: 0..255)
-        .and_return(0)
+        .with("/sbin/chzdev", "ctc", subject.device_id, "-e", "protocol=#{builder.protocol}",
+          stdout: :capture, stderr: :capture, allowed_exitstatus: 0..255)
       subject.configure
     end
 
-    context "when activated succesfully" do
-      it "returns true" do
-        expect(Yast::Execute).to receive(:on_target!).and_return(0)
-        expect(subject.configure).to eq(true)
-      end
-    end
+    it "returns an array with the stdout, stderr, and command status" do
+      expect(Yast::Execute).to receive(:on_target!)
+        .with("/sbin/chzdev", "ctc", subject.device_id, "-e", "protocol=#{builder.protocol}",
+          stdout: :capture, stderr: :capture, allowed_exitstatus: 0..255)
+        .and_return(chzdev_output)
 
-    context "when failed the activation and returned a non zero return code" do
-      it "returns false" do
-        expect(Yast::Execute).to receive(:on_target!).and_return(34)
-        expect(subject.configure).to eq(false)
-      end
+      expect(subject.configure).to eq(chzdev_output)
     end
   end
 
@@ -78,26 +73,8 @@ describe Y2Network::S390DeviceActivators::Ctc do
     end
   end
 
-  describe "#device_id_from" do
-    context "given the read or write device id" do
-      let(:device_id) { "0.0.0800:0.0.0801" }
-      let(:write_channel) { "0.0.0801" }
-      let(:hwinfo) { Y2Network::Hwinfo.new("busid" => write_channel) }
-      before do
-        allow(builder).to receive(:hwinfo).and_return(hwinfo)
-        allow(executor).to receive(:on_target!)
-          .with(["/sbin/lszdev", "ctc", "-c", "id", "-n"])
-          .and_return(device_id)
-      end
-
-      it "obtains the triplet device ids listed by lszdev" do
-        expect(subject.device_id_from(hwinfo.busid)).to eq(device_id)
-      end
-    end
-  end
-
   describe "#device_id" do
-    it "returns the read and write channel device ids joined by ':'" do
+    it "returns the s390 group device id" do
       expect(subject.device_id).to eql("0.0.0900:0.0.0901")
     end
   end
@@ -107,11 +84,12 @@ describe Y2Network::S390DeviceActivators::Ctc do
       let(:initialize_channels) { false }
       let(:device_id) { "0.0.0800:0.0.0801" }
       let(:write_channel) { "0.0.0801" }
+
       let(:hwinfo) { Y2Network::Hwinfo.new("busid" => write_channel) }
 
       before do
-        allow(subject).to receive(:device_id_from).with(write_channel).and_return(device_id)
         allow(builder).to receive(:hwinfo).and_return(hwinfo)
+        builder.name = device_id
       end
 
       it "initializes them from the given busid" do
@@ -123,6 +101,7 @@ describe Y2Network::S390DeviceActivators::Ctc do
   describe "#propose!" do
     context "when no device id has been initialized" do
       let(:initialize_channels) { false }
+
       it "proposes the channel device ids to be used" do
         expect(subject).to receive(:propose_channels)
         subject.propose!
@@ -136,5 +115,4 @@ describe Y2Network::S390DeviceActivators::Ctc do
       end
     end
   end
-
 end
