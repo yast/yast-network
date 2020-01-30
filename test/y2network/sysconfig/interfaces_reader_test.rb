@@ -56,16 +56,25 @@ describe Y2Network::Sysconfig::InterfacesReader do
   let(:configured_interfaces) { ["lo", "eth0"] }
   let(:hardware_wrapper) { Y2Network::HardwareWrapper.new }
   let(:driver) { Y2Network::Driver.new("virtio_net") }
+  let(:lszdev_output) do
+    "0.0.0700:0.0.0701:0.0.0702  no   \n0.0.0800:0.0.0801:0.0.0802  yes  eth0"
+  end
+  let(:qeth_0700) { Y2Network::S390GroupDevice.new("qeth", "0.0.0700:0.0.0701:0.0.0702") }
+  let(:qeth_0800) { Y2Network::S390GroupDevice.new("qeth", "0.0.0800:0.0.0801:0.0.0802", "eth0") }
+
+  let(:in_s390) { false }
 
   TYPES = { "eth0" => "eth" }.freeze
 
   before do
     allow(hardware_wrapper).to receive(:ReadHardware).and_return(netcards)
+    allow(Yast::Arch).to receive(:s390).and_return(in_s390)
     allow(Y2Network::HardwareWrapper).to receive(:new).and_return(hardware_wrapper)
     allow(Yast::SCR).to receive(:Dir).and_call_original
     allow(Yast::NetworkInterfaces).to receive(:GetTypeFromSysfs) { |n| TYPES[n] }
     allow(Y2Network::UdevRule).to receive(:find_for).and_return(udev_rule)
     allow(Y2Network::Driver).to receive(:from_system).and_return(driver)
+    allow(Y2Network::S390GroupDevice).to receive(:all).and_return([qeth_0700, qeth_0800])
   end
 
   around { |e| change_scr_root(File.join(DATA_PATH, "scr_read"), &e) }
@@ -136,6 +145,30 @@ describe Y2Network::Sysconfig::InterfacesReader do
   describe "#drivers" do
     it "returns a list of drivers" do
       expect(reader.drivers).to eq([driver])
+    end
+  end
+
+  describe "#s390_devices" do
+    context "when running in s390 arch" do
+      let(:in_s390) { true }
+
+      it "reads s390 group devices" do
+        devices = reader.s390_devices
+        device = devices.by_id("0.0.0800:0.0.0801:0.0.0802")
+        expect(device.interface).to eq("eth0")
+      end
+    end
+
+    context "when not running in s390" do
+      it "does not read the s390 group devices" do
+        expect(Y2Network::S390GroupDevice).to_not receive(:all)
+
+        reader.s390_devices
+      end
+    end
+
+    it "returns a S390GroupDevicesCollection" do
+      expect(reader.s390_devices).to be_a(Y2Network::S390GroupDevicesCollection)
     end
   end
 end

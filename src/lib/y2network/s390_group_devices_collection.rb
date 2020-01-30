@@ -64,7 +64,7 @@ module Y2Network
     # @param type [String] device type
     # @return [S390GroupDevicesCollection] list of found devices
     def by_type(type)
-      S390GroupDevicesCollection.new(devices.select { |d| d.type == type })
+      S390GroupDevicesCollection.new(devices.select { |d| d.type.short_name == type })
     end
 
     # Deletes elements which meet a given condition

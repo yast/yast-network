@@ -38,15 +38,15 @@ module Y2Network
     attr_accessor :type
     # @return [String] the device id
     attr_accessor :id
-    # @return [Y2Network::Interface)
+    # @return [Y2Network::Interface,nil)
     attr_accessor :interface
 
     alias_method :name, :id
 
     # @param type [String]
     # @param id [String]
-    # @param interface [Y2Network::Interface]
-    def initialize(type, id, interface)
+    # @param interface [String, nil]
+    def initialize(type, id, interface = nil)
       @type = Y2Network::InterfaceType.from_short_name(type)
       @id = id
       @interface = interface
@@ -75,9 +75,9 @@ module Y2Network
         cmd = [LIST_CMD, type, "-c", "id,names", "-n"]
         cmd << "--offline" if offline
 
-        Yast::Execute.stdout.on_target!(cmd).split("\n").map do |device|
-          id, names = device.split(" ")
-          new(type, id, names)
+        Yast::Execute.locally!(*cmd, stdout: :capture).split("\n").map do |device|
+          id, iface_name = device.split(" ")
+          new(type, id, iface_name)
         end
       end
 
