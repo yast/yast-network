@@ -65,7 +65,7 @@ module Y2Network
     # @return [Y2Network::Interface,nil] Underlying interface if it exists
     attr_reader :interface
     # @return [Boolean] True when it is a new connection
-    attr_accessor :newly_added
+    attr_writer :newly_added
 
     def_delegators :@connection_config,
       :startmode, :ethtool_options, :ethtool_options=

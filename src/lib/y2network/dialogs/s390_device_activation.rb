@@ -80,26 +80,21 @@ module Y2Network
       end
 
       def run
-        ret = nil
-        loop do
-          ret = super
-          if ret == :next
-            _stdout, stderr, status = activator.configure
-            configured = status.zero?
+        ret = super
+        if ret == :next
+          _stdout, stderr, status = activator.configure
+          configured = status.zero?
 
-            if configured
-              interface_name = activator.configured_interface
-              builder.name = interface_name
-              add_interface(interface_name)
-            end
-
-            if !configured || builder.name.empty?
-              show_activation_error(stderr)
-              ret = :redraw
-            end
+          if configured
+            interface_name = activator.configured_interface
+            builder.name = interface_name
+            add_interface(interface_name)
           end
 
-          break if ret != :redraw
+          if !configured || builder.name.empty?
+            show_activation_error(stderr)
+            return run
+          end
         end
 
         ret
@@ -130,8 +125,7 @@ module Y2Network
       end
 
       def add_interface(name)
-        interface = reader.interfaces.by_name(name)
-        config.interfaces << interface if interface
+        config.interfaces << reader.interfaces.by_name(name)
       end
     end
   end
