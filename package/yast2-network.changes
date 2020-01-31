@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Jan 31 07:23:15 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
+
+- Do not fail when listing the s390 group devices of a given type
+  and no one is present (bsc#1160997)
+- 4.2.49
+
+-------------------------------------------------------------------
 Thu Jan 30 12:37:03 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
 
 - Bring back the s390 group device activation dialog when editing
