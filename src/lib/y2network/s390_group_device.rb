@@ -61,8 +61,22 @@ module Y2Network
     def online?
       cmd = [LIST_CMD, id, "-c", "on", "-n"]
 
-      Yast::Execute.stdout.on_target!(cmd).split("\n").first == "yes"
+      Yast::Execute.stdout.locally!(cmd).split("\n").first == "yes"
     end
+
+    # Determines whether two s390 group devices are the same
+    #
+    # @param other [S390GroupDevice] device to compare with
+    # @return [Boolean]
+    def ==(other)
+      return false unless other.is_a?(S390GroupDevice)
+
+      id == other.id
+    end
+
+    # eql? (hash key equality) should alias ==, see also
+    # https://ruby-doc.org/core-2.3.3/Object.html#method-i-eql-3F
+    alias_method :eql?, :==
 
     class << self
       # Returns the list of S390 group devices of the given type
@@ -75,7 +89,7 @@ module Y2Network
         cmd = [LIST_CMD, type, "-c", "id,names", "-n"]
         cmd << "--offline" if offline
 
-        Yast::Execute.locally!(*cmd, stdout: :capture).split("\n").map do |device|
+        Yast::Execute.stdout.locally!(*cmd).split("\n").map do |device|
           id, iface_name = device.split(" ")
           new(type, id, iface_name)
         end
