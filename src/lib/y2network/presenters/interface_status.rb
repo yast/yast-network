@@ -44,7 +44,7 @@ module Y2Network
             format(
               _("Configured with address %{local} (remote %{remote})"),
               local:  addr,
-              remote: config.remote_address.to_s
+              remote: config.ip.remote_address.to_s
             )
           else
             # TRANSLATORS %s is address

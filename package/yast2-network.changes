@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Feb  3 10:44:31 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
+
+- Fix connection configuration summary when using a remote
+  IP address (bsc#1162483)
+- 4.2.50
+
+-------------------------------------------------------------------
 Fri Jan 31 07:23:15 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
 
 - Do not fail when listing the s390 group devices of a given type
