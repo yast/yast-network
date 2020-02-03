@@ -2,7 +2,7 @@
 Mon Feb  3 10:44:31 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
 
 - Fix connection configuration summary when using a remote
-  ip address (bsc#1162483)
+  IP address (bsc#1162483)
 - 4.2.50
 
 -------------------------------------------------------------------
