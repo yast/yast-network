@@ -516,7 +516,7 @@ module Y2Network
       # @return [Object] Value for the given key
       def fetch_scalar(key, type)
         path = Yast::Path.new(".network.value.\"#{interface}\".#{key}")
-        value = Yast::SCR.Read(path)&.rstrip
+        value = Yast::SCR.Read(path)&.strip
         send("value_as_#{type}", value)
       end
 
