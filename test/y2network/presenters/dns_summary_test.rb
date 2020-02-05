@@ -22,13 +22,44 @@ require "y2network/presenters/dns_summary"
 require "y2network/dns"
 
 describe Y2Network::Presenters::DNSSummary do
-  subject(:presenter) { described_class.new(dns, hostname) }
+  subject(:presenter) { described_class.new(config) }
 
   let(:dns) do
     Y2Network::DNS.new(
       nameservers: nameservers, searchlist: searchlist
     )
   end
+
+  let(:config) do
+    Y2Network::Config.new(interfaces: interfaces, connections: connections,
+                          source: :testing, hostname: hostname, dns: dns)
+  end
+
+  let(:eth0) do
+    config = Y2Network::ConnectionConfig::Ethernet.new.tap(&:propose)
+    config.name = "eth0"
+    config
+  end
+
+  let(:eth1) do
+    config = Y2Network::ConnectionConfig::Ethernet.new.tap(&:propose)
+    config.name = "eth1"
+    config
+  end
+
+  let(:interfaces) do
+    Y2Network::InterfacesCollection.new(
+      [
+        double(Y2Network::Interface, hardware: double.as_null_object, name: "eth1"),
+        double(Y2Network::Interface, hardware: double.as_null_object, name: "eth0")
+      ]
+    )
+  end
+
+  let(:connections) do
+    Y2Network::ConnectionConfigsCollection.new([eth0, eth1])
+  end
+
   let(:hostname) { Y2Network::Hostname.new(static: system_hostname) }
   let(:system_hostname) { "test" }
   let(:nameservers) { [IPAddr.new("1.1.1.1"), IPAddr.new("8.8.8.8")] }
@@ -42,30 +73,38 @@ describe Y2Network::Presenters::DNSSummary do
       expect(text).to include("Search List: example.net, example.org")
     end
 
-    context "when no hostname is given" do
+    context "when the hostname is set by DHCP" do
+      before do
+        eth0.bootproto = Y2Network::BootProtocol::DHCP
+        hostname.dhcp_hostname = "eth0"
+      end
+
+      it "is shown as the hostname" do
+        expect(presenter.text).to include("Hostname: Set by DHCP")
+      end
+    end
+
+    context "when the config does not contains a system hostname" do
       let(:system_hostname) { "" }
 
       it "does not show the hostname" do
-        text = presenter.text
-        expect(text).to_not include("Hostname")
+        expect(presenter.text).to_not include("Hostname")
       end
     end
 
-    context "when name servers are given" do
+    context "when the config does not contains name servers" do
       let(:nameservers) { [] }
 
       it "does not show the name servers" do
-        text = presenter.text
-        expect(text).to_not include("Name Servers")
+        expect(presenter.text).to_not include("Name Servers")
       end
     end
 
-    context "when search domains are given" do
+    context "when the config does not contains search domains" do
       let(:searchlist) { [] }
 
       it "does not show the search domains" do
-        text = presenter.text
-        expect(text).to_not include("Search List")
+        expect(presenter.text).to_not include("Search List")
       end
     end
   end

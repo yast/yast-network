@@ -35,7 +35,6 @@ module Y2Network
 
       def_delegators :@config, :hostname, :dns
 
-
       # Constructor
       #
       # @param config [Y2Network::Config]
