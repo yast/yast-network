@@ -1,0 +1,33 @@
+## Hostname in Linux ##
+
+We have several hostnames in linux. Every of them has different usage and different place where to set it up. Some of them can be configured in the YaST's lan module.
+
+## Local system hostname / static hostname (/etc/hostname) ##
+
+You can put a string into /etc/hostname. This string is than used as so called "local system hostname" which is set in the kernel during the boot. This name is used for identification of your local system. This name is typically used e.g. in logs where individual log entries can be prepended by this name. More importantly this name is not related to networking, so putting e.g. FQDN (Fully Qualified Domain Name) has no sense.
+
+Content of this file can be displayed by ```hostname``` command or in systemd world by ```hostnamectl --static```
+
+In YaST you can edit this hostname on Hostname / DNS tab, hostname field.
+
+## Dynamic system hostname(s) (via DHCP) ##
+
+In modern networks is quite common to use DHCP for configuring workstations. If DHCP server supports that you can even configure hostname for workstation. If you want to use hostname from DHCP server on your workstation, you have to allow it. You have to configure ```DHCLIENT_SET_HOSTNAME``` option. This option can be configured on global level for all interfaces in ```/etc/sysconfig/network/dhcp``` file - this setup is then used as global default for all interfaces without that option explicitly configured. You can also configure this option per interface in the interface's ifcfg file. It is very easy to put the system into wrong state here and you will get unpredictable hostname(s) for your system.
+
+YaST is able to take care of this setup too. If you want to configure ```DHCLIENT_SET_HOSTNAME``` option via YaST then go to ```Hostname / DNS``` tab and set desired configuration in "Set Hostname via DHCP" combobox. Only safe configurations are allowed there. If you pick one of predefined setups there, YaST will set global even local options for you.
+
+However, we still talk about naming local system here. This name is also called "Transient hostname" in systemd world. You can display it e.g. by ```hostnamectl --transient```.
+
+## Static network hostname(s) (/etc/hosts) ##
+
+We're getting off the local system here.
+
+In networking world we are used to access remote computers by human readable names instead of networking addresses (IPs). E.g. we want to use google.com instead of 216.239.36.117 when browsing internet. There are severak ways how to achieve this. If you don't want to bother with DNS, you can use local database in /etc/hosts. This file is used as local database translating IP addresses to hostnames - one IP per line.
+
+You can edit this file directly in text editor - you have to take care of correct syntax then, or you can use YaST. This setup is per interface. So, when using YaST, you have to open statically configured interface and write desired hostname to hostname field beside of static IP configuration fields.
+
+## See also ##
+
+* man 5 hostname - /etc/hostname file description
+* man 1 hostname - hostname command description
+* man hostnamectl
