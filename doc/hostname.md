@@ -22,7 +22,7 @@ However, we still talk about naming local system here. This name is also called 
 
 We're getting off the local system here.
 
-In networking world we are used to access remote computers by human readable names instead of networking addresses (IPs). E.g. we want to use google.com instead of 216.239.36.117 when browsing internet. There are severak ways how to achieve this. If you don't want to bother with DNS, you can use local database in /etc/hosts. This file is used as local database translating IP addresses to hostnames - one IP per line.
+In networking world we are used to access remote computers by human readable names instead of networking addresses (IPs). E.g. we want to use google.com instead of 216.239.36.117 when browsing internet. There are several ways how to achieve this. If you don't want to bother with DNS, you can use local database in /etc/hosts. This file is used as local database translating IP addresses to hostnames - one IP per line.
 
 You can edit this file directly in text editor - you have to take care of correct syntax then, or you can use YaST. This setup is per interface. So, when using YaST, you have to open statically configured interface and write desired hostname to hostname field beside of static IP configuration fields.
 
