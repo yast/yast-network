@@ -27,22 +27,21 @@ module Y2Network
     # This class converts a DNS configuration object into a string to be used
     # in an AutoYaST summary.
     class DNSSummary
+      extend Forwardable
       include Yast::I18n
 
-      # @return [Y2Network::DNS]
-      attr_reader :dns
+      # @return [Y2Network::Config]
+      attr_reader :config
 
-      # @return [Y2Network::Hostname]
-      attr_reader :hostname
+      def_delegators :@config, :hostname, :dns
+
 
       # Constructor
       #
-      # @param dns [Y2Network::DNS]
-      # @param hostname [Y2Network::Hostname]
-      def initialize(dns, hostname)
+      # @param config [Y2Network::Config]
+      def initialize(config)
         textdomain "network"
-        @dns = dns
-        @hostname = hostname
+        @config = config
       end
 
       def text
@@ -54,6 +53,12 @@ module Y2Network
 
     private
 
+      def dhcp_hostname?
+        return false unless config.connections.any? { |c| c.bootproto&.dhcp? }
+
+        hostname.dhcp_hostname && hostname.dhcp_hostname != :none
+      end
+
       def add_hostname(summary)
         hostname_str = format_hostname
         return summary unless hostname_str
@@ -62,7 +67,7 @@ module Y2Network
       end
 
       def format_hostname
-        if dhcp? && hostname.dhcp_hostname
+        if dhcp_hostname?
           _("Hostname: Set by DHCP")
         elsif hostname.hostname && !hostname.hostname.empty?
           format(_("Hostname: %s"), hostname.hostname)
@@ -81,10 +86,6 @@ module Y2Network
 
         item = format(_("Search List: %s"), dns.searchlist.join(", "))
         Yast::Summary.AddListItem(summary, item)
-      end
-
-      def dhcp?
-        Yast::NetworkInterfaces.Locate("BOOTPROTO", "dhcp").empty?
       end
     end
   end

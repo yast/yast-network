@@ -635,7 +635,9 @@ module Yast
     #
     # @return [Boolean] true when an interface uses DHCP config
     def dhcp?
-      !LanItems.find_dhcp_ifaces.empty?
+      config = Yast::Lan.yast_config
+
+      !!config&.connections&.any? { |c| c.bootproto&.dhcp? }
     end
   end
 end
