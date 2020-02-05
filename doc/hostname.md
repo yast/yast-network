@@ -26,6 +26,10 @@ In networking world we are used to access remote computers by human readable nam
 
 You can edit this file directly in text editor - you have to take care of correct syntax then, or you can use YaST. This setup is per interface. So, when using YaST, you have to open statically configured interface and write desired hostname to hostname field beside of static IP configuration fields.
 
+## Installation proposals ##
+
+YaST tries to configure the local system hostname during installation. Currently (since SLE 15 SP2) YaST configures target system hostname only if it is explicitly set when booting installation with linuxrc's hostname option. In all other cases no hostname is proposed and you have to set the hostname later when booted into installed system.
+
 ## See also ##
 
 * man 5 hostname - /etc/hostname file description
