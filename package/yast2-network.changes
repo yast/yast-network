@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Feb  4 19:06:52 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
+
+- Do not break when reading interface config files with trailing
+  spaces (bsc#1161300)
+- 4.2.51
+
+-------------------------------------------------------------------
 Mon Feb  3 10:44:31 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
 
 - Fix connection configuration summary when using a remote
