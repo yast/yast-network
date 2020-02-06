@@ -259,6 +259,9 @@ module Y2Network
       def initialize(*_args)
         super
 
+        # TODO: Initializing all the attributes to an empty string makes
+        # hard to know whether the value was defined or not at all. We probably
+        # should ommit this initialization
         self.class.attributes.each do |attr|
           # init everything to empty string
           public_send(:"#{attr[:name]}=", "")

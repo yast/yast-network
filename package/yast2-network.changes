@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Feb  6 15:48:23 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
+
+- Prevent assignation of values not defined in the AutoYaST profile
+  when reading the interfaces section (bsc#1162671)
+- 4.2.52
+
+-------------------------------------------------------------------
 Tue Feb  4 19:06:52 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
 
 - Do not break when reading interface config files with trailing

@@ -38,7 +38,6 @@ describe Y2Network::Autoinst::InterfacesReader do
         "device"                => "eth1",
         "name"                  => "",
         "ipaddr"                => "192.168.10.10",
-        "netmask"               => "255.255.255.0",
         "dhclient_set_hostname" => "no",
         "prefixlen"             => "24"
       },
