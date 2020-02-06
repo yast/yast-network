@@ -53,9 +53,10 @@ module Y2Network
     private
 
       def dhcp_hostname?
-        return false unless config.connections.any? { |c| c.bootproto&.dhcp? }
+        return false unless hostname.dhcp_hostname
+        return false unless config.connections.any?(&:dhcp?)
 
-        hostname.dhcp_hostname && hostname.dhcp_hostname != :none
+        hostname.dhcp_hostname != :none
       end
 
       def add_hostname(summary)

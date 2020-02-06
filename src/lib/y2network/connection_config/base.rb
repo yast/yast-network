@@ -189,6 +189,12 @@ module Y2Network
         end
       end
 
+      def dhcp?
+        return false unless bootproto
+
+        bootproto.dhcp?
+      end
+
     private
 
       def replace_ifplugd?

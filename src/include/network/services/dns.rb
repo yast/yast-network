@@ -385,8 +385,7 @@ module Yast
         Item(Id(:any), _("yes: any"), dhcp_hostname == :any)
       ]
 
-      config = Yast::Lan.yast_config
-      iface_names = config.connections.to_a.select { |c| c.bootproto.dhcp? }.map(&:interface)
+      iface_names = config.connections.to_a.select(&:dhcp?).map(&:interface)
       items += iface_names.map do |iface|
         # translators: label is in form yes: <device name>
         Item(Id(iface), format(_("yes: %s"), iface), dhcp_hostname == iface)
@@ -631,13 +630,17 @@ module Yast
       ret
     end
 
+    def config
+      Yast::Lan.yast_config
+    end
+
     # Checks if any interface is configured to use DHCP
     #
     # @return [Boolean] true when an interface uses DHCP config
     def dhcp?
-      config = Yast::Lan.yast_config
+      return false unless config&.connections
 
-      !!config&.connections&.any? { |c| c.bootproto&.dhcp? }
+      config.connections.any?(&:dhcp?)
     end
   end
 end

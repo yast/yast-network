@@ -31,8 +31,10 @@ describe Y2Network::Presenters::DNSSummary do
   end
 
   let(:config) do
-    Y2Network::Config.new(interfaces: interfaces, connections: connections,
-                          source: :testing, hostname: hostname, dns: dns)
+    Y2Network::Config.new(
+      interfaces: interfaces, connections: connections,
+      source: :testing, hostname: hostname, dns: dns
+    )
   end
 
   let(:eth0) do
