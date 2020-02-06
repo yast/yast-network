@@ -8,7 +8,7 @@ You can put a string into /etc/hostname. This string is than used as so called "
 
 Content of this file can be displayed by ```hostname``` command or in systemd world by ```hostnamectl --static```
 
-In YaST you can edit this hostname on Hostname / DNS tab, hostname field.
+In YaST you can edit this hostname on Hostname / DNS tab, hostname field. Unlike other ways mentioned above, YaST validates your input.
 
 ## Dynamic system hostname(s) (via DHCP) ##
 
@@ -24,7 +24,7 @@ We're getting off the local system here.
 
 In networking world we are used to access remote computers by human readable names instead of networking addresses (IPs). E.g. we want to use google.com instead of 216.239.36.117 when browsing internet. There are several ways how to achieve this. If you don't want to bother with DNS, you can use local database in /etc/hosts. This file is used as local database translating IP addresses to hostnames - one IP per line.
 
-You can edit this file directly in text editor - you have to take care of correct syntax then, or you can use YaST. This setup is per interface. So, when using YaST, you have to open statically configured interface and write desired hostname to hostname field beside of static IP configuration fields.
+You can edit this file directly in text editor - you have to take care of correct syntax then, or you can use YaST. This setup is per interface. So, when using YaST, you have to open statically configured interface and write desired hostname to hostname field beside of static IP configuration fields. YaST also automatically proposes reasonable aliases automatically if you put FQDN there. For example if you use "sle.suse.de" as hostname, the IP will also be assigned with "sle" alias.
 
 ## Installation proposals ##
 
