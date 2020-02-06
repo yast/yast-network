@@ -73,8 +73,10 @@ module Y2Network
       #
       # @param hostname [Y2Network::Hostname] Hostname configuration
       def update_hostname(hostname)
-        Yast::Execute.on_target!("/usr/bin/hostname", hostname.hostname.split(".")[0])
-        Yast::SCR.Write(Yast::Path.new(".target.string"), HOSTNAME_PATH, "#{hostname.hostname}\n")
+        # 1) when user asked for ereasing hostname from /etc/hostname, we keep runtime as it is
+        # 2) we will write whatever user wants even FQDN - no changes under the hood
+        Yast::Execute.on_target!("/usr/bin/hostname", hostname.static) if !hostname.static.empty?
+        Yast::SCR.Write(Yast::Path.new(".target.string"), HOSTNAME_PATH, hostname.static.empty? ? hostname.static : "#{hostname.static}\n")
       end
     end
   end

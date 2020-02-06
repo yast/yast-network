@@ -64,7 +64,7 @@ module Yast
       @widget_descr_dns = {
         "HOSTNAME"        => {
           "widget"            => :textentry,
-          "label"             => Label.HostName,
+          "label"             => "Static H&ostname",
           "opt"               => [],
           "help"              => Ops.get_string(@help, "hostname_global", ""),
           "valid_chars"       => Hostname.ValidChars,
@@ -433,15 +433,10 @@ module Yast
     # @param _event [Hash] the event being handled
     # @return whether valid
     def ValidateHostname(key, _event)
-      dhn = dhcp? && use_dhcp_hostname?
-      # If the names are set by dhcp, the user may enter backup values
-      # here - N#28427. That is, host and domain name are optional then.
-      # For static config, they are mandatory.
-      value = Convert.to_string(UI.QueryWidget(Id(key), :Value))
+      value = UI.QueryWidget(Id(key), :Value).to_s
 
-      return Hostname.Check(value) if !dhn || value != ""
-
-      true
+      # empty hostname is allowed - /etc/hostname gets cleared in such case
+      value.empty? || Hostname.Check(value)
     end
 
     # Validator for the search list
