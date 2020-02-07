@@ -25,7 +25,10 @@ require "y2network/routing_table"
 require "y2network/route"
 
 describe Y2Network::Presenters::RoutingSummary do
-  subject(:presenter) { described_class.new(routing) }
+  subject(:presenter) { described_class.new(config) }
+  let(:config) do
+    Y2Network::Config.new(routing: routing, source: "test")
+  end
 
   let(:routing) do
     Y2Network::Routing.new(tables: [table], forward_ipv4: true, forward_ipv6: false)

@@ -20,6 +20,7 @@
 require "cgi"
 require "installation/proposal_client"
 require "y2network/proposal_settings"
+require "y2network/presenters/summary"
 
 module Yast
   # Proposal client for Network configuration
@@ -53,7 +54,7 @@ module Yast
     def make_proposal(_)
       {
         "preformatted_proposal" => preformatted_proposal,
-        "label_proposal"        => [Yast::LanItems.summary("one_line")],
+        "label_proposal"        => [proposal_summary.one_line_text],
         "links"                 => BACKEND_LINKS
       }
     end
@@ -74,11 +75,19 @@ module Yast
 
   private
 
+    def config
+      Yast::Lan.yast_config
+    end
+
+    def proposal_summary
+      @proposal_summary ||= Y2Network::Presenters::Summary.for(config, "proposal")
+    end
+
     def preformatted_proposal
-      return lan_summary unless settings.network_manager_available?
+      return proposal_summary.text unless settings.network_manager_available?
 
       proposal_text = switch_backend_link
-      proposal_text.prepend(lan_summary) if wicked_backend?
+      proposal_text.prepend(proposal_summary.text) if wicked_backend?
       proposal_text
     end
 
@@ -129,10 +138,6 @@ module Yast
     def Hyperlink(href, text)
       Builtins.sformat("<a href=\"%1\">%2</a>", href, CGI.escapeHTML(text))
     end
-  end
-
-  def lan_summary
-    Yast::Lan.Summary("proposal")
   end
 
   def settings
