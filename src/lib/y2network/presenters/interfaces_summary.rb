@@ -37,6 +37,8 @@ module Y2Network
       attr_reader :config
 
       def initialize(config)
+        textdomain "network"
+
         @config = config
       end
 

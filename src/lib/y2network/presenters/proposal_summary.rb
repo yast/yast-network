@@ -34,6 +34,8 @@ module Y2Network
       #
       # @param config [Y2Network::Config]
       def initialize(config)
+        textdomain "network"
+
         @config = config
       end
 
