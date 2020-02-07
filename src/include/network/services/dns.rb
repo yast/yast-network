@@ -64,7 +64,7 @@ module Yast
       @widget_descr_dns = {
         "HOSTNAME"        => {
           "widget"            => :textentry,
-          "label"             => "Static H&ostname",
+          "label"             => _("Static H&ostname"),
           "opt"               => [],
           "help"              => Ops.get_string(@help, "hostname_global", ""),
           "valid_chars"       => Hostname.ValidChars,
