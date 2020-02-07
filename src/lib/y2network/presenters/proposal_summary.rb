@@ -44,9 +44,9 @@ module Y2Network
       # @return [String]
       def text
         output = "<ul>"
-        output << list_entry_for(_("Interfaces"), interfaces_summary.proposal_text)
-        output << list_entry_for(_("Hostname / DNS"), dns_summary.text)
-        output << list_entry_for(_("Routing"), routing_summary.text)
+        output << list_item_for(_("Interfaces"), interfaces_summary.proposal_text)
+        output << list_item_for(_("Hostname / DNS"), dns_summary.text)
+        output << list_item_for(_("Routing"), routing_summary.text)
         output << "</ul>"
 
         output
@@ -62,7 +62,7 @@ module Y2Network
 
     private
 
-      def list_entry_for(title, content)
+      def list_item_for(title, content)
         "<li>" + title + "</li>" + content
       end
 

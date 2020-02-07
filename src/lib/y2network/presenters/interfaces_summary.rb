@@ -54,20 +54,36 @@ module Y2Network
         Yast::Summary.DevicesList(overview)
       end
 
+      # Generates a one line text summary for the configured interfaces.
+      #
+      # @example with one configured interface
+      #   presenter.one_line_text
+      #   => "DHCP / eth1"
+      #
+      # @example with many configured interfaces
+      #   presenter.one_line_text
+      #   => "Multiple Interfaces"
+      #
+      # @return [String] summary in just one line and in plain text
       def one_line_text
         protocols = []
+        output = []
 
         protocols << "DHCP" if config.connections.any?(&:dhcp?)
         protocols << "STATIC" if config.connections.any?(&:static?)
 
-        case protocols.uniq.size
+        output << protocols.first if protocols.uniq.size == 1
+
+        case config.connections.size
         when 0
           return Yast::Summary.NotConfigured
         when 1
-          return "#{protocols.first} / #{config.connections.map(&:interface).join(", ")}"
+          output << config.connections.first.interface
         else
-          _("Multiple Interfaces")
+          output << _("Multiple Interfaces")
         end
+
+        output.join(" / ")
       end
 
       # Generates a summary in RichText format for the configured interfaces
@@ -82,12 +98,11 @@ module Y2Network
       # @return [String] summary in RichText
       def proposal_text
         items = []
-        items << "<li>#{dhcp_summary}</li>" unless dhcp_ifaces.empty?
-        items << "<li>#{static_summary}</li>" unless static_ifaces.empty?
-        items << "<li>#{bridge_summary}</li>" unless bridge_connections.empty?
-        items << "<li>#{bonding_summary}</li>" unless bonding_connections.empty?
-
-        return Yast::Summary.NotConfigured if items.empty?
+        items << list_item_for(dhcp_summary) unless dhcp_ifaces.empty?
+        items << list_item_for(static_summary) unless static_ifaces.empty?
+        items << list_item_for(bridge_summary) unless bridge_connections.empty?
+        items << list_item_for(bonding_summary) unless bonding_connections.empty?
+        items << list_item_for(Yast::Summary.NotConfigured) if items.empty?
 
         Yast::Summary.DevicesList(items)
       end
@@ -102,18 +117,6 @@ module Y2Network
 
       def dhcp_ifaces
         config.connections.select(&:dhcp?).map(&:interface)
-      end
-
-      def static_ifaces
-        config.connections.select(&:static?).map(&:interface)
-      end
-
-      def bridge_connections
-        config.connections.select { |c| c.type.bridge? }
-      end
-
-      def bonding_connections
-        config.connections.select { |c| c.type.bonding? }
       end
 
       # Return a summary of the interfaces configured statically
@@ -140,6 +143,24 @@ module Y2Network
         _("Bonds: %s") % bonding_connections.map do |connection|
           "#{connection.name} (#{connection.slaves.sort.join(", ")})"
         end
+      end
+
+    private
+
+      def list_item_for(text)
+        "<li>" + text + "</li>"
+      end
+
+      def static_ifaces
+        config.connections.select(&:static?).map(&:interface)
+      end
+
+      def bridge_connections
+        config.connections.select { |c| c.type.bridge? }
+      end
+
+      def bonding_connections
+        config.connections.select { |c| c.type.bonding? }
       end
     end
   end
