@@ -97,14 +97,14 @@ describe Y2Network::Presenters::InterfacesSummary do
     context "when there is only one configured interface" do
       let(:connections) { Y2Network::ConnectionConfigsCollection.new([eth0]) }
 
-      it "returns the interface bootproto and interface name" do
+      it "returns 'protocol / interface name'" do
         expect(subject.one_line_text).to eql "DHCP / eth0"
       end
     end
 
     context "when there are multiple interfaces" do
       context "sharing the same bootproto" do
-        it "returns the bootproto and 'Multiple Interfaces'" do
+        it "returns 'protocol / Multiple Interfaces'" do
           eth0.bootproto = Y2Network::BootProtocol::STATIC
           expect(subject.one_line_text).to eql("STATIC / #{MULTIPLE_INTERFACES}")
         end
