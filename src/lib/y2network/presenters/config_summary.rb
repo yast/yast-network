@@ -21,6 +21,8 @@ require "yast"
 
 module Y2Network
   module Presenters
+    # This class is responsible of creating text summaries for the given
+    # Y2Network::Config.
     class ConfigSummary
       # @return [Y2Network::Config]
       attr_reader :config
@@ -32,7 +34,7 @@ module Y2Network
         @config = config
       end
 
-      # Network config html summary
+      # Network config RichText summary
       #
       # @return [String]
       def text
@@ -41,14 +43,17 @@ module Y2Network
 
     private
 
+      # Convenicente method to obtain the current config interfaces summary
       def interfaces_summary
         @interfaces_summary ||= Summary.for(config, "interfaces")
       end
 
+      # Convenicente method to obtain the current config routing summary
       def routing_summary
         @routing_summary ||= Summary.for(config, "routing")
       end
 
+      # Convenicente method to obtain the current config dns summary
       def dns_summary
         @dns_summary ||= Summary.for(config, "dns")
       end

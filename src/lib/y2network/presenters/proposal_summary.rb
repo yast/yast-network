@@ -25,6 +25,8 @@ require "y2network/presenters/routing_summary"
 
 module Y2Network
   module Presenters
+    # This class is responsible of creating text summaries for the given
+    # Y2Network::Config and mainly used by the installation proposal.
     class ProposalSummary
       include Yast::I18n
       # @return [Y2Network::Config]
@@ -39,7 +41,7 @@ module Y2Network
         @config = config
       end
 
-      # Network proposal html summary
+      # Network proposal RichText format summary
       #
       # @return [String]
       def text

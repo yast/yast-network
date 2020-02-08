@@ -26,8 +26,8 @@ Yast.import "HTML"
 
 module Y2Network
   module Presenters
-    # This class converts a connection config configurations into a string to be used
-    # in an AutoYaST summary.
+    # This class is responsible of creating text summaries for the connections
+    # of the Y2Network::Config given
     class InterfacesSummary
       include Yast::I18n
       include Yast::Logger
@@ -36,12 +36,18 @@ module Y2Network
       # @return [Config]
       attr_reader :config
 
+      # Constructor
+      #
+      # @param config [Y2Network::Config]
       def initialize(config)
         textdomain "network"
 
         @config = config
       end
 
+      # Interfaces configuration summary in RichText format
+      #
+      # @return [String] interfaces config summary in RichText format
       def text
         overview = config.interfaces.map do |interface|
           connection = config.connections.by_name(interface.name)
@@ -107,7 +113,7 @@ module Y2Network
         Yast::Summary.DevicesList(items)
       end
 
-      # Return a summary of the interfaces configurew with DHCP
+      # Return a summary of the interfaces configured with DHCP
       #
       # @return [String] interfaces configured with DHCP summary
       def dhcp_summary
@@ -115,15 +121,11 @@ module Y2Network
         _("Configured with DHCP: %s") % dhcp_ifaces.sort.join(", ")
       end
 
-      def dhcp_ifaces
-        config.connections.select(&:dhcp?).map(&:interface)
-      end
-
       # Return a summary of the interfaces configured statically
       #
       # @return [String] statically configured interfaces summary
       def static_summary
-        # TRANSLATORS: %s is the list of interfaces configured by DHCP
+        # TRANSLATORS: %s is the list of interfaces configured statically
         _("Statically configured: %s") % static_ifaces.sort.join(", ")
       end
 
@@ -131,6 +133,8 @@ module Y2Network
       #
       # @return [String] bridge configured interfaces summary
       def bridge_summary
+        # TRANSLATORS: %s is a list of bridge interface names and their ports
+        # like 'br0 (eth0, eth1)'
         _("Bridges: %s") % bridge_connections.map do |connection|
           "#{connection.name} (#{connection.ports.sort.join(", ")})"
         end
@@ -140,6 +144,8 @@ module Y2Network
       #
       # @return [String] bonding configured interfaces summary
       def bonding_summary
+        # TRANSLATORS: %s is the list of bonding interface names and their
+        # slaves like 'bond0 (br0, eth2)'
         _("Bonds: %s") % bonding_connections.map do |connection|
           "#{connection.name} (#{connection.slaves.sort.join(", ")})"
         end
@@ -147,18 +153,39 @@ module Y2Network
 
     private
 
+      # Convenience method to create an html list item with the text given
+      #
+      # @param [String] text to be used as a list item
+      # @return [String] the given text surrounded by the list item html tags
       def list_item_for(text)
         "<li>" + text + "</li>"
       end
 
+      # Convenience method to obtain all the interface names configured by DHCP
+      #
+      # @return [Array<String>] Interface names configured by DHCP
+      def dhcp_ifaces
+        config.connections.select(&:dhcp?).map(&:interface)
+      end
+
+      # Convenience method to obtain all the interface names configured
+      # statically
+      #
+      # @return [Array<String>] Interface names configured statically
       def static_ifaces
         config.connections.select(&:static?).map(&:interface)
       end
 
+      # Convenience method to obtain all the bridge connections
+      #
+      # @return [Array<Y2Network::ConnectionConfig>] bridge connections array
       def bridge_connections
         config.connections.select { |c| c.type.bridge? }
       end
 
+      # Convenience method to obtain all the bonding connections
+      #
+      # @return [Array<Y2Network::ConnectionConfig>] bonding connections array
       def bonding_connections
         config.connections.select { |c| c.type.bonding? }
       end
