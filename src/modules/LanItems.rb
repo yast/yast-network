@@ -25,7 +25,6 @@ require "y2storage"
 require "network/network_autoyast"
 require "network/install_inf_convertor"
 require "network/wicked"
-require "network/lan_items_summary"
 require "y2network/config"
 require "y2network/boot_protocol"
 
@@ -409,17 +408,6 @@ module Yast
       SetModified() if !settings.empty?
 
       true
-    end
-
-    # Creates a summary of the configured items.
-    #
-    # It supports differents types of summaries depending on the options[:type]
-    #
-    # @see LanItemsSummary
-    # @param type [String,Symbol] summary options, supported "one-line" and "proposal"
-    # @return [String] summary of the configured items
-    def summary(type)
-      LanItemsSummary.new.send(type)
     end
 
     # Creates details for device's overview based on ip configuration type

@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Feb  7 15:50:13 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
+
+- Fix the installation proposal text reflecting the network
+  configuration changes (bsc#1162796)
+- 4.2.53
+
+-------------------------------------------------------------------
 Thu Feb  6 15:48:23 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
 
 - Prevent assignation of values not defined in the AutoYaST profile

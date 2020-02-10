@@ -37,9 +37,7 @@ require "y2network/autoinst_profile/networking_section"
 require "y2network/config"
 require "y2network/virtualization_config"
 require "y2network/interface_config_builder"
-require "y2network/presenters/routing_summary"
-require "y2network/presenters/dns_summary"
-require "y2network/presenters/interfaces_summary"
+require "y2network/presenters/summary"
 
 require "shellwords"
 
@@ -702,12 +700,10 @@ module Yast
     # @return summary of the current configuration
     def Summary(mode)
       case mode
-      when "summary"
-        "#{interfaces_summary}#{dns_summary}#{routing_summary}"
-      when "proposal"
-        "#{LanItems.summary(:proposal)}#{dns_summary}#{routing_summary}"
+      when "summary", "proposal"
+        Y2Network::Presenters::Summary.text_for(yast_config, mode)
       else
-        interfaces_summary
+        Y2Network::Presenters::Summary.text_for(yast_config, "interfaces")
       end
     end
 
@@ -898,39 +894,6 @@ module Yast
       system_config = Y2Network::Config.from(:sysconfig)
       Yast::Lan.add_config(:system, system_config)
       Yast::Lan.add_config(:yast, system_config.copy)
-    end
-
-    # Returns the routing summary
-    #
-    # @return [String]
-    def routing_summary
-      config = find_config(:yast)
-      return "" unless config&.routing
-
-      presenter = Y2Network::Presenters::RoutingSummary.new(config.routing)
-      presenter.text
-    end
-
-    # Returns the DNS configuration summary
-    #
-    # @return [String]
-    def dns_summary
-      config = find_config(:yast)
-      return "" unless config&.dns
-
-      presenter = Y2Network::Presenters::DNSSummary.new(config.dns, config.hostname)
-      presenter.text
-    end
-
-    # Returns the interfaces configuration summary
-    #
-    # @return [String]
-    def interfaces_summary
-      config = find_config(:yast)
-      return "" unless config
-
-      presenter = Y2Network::Presenters::InterfacesSummary.new(config)
-      presenter.text
     end
 
     def firewalld

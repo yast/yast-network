@@ -33,10 +33,10 @@ module Y2Network
 
       # Constructor
       #
-      # @param routing [Y2Network::Routing] Network configuration to represent
-      def initialize(routing)
+      # @param config [Y2Network::Config] Network configuration to represent
+      def initialize(config)
         textdomain "network"
-        @routing = routing
+        @routing = config.routing
       end
 
       # Returns the summary of network configuration settings in text form
