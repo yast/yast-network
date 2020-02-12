@@ -189,6 +189,21 @@ module Y2Network
         end
       end
 
+      # Return whether the connection is configured using the dhcp protocol or not
+      #
+      # @return [Boolean] true when using dhcp; false otherwise
+      def dhcp?
+        bootproto ? bootproto.dhcp? : false
+      end
+
+      # Return whether the connection is configured using a fixed IPADDR
+      #
+      # @return [Boolean] true when static protocol is used or not defined
+      #   bootpro; false otherwise
+      def static?
+        bootproto ? bootproto.static? : true
+      end
+
     private
 
       def replace_ifplugd?

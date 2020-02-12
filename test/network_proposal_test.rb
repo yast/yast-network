@@ -22,15 +22,21 @@
 require_relative "test_helper"
 
 require "network/clients/network_proposal"
+require "y2network/presenters/proposal_summary"
 
 describe Yast::NetworkProposal do
-  Yast.import "LanItems"
   Yast.import "Lan"
+
+  let(:proposal_summary) do
+    double(
+      "Y2Network::Presenters::ProposalSummary",
+      one_line_text: "one_line_summary", text: "rich_text_summary"
+    )
+  end
 
   before do
     stub_const("Yast::Wizard", double.as_null_object)
-    allow(Yast::LanItems).to receive(:summary).with("one_line").and_return("one_line_summary")
-    allow(Yast::Lan).to receive(:Summary).with("proposal").and_return("rich_text_summary")
+    allow(subject).to receive(:proposal_summary).and_return(proposal_summary)
   end
 
   describe "#description" do
