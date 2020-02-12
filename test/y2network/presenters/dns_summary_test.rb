@@ -86,7 +86,7 @@ describe Y2Network::Presenters::DNSSummary do
       end
     end
 
-    context "when the config does not contains a system hostname" do
+    context "when the config does not contain a system hostname" do
       let(:system_hostname) { "" }
 
       it "does not show the hostname" do
@@ -94,7 +94,7 @@ describe Y2Network::Presenters::DNSSummary do
       end
     end
 
-    context "when the config does not contains name servers" do
+    context "when the config does not contain name servers" do
       let(:nameservers) { [] }
 
       it "does not show the name servers" do
@@ -102,7 +102,7 @@ describe Y2Network::Presenters::DNSSummary do
       end
     end
 
-    context "when the config does not contains search domains" do
+    context "when the config does not contain search domains" do
       let(:searchlist) { [] }
 
       it "does not show the search domains" do

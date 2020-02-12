@@ -54,8 +54,7 @@ describe Y2Network::Presenters::ProposalSummary do
 
   describe "#text" do
     it "returns a summary in text form" do
-      text = presenter.text
-      expect(text).to be_a(::String)
+      expect(presenter.text).to be_a(::String)
     end
 
     it "returns a summary with the interfaces, dns and routing configuration" do

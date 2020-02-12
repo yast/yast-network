@@ -43,17 +43,17 @@ module Y2Network
 
     private
 
-      # Convenicente method to obtain the current config interfaces summary
+      # Convenience method to obtain the current config interfaces summary
       def interfaces_summary
         @interfaces_summary ||= Summary.for(config, "interfaces")
       end
 
-      # Convenicente method to obtain the current config routing summary
+      # Convenience method to obtain the current config routing summary
       def routing_summary
         @routing_summary ||= Summary.for(config, "routing")
       end
 
-      # Convenicente method to obtain the current config dns summary
+      # Convenience method to obtain the current config dns summary
       def dns_summary
         @dns_summary ||= Summary.for(config, "dns")
       end
