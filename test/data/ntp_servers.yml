@@ -1,0 +1,9 @@
+---
+
+- access_policy: open access
+  address: ntp.cgi.cz
+  country: CZ
+  exact_location: Prague, The Czech Republic
+  location: Czech Republic
+  stratum: '2'
+  synchronization: NTP V4 secondary (stratum 2), PC/FreeBSD
