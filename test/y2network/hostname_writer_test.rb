@@ -78,7 +78,7 @@ describe Y2Network::Sysconfig::HostnameWriter do
     context "when no change in hostname" do
       let(:hostname) { "hostname" }
 
-      it "do not try to update anything" do
+      it "does not try to update anything" do
         expect(Yast::Execute)
           .not_to receive(:on_target!)
         expect(Yast::SCR)
