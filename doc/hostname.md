@@ -30,6 +30,18 @@ You can edit this file directly in text editor - you have to take care of correc
 
 YaST tries to configure the local system hostname during installation. Currently (since SLE 15 SP2) YaST configures target system hostname only if it is explicitly set when booting installation with linuxrc's hostname option. In all other cases no hostname is proposed and you have to set the hostname later when booted into installed system.
 
+## Known issues ##
+
+* When you try to delete hostname you can face following issue with runtime hostname.
+
+Empty hostname is treated as invalid by hostname utility and empty /etc/hostname is automatically changed to localhost during the boot.
+
+However, ```hostname ''``` even ```hostname -b --file /etc/hostname``` do not work (for empty /etc/hostname). So, runtime remains untouched (hostname cmd still returns previous hostname).
+
+In oposite ```hostnamectl set-hostname ''``` works in a sense that it deletes /etc/hostname, erases static hostname and sets transient hostname to localhost, so hostname cmd then correctly shows localhost as result. However, things like bash promt remains untouched (which is also true when modifying hostname to a nonempty string).
+
+As there currently is no difference between deleting ```/etc/hostname``` and ereasing it, we decided to keep empty ```/etc/hostname``` to be consistent with state you (can) get right after installation. However, until we switch to hostnamectl reboot is required to ```hostname``` utility accept empty hostname in some expected way.
+
 ## See also ##
 
 * man 5 hostname - /etc/hostname file description
