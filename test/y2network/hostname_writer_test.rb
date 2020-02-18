@@ -23,7 +23,7 @@ require "y2network/hostname"
 describe Y2Network::Sysconfig::HostnameWriter do
   subject { Y2Network::Sysconfig::HostnameWriter.new }
 
-  describe ".update_hostname" do
+  describe ".write" do
     let(:hostname_container) do
       instance_double(
         Y2Network::Hostname,
@@ -40,6 +40,10 @@ describe Y2Network::Sysconfig::HostnameWriter do
         dhcp_hostname:  false,
         save_hostname?: true
       )
+    end
+
+    before(:each) do
+      allow(subject).to receive(:update_sysconfig_dhcp).and_return(nil)
     end
 
     context "when updating hostname" do
@@ -68,6 +72,20 @@ describe Y2Network::Sysconfig::HostnameWriter do
           .with(anything, anything, /#{hostname}/)
 
         subject.write(hostname_container, old_hostname_container)
+      end
+    end
+
+    context "when no change in hostname" do
+      let(:hostname) { "hostname" }
+
+      it "do not try to update anything" do
+        expect(Yast::Execute)
+          .not_to receive(:on_target!)
+        expect(Yast::SCR)
+          .not_to receive(:Write)
+          .with(anything, anything, /#{hostname}/)
+
+        subject.write(hostname_container, hostname_container)
       end
     end
   end
