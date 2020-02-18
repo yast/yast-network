@@ -83,7 +83,6 @@ describe Y2Network::Sysconfig::HostnameWriter do
           .not_to receive(:on_target!)
         expect(Yast::SCR)
           .not_to receive(:Write)
-          .with(anything, anything, /#{hostname}/)
 
         subject.write(hostname_container, hostname_container)
       end
