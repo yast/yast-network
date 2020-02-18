@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Feb  7 17:31:31 UTC 2020 - Michal Filka <mfilka@suse.com>
+
+- bsc#1162271
+  - fixed validation of hostname
+- 4.2.54
+
+-------------------------------------------------------------------
 Fri Feb  7 15:50:13 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
 
 - Fix the installation proposal text reflecting the network

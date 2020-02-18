@@ -19,11 +19,7 @@
 # you may find current contact information at www.novell.com
 #
 # **************************************************************************
-# File:  include/network/lan/dialogs.ycp
-# Package:  Network configuration
-# Summary:  Summary, overview and IO dialogs for network cards config
-# Authors:  Michal Svec <msvec@suse.cz>
-#
+
 module Yast
   module NetworkServicesDnsInclude
     # CWM wants id-value pairs
@@ -61,10 +57,12 @@ module Yast
       # are lists and their widgets are suffixed.
       @hn_settings = {}
 
+      # TODO: It would be nice to display also transient hostname here - e.g. that
+      # one received from dhcp
       @widget_descr_dns = {
         "HOSTNAME"        => {
           "widget"            => :textentry,
-          "label"             => Label.HostName,
+          "label"             => _("Static H&ostname"),
           "opt"               => [],
           "help"              => Ops.get_string(@help, "hostname_global", ""),
           "valid_chars"       => Hostname.ValidChars,
@@ -431,17 +429,13 @@ module Yast
     # Validator for hostname, no_popup
     # @param key [String] the widget being validated
     # @param _event [Hash] the event being handled
-    # @return whether valid
+    # @return [Boolean] whether the current static hostname is valid or not
     def ValidateHostname(key, _event)
-      dhn = dhcp? && use_dhcp_hostname?
-      # If the names are set by dhcp, the user may enter backup values
-      # here - N#28427. That is, host and domain name are optional then.
-      # For static config, they are mandatory.
-      value = Convert.to_string(UI.QueryWidget(Id(key), :Value))
+      value = UI.QueryWidget(Id(key), :Value).to_s
 
-      return Hostname.Check(value) if !dhn || value != ""
-
-      true
+      # 1) empty hostname is allowed - /etc/hostname gets cleared in such case
+      # 2) FQDN is allowed
+      value.empty? || Hostname.Check(value.tr(".", ""))
     end
 
     # Validator for the search list
