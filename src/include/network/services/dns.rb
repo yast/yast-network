@@ -431,8 +431,9 @@ module Yast
     def ValidateHostname(key, _event)
       value = UI.QueryWidget(Id(key), :Value).to_s
 
-      # empty hostname is allowed - /etc/hostname gets cleared in such case
-      value.empty? || Hostname.Check(value)
+      # 1) empty hostname is allowed - /etc/hostname gets cleared in such case
+      # 2) FQDN is allowed
+      value.empty? || Hostname.Check(value.tr('.',''))
     end
 
     # Validator for the search list
