@@ -57,6 +57,9 @@ module Yast
       # are lists and their widgets are suffixed.
       @hn_settings = {}
 
+      # TODO:
+      # It would be nice to display also transient hostname here - e.g. that
+      # one received from dhcp
       @widget_descr_dns = {
         "HOSTNAME"        => {
           "widget"            => :textentry,
