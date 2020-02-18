@@ -19,11 +19,7 @@
 # you may find current contact information at www.novell.com
 #
 # **************************************************************************
-# File:  include/network/lan/dialogs.ycp
-# Package:  Network configuration
-# Summary:  Summary, overview and IO dialogs for network cards config
-# Authors:  Michal Svec <msvec@suse.cz>
-#
+
 module Yast
   module NetworkServicesDnsInclude
     # CWM wants id-value pairs
