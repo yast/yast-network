@@ -27,8 +27,8 @@ describe Y2Network::Sysconfig::HostnameWriter do
     let(:hostname_container) do
       instance_double(
         Y2Network::Hostname,
-        static: hostname,
-        dhcp_hostname: false,
+        static:         hostname,
+        dhcp_hostname:  false,
         save_hostname?: true
       )
     end
@@ -36,8 +36,8 @@ describe Y2Network::Sysconfig::HostnameWriter do
     let(:old_hostname_container) do
       instance_double(
         Y2Network::Hostname,
-        static: "oldhostname",
-        dhcp_hostname: false,
+        static:         "old#{hostname}",
+        dhcp_hostname:  false,
         save_hostname?: true
       )
     end

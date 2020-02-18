@@ -57,8 +57,7 @@ module Yast
       # are lists and their widgets are suffixed.
       @hn_settings = {}
 
-      # TODO:
-      # It would be nice to display also transient hostname here - e.g. that
+      # TODO: It would be nice to display also transient hostname here - e.g. that
       # one received from dhcp
       @widget_descr_dns = {
         "HOSTNAME"        => {
@@ -436,7 +435,7 @@ module Yast
 
       # 1) empty hostname is allowed - /etc/hostname gets cleared in such case
       # 2) FQDN is allowed
-      value.empty? || Hostname.Check(value.tr('.',''))
+      value.empty? || Hostname.Check(value.tr(".", ""))
     end
 
     # Validator for the search list
