@@ -427,7 +427,7 @@ module Yast
     # Validator for hostname, no_popup
     # @param key [String] the widget being validated
     # @param _event [Hash] the event being handled
-    # @return whether valid
+    # @return [Boolean] whether the current static hostname is valid or not
     def ValidateHostname(key, _event)
       value = UI.QueryWidget(Id(key), :Value).to_s
 
