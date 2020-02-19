@@ -125,12 +125,16 @@ module Y2Network
         end
       end
 
+      yast_config.rename_interface(@old_name, name, renaming_mechanism) if renamed_interface?
+      yast_config.add_or_update_connection_config(@connection_config)
+      # Assign the new added interface in case of a new connection for an
+      # unplugged one (bsc#1162679)
+      self.interface = find_interface unless interface
+
       if interface.respond_to?(:custom_driver)
         interface.custom_driver = driver_auto? ? nil : driver.name
         yast_config.add_or_update_driver(driver) unless driver_auto?
       end
-      yast_config.rename_interface(@old_name, name, renaming_mechanism) if renamed_interface?
-      yast_config.add_or_update_connection_config(@connection_config)
 
       nil
     end
@@ -245,7 +249,7 @@ module Y2Network
     def driver
       return @driver if @driver
 
-      if @interface.custom_driver
+      if @interface&.custom_driver
         @driver = yast_config.drivers.find { |d| d.name == @interface.custom_driver }
       end
       @driver ||= :auto
