@@ -1,6 +1,6 @@
 ## Hostname in Linux ##
 
-We have several hostnames in linux. Every of them has different usage and different place where to set it up. Some of them can be configured in the YaST's lan module.
+We have several hostnames in linux. Each of them has different usage and different place where to set it up. Some of them can be configured by the YaST's lan module.
 
 ## Local system hostname / static hostname (/etc/hostname) ##
 
