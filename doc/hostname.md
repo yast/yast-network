@@ -44,6 +44,6 @@ As there currently is no difference between deleting ```/etc/hostname``` and ere
 
 ## See also ##
 
-* man 5 hostname - /etc/hostname file description
+* [man 5 hostname](http://man7.org/linux/man-pages/man5/hostname.5.html) - /etc/hostname file description
 * [man 1 hostname](http://man7.org/linux/man-pages/man1/hostname.1.html) - hostname command description
 * man hostnamectl
