@@ -80,6 +80,7 @@ module Yast
       Yast.import "UI"
       textdomain "network"
 
+      Yast.import "Lan"
       Yast.import "Arch"
       Yast.import "Hostname"
       Yast.import "IP"
