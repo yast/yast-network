@@ -84,7 +84,6 @@ module Yast
       Yast.import "Arch"
       Yast.import "Hostname"
       Yast.import "IP"
-      Yast.import "NetworkInterfaces"
       Yast.import "ProductFeatures"
       Yast.import "Progress"
       Yast.import "Service"
@@ -224,16 +223,14 @@ module Yast
     # NOTE: used in yast2-nis-server, yast2-samba-server, yast2-dhcp-server
     def IsHostLocal(check_host)
       Read()
-      NetworkInterfaces.Read
-      dhcp_data = {}
+      current_dhcp_data = {}
+      connections = Yast::Lan.yast_config.connections
 
-      if Ops.greater_than(
-        Builtins.size(NetworkInterfaces.Locate("BOOTPROTO", "dhcp")),
-        0
-      ) || dhcp_hostname
-        dhcp_data = dhcp_data()
-        Builtins.y2milestone("Got DHCP-configured data: %1", dhcp_data)
+      if connections.any?(:dhcp?) || dhcp_hostname
+        current_dhcp_data = dhcp_data
+        log.info("Got DHCP-configured data: #{current_dhcp_data.inspect}")
       end
+
       # FIXME: May not work properly in following situations:
       #   - multiple addresses per interface
       #     - aliases in /etc/hosts
@@ -242,29 +239,19 @@ module Yast
       # loopback interface or localhost hostname
       return true if ["127.0.0.1", "::1", "localhost", "localhost.localdomain"].include?(check_host)
 
+      ip_addresses = connections.map { |c| c.all_ips.map { |i| i&.address&.address.to_s } }.flatten
+
       # IPv4 address
       if IP.Check4(check_host)
-        if Ops.greater_than(
-          Builtins.size(NetworkInterfaces.Locate("IPADDR", check_host)),
-          0
-        ) ||
-            Ops.get(dhcp_data, "ip", "") == check_host
-          return true
-        end
+        return true if ip_addresses.include?(check_host) || current_dhcp_data["ip"] == check_host
       # IPv6 address
       elsif IP.Check6(check_host)
-        Builtins.y2debug(
-          "TODO make it similar to IPv4 after other code adapted to IPv6"
-        )
-      # short hostname
-      elsif Builtins.findfirstof(check_host, ".").nil?
-        if Builtins.tolower(check_host) == Builtins.tolower(@hostname) ||
-            Ops.get(dhcp_data, "hostname_short", "") == check_host
-          return true
-        end
-      elsif Builtins.tolower(check_host) ==
-          Builtins.tolower(Ops.add(Ops.add(@hostname, "."), @domain)) ||
-          Ops.get(dhcp_data, "hostname_fq", "") == check_host
+        log.debug("TODO make it similar to IPv4 after other code adapted to IPv6")
+      # short hostname or FQDN
+      elsif check_host.downcase == hostname.to_s.downcase ||
+          current_dhcp_data["hostname_short"] == check_host ||
+          current_dhcp_data["hostname_fq"] == check_host
+
         return true
       end
       false

@@ -33,7 +33,10 @@ Yast.import "Lan"
 
 describe Yast::DNS do
   let(:lan_config) do
-    Y2Network::Config.new(dns: dns_config, hostname: hostname_config, source: :sysconfig)
+    Y2Network::Config.new(
+      dns: dns_config, hostname: hostname_config, source: :sysconfig,
+      connections: connections, interfaces: interfaces
+    )
   end
   let(:dns_config) do
     Y2Network::DNS.new
@@ -41,6 +44,26 @@ describe Yast::DNS do
   let(:hostname_config) do
     Y2Network::Hostname.new(static: "install", dhcp_hostname: true)
   end
+
+  let(:eth0) { Y2Network::PhysicalInterface.new("eth0") }
+  let(:interfaces) { Y2Network::InterfacesCollection.new([eth0]) }
+
+  let(:eth0_conn) do
+    Y2Network::ConnectionConfig::Ethernet.new.tap do |conn|
+      conn.interface = "eth0"
+      conn.name = "eth0"
+      conn.ip = ip
+    end
+  end
+
+  let(:ip) do
+    Y2Network::ConnectionConfig::IPConfig.new(
+      Y2Network::IPAddress.from_string("192.168.122.33/24"),
+      id: "", broadcast: Y2Network::IPAddress.from_string("192.168.122.255")
+    )
+  end
+
+  let(:connections) { Y2Network::ConnectionConfigsCollection.new([eth0_conn]) }
 
   subject { Yast::DNS }
 
@@ -117,14 +140,12 @@ describe Yast::DNS do
   end
 
   describe ".IsHostLocal" do
-    let(:ip) { "10.111.66.75" }
+    let(:dhcp_ip) { "10.111.66.75" }
     let(:hostname_short) { "test" }
     let(:hostname_fq) { "test.test.de" }
     let(:output) do
       { "ip" => ip, "hostname_short" => hostname_short, "hostname_fq" => hostname_fq }
     end
-    let(:ipv4) { false }
-    let(:ipv6) { false }
     let(:stdout) { double }
 
     before do
@@ -133,10 +154,8 @@ describe Yast::DNS do
         .with(/eth[0-9]/)
         .and_return(Y2Network::InterfaceType::ETHERNET)
       allow(subject).to receive(:Read)
-      allow(Yast::IP).to receive(:Check4).and_return(ipv4)
-      allow(Yast::IP).to receive(:Check6).and_return(ipv6)
       allow(Yast::Execute).to receive(:stdout).and_return(stdout)
-      allow(stdout).to receive(:on_target!).with("/usr/bin/hostname -i").and_return(ip)
+      allow(stdout).to receive(:on_target!).with("/usr/bin/hostname -i").and_return(dhcp_ip)
       allow(stdout).to receive(:on_target!).with("/usr/bin/hostname").and_return(hostname_short)
       allow(stdout).to receive(:on_target!).with("/usr/bin/hostname -f").and_return(hostname_fq)
 
@@ -158,10 +177,9 @@ describe Yast::DNS do
     end
 
     context "for IPv4" do
-      let(:ipv4) { true }
-
       it "returns true when the ip of local machine is given" do
-        expect(subject.IsHostLocal(ip)).to eq(true)
+        expect(subject.IsHostLocal(dhcp_ip)).to eq(true)
+        expect(subject.IsHostLocal("192.168.122.33")).to eq(true)
       end
 
       it "returns false when the ip of local machine is not given" do
