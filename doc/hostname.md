@@ -10,6 +10,8 @@ Content of this file can be displayed by `hostname` command or in systemd world 
 
 In YaST you can edit this hostname on Hostname / DNS tab, hostname field. Unlike other ways mentioned above, YaST validates your input.
 
+![Hostname/DNS tab](pics/hostname_tab.png?raw=true "Hostname/DNS tab")
+
 ## Dynamic system hostname(s) (via DHCP) ##
 
 If you want to set hostname via DHCP you have to configure `DHCLIENT_SET_HOSTNAME` option on the client. This option can be configured on global level for all interfaces in `/etc/sysconfig/network/dhcp` file - this setup is then used as global default for all interfaces without that option explicitly configured. You can also configure this option per interface in the interface's ifcfg file. It is very easy to put the system into wrong state here and you will get unpredictable hostname(s) for your system.
@@ -25,6 +27,8 @@ We're getting off the local system here.
 In networking world we are used to access remote computers using human readable names instead of networking addresses (IPs). E.g. we want to use google.com instead of 216.239.36.117 when browsing internet. There are several ways how to achieve this. If you don't want to bother with DNS, you can use local database in /etc/hosts. This file is used as local database translating IP addresses to hostnames - one IP per line.
 
 You can edit this file directly in text editor - you have to take care of correct syntax then, or you can use YaST. This setup is per interface. When using YaST, you have to open statically configured interface and write desired hostname to hostname field beside of static IP configuration fields. YaST also automatically proposes reasonable aliases automatically if you put FQDN there. For example if you use "sle.suse.de" as hostname, the IP will also be assigned with "sle" alias.
+
+![Hostname for interface](pics/hostname_iface.png?raw=true "Hostname for interface")
 
 ## Installation proposals ##
 
