@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Feb 19 11:52:25 UTC 2020 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
+
+- Add a class to represent NTP servers (jsc#SLE-7188).
+- 4.2.55
+
+-------------------------------------------------------------------
 Wed Feb 19 07:34:39 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
 
 - Do not crash with an exception when editing the hardware
