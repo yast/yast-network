@@ -110,6 +110,19 @@ describe Y2Network::InterfaceConfigBuilder do
       subject.save
     end
 
+    context "when the new connection config is for an unplugged interface" do
+      subject(:config_builder) do
+        res = Y2Network::InterfaceConfigBuilder.for("eth")
+        res.name = "eth1"
+        res
+      end
+
+      it "assigns the added interface to the builder" do
+        subject.save
+        expect(subject.interface.name).to eq("eth1")
+      end
+    end
+
     context "when interface was renamed" do
       before do
         subject.rename_interface("eth2")
