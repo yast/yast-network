@@ -46,6 +46,10 @@ In oposite `hostnamectl set-hostname ''` works in a sense that it deletes /etc/h
 
 As there currently is no difference between deleting `/etc/hostname` and ereasing it, we decided to keep empty `/etc/hostname` to be consistent with state you (can) get right after installation. However, until we switch to hostnamectl reboot is required to `hostname` utility accept empty hostname in some expected way.
 
+* You can see also /etc/HOSTNAME on your system.
+
+This used to be SUSE specific file with different usage than /etc/hostname. However, /etc/HOSTNAME is obsolete and currently is symlinked to /etc/hostname and can disappear in the future completelly.
+
 ## See also ##
 
 * [man 5 hostname](http://man7.org/linux/man-pages/man5/hostname.5.html) - /etc/hostname file description
