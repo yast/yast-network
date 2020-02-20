@@ -127,7 +127,7 @@ module Y2Network
 
       yast_config.rename_interface(@old_name, name, renaming_mechanism) if renamed_interface?
       yast_config.add_or_update_connection_config(@connection_config)
-      # Assign the new added interface in case of a new connection for an
+      # Assign the newly added interface in case of a new connection for an
       # unplugged one (bsc#1162679)
       self.interface = find_interface unless interface
 
