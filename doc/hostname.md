@@ -4,11 +4,11 @@ We have several hostnames in Linux. Each of them has different usage and differe
 
 ## Local system hostname / static hostname (/etc/hostname) ##
 
-You can put a string into /etc/hostname. This string is than used as so called "local system hostname" which is set in the kernel during the boot. This name is used for identification of your local system. This name is typically used e.g. in logs where individual log entries can be prepended by this name. More importantly this name is not related to networking, so putting e.g. FQDN (Fully Qualified Domain Name) has no sense.
+You can put a string into /etc/hostname. This string is than used as so called "local system hostname" which is set in the kernel during the boot. In systemd it is named "static hostname". This name is used for identification of your local system. This name is typically used e.g. in logs where individual log entries can be prepended by this name. More importantly this name is not directly related to networking, so putting e.g. FQDN (Fully Qualified Domain Name) here has no sense.
 
-Content of this file can be displayed by `hostname` command or in systemd world by `hostnamectl --static`
+Current static hostname can be displayed by `hostname` command or in systemd world by `hostnamectl --static`
 
-In YaST you can edit this hostname on Hostname / DNS tab, hostname field. Unlike other ways mentioned above, YaST validates your input.
+In YaST you can edit this hostname on Hostname / DNS tab, `Static Hostname` field. Unlike other ways mentioned above, YaST validates your input. FQDN is allowed here.
 
 ![Hostname/DNS tab](pics/hostname_tab.png?raw=true "Hostname/DNS tab")
 
