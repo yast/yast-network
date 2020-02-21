@@ -8,7 +8,7 @@ You can put a string into /etc/hostname. This string is than used as so called "
 
 Current static hostname can be displayed by `hostname` command or in systemd world by `hostnamectl --static`
 
-In YaST you can edit this hostname on Hostname / DNS tab, `Static Hostname` field. Unlike other ways mentioned above, YaST validates your input. FQDN is allowed here.
+In YaST you can edit this hostname on `Hostname / DNS tab`, `Static Hostname` field. Unlike other ways mentioned above, YaST validates your input. FQDN is allowed here.
 
 ![Hostname/DNS tab](pics/hostname_tab.png?raw=true "Hostname/DNS tab")
 
@@ -40,15 +40,15 @@ YaST tries to configure the local system hostname during installation. Currently
 
 Empty hostname is treated as invalid by hostname utility and empty /etc/hostname is automatically changed to localhost during the boot.
 
-However, `hostname ''` even `hostname -b --file /etc/hostname` do not work (for empty /etc/hostname). So, runtime remains untouched (hostname cmd still returns previous hostname).
+However, `hostname ''` even `hostname -b --file /etc/hostname` do not work (for empty /etc/hostname). So, runtime remains untouched (hostname command still returns previous hostname).
 
-In oposite `hostnamectl set-hostname ''` works in a sense that it deletes /etc/hostname, erases static hostname and sets transient hostname to localhost, so hostname cmd then correctly shows localhost as result. However, things like bash promt remains untouched (which is also true when modifying hostname to a nonempty string).
+In opposite `hostnamectl set-hostname ''` works in a sense that it deletes /etc/hostname, erases static hostname and sets transient hostname to localhost, so hostname cmd then correctly shows localhost as result. However, things like bash prompt remains untouched (which is also true when modifying hostname to a nonempty string).
 
-As there currently is no difference between deleting `/etc/hostname` and ereasing it, we decided to keep empty `/etc/hostname` to be consistent with state you (can) get right after installation. However, until we switch to hostnamectl reboot is required to `hostname` utility accept empty hostname in some expected way.
+As there currently is no difference between deleting `/etc/hostname` and erasing it, we decided to keep empty `/etc/hostname` to be consistent with state you (can) get right after installation. However, until we switch to hostnamectl reboot is required to `hostname` utility accept empty hostname in some expected way.
 
 * You can see also /etc/HOSTNAME on your system.
 
-This used to be SUSE specific file with different usage than /etc/hostname. However, /etc/HOSTNAME is obsolete and currently is symlinked to /etc/hostname and can disappear in the future completelly.
+This used to be SUSE specific file with different usage than /etc/hostname. However, /etc/HOSTNAME is obsolete and currently is symlinked to /etc/hostname and can disappear in the future completely.
 
 ## See also ##
 
