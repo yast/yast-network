@@ -32,6 +32,7 @@ Yast.import "ProductControl"
 Yast.import "Lan"
 
 describe Yast::DNS do
+  let(:logger) { double(info: true, debug: true) }
   let(:lan_config) do
     Y2Network::Config.new(
       dns: dns_config, hostname: hostname_config, source: :sysconfig,
@@ -68,6 +69,7 @@ describe Yast::DNS do
   subject { Yast::DNS }
 
   before do
+    allow(described_class).to receive(:log).and_return(logger)
     allow(Yast::Lan).to receive(:Read)
     allow(Yast::Lan).to receive(:yast_config).and_return(lan_config)
   end
@@ -184,6 +186,19 @@ describe Yast::DNS do
 
       it "returns false when the ip of local machine is not given" do
         expect(subject.IsHostLocal("1.2.3.4")).to eq(false)
+      end
+    end
+
+    context "for IPv6" do
+      let(:ip6) { "2001:db8:1234:ffff:ffff:ffff:ffff:fff1" }
+
+      it "logs that the implementation is still pending" do
+        expect(logger).to receive(:debug).with(/^TODO/)
+        subject.IsHostLocal(ip6)
+      end
+
+      it "returns false" do
+        expect(subject.IsHostLocal(ip6)).to eq(false)
       end
     end
   end
