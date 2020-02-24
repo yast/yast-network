@@ -239,7 +239,13 @@ module Yast
       # loopback interface or localhost hostname
       return true if ["127.0.0.1", "::1", "localhost", "localhost.localdomain"].include?(check_host)
 
-      ip_addresses = connections.map { |c| c.all_ips.map { |i| i&.address&.address.to_s } }.flatten
+      ip_addresses = []
+      connections.each do |conn|
+        conn.all_ips.each do |ip|
+          address = ip&.address&.address.to_s
+          ip_addresses << address if !address.empty? && !ip_addresses.include?(address)
+        end
+      end
 
       # IPv4 address
       if IP.Check4(check_host)
