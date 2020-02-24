@@ -44,6 +44,7 @@ describe Y2Network::Sysconfig::HostnameWriter do
 
     before(:each) do
       allow(subject).to receive(:update_sysconfig_dhcp).and_return(nil)
+      allow(Yast::Stage).to receive(:initial).and_return(true)
     end
 
     context "when updating hostname" do

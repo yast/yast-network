@@ -34,15 +34,13 @@ module Y2Network
         return if old_hostname && hostname == old_hostname
 
         update_sysconfig_dhcp(hostname, old_hostname)
-        update_hostname(hostname) if hostname.save_hostname?
+        update_hostname(hostname) if hostname.static != old_hostname.static
       end
 
     private
 
       # @return [String] Hostname executable
       HOSTNAME_PATH = "/etc/hostname".freeze
-      # @return [String] Sendmail update script (included in "sendmail" package)
-      SENDMAIL_UPDATE_PATH = "/usr/lib/sendmail.d/update".freeze
 
       # @param hostname [Y2Network::Hostname] Hostname configuration
       # @param old_hostname [Y2Network::Hostname] Old Hostname configuration
@@ -69,19 +67,25 @@ module Y2Network
         end
       end
 
-      # Sets the hostname
+      # Sets the system hostname
       #
       # @param hostname [Y2Network::Hostname] Hostname configuration
       def update_hostname(hostname)
         hostname = hostname.static
-        # 1) when user asked for erasing hostname from /etc/hostname, we keep runtime as it is
-        # 2) we will write whatever user wants even FQDN - no changes under the hood
-        Yast::Execute.on_target!("/usr/bin/hostname", hostname) if !hostname.empty?
-        Yast::SCR.Write(
-          Yast::Path.new(".target.string"),
-          HOSTNAME_PATH,
-          hostname.empty? ? "" : hostname + "\n"
-        )
+
+        Yast.import "Stage"
+        if Yast::Stage.initial
+          # 1) when user asked for erasing hostname from /etc/hostname, we keep runtime as it is
+          # 2) we will write whatever user wants even FQDN - no changes under the hood
+          Yast::Execute.on_target!("/usr/bin/hostname", hostname) if !hostname.empty?
+          Yast::SCR.Write(
+            Yast::Path.new(".target.string"),
+            HOSTNAME_PATH,
+            hostname.empty? ? "" : hostname + "\n"
+          )
+        else
+          Yast::Execute.on_target!("/usr/bin/hostnamectl", "set-hostname", "--static", hostname)
+        end
       end
     end
   end
