@@ -239,11 +239,10 @@ module Yast
       # loopback interface or localhost hostname
       return true if ["127.0.0.1", "::1", "localhost", "localhost.localdomain"].include?(check_host)
 
-      ip_addresses = []
-      connections.each do |conn|
-        conn.all_ips.each do |ip|
+      ip_addresses = connections.each_with_object([]) do |conn, res|
+        conn.all_ips.each_with_object(res) do |ip, ips|
           address = ip&.address&.address.to_s
-          ip_addresses << address if !address.empty? && !ip_addresses.include?(address)
+          ips << address if !address.empty? && !ips.include?(address)
         end
       end
 
