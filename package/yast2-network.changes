@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Feb 21 09:53:25 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
+
+- Do not crash when checking if a given 'host' is local or not
+  (bsc#1163305)
+- 4.2.56
+
+-------------------------------------------------------------------
 Wed Feb 19 11:52:25 UTC 2020 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
 
 - Add a class to represent NTP servers (jsc#SLE-7188).
