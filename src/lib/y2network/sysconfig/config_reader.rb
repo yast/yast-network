@@ -49,8 +49,8 @@ module Y2Network
         routing_tables = find_routing_tables(interfaces_reader.interfaces)
         routing = Routing.new(
           tables:       routing_tables,
-          forward_ipv4: sysctl_config_file.forward_ipv4?,
-          forward_ipv6: sysctl_config_file.forward_ipv6?
+          forward_ipv4: sysctl_config_file.forward_ipv4,
+          forward_ipv6: sysctl_config_file.forward_ipv6
         )
 
         result = Config.new(
