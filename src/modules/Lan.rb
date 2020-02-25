@@ -223,7 +223,7 @@ module Yast
     def readIPv6
       sysctl_config_file = CFA::SysctlConfig.new
       sysctl_config_file.load
-      ipv6 = !sysctl_config_file.disable_ipv6?
+      ipv6 = !sysctl_config_file.disable_ipv6
       log.info("readIPv6: IPv6 is #{ipv6 ? "enabled" : "disabled"}")
       ipv6
     end
