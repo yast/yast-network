@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Feb 25 12:16:42 CET 2020 - schubi@suse.de
+
+- Using SysctlConfig class: Handle sysctl entries in different
+  directories (bsc#1151649).
+- 4.2.57
+
+-------------------------------------------------------------------
 Fri Feb 21 09:53:25 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
 
 - Do not crash when checking if a given 'host' is local or not
