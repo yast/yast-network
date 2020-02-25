@@ -109,7 +109,7 @@ module Y2Network
 
         update_ip_forwarding((sysctl_config.forward_ipv4 ? "1" : "0"),
           :ipv4)
-        update_ip_forwarding((sysctl_config.raw_forward_ipv6 ? "1" : "0"),
+        update_ip_forwarding((sysctl_config.forward_ipv6 ? "1" : "0"),
           :ipv6)
         nil
       end
