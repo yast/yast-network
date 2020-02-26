@@ -74,7 +74,6 @@ module Yast
     # for backward compatibility as long as old DNS module is used as an API
     # for new dns and hostname classes
     alias_method :hostname, :static
-    alias_method :hostname=, :static=
 
     def main
       Yast.import "UI"
