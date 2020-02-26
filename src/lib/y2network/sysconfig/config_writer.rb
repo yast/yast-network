@@ -18,7 +18,6 @@
 # find current contact information at www.suse.com.
 
 require "yast"
-require "y2network/sysconfig_paths"
 require "y2network/sysconfig/routes_file"
 require "y2network/sysconfig/dns_writer"
 require "y2network/sysconfig/hostname_writer"

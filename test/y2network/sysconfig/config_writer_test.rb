@@ -25,7 +25,6 @@ require "y2network/interfaces_collection"
 require "y2network/routing"
 require "y2network/route"
 require "y2network/routing_table"
-require "y2network/sysconfig_paths"
 require "y2network/connection_config/ethernet"
 require "y2network/connection_config/ip_config"
 
