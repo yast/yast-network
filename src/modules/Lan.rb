@@ -28,7 +28,7 @@
 # Representation of the configuration of network cards.
 # Input and output routines.
 require "yast"
-require "cfa/sysctl"
+require "cfa/sysctl_config"
 require "network/network_autoyast"
 require "network/confirm_virt_proposal"
 require "ui/text_helpers"
@@ -221,9 +221,9 @@ module Yast
     #
     # return [Boolean] true when IPv6 is enabled in the system
     def readIPv6
-      sysctl_file = CFA::Sysctl.new
-      sysctl_file.load
-      ipv6 = !sysctl_file.disable_ipv6?
+      sysctl_config_file = CFA::SysctlConfig.new
+      sysctl_config_file.load
+      ipv6 = !sysctl_config_file.disable_ipv6
       log.info("readIPv6: IPv6 is #{ipv6 ? "enabled" : "disabled"}")
       ipv6
     end
@@ -406,10 +406,10 @@ module Yast
 
     def writeIPv6
       log.info("writeIPv6: IPv6 is #{@ipv6 ? "enabled" : "disabled"}")
-      sysctl_file = CFA::Sysctl.new
-      sysctl_file.load
-      sysctl_file.disable_ipv6 = !@ipv6
-      sysctl_file.save
+      sysctl_config_file = CFA::SysctlConfig.new
+      sysctl_config_file.load
+      sysctl_config_file.disable_ipv6 = !@ipv6
+      sysctl_config_file.save unless sysctl_config_file.conflict?
       SCR.Execute(
         path(".target.bash"),
         Builtins.sformat(

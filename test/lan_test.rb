@@ -242,12 +242,12 @@ describe "LanClass" do
   end
 
   describe "#readIPv6" do
-    let(:sysctl_file) { CFA::Sysctl.new }
+    let(:sysctl_config_file) { CFA::SysctlConfig.new }
 
     before do
-      allow(CFA::Sysctl).to receive(:new).and_return(sysctl_file)
-      allow(sysctl_file).to receive(:load)
-      sysctl_file.disable_ipv6 = disable_ipv6
+      allow(CFA::SysctlConfig).to receive(:new).and_return(sysctl_config_file)
+      allow(sysctl_config_file).to receive(:load)
+      sysctl_config_file.disable_ipv6 = disable_ipv6
     end
 
     context "when IPv6 is disabled" do
@@ -268,20 +268,20 @@ describe "LanClass" do
   end
 
   describe "#readIPv6" do
-    let(:sysctl_file) { CFA::Sysctl.new }
+    let(:sysctl_config_file) { CFA::SysctlConfig.new }
 
     before do
-      allow(CFA::Sysctl).to receive(:new).and_return(sysctl_file)
-      allow(sysctl_file).to receive(:load)
-      allow(sysctl_file).to receive(:save)
+      allow(CFA::SysctlConfig).to receive(:new).and_return(sysctl_config_file)
+      allow(sysctl_config_file).to receive(:load)
+      allow(sysctl_config_file).to receive(:save)
       Yast::Lan.ipv6 = ipv6
     end
 
     context "when IPv6 is enabled" do
       let(:ipv6) { true }
 
-      it "enables IPv6 in the sysctl configuration" do
-        expect(sysctl_file).to receive(:disable_ipv6=).with(false)
+      it "enables IPv6 in the sysctl_config configuration" do
+        expect(sysctl_config_file).to receive(:disable_ipv6=).with(false)
         Yast::Lan.writeIPv6
       end
 
@@ -294,8 +294,8 @@ describe "LanClass" do
     context "when IPv6 is disabled" do
       let(:ipv6) { false }
 
-      it "disables IPv6 in the sysctl configuration" do
-        expect(sysctl_file).to receive(:disable_ipv6=).with(true)
+      it "disables IPv6 in the sysctl_config configuration" do
+        expect(sysctl_config_file).to receive(:disable_ipv6=).with(true)
         Yast::Lan.writeIPv6
       end
 
