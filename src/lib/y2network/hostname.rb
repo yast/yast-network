@@ -31,7 +31,7 @@ module Y2Network
     # @return [String] dynamically defined hostname (e.g. from DHCP), defaults to static
     attr_accessor :transient
 
-    # @return [String, nil] hostname as read from linuxrc (if set) in installer, nil otherwise
+    # @return [String, nil] hostname as read from linuxrc (if set) or explicitly set in installer, nil otherwise
     attr_accessor :installer
 
     # @return [String,Symbol] Whether to take the hostname from DHCP.
