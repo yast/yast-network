@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Feb 27 20:40:51 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
+
+- Do not crash when running the network configuration client if
+  the config has not been read by a previous client (bsc#1101514)
+- 4.2.58
+
+-------------------------------------------------------------------
 Tue Feb 25 12:16:42 CET 2020 - schubi@suse.de
 
 - Using SysctlConfig class: Handle sysctl entries in different
