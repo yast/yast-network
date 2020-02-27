@@ -37,6 +37,8 @@ describe Yast::InstLanClient do
     before do
       allow(Yast::GetInstArgs).to receive(:argmap).and_return(argmap)
       allow(Yast::Lan).to receive(:yast_config).and_return(config)
+      allow(Yast::Lan).to receive(:Read)
+      allow(subject).to receive(:LanSequence)
       allow(Yast::GetInstArgs).to receive(:going_back).and_return(going_back)
       allow(Yast::NetworkService).to receive(:network_manager?).and_return(using_nm)
       subject.send(:reset_config_state)
@@ -87,6 +89,12 @@ describe Yast::InstLanClient do
     end
 
     context "when the NetworkService is wicked" do
+      it "reads the current network config" do
+        expect(Yast::Lan).to receive(:Read).with(:cache)
+
+        subject.main
+      end
+
       context "and there is some connection config already present in yast" do
         let(:connections) { Y2Network::ConnectionConfigsCollection.new([fake_conn]) }
         let(:config) { instance_double("Y2Network::Config", connections: connections) }

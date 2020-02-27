@@ -67,7 +67,8 @@ module Yast
     # @return [Boolean] true when there is some connection present in yast
     #   config; false otherwise
     def connections_configured?
-      # TODO: Shall we read the configuration in this case?
+      # Ensure we read the current network config
+      Yast::Lan.Read(:cache)
       !(Lan.yast_config&.connections || []).empty?
     end
 
