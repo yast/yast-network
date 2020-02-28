@@ -51,7 +51,7 @@ module Yast
       # behavior when walking :back in installation workflow
       if !defined?(@@network_configured)
         @@network_configured =
-          NetworkService.network_manager? ? true : !Lan.yast_config.connections.empty?
+          NetworkService.network_manager? ? true : connections_configured?
       end
 
       log.info("Configured network found: #{@@network_configured}")
@@ -66,6 +66,18 @@ module Yast
       log.info("----------------------------------------")
 
       ret
+    end
+
+  private
+
+    # Convenience method that checks whether there is some connection
+    # configuration present in the system
+    #
+    # @return [Boolean] true when there is some connection present in yast
+    #   config; false otherwise
+    def connections_configured?
+      # TODO: Shall we read the configuration in this case?
+      !(Lan.yast_config&.connections || []).empty?
     end
   end
 
