@@ -65,16 +65,8 @@ describe Yast::InstLanClient do
           subject.main
         end
 
-        context "and going back" do
-          let(:going_back) { true }
-
-          it "returns :back" do
-            expect(subject.main).to eq(:back)
-          end
-        end
-
-        it "returns :next" do
-          expect(subject.main).to eq(:next)
+        it "returns :auto" do
+          expect(subject.main).to eq(:auto)
         end
       end
     end

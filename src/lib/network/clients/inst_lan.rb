@@ -59,27 +59,34 @@ module Yast
     end
 
     def main
-      ret = nil
-      log.info("----------------------------------------")
-      log.info("Lan module started")
+      log_and_return do
+        manual_conf_request = GetInstArgs.argmap["skip_detection"] || false
+        log.info("Lan module forces manual configuration: #{manual_conf_request}")
 
-      manual_conf_request = GetInstArgs.argmap["skip_detection"] || false
-      log.info("Lan module forces manual configuration: #{manual_conf_request}")
-
-      if !manual_conf_request
-        log.info("Configured network found: #{network_configured?}")
-        ret = GetInstArgs.going_back ? :back : :next if network_configured?
+        if manual_conf_request
+          LanSequence()
+        else
+          log.info("Configured network found: #{network_configured?}")
+          network_configured? ? :auto : LanSequence()
+        end
       end
+    end
 
-      ret ||= LanSequence()
+  private
 
-      log.info("Lan module finished, ret = #{ret}")
+    # It logs the start and finish of the given block call returning the
+    # result of the call.
+    def log_and_return(&block)
+      log.info("----------------------------------------")
+      log.info("Lan inst client started")
+
+      ret = block.call
+
+      log.info("Lan inst client finished, ret = #{ret}")
       log.info("----------------------------------------")
 
       ret
     end
-
-  private
 
     # Convenience method that checks whether there is some connection
     # configuration present in the system
