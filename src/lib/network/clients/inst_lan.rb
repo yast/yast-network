@@ -68,7 +68,7 @@ module Yast
     #   config; false otherwise
     def connections_configured?
       # Ensure we read the current network config
-      Yast::Lan.Read(:cache)
+      Lan.Read(:cache)
       !(Lan.yast_config&.connections || []).empty?
     end
 
