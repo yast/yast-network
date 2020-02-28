@@ -59,19 +59,19 @@ module Yast
     end
 
     def main
+      ret = nil
       log.info("----------------------------------------")
       log.info("Lan module started")
 
       manual_conf_request = GetInstArgs.argmap["skip_detection"] || false
       log.info("Lan module forces manual configuration: #{manual_conf_request}")
 
-      log.info("Configured network found: #{network_configured?}")
-
-      ret = if network_configured? && !manual_conf_request
-        GetInstArgs.going_back ? :back : :next
-      else
-        LanSequence()
+      if !manual_conf_request
+        log.info("Configured network found: #{network_configured?}")
+        ret = GetInstArgs.going_back ? :back : :next if network_configured?
       end
+
+      ret ||= LanSequence()
 
       log.info("Lan module finished, ret = #{ret}")
       log.info("----------------------------------------")
@@ -98,7 +98,7 @@ module Yast
     #
     # @see connections_configured?
     def network_configured?
-      # keep network configuration state in to gurantee same behavior when
+      # keep network configuration state to gurantee same behavior when
       # walking :back in installation workflow
       return self.class.configured unless self.class.configured.nil?
 
