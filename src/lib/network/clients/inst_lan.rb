@@ -25,6 +25,26 @@ Yast.import "GetInstArgs"
 Yast.import "NetworkService"
 
 module Yast
+  # Client for configuring the network during installation.
+  #
+  # If the network configuration is managed by NetworkManager or some
+  # connection config is already present the client skip the configuration
+  # sequence.
+  #
+  # The configuration sequence can be forced passing the 'skip_detection'
+  # argument.
+  #
+  # @example calling the client forcing the configuration sequence
+  #   Yast::WFM.CallFunction("inst_lan", [args.merge("skip_detection" => true)])
+  #
+  # @example firsboot xml forcing the configuration sequence
+  #   <module>
+  #     <label>Network</label>
+  #      <name>inst_lan</name>
+  #      <arguments>
+  #        <skip_detection>true</skip_detection>
+  #      </arguments>
+  #   </module>
   class InstLanClient < Client
     include Logger
 
