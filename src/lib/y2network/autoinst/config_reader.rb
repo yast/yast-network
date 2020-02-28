@@ -22,6 +22,7 @@ require "y2network/interface"
 require "y2network/config"
 require "y2network/autoinst/routing_reader"
 require "y2network/autoinst/dns_reader"
+require "y2network/autoinst/hostname_reader"
 require "y2network/autoinst/interfaces_reader"
 require "y2network/autoinst/udev_rules_reader"
 require "y2network/autoinst_profile/networking_section"
@@ -48,10 +49,13 @@ module Y2Network
       # @return [Y2Network::Config] Network configuration
       def config
         config = @original_config.copy
+
         # apply at first udev rules, so interfaces names are correct
         UdevRulesReader.new(section.udev_rules).apply(config) if section.udev_rules
         config.routing = RoutingReader.new(section.routing).config if section.routing
         config.dns = DNSReader.new(section.dns).config if section.dns
+        config.hostname = HostnameReader.new(section.dns).config if section.dns
+
         if section.interfaces
           interfaces = InterfacesReader.new(section.interfaces).config
           interfaces.each do |interface|
