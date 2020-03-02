@@ -52,7 +52,7 @@ module Y2Network
             description = Yast::NetworkInterfaces.GetDevTypeDescription(interface.type.short_name,
               true)
           else
-            description = interface.name
+            description = interface.name.dup
 
             # this conditions origin from bridge configuration
             # if enslaving a configured device then its configuration is rewritten
@@ -64,7 +64,7 @@ module Y2Network
 
           selected = enslaved_ifaces.include?(interface.name)
           if physical_port_id?(interface.name)
-            description << " (Port ID: #{physical_port_id(interface.name)})"
+            description += " (Port ID: #{physical_port_id(interface.name)})"
           end
 
           result << Yast::Term.new(:item,
