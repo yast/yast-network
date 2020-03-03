@@ -74,7 +74,7 @@ module Y2Network
     # @param name [String] Interface name (e.g., "eth0")
     # @param type [InterfaceType] Interface type
     def initialize(name, type: InterfaceType::ETHERNET)
-      @name = name
+      @name = name.freeze
       @description = ""
       @type = type
       # TODO: move renaming logic to physical interfaces only
@@ -109,7 +109,7 @@ module Y2Network
     def rename(new_name, mechanism)
       log.info "Rename interface '#{name}' to '#{new_name}' using the '#{mechanism}'"
       @old_name = name if name != new_name # same name, just set different mechanism
-      @name = new_name
+      @name = new_name.freeze
       @renaming_mechanism = mechanism
     end
 
