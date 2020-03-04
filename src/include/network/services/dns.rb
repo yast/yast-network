@@ -257,6 +257,18 @@ module Yast
       deep_copy(settings)
     end
 
+    # Stores user's input from hostname field
+    #
+    # @param value [String]
+    # @return [String] stored hostname
+    def store_hostname(value)
+      hostname = Yast::Lan.yast_config.hostname
+      hostname.static = value
+      hostname.installer = value if Stage.initial
+
+      value
+    end
+
     # @param [Hash] settings map of settings to be stored to DNS::
     def StoreSettings(settings)
       settings = deep_copy(settings)
@@ -270,7 +282,8 @@ module Yast
         " ,\n\t"
       )
 
-      DNS.hostname = Ops.get_string(settings, "HOSTNAME", "")
+      store_hostname(settings["HOSTNAME"] || "")
+
       valid_nameservers = NonEmpty(nameservers).each_with_object([]) do |ip_str, all|
         all << IPAddr.new(ip_str) if IP.Check(ip_str)
       end

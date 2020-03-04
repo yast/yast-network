@@ -51,7 +51,7 @@ describe Y2Network::Sysconfig::HostnameWriter do
 
       it "updates system with the new hostname" do
         expect(Yast::Execute)
-          .to receive(:on_target!)
+          .to receive(:locally!)
           .with("/usr/bin/hostname", hostname)
         expect(Yast::SCR)
           .to receive(:Write)
