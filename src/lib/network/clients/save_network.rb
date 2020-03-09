@@ -97,7 +97,9 @@ module Yast
         { dir: SYSCONFIG, file: "ifroute-*" },
         { dir: SYSCONFIG, file: "routes" },
         { dir: ETC + "wicked/", file: "common.xml" },
-        { dir: ETC, file: DNSClass::HOSTNAME_FILE }
+        { dir: ETC, file: DNSClass::HOSTNAME_FILE },
+        # Copy sysctl file as network writes there ip forwarding (bsc#1159295)
+        { dir: File.join(ETC, "sysctl.d/"), file: "70-yast.conf" }
       ]
 
       # NetworkManager is usually the default in a live installation. Any
@@ -112,6 +114,7 @@ module Yast
         # can be shell pattern like ifcfg-*
         file_pattern = recipe[:dir] + recipe[:file]
         copy_to = inst_dir + recipe[:dir]
+        log.info("Processing copy recipe #{file_pattern.inspect}")
 
         Dir.glob(file_pattern).each do |file|
           adjust_for_network_disks(file) if file.include?("ifcfg-")
