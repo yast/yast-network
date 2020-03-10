@@ -79,9 +79,9 @@ module Yast
       )
     end
 
-    ETC = "/etc/".freeze
-    SYSCONFIG = "/etc/sysconfig/network/".freeze
-    NETWORK_MANAGER = "/etc/NetworkManager/".freeze
+    ETC = "/etc".freeze
+    SYSCONFIG = "/etc/sysconfig/network".freeze
+    NETWORK_MANAGER = "/etc/NetworkManager".freeze
 
     def CopyConfiguredNetworkFiles
       return if Mode.autoinst && !NetworkAutoYast.instance.keep_net_config?
@@ -96,22 +96,25 @@ module Yast
         { dir: SYSCONFIG, file: "ifcfg-*" },
         { dir: SYSCONFIG, file: "ifroute-*" },
         { dir: SYSCONFIG, file: "routes" },
-        { dir: ETC + "wicked/", file: "common.xml" },
-        { dir: ETC, file: DNSClass::HOSTNAME_FILE }
+        { dir: ::File.join(ETC, "wicked"), file: "common.xml" },
+        { dir: ETC, file: DNSClass::HOSTNAME_FILE },
+        # Copy sysctl file as network writes there ip forwarding (bsc#1159295)
+        { dir: ::File.join(ETC, "sysctl.d"), file: "70-yast.conf" }
       ]
 
       # NetworkManager is usually the default in a live installation. Any
       # configuration applied during the installation should be present in the
       # target system.
       if Y2Network::ProposalSettings.instance.network_service == :network_manager
-        copy_recipes << { dir: NETWORK_MANAGER + "/system-connections/", file: "*" }
+        copy_recipes << { dir: ::File.join(NETWORK_MANAGER, "system-connections"), file: "*" }
       end
 
       # just copy files
       copy_recipes.each do |recipe|
         # can be shell pattern like ifcfg-*
-        file_pattern = recipe[:dir] + recipe[:file]
-        copy_to = inst_dir + recipe[:dir]
+        file_pattern = ::File.join(recipe[:dir], recipe[:file])
+        copy_to = ::File.join(inst_dir, recipe[:dir])
+        log.info("Processing copy recipe #{file_pattern.inspect}")
 
         Dir.glob(file_pattern).each do |file|
           adjust_for_network_disks(file) if file.include?("ifcfg-")
@@ -127,12 +130,12 @@ module Yast
         end
       end
 
-      copy_to = String.Quote(inst_dir + SYSCONFIG)
+      copy_to = String.Quote(::File.join(inst_dir, SYSCONFIG))
 
       # merge files with default installed by sysconfig
       ["dhcp", "config"].each do |file|
-        modified_file = SYSCONFIG + file
-        dest_file = copy_to + file
+        modified_file = ::File.join(SYSCONFIG, file)
+        dest_file = ::File.join(copy_to, file)
         CFA::GenericSysconfig.merge_files(dest_file, modified_file)
       end
       # FIXME: proxy

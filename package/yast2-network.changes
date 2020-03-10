@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Mar 10 14:29:36 UTC 2020 - Josef Reidinger <jreidinger@suse.com>
+
+- Store ip forwarding set during installation to target system
+  (bsc#1159295)
+- 4.2.61
+
+-------------------------------------------------------------------
 Mon Mar  2 21:01:33 UTC 2020 - Michal Filka <mfilka@suse.com>
 
 - bsc#1164506
