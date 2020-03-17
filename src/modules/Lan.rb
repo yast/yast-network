@@ -44,6 +44,7 @@ require "shellwords"
 module Yast
   class LanClass < Module
     include ::UI::TextHelpers
+    include Wicked
 
     def main
       Yast.import "UI"
@@ -876,14 +877,14 @@ module Yast
         NetworkService.ReloadOrRestart if Stage.normal || !Linuxrc.usessh
 
       when :remote_installer
-        ifaces = LanItems.getNetworkInterfaces
+        connections = yast_config&.connections&.map(&:name) || []
 
         # last instance handling "special" cases like ssh installation
         # FIXME: most probably not everything will be set properly
         log.info("Running in ssh/vnc installer -> just setting links up")
-        log.info("Available interfaces: #{ifaces}")
+        log.info("Configured interfaces: #{connections}")
 
-        LanItems.reload_config(ifaces)
+        reload_config(connections)
       end
     end
 

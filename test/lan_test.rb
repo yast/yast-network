@@ -80,13 +80,21 @@ describe "LanClass" do
   end
 
   describe "#activate_network_service" do
+
     Yast.import "Stage"
     Yast.import "NetworkService"
+
+    let(:yast_config) { instance_double(Y2Network::Config, "YaST", connections: collection) }
+    let(:collection) { [eth0, eth1] }
+
+    let(:eth0) { Y2Network::ConnectionConfig::Ethernet.new.tap { |c| c.name = "eth0" } }
+    let(:eth1) { Y2Network::ConnectionConfig::Ethernet.new.tap { |c| c.name = "eth1" } }
 
     let(:force_restart) { false }
     let(:installation) { false }
 
     before do
+      subject.add_config(:yast, yast_config)
       allow(Yast::LanItems).to receive(:force_restart).and_return(force_restart)
       allow(Yast::Stage).to receive(:normal).and_return(!installation)
       allow(Yast::Stage).to receive(:initial).and_return(installation)
@@ -125,17 +133,21 @@ describe "LanClass" do
         context "when asked during installation" do
           let(:installation) { true }
 
-          it "updates network service according usessh flag" do
-            if ssh_flag
-              expect(Yast::NetworkService)
-                .not_to receive(:ReloadOrRestart)
-            else
+          if ssh_flag
+            it "reloads configured connections" do
+              expect(subject).to receive(:reload_config).with(["eth0", "eth1"])
+
+              Yast::Lan.send(:activate_network_service)
+            end
+          else
+            it "tries to reload or restart the networkservice" do
               expect(Yast::NetworkService)
                 .to receive(:ReloadOrRestart)
-            end
 
-            Yast::Lan.send(:activate_network_service)
+              Yast::Lan.send(:activate_network_service)
+            end
           end
+
         end
       end
     end
