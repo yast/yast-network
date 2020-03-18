@@ -877,14 +877,14 @@ module Yast
         NetworkService.ReloadOrRestart if Stage.normal || !Linuxrc.usessh
 
       when :remote_installer
-        connections = yast_config&.connections&.map(&:name) || []
+        connection_names = yast_config&.connections&.map(&:name) || []
 
         # last instance handling "special" cases like ssh installation
         # FIXME: most probably not everything will be set properly
         log.info("Running in ssh/vnc installer -> just setting links up")
-        log.info("Configured interfaces: #{connections}")
+        log.info("Configured connections: #{connection_names}")
 
-        reload_config(connections)
+        reload_config(connection_names)
       end
     end
 
