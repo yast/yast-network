@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Mar 18 09:42:36 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
+
+- Do a reload of configured interfaces when writing the
+  configuration during a ssh or vnc installation (bsc#1166287)
+- 4.2.62
+
+-------------------------------------------------------------------
 Tue Mar 10 14:29:36 UTC 2020 - Josef Reidinger <jreidinger@suse.com>
 
 - Store ip forwarding set during installation to target system
