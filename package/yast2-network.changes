@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Mar 19 13:52:31 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
+
+- Fixed AutoYaST installation crash when defined dns section
+  whitout hostname (bsc#1166953)
+- 4.2.63
+
+-------------------------------------------------------------------
 Wed Mar 18 09:42:36 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
 
 - Do a reload of configured interfaces when writing the
