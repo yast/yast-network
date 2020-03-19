@@ -40,7 +40,7 @@ describe Y2Network::Autoinst::HostnameReader do
     {
       "dns" => {
         "hostname" => "host",
-        "dhcp_hostname" => true, "write_hostname" => true
+        "dhcp_hostname" => false, "write_hostname" => true
       }
     }
   end
@@ -50,7 +50,7 @@ describe Y2Network::Autoinst::HostnameReader do
       config = subject.config
       expect(config).to be_a Y2Network::Hostname
       expect(config.installer).to eq("host")
-      expect(config.dhcp_hostname).to eq(true)
+      expect(config.dhcp_hostname).to eq(:none)
       expect(config.static).to eq(current_static_hostname)
     end
   end

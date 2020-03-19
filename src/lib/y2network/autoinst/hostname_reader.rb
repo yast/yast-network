@@ -39,7 +39,7 @@ module Y2Network
       # @return [Hostname] the imported {Hostname} config
       def config
         Y2Network::Hostname.new(
-          dhcp_hostname: section.dhcp_hostname,
+          dhcp_hostname: section.dhcp_hostname ? :any : :none,
           static:        static_hostname,
           installer:     section.hostname
         )
