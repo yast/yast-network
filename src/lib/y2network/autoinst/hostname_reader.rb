@@ -40,18 +40,18 @@ module Y2Network
       def config
         Y2Network::Hostname.new(
           dhcp_hostname: section.dhcp_hostname,
-          static:        section.hostname || default_hostname,
+          static:        static_hostname,
           installer:     section.hostname
         )
       end
 
     private
 
-      # Returns a default hostname proposal for installer
+      # Returns the current static_hostname
       #
       # @return [String]
-      def default_hostname
-        Y2Network::Sysconfig::HostnameReader.new.hostname
+      def static_hostname
+        Y2Network::Sysconfig::HostnameReader.new.static_hostname
       end
     end
   end
