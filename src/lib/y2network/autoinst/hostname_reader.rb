@@ -39,19 +39,33 @@ module Y2Network
       # @return [Hostname] the imported {Hostname} config
       def config
         Y2Network::Hostname.new(
-          dhcp_hostname: section.dhcp_hostname,
-          static:        section.hostname || default_hostname,
+          dhcp_hostname: dhcp_hostname_for(section.dhcp_hostname),
+          static:        section.hostname || static_hostname,
           installer:     section.hostname
         )
       end
 
     private
 
-      # Returns a default hostname proposal for installer
+      # Returns the current static_hostname
       #
       # @return [String]
-      def default_hostname
-        Y2Network::Sysconfig::HostnameReader.new.hostname
+      def static_hostname
+        Y2Network::Sysconfig::HostnameReader.new.static_hostname
+      end
+
+      # Returns the value for the dhcp_hostname option selected in the profile.
+      # If the option is not present then it is read from the system
+      #
+      # @return [String]
+      def dhcp_hostname_for(section_value)
+        # The autoyast network configuration is usually merge with current
+        # config, but we do not want to override current config if the value is
+        # not present and the merge is missing for whatever reason, for example
+        # in case AutoYaST is called in config mode
+        return Y2Network::Sysconfig::HostnameReader.new.dhcp_hostname if section_value.nil?
+
+        section_value ? :any : :none
       end
     end
   end

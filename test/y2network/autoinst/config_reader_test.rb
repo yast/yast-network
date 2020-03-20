@@ -58,7 +58,8 @@ describe Y2Network::Autoinst::ConfigReader do
         "ipv4_forward" => true,
         "ipv6_forward" => false,
         "routes"       => routes
-      }
+      },
+      "dns"        => dns
     }
   end
 
@@ -67,6 +68,8 @@ describe Y2Network::Autoinst::ConfigReader do
       expect(subject.config).to be_a Y2Network::Config
       expect(subject.config.routing).to be_a Y2Network::Routing
       expect(subject.config.dns).to be_a Y2Network::DNS
+      expect(subject.config.hostname.dhcp_hostname).to eq(:any)
+      expect(subject.config.hostname.installer).to eq("host")
     end
   end
 end

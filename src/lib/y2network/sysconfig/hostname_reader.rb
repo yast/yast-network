@@ -106,12 +106,19 @@ module Y2Network
         nil
       end
 
-      # Reads the system (local) hostname
+      # Reads the transient hostname or system (local) hostname
       #
       # @return [String, nil] Hostname
       def hostname_from_system
         Yast::Execute.on_target!("/usr/bin/hostname", stdout: :capture).strip
       rescue Cheetah::ExecutionFailed
+        static_hostname
+      end
+
+      # Reads the static hostname from /etc/hostname
+      #
+      # @return [String, nil]
+      def static_hostname
         name = Yast::SCR.Read(Yast::Path.new(".target.string"), "/etc/hostname").to_s.strip
         name.empty? ? nil : name
       end
