@@ -54,7 +54,15 @@ describe Y2Network::Autoinst::HostnameReader do
       expect(config).to be_a Y2Network::Hostname
       expect(config.installer).to eq("host")
       expect(config.dhcp_hostname).to eq(:none)
-      expect(config.static).to eq(current_static_hostname)
+      expect(config.static).to eq("host")
+    end
+
+    context "when no hostname option is defined" do
+      let(:profile) { { "dns" => { "dhcp_hostname" => true } } }
+
+      it "reads the current hostname configuration from the system" do
+        expect(subject.config.hostname).to eq(current_static_hostname)
+      end
     end
 
     context "when no dhcp_hostname option is defined" do

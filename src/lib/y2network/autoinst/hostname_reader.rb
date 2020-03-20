@@ -40,7 +40,7 @@ module Y2Network
       def config
         Y2Network::Hostname.new(
           dhcp_hostname: dhcp_hostname_for(section.dhcp_hostname),
-          static:        static_hostname,
+          static:        section.hostname || static_hostname,
           installer:     section.hostname
         )
       end
