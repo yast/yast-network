@@ -73,7 +73,7 @@ module Y2Network
       #
       # @param hostname [Y2Network::Hostname] Hostname configuration
       def update_hostname(hostname)
-        hostname = hostname.static
+        hostname = hostname.static.to_s
         # 1) when user asked for erasing hostname from /etc/hostname, we keep runtime as it is
         # 2) we will write whatever user wants even FQDN - no changes under the hood
         Yast::Execute.locally!("/usr/bin/hostname", hostname) if !hostname.empty?
