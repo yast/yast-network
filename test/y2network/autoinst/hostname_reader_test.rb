@@ -30,10 +30,13 @@ describe Y2Network::Autoinst::HostnameReader do
   end
 
   let(:current_static_hostname) { "test" }
+  let(:current_dhcp_hostname) { :any }
 
   before do
     allow_any_instance_of(Y2Network::Sysconfig::HostnameReader)
       .to receive(:static_hostname).and_return(current_static_hostname)
+    allow_any_instance_of(Y2Network::Sysconfig::HostnameReader)
+      .to receive(:dhcp_hostname).and_return(current_dhcp_hostname)
   end
 
   let(:profile) do
@@ -52,6 +55,14 @@ describe Y2Network::Autoinst::HostnameReader do
       expect(config.installer).to eq("host")
       expect(config.dhcp_hostname).to eq(:none)
       expect(config.static).to eq(current_static_hostname)
+    end
+
+    context "when no dhcp_hostname option is defined" do
+      let(:profile) { { "dns" => { "hostname" => "another_host" } } }
+
+      it "reads the current dhcp_hostname configuration from the system" do
+        expect(subject.config.dhcp_hostname).to eq(current_dhcp_hostname)
+      end
     end
   end
 end
