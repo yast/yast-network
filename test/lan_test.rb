@@ -90,12 +90,10 @@ describe "LanClass" do
     let(:eth0) { Y2Network::ConnectionConfig::Ethernet.new.tap { |c| c.name = "eth0" } }
     let(:eth1) { Y2Network::ConnectionConfig::Ethernet.new.tap { |c| c.name = "eth1" } }
 
-    let(:force_restart) { false }
     let(:installation) { false }
 
     before do
       subject.add_config(:yast, yast_config)
-      allow(Yast::LanItems).to receive(:force_restart).and_return(force_restart)
       allow(Yast::Stage).to receive(:normal).and_return(!installation)
       allow(Yast::Stage).to receive(:initial).and_return(installation)
     end
@@ -109,24 +107,11 @@ describe "LanClass" do
         end
 
         context "when asked in normal mode" do
-          context "and a restart is not forced" do
-            it "tries to reload network service" do
-              expect(Yast::NetworkService)
-                .to receive(:ReloadOrRestart)
+          it "tries to reload network service" do
+            expect(Yast::NetworkService)
+              .to receive(:ReloadOrRestart)
 
-              Yast::Lan.send(:activate_network_service)
-            end
-          end
-
-          context "and a restart is forced" do
-            let(:force_restart) { true }
-
-            it "tries to restart the network service" do
-              expect(Yast::NetworkService)
-                .to receive(:Restart)
-
-              Yast::Lan.send(:activate_network_service)
-            end
+            Yast::Lan.send(:activate_network_service)
           end
         end
 
