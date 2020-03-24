@@ -862,20 +862,14 @@ module Yast
       # ssh, we should not restart network because systemctl
       # hangs in that case. (bnc#885640)
       action = :reload_restart   if Stage.normal || !Linuxrc.usessh
-      action = :force_restart    if LanItems.force_restart
       action = :remote_installer if Stage.initial && (Linuxrc.usessh || Linuxrc.vnc)
 
       case action
-      when :force_restart
-        log.info("Network service activation forced")
-        NetworkService.Restart
-
       when :reload_restart
         log.info("Attempting to reload network service, normal stage #{Stage.normal}, " \
           "ssh: #{Linuxrc.usessh}")
 
         NetworkService.ReloadOrRestart if Stage.normal || !Linuxrc.usessh
-
       when :remote_installer
         connection_names = yast_config&.connections&.map(&:name) || []
 
