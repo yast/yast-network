@@ -171,7 +171,7 @@ module Yast
     def ReadDialog
       Wizard.RestoreHelp(Ops.get_string(@help, "read", ""))
       Lan.AbortFunction = -> { PollAbort() }
-      ret = Lan.Read(:cache)
+      ret = Lan.Read(false)
       # Currently just a smoketest for new config storage -
       # something what should replace Lan module in the bright future
       # TODO: find a suitable place for this config storage

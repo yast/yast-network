@@ -31,6 +31,7 @@ module Y2Network
       # @param hostname [Y2Network::Hostname] Hostname configuration
       # @param old_hostname [Y2Network::Hostname] Old Hostname configuration
       def write(hostname, old_hostname)
+        log.info("WRITING HOSTNAME")
         return if old_hostname && hostname == old_hostname
 
         update_sysconfig_dhcp(hostname, old_hostname)
@@ -52,9 +53,10 @@ module Y2Network
           return
         end
 
+        value = (hostname.dhcp_hostname == :any) ? "yes" : "no"
+        log.info("WRITING #{value.inspect}")
         Yast::SCR.Write(
-          Yast::Path.new(".sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME"),
-          (hostname.dhcp_hostname == :any) ? "yes" : "no"
+          Yast::Path.new(".sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME"), value
         )
         Yast::SCR.Write(Yast::Path.new(".sysconfig.network.dhcp"), nil)
 

@@ -65,9 +65,6 @@ module Yast
       # Which operation is pending?
       @operation = nil
 
-      # in special cases when rcnetwork reload is not enought
-      @force_restart = false
-
       @description = ""
 
       @type = ""
@@ -800,7 +797,6 @@ module Yast
     publish_variable :driver_options, "map <string, any>"
     publish_variable :autoinstall_settings, "map"
     publish_variable :operation, "symbol"
-    publish_variable :force_restart, "boolean"
     publish_variable :description, "string"
     publish_variable :type, "string"
     # note: read-only param. Any modification is ignored.

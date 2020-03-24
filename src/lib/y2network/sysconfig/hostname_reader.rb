@@ -64,6 +64,8 @@ module Y2Network
       #   :any for any interface; :none for ignoring the hostname assigned via DHCP
       def dhcp_hostname
         value = Yast::SCR.Read(Yast::Path.new(".sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME"))
+        log.info("THE current value is #{value}")
+
         return :any if value == "yes"
 
         files = InterfaceFile.all
