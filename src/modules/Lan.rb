@@ -506,6 +506,8 @@ module Yast
 
       target = :sysconfig if Mode.auto
       yast_config.write(original: system_config, target: target)
+      # Force a refresh of the system_config bsc#1162987
+      add_config(:system, yast_config.copy)
       Progress.set(orig)
       Builtins.sleep(sl)
 
