@@ -125,15 +125,20 @@ module Yast
       devices_section = Y2Network::AutoinstProfile::S390DevicesSection
         .new_from_hashes(profile_devices)
       connections = Y2Network::Autoinst::S390DevicesReader.new(devices_section).config
-      connections.each do |conn|
 
+      connections.each do |conn|
         builder = Y2Network::InterfaceConfigBuilder.for(conn.type, config: conn)
         activator = Y2Network::S390DeviceActivator.for(builder)
+        if !activator.configured_interface.empty?
+          log.info "Interface #{activator.configured_interface} is already active. " \
+            "Skipping the activation."
+          next
+        end
+
         log.info "Created interface #{activator.configured_interface}" if activator.configure
       rescue RuntimeError => e
         log.error("An error ocurred when trying to activate the s390 device: #{conn.inspect}")
-        log.error("Error: #{e.sinpect}")
-
+        log.error("Error: #{e.inspect}")
       end
 
       true
