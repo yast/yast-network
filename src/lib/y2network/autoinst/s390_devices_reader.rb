@@ -66,18 +66,29 @@ module Y2Network
       end
 
       def load_qeth(config, device_section)
-        chanids = device_section.chanids
-        config.read_channel, config.write_channel, config.data_channel = chanids.split(" ")
+        config.read_channel, config.write_channel, config.data_channel =
+          chanids_from(device_section.chanids)
         config.layer2 = device_section.layer2
       end
 
       def load_ctc(config, device_section)
-        config.read_channel, config.write_channel = device_section.chanids.split(" ")
+        config.read_channel, config.write_channel = chanids_from(device_section.chanids)
         config.protocol = device_section.protocol
       end
 
       def load_lcs(config, device_section)
-        config.read_channel, config.write_channel = device_section.chanids.split(" ")
+        config.read_channel, config.write_channel = chanids_from(device_section.chanids)
+      end
+
+      # Separator used for the list of channel IDs
+      CHANIDS_SEPARATOR = ":".freeze
+      private_constant :CHANIDS_SEPARATOR
+
+      # Returns the list of channel IDs from a string
+      #
+      # @return [Array<String>]
+      def chanids_from(ids)
+        ids.to_s.split(CHANIDS_SEPARATOR)
       end
     end
   end
