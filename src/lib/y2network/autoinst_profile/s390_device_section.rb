@@ -44,7 +44,7 @@ module Y2Network
       define_attr_accessors
 
       # @!attribute chanids
-      #   @return [String] channel device id separated by spaces
+      #   @return [String] channel device id separated by spaces or colons
 
       # @!attribute layer2
       #   @return [Boolean] Whether layer2 is enabler or not
@@ -71,6 +71,17 @@ module Y2Network
         result
       end
 
+      # Creates an instance based on the profile representation used by the AutoYaST modules
+      # (array of hashes objects).
+      #
+      # @param hash [Hash] Networking section from an AutoYaST profile
+      # @return [S390DeviceSection]
+      def self.new_from_hashes(hash)
+        result = new
+        result.init_from_hashes(hash)
+        result
+      end
+
       # Method used by {.new_from_network} to populate the attributes when cloning a network s390
       # device
       #
@@ -90,6 +101,26 @@ module Y2Network
         end
 
         true
+      end
+
+      # Method used by {.new_from_hashes} to populate the attributes when importing a profile
+      #
+      # @param hash [Hash] see {.new_from_hashes}
+      def init_from_hashes(hash)
+        super
+        self.chanids = normalized_chanids(hash["chanids"]) if hash["chanids"]
+      end
+
+    private
+
+      # Normalizes the list of channel IDs
+      #
+      # It replaces spaces with colons.
+      #
+      # @param ids [String] String representing the channel IDs
+      # @return [String]
+      def normalized_chanids(ids)
+        ids.gsub(/\ +/, ":")
       end
     end
   end

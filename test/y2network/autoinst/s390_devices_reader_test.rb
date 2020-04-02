@@ -51,8 +51,19 @@ describe Y2Network::Autoinst::S390DevicesReader do
 
   describe "#config" do
     it "builds a new Y2Network::ConnectionConfigsCollection" do
-      expect(subject.config).to be_a Y2Network::ConnectionConfigsCollection
-      expect(subject.config.size).to eq(2)
+      expect(subject.config).to contain_exactly(
+        an_object_having_attributes(
+          read_channel:  "0.0.0700",
+          write_channel: "0.0.0701",
+          data_channel:  "0.0.0702"
+        ),
+        an_object_having_attributes(
+          read_channel:  "0.0.0800",
+          write_channel: "0.0.0801",
+          data_channel:  "0.0.0802",
+          layer2:        true
+        )
+      )
     end
   end
 end

@@ -23,6 +23,8 @@ require_relative "test_helper"
 
 require "network/network_autoyast"
 require "y2network/sysconfig/config_reader"
+require "y2network/s390_device_activators/qeth"
+
 Yast.import "Profile"
 Yast.import "Lan"
 
@@ -30,7 +32,7 @@ describe "NetworkAutoYast" do
   subject(:network_autoyast) { Yast::NetworkAutoYast.instance }
   let(:config) do
     Y2Network::Config.new(
-      interfaces: [],
+      interfaces: Y2Network::InterfacesCollection.new([]),
       routing:    Y2Network::Routing.new(tables: []),
       dns:        Y2Network::DNS.new,
       source:     :sysconfig
@@ -338,6 +340,56 @@ describe "NetworkAutoYast" do
       it "does not merge the installation configuration" do
         expect(Yast::NetworkAutoYast.instance).to_not receive(:merge_configs)
         subject.configure_lan
+      end
+    end
+  end
+
+  describe "#activate_s390_devices" do
+    let(:section) do
+      [
+        {
+          "chanids" => "0.0.0800 0.0.0801 0.0.0802",
+          "type"    => "qeth"
+        }
+      ]
+    end
+
+    let(:activator) do
+      instance_double(
+        Y2Network::S390DeviceActivators::Qeth,
+        configured_interface: configured_interface
+      )
+    end
+
+    let(:configured_interface) { "" }
+
+    before do
+      allow(Y2Network::S390DeviceActivators::Qeth).to receive(:new)
+        .and_return(activator)
+    end
+
+    it "activates the given device" do
+      expect(activator).to receive(:configure)
+      subject.activate_s390_devices(section)
+    end
+
+    context "if the device is already active" do
+      let(:configured_interface) { "eth0" }
+
+      it "does not activate the device" do
+        expect(activator).to_not receive(:configure)
+        subject.activate_s390_devices(section)
+      end
+    end
+
+    context "if the activation fails" do
+      before do
+        allow(activator).to receive(:configure).and_raise(RuntimeError)
+      end
+
+      it "logs the error" do
+        expect(subject.log).to receive(:error).at_least(1)
+        subject.activate_s390_devices(section)
       end
     end
   end

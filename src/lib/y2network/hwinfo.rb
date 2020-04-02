@@ -37,7 +37,7 @@ module Y2Network
       read_hardware
       @netcards = ReadHardware("netcard").map do |attrs|
         name = attrs["dev_name"]
-        extra_attrs = name ? extra_attrs_for(name) : {}
+        extra_attrs = name.to_s.empty? ? {} : extra_attrs_for(name)
         Hwinfo.new(attrs.merge(extra_attrs))
       end
     end
