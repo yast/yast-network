@@ -86,6 +86,7 @@ module Y2Network
 
       # Returns the list of channel IDs from a string
       #
+      # @param ids [String] String representing the channel IDs
       # @return [Array<String>]
       def chanids_from(ids)
         ids.to_s.split(CHANIDS_SEPARATOR)

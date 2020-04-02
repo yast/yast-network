@@ -117,6 +117,7 @@ module Y2Network
       #
       # It replaces spaces with colons.
       #
+      # @param ids [String] String representing the channel IDs
       # @return [String]
       def normalized_chanids(ids)
         ids.gsub(/\ +/, ":")

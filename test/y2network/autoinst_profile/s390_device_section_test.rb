@@ -59,7 +59,7 @@ describe Y2Network::AutoinstProfile::S390DeviceSection do
       }
     end
 
-    it "loads properly boot protocol" do
+    it "loads properly type, chanids and boot protocol" do
       section = described_class.new_from_hashes(hash)
       expect(section.type).to eq "ctc"
       expect(section.chanids).to eq("0.0.0800:0.0.0801")
@@ -75,7 +75,7 @@ describe Y2Network::AutoinstProfile::S390DeviceSection do
         }
       end
 
-      it "loads properly boot protocol" do
+      it "loads properly the chanids" do
         section = described_class.new_from_hashes(hash)
         expect(section.chanids).to eq("0.0.0800:0.0.0801")
       end
