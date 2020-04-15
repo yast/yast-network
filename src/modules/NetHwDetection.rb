@@ -67,17 +67,7 @@ module Yast
       Yast.import "Package"
       Yast.import "String"
 
-      # yuck, FIXME
-      # this is here just because network/hardware.ycp references it
-      # because of detection and module loading (StartEthInterface)
-      # general stuff
-      @description = ""
-      @type = ""
-      @unique = ""
-      @hotplug = ""
-      @Requires = []
-
-      Yast.include self, "network/hardware.rb"
+      Yast.include self, "network/routines.rb"
 
       # Detection result
       # (in dhcpcd-<i>interface</i>.info format)
@@ -127,9 +117,6 @@ module Yast
           ) != 0
       end
       @detection_modules = Builtins.maplist(needed_modules) { |m, _a| m }
-      Package.InstallKernel(Builtins.maplist(@detection_modules) do |m|
-        Ops.add(m, ".ko")
-      end)
       Builtins.foreach(@detection_modules) do |mod|
         Builtins.y2milestone("Loading module: %1", mod)
         SCR.Execute(
@@ -246,11 +233,6 @@ module Yast
       String.CutBlanks(hnent)
     end
 
-    publish variable: :description, type: "string"
-    publish variable: :type, type: "string"
-    publish variable: :unique, type: "string"
-    publish variable: :hotplug, type: "string"
-    publish variable: :Requires, type: "list <string>"
     publish variable: :result, type: "map"
     publish variable: :running, type: "boolean"
     publish function: :Start, type: "boolean ()"

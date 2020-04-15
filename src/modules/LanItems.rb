@@ -100,8 +100,6 @@ module Yast
       @tunnel_set_owner = ""
       @tunnel_set_group = ""
 
-      Yast.include self, "network/hardware.rb"
-
       # this is the map of kernel modules vs. requested firmware
       # non-empty keys are firmware packages shipped by SUSE
       @request_firmware = YAML.load_file(Directory.find_data_file("network/firmwares.yml"))
