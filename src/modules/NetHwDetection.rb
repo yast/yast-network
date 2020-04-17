@@ -55,6 +55,7 @@
 # </ul>
 #
 require "yast"
+require "yast2/execute"
 require "shellwords"
 
 module Yast
@@ -67,17 +68,7 @@ module Yast
       Yast.import "Package"
       Yast.import "String"
 
-      # yuck, FIXME
-      # this is here just because network/hardware.ycp references it
-      # because of detection and module loading (StartEthInterface)
-      # general stuff
-      @description = ""
-      @type = ""
-      @unique = ""
-      @hotplug = ""
-      @Requires = []
-
-      Yast.include self, "network/hardware.rb"
+      Yast.include self, "network/routines.rb"
 
       # Detection result
       # (in dhcpcd-<i>interface</i>.info format)
@@ -95,50 +86,17 @@ module Yast
     # WATCH OUT, this is the place where modules are loaded
     # @return true if success
     def LoadNetModules
-      Builtins.y2milestone("Network detection prepare")
+      log.info "Network detection prepare"
 
       hardware = ReadHardware("netcard")
 
-      Builtins.y2debug("Hardware=%1", hardware)
-      return false if Ops.less_than(Builtins.size(hardware), 1)
+      log.debug("Hardware=#{hardware.inspect}")
+      return false if hardware.empty?
 
-      needed_modules = Builtins.listmap(hardware) do |h|
-        # Formerly we simply modprobed the first module of the first
-        # driver, if it was not already loaded.  But if the user
-        # configured the card to use the second driver and unloads it
-        # and wants to load the first, it will not work because the
-        # first driver is already loaded but not bound to the device
-        # (the second one took it). N#59794#c31
-        # We will only load a driver if there's no driver for the card active.
-        active_driver = Builtins.find(Ops.get_list(h, "drivers", [])) do |d|
-          Ops.get_boolean(d, "active", false)
-        end
-        { Ops.get_string(h, "module", "") => active_driver.nil? }
-        # TODO: list of todos
-        # 1: choose which driver to load
-        # 2: load all its modules: no cards use multiple modules
-        # 3: either modprobe or insmod: ISA history
-      end
-      needed_modules = Builtins.filter(needed_modules) do |m, load|
-        load && !m.nil? && m != "" &&
-          SCR.Execute(
-            path(".target.bash"),
-            Builtins.sformat("/usr/bin/grep ^%1 /proc/modules", m.shellescape)
-          ) != 0
-      end
-      @detection_modules = Builtins.maplist(needed_modules) { |m, _a| m }
-      Package.InstallKernel(Builtins.maplist(@detection_modules) do |m|
-        Ops.add(m, ".ko")
-      end)
-      Builtins.foreach(@detection_modules) do |mod|
-        Builtins.y2milestone("Loading module: %1", mod)
-        SCR.Execute(
-          path(".target.bash"),
-          Builtins.sformat("/usr/sbin/modprobe --use-blacklist %1 2>&1", mod.shellescape)
-        )
-      end
+      @detection_modules = needed_modules(hardware).dup
+      @detection_modules.each { |name| load_module(name) }
 
-      Builtins.y2milestone("Network detection prepare (end)")
+      log.info("Network detection prepare (end)")
 
       true
     end
@@ -246,17 +204,59 @@ module Yast
       String.CutBlanks(hnent)
     end
 
-    publish variable: :description, type: "string"
-    publish variable: :type, type: "string"
-    publish variable: :unique, type: "string"
-    publish variable: :hotplug, type: "string"
-    publish variable: :Requires, type: "list <string>"
     publish variable: :result, type: "map"
     publish variable: :running, type: "boolean"
     publish function: :Start, type: "boolean ()"
     publish function: :Stop, type: "boolean ()"
     publish function: :DuplicateIP, type: "boolean (string)"
     publish function: :ResolveIP, type: "string (string)"
+
+  private
+
+    # Check which modules need to be modprobed returning the ones which are not
+    # active according to hwinfo and which are still not loaded
+    #
+    # @param netcards_hwinfo [Array<Hash>] network devices info
+    # @return [Array<String>]
+    def needed_modules(netcards_hwinfo)
+      netcards_hwinfo.each_with_object([]) do |h, modules|
+        name = h.fetch("module", "")
+        next if name.empty?
+
+        modules << name if !active_driver?(h) && !already_loaded?(name)
+      end
+    end
+
+    # Convenience method to check whether a given module is already loaded or
+    # not
+    #
+    # @param name [String] module name
+    # @return [Boolean] whether a given module is already loaded or not
+    def already_loaded?(name)
+      cmd = ["/usr/bin/grep", "^#{name}", "/proc/modules"]
+
+      _output, status = Yast::Execute.stdout.on_target(*cmd, allowed_exitstatus: 0..255)
+      status&.zero?
+    end
+
+    # Convenience method to check wheter a driver is already active or not
+    # according to the given hwinfo
+    #
+    # @param netcard_hwinfo [Array<Hash>] netcard hardware info
+    # @return [Boolean] whether the netcard driver is active or not
+    def active_driver?(netcard_hwinfo)
+      netcard_hwinfo.fetch("drivers", []).any? { |d| d["active"] }
+    end
+
+    # Convenience method to modprobe the given module
+    #
+    # @param name [String] module to be modprobed
+    def load_module(name)
+      cmd = ["/usr/sbin/modprobe", "--use-blacklist", name]
+
+      log.info("Loading module: #{name}")
+      Yast::Execute.stdout.on_target(*cmd, allowed_exitstatus: 0..1)
+    end
   end
 
   NetHwDetection = NetHwDetectionClass.new
