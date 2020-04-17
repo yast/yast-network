@@ -162,13 +162,6 @@ module Yast
       current_name_for(@current)
     end
 
-    # Return the current device names
-    #
-    # @ return [Array<String>]
-    def current_device_names
-      GetNetcardInterfaces().map { |i| current_name_for(i) }.reject(&:empty?)
-    end
-
     # Returns device type for particular lan item
     #
     # @param itemId [Integer] a key for {#Items}
@@ -183,36 +176,6 @@ module Yast
       return nil if !IsItemConfigured(itemId)
 
       NetworkInterfaces.devmap(GetDeviceName(itemId))
-    end
-
-    def GetCurrentMap
-      GetDeviceMap(@current)
-    end
-
-    # Sets item's sysconfig device map to given one
-    #
-    # It updates NetworkInterfaces according given map. Map is expected
-    # to be a hash where both key even value are strings
-    #
-    # @param item_id [Integer] a key for {#Items}
-    def SetDeviceMap(item_id, devmap)
-      devname = GetDeviceName(item_id)
-      return false if devname.nil? || devname.empty?
-
-      NetworkInterfaces.Change2(devname, devmap, false)
-    end
-
-    # Sets one option in items sysconfig device map
-    #
-    # Currently no checks on sysconfig option validity are performed
-    #
-    # @param item_id [Integer] a key for {#Items}
-    def SetItemSysconfigOpt(item_id, opt, value)
-      devmap = GetDeviceMap(item_id)
-      return false if devmap.nil?
-
-      devmap[opt] = value
-      SetDeviceMap(item_id, devmap)
     end
 
     # Function which returns if the settings were modified
@@ -237,11 +200,6 @@ module Yast
       Items().keys
     end
 
-    # Creates list of names of all known netcards configured even unconfigured
-    def GetNetcardNames
-      GetDeviceNames(GetNetcardInterfaces())
-    end
-
     # Finds all items of given device type
     #
     # @param type [String] device type
@@ -259,15 +217,6 @@ module Yast
     # @return [Array<String>] list of NIC names which are configured to use (any) dhcp
     def find_dhcp_ifaces
       find_by_sysconfig { |ifcfg| dhcp?(ifcfg) }
-    end
-
-    # Find all NICs configured statically
-    #
-    # @return [Array<String>] list of NIC names which have a static config
-    def find_static_ifaces
-      find_by_sysconfig do |ifcfg|
-        ifcfg.fetch("BOOTPROTO", "").match(/static/i)
-      end
     end
 
     # Finds all devices which has DHCLIENT_SET_HOSTNAME set to "yes"
@@ -297,63 +246,6 @@ module Yast
     # @return [Boolean]
     def valid_dhcp_cfg?
       invalid_dhcp_cfgs.empty?
-    end
-
-    # Get list of all configured interfaces
-    #
-    # @param type [String] only obtains configured interfaces of the given type
-    # return [Array] list of strings - interface names (eth0, ...)
-    # FIXME: rename e.g. to configured_interfaces
-    def getNetworkInterfaces(type = nil)
-      configurations = NetworkInterfaces.FilterDevices("netcard")
-      devtypes = type ? [type] : NetworkInterfaces.CardRegex["netcard"].to_s.split("|")
-
-      devtypes.inject([]) do |acc, conf_type|
-        conf = configurations[conf_type].to_h
-        acc.concat(conf.keys)
-      end
-    end
-
-    # Finds item_id by device name
-    #
-    # If an item is associated with config file of given name (ifcfg-<device>)
-    # then its id is returned
-    #
-    # @param [String] device name (e.g. eth0)
-    # @return index in Items or nil
-    def find_configured(device)
-      @Items.select { |_k, v| v["ifcfg"] == device }.keys.first
-    end
-
-    # It finds a new style device name for device name in old fashioned format
-    #
-    # It goes through currently present devices and tries to mach it to given
-    # old fashioned name
-    #
-    # @return [String] new style name in case of success. Given name otherwise.
-    def getDeviceName(oldname)
-      newname = oldname
-
-      hardware = ReadHardware("netcard")
-
-      hardware.each do |hw|
-        hw_dev_name = hw["dev_name"] || ""
-        hw_dev_mac = hw["permanent_mac"] || hw["mac"] || ""
-        hw_dev_busid = hw["busid"] || ""
-
-        case oldname
-        when /.*-id-#{hw_dev_mac}/i
-          log.info("device by ID found: #{oldname}")
-          newname = hw_dev_name
-        when /.*-bus-#{hw_dev_busid}/i
-          log.info("device by BUS found #{oldname}")
-          newname = hw_dev_name
-        end
-      end
-
-      log.info("nothing changed, #{newname} is old style dev_name") if oldname == newname
-
-      newname
     end
 
     # preinitializates @Items according info on physically detected network cards
@@ -407,43 +299,6 @@ module Yast
       true
     end
 
-    # Creates details for device's overview based on ip configuration type
-    #
-    # Produces list of strings. Strings are intended for "bullet" list, e.g.:
-    # * <string1>
-    # * <string2>
-    #
-    # @param [Hash] dev_map a device's sysconfig map (in form "option" => "value")
-    # @return [Array] list of strings, one string is intended for one "bullet"
-    def ip_overview(dev_map)
-      bullets = []
-
-      ip = DeviceProtocol(dev_map)
-
-      if ip =~ /DHCP/
-        bullets << format("%s %s", _("IP address assigned using"), ip)
-      elsif IP.Check(ip)
-        prefixlen = dev_map["PREFIXLEN"] || ""
-        if !prefixlen.empty?
-          bullets << format(_("IP address: %s/%s"), ip, prefixlen)
-        else
-          subnetmask = dev_map["NETMASK"]
-          bullets << format(_("IP address: %s, subnet mask %s"), ip, subnetmask)
-        end
-      end
-
-      # build aliases overview
-      item_aliases = dev_map["_aliases"] || {}
-      if !item_aliases.empty? && !NetworkService.is_network_manager
-        item_aliases.each do |_key2, desc|
-          parameters = format("%s/%s", desc["IPADDR"], desc["PREFIXLEN"])
-          bullets << format("%s (%s)", desc["LABEL"], parameters)
-        end
-      end
-
-      bullets
-    end
-
     # Is current device hotplug or not? I.e. is connected via usb/pcmci?
     def isCurrentHotplug
       hotplugtype = Ops.get_string(getCurrentItem, ["hwinfo", "hotplug"], "")
@@ -494,15 +349,6 @@ module Yast
       end
 
       true
-    end
-
-    def SetItem(*)
-      @hotplug = ""
-      Builtins.y2debug("type=%1", @type)
-      @type = Builtins.regexpsub(@type, "([^-]+)-.*$", "\\1") if Builtins.issubstring(@type, "-")
-      Builtins.y2debug("type=%1", @type)
-
-      nil
     end
 
     # Creates eth emulation for s390 devices
@@ -629,42 +475,6 @@ module Yast
       end
 
       result
-    end
-
-    #  Creates a list of udev rules for old style named interfaces
-    #
-    #  It takes a whole "interfaces" section of AY profile and produces
-    #  a list of udev rules to guarantee device naming persistency.
-    #  The rule is base on attributes described in old style name
-    #
-    #  @param [Array] list of hashes describing interfaces in AY profile
-    #  @return [Array] list of hashes for udev rules
-    def createUdevFromIfaceName(interfaces)
-      return [] if !interfaces || interfaces.empty?
-
-      udev_rules = []
-      attr_map = {
-        "id"  => "ATTR{address}",
-        "bus" => "KERNELS"
-      }
-
-      # rubocop:disable Next
-      # the check is disabled bcs the code uses capture groups. Rewriting
-      # the code would require some tricks to access these groups
-      interfaces.each do |interface|
-        if /.*-(?<attr>id|bus)-(?<value>.*)/ =~ interface["device"]
-          udev_rules << {
-            "rule"  => attr_map[attr],
-            "value" => value,
-            "name"  => getDeviceName(interface["device"])
-          }
-        end
-      end
-      # rubocop:enable Next
-
-      log.info("converted interfaces: #{interfaces}")
-
-      udev_rules
     end
 
     # Returns unused name for device of given type
