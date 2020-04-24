@@ -34,7 +34,6 @@ module Y2Network
     def netcards
       return @netcards if @netcards
 
-      read_hardware
       @netcards = ReadHardware("netcard").map do |attrs|
         name = attrs["dev_name"]
         extra_attrs = name.to_s.empty? ? {} : extra_attrs_for(name)
@@ -55,13 +54,6 @@ module Y2Network
       ).to_s.strip
       extra["dev_port"] = raw_dev_port unless raw_dev_port.empty?
       extra
-    end
-
-    # Makes sure that the hardware information was read
-    def read_hardware
-      Yast.import "LanItems"
-
-      Yast::LanItems.ReadHw if Yast::LanItems.Hardware.empty?
     end
   end
 
