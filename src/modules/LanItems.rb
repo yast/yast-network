@@ -246,13 +246,6 @@ module Yast
       invalid_dhcp_cfgs.empty?
     end
 
-    # preinitializates @Items according info on physically detected network cards
-    def ReadHw
-      @Items = {}
-      @Hardware = ReadHardware("netcard")
-      nil
-    end
-
     # Clears internal cache of the module to default values
     #
     # TODO: LanItems consists of several sets of internal variables.
@@ -347,132 +340,6 @@ module Yast
       end
 
       true
-    end
-
-    # Creates eth emulation for s390 devices
-    #
-    # @param dev_attrs [Hash] an s390 device description (e.g. as obtained from AY profile).
-    # If it contains s390 device attributes definition, then these definitions takes
-    # precendence over values assigned to corresponding LanItems' global variables
-    # before the method invocation. Hash keys are strings named after LanItems'
-    # s390 globals.
-    def createS390Device(dev_attrs = {})
-      Builtins.y2milestone("creating device s390 network device, #{dev_attrs}")
-
-      # FIXME: leftover from dropping LanUdevAuto module. This was its way how to
-      # configure s390 specific globals. When running in "normal" mode these attributes
-      # are initialized elsewhere (see S390Dialog in include/network/lan/hardware.rb)
-      if !dev_attrs.empty?
-        Select("")
-        @type = dev_attrs["type"] || ""
-        @qeth_chanids = dev_attrs["chanids"] || ""
-        @qeth_layer2 = dev_attrs.fetch("layer2", false)
-        @chan_mode = dev_attrs["protocol"] || ""
-        @iucv_user = dev_attrs["router"] || ""
-      end
-
-      result = true
-      # command to create device
-      command1 = ""
-      # command to find created device
-      command2 = ""
-      case @type
-      when "hsi", "qeth"
-        @portnumber_param = if Ops.greater_than(Builtins.size(@qeth_portnumber), 0)
-          Builtins.sformat("-n %1", @qeth_portnumber.to_s.shellescape)
-        else
-          ""
-        end
-        @options_param = if Ops.greater_than(Builtins.size(@qeth_options), 0)
-          Builtins.sformat("-o %1", @qeth_options.shellescape)
-        else
-          ""
-        end
-        command1 = Builtins.sformat(
-          "/sbin/qeth_configure %1 %2 %3 %4 %5 1",
-          @options_param,
-          @qeth_layer2 ? "-l" : "",
-          @portnumber_param,
-          @qeth_chanids
-        )
-        command2 = Builtins.sformat(
-          "/usr/bin/ls /sys/devices/qeth/%1/net/ | /usr/bin/head -n1 | /usr/bin/tr -d '\n'",
-          Ops.get(Builtins.splitstring(@qeth_chanids, " "), 0, "")
-        )
-      when "ctc"
-        # chan_ids (read, write), protocol
-        command1 = Builtins.sformat(
-          "/sbin/ctc_configure %1 1 %2",
-          @qeth_chanids,
-          @chan_mode.shellescape
-        )
-        command2 = Builtins.sformat(
-          "/usr/bin/ls /sys/devices/ctcm/%1/net/ | /usr/bin/head -n1 | /usr/bin/tr -d '\n'",
-          Ops.get(Builtins.splitstring(@qeth_chanids, " "), 0, "").shellescape
-        )
-      when "lcs"
-        # chan_ids (read, write), protocol
-        command1 = Builtins.sformat(
-          "/sbin/ctc_configure %1 1 %2",
-          @qeth_chanids,
-          @chan_mode.shellescape
-        )
-        command2 = Builtins.sformat(
-          "/usr/bin/ls /sys/devices/lcs/%1/net/ | /usr/bin/head -n1 | /usr/bin/tr -d '\n'",
-          Ops.get(Builtins.splitstring(@qeth_chanids, " "), 0, "").shellescape
-        )
-      when "iucv"
-        # router
-        command1 = Builtins.sformat("/sbin/iucv_configure %1 1", @iucv_user.shellescape)
-        command2 = Builtins.sformat(
-          "/usr/bin/ls /sys/devices/%1/*/net/ | /usr/bin/head -n1 | /usr/bin/tr -d '\n'",
-          @type.shellescape
-        )
-      else
-        Builtins.y2error("Unsupported type : %1", @type)
-      end
-      Builtins.y2milestone("execute %1", command1)
-      output1 = SCR.Execute(path(".target.bash_output"), command1)
-      if Ops.get_integer(output1, "exit", -1) == 0 &&
-          Builtins.size(Ops.get_string(output1, "stderr", "")) == 0
-        Builtins.y2milestone("Success : %1", output1)
-      else
-        Builtins.y2error("Problem occured : %1", output1)
-        result = false
-      end
-      Builtins.y2milestone("output1 %1", output1)
-
-      if result
-        Builtins.y2milestone("command2 %1", command2)
-        output2 = Convert.convert(
-          SCR.Execute(path(".target.bash_output"), command2),
-          from: "any",
-          to:   "map <string, any>"
-        )
-        Builtins.y2milestone("output2 %1", output2)
-        if Ops.get_integer(output2, "exit", -1) == 0 &&
-            Builtins.size(Ops.get_string(output2, "stderr", "")) == 0
-          Ops.set(
-            @Items,
-            [@current, "ifcfg"],
-            Ops.get_string(output2, "stdout", "")
-          )
-          Ops.set(
-            @Items,
-            [@current, "hwinfo", "dev_name"],
-            Ops.get_string(output2, "stdout", "")
-          )
-          Builtins.y2milestone(
-            "Device %1 created",
-            Ops.get_string(output2, "stdout", "")
-          )
-        else
-          Builtins.y2error("Some problem occured : %1", output2)
-          result = false
-        end
-      end
-
-      result
     end
 
     # Returns unused name for device of given type
@@ -637,12 +504,10 @@ module Yast
     publish function: :GetDeviceMap, type: "map <string, any> (integer)"
     publish function: :GetModified, type: "boolean ()"
     publish function: :SetModified, type: "void ()"
-    publish function: :ReadHw, type: "void ()"
     publish function: :Read, type: "void ()"
     publish function: :isCurrentHotplug, type: "boolean ()"
     publish function: :isCurrentDHCP, type: "boolean ()"
     publish function: :Commit, type: "boolean ()"
-    publish function: :createS390Device, type: "boolean ()"
     publish function: :find_dhcp_ifaces, type: "list <string> ()"
   end
 
