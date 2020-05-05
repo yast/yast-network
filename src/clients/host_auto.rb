@@ -33,6 +33,9 @@
 # @return [Boolean] success of operation
 # @example map mm = $[ "FAIL_DELAY" : "77" ];
 # @example map ret = WFM::CallFunction("host_auto", [ mm ]);
+
+require "y2network/autoinst_profile/host_section"
+
 module Yast
   class HostAutoClient < Client
     def main
@@ -153,7 +156,10 @@ module Yast
       imported_hosts.each do |ip, hosts|
         next unless hosts.any? { |host| host.strip.empty? }
 
-        AutoInstall.issues_list.add(:invalid_value, "host", "names",
+        AutoInstall.issues_list.add(:ay_invalid_value,
+          Y2Network::AutoinstProfile::HostSection.new_from_hashes(
+            @param),
+          "names",
           "",
           # TRANSLATORS: %s is host address
           _("The name must not be empty for %s.") % ip)
