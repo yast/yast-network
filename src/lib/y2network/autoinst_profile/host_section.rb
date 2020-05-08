@@ -24,13 +24,12 @@ module Y2Network
     # This class represents an AutoYaST \<host> section
 
     class HostSection < ::Installation::AutoinstProfile::SectionWithAttributes
-      
       # Creates an instance based on the profile representation used by the AutoYaST modules
       # (hash with nested hashes and arrays).
       #
       # @param hash [Hash] Host section from an AutoYaST profile
       # @return [HostSection]
-      def self.new_from_hashes(hash)
+      def self.new_from_hashes(_hash)
         result = new
         result
       end

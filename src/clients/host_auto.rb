@@ -158,7 +158,8 @@ module Yast
 
         AutoInstall.issues_list.add(:ay_invalid_value,
           Y2Network::AutoinstProfile::HostSection.new_from_hashes(
-            @param),
+            @param
+          ),
           "names",
           "",
           # TRANSLATORS: %s is host address
