@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu May  7 15:22:56 CEST 2020 - schubi@suse.de
+
+- AutoYaST: Cleanup/improve issue handling (bsc#1171335).
+- 4.2.67
+
+-------------------------------------------------------------------
 Thu Apr 16 07:19:26 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
 
 - Do not try to install kernel packages anymore since ISDN support
