@@ -17,7 +17,7 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/autoinst_profile/section_with_attributes"
+require "installation/autoinst_profile/section_with_attributes"
 module Y2Network
   module AutoinstProfile
     # This class represents an AutoYaST <device> section under <s390-devices>
@@ -29,7 +29,7 @@ module Y2Network
     #  </device>
     #
     # @see S390DevicesSection
-    class S390DeviceSection < SectionWithAttributes
+    class S390DeviceSection < ::Installation::AutoinstProfile::SectionWithAttributes
       def self.attributes
         [
           { name: :chanids },

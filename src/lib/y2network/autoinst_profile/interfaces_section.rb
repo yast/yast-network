@@ -17,7 +17,7 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/autoinst_profile/section_with_attributes"
+require "installation/autoinst_profile/section_with_attributes"
 require "y2network/autoinst_profile/interface_section"
 
 module Y2Network
@@ -45,7 +45,7 @@ module Y2Network
     #   </interfaces>
     #
     # @see NetworkingSection
-    class InterfacesSection < SectionWithAttributes
+    class InterfacesSection < ::Installation::AutoinstProfile::SectionWithAttributes
       include Yast::Logger
 
       def self.attributes
