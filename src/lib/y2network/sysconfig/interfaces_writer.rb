@@ -34,6 +34,10 @@ module Y2Network
     #
     # @see Y2Network::InterfacesCollection
     class InterfacesWriter
+      def initialize(reload: true)
+        @reload = reload
+      end
+
       # Writes interfaces hardware configuration and refreshes udev
       #
       # @param interfaces [Y2Network::InterfacesCollection] Interfaces collection
@@ -43,6 +47,10 @@ module Y2Network
       end
 
     private
+
+      def reload?
+        @reload
+      end
 
       # Creates an udev rule to set the driver for the given interface
       #
@@ -60,7 +68,7 @@ module Y2Network
       def update_udevd(interfaces)
         update_renaming_udev_rules(interfaces)
         update_drivers_udev_rules(interfaces)
-        reload_udev_rules
+        reload_udev_rules if reload?
       end
 
       # Writes down the current interfaces udev rules and the custom rules that
@@ -105,7 +113,7 @@ module Y2Network
       #
       # @param iface_name [String] Interface's name
       def shut_down_interface(iface_name)
-        Yast::Execute.on_target("/sbin/ifdown", iface_name) unless Yast::Mode.autoinst
+        Yast::Execute.on_target("/sbin/ifdown", iface_name) if reload?
       end
     end
   end
