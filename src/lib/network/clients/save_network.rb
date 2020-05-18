@@ -84,7 +84,7 @@ module Yast
     NETWORK_MANAGER = "/etc/NetworkManager".freeze
 
     def CopyConfiguredNetworkFiles
-      return if Mode.autoinst && !NetworkAutoYast.instance.keep_net_config?
+      return if Mode.autoinst && !Lan.autoinst.copy_network?
 
       log.info(
         "Copy network configuration files from 1st stage into installed system"
@@ -284,11 +284,11 @@ module Yast
     # It creates a proposal in case of common installation. In case of AY
     # installation it does full import of <networking> section
     def configure_lan
-      NetworkAutoYast.instance.configure_lan if Mode.autoinst
+      copy_udev_rules if Mode.autoinst && NetworkAutoYast.instance.configure_lan
 
       # FIXME: Really make sense to configure it in autoinst mode? At least the
       # proposal should be done and checked after lan configuration and in case
-      # that a bridge configuratio is present in the profile it should be
+      # that a bridge configuration is present in the profile it should be
       # skipped or even only done in case of missing `networking -> interfaces`
       # section
       NetworkAutoconfiguration.instance.configure_virtuals
