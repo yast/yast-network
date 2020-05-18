@@ -110,13 +110,9 @@ module Yast
     # @return [Boolean] true when configuration was present and loaded from the profile
     def configure_lan(write: false)
       log.info("NetworkAutoYast: Lan configuration")
+      return false if Lan.autoinst.before_proposal
 
-      ay_configuration = Lan.FromAY(ay_networking_section)
-      if keep_net_config?
-        ay_configuration = NetworkAutoYast.instance.merge_configs(ay_configuration)
-      end
-
-      configure_submodule(Lan, ay_configuration, write: write)
+      result = Lan.WriteOnly
     end
 
     # Takes care of activate s390 devices from the profile declaration
@@ -153,6 +149,12 @@ module Yast
     # @return [Boolean] true when configuration was present and loaded from the profile
     def configure_hosts(write: false)
       log.info("NetworkAutoYast: Hosts configuration")
+
+      unless ay_current_profile.key? "host"
+        Host.Write(gui: false)
+
+        return true
+      end
 
       hosts_config = (ay_host_section["hosts"] || {}).map do |host|
         # we need to guarantee order of the items here
@@ -310,10 +312,7 @@ module Yast
       # Return true in order to not call the NetworkAutoconfiguration.configure_hosts
       return true unless AutoInstall.valid_imported_values
 
-      mode_section = ay_general_section.fetch("mode", {})
-      write ||= !mode_section.fetch("second_stage", true)
       log.info("Write configuration instantly: #{write}")
-
       yast_module.Write(gui: false) if write
 
       true
