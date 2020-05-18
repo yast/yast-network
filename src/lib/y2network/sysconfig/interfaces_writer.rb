@@ -23,8 +23,6 @@ require "yast2/execute"
 require "y2network/sysconfig/interface_file"
 require "y2network/sysconfig/routes_file"
 
-Yast.import "Mode"
-
 module Y2Network
   module Sysconfig
     # This class writes interfaces specific configuration
@@ -33,6 +31,7 @@ module Y2Network
     # hardware specific configuration through udev rules.
     #
     # @see Y2Network::InterfacesCollection
+    # @param reload [Boolean] whether the udev rules should be reloaded or not
     class InterfacesWriter
       def initialize(reload: true)
         @reload = reload
@@ -48,6 +47,9 @@ module Y2Network
 
     private
 
+      # Whether the udev rules should be reloaded or not
+      #
+      # @return [Boolean] true if needs to be reloaded after written
       def reload?
         @reload
       end

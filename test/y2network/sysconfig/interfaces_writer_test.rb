@@ -70,19 +70,23 @@ describe Y2Network::Sysconfig::InterfacesWriter do
         eth0.rename("eth1", renaming_mechanism)
       end
 
-      it "sets the interface down" do
-        expect(Yast::Execute).to receive(:on_target).with("/sbin/ifdown", "eth0")
-        subject.write(interfaces)
+      context "and the reload is forced" do
+        it "sets the interface down" do
+          expect(Yast::Execute).to receive(:on_target).with("/sbin/ifdown", "eth0")
+          subject.write(interfaces)
+        end
       end
 
-      context "during autoinstallation" do
+      context "and the reload is not forced (ie: autoinstallation)" do
         before do
           allow(Yast::Mode).to receive(:autoinst).and_return(true)
         end
 
-        it "does not set the interface down" do
-          expect(Yast::Execute).to_not receive(:on_target).with("/sbin/ifdown", any_args)
-          subject.write(interfaces)
+        context "if not forced the reload" do
+          it "does not set the interface down" do
+            expect(Yast::Execute).to receive(:on_target).with("/sbin/ifdown", any_args)
+            subject.write(interfaces)
+          end
         end
       end
 
