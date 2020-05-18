@@ -32,5 +32,4 @@ testsuite/run/
 .yardoc
 /coverage
 *.pot
-config.*
 /test/data/scr_read/var/log
