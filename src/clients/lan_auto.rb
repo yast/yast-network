@@ -25,6 +25,8 @@ require "network/network_autoyast"
 module Yast
   # Client providing autoyast functionality
   class LanAutoClient < Client
+    include Yast::Logger
+
     def main
       Yast.import "UI"
 
@@ -96,23 +98,14 @@ module Yast
         result = Lan.WriteOnly
         Builtins.y2error("Writing lan config failed") if !result
         @ret &&= result
+        timeout = Lan.autoinst.ip_check_timeout || -1
 
-        if Ops.get(LanItems.autoinstall_settings, "strict_IP_check_timeout")
-          if Lan.isAnyInterfaceDown
-            @timeout = Ops.get_integer(
-              LanItems.autoinstall_settings,
-              "strict_IP_check_timeout",
-              0
-            )
-            Builtins.y2debug("timeout %1", @timeout)
-            @error_text = _("Configuration Error: uninitialized interface.")
-            if @timeout == 0
-              Popup.Error(@error_text)
-            else
-              Popup.TimedError(@error_text, @timeout)
-            end
-          end
+        if (timeout >= 0) && Lan.isAnyInterfaceDown
+          Builtins.y2debug("timeout %1", timeout)
+          error_text = _("Configuration Error: uninitialized interface.")
+          timeout == 0 ? Popup.Error(error_text) : Popup.TimedError(error_text, timeout)
         end
+
         Progress.set(@progress_orig)
       else
         Builtins.y2error("unknown function: %1", @func)

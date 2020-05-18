@@ -42,10 +42,10 @@ module Yast
       # import has to be done here, there are some collisions otherwise
       Yast.import "Arch"
       Yast.import "Lan"
-      Yast.import "LanItems"
       Yast.import "Linuxrc"
       Yast.import "Host"
       Yast.import "AutoInstall"
+      Yast.import "Stage"
     end
 
     # Merges existing config from system into given configuration map
@@ -165,7 +165,7 @@ module Yast
 
     # Checks if the profile asks for keeping installation network configuration
     def keep_net_config?
-      ret = ay_networking_section.fetch("keep_install_network", true)
+      ret = Lan.autoinst.keep_install_network
 
       log.info("NetworkAutoYast: keep installation network: #{ret}")
 
