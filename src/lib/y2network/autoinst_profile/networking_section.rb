@@ -35,6 +35,17 @@ module Y2Network
     #
     # @see RoutingSection
     class NetworkingSection
+
+      # @return [Boolean]
+      attr_accessor :setup_before_proposal
+      # @return [Boolean]
+      attr_accessor :start_immediately
+      # @return [Boolean]
+      attr_accessor :keep_install_network
+      # @return [Integer]
+      attr_accessor :strict_ip_check_timeout
+
+
       # @return [RoutingSection]
       attr_accessor :routing
       # @return [DNSSection]
@@ -53,6 +64,10 @@ module Y2Network
       # @return [NetworkingSection]
       def self.new_from_hashes(hash)
         result = new
+        result.setup_before_proposal = hash.fetch("setup_before_proposal", false)
+        result.start_immediately = hash.fetch("start_immediately", false)
+        result.keep_install_network = hash.fetch("keep_install_network", true)
+        result.strict_ip_check_timeout = hash.fetch("strict_ip_check_timeout", -1)
         result.routing = RoutingSection.new_from_hashes(hash["routing"]) if hash["routing"]
         result.dns = DNSSection.new_from_hashes(hash["dns"]) if hash["dns"]
         if hash["interfaces"]
@@ -92,7 +107,7 @@ module Y2Network
           "dns"          => dns.to_hashes,
           "interfaces"   => interfaces.to_hashes,
           "net-udev"     => udev_rules.to_hashes,
-          "s390-devices" => s390_devices.to_hashes
+          "s390-devices" => s390_devices.to_hashes,
         }
       end
     end
