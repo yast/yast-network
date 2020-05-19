@@ -103,16 +103,15 @@ module Yast
 
     # Initializates NICs setup according AY profile
     #
-    # If the installer is running in 1st stage mode only, then the configuration
-    # is also written
+    # If the network was already written before the proposal it returns without
+    # touching it
     #
-    # @param [Boolean] write forces instant writing of the configuration
-    # @return [Boolean] true when configuration was present and loaded from the profile
-    def configure_lan(write: false)
+    # @return [Boolean] true when written
+    def configure_lan
       log.info("NetworkAutoYast: Lan configuration")
       return false if Lan.autoinst.before_proposal
 
-      result = Lan.WriteOnly
+      Lan.WriteOnly
     end
 
     # Takes care of activate s390 devices from the profile declaration
