@@ -110,7 +110,7 @@ module Yast
     # @return [Boolean]
     attr_accessor :write_only
     # @return [Autoinst::Config]
-    attr_accessor :autoinst
+    attr_writer :autoinst
 
     #------------------
     # GLOBAL FUNCTIONS
@@ -675,8 +675,9 @@ module Yast
     end
 
     # Export data.
-    # They need to be passed through {LanAutoClient#ToAY} to become
-    # what networking.rnc describes.
+    # They need to be converted to become what networking.rnc describes.
+    # @see Y2Network::Clients::Auto.adapt_for_autoyast
+    #
     # Most prominently, instead of a flat list called "interfaces"
     # we export a 2-level map of typed "devices"
     # @return dumped settings
@@ -864,10 +865,10 @@ module Yast
       return unless autoinst_settings?(section)
 
       Y2Network::Autoinst::Config.new(
-        before_proposal: section.setup_before_proposal,
-        start_immediately: section.start_immediately,
+        before_proposal:      section.setup_before_proposal,
+        start_immediately:    section.start_immediately,
         keep_install_network: section.keep_install_network,
-        ip_check_timeout: section.strict_ip_check_timeout
+        ip_check_timeout:     section.strict_ip_check_timeout
       )
     end
 

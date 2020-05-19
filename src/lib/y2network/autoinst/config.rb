@@ -19,7 +19,7 @@
 
 module Y2Network
   module Autoinst
-    # This class is responsible of storing network settings that are only 
+    # This class is responsible of storing network settings that are only
     # relevant to the autoinstallation proccess.
     class Config
       # @return [Boolean] controls whether the network configuration should be

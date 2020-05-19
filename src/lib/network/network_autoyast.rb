@@ -103,13 +103,14 @@ module Yast
 
     # Initializates NICs setup according AY profile
     #
-    # If the installer is running in 1st stage mode only, then the configuration
-    # is also written
+    # If the network was already written before the proposal or the second
+    # stage is not omitted, then, it returns without touching the config.
     #
     # @param [Boolean] write forces instant writing of the configuration
     # @return [Boolean] true when configuration was present and loaded from the profile
     def configure_lan(write: false)
       log.info("NetworkAutoYast: Lan configuration")
+      return false if !write && (Lan.autoinst.before_proposal || second_stage?)
 
       ay_configuration = Lan.FromAY(ay_networking_section)
       if keep_net_config?
@@ -301,7 +302,7 @@ module Yast
     # It imports the profile, configures the module and writes the configuration.
     # Writing the configuration is optional when second stage is available and mandatory
     # when running autoyast installation with first stage only.
-    def configure_submodule(yast_module, ay_config, write: false)
+    def configure_submodule(yast_module, ay_config, write: !second_stage?)
       return false if !ay_config
 
       yast_module.Import(ay_config)
@@ -310,13 +311,17 @@ module Yast
       # Return true in order to not call the NetworkAutoconfiguration.configure_hosts
       return true unless AutoInstall.valid_imported_values
 
-      mode_section = ay_general_section.fetch("mode", {})
-      write ||= !mode_section.fetch("second_stage", true)
       log.info("Write configuration instantly: #{write}")
-
       yast_module.Write(gui: false) if write
 
       true
+    end
+
+    # Convenience method to check whether the second stage is enabled or not
+    #
+    # @return[Boolean]
+    def second_stage?
+      ay_general_section.fetch("mode", {}).fetch("second_stage", true)
     end
   end
 end

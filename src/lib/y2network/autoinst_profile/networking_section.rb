@@ -35,7 +35,6 @@ module Y2Network
     #
     # @see RoutingSection
     class NetworkingSection
-
       # @return [Boolean]
       attr_accessor :setup_before_proposal
       # @return [Boolean]
@@ -44,7 +43,6 @@ module Y2Network
       attr_accessor :keep_install_network
       # @return [Integer]
       attr_accessor :strict_ip_check_timeout
-
 
       # @return [RoutingSection]
       attr_accessor :routing
@@ -107,7 +105,7 @@ module Y2Network
           "dns"          => dns.to_hashes,
           "interfaces"   => interfaces.to_hashes,
           "net-udev"     => udev_rules.to_hashes,
-          "s390-devices" => s390_devices.to_hashes,
+          "s390-devices" => s390_devices.to_hashes
         }
       end
     end
