@@ -297,21 +297,15 @@ describe "NetworkAutoYast" do
       let(:networking_section) { { "setup_before_proposal" => before_proposal } }
 
       it "does not write anything" do
-        expect(Yast::Lan).to_not receive(:WriteOnly)
+        expect(Yast::Lan).to_not receive(:Write)
 
         subject.configure_lan
       end
     end
 
     context "when the configuration is not done before the proposal" do
-      let(:before_proposal) { true }
+      let(:before_proposal) { false }
       let(:networking_section) { { "setup_before_proposal" => before_proposal } }
-
-      it "does not write anything" do
-        expect(Yast::Lan).to_not receive(:WriteOnly)
-
-        subject.configure_lan
-      end
 
       context "and the user wants to keep the installation network" do
         let(:networking_section) { { "keep_install_network" => true } }
@@ -331,8 +325,11 @@ describe "NetworkAutoYast" do
         end
       end
 
-      it "writes the current configuration taking into account if needs to start it immediately" do
-        expect(Yast::Lan).to_not receive(:WriteOnly)
+      it "writes the current configuration without starting it" do
+        original_value = Yast::Lan.write_only
+        expect(Yast::Lan).to receive(:write_only=).with(true)
+        expect(Yast::Lan).to receive(:Write)
+        expect(Yast::Lan).to receive(:write_only=).with(original_value)
 
         subject.configure_lan
       end

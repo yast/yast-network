@@ -101,7 +101,8 @@ module Yast
       NetworkService.EnableDisableNow
     end
 
-    # Initializates NICs setup according AY profile
+    # Writes the autoyast network configuration according to the already
+    # imported configuration
     #
     # If the network was already written before the proposal it returns without
     # touching it
@@ -111,7 +112,13 @@ module Yast
       log.info("NetworkAutoYast: Lan configuration")
       return false if Lan.autoinst.before_proposal
 
-      Lan.WriteOnly
+      # force a write only as it is run at the end of the installation and in
+      # the target system
+      original_value = Lan.write_only
+      Lan.write_only = true
+      ret = Lan.Write
+      Lan.write_only = original_value
+      ret
     end
 
     # Takes care of activate s390 devices from the profile declaration
