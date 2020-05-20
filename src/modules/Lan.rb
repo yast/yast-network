@@ -638,6 +638,7 @@ module Yast
 
       Ops.set(input, "config", "dhcp" => dhcp)
       if !Ops.get(input, "strict_IP_check_timeout").nil?
+        input["strict_ip_check_timeout"] = input.delete("strict_IP_check_timeout")
         Ops.set(input, ["config", "config"], "CHECK_DUPLICATE_IP" => true)
       end
 
