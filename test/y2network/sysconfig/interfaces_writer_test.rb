@@ -25,7 +25,8 @@ require "y2network/interfaces_collection"
 require "tmpdir"
 
 describe Y2Network::Sysconfig::InterfacesWriter do
-  subject(:writer) { described_class.new }
+  let(:reload) { false }
+  subject(:writer) { described_class.new(reload: reload) }
 
   describe "#write" do
     let(:interfaces) { Y2Network::InterfacesCollection.new([eth0]) }
@@ -71,20 +72,18 @@ describe Y2Network::Sysconfig::InterfacesWriter do
       end
 
       context "and the reload is forced" do
+        let(:reload) { true }
+
         it "sets the interface down" do
           expect(Yast::Execute).to receive(:on_target).with("/sbin/ifdown", "eth0")
           subject.write(interfaces)
         end
       end
 
-      context "and the reload is not forced (ie: autoinstallation)" do
-        before do
-          allow(Yast::Mode).to receive(:autoinst).and_return(true)
-        end
-
+      context "and the reload is not forced (ie: end of the autoinstallation)" do
         context "if not forced the reload" do
           it "does not set the interface down" do
-            expect(Yast::Execute).to receive(:on_target).with("/sbin/ifdown", any_args)
+            expect(Yast::Execute).to_not receive(:on_target).with("/sbin/ifdown", any_args)
             subject.write(interfaces)
           end
         end
@@ -201,11 +200,30 @@ describe Y2Network::Sysconfig::InterfacesWriter do
       end
     end
 
-    it "refreshes udev" do
-      expect(Yast::Execute).to receive(:on_target).with("/usr/bin/udevadm", "control", any_args)
-      expect(Yast::Execute).to receive(:on_target).with("/usr/bin/udevadm", "trigger", any_args)
-      expect(Yast::Execute).to receive(:on_target).with("/usr/bin/udevadm", "settle")
-      subject.write(interfaces)
+    context "after the udev rules have been written" do
+      context "when the reload is forced" do
+        let(:reload) { true }
+
+        it "refreshes udev" do
+          expect(Yast::Execute).to receive(:on_target).with("/usr/bin/udevadm", "control", any_args)
+          expect(Yast::Execute).to receive(:on_target).with("/usr/bin/udevadm", "trigger", any_args)
+          expect(Yast::Execute).to receive(:on_target).with("/usr/bin/udevadm", "settle")
+          subject.write(interfaces)
+        end
+      end
+
+      context "when the reload is not forced" do
+        it "does not refresh udev" do
+          expect(Yast::Execute)
+            .to_not receive(:on_target).with("/usr/bin/udevadm", "control", any_args)
+          expect(Yast::Execute)
+            .to_not receive(:on_target).with("/usr/bin/udevadm", "trigger", any_args)
+          expect(Yast::Execute)
+            .to_not receive(:on_target).with("/usr/bin/udevadm", "settle")
+          subject.write(interfaces)
+        end
+      end
+
     end
   end
 end

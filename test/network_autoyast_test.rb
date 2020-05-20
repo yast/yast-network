@@ -249,58 +249,50 @@ describe "NetworkAutoYast" do
 
   describe "#keep_net_config?" do
     let(:network_autoyast) { Yast::NetworkAutoYast.instance }
+    let(:profile) { { "networking" => { "keep_install_network" => true } } }
 
-    def keep_install_network_value(value)
-      allow(network_autoyast)
-        .to receive(:ay_networking_section)
-        .and_return(value)
+    before do
+      Yast::Lan.Import(Yast::Lan.FromAY(profile["networking"]))
+      allow(Yast::Profile).to receive(:current).and_return(profile)
     end
 
-    it "succeedes when keep_install_network is set in AY profile" do
-      keep_install_network_value("keep_install_network" => true)
-      expect(network_autoyast.keep_net_config?).to be true
+    context "when keep_install_network is true in AY profile" do
+      it "returns true" do
+        expect(network_autoyast.keep_net_config?).to be true
+      end
     end
 
-    it "fails when keep_install_network is not set in AY profile" do
-      keep_install_network_value("keep_install_network" => false)
-      expect(network_autoyast.keep_net_config?).to be false
+    context "when keep_install_network is false in AY profile" do
+      let(:profile) { { "networking" => { "keep_install_network" => false } } }
+      it "returns false" do
+        expect(network_autoyast.keep_net_config?).to be false
+      end
     end
 
-    it "succeedes when keep_install_network is not present in AY profile" do
-      keep_install_network_value({})
-      expect(network_autoyast.keep_net_config?).to be true
+    context "when keep_install_network is not present in AY profile" do
+      let(:profile) { { "networking" => { "setup_before_proposal" => true } } }
+
+      it "returns true" do
+        expect(network_autoyast.keep_net_config?).to be true
+      end
     end
   end
 
   describe "#configure_lan" do
     before do
+      Yast::Lan.autoinst = nil
       allow(Yast::Profile).to receive(:current)
         .and_return("general" => general_section, "networking" => networking_section)
       allow(Yast::AutoInstall).to receive(:valid_imported_values).and_return(true)
+      allow(Yast::Lan).to receive(:Write)
+      Yast::Lan.autoinst.before_proposal = before_proposal
     end
 
     let(:networking_section) { nil }
     let(:general_section) { nil }
+    let(:before_proposal) { false }
 
-    context "when second stage is disabled" do
-      let(:general_section) do
-        { "mode" => { "second_stage" => false } }
-      end
-
-      it "writes the Lan module configuration" do
-        expect(Yast::Lan).to receive(:Write)
-        subject.configure_lan
-      end
-    end
-
-    context "when writing the configuration is disabled" do
-      it "writes the Lan module configuration" do
-        expect(Yast::Lan).to_not receive(:Write)
-        subject.configure_lan(write: false)
-      end
-    end
-
-    context "when second stage is enabled" do
+    context "when second stage is explicitly enabled" do
       let(:general_section) do
         { "mode" => { "second_stage" => true } }
       end
@@ -309,37 +301,74 @@ describe "NetworkAutoYast" do
         expect(Yast::Lan).to_not receive(:Write)
         subject.configure_lan
       end
+
+      it "returns false" do
+        expect(subject.configure_lan).to eql(false)
+      end
     end
 
-    context "when second stage is not explicitly enabled" do
-      let(:general_section) { nil }
+    context "when the configuration was written before the proposal" do
+      let(:before_proposal) { true }
+      let(:networking_section) { { "setup_before_proposal" => before_proposal } }
 
-      it "does not write the Lan module configuration" do
+      it "does not write anything" do
         expect(Yast::Lan).to_not receive(:Write)
-        subject.configure_lan
+        expect(subject.configure_lan).to eql(false)
+      end
+
+      it "returns false" do
+        expect(subject.configure_lan).to eql(false)
       end
     end
 
-    it "merges the installation configuration" do
-      expect(Yast::NetworkAutoYast.instance).to receive(:merge_configs)
-      subject.configure_lan
-    end
-
-    context "when the user wants to keep the installation network" do
-      let(:networking_section) { { "keep_install_network" => true } }
-
-      it "merges the installation configuration" do
-        expect(Yast::NetworkAutoYast.instance).to receive(:merge_configs)
-        subject.configure_lan
+    context "when the second stage is disabled" do
+      let(:before_proposal) { true }
+      let(:networking_section) { { "setup_before_proposal" => before_proposal } }
+      let(:general_section) do
+        { "mode" => { "second_stage" => false } }
       end
-    end
 
-    context "when the user does not want to keep the installation network" do
-      let(:networking_section) { { "keep_install_network" => false } }
+      context "and the configuration was not written before the proposal" do
+        let(:before_proposal) { false }
 
-      it "does not merge the installation configuration" do
-        expect(Yast::NetworkAutoYast.instance).to_not receive(:merge_configs)
-        subject.configure_lan
+        context "if the user wants to keep the installation network" do
+          let(:networking_section) do
+            { "keep_install_network" => true, "setup_before_proposal" => before_proposal }
+          end
+
+          it "merges the installation configuration" do
+            expect(Yast::NetworkAutoYast.instance).to receive(:merge_configs)
+            subject.configure_lan
+          end
+        end
+
+        context "if the user does not want to keep the installation network" do
+          let(:networking_section) do
+            { "keep_install_network" => false, "setup_before_proposal" => before_proposal }
+          end
+
+          it "does not merge the installation configuration" do
+            expect(Yast::NetworkAutoYast.instance).to_not receive(:merge_configs)
+            subject.configure_lan
+          end
+        end
+
+        it "writes the Lan module configuration" do
+          expect(Yast::Lan).to receive(:Write)
+          subject.configure_lan
+        end
+      end
+
+      context "and the configuration was written before the proposal" do
+        it "does not write anything" do
+          expect(Yast::Lan).to_not receive(:Write)
+
+          subject.configure_lan
+        end
+
+        it "returns false" do
+          expect(subject.configure_lan).to eql(false)
+        end
       end
     end
   end

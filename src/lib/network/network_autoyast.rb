@@ -166,7 +166,7 @@ module Yast
 
     # Checks if the profile asks for keeping installation network configuration
     def keep_net_config?
-      ret = Lan.autoinst.keep_install_network
+      ret = ay_networking_section.fetch("keep_install_network", true)
 
       log.info("NetworkAutoYast: keep installation network: #{ret}")
 
@@ -302,7 +302,7 @@ module Yast
     # It imports the profile, configures the module and writes the configuration.
     # Writing the configuration is optional when second stage is available and mandatory
     # when running autoyast installation with first stage only.
-    def configure_submodule(yast_module, ay_config, write: !second_stage?)
+    def configure_submodule(yast_module, ay_config, write: false)
       return false if !ay_config
 
       yast_module.Import(ay_config)
@@ -312,7 +312,7 @@ module Yast
       return true unless AutoInstall.valid_imported_values
 
       log.info("Write configuration instantly: #{write}")
-      yast_module.Write(gui: false) if write
+      yast_module.Write(gui: false) if !second_stage? || write
 
       true
     end
