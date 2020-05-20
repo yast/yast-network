@@ -23,6 +23,37 @@ require "y2network/clients/auto"
 
 describe Y2Network::Clients::Auto do
   let(:network_autoyast) { Yast::NetworkAutoYast.instance }
+  let(:eth0) { { "device" => "eth0", "bootproto" => "dhcp", "startmode" => "auto" } }
+  let(:interfaces) { [eth0] }
+
+  let(:dns) { { "hostname" => "host", "dhcp_hostname" => true, "write_hostname" => true } }
+  let(:routes) do
+    [
+      {
+        "destination" => "default",
+        "gateway"     => "192.168.1.1",
+        "netmask"     => "255.255.255.0",
+        "device"      => "-"
+      },
+      {
+        "destination" => "172.26.0.0/24",
+        "device"      => "eth0"
+      }
+    ]
+  end
+
+  let(:profile) do
+    {
+      "keep_install_network" => false,
+      "interfaces"           => interfaces,
+      "routing"              => {
+        "ipv4_forward" => true,
+        "ipv6_forward" => false,
+        "routes"       => routes
+      },
+      "dns"                  => dns
+    }
+  end
 
   describe "#reset" do
     it "clears Yast::Lan internal state" do
@@ -121,6 +152,43 @@ describe Y2Network::Clients::Auto do
       allow(Yast::Lan).to receive(:Modified).and_return(modified)
 
       expect(subject.modified?).to eql(modified)
+    end
+  end
+
+  describe "#write" do
+    let(:system_config) { Y2Network::Config.new(source: :sysconfig) }
+
+    before do
+      allow(Yast::Lan).to receive(:Read)
+      Y2Network::Config.add(:system, system_config)
+      allow(Yast::Lan).to receive(:WriteOnly)
+      subject.import(profile)
+    end
+
+    it "writes the imported network configuration" do
+      expect(Yast::Lan).to receive(:WriteOnly)
+
+      subject.write
+    end
+
+    context "when the imported profile declares a strict ip check timeout" do
+      let(:profile) do
+        {
+          "strict_IP_check_timeout" => 15
+        }
+      end
+
+      context "and some interfaces is down" do
+        before do
+          allow(Yast::Lan).to receive(:isAnyInterfaceDown).and_return(true)
+        end
+
+        it "shows an error popup with the given timeout" do
+          expect(Yast::Popup).to receive(:TimedError)
+
+          subject.write
+        end
+      end
     end
   end
 end
