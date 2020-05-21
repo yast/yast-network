@@ -32,7 +32,6 @@ module Y2Network
     #
     # @see Y2Network::InterfacesCollection
     class InterfacesWriter
-
       # Constructor
       #
       # @param reload [Boolean] whether the udev rules should be reloaded or not
