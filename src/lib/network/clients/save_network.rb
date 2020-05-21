@@ -98,6 +98,7 @@ module Yast
         { dir: SYSCONFIG, file: "routes" },
         { dir: ::File.join(ETC, "wicked"), file: "common.xml" },
         { dir: ETC, file: DNSClass::HOSTNAME_FILE },
+        { dir: ETC, file: "hosts" },
         # Copy sysctl file as network writes there ip forwarding (bsc#1159295)
         { dir: ::File.join(ETC, "sysctl.d"), file: "70-yast.conf" }
       ]
