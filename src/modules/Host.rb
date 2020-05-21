@@ -145,9 +145,11 @@ module Yast
       imported_hosts = settings.fetch("hosts", {})
 
       # convert from old format to the new one
-      imported_hosts.each_pair do |k, v|
-        names = v.join(" ")
-        imported_hosts[k] = names.empty? ? [] : [names]
+      # use ::1 entry as a reference
+      if (imported_hosts["::1"] || []).size > 1
+        imported_hosts.each_pair do |k, v|
+          imported_hosts[k] = [v.join(" ")]
+        end
       end
 
       imported_hosts.each_pair do |ip, names|
