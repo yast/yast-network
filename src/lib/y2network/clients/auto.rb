@@ -116,6 +116,11 @@ module Y2Network
       end
 
       # Convert data from native network to autoyast for XML
+      #
+      # @todo we should get rid of this method moving the logic to the
+      # Y2Network::AutoinstProfile::NetworkingSection in case we cannot remove
+      # it completely
+      #
       # @param [Hash] settings native network settings
       # @return [Hash] autoyast network settings
       def adapt_for_autoyast(settings)
