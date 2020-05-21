@@ -112,13 +112,10 @@ module Yast
       log.info("NetworkAutoYast: Lan configuration")
       return false if Lan.autoinst.before_proposal
 
-      # force a write only as it is run at the end of the installation and in
-      # the target system
-      original_value = Lan.write_only
-      Lan.write_only = true
-      ret = Lan.Write
-      Lan.write_only = original_value
-      ret
+      # force a write only as it is run at the end of the installation and it
+      # is already chrooted in the target system where restarting services or
+      # refreshing udev rules does not make sense at all
+      Lan.Write(apply_config: false)
     end
 
     # Takes care of activate s390 devices from the profile declaration

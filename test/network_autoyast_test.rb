@@ -326,10 +326,7 @@ describe "NetworkAutoYast" do
       end
 
       it "writes the current configuration without starting it" do
-        original_value = Yast::Lan.write_only
-        expect(Yast::Lan).to receive(:write_only=).with(true)
-        expect(Yast::Lan).to receive(:Write)
-        expect(Yast::Lan).to receive(:write_only=).with(original_value)
+        expect(Yast::Lan).to receive(:Write).with(apply_config: false)
 
         subject.configure_lan
       end

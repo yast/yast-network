@@ -436,7 +436,7 @@ module Yast
 
     # Update the SCR according to network settings
     # @return true on success
-    def Write(gui: true)
+    def Write(gui: true, apply_config: !write_only)
       Builtins.y2milestone("Writing configuration")
 
       # Query modified flag in all components, not just LanItems - DNS,
@@ -472,7 +472,7 @@ module Yast
       step_labels << _("Writing firewall configuration") if firewalld.installed?
 
       # Progress stage 9
-      step_labels = Builtins.add(step_labels, _("Activate network services")) if !write_only
+      step_labels = Builtins.add(step_labels, _("Activate network services")) if apply_config
       # Progress stage 10
       step_labels = Builtins.add(step_labels, _("Update configuration"))
 
@@ -545,7 +545,7 @@ module Yast
         Builtins.sleep(sl)
       end
 
-      if !write_only
+      if apply_config
         return false if Abort()
 
         # Progress step 9
@@ -560,7 +560,7 @@ module Yast
 
       # Progress step 10
       ProgressNextStage(_("Updating configuration..."))
-      update_mta_config if !write_only
+      update_mta_config if !apply_config
       Builtins.sleep(sl)
 
       if NetworkService.is_network_manager

@@ -31,8 +31,11 @@ module Y2Network
     # hardware specific configuration through udev rules.
     #
     # @see Y2Network::InterfacesCollection
-    # @param reload [Boolean] whether the udev rules should be reloaded or not
     class InterfacesWriter
+
+      # Constructor
+      #
+      # @param reload [Boolean] whether the udev rules should be reloaded or not
       def initialize(reload: true)
         @reload = reload
       end
