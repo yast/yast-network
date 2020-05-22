@@ -42,10 +42,10 @@ module Yast
       # import has to be done here, there are some collisions otherwise
       Yast.import "Arch"
       Yast.import "Lan"
-      Yast.import "LanItems"
       Yast.import "Linuxrc"
       Yast.import "Host"
       Yast.import "AutoInstall"
+      Yast.import "Stage"
     end
 
     # Merges existing config from system into given configuration map
@@ -101,22 +101,21 @@ module Yast
       NetworkService.EnableDisableNow
     end
 
-    # Initializates NICs setup according AY profile
+    # Writes the autoyast network configuration according to the already
+    # imported configuration
     #
-    # If the installer is running in 1st stage mode only, then the configuration
-    # is also written
+    # If the network was already written before the proposal it returns without
+    # touching it
     #
-    # @param [Boolean] write forces instant writing of the configuration
-    # @return [Boolean] true when configuration was present and loaded from the profile
-    def configure_lan(write: false)
+    # @return [Boolean] true when written
+    def configure_lan
       log.info("NetworkAutoYast: Lan configuration")
+      return false if Lan.autoinst.before_proposal
 
-      ay_configuration = Lan.FromAY(ay_networking_section)
-      if keep_net_config?
-        ay_configuration = NetworkAutoYast.instance.merge_configs(ay_configuration)
-      end
-
-      configure_submodule(Lan, ay_configuration, write: write)
+      # force a write only as it is run at the end of the installation and it
+      # is already chrooted in the target system where restarting services or
+      # refreshing udev rules does not make sense at all
+      Lan.Write(apply_config: false)
     end
 
     # Takes care of activate s390 devices from the profile declaration
@@ -154,6 +153,12 @@ module Yast
     def configure_hosts(write: false)
       log.info("NetworkAutoYast: Hosts configuration")
 
+      unless ay_current_profile.key? "host"
+        Host.Write(gui: false)
+
+        return true
+      end
+
       hosts_config = (ay_host_section["hosts"] || {}).map do |host|
         # we need to guarantee order of the items here
         [host["host_address"] || "", host["names"] || []]
@@ -165,7 +170,7 @@ module Yast
 
     # Checks if the profile asks for keeping installation network configuration
     def keep_net_config?
-      ret = ay_networking_section.fetch("keep_install_network", true)
+      ret = Lan.autoinst.keep_install_network
 
       log.info("NetworkAutoYast: keep installation network: #{ret}")
 
@@ -310,10 +315,7 @@ module Yast
       # Return true in order to not call the NetworkAutoconfiguration.configure_hosts
       return true unless AutoInstall.valid_imported_values
 
-      mode_section = ay_general_section.fetch("mode", {})
-      write ||= !mode_section.fetch("second_stage", true)
       log.info("Write configuration instantly: #{write}")
-
       yast_module.Write(gui: false) if write
 
       true

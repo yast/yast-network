@@ -34,6 +34,7 @@ require "network/confirm_virt_proposal"
 require "ui/text_helpers"
 require "y2firewall/firewalld"
 require "y2network/autoinst_profile/networking_section"
+require "y2network/autoinst/config"
 require "y2network/config"
 require "y2network/virtualization_config"
 require "y2network/interface_config_builder"
@@ -105,6 +106,11 @@ module Yast
       # Y2Network::Config objects
       @configs = {}
     end
+
+    # @return [Boolean]
+    attr_accessor :write_only
+    # @return [Autoinst::Config]
+    attr_writer :autoinst
 
     #------------------
     # GLOBAL FUNCTIONS
@@ -430,7 +436,7 @@ module Yast
 
     # Update the SCR according to network settings
     # @return true on success
-    def Write(gui: true)
+    def Write(gui: true, apply_config: !write_only)
       Builtins.y2milestone("Writing configuration")
 
       # Query modified flag in all components, not just LanItems - DNS,
@@ -466,7 +472,7 @@ module Yast
       step_labels << _("Writing firewall configuration") if firewalld.installed?
 
       # Progress stage 9
-      step_labels = Builtins.add(step_labels, _("Activate network services")) if !@write_only
+      step_labels = Builtins.add(step_labels, _("Activate network services")) if apply_config
       # Progress stage 10
       step_labels = Builtins.add(step_labels, _("Update configuration"))
 
@@ -539,7 +545,7 @@ module Yast
         Builtins.sleep(sl)
       end
 
-      if !@write_only
+      if apply_config
         return false if Abort()
 
         # Progress step 9
@@ -554,7 +560,7 @@ module Yast
 
       # Progress step 10
       ProgressNextStage(_("Updating configuration..."))
-      update_mta_config if !@write_only
+      update_mta_config if !apply_config
       Builtins.sleep(sl)
 
       if NetworkService.is_network_manager
@@ -587,12 +593,12 @@ module Yast
     # Only write configuration without starting any init scripts and SuSEconfig
     # @return true on success
     def WriteOnly
-      @write_only = !Ops.get_boolean(
-        LanItems.autoinstall_settings,
-        "start_immediately",
-        false
-      )
+      @write_only = !autoinst.start_immediately
       Write()
+    end
+
+    def autoinst
+      @autoinst ||= Y2Network::Autoinst::Config.new
     end
 
     # If there's key in modify, upcase key and assign the value to ret
@@ -632,6 +638,7 @@ module Yast
 
       Ops.set(input, "config", "dhcp" => dhcp)
       if !Ops.get(input, "strict_IP_check_timeout").nil?
+        input["strict_ip_check_timeout"] = input.delete("strict_IP_check_timeout")
         Ops.set(input, ["config", "config"], "CHECK_DUPLICATE_IP" => true)
       end
 
@@ -649,12 +656,15 @@ module Yast
     def Import(settings)
       settings = {} if settings.nil?
 
-      Lan.Read(:cache)
+      Read(:cache)
       profile = Y2Network::AutoinstProfile::NetworkingSection.new_from_hashes(settings)
       config = Y2Network::Config.from(:autoinst, profile, system_config)
       add_config(:yast, config)
+      @autoinst = autoinst_config(profile)
+      if Arch.s390
+        NetworkAutoYast.instance.activate_s390_devices(settings.fetch("s390-devices", {}))
+      end
 
-      LanItems.Import(settings)
       NetworkConfig.Import(settings["config"] || {})
       # Ensure that the /etc/hosts has been read to no blank out it in case of
       # not defined <host> section (bsc#1058396)
@@ -666,8 +676,9 @@ module Yast
     end
 
     # Export data.
-    # They need to be passed through {LanAutoClient#ToAY} to become
-    # what networking.rnc describes.
+    # They need to be converted to become what networking.rnc describes.
+    # @see Y2Network::Clients::Auto.adapt_for_autoyast
+    #
     # Most prominently, instead of a flat list called "interfaces"
     # we export a 2-level map of typed "devices"
     # @return dumped settings
@@ -682,18 +693,10 @@ module Yast
         "ipv6"                 => @ipv6,
         "routing"              => profile.routing&.to_hashes || {},
         "managed"              => NetworkService.is_network_manager,
-        "start_immediately"    => Ops.get_boolean(
-          LanItems.autoinstall_settings,
-          "start_immediately",
-          false
-        ), # start_immediately,
-        "keep_install_network" => Ops.get_boolean(
-          LanItems.autoinstall_settings,
-          "keep_install_network",
-          true
-        )
+        "start_immediately"    => autoinst.start_immediately,
+        "keep_install_network" => autoinst.keep_install_network
       }
-      Builtins.y2milestone("Exported map: %1", ay)
+      log.info("Exported map: #{ay}")
       deep_copy(ay)
     end
 
@@ -858,6 +861,25 @@ module Yast
 
     # @return [Array<Y2Network::Config>]
     attr_reader :configs
+
+    def autoinst_config(section)
+      return unless autoinst_settings?(section)
+
+      Y2Network::Autoinst::Config.new(
+        before_proposal:      section.setup_before_proposal,
+        start_immediately:    section.start_immediately,
+        keep_install_network: section.keep_install_network,
+        ip_check_timeout:     section.strict_ip_check_timeout
+      )
+    end
+
+    def autoinst_settings?(section)
+      return false unless section
+
+      !section.start_immediately.nil? ||
+        !section.keep_install_network.nil? ||
+        !section.setup_before_proposal.nil?
+    end
 
     def activate_network_service
       # If the second installation stage has been called by yast.ssh via
