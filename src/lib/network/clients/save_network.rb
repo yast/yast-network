@@ -84,7 +84,7 @@ module Yast
     NETWORK_MANAGER = "/etc/NetworkManager".freeze
 
     def CopyConfiguredNetworkFiles
-      return if Mode.autoinst && !Lan.autoinst.copy_network?
+      return if Mode.autoinst && !NetworkAutoYast.instance.keep_net_config?
 
       log.info(
         "Copy network configuration files from 1st stage into installed system"
