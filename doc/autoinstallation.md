@@ -3,11 +3,13 @@ Introduction
 
 A regular installation of SUSE Linux Enterprise Server 15 SP2 is performed in a single stage. The auto-installation process, however, has been divided in two stages. (see https://documentation.suse.com/sles/15-SP1/single-html/SLES-autoyast/#overviewandconcept for further details)
 
-Thus, the proper configuration of the network according to the given profile was done during the `configuration stage`, more commonly known as the 'second stage' of the auto-installation.
+Thus, **before SLE-15-SP3**, the proper configuration of the network according to the given profile was done during the `configuration stage`, more commonly known as the 'second stage' of the auto-installation.
 
 There has been some effort trying to move the network configuration logic to the `first stage` but, that is something that was only partially addressed.
 
-The idea is, that, **since SLE-15-SP3**, the AutoYaST network configuration, by default, will be done during the `first stage`, and the networking section will be removed completely from the profile in order to not call the lan auto  client in the second stage in case of enabled.
+The idea is, that, **since SLE-15-SP3**, the AutoYaST network configuration, by default, will be done during the `first stage`, and the networking section will be removed completely from the profile in order to not call the lan auto client in the second stage in case of enabled.
+
+> **Note**: An option to explicitly force the configuration of the network during the `second stage` is expected to be added, but it is still pending.
 
 First Stage
 -----------
@@ -27,12 +29,12 @@ file takes part in these clients (**inst_autoinit**, **inst_autosetup** and
   
 - **inst_finish:** At the end it will call **save_network** client which copies
   udev rules and ifcfg files from the running system when needed, and which is
-  also responsible for writing several proposals like virtualization, dns and
-  network service as well as writing the network configuration according to
-  the profile when it is not written by **inst_autosetup**.
+  also responsible for writing several proposals like virtualization, DNS and
+  network service as well as writing the configuration according to the profile
+  when it is not written by **inst_autosetup**.
 
 
-There are two ways to give a profile to _AutoYaST_, with (`autoyast` or with `autoyast2` parameters), the principal difference is that `autoyast` leaves the fetching of the profile to YaST, which means that _Linuxrc_ does not need to configure the network, while for `autoyast` _Linuxrc_ fetches the profile and may need to configure the network.
+There are two ways to give a profile to _AutoYaST_, with (`autoyast` or with `autoyast2` parameters). The main difference is that `autoyast` leaves the fetching of the profile to YaST, which means that _Linuxrc_ does not need to configure the network, while for `autoyast` _Linuxrc_ fetches the profile and may need to configure the network.
 
 Linuxrc configuration (minimal_configuration)
 ---------------------------------------------
