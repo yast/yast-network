@@ -269,21 +269,6 @@ module Yast
     # @return [Boolean] on success
     def Import(settings)
       reset_cache
-
-      @autoinstall_settings["start_immediately"] = settings.fetch("start_immediately", false)
-      @autoinstall_settings["strict_IP_check_timeout"] = settings.fetch("strict_IP_check_timeout",
-        -1)
-      @autoinstall_settings["keep_install_network"] = settings.fetch("keep_install_network", true)
-
-      # FIXME: createS390Device does two things, it
-      # - updates internal structures
-      # - creates s390 device eth emulation
-      # So, it belongs partly into Import and partly into Write. Note, that
-      # the code is currently unable to revert already created emulated device.
-      if Arch.s390
-        NetworkAutoYast.instance.activate_s390_devices(settings.fetch("s390-devices", {}))
-      end
-
       # settings == {} has special meaning 'Reset' used by AY
       SetModified() if !settings.empty?
 

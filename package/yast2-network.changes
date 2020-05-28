@@ -1,8 +1,22 @@
 -------------------------------------------------------------------
-Thu May  7 15:22:56 CEST 2020 - schubi@suse.de
+Wed May 20 14:07:13 UTC 2020 - schubi@suse.de
 
 - AutoYaST: Cleanup/improve issue handling (bsc#1171335).
-- 4.2.67
+- 4.3.2
+
+-------------------------------------------------------------------
+Wed May 20 13:07:13 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
+
+- AutoYaST: Adapted the module to handle a complete network
+  configuration during the first stage (bsc#1171922)
+- 4.3.1
+
+-------------------------------------------------------------------
+Tue May 12 13:08:03 UTC 2020 - Josef Reidinger <jreidinger@suse.com>
+
+- Autoyast schema: Allow optional types for string and map objects
+  (bsc#1170886)
+- 4.3.0
 
 -------------------------------------------------------------------
 Thu Apr 16 07:19:26 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
