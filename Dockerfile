@@ -1,3 +1,3 @@
-FROM registry.opensuse.org/yast/sle-15/sp2/containers/yast-ruby
+FROM registry.opensuse.org/yast/head/containers/yast-ruby:latest
 COPY . /usr/src/app
 
