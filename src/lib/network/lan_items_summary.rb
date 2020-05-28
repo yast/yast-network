@@ -31,7 +31,6 @@ module Yast
       textdomain "network"
       Yast.import "LanItems"
       Yast.import "Summary"
-      textdomain "network"
     end
 
     # Generates a summary in RichText format for the configured interfaces
