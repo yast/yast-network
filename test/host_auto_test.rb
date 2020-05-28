@@ -40,7 +40,7 @@ describe Yast::HostAutoClient do
       it "blames empty host name entries" do
         expect(Yast::AutoInstall).to receive(:issues_list).and_return(i_list)
         expect(i_list).to receive(:add)
-          .with(:invalid_value,
+          .with(::Y2Autoinstallation::AutoinstIssues::AyInvalidValue,
             "host",
             "names",
             "",
