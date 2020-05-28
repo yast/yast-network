@@ -157,7 +157,7 @@ module Yast
         next unless hosts.any? { |host| host.strip.empty? }
 
         AutoInstall.issues_list.add(
-          ::Y2Autoinstallation::AutoinstIssues::AyInvalidValue,
+          ::Installation::AutoinstIssues::InvalidValue,
           Y2Network::AutoinstProfile::HostSection.new_from_hashes(
             @param
           ),
