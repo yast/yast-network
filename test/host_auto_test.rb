@@ -32,7 +32,7 @@ describe Yast::HostAutoClient do
 
     before do
       allow(Y2Network::AutoinstProfile::HostSection).to receive(:new_from_hashes)
-        .and_return(fw_section)
+        .and_return(host_section)
     end
 
     before do
