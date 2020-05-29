@@ -34,7 +34,7 @@ module Y2Network
     #   </net-udev>
     #
     # @see NetworkingSection
-    class UdevRulesSection <::Installation::AutoinstProfile::SectionWithAttributes
+    class UdevRulesSection < ::Installation::AutoinstProfile::SectionWithAttributes
       include Yast::Logger
 
       def self.attributes

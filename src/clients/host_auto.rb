@@ -164,7 +164,8 @@ module Yast
           "names",
           "",
           # TRANSLATORS: %s is host address
-          _("The name must not be empty for %s.") % ip)
+          _("The name must not be empty for %s.") % ip
+        )
       end
     end
   end
