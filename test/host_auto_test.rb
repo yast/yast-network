@@ -23,9 +23,18 @@ require_relative "test_helper"
 
 require "yast"
 require_relative "../src/clients/host_auto"
+require "installation/autoinst_issues"
 
 describe Yast::HostAutoClient do
   describe "#main" do
+
+    let(:host_section) { Y2Network::AutoinstProfile::NetworkingSection.new }
+
+    before do
+      allow(Y2Network::AutoinstProfile::HostSection).to receive(:new_from_hashes)
+        .and_return(host_section)
+    end
+
     before do
       allow(Yast::WFM).to receive(:Args).with(no_args).and_return([func, hosts])
       allow(Yast::WFM).to receive(:Args).with(0).and_return(func)
@@ -40,8 +49,8 @@ describe Yast::HostAutoClient do
       it "blames empty host name entries" do
         expect(Yast::AutoInstall).to receive(:issues_list).and_return(i_list)
         expect(i_list).to receive(:add)
-          .with(:invalid_value,
-            "host",
+          .with(::Installation::AutoinstIssues::InvalidValue,
+            host_section,
             "names",
             "",
             "The name must not be empty for 10.20.1.29.")

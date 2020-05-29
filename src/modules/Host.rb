@@ -23,6 +23,7 @@
 require "yast"
 require "yast2/execute"
 require "cfa/hosts"
+require "y2network/autoinst_profile/host_section"
 
 module Yast
   class HostClass < Module
@@ -143,6 +144,8 @@ module Yast
       load_hosts(load_only: true)
 
       imported_hosts = settings.fetch("hosts", {})
+
+      check_profile_for_errors(imported_hosts)
 
       # convert from old format to the new one
       # use ::1 entry as a reference
@@ -305,6 +308,28 @@ module Yast
       names.each do |name|
         canonical, *aliases = name.split(" ")
         @hosts.add_entry(address, canonical, aliases)
+      end
+    end
+
+    # Semantic AutoYaST profile check
+    #
+    # Problems will be stored in AutoInstall.issues_list.
+    # @param imported_hosts [Hash] autoyast settings
+    def check_profile_for_errors(imported_hosts)
+      # Checking for empty hostnames
+      imported_hosts.each do |ip, hosts|
+        next unless hosts.any? { |host| host.strip.empty? }
+
+        AutoInstall.issues_list.add(
+          ::Installation::AutoinstIssues::InvalidValue,
+          Y2Network::AutoinstProfile::HostSection.new_from_hashes(
+            @param
+          ),
+          "names",
+          "",
+          # TRANSLATORS: %s is host address
+          _("The name must not be empty for %s.") % ip
+        )
       end
     end
   end

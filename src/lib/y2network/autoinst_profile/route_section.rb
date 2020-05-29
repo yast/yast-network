@@ -17,7 +17,7 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/autoinst_profile/section_with_attributes"
+require "installation/autoinst_profile/section_with_attributes"
 
 module Y2Network
   module AutoinstProfile
@@ -32,7 +32,7 @@ module Y2Network
     #  </route>
     #
     # @see RoutingSection
-    class RouteSection < SectionWithAttributes
+    class RouteSection < ::Installation::AutoinstProfile::SectionWithAttributes
       def self.attributes
         [
           { name: :destination },
