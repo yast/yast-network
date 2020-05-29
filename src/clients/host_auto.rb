@@ -29,8 +29,6 @@
 # goes through the configuration and return the setting.
 # Does not do any changes to the configuration.
 
-require "y2network/autoinst_profile/host_section"
-
 # @param first a map of host settings
 # @return [Boolean] success of operation
 # @example map mm = $[ "FAIL_DELAY" : "77" ];
@@ -94,7 +92,6 @@ module Yast
             )
           }
         end
-        check_profile_for_errors(@hostlist)
         @ret = Host.Import("hosts" => @hostlist)
       # Return actual state
       elsif @func == "Export"
@@ -142,30 +139,6 @@ module Yast
       deep_copy(@ret)
 
       # EOF
-    end
-
-  private
-
-    # Semantic AutoYaST profile check
-    #
-    # Problems will be stored in AutoInstall.issues_list.
-    # @param imported_hosts [Hash] autoyast settings
-    def check_profile_for_errors(imported_hosts)
-      # Checking for empty hostnames
-      imported_hosts.each do |ip, hosts|
-        next unless hosts.any? { |host| host.strip.empty? }
-
-        AutoInstall.issues_list.add(
-          ::Installation::AutoinstIssues::InvalidValue,
-          Y2Network::AutoinstProfile::HostSection.new_from_hashes(
-            @param
-          ),
-          "names",
-          "",
-          # TRANSLATORS: %s is host address
-          _("The name must not be empty for %s.") % ip
-        )
-      end
     end
   end
 end
