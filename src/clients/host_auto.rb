@@ -29,13 +29,13 @@
 # goes through the configuration and return the setting.
 # Does not do any changes to the configuration.
 
+require "y2network/autoinst_profile/host_section"
+
+
 # @param first a map of host settings
 # @return [Boolean] success of operation
 # @example map mm = $[ "FAIL_DELAY" : "77" ];
 # @example map ret = WFM::CallFunction("host_auto", [ mm ]);
-
-require "y2network/autoinst_profile/host_section"
-
 module Yast
   class HostAutoClient < Client
     def main
