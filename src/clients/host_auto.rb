@@ -31,7 +31,6 @@
 
 require "y2network/autoinst_profile/host_section"
 
-
 # @param first a map of host settings
 # @return [Boolean] success of operation
 # @example map mm = $[ "FAIL_DELAY" : "77" ];
