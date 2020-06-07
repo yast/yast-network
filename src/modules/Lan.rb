@@ -642,8 +642,8 @@ module Yast
       Read(:cache)
       profile = Y2Network::AutoinstProfile::NetworkingSection.new_from_hashes(settings)
       config = Y2Network::Config.from(:autoinst, profile, system_config)
-      add_config(:yast, config)
       @autoinst = autoinst_config(profile)
+      add_config(:yast, config)
       if Arch.s390
         NetworkAutoYast.instance.activate_s390_devices(settings.fetch("s390-devices", {}))
       end

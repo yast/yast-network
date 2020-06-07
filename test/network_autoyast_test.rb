@@ -47,63 +47,41 @@ describe "NetworkAutoYast" do
   end
 
   describe "#merge_devices" do
-    let(:netconfig_linuxrc) do
-      {
-        "eth" => { "eth0" => {} }
-      }
-    end
-    let(:netconfig_ay) do
-      {
-        "eth" => { "eth1" => {} }
-      }
-    end
-    let(:netconfig_ay_colliding) do
-      {
-        "eth" => { "eth0" => { ifcfg_key: "value" } }
-      }
-    end
-    let(:netconfig_no_eth) do
-      {
-        "tun"  => { "tun0"  => {} },
-        "tap"  => { "tap0"  => {} },
-        "br"   => { "br0"   => {} },
-        "bond" => { "bond0" => {} }
-      }
+    let(:eth0_dhcp) { { "name" => "eth0", "bootproto" => "dhcp" } }
+    let(:eth1_dhcp) { { "name" => "eth1", "bootproto" => "dhcp" } }
+    let(:eth1_static) { { "name" => "eth1", "bootproto" => "static", "ipaddr"=>"192.168.1.5" } }
+    let(:eth2_dhcp) { { "name" => "eth2", "bootproto" => "dhcp" } }
+    let(:netconfig_linuxrc) { [eth0_dhcp, eth1_static] }
+    let(:netconfig_ay) { [eth2_dhcp] }
+    let(:netconfig_ay_colliding) { [eth1_dhcp, eth2_dhcp] }
+
+    context "when given interfaces list are nil or empty" do
+      it "returns an empty array" do
+        expect(network_autoyast.send(:merge_devices, [], [])).to eql([])
+        expect(network_autoyast.send(:merge_devices, nil, [])).to eql([])
+        expect(network_autoyast.send(:merge_devices, [], nil)).to eql([])
+        expect(network_autoyast.send(:merge_devices, nil, nil)).to eql([])
+      end
     end
 
-    it "returns empty result when both maps are empty" do
-      expect(network_autoyast.send(:merge_devices, {}, {})).to be_empty
+    context "when only one of the given interfaces list is empty" do
+      it "returns the other list" do
+        expect(network_autoyast.send(:merge_devices, netconfig_linuxrc, [])).to eql netconfig_linuxrc
+        expect(network_autoyast.send(:merge_devices, [], netconfig_ay)).to eql netconfig_ay
+      end
     end
 
-    it "returns empty result when both maps are nil" do
-      expect(network_autoyast.send(:merge_devices, nil, nil)).to be_empty
+    it "combines the two lists ommiting duplicates using the name as the group value" do
+      devices = network_autoyast.send(:merge_devices, netconfig_linuxrc, netconfig_ay)
+      expect(devices.size).to eq(3)
     end
 
-    it "returns other map when one map is empty" do
-      expect(network_autoyast.send(:merge_devices, netconfig_linuxrc, {})).to eql netconfig_linuxrc
-      expect(network_autoyast.send(:merge_devices, {}, netconfig_ay)).to eql netconfig_ay
-    end
-
-    it "merges nonempty maps with no collisions in keys" do
-      merged = network_autoyast.send(:merge_devices, netconfig_linuxrc, netconfig_no_eth)
-
-      expect(merged.keys).to match_array netconfig_linuxrc.keys + netconfig_no_eth.keys
-    end
-
-    it "merges nonempty maps including maps referenced by colliding key" do
-      merged = network_autoyast.send(:merge_devices, netconfig_linuxrc, netconfig_ay)
-
-      result_dev_types = (netconfig_linuxrc.keys + netconfig_ay.keys).uniq
-      result_eth_devs  = (netconfig_linuxrc["eth"].keys + netconfig_ay["eth"].keys).uniq
-
-      expect(merged.keys).to match_array result_dev_types
-      expect(merged["eth"].keys).to match_array result_eth_devs
-    end
-
-    it "returns merged map where inner map uses values from second argument in case of collision" do
-      merged = network_autoyast.send(:merge_devices, netconfig_linuxrc, netconfig_ay_colliding)
-
-      expect(merged["eth"]).to eql netconfig_ay_colliding["eth"]
+    context "when there is a duplicate interface definition" do
+      it "updates the system config with the defined by AutoYaST" do
+        devices = network_autoyast.send(:merge_devices, netconfig_linuxrc, netconfig_ay_colliding)
+        expect(devices.size).to eq(3)
+        expect(devices.find {|d| d["name"] == "eth1"}).to eq(eth1_dhcp)
+      end
     end
   end
 
@@ -174,14 +152,13 @@ describe "NetworkAutoYast" do
   end
 
   describe "#merge_configs" do
-
     it "merges all necessary stuff" do
       stub_const("Yast::UI", double.as_null_object)
       expect(network_autoyast).to receive(:merge_dns)
       expect(network_autoyast).to receive(:merge_routing)
       expect(network_autoyast).to receive(:merge_devices)
 
-      network_autoyast.merge_configs("dns" => {}, "routing" => {}, "devices" => {})
+      network_autoyast.merge_configs("dns" => {}, "routing" => {}, "interfaces" => [])
     end
   end
 

@@ -58,11 +58,11 @@ module Yast
       Lan.Read(:cache)
       # export settings into AY map
       from_system = Lan.Export
+      return from_system if conf.nil? || conf.empty?
+
       dns = from_system["dns"] || {}
       routing = from_system["routing"] || {}
-      devices = from_system["devices"] || {}
-
-      return from_system if conf.nil? || conf.empty?
+      devices = from_system["interfaces"] || []
 
       # copy the keys/values that are not existing in the XML
       # so we merge the inst-sys settings with the XML while XML
@@ -71,7 +71,7 @@ module Yast
       conf["routing"] = merge_routing(routing, conf["routing"])
       # merge devices definitions obtained from inst-sys
       # and those which were read from AY profile. bnc#874259
-      conf["devices"] = merge_devices(devices, conf["devices"])
+      conf["interfaces"] = merge_devices(devices, conf["interfaces"])
 
       conf
     end
@@ -197,11 +197,9 @@ module Yast
     def merge_devices(in_devs1, in_devs2)
       return in_devs2 if in_devs1.nil? && !in_devs2.nil?
       return in_devs1 if in_devs2.nil? && !in_devs1.nil?
-      return {} if in_devs1.nil? && in_devs2.nil?
+      return [] if in_devs1.nil? && in_devs2.nil?
 
-      in_devs1.merge(in_devs2) do |_key, devs1_vals, devs2_vals|
-        devs1_vals.merge(devs2_vals)
-      end
+      (in_devs1 + in_devs2).group_by {|i| i["name"] }.values.map {|a| a.last }
     end
 
     # Merges two maps with dns related values.
