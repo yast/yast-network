@@ -18,6 +18,7 @@
 # find current contact information at www.suse.com.
 
 require "yast"
+require "y2network/can_be_copied"
 require "forwardable"
 
 module Y2Network
@@ -32,6 +33,7 @@ module Y2Network
   class ConnectionConfigsCollection
     extend Forwardable
     include Yast::Logger
+    include CanBeCopied
 
     attr_reader :connection_configs
     alias_method :to_a, :connection_configs

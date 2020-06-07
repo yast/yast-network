@@ -62,16 +62,12 @@ module Yast
 
       dns = from_system["dns"] || {}
       routing = from_system["routing"] || {}
-      devices = from_system["interfaces"] || []
 
       # copy the keys/values that are not existing in the XML
       # so we merge the inst-sys settings with the XML while XML
       # has higher priority
       conf["dns"] = merge_dns(dns, conf["dns"])
       conf["routing"] = merge_routing(routing, conf["routing"])
-      # merge devices definitions obtained from inst-sys
-      # and those which were read from AY profile. bnc#874259
-      conf["interfaces"] = merge_devices(devices, conf["interfaces"])
 
       conf
     end
@@ -174,33 +170,6 @@ module Yast
     end
 
   private
-
-    # Merges two devices map into one.
-    #
-    # Maps are expected in NetworkInterfaces format. That is
-    # {
-    #   type1:
-    #   {
-    #     dev_name_1: { ... },
-    #     ...
-    #   },
-    #   ...
-    # }
-    #
-    # If a device definition is present in both maps, then the one from devices2
-    # wins.
-    #
-    # @param [Hash, nil] in_devs1 first map of devices in NetworkInterfaces format
-    # @param [Hash, nil] in_devs2 second map of devices in NetworkInterfaces format
-    #
-    # @return merged device map in NetworkInterfaces format or empty map
-    def merge_devices(in_devs1, in_devs2)
-      return in_devs2 if in_devs1.nil? && !in_devs2.nil?
-      return in_devs1 if in_devs2.nil? && !in_devs1.nil?
-      return [] if in_devs1.nil? && in_devs2.nil?
-
-      (in_devs1 + in_devs2).group_by {|i| i["name"] }.values.map {|a| a.last }
-    end
 
     # Merges two maps with dns related values.
     #
