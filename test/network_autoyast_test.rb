@@ -47,67 +47,6 @@ describe "NetworkAutoYast" do
     Yast::Lan.add_config(:yast, config)
   end
 
-  describe "#merge_devices" do
-    let(:netconfig_linuxrc) do
-      {
-        "eth" => { "eth0" => {} }
-      }
-    end
-    let(:netconfig_ay) do
-      {
-        "eth" => { "eth1" => {} }
-      }
-    end
-    let(:netconfig_ay_colliding) do
-      {
-        "eth" => { "eth0" => { ifcfg_key: "value" } }
-      }
-    end
-    let(:netconfig_no_eth) do
-      {
-        "tun"  => { "tun0"  => {} },
-        "tap"  => { "tap0"  => {} },
-        "br"   => { "br0"   => {} },
-        "bond" => { "bond0" => {} }
-      }
-    end
-
-    it "returns empty result when both maps are empty" do
-      expect(network_autoyast.send(:merge_devices, {}, {})).to be_empty
-    end
-
-    it "returns empty result when both maps are nil" do
-      expect(network_autoyast.send(:merge_devices, nil, nil)).to be_empty
-    end
-
-    it "returns other map when one map is empty" do
-      expect(network_autoyast.send(:merge_devices, netconfig_linuxrc, {})).to eql netconfig_linuxrc
-      expect(network_autoyast.send(:merge_devices, {}, netconfig_ay)).to eql netconfig_ay
-    end
-
-    it "merges nonempty maps with no collisions in keys" do
-      merged = network_autoyast.send(:merge_devices, netconfig_linuxrc, netconfig_no_eth)
-
-      expect(merged.keys).to match_array netconfig_linuxrc.keys + netconfig_no_eth.keys
-    end
-
-    it "merges nonempty maps including maps referenced by colliding key" do
-      merged = network_autoyast.send(:merge_devices, netconfig_linuxrc, netconfig_ay)
-
-      result_dev_types = (netconfig_linuxrc.keys + netconfig_ay.keys).uniq
-      result_eth_devs  = (netconfig_linuxrc["eth"].keys + netconfig_ay["eth"].keys).uniq
-
-      expect(merged.keys).to match_array result_dev_types
-      expect(merged["eth"].keys).to match_array result_eth_devs
-    end
-
-    it "returns merged map where inner map uses values from second argument in case of collision" do
-      merged = network_autoyast.send(:merge_devices, netconfig_linuxrc, netconfig_ay_colliding)
-
-      expect(merged["eth"]).to eql netconfig_ay_colliding["eth"]
-    end
-  end
-
   describe "#merge_dns" do
     let(:instsys_dns_setup) do
       {
@@ -175,14 +114,12 @@ describe "NetworkAutoYast" do
   end
 
   describe "#merge_configs" do
-
     it "merges all necessary stuff" do
       stub_const("Yast::UI", double.as_null_object)
       expect(network_autoyast).to receive(:merge_dns)
       expect(network_autoyast).to receive(:merge_routing)
-      expect(network_autoyast).to receive(:merge_devices)
 
-      network_autoyast.merge_configs("dns" => {}, "routing" => {}, "devices" => {})
+      network_autoyast.merge_configs("dns" => {}, "routing" => {}, "interfaces" => [])
     end
   end
 
@@ -300,6 +237,10 @@ describe "NetworkAutoYast" do
         expect(Yast::Lan).to_not receive(:Write)
 
         subject.configure_lan
+      end
+
+      it "returns false" do
+        expect(subject.configure_lan).to eql(false)
       end
     end
 
