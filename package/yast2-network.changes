@@ -1,4 +1,14 @@
 -------------------------------------------------------------------
+Mon Jun  8 08:15:26 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
+
+- AutoYaST: Udev rules are written or copied to the target system
+  properly when defined in the profile (bsc#1169663).
+- AutoYaST: Fixed the copy or merge of the linuxrc interfaces
+  configuration when the installation network configuration is
+  selected to be kept.
+- 4.2.67
+
+-------------------------------------------------------------------
 Thu Apr 16 07:19:26 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
 
 - Do not try to install kernel packages anymore since ISDN support
