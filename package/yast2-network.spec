@@ -1,7 +1,7 @@
 #
 # spec file for package yast2-network
 #
-# Copyright (c) 2019 SUSE LINUX GmbH, Nuernberg, Germany.
+# Copyright (c) 2020 SUSE LLC
 #
 # All modifications and additions to the file contributed by third parties
 # remain the property of their copyright owners, unless otherwise agreed
@@ -17,22 +17,22 @@
 
 
 Name:           yast2-network
-Version:        4.2.66
+Version:        4.2.67
 Release:        0
 Summary:        YaST2 - Network Configuration
 License:        GPL-2.0-only
 Group:          System/YaST
-Url:            https://github.com/yast/yast-network
+URL:            https://github.com/yast/yast-network
 
 Source0:        %{name}-%{version}.tar.bz2
 
 # testsuite
-BuildRequires:  rubygem(%rb_default_ruby_abi:rspec)
 BuildRequires:  update-desktop-files
 BuildRequires:  yast2-devtools >= 3.1.15
+BuildRequires:  rubygem(%rb_default_ruby_abi:rspec)
 #for install task
-BuildRequires:  rubygem(%rb_default_ruby_abi:yast-rake)
 BuildRequires:  yast2-storage-ng
+BuildRequires:  rubygem(%rb_default_ruby_abi:yast-rake)
 # CFA::SysctlConfig
 BuildRequires:  yast2 >= 4.2.67
 BuildRequires:  yast2-packager >= 4.0.18
@@ -51,14 +51,14 @@ Requires:       yast2-storage-ng
 # CFA::SysctlConfig 
 Requires:       yast2 >= 4.2.67
 # Packages::vnc_packages
+Requires:       augeas-lenses
 Requires:       yast2-packager >= 4.0.18
 Requires:       rubygem(%rb_default_ruby_abi:cfa) >= 0.6.4
-Requires:       augeas-lenses
 # BusID of all the cards with the same one (bsc#1007172)
+Requires:       hostname
 Requires:       hwinfo         >= 21.35
 Requires:       yast2-ruby-bindings >= 1.0.0
 Requires:       yast2-xml
-Requires:       hostname
 
 # testsuite
 BuildRequires:  rubygem(%rb_default_ruby_abi:rspec)
