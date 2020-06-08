@@ -1,7 +1,7 @@
 #
 # spec file for package yast2-network
 #
-# Copyright (c) 2019 SUSE LINUX GmbH, Nuernberg, Germany.
+# Copyright (c) 2020 SUSE LLC
 #
 # All modifications and additions to the file contributed by third parties
 # remain the property of their copyright owners, unless otherwise agreed
@@ -17,12 +17,12 @@
 
 
 Name:           yast2-network
-Version:        4.3.2
+Version:        4.3.3
 Release:        0
 Summary:        YaST2 - Network Configuration
 License:        GPL-2.0-only
 Group:          System/YaST
-Url:            https://github.com/yast/yast-network
+URL:            https://github.com/yast/yast-network
 
 Source0:        %{name}-%{version}.tar.bz2
 
@@ -34,7 +34,7 @@ BuildRequires:  yast2-devtools >= 3.1.15
 BuildRequires:  rubygem(%rb_default_ruby_abi:yast-rake)
 BuildRequires:  yast2-storage-ng
 # AutoYaST issue handling
-BuildRequires:  yast2 >= 4.3.2
+BuildRequires:  yast2 >= 4.3.3
 BuildRequires:  yast2-packager >= 4.0.18
 # Product control need xml agent
 BuildRequires:  yast2-xml

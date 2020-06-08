@@ -189,36 +189,19 @@ module Yast
         Builtins.y2debug("link_status %1", link_status)
       end
 
-      Builtins.y2milestone("link_status %1", link_status)
-      configurations = NetworkInterfaces.FilterDevices("")
-      Builtins.foreach(
-        Builtins.splitstring(
-          Ops.get(NetworkInterfaces.CardRegex, "netcard", ""),
-          "|"
-        )
-      ) do |devtype|
-        Builtins.foreach(
-          Convert.convert(
-            Map.Keys(Ops.get_map(configurations, devtype, {})),
-            from: "list",
-            to:   "list <string>"
-          )
-        ) do |devname|
-          address_file = "/sys/class/net/#{devname}/address"
-          mac = ::File.read(address_file).chomp if ::File.file?(address_file)
-          Builtins.y2milestone("confname %1", mac)
-          if !Builtins.haskey(link_status, mac)
-            Builtins.y2error(
-              "Mac address %1 not found in map %2!",
-              mac,
-              link_status
-            )
-          elsif Ops.get_boolean(link_status, mac, false) == false
-            Builtins.y2warning("Interface with mac %1 is down!", mac)
-            down = true
-          else
-            Builtins.y2debug("Interface with mac %1 is up", mac)
-          end
+      log.info("link_status #{link_status}")
+      configurations = (Yast::Lan.system_config&.interfaces&.map(&:name) || [])
+      configurations.each do |devname|
+        address_file = "/sys/class/net/#{devname}/address"
+        mac = ::File.read(address_file).chomp if ::File.file?(address_file)
+        log.info("confname #{mac}")
+        if !link_status.keys.include?(mac)
+          log.error("Mac address #{mac} not found in map #{link_status}!")
+        elsif link_status[mac] == false
+          log.warn("Interface with mac #{mac} is down!")
+          down = true
+        else
+          log.debug("Interface with mac #{mac} is up")
         end
       end
       down
