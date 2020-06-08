@@ -42,10 +42,10 @@ module Yast
       # import has to be done here, there are some collisions otherwise
       Yast.import "Arch"
       Yast.import "Lan"
-      Yast.import "LanItems"
       Yast.import "Linuxrc"
       Yast.import "Host"
       Yast.import "AutoInstall"
+      Yast.import "Stage"
     end
 
     # Merges existing config from system into given configuration map
@@ -58,20 +58,16 @@ module Yast
       Lan.Read(:cache)
       # export settings into AY map
       from_system = Lan.Export
+      return from_system if conf.nil? || conf.empty?
+
       dns = from_system["dns"] || {}
       routing = from_system["routing"] || {}
-      devices = from_system["devices"] || {}
-
-      return from_system if conf.nil? || conf.empty?
 
       # copy the keys/values that are not existing in the XML
       # so we merge the inst-sys settings with the XML while XML
       # has higher priority
       conf["dns"] = merge_dns(dns, conf["dns"])
       conf["routing"] = merge_routing(routing, conf["routing"])
-      # merge devices definitions obtained from inst-sys
-      # and those which were read from AY profile. bnc#874259
-      conf["devices"] = merge_devices(devices, conf["devices"])
 
       conf
     end
@@ -103,13 +99,14 @@ module Yast
 
     # Initializates NICs setup according AY profile
     #
-    # If the installer is running in 1st stage mode only, then the configuration
-    # is also written
+    # If the network was already written before the proposal or the second
+    # stage is not omitted, then, it returns without touching the config.
     #
     # @param [Boolean] write forces instant writing of the configuration
     # @return [Boolean] true when configuration was present and loaded from the profile
     def configure_lan(write: false)
       log.info("NetworkAutoYast: Lan configuration")
+      return false if !write && (Lan.autoinst.before_proposal || second_stage?)
 
       ay_configuration = Lan.FromAY(ay_networking_section)
       if keep_net_config?
@@ -173,35 +170,6 @@ module Yast
     end
 
   private
-
-    # Merges two devices map into one.
-    #
-    # Maps are expected in NetworkInterfaces format. That is
-    # {
-    #   type1:
-    #   {
-    #     dev_name_1: { ... },
-    #     ...
-    #   },
-    #   ...
-    # }
-    #
-    # If a device definition is present in both maps, then the one from devices2
-    # wins.
-    #
-    # @param [Hash, nil] in_devs1 first map of devices in NetworkInterfaces format
-    # @param [Hash, nil] in_devs2 second map of devices in NetworkInterfaces format
-    #
-    # @return merged device map in NetworkInterfaces format or empty map
-    def merge_devices(in_devs1, in_devs2)
-      return in_devs2 if in_devs1.nil? && !in_devs2.nil?
-      return in_devs1 if in_devs2.nil? && !in_devs1.nil?
-      return {} if in_devs1.nil? && in_devs2.nil?
-
-      in_devs1.merge(in_devs2) do |_key, devs1_vals, devs2_vals|
-        devs1_vals.merge(devs2_vals)
-      end
-    end
 
     # Merges two maps with dns related values.
     #
@@ -310,13 +278,17 @@ module Yast
       # Return true in order to not call the NetworkAutoconfiguration.configure_hosts
       return true unless AutoInstall.valid_imported_values
 
-      mode_section = ay_general_section.fetch("mode", {})
-      write ||= !mode_section.fetch("second_stage", true)
       log.info("Write configuration instantly: #{write}")
-
-      yast_module.Write(gui: false) if write
+      yast_module.Write(gui: false) if !second_stage? || write
 
       true
+    end
+
+    # Convenience method to check whether the second stage is enabled or not
+    #
+    # @return[Boolean]
+    def second_stage?
+      ay_general_section.fetch("mode", {}).fetch("second_stage", true)
     end
   end
 end

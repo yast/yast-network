@@ -98,6 +98,7 @@ module Yast
         { dir: SYSCONFIG, file: "routes" },
         { dir: ::File.join(ETC, "wicked"), file: "common.xml" },
         { dir: ETC, file: DNSClass::HOSTNAME_FILE },
+        { dir: ETC, file: "hosts" },
         # Copy sysctl file as network writes there ip forwarding (bsc#1159295)
         { dir: ::File.join(ETC, "sysctl.d"), file: "70-yast.conf" }
       ]
@@ -283,11 +284,11 @@ module Yast
     # It creates a proposal in case of common installation. In case of AY
     # installation it does full import of <networking> section
     def configure_lan
-      NetworkAutoYast.instance.configure_lan if Mode.autoinst
+      copy_udev_rules if Mode.autoinst && NetworkAutoYast.instance.configure_lan
 
       # FIXME: Really make sense to configure it in autoinst mode? At least the
       # proposal should be done and checked after lan configuration and in case
-      # that a bridge configuratio is present in the profile it should be
+      # that a bridge configuration is present in the profile it should be
       # skipped or even only done in case of missing `networking -> interfaces`
       # section
       NetworkAutoconfiguration.instance.configure_virtuals

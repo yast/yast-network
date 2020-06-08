@@ -48,7 +48,13 @@ module Y2Network
 
       # @return [Y2Network::Config] Network configuration
       def config
-        config = @original_config.copy
+        config = Y2Network::Config.new(source: :autoinst)
+        # We need the current interfaces in order to rewrite the config
+        # properly but the rest should be imported from the profile
+        config.interfaces = @original_config.interfaces.copy
+        # merge devices definitions obtained from inst-sys
+        # and those which were read from AY profile. bnc#874259
+        config.connections = @original_config.connections.copy if section.keep_install_network
 
         # apply at first udev rules, so interfaces names are correct
         UdevRulesReader.new(section.udev_rules).apply(config) if section.udev_rules

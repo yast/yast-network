@@ -188,7 +188,7 @@ module Y2Network
       # @param interfaces [Y2Network::InterfacesCollection]
       # @see Y2Network::Sysconfig::InterfacesWriter
       def write_interfaces(interfaces)
-        writer = Y2Network::Sysconfig::InterfacesWriter.new
+        writer = Y2Network::Sysconfig::InterfacesWriter.new(reload: !Yast::Lan.write_only)
         writer.write(interfaces)
       end
 
