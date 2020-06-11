@@ -55,6 +55,8 @@ describe Y2Network::InterfaceConfigBuilders::Bonding do
       allow(connection_config).to receive(:name).and_return(connection_name)
 
       allow(connection_config).to receive(:find_master).and_return(connection_master)
+
+      allow(Yast::Arch).to receive(:s390).and_return(s390)
     end
 
     let(:interfaces_collection) do
@@ -75,19 +77,53 @@ describe Y2Network::InterfaceConfigBuilders::Bonding do
 
     let(:connection_master) { nil }
 
-    it "returns array" do
+    let(:s390) { false }
+
+    shared_examples "interface filters" do
+      context "when an interface does not have a connection config yet" do
+        let(:connection_name) { "iface2" } # only iface2 has a config
+
+        it "includes the interface without a connection config" do
+          expect(subject.bondable_interfaces).to include(interface1)
+        end
+      end
+
+      context "when an interface has a connection config" do
+        let(:connection_name) { "iface1" }
+
+        context "and there already is a master connection" do
+          let(:connection_master) do
+            instance_double(Y2Network::ConnectionConfig::Bonding, name: "bond1")
+          end
+
+          it "does not include the interface" do
+            expect(subject.bondable_interfaces).to_not include(interface1)
+          end
+        end
+
+        context "and there is no master connection yet" do
+          let(:connection_master) { nil }
+
+          it "includes the interface" do
+            expect(subject.bondable_interfaces).to include(interface1)
+          end
+        end
+      end
+    end
+
+    it "returns an array" do
       expect(subject.bondable_interfaces).to be_a(::Array)
     end
 
     context "when the architecture is s390" do
+      let(:s390) { true }
+
       before do
-        allow(Yast::Arch).to receive(:s390).and_return(true)
+        allow(Yast::FileUtils).to receive(:IsDirectory).and_return(true)
       end
 
       context "and the interface has no L2 support" do
         before do
-          allow(Yast::FileUtils).to receive(:IsDirectory).and_return(true)
-
           allow(Yast::SCR).to receive(:Read).with(anything, /.*iface1.*\/layer2/).and_return("0\n")
         end
 
@@ -95,36 +131,20 @@ describe Y2Network::InterfaceConfigBuilders::Bonding do
           expect(subject.bondable_interfaces).to_not include(interface1)
         end
       end
-    end
 
-    context "when an interface does not have a connection config yet" do
-      let(:connection_name) { "iface2" }
+      context "and the interface has L2 support" do
+        before do
+          allow(Yast::SCR).to receive(:Read).with(anything, /.*iface1.*\/layer2/).and_return("1\n")
+        end
 
-      it "includes the interface without a connection config" do
-        expect(subject.bondable_interfaces).to include(interface1)
+        include_examples "interface filters"
       end
     end
 
-    context "when an interface has a connection config" do
-      let(:connection_name) { "iface2" }
+    context "when the architecture is not s390" do
+      let(:s390) { false }
 
-      context "and there already is a master connection" do
-        let(:connection_master) do
-          instance_double(Y2Network::ConnectionConfig::Bonding, name: "bond1")
-        end
-
-        it "does not include the interface" do
-          expect(subject.bondable_interfaces).to_not include(interface2)
-        end
-      end
-
-      context "and there is no master connection yet" do
-        let(:connection_master) { nil }
-
-        it "includes the interface" do
-          expect(subject.bondable_interfaces).to include(interface2)
-        end
-      end
+      include_examples "interface filters"
     end
   end
 end
