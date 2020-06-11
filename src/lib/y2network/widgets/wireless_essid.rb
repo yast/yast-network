@@ -22,6 +22,8 @@ require "cwm/custom_widget"
 require "yast2/feedback"
 
 Yast.import "String"
+Yast.import "Package"
+Yast.import "Stage"
 
 module Y2Network
   module Widgets
@@ -110,20 +112,46 @@ module Y2Network
       end
 
       def handle
-        networks = essid_list
+        return unless scan_supported?
+
+        @update_widget&.update_essid_list(fetch_essid_list)
+        nil
+      end
+
+    private
+
+      IWLIST_PKG = "wireless-tools".freeze
+
+      def scan_supported?
+        return true if install_needed_packages
+
+        Yast::Popup.Error(
+          _("The package %s was not installed. It is needed in order to " \
+            "be able to scan the network") % IWLIST_PKG
+        )
+        false
+      end
+
+      # Require wireless-tools installation in order to be able to scan the
+      # wlan network (bsc#1112952, bsc#1168479)
+      #
+      # TODO: drop it when supported by wicked directly
+      def install_needed_packages
+        Yast::Stage.initial ||
+          Yast::Package.Installed(IWLIST_PKG) ||
+          Yast::Package.Install(IWLIST_PKG)
+      end
+
+      def fetch_essid_list
+        networks = []
 
         Yast2::Feedback.show("Obtaining essid list", headline: "Scanning network") do |_f|
           networks = essid_list
           log.info("Found networks: #{networks}")
         end
 
-        return unless @update_widget
-
-        @update_widget.update_essid_list(networks)
-        nil
+        networks
       end
-
-    private
 
       # TODO: own class and do not call directly in widget.
       def essid_list
