@@ -123,7 +123,7 @@ module Y2Network
       IWLIST_PKG = "wireless-tools".freeze
 
       def scan_supported?
-        return true if package_installed?
+        return true if install_needed_packages
 
         Yast::Popup.Error(
           _("The package %s was not installed. It is needed in order to " \
@@ -136,7 +136,7 @@ module Y2Network
       # wlan network (bsc#1112952, bsc#1168479)
       #
       # TODO: drop it when supported by wicked directly
-      def package_installed?
+      def install_needed_packages
         Yast::Stage.initial ||
           Yast::Package.Installed(IWLIST_PKG) ||
           Yast::Package.Install(IWLIST_PKG)
