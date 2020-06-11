@@ -29,3 +29,56 @@ describe Y2Network::Widgets::WirelessEssid do
 
   include_examples "CWM::CustomWidget"
 end
+
+describe Y2Network::Widgets::WirelessScan do
+  let(:builder) { Y2Network::InterfaceConfigBuilder.for("wlan") }
+  let(:essid) { Y2Network::Widgets::WirelessEssidName.new(builder) }
+  let(:installed) { true }
+  let(:initial_stage) { false }
+  let(:available_networks) { ["YaST", "Guests"] }
+  subject { described_class.new(builder, update: essid) }
+
+  before do
+    allow(subject).to receive(:scan_supported?).and_return(installed)
+    allow(Yast::Package).to receive(:Installed).and_return(installed)
+    allow(Yast::Stage).to receive(:initial).and_return(initial_stage)
+    allow(subject).to receive(:fetch_essid_list).and_return(available_networks)
+    allow(essid).to receive(:update_essid_list)
+  end
+
+  describe "#handle" do
+    context "when the package for scanning wireless networks is not installed" do
+      let(:installed) { false }
+      before do
+        allow(subject).to receive(:scan_supported?).and_call_original
+      end
+
+      it "tries to install it" do
+        expect(Yast::Package).to receive(:Install).and_return(true)
+        subject.handle
+      end
+
+      context "and failed installing the missing package" do
+        it "returns without scanning the available network" do
+          allow(Yast::Package).to receive(:Install).and_return(false)
+          expect(Yast::Popup).to receive(:Error).with(/was not installed/)
+          expect(subject).to_not receive(:fetch_essid_list)
+
+          expect(subject.handle).to eql(nil)
+        end
+      end
+    end
+
+    context "when the package for scanning wireless networks is installed" do
+      it "scans the list of available essids" do
+        expect(subject).to receive(:fetch_essid_list).and_return(available_networks)
+        subject.handle
+      end
+
+      it "updates the widget with the list of the available essids with the obtained one" do
+        expect(essid).to receive(:update_essid_list).with(available_networks)
+        subject.handle
+      end
+    end
+  end
+end
