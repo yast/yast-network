@@ -1,4 +1,4 @@
-# Copyright (c) [2019] SUSE LLC
+# Copyright (c) [2019-2020] SUSE LLC
 #
 # All Rights Reserved.
 #
@@ -24,6 +24,7 @@ module Yast
 
     def initialize_network_lan_s390(_include_target)
       Yast.import "FileUtils"
+      Yast.import "Arch"
     end
 
     # Checks if driver was successfully loaded for particular device.
@@ -43,7 +44,7 @@ module Yast
 
       result = Convert.to_string(
         SCR.Read(
-          path(".target.string"),
+          Yast.path(".target.string"),
           Builtins.sformat("%1/%2/device/%3", SYS_DIR, devname, attrib)
         )
       )
@@ -92,7 +93,7 @@ module Yast
 
       Builtins.y2debug("s390_ReadQethConfig: %1", result)
 
-      deep_copy(result)
+      Yast.deep_copy(result)
     end
   end
 end
