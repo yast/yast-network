@@ -160,6 +160,7 @@ module Y2Network
         Yast::SCR.Write(Yast::Path.new(".udev_persistent.rules"), udev_rules.map(&:to_s))
         # Writes changes to the rules file
         Yast::SCR.Write(Yast::Path.new(".udev_persistent.nil"), [])
+        Yast::SCR.UnmountAgent(Yast::Path.new(".udev_persistent"))
       end
 
       # Writes drivers specific udev rules to the filesystem
@@ -177,6 +178,7 @@ module Y2Network
         Yast::SCR.Write(Yast::Path.new(".udev_persistent.drivers"), rules_hash)
         # Writes changes to the rules file
         Yast::SCR.Write(Yast::Path.new(".udev_persistent.nil"), [])
+        Yast::SCR.UnmountAgent(Yast::Path.new(".udev_persistent"))
       end
 
       # Clears rules cache map
@@ -191,6 +193,7 @@ module Y2Network
         return @all[group] if @all[group]
 
         rules_map = Yast::SCR.Read(Yast::Path.new(".udev_persistent.#{group}")) || {}
+        Yast::SCR.UnmountAgent(Yast::Path.new(".udev_persistent"))
         @all[group] = rules_map.values.map do |parts|
           udev_parts = parts.map { |p| UdevRulePart.from_string(p) }.compact
           new(udev_parts)
