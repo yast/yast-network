@@ -443,4 +443,34 @@ describe "LanClass" do
         .from(nil).to(system_config)
     end
   end
+
+  describe "#Export" do
+    let(:nm) { false }
+    let(:yast_config) do
+      Y2Network::Config.new(source: :autoinst).tap do |config|
+        config.hostname.static = "yasties"
+      end
+    end
+
+    before do
+      allow(Yast::NetworkService).to receive(:is_network_manager).and_return(nm)
+      Yast::Lan.add_config(:yast, yast_config)
+    end
+
+    it "exports the current network settings" do
+      exported_profile = Yast::Lan.Export
+      expect(exported_profile["dns"]).to eql("hostname" => "yasties")
+      expect(exported_profile["interfaces"]).to be_empty
+      expect(exported_profile["net-udev"]).to be_empty
+      expect(exported_profile["s390-devices"]).to be_empty
+    end
+
+    context "when NetworkManager is the network service" do
+      let(:nm) { true }
+
+      it "exports onlye the manage attribute" do
+        expect(subject.Export).to eql("managed" => true)
+      end
+    end
+  end
 end

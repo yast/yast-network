@@ -666,6 +666,8 @@ module Yast
     # we export a 2-level map of typed "devices"
     # @return dumped settings
     def Export
+      return { "managed" => true } if NetworkService.is_network_manager
+
       profile = Y2Network::AutoinstProfile::NetworkingSection.new_from_network(yast_config)
       ay = {
         "dns"                  => profile.dns&.to_hashes || {},
