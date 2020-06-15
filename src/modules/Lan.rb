@@ -136,58 +136,7 @@ module Yast
     # function for use from autoinstallation (Fate #301032)
     def isAnyInterfaceDown
       down = false
-      link_status = {}
-      net_devices = Builtins.splitstring(
-        Ops.get_string(
-          Convert.convert(
-            SCR.Execute(
-              path(".target.bash_output"),
-              "/usr/bin/ls /sys/class/net/ | /usr/bin/grep -v lo | /usr/bin/tr '\n' ','"
-            ),
-            from: "any",
-            to:   "map <string, any>"
-          ),
-          "stdout",
-          ""
-        ),
-        ","
-      )
-      net_devices = Builtins.filter(net_devices) do |item|
-        Ops.greater_than(Builtins.size(item), 0)
-      end
-      Builtins.foreach(net_devices) do |net_dev|
-        row = Builtins.splitstring(
-          Ops.get_string(
-            SCR.Execute(
-              path(".target.bash_output"),
-              Builtins.sformat(
-                "/usr/sbin/ip address show dev %1 | /usr/bin/grep 'inet\\|link' | " \
-                  "/usr/bin/sed 's/^ \\+//g'| /usr/bin/cut -d' ' -f-2",
-                net_dev.shellescape
-              )
-            ),
-            "stdout",
-            ""
-          ),
-          "\n"
-        )
-        tmp_mac = ""
-        addr = false
-        Builtins.foreach(row) do |column|
-          tmp_col = Builtins.splitstring(column, " ")
-          next if Ops.less_than(Builtins.size(tmp_col), 2)
-
-          if Builtins.issubstring(Ops.get(tmp_col, 0, ""), "link/ether")
-            tmp_mac = Ops.get(tmp_col, 1, "")
-          end
-          if Builtins.issubstring(Ops.get(tmp_col, 0, ""), "inet") &&
-              !Builtins.issubstring(Ops.get(tmp_col, 0, ""), "inet6")
-            addr = true
-          end
-        end
-        Ops.set(link_status, tmp_mac, addr) if Ops.greater_than(Builtins.size(tmp_mac), 0)
-        Builtins.y2debug("link_status %1", link_status)
-      end
+      link_status = devices_link_status
 
       log.info("link_status #{link_status}")
       configurations = (Yast::Lan.system_config&.interfaces&.map(&:name) || [])
@@ -902,6 +851,46 @@ module Yast
 
     def firewalld
       Y2Firewall::Firewalld.instance
+    end
+
+    # Obtains the list of the system network devices names through the sysfs
+    #
+    # @return [Array<String>] names of the system network devices
+    def devices_from_sys
+      interfaces = Yast::Execute.stdout.on_target!("/usr/bin/ls", "/sys/class/net").split("\n")
+      interfaces.delete("lo")
+      interfaces
+    end
+
+    # Returns the mac address and whether the device has an ip associated or
+    # not of the given interface name
+    #
+    # @return [Array(2)<String, Boolean>] mac address and ip assignation status
+    def link_status(name)
+      addr_show = ["/usr/sbin/ip", "address", "show", name]
+      inet_link = ["grep", "inet\\|link"]
+      row = Yast::Execute.stdout.on_target!(addr_show, inet_link).split("\n").map(&:strip)
+      addr = false
+      tmp_mac = nil
+      row.each do |column|
+        tmp_col = column.split(" ")
+        next if tmp_col.size < 2
+
+        tmp_mac = tmp_col[1] if tmp_col[0] == "link/ether"
+        addr = true if tmp_col[0] == "inet"
+      end
+
+      [tmp_mac, addr]
+    end
+
+    # Convenience method to obtain the mac and ip assignment status of the
+    # system network devices
+    def devices_link_status
+      devices_from_sys.each_with_object({}) do |name, hash|
+        tmp_mac, addr = link_status(name)
+        hash[tmp_mac] ||= addr if tmp_mac
+        log.debug("link_status #{hash.inspect}")
+      end
     end
   end
 
