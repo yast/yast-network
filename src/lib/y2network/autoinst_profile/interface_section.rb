@@ -335,7 +335,7 @@ module Y2Network
       # @see SectionWithAttributes#to_hashes
       def to_hashes
         hash = super
-        hash.delete("aliases") if hash["aliases"] && hash["aliases"].empty?
+        hash.delete("aliases") if hash["aliases"]&.empty?
         hash
       end
 
