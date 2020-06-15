@@ -332,6 +332,13 @@ module Y2Network
         true
       end
 
+      # @see SectionWithAttributes#to_hashes
+      def to_hashes
+        hash = super
+        hash.delete("aliases") if hash["aliases"] && hash["aliases"].empty?
+        hash
+      end
+
       # Helper to get wireless keys as array
       # @return [Array<String>]
       def wireless_keys

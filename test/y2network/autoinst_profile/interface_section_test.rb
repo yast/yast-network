@@ -74,6 +74,29 @@ describe Y2Network::AutoinstProfile::InterfaceSection do
     end
   end
 
+  describe "#to_hashes" do
+    subject(:section) do
+      described_class.new_from_hashes(
+        "device"  => "eth0",
+        "aliases" => { "alias0" => { "IPADDR" => "10.100.0.1", "PREFIXLEN" => "24" } }
+      )
+    end
+
+    it "exports the aliases key" do
+      expect(section.to_hashes["aliases"]).to eq(section.aliases)
+    end
+
+    context "when the list of aliases is empty" do
+      subject(:section) do
+        described_class.new_from_hashes("device" => "eth0", "aliases" => {})
+      end
+
+      it "does not export the aliases key" do
+        expect(section.to_hashes).to_not have_key("aliases")
+      end
+    end
+  end
+
   describe "#wireless_keys" do
     it "returns array" do
       section = described_class.new_from_hashes({})
