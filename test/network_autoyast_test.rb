@@ -128,40 +128,29 @@ describe "NetworkAutoYast" do
     Yast.import "Mode"
 
     let(:network_autoyast) { Yast::NetworkAutoYast.instance }
+    let(:control_use_nm) { "always" }
+    let(:backend) { :network_manager }
+    let(:installed) { true }
+    let(:net_section) { { "managed" => true } }
+    let(:yast_config) do
+      Y2Network::Config.new(source: :autoinst).tap do |config|
+        config.backend = backend
+      end
+    end
 
     before(:each) do
       allow(Yast::Mode).to receive(:autoinst).and_return(true)
-    end
-
-    def product_use_nm(nm_used)
-      allow(Yast::ProductFeatures)
-        .to receive(:GetStringFeature)
-        .with("network", "network_manager")
-        .and_return nm_used
-    end
-
-    def networking_section(net_section)
+      allow(Yast::ProductFeatures).to receive(:GetStringFeature)
+        .with("network", "network_manager").and_return(control_use_nm)
+      allow(Yast::Package).to receive(:Installed).and_return(installed)
       allow(network_autoyast).to receive(:ay_networking_section).and_return(net_section)
-    end
-
-    def nm_installed(installed)
-      allow(Yast::Package)
-        .to receive(:Installed)
-        .and_return installed
+      Yast::Lan.add_config(:yast, yast_config)
     end
 
     context "in SLED product" do
-      before(:each) do
-        product_use_nm("always")
-        nm_installed(true)
-        networking_section("managed" => true)
-      end
-
       it "enables NetworkManager" do
-        expect(Yast::NetworkService)
-          .to receive(:is_backend_available)
-          .with(:network_manager)
-          .and_return true
+        expect(Yast::NetworkService).to receive(:is_backend_available)
+          .with(:network_manager).and_return(true)
         expect(Yast::NetworkService).to receive(:use_network_manager).and_return nil
         expect(Yast::NetworkService).to receive(:EnableDisableNow).and_return nil
 
@@ -170,13 +159,12 @@ describe "NetworkAutoYast" do
     end
 
     context "in SLES product" do
-      before(:each) do
-        product_use_nm("never")
-        nm_installed(false)
-        networking_section({})
-      end
+      let(:control_use_nm) { "never" }
+      let(:installed) { false }
+      let(:net_section) { {} }
 
       it "enables wicked" do
+        expect(Yast::PackageSystem).to receive(:Installed).and_return(installed)
         expect(Yast::NetworkService).to receive(:use_wicked).and_return nil
         expect(Yast::NetworkService).to receive(:EnableDisableNow).and_return nil
 
