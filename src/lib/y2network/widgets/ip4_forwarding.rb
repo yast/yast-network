@@ -18,7 +18,6 @@
 # find current contact information at www.suse.com.
 
 require "cwm/common_widgets"
-Yast.import "NetworkService"
 
 module Y2Network
   module Widgets
@@ -31,7 +30,7 @@ module Y2Network
 
       def init
         self.value = @config.routing.forward_ipv4
-        disable if Yast::NetworkService.network_manager?
+        disable if @config.backend?(:network_manager)
       end
 
       def store

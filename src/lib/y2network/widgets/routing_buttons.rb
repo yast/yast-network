@@ -43,7 +43,7 @@ module Y2Network
       end
 
       def init
-        disable if Yast::NetworkService.network_manager?
+        disable if @config.backend?(:network_manager)
       end
     end
 
@@ -69,7 +69,7 @@ module Y2Network
       end
 
       def init
-        disable if Yast::NetworkService.network_manager?
+        disable if @config.backend?(:network_manager)
       end
     end
 
@@ -92,7 +92,7 @@ module Y2Network
       end
 
       def init
-        disable if Yast::NetworkService.network_manager?
+        disable if @table&.config&.backend?(:network_manager)
       end
     end
   end

@@ -39,7 +39,6 @@ module Yast
       Yast.import "NetworkInterfaces"
       Yast.import "NetworkService"
       Yast.import "Lan"
-      Yast.import "LanItems"
 
       Yast.include include_target, "network/complex.rb"
     end
@@ -60,28 +59,14 @@ module Yast
     def ManagedInit(_key)
       items = []
 
-      if NetworkService.is_backend_available(:network_manager)
+      Y2Network::Backend.all.each do |backend|
+        next unless backend.available?
+
         items << Item(
-          Id("managed"),
+          Id(backend.name),
           # the user can control the network with the NetworkManager program
-          _("NetworkManager Service"),
-          NetworkService.is_network_manager
-        )
-      end
-      if NetworkService.is_backend_available(:netconfig)
-        items << Item(
-          Id("ifup"),
-          # ifup is a program name
-          _("Traditional ifup"),
-          NetworkService.is_netconfig
-        )
-      end
-      if NetworkService.is_backend_available(:wicked)
-        items << Item(
-          Id("wicked"),
-          # wicked is network configuration backend like netconfig
-          _("Wicked Service"),
-          NetworkService.is_wicked
+          backend.label,
+          !!Lan.yast_config&.backend?(backend.id)
         )
       end
 
@@ -89,7 +74,7 @@ module Yast
         Id("disabled"),
         # used when no network service is active or to disable network service
         _("Network Services Disabled"),
-        NetworkService.is_disabled
+        Lan.yast_config&.backend.nil?
       )
 
       UI.ChangeWidget(Id(:managed), :Items, items)
@@ -103,21 +88,10 @@ module Yast
     def ManagedStore(_key, _event)
       new_backend = UI.QueryWidget(Id(:managed), :Value)
 
-      case new_backend
-      when "ifup"
-        NetworkService.use_netconfig
-      when "managed"
-        NetworkService.use_network_manager
-      when "wicked"
-        NetworkService.use_wicked
-      else
-        NetworkService.disable
-      end
+      Lan.yast_config.backend = new_backend.to_sym
 
-      if NetworkService.Modified
-        Lan.SetModified
-
-        if Stage.normal && NetworkService.is_network_manager
+      if Lan.system_config.backend != Lan.yast_config.backend
+        if Stage.normal && Lan.yast_config&.backend?(:network_manager)
           Popup.AnyMessage(
             _("Applet needed"),
             _(
