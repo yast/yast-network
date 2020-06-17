@@ -5,6 +5,7 @@ module Y2Network
     # This class represents the wicked backend
     class Wicked < Backend
       def initialize
+        textdomain "network"
         super(:wicked)
       end
 

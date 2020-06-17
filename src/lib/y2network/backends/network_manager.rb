@@ -5,6 +5,7 @@ module Y2Network
     # This class represents the NetworkManager backend
     class NetworkManager < Backend
       def initialize
+        textdomain "network"
         super(:network_manager)
       end
 

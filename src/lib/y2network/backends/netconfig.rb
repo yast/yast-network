@@ -5,6 +5,7 @@ module Y2Network
     # This class represents the Netconfig backend
     class Netconfig < Backend
       def initialize
+        textdomain "network"
         super(:netconfig)
       end
 

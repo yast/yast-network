@@ -26,6 +26,7 @@ require "y2network/s390_group_devices_collection"
 require "y2network/connection_configs_collection"
 require "y2network/physical_interface"
 require "y2network/can_be_copied"
+require "y2network/backend"
 
 module Y2Network
   # This class represents the current network configuration including interfaces,
@@ -44,6 +45,8 @@ module Y2Network
     include CanBeCopied
     include Yast::Logger
 
+    # @return [Backend, Symbol, nil]
+    attr_reader :backend
     # @return [InterfacesCollection]
     attr_accessor :interfaces
     # @return [ConnectionConfigsCollection]
@@ -105,11 +108,13 @@ module Y2Network
     # @param opts   [Hash] configuration options
     # @option opts  [InterfacesCollection] :interfaces List of interfaces
     # @option opts  [ConnectionConfigsCollection] :connections List of connection configurations
+    # @option opts  [S390GroupDevicesCollection] :s390_devices
     # @option opts  [Routing] :routing Object with routing configuration
     # @option opts  [DNS] :dns Object with DNS configuration
     # @option opts  [Hostname] :hostname Object with Hostname configuration
     # @option opts  [Array<Driver>] :drivers List of available drivers
     def initialize(source:, **opts)
+      @backend = opts.fetch(:backend, nil)
       @interfaces = opts.fetch(:interfaces, InterfacesCollection.new)
       @connections = opts.fetch(:connections, ConnectionConfigsCollection.new)
       @s390_devices = opts.fetch(:s390_devices, S390GroupDevicesCollection.new)
@@ -139,6 +144,7 @@ module Y2Network
     # @return [Boolean] true if both configurations are equal; false otherwise
     def ==(other)
       source == other.source &&
+        backend == other.backend &&
         interfaces == other.interfaces &&
         routing == other.routing &&
         dns == other.dns &&
@@ -243,6 +249,17 @@ module Y2Network
       end
       result.concat(vlans)
       ConnectionConfigsCollection.new(result)
+    end
+
+    # Return whether the config backend is the one given or not
+    #
+    # @param name [Symbol]
+    def backend?(name)
+      backend&.id == name
+    end
+
+    def backend=(id)
+      @backend = Y2Network::Backend.all.find { |b| b.id == id }
     end
 
     alias_method :eql?, :==
