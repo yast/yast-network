@@ -100,7 +100,7 @@ module Yast
     end
 
     # It returns whether the network has been configured or not. It returns
-    # true in case NetworkManager is in use, otherwise returns whehter there is
+    # true in case NetworkManager is in use, otherwise returns whether there is
     # some connection configured
     #
     # @see connections_configured?

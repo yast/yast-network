@@ -54,6 +54,8 @@ module Y2Network
       attr_accessor :udev_rules
       # @return [S390DevicesSection]
       attr_accessor :s390_devices
+      # @return [Boolean]
+      attr_accessor :managed
 
       # Creates an instance based on the profile representation used by the AutoYaST modules
       # (hash with nested hashes and arrays).
@@ -62,6 +64,7 @@ module Y2Network
       # @return [NetworkingSection]
       def self.new_from_hashes(hash)
         result = new
+        result.managed = hash["managed"]
         result.setup_before_proposal = hash.fetch("setup_before_proposal", false)
         result.start_immediately = hash.fetch("start_immediately", false)
         result.keep_install_network = hash.fetch("keep_install_network", true)
@@ -86,6 +89,7 @@ module Y2Network
         result = new
         return result unless config
 
+        result.managed = config.backend?(:network_manager)
         build_dns = config.dns || config.hostname
 
         result.routing = RoutingSection.new_from_network(config.routing) if config.routing
@@ -100,13 +104,18 @@ module Y2Network
       #
       # @return [Hash]
       def to_hashes
-        {
-          "routing"      => routing.to_hashes,
-          "dns"          => dns.to_hashes,
-          "interfaces"   => interfaces.to_hashes,
-          "net-udev"     => udev_rules.to_hashes,
-          "s390-devices" => s390_devices.to_hashes
-        }
+        result = {}
+        result["dns"] = dns&.to_hashes || {}
+        unless managed
+          result["routing"] = routing&.to_hashes || {}
+          result["net-udev"] = udev_rules&.udev_rules&.map(&:to_hashes) || []
+          result["interfaces"] = interfaces&.interfaces&.map(&:to_hashes) || []
+          result["s390-devices"] = s390_devices&.to_hashes&.fetch("devices", []) || []
+        end
+
+        result.keys.each { |k| result.delete(k) if result[k].empty? }
+        result["managed"] = true if managed
+        result
       end
     end
   end

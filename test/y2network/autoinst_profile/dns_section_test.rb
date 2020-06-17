@@ -38,7 +38,7 @@ describe Y2Network::AutoinstProfile::DNSSection do
       instance_double(
         Y2Network::Hostname,
         hostname:      "linux",
-        dhcp_hostname: true
+        dhcp_hostname: :any
       )
     end
 

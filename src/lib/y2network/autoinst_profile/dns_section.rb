@@ -103,7 +103,7 @@ module Y2Network
       #
       # @return [Boolean] Result true on success or false otherwise
       def init_from_network(dns, hostname)
-        @dhcp_hostname = hostname.dhcp_hostname
+        @dhcp_hostname = hostname.dhcp_hostname == :any
         @hostname = hostname.hostname
         @nameservers = dns.nameservers.map(&:to_s)
         @resolv_conf_policy = dns.resolv_conf_policy

@@ -78,9 +78,7 @@ module Yast
 
       log.info("Setting network service according to AY profile")
 
-      use_network_manager = ay_networking_section["managed"]
-      use_network_manager = Lan.UseNetworkManager if use_network_manager.nil?
-
+      use_network_manager = Lan.yast_config&.backend?(:network_manager)
       nm_available = NetworkService.is_backend_available(:network_manager) if use_network_manager
 
       if use_network_manager && nm_available
