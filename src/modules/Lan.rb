@@ -699,6 +699,7 @@ module Yast
     #
     # @return [Array<String>] list of ntp servers obtained byg DHCP
     def dhcp_ntp_servers
+      # Used before the config has been read
       return [] if !NetworkService.isNetworkRunning || Yast::NetworkService.is_network_manager
 
       ReadWithCacheNoGUI()

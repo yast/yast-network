@@ -67,9 +67,20 @@ module Y2Network
     # @return [Array<Backend>]
     def self.all
       require "y2network/backends"
-      Backends.constants.map { |c| Backends.const_get(c).new }
+      @all ||= Backends.constants.map { |c| Backends.const_get(c).new }
     end
 
+    # Return all the supported and installed backends
+    #
+    # @return [Array<Backend>]
+    def self.available
+      all.select(&:available?)
+    end
+
+    # Return the backend with the given id when supported
+    #
+    # @param id [Symbol] the backend id to be find
+    # @return [Backend, nil]
     def self.by_id(id)
       all.find { |b| b.id == id }
     end

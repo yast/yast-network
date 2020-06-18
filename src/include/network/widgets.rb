@@ -59,9 +59,7 @@ module Yast
     def ManagedInit(_key)
       items = []
 
-      Y2Network::Backend.all.each do |backend|
-        next unless backend.available?
-
+      Y2Network::Backend.available.each do |backend|
         items << Item(
           Id(backend.name),
           # the user can control the network with the NetworkManager program

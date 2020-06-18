@@ -22,11 +22,25 @@ require "y2network/backend"
 
 describe Y2Network::Backend do
   let(:supported_backends) { [:netconfig, :network_manager, :wicked] }
+  let(:installed_backends) { [:netconfig, :wicked] }
   let(:network_manager) { described_class.by_id(:network_manager) }
 
   describe "#all" do
-    it "returns all the available backends" do
+    it "returns all the supported backends" do
       expect(described_class.all.map(&:id).sort).to eql(supported_backends)
+    end
+  end
+
+  describe "#available" do
+    before do
+      described_class.all.each do |backend|
+        allow(backend).to receive(:available?).and_return(true)
+      end
+    end
+
+    it "returns all the supported and installed backends" do
+      expect(network_manager).to receive(:available?).and_return(false)
+      expect(described_class.available.map(&:id).sort).to eql(installed_backends)
     end
   end
 
