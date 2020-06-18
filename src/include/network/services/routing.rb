@@ -89,7 +89,7 @@ module Yast
 
     def config
       # TODO: get it from some config holder
-      Yast::Lan.yast_config
+      @config ||= Yast::Lan.yast_config
     end
 
     def routing_table_widget

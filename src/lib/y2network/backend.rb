@@ -91,10 +91,5 @@ module Y2Network
     def available?
       Yast::NetworkService.is_backend_available(id)
     end
-
-    # Sets the backend to be used as the current network service
-    def use!
-      Yast::NetworkService.public_send("use_#{id}")
-    end
   end
 end
