@@ -33,6 +33,11 @@ describe Y2Network::UdevRulePart do
       expect(part.key).to eq("ACTION")
       expect(part.operator).to eq("==")
       expect(part.value).to eq("add")
+
+      part = described_class.from_string("ATTR{dev_id}==\"0x0\"")
+      expect(part.key).to eq("ATTR{dev_id}")
+      expect(part.operator).to eq("==")
+      expect(part.value).to eq("0x0")
     end
 
     it "returns nil in case of an invalid udev rule" do

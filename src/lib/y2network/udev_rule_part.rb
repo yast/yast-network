@@ -27,7 +27,7 @@ module Y2Network
   class UdevRulePart
     include Yast::Logger
     # Regular expression to match a udev rule part
-    PART_REGEXP = Regexp.new("\\A(?<key>[A-Za-z\{\}]+)(?<operator>[^\"]+)\"(?<value>.+)\"\\Z")
+    PART_REGEXP = Regexp.new("\\A(?<key>[A-Za-z\{\}_]+)(?<operator>[^\"]+)\"(?<value>.+)\"\\Z")
 
     class << self
       # Returns a rule part from a string
