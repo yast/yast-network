@@ -82,7 +82,7 @@ module Yast
 
       if use_network_manager && Lan.yast_config.backend.available?
         log.info("- using NetworkManager")
-        NetworkService.use_networ_kmanager
+        NetworkService.use_network_manager
       else
         log.info("- using wicked")
         log.warn("- NetworkManager requested but not available") if use_network_manager
