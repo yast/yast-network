@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Jun 19 13:04:18 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
+
+- Parse correctly udev rules keys using underscores (bsc#1167256)
+- 4.2.71
+
+-------------------------------------------------------------------
 Mon Jun 15 11:53:03 UTC 2020 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
 
 - Do not export interfaces <aliases> section when there are no
