@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Jun 19 08:52:54 UTC 2020 - Martin Vidner <mvidner@suse.com>
+
+- Save inst-sys memory by ending ag_udev_persistent after use
+  (bsc#1172139).
+- 4.3.7
+
+-------------------------------------------------------------------
 Mon Jun 15 11:53:03 UTC 2020 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
 
 - Do not export interfaces <aliases> section when there are no
