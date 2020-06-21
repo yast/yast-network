@@ -151,7 +151,7 @@ describe "NetworkAutoYast" do
       it "enables NetworkManager" do
         expect(Yast::NetworkService).to receive(:is_backend_available)
           .with(:network_manager).and_return(true)
-        expect(Yast::NetworkService).to receive(:use_network_manager).and_return nil
+        expect(Yast::NetworkService).to receive(:use).with(:network_manager)
         expect(Yast::NetworkService).to receive(:EnableDisableNow).and_return nil
 
         network_autoyast.set_network_service
@@ -165,7 +165,7 @@ describe "NetworkAutoYast" do
 
       it "enables wicked" do
         expect(Yast::PackageSystem).to receive(:Installed).and_return(installed)
-        expect(Yast::NetworkService).to receive(:use_wicked).and_return nil
+        expect(Yast::NetworkService).to receive(:use).with(:wicked)
         expect(Yast::NetworkService).to receive(:EnableDisableNow).and_return nil
 
         network_autoyast.set_network_service

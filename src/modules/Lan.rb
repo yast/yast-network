@@ -482,7 +482,7 @@ module Yast
         # Progress step 9
         ProgressNextStage(_("Activating network services..."))
 
-        activate_network_service
+        select_network_service ? activate_network_service : NetworkService.disable
 
         Builtins.sleep(sl)
       end
@@ -842,6 +842,10 @@ module Yast
       system_config.backend = NetworkService.cached_name
       Yast::Lan.add_config(:system, system_config)
       Yast::Lan.add_config(:yast, system_config.copy)
+    end
+
+    def select_network_service
+      NetworkService.use(yast_config&.backend&.id)
     end
 
     def firewalld

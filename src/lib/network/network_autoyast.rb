@@ -82,14 +82,13 @@ module Yast
 
       if use_network_manager && Lan.yast_config.backend.available?
         log.info("- using NetworkManager")
-        NetworkService.use_network_manager
       else
         log.info("- using wicked")
         log.warn("- NetworkManager requested but not available") if use_network_manager
         Lan.yast_config&.backend = :wicked
-        NetworkService.use_wicked
       end
 
+      NetworkService.use(Lan.yast_config&.backend&.id)
       NetworkService.EnableDisableNow
     end
 
