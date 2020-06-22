@@ -22,7 +22,6 @@ require "cwm/table"
 require "y2network/presenters/interface_summary"
 require "y2network/presenters/s390_group_device_summary"
 
-Yast.import "NetworkService"
 Yast.import "Lan"
 Yast.import "Popup"
 Yast.import "UI"
@@ -65,7 +64,7 @@ module Y2Network
 
       # Workaround for usage in old CWM which also cache content of cwm items
       def init
-        if Yast::NetworkService.is_network_manager
+        if config.backend?(:network_manager)
           Yast::Popup.Warning(
             _(
               "Network is currently handled by NetworkManager\n" \

@@ -41,8 +41,6 @@ module Yast
       Yast.import "Popup"
       Yast.import "Progress"
       Yast.import "String"
-      Yast.import "NetworkService"
-      Yast.import "NetworkInterfaces"
       Yast.import "Arch"
       Yast.import "Confirm"
       Yast.import "Map"
@@ -678,8 +676,9 @@ module Yast
     end
 
     def unconfigureable_service?
-      return true if Mode.normal && NetworkService.is_network_manager
-      return true if NetworkService.is_disabled
+      Yast.import "Lan"
+      return true if Mode.normal && Lan.yast_config&.backend?(:network_manager)
+      return true unless Lan.yast_config&.backend
 
       false
     end

@@ -36,10 +36,8 @@ module Yast
       Yast.import "Hostname"
       Yast.import "IP"
       Yast.import "Label"
-      Yast.import "LanItems"
       Yast.import "Popup"
       Yast.import "Map"
-      Yast.import "NetworkService"
 
       Yast.include include_target, "network/routines.rb"
       Yast.include include_target, "network/widgets.rb"
@@ -386,7 +384,7 @@ module Yast
 
     # Init handler for DHCP_HOSTNAME
     def InitDhcpHostname(_key)
-      UI.ChangeWidget(Id("DHCP_HOSTNAME"), :Enabled, dhcp? && NetworkService.is_wicked)
+      UI.ChangeWidget(Id("DHCP_HOSTNAME"), :Enabled, dhcp? && config&.backend?(:wicked))
       dhcp_hostname = DNS.dhcp_hostname
 
       items = [

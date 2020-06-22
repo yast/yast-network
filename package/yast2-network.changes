@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Jun 19 18:24:34 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
+
+- Do not export any settings when NetworkManager is the network
+  backend (bsc#1172822).
+- 4.3.8
+
+-------------------------------------------------------------------
 Fri Jun 19 08:52:54 UTC 2020 - Martin Vidner <mvidner@suse.com>
 
 - Save inst-sys memory by ending ag_udev_persistent after use

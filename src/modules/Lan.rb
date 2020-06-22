@@ -136,58 +136,7 @@ module Yast
     # function for use from autoinstallation (Fate #301032)
     def isAnyInterfaceDown
       down = false
-      link_status = {}
-      net_devices = Builtins.splitstring(
-        Ops.get_string(
-          Convert.convert(
-            SCR.Execute(
-              path(".target.bash_output"),
-              "/usr/bin/ls /sys/class/net/ | /usr/bin/grep -v lo | /usr/bin/tr '\n' ','"
-            ),
-            from: "any",
-            to:   "map <string, any>"
-          ),
-          "stdout",
-          ""
-        ),
-        ","
-      )
-      net_devices = Builtins.filter(net_devices) do |item|
-        Ops.greater_than(Builtins.size(item), 0)
-      end
-      Builtins.foreach(net_devices) do |net_dev|
-        row = Builtins.splitstring(
-          Ops.get_string(
-            SCR.Execute(
-              path(".target.bash_output"),
-              Builtins.sformat(
-                "/usr/sbin/ip address show dev %1 | /usr/bin/grep 'inet\\|link' | " \
-                  "/usr/bin/sed 's/^ \\+//g'| /usr/bin/cut -d' ' -f-2",
-                net_dev.shellescape
-              )
-            ),
-            "stdout",
-            ""
-          ),
-          "\n"
-        )
-        tmp_mac = ""
-        addr = false
-        Builtins.foreach(row) do |column|
-          tmp_col = Builtins.splitstring(column, " ")
-          next if Ops.less_than(Builtins.size(tmp_col), 2)
-
-          if Builtins.issubstring(Ops.get(tmp_col, 0, ""), "link/ether")
-            tmp_mac = Ops.get(tmp_col, 1, "")
-          end
-          if Builtins.issubstring(Ops.get(tmp_col, 0, ""), "inet") &&
-              !Builtins.issubstring(Ops.get(tmp_col, 0, ""), "inet6")
-            addr = true
-          end
-        end
-        Ops.set(link_status, tmp_mac, addr) if Ops.greater_than(Builtins.size(tmp_mac), 0)
-        Builtins.y2debug("link_status %1", link_status)
-      end
+      link_status = devices_link_status
 
       log.info("link_status #{link_status}")
       configurations = (Yast::Lan.system_config&.interfaces&.map(&:name) || [])
@@ -224,16 +173,17 @@ module Yast
         _("Detect network devices"),
         # Progress stage 2/7
         _("Read driver information"),
-        # Progress stage 3/7 - multiple devices may be present, really plural
+        # Progress stage 3/7
+        _("Detect current status"),
+        # Progress stage 4/7 - multiple devices may be present, really plural
         _("Read device configuration"),
-        # Progress stage 4/7
-        _("Read network configuration"),
         # Progress stage 5/7
-        _("Read installation information"),
+        _("Read network configuration"),
         # Progress stage 6/7
-        _("Read routing configuration"),
+        _("Read installation information"),
         # Progress stage 7/7
-        _("Detect current status")
+        _("Read routing configuration")
+
       ]
 
       steps << _("Read firewall configuration") if firewalld.installed?
@@ -317,15 +267,21 @@ module Yast
 
       return false if Abort()
 
-      ProgressNextStage(_("Reading device configuration...")) if @gui
-      read_config
-
-      Builtins.sleep(sl)
-
-      return false if Abort()
-
-      ProgressNextStage(_("Reading network configuration...")) if @gui
       begin
+        ProgressNextStage(_("Detecting current status...")) if @gui
+        NetworkService.Read
+        Builtins.sleep(sl)
+
+        return false if Abort()
+
+        ProgressNextStage(_("Reading device configuration...")) if @gui
+        read_config
+
+        Builtins.sleep(sl)
+
+        return false if Abort()
+
+        ProgressNextStage(_("Reading network configuration...")) if @gui
         NetworkConfig.Read
 
         @ipv6 = readIPv6
@@ -333,12 +289,6 @@ module Yast
         Builtins.sleep(sl)
 
         Host.Read
-        Builtins.sleep(sl)
-
-        return false if Abort()
-
-        ProgressNextStage(_("Detecting current status...")) if @gui
-        NetworkService.Read
         Builtins.sleep(sl)
 
         return false if Abort()
@@ -415,18 +365,16 @@ module Yast
       nil
     end
 
-    NM_DHCP_TIMEOUT = 45
-
     # Update the SCR according to network settings
     # @return true on success
     def Write(gui: true, apply_config: !write_only)
-      Builtins.y2milestone("Writing configuration")
+      log.info("Writing configuration")
 
       # Query modified flag in all components, not just LanItems - DNS,
       # Routing, NetworkConfig too in order not to discard changes made
       # outside LanItems (bnc#439235)
       if !Modified()
-        Builtins.y2milestone("No changes to network setup -> nothing to write")
+        log.info("No changes to network setup -> nothing to write")
         return true
       end
 
@@ -534,7 +482,7 @@ module Yast
         # Progress step 9
         ProgressNextStage(_("Activating network services..."))
 
-        activate_network_service
+        select_network_service ? activate_network_service : NetworkService.disable
 
         Builtins.sleep(sl)
       end
@@ -546,21 +494,7 @@ module Yast
       update_mta_config if !apply_config
       Builtins.sleep(sl)
 
-      if NetworkService.is_network_manager
-        network = false
-        timeout = NM_DHCP_TIMEOUT
-        while Ops.greater_than(timeout, 0)
-          if NetworkService.isNetworkRunning
-            network = true
-            break
-          end
-          Builtins.y2milestone("waiting for network ... %1", timeout)
-          Builtins.sleep(1000)
-          timeout = Ops.subtract(timeout, 1)
-        end
-
-        Popup.Error(_("No network running")) unless network
-      end
+      ensure_network_running if yast_config.backend?(:network_manager)
 
       # Final progress step
       ProgressNextStage(_("Finished"))
@@ -667,18 +601,10 @@ module Yast
     # @return dumped settings
     def Export
       profile = Y2Network::AutoinstProfile::NetworkingSection.new_from_network(yast_config)
-      ay = {
-        "dns"                  => profile.dns&.to_hashes || {},
-        "net-udev"             => profile.udev_rules&.udev_rules&.map(&:to_hashes) || [],
-        "s390-devices"         => profile.s390_devices&.to_hashes&.fetch("devices", []) || [],
-        "config"               => NetworkConfig.Export,
-        "interfaces"           => profile.interfaces&.interfaces&.map(&:to_hashes) || [],
-        "ipv6"                 => @ipv6,
-        "routing"              => profile.routing&.to_hashes || {},
-        "managed"              => NetworkService.is_network_manager,
-        "start_immediately"    => autoinst.start_immediately,
-        "keep_install_network" => autoinst.keep_install_network
-      }
+      ay = profile.to_hashes
+      ay["ipv6"] = @ipv6
+      ay["config"] = NetworkConfig.Export unless ay["managed"]
+
       log.info("Exported map: #{ay}")
       deep_copy(ay)
     end
@@ -736,7 +662,7 @@ module Yast
     def Packages
       pkgs = []
 
-      if NetworkService.is_network_manager
+      if yast_config&.backend?(:network_manager)
         pkgs << "NetworkManager" if !PackageSystem.Installed("NetworkManager")
       elsif !PackageSystem.Installed("wpa_supplicant")
         # we have to add wpa_supplicant when wlan is in game, wicked relies on it
@@ -773,6 +699,7 @@ module Yast
     #
     # @return [Array<String>] list of ntp servers obtained byg DHCP
     def dhcp_ntp_servers
+      # Used before the config has been read
       return [] if !NetworkService.isNetworkRunning || Yast::NetworkService.is_network_manager
 
       ReadWithCacheNoGUI()
@@ -840,7 +767,25 @@ module Yast
     publish function: :AutoPackages, type: "map ()"
     publish function: :HaveXenBridge, type: "boolean ()"
 
+    NM_DHCP_TIMEOUT = 45
+
   private
+
+    def ensure_network_running
+      network = false
+      timeout = NM_DHCP_TIMEOUT
+      while timeout > 0
+        if NetworkService.isNetworkRunning
+          network = true
+          break
+        end
+        log.info("waiting for network ... #{timeout}")
+        sleep(1)
+        timeout -= 1
+      end
+
+      Popup.Error(_("No network running")) unless network
+    end
 
     # @return [Array<Y2Network::Config>]
     attr_reader :configs
@@ -894,12 +839,57 @@ module Yast
     # It clears already read configuration.
     def read_config
       system_config = Y2Network::Config.from(:sysconfig)
+      system_config.backend = NetworkService.cached_name
       Yast::Lan.add_config(:system, system_config)
       Yast::Lan.add_config(:yast, system_config.copy)
     end
 
+    def select_network_service
+      NetworkService.use(yast_config&.backend&.id)
+    end
+
     def firewalld
       Y2Firewall::Firewalld.instance
+    end
+
+    # Obtains the list of the system network devices names through the sysfs
+    #
+    # @return [Array<String>] names of the system network devices
+    def devices_from_sys
+      interfaces = Yast::Execute.stdout.on_target!("/usr/bin/ls", "/sys/class/net").split("\n")
+      interfaces.delete("lo")
+      interfaces
+    end
+
+    # Returns the mac address and whether the device has an ip associated or
+    # not of the given interface name
+    #
+    # @return [Array(2)<String, Boolean>] mac address and ip assignation status
+    def link_status(name)
+      addr_show = ["/usr/sbin/ip", "address", "show", name]
+      inet_link = ["grep", "inet\\|link"]
+      row = Yast::Execute.stdout.on_target!(addr_show, inet_link).split("\n").map(&:strip)
+      addr = false
+      tmp_mac = nil
+      row.each do |column|
+        tmp_col = column.split(" ")
+        next if tmp_col.size < 2
+
+        tmp_mac = tmp_col[1] if tmp_col[0] == "link/ether"
+        addr = true if tmp_col[0] == "inet"
+      end
+
+      [tmp_mac, addr]
+    end
+
+    # Convenience method to obtain the mac and ip assignment status of the
+    # system network devices
+    def devices_link_status
+      devices_from_sys.each_with_object({}) do |name, hash|
+        tmp_mac, addr = link_status(name)
+        hash[tmp_mac] ||= addr if tmp_mac
+        log.debug("link_status #{hash.inspect}")
+      end
     end
   end
 

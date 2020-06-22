@@ -1,4 +1,4 @@
-# Copyright (c) [2019] SUSE LLC
+# Copyright (c) [2020] SUSE LLC
 #
 # All Rights Reserved.
 #
@@ -17,37 +17,19 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "cwm/common_widgets"
+require "y2network/backend"
 
 module Y2Network
-  module Widgets
-    class IP6Forwarding < CWM::CheckBox
-      def initialize(config)
+  module Backends
+    # This class represents the wicked backend
+    class Wicked < Backend
+      def initialize
         textdomain "network"
-
-        @config = config
-      end
-
-      def init
-        self.value = @config.routing.forward_ipv6
-        disable if @config.backend?(:network_manager)
-      end
-
-      def store
-        @config.routing.forward_ipv6 = value
+        super(:wicked)
       end
 
       def label
-        _("Enable I&Pv6 Forwarding")
-      end
-
-      def help
-        _(
-          "<p>Enable <b>IPv6 Forwarding</b> (forwarding packets from external networks\n" \
-            "to the internal one) if this system is a router.\n" \
-            "<b>Warning:</b> IPv6 forwarding disables IPv6 stateless address\n" \
-            "autoconfiguration (SLAAC).</p>"
-        )
+        _("Wicked Service")
       end
     end
   end

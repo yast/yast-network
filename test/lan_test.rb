@@ -32,17 +32,20 @@ describe "LanClass" do
   subject { Yast::Lan }
 
   let(:system_config) { Y2Network::Config.new(interfaces: [], source: :sysconfig) }
+  let(:backend) { :wicked }
 
   describe "#Packages" do
+    let(:yast_config) do
+      Y2Network::Config.new(source: :autoinst).tap do |config|
+        config.backend = backend
+      end
+    end
+
     before(:each) do
-      allow(Yast::NetworkService)
-        .to receive(:is_network_manager)
-        .and_return(nm_enabled)
+      Yast::Lan.add_config(:yast, yast_config)
     end
 
     context "When NetworkManager is not going to be installed" do
-      let(:nm_enabled) { false }
-
       before(:each) do
         allow(Yast::PackageSystem)
           .to receive(:Installed)
@@ -63,12 +66,10 @@ describe "LanClass" do
     end
 
     context "When NetworkManager is selected for the target" do
-      let(:nm_enabled) { true }
+      let(:backend) { :network_manager }
 
       it "lists NetworkManager package" do
-        expect(Yast::NetworkService)
-          .to receive(:is_network_manager)
-          .and_return(true)
+        expect(yast_config).to receive(:backend?).with(:network_manager).and_call_original
         expect(Yast::PackageSystem)
           .to receive(:Installed)
           .with("NetworkManager")
@@ -441,6 +442,37 @@ describe "LanClass" do
       expect { subject.add_config(:system, system_config) }
         .to change { subject.find_config(:system) }
         .from(nil).to(system_config)
+    end
+  end
+
+  describe "#Export" do
+    let(:backend) { :wicked }
+    let(:yast_config) do
+      Y2Network::Config.new(source: :autoinst).tap do |config|
+        config.hostname.static = "yasties"
+        config.hostname.dhcp_hostname = :any
+        config.backend = backend
+      end
+    end
+
+    before do
+      Yast::Lan.add_config(:yast, yast_config)
+    end
+
+    it "exports the current network settings" do
+      exported_profile = Yast::Lan.Export
+      expect(exported_profile["dns"]).to eql("hostname" => "yasties", "dhcp_hostname" => true)
+      expect(exported_profile).to_not include("interfaces")
+      expect(exported_profile).to_not include("net-udev")
+      expect(exported_profile).to_not include("s390-devices")
+    end
+
+    context "when NetworkManager is the network service" do
+      let(:backend) { :network_manager }
+
+      it "exports the managed attribute as true" do
+        expect(subject.Export).to include("managed" => true)
+      end
     end
   end
 end

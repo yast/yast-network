@@ -64,6 +64,7 @@ module Yast
     # @param query [String] xpath query. See man wicked for info what is supported there.
     # @return [String] result of the query
     def query_wicked(iface, query)
+      Yast.import "NetworkService"
       raise ArgumentError, "A network device has to be specified" if iface.nil? || iface.empty?
       raise "Parsing not supported for network service in use" if !NetworkService.is_wicked
 

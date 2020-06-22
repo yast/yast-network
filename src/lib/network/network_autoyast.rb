@@ -78,22 +78,17 @@ module Yast
 
       log.info("Setting network service according to AY profile")
 
-      use_network_manager = ay_networking_section["managed"]
-      use_network_manager = Lan.UseNetworkManager if use_network_manager.nil?
+      use_network_manager = Lan.yast_config&.backend?(:network_manager)
 
-      nm_available = NetworkService.is_backend_available(:network_manager) if use_network_manager
-
-      if use_network_manager && nm_available
+      if use_network_manager && Lan.yast_config.backend.available?
         log.info("- using NetworkManager")
-
-        NetworkService.use_network_manager
       else
         log.info("- using wicked")
         log.warn("- NetworkManager requested but not available") if use_network_manager
-
-        NetworkService.use_wicked
+        Lan.yast_config&.backend = :wicked
       end
 
+      NetworkService.use(Lan.yast_config&.backend&.id)
       NetworkService.EnableDisableNow
     end
 
