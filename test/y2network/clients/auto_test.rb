@@ -140,7 +140,7 @@ describe Y2Network::Clients::Auto do
   describe "#modified" do
     it "sets the network config as modified" do
       subject.class.modified = false
-      expect{subject.modified}.to change{subject.modified?}.from(false).to(true)
+      expect { subject.modified }.to change { subject.modified? }.from(false).to(true)
     end
   end
 
