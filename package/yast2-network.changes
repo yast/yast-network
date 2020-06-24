@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Jun 24 11:52:46 UTC 2020 - Josef Reidinger <jreidinger@suse.com>
+
+- Do not export network when not requested (bsc#1172552)
+- 4.3.9
+
+-------------------------------------------------------------------
 Fri Jun 19 18:24:34 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
 
 - Do not export any settings when NetworkManager is the network
