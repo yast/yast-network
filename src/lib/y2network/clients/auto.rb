@@ -96,11 +96,15 @@ module Y2Network
       end
 
       def modified
-        Yast::Lan.SetModified
+        self.class.modified = true
       end
 
       def modified?
-        Yast::Lan.Modified
+        !!self.class.modified
+      end
+
+      class << self
+        attr_accessor :modified
       end
 
       def export

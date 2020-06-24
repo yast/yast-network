@@ -139,19 +139,15 @@ describe Y2Network::Clients::Auto do
 
   describe "#modified" do
     it "sets the network config as modified" do
-      expect(Yast::Lan).to receive(:SetModified)
-
-      subject.modified
+      subject.class.modified = false
+      expect{subject.modified}.to change{subject.modified?}.from(false).to(true)
     end
   end
 
   describe "#modified?" do
-    let(:modified) { :true_or_false }
-
-    it "returns whether lan configuration has been modified or not" do
-      allow(Yast::Lan).to receive(:Modified).and_return(modified)
-
-      expect(subject.modified?).to eql(modified)
+    it "returns whether modified is called or not" do
+      subject.modified
+      expect(subject.modified?).to eq true
     end
   end
 
