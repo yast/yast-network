@@ -9,6 +9,7 @@ networking =
   element networking {
     MAP,
     (
+      element setup_before_proposal { BOOLEAN }? &
       element start_immediately { BOOLEAN }? &
       element keep_install_network { BOOLEAN }? &
       ipv6? &
