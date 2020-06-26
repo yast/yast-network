@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Jun 26 08:00:33 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
+
+- AutoYaST schema: add the setup_before_proposal element to the
+  schema (bsc#1171922)
+- 4.3.10
+
+-------------------------------------------------------------------
 Wed Jun 24 11:52:46 UTC 2020 - Josef Reidinger <jreidinger@suse.com>
 
 - Do not export network when not requested (bsc#1172552)
