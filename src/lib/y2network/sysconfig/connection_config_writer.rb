@@ -21,6 +21,7 @@ require "y2network/sysconfig/interface_file"
 require "y2network/sysconfig/routes_file"
 
 Yast.import "Host"
+Yast.import "Mode"
 
 module Y2Network
   module Sysconfig
@@ -53,7 +54,10 @@ module Y2Network
       def remove(conn)
         ifcfg = Y2Network::Sysconfig::InterfaceFile.find(conn.interface)
         ifcfg&.remove
-        Yast::Host.remove_ip(conn.ip.address.address.to_s) if conn.ip
+        # During an autoinstallation do not remove /etc/hosts entries
+        # associated with the static IP address (bsc#1173213).
+        # The hook or original behavior was introduced because of (bsc#951330)
+        Yast::Host.remove_ip(conn.ip.address.address.to_s) if !Yast::Mode.auto && conn.ip
       end
 
     private
