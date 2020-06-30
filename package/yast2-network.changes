@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Jun 30 13:52:44 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
+
+- Do not remove automatically aliases from /etc/hosts during an
+  autoinstallation (bsc#1173213)
+- 4.2.72
+
+-------------------------------------------------------------------
 Fri Jun 19 13:04:18 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
 
 - Parse correctly udev rules keys using underscores (bsc#1167256)
