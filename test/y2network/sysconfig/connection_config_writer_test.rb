@@ -93,8 +93,10 @@ describe Y2Network::Sysconfig::ConnectionConfigWriter do
   end
 
   describe "#remove" do
+    let(:autoinstallation) { false }
     before do
       allow(Y2Network::Sysconfig::InterfaceFile).to receive(:find).and_return(file)
+      allow(Yast::Mode).to receive(:auto).and_return(autoinstallation)
     end
 
     it "removes the configuration file" do
@@ -109,6 +111,15 @@ describe Y2Network::Sysconfig::ConnectionConfigWriter do
 
     context "if no IP address is defined" do
       let(:ip_config) { nil }
+
+      it "does not try to remove the hostname" do
+        expect(Yast::Host).to_not receive(:remove_ip)
+        writer.remove(conn)
+      end
+    end
+
+    context "during an autoinstallation" do
+      let(:autoinstallation) { true }
 
       it "does not try to remove the hostname" do
         expect(Yast::Host).to_not receive(:remove_ip)
