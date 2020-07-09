@@ -77,6 +77,8 @@ module Y2Network
       end
 
       def import(profile)
+        Yast::NetworkAutoYast.instance.ay_networking_section = profile
+
         modified_profile = Yast::Lan.FromAY(profile)
 
         # see bnc#498993
