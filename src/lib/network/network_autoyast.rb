@@ -168,6 +168,12 @@ module Yast
       ret
     end
 
+    # setter for networking section. Should be done during import.
+    attr_writer :ay_networking_section
+
+    # setter for host section. Should be done during import.
+    attr_writer :ay_host_section
+
   private
 
     # Merges two maps with dns related values.
@@ -215,8 +221,6 @@ module Yast
       @ay_networking_section || {}
     end
 
-    attr_writer :ay_networking_section
-
 
     # Returns host section of the current AY profile
     #
@@ -238,8 +242,6 @@ module Yast
     def ay_host_section
       @ay_host_section || {}
     end
-
-    attr_writer :ay_host_section
 
     # Configures given yast submodule according AY configuration
     #
