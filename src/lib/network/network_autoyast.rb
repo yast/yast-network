@@ -144,7 +144,7 @@ module Yast
     def configure_hosts(write: false)
       log.info("NetworkAutoYast: Hosts configuration")
 
-      if ay_current_profile.empty?
+      if ay_host_section.empty?
         Host.Write(gui: false)
 
         return true
