@@ -65,7 +65,7 @@ module Yast
           "label"             => _("Static H&ostname"),
           "opt"               => [],
           "help"              => Ops.get_string(@help, "hostname_global", ""),
-          "valid_chars"       => Hostname.ValidChars,
+          "valid_chars"       => Yast::Hostname.ValidCharsDomain,
           "validate_type"     => :function_no_popup,
           "validate_function" => fun_ref(
             method(:ValidateHostname),
