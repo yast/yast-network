@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Jul 14 14:07:39 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
+
+- Permit dot characters in the hostname allowing to specify it as
+  a FQDN (1173298)
+- 4.3.13
+
+-------------------------------------------------------------------
 Wed Jul 15 15:10:34 UTC 2020 - Josef Reidinger <jreidinger@suse.com>
 
 - Do not use Profile.current (bsc#1174173)
