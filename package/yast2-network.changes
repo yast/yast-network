@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Jul 14 14:07:39 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
+
+- Permit dot characters in the hostname allowing to specify it as
+  a FQDN (1173298)
+- 4.2.73
+
+-------------------------------------------------------------------
 Tue Jun 30 13:52:44 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
 
 - Do not remove automatically aliases from /etc/hosts during an
