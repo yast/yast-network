@@ -66,6 +66,9 @@ BuildRequires:  rubygem(%rb_default_ruby_abi:rspec)
 # carrier detection
 Conflicts:      yast2-core < 2.10.6
 
+# new calls in AutoinstGeneral
+Conflicts:      autoyast2 < 4.3.23
+
 Obsoletes:      yast2-network-devel-doc <= 3.1.154
 Provides:       yast2-network-devel-doc = %{version}
 
