@@ -441,10 +441,8 @@ module Yast
       ProgressNextStage(_("Writing routing configuration..."))
       orig = Progress.set(false)
 
-      target = :sysconfig if Mode.auto
-      yast_config.write(original: system_config, target: target)
-      # Force a refresh of the system_config bsc#1162987
-      add_config(:system, yast_config.copy)
+      write_config
+
       Progress.set(orig)
       Builtins.sleep(sl)
 
@@ -745,6 +743,24 @@ module Yast
       find_config(:yast)
     end
 
+    # Reads system configuration
+    #
+    # It clears already read configuration.
+    def read_config
+      system_config = Y2Network::Config.from(:sysconfig)
+      system_config.backend = NetworkService.cached_name
+      Yast::Lan.add_config(:system, system_config)
+      Yast::Lan.add_config(:yast, system_config.copy)
+    end
+
+    # Writes current yast config and replace the system config with it
+    def write_config
+      target = :sysconfig if Mode.auto
+      yast_config.write(original: system_config, target: target)
+      # Force a refresh of the system_config bsc#1162987
+      add_config(:system, yast_config.copy)
+    end
+
     publish variable: :ipv6, type: "boolean"
     publish variable: :AbortFunction, type: "block <boolean>"
     publish variable: :bond_autoconf_slaves, type: "list <string>"
@@ -832,16 +848,6 @@ module Yast
 
         reload_config(connection_names)
       end
-    end
-
-    # Reads system configuration
-    #
-    # It clears already read configuration.
-    def read_config
-      system_config = Y2Network::Config.from(:sysconfig)
-      system_config.backend = NetworkService.cached_name
-      Yast::Lan.add_config(:system, system_config)
-      Yast::Lan.add_config(:yast, system_config.copy)
     end
 
     def select_network_service
