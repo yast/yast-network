@@ -24,6 +24,7 @@ require "yast"
 require "yast2/execute"
 require "cfa/hosts"
 require "y2network/autoinst_profile/host_section"
+require "network/network_autoyast"
 
 module Yast
   class HostClass < Module
@@ -158,6 +159,8 @@ module Yast
       imported_hosts.each_pair do |ip, names|
         set_names(ip, names)
       end
+
+      NetworkAutoYast.instance.ay_host_section = settings
 
       true
     end

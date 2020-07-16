@@ -144,7 +144,7 @@ module Yast
     def configure_hosts(write: false)
       log.info("NetworkAutoYast: Hosts configuration")
 
-      unless ay_current_profile.key? "host"
+      if ay_host_section.empty?
         Host.Write(gui: false)
 
         return true
@@ -167,6 +167,14 @@ module Yast
 
       ret
     end
+
+    # setter for networking section. Should be done during import.
+    # @return [Hash] networking section hash
+    attr_writer :ay_networking_section
+
+    # setter for host section. Should be done during import.
+    # @return [Hash] host section hash
+    attr_writer :ay_host_section
 
   private
 
@@ -210,31 +218,9 @@ module Yast
       instsys_routing.merge(ay_routing)
     end
 
-    # Returns current AY profile in the internal representation
-    #
-    # @return [Hash] hash representing current profile or empty hash
-    def ay_current_profile
-      Yast.import "Profile"
-
-      ay_profile = Profile.current
-
-      return {} if ay_profile.nil? || ay_profile.empty?
-
-      ay_profile
-    end
-
     # Returns networking section of current AY profile
     def ay_networking_section
-      return {} if ay_current_profile["networking"].nil?
-
-      ay_current_profile["networking"]
-    end
-
-    # Returns global section of current AY profile
-    def ay_general_section
-      return {} if ay_current_profile["general"].nil?
-
-      ay_current_profile["general"]
+      @ay_networking_section || {}
     end
 
     # Returns host section of the current AY profile
@@ -255,9 +241,7 @@ module Yast
     #
     # return <Hash> with hosts configuration
     def ay_host_section
-      return {} if ay_current_profile["host"].nil?
-
-      ay_current_profile["host"]
+      @ay_host_section || {}
     end
 
     # Configures given yast submodule according AY configuration

@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Jul 15 15:10:34 UTC 2020 - Josef Reidinger <jreidinger@suse.com>
+
+- Do not use Profile.current (bsc#1174173)
+- 4.3.12
+
+-------------------------------------------------------------------
 Wed Jul 01 08:52:44 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
 
 - Do not remove automatically aliases from /etc/hosts during an
