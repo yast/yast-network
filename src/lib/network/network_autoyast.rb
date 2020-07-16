@@ -221,7 +221,6 @@ module Yast
       @ay_networking_section || {}
     end
 
-
     # Returns host section of the current AY profile
     #
     # Note that autoyast transforms the host's subsection
