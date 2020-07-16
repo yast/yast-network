@@ -260,7 +260,7 @@ module Yast
     #
     # It is expected to be used during installation only. If user configures static
     # ips during installation and do not assign them particular hostname, then such
-    # ips are configuret to resolve to the system wide hostname (see Hostname module,
+    # ips are configured to resolve to the system wide hostname (see Hostname module,
     # /etc/HOSTNAME)
     #
     # Originally implemented as a fix for bnc#664929, later extended for bnc#1039532
