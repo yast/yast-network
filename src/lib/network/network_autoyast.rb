@@ -169,9 +169,11 @@ module Yast
     end
 
     # setter for networking section. Should be done during import.
+    # @return [Hash] networking section hash
     attr_writer :ay_networking_section
 
     # setter for host section. Should be done during import.
+    # @return [Hash] host section hash
     attr_writer :ay_host_section
 
   private
