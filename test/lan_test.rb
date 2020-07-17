@@ -475,4 +475,53 @@ describe "LanClass" do
       end
     end
   end
+
+  describe "#read_config" do
+    let(:system_config_copy) { double.as_null_object }
+
+    before do
+      subject.main
+      allow(Y2Network::Config).to receive(:from).and_return(system_config)
+      allow(system_config).to receive(:copy).and_return(system_config_copy)
+      allow(Yast::Lan).to receive(:add_config)
+    end
+
+    it "reads the Y2Network::Config from sysconfig" do
+      expect(Y2Network::Config).to receive(:from).and_return(system_config)
+      subject.read_config
+    end
+
+    it "adds the read config as the Yast::Lan.system_config" do
+      expect(Yast::Lan).to receive(:add_config).with(:system, system_config)
+      subject.read_config
+    end
+
+    it "copies the system config as the Yast::Lan.yast_config" do
+      expect(Yast::Lan).to receive(:add_config).with(:yast, system_config_copy)
+      subject.read_config
+    end
+  end
+
+  describe "#write_config" do
+    let(:yast_config_copy) { double.as_null_object }
+
+    before do
+      subject.main
+      allow(Y2Network::Config).to receive(:from).and_return(system_config)
+      subject.read_config
+      allow(Yast::Lan.yast_config).to receive(:write)
+      allow(Yast::Lan.yast_config).to receive(:copy).and_return(yast_config_copy)
+    end
+
+    it "writes the current yast_config passing the system config as the original" do
+      expect(Yast::Lan.yast_config).to receive(:write).with(original: system_config, target: nil)
+      subject.write_config
+    end
+
+    it "replaces the system config by a copy of the written one" do
+      expect { subject.write_config }
+        .to change { Yast::Lan.system_config }
+        .from(system_config).to(yast_config_copy)
+    end
+  end
 end
