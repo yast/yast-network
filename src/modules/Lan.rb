@@ -818,14 +818,14 @@ module Yast
 
     # Reads system configuration
     #
-    # It clears already read configuration.
+    # It resets already read configuration.
     def read_config
       system_config = Y2Network::Config.from(:sysconfig)
       Yast::Lan.add_config(:system, system_config)
       Yast::Lan.add_config(:yast, system_config.copy)
     end
 
-    # Writes current yast config and replace the system config with it
+    # Writes current yast config and replaces the system config with it
     def write_config
       target = :sysconfig if Mode.auto
       yast_config.write(original: system_config, target: target)
