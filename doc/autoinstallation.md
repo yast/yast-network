@@ -20,7 +20,7 @@ the networking section from the profile so it is not processed during the second
 ## Network Configuration Overview
 
 There are two different aspects of the network configuration that we should bear in mind when trying
-to understand how AutoYaST sets up the network. The first is *which configuration* is going the use
+to understand how AutoYaST sets up the network. The first is *which configuration* is going to be used
 and the second is *when it gets applied*.
 
 - Which configuration?
