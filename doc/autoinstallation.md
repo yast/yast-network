@@ -34,10 +34,9 @@ and the second is *when it gets applied*.
 
 ### Involved Clients (1st Stage)
 
-The network configuration for the first stage defined in the control file takes part in these
-clients:
+The network configuration for the first stage defined in the control file is performed by clients:
 
-- **inst_autoinit:** It calls iSCSI or FCOE clients if they are enabled in Linuxrc and tries to
+- **inst_autoinit:** It calls iSCSI or FCOE clients if they are enabled in _Linuxrc_ and tries to
   fetch and process the profile.
 
 - **inst_autosetup:** This client is responsible for importing the networking section from the
@@ -56,8 +55,8 @@ clients:
 Depending on the argument used to specify which profile _AutoYaST_ should use, the fetching process is different.
 
 - **autoyast**: YaST fetches the profile, so _Linuxrc_ does not need to set up the network in advance.
-- **autoyast2**: Linuxrc is the responsible for fetching the profile so, depending where the profile
-  is located, it might need to configure the network.
+- **autoyast2**: _Linuxrc_ is the responsible for fetching the profile so, depending where the
+  profile is located, it might need to configure the network.
   
 How the profile is fetched is not the only difference between both options, but the differences are
 out of the scope of this document.
@@ -66,7 +65,7 @@ out of the scope of this document.
 
 ### Linuxrc configuration (minimal configuration)
 
-When the network is set up through *Linuxrc*, the configuration is written to the inst-sys and,
+When the network is set up through _Linuxrc_, the configuration is written to the inst-sys and,
 depending on the value of the `keep_install_network` element, it can be copied or not to the target
 system.
 
@@ -89,7 +88,7 @@ system.
 </profile>
 ```
 
-> **Note:** By default, the Linuxrc configuration is copied, which means that omitting the
+> **Note:** By default, the _Linuxrc_ configuration is copied, which means that omitting the
 networking section is the same as:
 
 ```xml
@@ -101,7 +100,7 @@ networking section is the same as:
   **Expected Results:**
 
 With this configuration, autosetup does not write anything because there is no networking section,
-but as *Linuxrc* network configuration was given, the ifcfg-file exists in the running system.
+but as _Linuxrc_ network configuration was given, the ifcfg-file exists in the running system.
 
   ```xml
 # cat /etc/sysconfig/network/ifcfg-eth0
@@ -109,7 +108,7 @@ BOOTPROTO='dhcp'
 STARTMODE='auto'
 ```
 
-> **Note:** In order to check the configuration written by Linuxrc before the autoinstallation has
+> **Note:** In order to check the configuration written by _Linuxrc_ before the autoinstallation has
 > started you can use the pass to linuxrc the startshell=1 option
 
 Therefore, when `save_network` is called by `inst_finish` it copies the udev rules and the sysconfig
