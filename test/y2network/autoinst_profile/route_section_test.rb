@@ -30,6 +30,17 @@ describe Y2Network::AutoinstProfile::RouteSection do
         to: to, interface: interface, gateway: gateway, options: options
       )
     end
+
+    let(:route_ipv6) do
+      Y2Network::Route.new(
+        to: to_ipv6, interface: interface_ipv6, gateway: gateway_ipv6
+      )
+    end
+
+    let(:to_ipv6) { IPAddr.new("2001:DB8:100::/32") }
+    let(:interface_ipv6) { double("interface", name: "eth1") }
+    let(:gateway_ipv6) { IPAddr.new("fe80::216:3eff:fe6d:c04") }
+
     let(:to) { IPAddr.new("192.168.122.0/24") }
     let(:interface) { double("interface", name: "eth0") }
     let(:gateway) { IPAddr.new("192.168.122.1") }
@@ -66,6 +77,8 @@ describe Y2Network::AutoinstProfile::RouteSection do
     it "initializes the gateway value" do
       section = described_class.new_from_network(route)
       expect(section.gateway).to eq("192.168.122.1")
+      section_ipv6 = described_class.new_from_network(route_ipv6)
+      expect(section_ipv6.gateway).to eq("fe80::216:3eff:fe6d:c04")
     end
 
     context "when the gateway is missing" do
@@ -80,6 +93,8 @@ describe Y2Network::AutoinstProfile::RouteSection do
     it "initializes the netmask value" do
       section = described_class.new_from_network(route)
       expect(section.netmask).to eq("255.255.255.0")
+      section_ipv6 = described_class.new_from_network(route_ipv6)
+      expect(section_ipv6.netmask).to eq("ffff:ffff::")
     end
 
     context "when it is the default route" do
