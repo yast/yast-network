@@ -124,7 +124,7 @@ module Y2Network
       end
 
       IPV4_MASK = "255.255.255.255".freeze
-      IPV6_MASK = "fffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff".freeze
+      IPV6_MASK = "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff".freeze
 
       # Returns the netmask
       #
