@@ -138,8 +138,6 @@ module Yast
     #
     # If the installer is running in 1st stage mode only, then the configuration
     # is also written
-    #
-    # @param [Boolean] write forces instant writing of the configuration
     def configure_hosts
       Host.Write(gui: false)
     end
