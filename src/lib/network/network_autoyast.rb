@@ -138,25 +138,8 @@ module Yast
     #
     # If the installer is running in 1st stage mode only, then the configuration
     # is also written
-    #
-    # @param [Boolean] write forces instant writing of the configuration
-    # @return [Boolean] true when configuration was present and loaded from the profile
-    def configure_hosts(write: false)
-      log.info("NetworkAutoYast: Hosts configuration")
-
-      if ay_host_section.empty?
-        Host.Write(gui: false)
-
-        return true
-      end
-
-      hosts_config = (ay_host_section["hosts"] || {}).map do |host|
-        # we need to guarantee order of the items here
-        [host["host_address"] || "", host["names"] || []]
-      end
-      hosts_config = hosts_config.to_h.delete_if { |k, v| k.empty? || v.empty? }
-
-      configure_submodule(Host, "hosts" => hosts_config, write: write)
+    def configure_hosts
+      Host.Write(gui: false)
     end
 
     # Checks if the profile asks for keeping installation network configuration
@@ -171,10 +154,6 @@ module Yast
     # setter for networking section. Should be done during import.
     # @return [Hash] networking section hash
     attr_writer :ay_networking_section
-
-    # setter for host section. Should be done during import.
-    # @return [Hash] host section hash
-    attr_writer :ay_host_section
 
   private
 
@@ -221,50 +200,6 @@ module Yast
     # Returns networking section of current AY profile
     def ay_networking_section
       @ay_networking_section || {}
-    end
-
-    # Returns host section of the current AY profile
-    #
-    # Note that autoyast transforms the host's subsection
-    # into:
-    # {
-    #   hosts => [
-    #     # first <host_entry>
-    #     {
-    #       "host_address" => <ip>,
-    #       "names" => [list, of, names]
-    #     }
-    #     # second <host_entry>
-    #     ...
-    #   ]
-    # }
-    #
-    # return <Hash> with hosts configuration
-    def ay_host_section
-      @ay_host_section || {}
-    end
-
-    # Configures given yast submodule according AY configuration
-    #
-    # It takes data from AY profile transformed into a format expected by the YaST
-    # sub module's Import method.
-    #
-    # It imports the profile, configures the module and writes the configuration.
-    # Writing the configuration is optional when second stage is available and mandatory
-    # when running autoyast installation with first stage only.
-    def configure_submodule(yast_module, ay_config, write: false)
-      return false if !ay_config
-
-      yast_module.Import(ay_config)
-
-      # Results of imported values semantic check.
-      # Return true in order to not call the NetworkAutoconfiguration.configure_hosts
-      return true unless AutoInstall.valid_imported_values
-
-      log.info("Write configuration instantly: #{write}")
-      yast_module.Write(gui: false) if write
-
-      true
     end
   end
 end

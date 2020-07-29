@@ -160,8 +160,6 @@ module Yast
         set_names(ip, names)
       end
 
-      NetworkAutoYast.instance.ay_host_section = settings
-
       true
     end
 
