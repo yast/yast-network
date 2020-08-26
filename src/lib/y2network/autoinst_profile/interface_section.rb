@@ -365,6 +365,23 @@ module Y2Network
         slaves
       end
 
+      # Returns the collection name
+      #
+      # @return [String] "interfaces"
+      def collection_name
+        "interfaces"
+      end
+
+      # Returns the section path
+      #
+      # @return [Installation::AutoinstProfile::ElementPath,nil] Section path or
+      #   nil if the parent is not set
+      def section_path
+        return nil unless parent
+
+        parent.section_path.join(index)
+      end
+
     private
 
       def init_from_wireless(config)

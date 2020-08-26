@@ -19,6 +19,7 @@
 
 require_relative "../../test_helper"
 require "y2network/autoinst_profile/route_section"
+require "y2network/autoinst_profile/networking_section"
 require "y2network/route"
 
 describe Y2Network::AutoinstProfile::RouteSection do
@@ -177,6 +178,20 @@ describe Y2Network::AutoinstProfile::RouteSection do
         section = described_class.new_from_hashes(default_gateway)
         expect(section.destination).to eq(:default)
       end
+    end
+  end
+
+  describe "#section_path" do
+    let(:networking) do
+      Y2Network::AutoinstProfile::NetworkingSection.new_from_hashes(
+        "routing" => { "routes" => [{ "device" => "eth0" }] }
+      )
+    end
+
+    subject(:section) { networking.routing.routes.first }
+
+    it "returns the section path" do
+      expect(section.section_path.to_s).to eq("networking,routing,routes,0")
     end
   end
 end

@@ -88,4 +88,18 @@ describe Y2Network::AutoinstProfile::S390DeviceSection do
       end
     end
   end
+
+  describe "#section_path" do
+    let(:networking) do
+      Y2Network::AutoinstProfile::NetworkingSection.new_from_hashes(
+        "s390-devices" => [{ "type" => "qeth" }]
+      )
+    end
+
+    subject(:section) { networking.s390_devices.devices.first }
+
+    it "returns the section path" do
+      expect(section.section_path.to_s).to eq("networking,s390-devices,0")
+    end
+  end
 end

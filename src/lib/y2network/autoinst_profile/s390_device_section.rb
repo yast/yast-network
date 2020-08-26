@@ -101,6 +101,23 @@ module Y2Network
         self.chanids = normalized_chanids(hash["chanids"]) if hash["chanids"]
       end
 
+      # Returns the collection name
+      #
+      # @return [String] "interfaces"
+      def collection_name
+        "devices"
+      end
+
+      # Returns the section path
+      #
+      # @return [Installation::AutoinstProfile::ElementPath,nil] Section path or
+      #   nil if the parent is not set
+      def section_path
+        return nil unless parent
+
+        parent.section_path.join(index)
+      end
+
     private
 
       # Normalizes the list of channel IDs

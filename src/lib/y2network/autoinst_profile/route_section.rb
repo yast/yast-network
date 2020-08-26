@@ -98,6 +98,13 @@ module Y2Network
         true
       end
 
+      # Returns the collection name
+      #
+      # @return [String] "routes"
+      def collection_name
+        "routes"
+      end
+
     private
 
       def destination_from_hash(hash)

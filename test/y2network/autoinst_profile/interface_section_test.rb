@@ -19,6 +19,7 @@
 
 require_relative "../../test_helper"
 require "y2network/autoinst_profile/interface_section"
+require "y2network/autoinst_profile/networking_section"
 require "y2network/connection_config/ip_config"
 
 describe Y2Network::AutoinstProfile::InterfaceSection do
@@ -142,6 +143,20 @@ describe Y2Network::AutoinstProfile::InterfaceSection do
 
       section = described_class.new_from_hashes(hash)
       expect(section.bonding_slaves).to eq ["eth0", "eth1"]
+    end
+  end
+
+  describe "#section_path" do
+    let(:networking) do
+      Y2Network::AutoinstProfile::NetworkingSection.new_from_hashes(
+        "interfaces" => [{ "device" => "eth0" }]
+      )
+    end
+
+    subject(:section) { networking.interfaces.interfaces.first }
+
+    it "returns the section path" do
+      expect(section.section_path.to_s).to eq("networking,interfaces,0")
     end
   end
 end

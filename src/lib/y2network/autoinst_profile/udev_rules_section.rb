@@ -78,6 +78,13 @@ module Y2Network
         @udev_rules = udev_rules_section(interfaces)
       end
 
+      # Returns the section name
+      #
+      # @return [String] "udev-rules"
+      def section_name
+        "net-udev"
+      end
+
     private
 
       # Returns an array of udev rules sections

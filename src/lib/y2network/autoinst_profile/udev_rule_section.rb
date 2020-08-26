@@ -103,6 +103,23 @@ module Y2Network
       def mechanism
         RULE_MAPPING.each_pair { |k, v| return k if v == rule }
       end
+
+      # Returns the collection name
+      #
+      # @return [String] "interfaces"
+      def collection_name
+        "udev_rules"
+      end
+
+      # Returns the section path
+      #
+      # @return [Installation::AutoinstProfile::ElementPath,nil] Section path or
+      #   nil if the parent is not set
+      def section_path
+        return nil unless parent
+
+        parent.section_path.join(index)
+      end
     end
   end
 end

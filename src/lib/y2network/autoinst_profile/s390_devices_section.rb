@@ -82,6 +82,13 @@ module Y2Network
         true
       end
 
+      # Returns the collection name
+      #
+      # @return [String] "s390-devices"
+      def section_name
+        "s390-devices"
+      end
+
     private
 
       # Returns an array of s390 devices sections
@@ -90,7 +97,7 @@ module Y2Network
       def devices_from_hash(hash)
         hash.map do |h|
           h = h["device"] if h["device"].is_a? ::Hash # hash can be enclosed in different hash
-          res = S390DeviceSection.new_from_hashes(h)
+          res = S390DeviceSection.new_from_hashes(h, self)
           log.info "devices section #{res.inspect} load from hash #{h.inspect}"
           res
         end
@@ -99,7 +106,7 @@ module Y2Network
       def s390_devices_section(connection_configs)
         connection_configs
           .select { |c| supported_device?(c) }
-          .map { |c| Y2Network::AutoinstProfile::S390DeviceSection.new_from_network(c) }
+          .map { |c| Y2Network::AutoinstProfile::S390DeviceSection.new_from_network(c, self) }
       end
 
       def supported_device?(connection)
