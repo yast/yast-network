@@ -33,7 +33,8 @@ describe Y2Network::AutoinstProfile::RoutingSection do
     let(:parent) { double("parent section") }
 
     before do
-      allow(Y2Network::AutoinstProfile::RouteSection).to receive(:new_from_network).with(route1)
+      allow(Y2Network::AutoinstProfile::RouteSection).to receive(:new_from_network)
+        .with(route1, Y2Network::AutoinstProfile::RoutingSection)
         .and_return(route_section)
     end
 
@@ -71,7 +72,8 @@ describe Y2Network::AutoinstProfile::RoutingSection do
     let(:route_section) { double("RouteSection") }
 
     before do
-      allow(Y2Network::AutoinstProfile::RouteSection).to receive(:new_from_hashes).with(route)
+      allow(Y2Network::AutoinstProfile::RouteSection).to receive(:new_from_hashes)
+        .with(route, Y2Network::AutoinstProfile::RoutingSection)
         .and_return(route_section)
     end
 
