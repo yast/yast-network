@@ -42,11 +42,18 @@ describe Y2Network::AutoinstProfile::S390DeviceSection do
       end
     end
 
+    let(:parent) { double("Installation::AutoinstProfile::SectionWithAttributes") }
+
     it "initializes values properly" do
       section = described_class.new_from_network(config)
       expect(section.layer2).to eq(true)
       expect(section.chanids).to eq("0.0.0700:0.0.0701:0.0.0702")
       expect(section.type).to eq("qeth")
+    end
+
+    it "sets the parent section" do
+      section = described_class.new_from_network(config, parent)
+      expect(section.parent).to eq(parent)
     end
   end
 

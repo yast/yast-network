@@ -52,9 +52,10 @@ module Y2Network
       #
       # @param config [Y2Network::Config] whole config as it need both s390-devices
       #   and connection configs
+      # @param parent [SectionWithAttributes,nil] Parent section
       # @return [S390DevicesSection]
-      def self.new_from_network(config)
-        result = new
+      def self.new_from_network(config, parent = nil)
+        result = new(parent)
         initialized = result.init_from_network(config)
         initialized ? result : nil
       end

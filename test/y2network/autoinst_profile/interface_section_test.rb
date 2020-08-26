@@ -47,6 +47,8 @@ describe Y2Network::AutoinstProfile::InterfaceSection do
       end
     end
 
+    let(:parent) { double("parent section") }
+
     it "initializes values properly" do
       section = described_class.new_from_network(config)
       expect(section.bootproto).to eq("static")
@@ -56,6 +58,11 @@ describe Y2Network::AutoinstProfile::InterfaceSection do
         "alias0" => { "IPADDR" => "10.100.0.1", "PREFIXLEN" => "24", "LABEL" => "test" },
         "alias1" => { "IPADDR" => "10.100.0.2", "PREFIXLEN" => "24", "LABEL" => "test1" }
       )
+    end
+
+    it "sets the parent section" do
+      section = described_class.new_from_network(config, parent)
+      expect(section.parent).to eq(parent)
     end
   end
 
@@ -68,9 +75,16 @@ describe Y2Network::AutoinstProfile::InterfaceSection do
       }
     end
 
+    let(:parent) { double("parent section") }
+
     it "loads properly boot protocol" do
       section = described_class.new_from_hashes(hash)
       expect(section.bootproto).to eq "dhcp4"
+    end
+
+    it "sets the parent section" do
+      section = described_class.new_from_hashes(hash, parent)
+      expect(section.parent).to eq(parent)
     end
   end
 

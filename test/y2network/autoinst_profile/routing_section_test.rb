@@ -30,6 +30,7 @@ describe Y2Network::AutoinstProfile::RoutingSection do
     end
     let(:route1) { double("Y2Network::Route") }
     let(:route_section) { double("Y2Network::AutoinstProfile::RouteSection") }
+    let(:parent) { double("parent section") }
 
     before do
       allow(Y2Network::AutoinstProfile::RouteSection).to receive(:new_from_network).with(route1)
@@ -49,6 +50,11 @@ describe Y2Network::AutoinstProfile::RoutingSection do
     it "sets the routing section" do
       section = described_class.new_from_network(routing)
       expect(section.routes).to eq([route_section])
+    end
+
+    it "sets the parent section" do
+      section = described_class.new_from_network(routing, parent)
+      expect(section.parent).to eq(parent)
     end
   end
 

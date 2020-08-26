@@ -71,11 +71,12 @@ module Y2Network
       #
       # @param dns [Y2Network::DNS] DNS settings
       # @param hostname [Y2Network::Hostname] Hostname settings
+      # @param parent [SectionWithAttributes,nil] Parent section
       # @return [DNSSection]
       # NOTE: we need both DNS and Hostname settings because of historical reasons
       # when both used to be handled in one class / module
-      def self.new_from_network(dns, hostname)
-        result = new
+      def self.new_from_network(dns, hostname, parent = nil)
+        result = new(parent)
         initialized = result.init_from_network(dns, hostname)
         initialized ? result : nil
       end

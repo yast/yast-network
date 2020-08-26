@@ -46,6 +46,8 @@ describe Y2Network::AutoinstProfile::RouteSection do
     let(:gateway) { IPAddr.new("192.168.122.1") }
     let(:options) { "some-option" }
 
+    let(:parent) { double("Installation::AutoinstProfile::SectionWithAttributes") }
+
     it "initializes the destination value" do
       section = described_class.new_from_network(route)
       expect(section.destination).to eq("192.168.122.0")
@@ -118,6 +120,11 @@ describe Y2Network::AutoinstProfile::RouteSection do
         section = described_class.new_from_network(route)
         expect(section.extrapara).to eq("")
       end
+    end
+
+    it "sets the parent section" do
+      section = described_class.new_from_network(route, parent)
+      expect(section.parent).to eq(parent)
     end
   end
 

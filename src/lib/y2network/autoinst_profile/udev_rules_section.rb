@@ -51,9 +51,10 @@ module Y2Network
       # Clones network interfaces settings into an AutoYaST interfaces section
       #
       # @param interfaces [Y2Network::InterfacesCollection] interfaces to detect udev rules
+      # @param parent [SectionWithAttributes,nil] Parent section
       # @return [UdevRulesSection]
-      def self.new_from_network(interfaces)
-        new.tap { |r| r.init_from_network(interfaces) }
+      def self.new_from_network(interfaces, parent = nil)
+        new(parent).tap { |r| r.init_from_network(interfaces) }
       end
 
       # Constructor
@@ -84,7 +85,7 @@ module Y2Network
       # @param hash [Hash] net-udev section hash
       def udev_rules_from_hash(hash)
         hash.map do |h|
-          res = UdevRuleSection.new_from_hashes(h)
+          res = UdevRuleSection.new_from_hashes(h, self)
           log.info "udev rules section #{res.inspect} load from hash #{h.inspect}"
           res
         end
@@ -93,7 +94,7 @@ module Y2Network
       # @param interfaces [Y2Network::InterfacesCollection] interfaces to detect udev rules
       def udev_rules_section(interfaces)
         result = interfaces
-          .map { |i| Y2Network::AutoinstProfile::UdevRuleSection.new_from_network(i) }
+          .map { |i| Y2Network::AutoinstProfile::UdevRuleSection.new_from_network(i, self) }
           .compact
 
         log.info "udev rules for interfaces: #{interfaces.inspect} => #{result.inspect}"

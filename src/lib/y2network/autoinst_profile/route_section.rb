@@ -62,10 +62,11 @@ module Y2Network
 
       # Clones a network route into an AutoYaST route section
       #
+      # @param parent [SectionWithAttributes,nil] Parent section
       # @param route [Y2Network::Route] Network route
       # @return [RouteSection]
-      def self.new_from_network(route)
-        result = new
+      def self.new_from_network(route, parent = nil)
+        result = new(parent)
         result.init_from_route(route)
         result
       end

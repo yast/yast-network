@@ -62,9 +62,10 @@ module Y2Network
       # Clones network routing settings into an AutoYaST routing section
       #
       # @param routing [Y2Network::Routing] Routing settings
+      # @param parent [SectionWithAttributes,nil] Parent section
       # @return [RoutingSection]
-      def self.new_from_network(routing)
-        result = new
+      def self.new_from_network(routing, parent = nil)
+        result = new(parent)
         initialized = result.init_from_network(routing)
         initialized ? result : nil
       end
@@ -104,11 +105,11 @@ module Y2Network
       # @param hash [Hash] Routing section hash
       def routes_from_hash(hash)
         hashes = hash["routes"] || []
-        hashes.map { |h| RouteSection.new_from_hashes(h) }
+        hashes.map { |h| RouteSection.new_from_hashes(h, self) }
       end
 
       def routes_section(routes)
-        routes.map { |r| Y2Network::AutoinstProfile::RouteSection.new_from_network(r) }
+        routes.map { |r| Y2Network::AutoinstProfile::RouteSection.new_from_network(r, self) }
       end
     end
   end
