@@ -103,7 +103,7 @@ module Y2Network
 
       # Returns the collection name
       #
-      # @return [String] "interfaces"
+      # @return [String] "devices"
       def collection_name
         "devices"
       end

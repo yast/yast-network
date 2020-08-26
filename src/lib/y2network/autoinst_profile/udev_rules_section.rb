@@ -80,7 +80,7 @@ module Y2Network
 
       # Returns the section name
       #
-      # @return [String] "udev-rules"
+      # @return [String] "net-udev"
       def section_name
         "net-udev"
       end
