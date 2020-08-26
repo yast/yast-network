@@ -44,6 +44,7 @@ describe Y2Network::AutoinstProfile::DNSSection do
 
     let(:nameservers) { [IPAddr.new("1.1.1.1")] }
     let(:searchlist) { ["example.net"] }
+    let(:parent) { double("Installation::AutoinstProfile::SectionWithAttributes") }
 
     it "sets the hostname attribute" do
       section = described_class.new_from_network(dns, hostname)
@@ -68,6 +69,11 @@ describe Y2Network::AutoinstProfile::DNSSection do
     it "sets the searchlist attribute" do
       section = described_class.new_from_network(dns, hostname)
       expect(section.searchlist).to eq(["example.net"])
+    end
+
+    it "sets the parent section" do
+      section = described_class.new_from_network(dns, hostname, parent)
+      expect(section.parent).to eq(parent)
     end
   end
 

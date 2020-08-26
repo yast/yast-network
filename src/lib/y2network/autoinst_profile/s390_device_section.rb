@@ -64,21 +64,11 @@ module Y2Network
       # Clones a network s390 connection config into an AutoYaST s390 device section
       #
       # @param connection_config [Y2Network::ConnectionConfig] Network connection config
+      # @param parent [SectionWithAttributes,nil] Parent section
       # @return [S390DeviceSection]
-      def self.new_from_network(connection_config)
-        result = new
+      def self.new_from_network(connection_config, parent = nil)
+        result = new(parent)
         result.init_from_config(connection_config)
-        result
-      end
-
-      # Creates an instance based on the profile representation used by the AutoYaST modules
-      # (array of hashes objects).
-      #
-      # @param hash [Hash] Networking section from an AutoYaST profile
-      # @return [S390DeviceSection]
-      def self.new_from_hashes(hash)
-        result = new
-        result.init_from_hashes(hash)
         result
       end
 
@@ -109,6 +99,23 @@ module Y2Network
       def init_from_hashes(hash)
         super
         self.chanids = normalized_chanids(hash["chanids"]) if hash["chanids"]
+      end
+
+      # Returns the collection name
+      #
+      # @return [String] "devices"
+      def collection_name
+        "devices"
+      end
+
+      # Returns the section path
+      #
+      # @return [Installation::AutoinstProfile::ElementPath,nil] Section path or
+      #   nil if the parent is not set
+      def section_path
+        return nil unless parent
+
+        parent.section_path.join(index)
       end
 
     private

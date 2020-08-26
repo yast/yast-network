@@ -249,9 +249,10 @@ module Y2Network
       # Clones a network interface into an AutoYaST interface section
       #
       # @param connection_config [Y2Network::ConnectionConfig] Network connection config
+      # @param parent [SectionWithAttributes,nil] Parent section
       # @return [InterfacesSection]
-      def self.new_from_network(connection_config)
-        result = new
+      def self.new_from_network(connection_config, parent = nil)
+        result = new(parent)
         result.init_from_config(connection_config)
         result
       end
@@ -362,6 +363,23 @@ module Y2Network
         end
 
         slaves
+      end
+
+      # Returns the collection name
+      #
+      # @return [String] "interfaces"
+      def collection_name
+        "interfaces"
+      end
+
+      # Returns the section path
+      #
+      # @return [Installation::AutoinstProfile::ElementPath,nil] Section path or
+      #   nil if the parent is not set
+      def section_path
+        return nil unless parent
+
+        parent.section_path.join(index)
       end
 
     private

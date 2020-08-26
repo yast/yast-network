@@ -42,11 +42,18 @@ describe Y2Network::AutoinstProfile::S390DeviceSection do
       end
     end
 
+    let(:parent) { double("Installation::AutoinstProfile::SectionWithAttributes") }
+
     it "initializes values properly" do
       section = described_class.new_from_network(config)
       expect(section.layer2).to eq(true)
       expect(section.chanids).to eq("0.0.0700:0.0.0701:0.0.0702")
       expect(section.type).to eq("qeth")
+    end
+
+    it "sets the parent section" do
+      section = described_class.new_from_network(config, parent)
+      expect(section.parent).to eq(parent)
     end
   end
 
@@ -79,6 +86,20 @@ describe Y2Network::AutoinstProfile::S390DeviceSection do
         section = described_class.new_from_hashes(hash)
         expect(section.chanids).to eq("0.0.0800:0.0.0801")
       end
+    end
+  end
+
+  describe "#section_path" do
+    let(:networking) do
+      Y2Network::AutoinstProfile::NetworkingSection.new_from_hashes(
+        "s390-devices" => [{ "type" => "qeth" }]
+      )
+    end
+
+    subject(:section) { networking.s390_devices.devices.first }
+
+    it "returns the section path" do
+      expect(section.section_path.to_s).to eq("networking,s390-devices,0")
     end
   end
 end

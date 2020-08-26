@@ -19,6 +19,7 @@
 
 require_relative "../../test_helper"
 require "y2network/autoinst_profile/route_section"
+require "y2network/autoinst_profile/networking_section"
 require "y2network/route"
 
 describe Y2Network::AutoinstProfile::RouteSection do
@@ -45,6 +46,8 @@ describe Y2Network::AutoinstProfile::RouteSection do
     let(:interface) { double("interface", name: "eth0") }
     let(:gateway) { IPAddr.new("192.168.122.1") }
     let(:options) { "some-option" }
+
+    let(:parent) { double("Installation::AutoinstProfile::SectionWithAttributes") }
 
     it "initializes the destination value" do
       section = described_class.new_from_network(route)
@@ -119,6 +122,11 @@ describe Y2Network::AutoinstProfile::RouteSection do
         expect(section.extrapara).to eq("")
       end
     end
+
+    it "sets the parent section" do
+      section = described_class.new_from_network(route, parent)
+      expect(section.parent).to eq(parent)
+    end
   end
 
   describe ".new_from_hashes" do
@@ -170,6 +178,20 @@ describe Y2Network::AutoinstProfile::RouteSection do
         section = described_class.new_from_hashes(default_gateway)
         expect(section.destination).to eq(:default)
       end
+    end
+  end
+
+  describe "#section_path" do
+    let(:networking) do
+      Y2Network::AutoinstProfile::NetworkingSection.new_from_hashes(
+        "routing" => { "routes" => [{ "device" => "eth0" }] }
+      )
+    end
+
+    subject(:section) { networking.routing.routes.first }
+
+    it "returns the section path" do
+      expect(section.section_path.to_s).to eq("networking,routing,routes,0")
     end
   end
 end

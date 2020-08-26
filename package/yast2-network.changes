@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Aug 26 12:35:44 UTC 2020 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
+
+- Unify profile element paths (bsc#1175680).
+- 4.3.17
+
+-------------------------------------------------------------------
 Tue Aug 11 12:13:34 CEST 2020 - schubi@suse.de
 
 - AutoYaST: Added supplements: autoyast(host,networking,remote)

@@ -19,6 +19,7 @@
 
 require_relative "../../test_helper"
 require "y2network/autoinst_profile/interface_section"
+require "y2network/autoinst_profile/networking_section"
 require "y2network/connection_config/ip_config"
 
 describe Y2Network::AutoinstProfile::InterfaceSection do
@@ -47,6 +48,8 @@ describe Y2Network::AutoinstProfile::InterfaceSection do
       end
     end
 
+    let(:parent) { double("parent section") }
+
     it "initializes values properly" do
       section = described_class.new_from_network(config)
       expect(section.bootproto).to eq("static")
@@ -56,6 +59,11 @@ describe Y2Network::AutoinstProfile::InterfaceSection do
         "alias0" => { "IPADDR" => "10.100.0.1", "PREFIXLEN" => "24", "LABEL" => "test" },
         "alias1" => { "IPADDR" => "10.100.0.2", "PREFIXLEN" => "24", "LABEL" => "test1" }
       )
+    end
+
+    it "sets the parent section" do
+      section = described_class.new_from_network(config, parent)
+      expect(section.parent).to eq(parent)
     end
   end
 
@@ -68,9 +76,16 @@ describe Y2Network::AutoinstProfile::InterfaceSection do
       }
     end
 
+    let(:parent) { double("parent section") }
+
     it "loads properly boot protocol" do
       section = described_class.new_from_hashes(hash)
       expect(section.bootproto).to eq "dhcp4"
+    end
+
+    it "sets the parent section" do
+      section = described_class.new_from_hashes(hash, parent)
+      expect(section.parent).to eq(parent)
     end
   end
 
@@ -128,6 +143,20 @@ describe Y2Network::AutoinstProfile::InterfaceSection do
 
       section = described_class.new_from_hashes(hash)
       expect(section.bonding_slaves).to eq ["eth0", "eth1"]
+    end
+  end
+
+  describe "#section_path" do
+    let(:networking) do
+      Y2Network::AutoinstProfile::NetworkingSection.new_from_hashes(
+        "interfaces" => [{ "device" => "eth0" }]
+      )
+    end
+
+    subject(:section) { networking.interfaces.interfaces.first }
+
+    it "returns the section path" do
+      expect(section.section_path.to_s).to eq("networking,interfaces,0")
     end
   end
 end

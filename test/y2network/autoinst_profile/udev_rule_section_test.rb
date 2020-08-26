@@ -19,7 +19,7 @@
 
 require_relative "../../test_helper"
 require "y2network/autoinst_profile/udev_rule_section"
-require "y2network/connection_config/ip_config"
+require "y2network/autoinst_profile/networking_section"
 
 describe Y2Network::AutoinstProfile::UdevRuleSection do
   subject(:section) { described_class.new }
@@ -32,11 +32,32 @@ describe Y2Network::AutoinstProfile::UdevRuleSection do
       double(Y2Network::Interface, renaming_mechanism: :mac, hardware: hardware, name: "eth0")
     end
 
+    let(:parent) { double("Installation::AutoinstProfile::SectionWithAttributes") }
+
     it "initializes values properly" do
       section = described_class.new_from_network(interface)
       expect(section.name).to eq "eth0"
       expect(section.value).to eq "mac1"
       expect(section.rule).to eq "ATTR{address}"
+    end
+
+    it "sets the parent section" do
+      section = described_class.new_from_network(interface, parent)
+      expect(section.parent).to eq(parent)
+    end
+  end
+
+  describe "#section_path" do
+    let(:networking) do
+      Y2Network::AutoinstProfile::NetworkingSection.new_from_hashes(
+        "net-udev" => [{ "name" => "eth0" }]
+      )
+    end
+
+    subject(:section) { networking.udev_rules.udev_rules.first }
+
+    it "returns the section path" do
+      expect(section.section_path.to_s).to eq("networking,net-udev,0")
     end
   end
 end

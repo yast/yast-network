@@ -67,9 +67,9 @@ describe Y2Network::AutoinstProfile::NetworkingSection do
 
     before do
       allow(Y2Network::AutoinstProfile::RoutingSection).to receive(:new_from_hashes)
-        .with(routing).and_return(routing_section)
+        .with(routing, described_class).and_return(routing_section)
       allow(Y2Network::AutoinstProfile::DNSSection).to receive(:new_from_hashes)
-        .with(dns).and_return(dns_section)
+        .with(dns, described_class).and_return(dns_section)
     end
 
     it "initializes the routing section" do

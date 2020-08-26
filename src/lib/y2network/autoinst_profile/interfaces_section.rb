@@ -63,9 +63,10 @@ module Y2Network
       #
       # @param config [Y2Network::Config] whole config as it need both interfaces and
       #   connection configs
+      # @param parent [SectionWithAttributes,nil] Parent section
       # @return [InterfacesSection]
-      def self.new_from_network(config)
-        result = new
+      def self.new_from_network(config, parent = nil)
+        result = new(parent)
         initialized = result.init_from_network(config)
         initialized ? result : nil
       end
@@ -100,7 +101,7 @@ module Y2Network
       def interfaces_from_hash(hash)
         hash.map do |h|
           h = h["device"] if h["device"].is_a? ::Hash # hash can be enclosed in different hash
-          res = InterfaceSection.new_from_hashes(h)
+          res = InterfaceSection.new_from_hashes(h, self)
           log.info "interfaces section #{res.inspect} load from hash #{h.inspect}"
           res
         end
@@ -108,7 +109,7 @@ module Y2Network
 
       def interfaces_section(connection_configs)
         connection_configs.map do |c|
-          Y2Network::AutoinstProfile::InterfaceSection.new_from_network(c)
+          Y2Network::AutoinstProfile::InterfaceSection.new_from_network(c, self)
         end
       end
     end

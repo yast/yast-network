@@ -57,13 +57,14 @@ module Y2Network
       # Clones a network interface into an AutoYaST udev rule section
       #
       # @param interface [Y2Network::Interface]
+      # @param parent [SectionWithAttributes,nil] Parent section
       # @return [InterfacesSection, nil] Udev rule section or nil if udev naming is not implemented
       #   for interface
-      def self.new_from_network(interface)
+      def self.new_from_network(interface, parent = nil)
         return if interface.renaming_mechanism == :none
         return unless interface.hardware
 
-        new.tap { |r| r.init_from_config(interface) }
+        new(parent).tap { |r| r.init_from_config(interface) }
       end
 
       def initialize(*_args)
@@ -101,6 +102,23 @@ module Y2Network
       # @return [Symbol] mechanism corresponding to {Interface#renaming_mechanism}
       def mechanism
         RULE_MAPPING.each_pair { |k, v| return k if v == rule }
+      end
+
+      # Returns the collection name
+      #
+      # @return [String] "udev_rules"
+      def collection_name
+        "udev_rules"
+      end
+
+      # Returns the section path
+      #
+      # @return [Installation::AutoinstProfile::ElementPath,nil] Section path or
+      #   nil if the parent is not set
+      def section_path
+        return nil unless parent
+
+        parent.section_path.join(index)
       end
     end
   end
