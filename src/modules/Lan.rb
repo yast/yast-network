@@ -431,6 +431,8 @@ module Yast
         file = Builtins.add(file, row)
       end
       file = Builtins.add(file, sysctl_row) if !found
+      # Make sure a '\n' is added even if it was already missing (bsc#1171416)
+      file << "" unless file.empty? || file.last.empty?
       SCR.Write(
         path(".target.string"),
         filename,
