@@ -499,3 +499,99 @@ describe "Yast::LanClass#dhcp_ntp_servers" do
     end
   end
 end
+
+describe "Yast::LanClass#writeIPv6" do
+  subject { Yast::Lan }
+
+  let(:sysctl_content) { "" }
+  let(:ipv6) { false }
+
+  before do
+    allow(Yast::SCR).to receive(:Write)
+      .with(path(".target.string"), "")
+    allow(Yast::SCR).to receive(:Read)
+      .with(path(".target.string"), /sysctl.conf/)
+      .and_return(sysctl_content)
+    allow(Yast::SCR).to receive(:Write)
+      .with(path(".sysconfig.windowmanager.KDE_USE_IPV6"), String)
+  end
+
+  around do |example|
+    old_ipv6 = subject.ipv6
+    subject.ipv6 = ipv6
+    example.run
+    subject.ipv6 = old_ipv6
+  end
+
+  context "when IPv6 must be enabled" do
+    let(:ipv6) { true }
+
+    context "and the configuration is present in sysctl.conf" do
+      let(:sysctl_content) { "# net.ipv6.conf.all.disable_ipv6=1" }
+
+      it "enables IPv6 in the sysctl.conf (by commenting the disable_ipv6 line)" do
+        expect(Yast::SCR).to receive(:Write)
+          .with(path(".target.string"), /sysctl.conf/, "# net.ipv6.conf.all.disable_ipv6 = 1\n")
+        subject.writeIPv6
+      end
+    end
+
+    context "and the configuration is missing from sysctl.conf" do
+      let(:sysctl_content) { "" }
+
+      it "enables IPv6 in the sysctl.conf (by commenting the disable_ipv6 line)" do
+        expect(Yast::SCR).to receive(:Write)
+          .with(path(".target.string"), /sysctl.conf/, "# net.ipv6.conf.all.disable_ipv6 = 1\n")
+        subject.writeIPv6
+      end
+    end
+
+    it "enables IPv6 using sysctl" do
+      expect(Yast::SCR).to receive(:Execute)
+        .with(path(".target.bash"), /sysctl -w net.ipv6.conf.all.disable_ipv6=0/)
+      subject.writeIPv6
+    end
+
+    it "enables IPv6 for KDE" do
+      expect(Yast::SCR).to receive(:Write)
+        .with(path(".sysconfig.windowmanager.KDE_USE_IPV6"), "yes")
+      subject.writeIPv6
+    end
+  end
+
+  context "when IPv6 must be disabled" do
+    let(:ipv6) { false }
+
+    context "and the configuration is present in sysctl.conf" do
+      let(:sysctl_content) { "net.ipv6.conf.all.disable_ipv6=1" }
+
+      it "disables IPv6 in the sysctl.conf" do
+        expect(Yast::SCR).to receive(:Write)
+          .with(path(".target.string"), /sysctl.conf/, "net.ipv6.conf.all.disable_ipv6 = 1\n")
+        subject.writeIPv6
+      end
+    end
+
+    context "and the configuration is missing from sysctl.conf" do
+      let(:sysctl_content) { "" }
+
+      it "disables IPv6 in the sysctl.conf" do
+        expect(Yast::SCR).to receive(:Write)
+          .with(path(".target.string"), /sysctl.conf/, "net.ipv6.conf.all.disable_ipv6 = 1\n")
+        subject.writeIPv6
+      end
+    end
+
+    it "disables IPv6 using sysctl" do
+      expect(Yast::SCR).to receive(:Execute)
+        .with(path(".target.bash"), /sysctl -w net.ipv6.conf.all.disable_ipv6=1/)
+      subject.writeIPv6
+    end
+
+    it "disables IPv6 for KDE" do
+      expect(Yast::SCR).to receive(:Write)
+        .with(path(".sysconfig.windowmanager.KDE_USE_IPV6"), "no")
+      subject.writeIPv6
+    end
+  end
+end

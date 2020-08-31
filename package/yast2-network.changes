@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Aug 31 14:45:25 UTC 2020 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
+
+- Add a line return after the 'disable_ipv6' line in sysctl.conf
+  (bsc#1171416).
+- 4.1.54
+
+-------------------------------------------------------------------
 Tue Sep 24 09:58:00 UTC 2019 - Knut Anderssen <kanderssen@suse.com>
 
 - bsc#1136934
