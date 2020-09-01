@@ -264,13 +264,15 @@ describe "LanClass" do
     end
   end
 
-  describe "#readIPv6" do
+  describe "#writeIPv6" do
     let(:sysctl_config_file) { CFA::SysctlConfig.new }
 
     before do
       allow(CFA::SysctlConfig).to receive(:new).and_return(sysctl_config_file)
       allow(sysctl_config_file).to receive(:load)
       allow(sysctl_config_file).to receive(:save)
+      allow(Yast::SCR).to receive(:Write)
+        .with(path(".sysconfig.windowmanager.KDE_USE_IPV6"), String)
       Yast::Lan.ipv6 = ipv6
     end
 
@@ -279,12 +281,19 @@ describe "LanClass" do
 
       it "enables IPv6 in the sysctl_config configuration" do
         expect(sysctl_config_file).to receive(:disable_ipv6=).with(false)
+        expect(sysctl_config_file).to receive(:save)
         Yast::Lan.writeIPv6
       end
 
       it "enables IPv6 in the running system" do
         expect(Yast::SCR).to receive(:Execute).with(anything, /sysctl .+disable_ipv6=0/)
         Yast::Lan.writeIPv6
+      end
+
+      it "enables IPv6 for KDE" do
+        expect(Yast::SCR).to receive(:Write)
+          .with(path(".sysconfig.windowmanager.KDE_USE_IPV6"), "yes")
+        subject.writeIPv6
       end
     end
 
@@ -293,12 +302,19 @@ describe "LanClass" do
 
       it "disables IPv6 in the sysctl_config configuration" do
         expect(sysctl_config_file).to receive(:disable_ipv6=).with(true)
+        expect(sysctl_config_file).to receive(:save)
         Yast::Lan.writeIPv6
       end
 
       it "disables IPv6 in the running system" do
         expect(Yast::SCR).to receive(:Execute).with(anything, /sysctl .+disable_ipv6=1/)
         Yast::Lan.writeIPv6
+      end
+
+      it "disables IPv6 for KDE" do
+        expect(Yast::SCR).to receive(:Write)
+          .with(path(".sysconfig.windowmanager.KDE_USE_IPV6"), "no")
+        subject.writeIPv6
       end
     end
   end
@@ -490,75 +506,6 @@ describe "LanClass" do
       expect { subject.write_config }
         .to change { Yast::Lan.system_config }
         .from(system_config).to(yast_config_copy)
-    end
-  end
-end
-
-describe "Yast::LanClass#writeIPv6" do
-  subject { Yast::Lan }
-
-  let(:sysctl_config) do
-    instance_double(
-      CFA::SysctlConfig, :conflict? => false
-    ).as_null_object
-  end
-
-  before do
-    allow(CFA::SysctlConfig).to receive(:new).and_return(sysctl_config)
-    allow(Yast::SCR).to receive(:Execute)
-      .with(path(".target.bash"), /sysctl -w/)
-    allow(Yast::SCR).to receive(:Write)
-      .with(path(".sysconfig.windowmanager.KDE_USE_IPV6"), String)
-  end
-
-  around do |example|
-    old_ipv6 = subject.ipv6
-    subject.ipv6 = ipv6
-    example.run
-    subject.ipv6 = old_ipv6
-  end
-
-  context "when IPv6 must be enabled" do
-    let(:ipv6) { true }
-
-    it "enables IPv6 in sysctl.conf" do
-      expect(sysctl_config).to receive(:disable_ipv6=).with(false)
-      expect(sysctl_config).to receive(:save)
-      subject.writeIPv6
-    end
-
-    it "enables IPv6 using sysctl" do
-      expect(Yast::SCR).to receive(:Execute)
-        .with(path(".target.bash"), /sysctl -w net.ipv6.conf.all.disable_ipv6=0/)
-      subject.writeIPv6
-    end
-
-    it "enables IPv6 for KDE" do
-      expect(Yast::SCR).to receive(:Write)
-        .with(path(".sysconfig.windowmanager.KDE_USE_IPV6"), "yes")
-      subject.writeIPv6
-    end
-  end
-
-  context "when IPv6 must be disabled" do
-    let(:ipv6) { false }
-
-    it "disables IPv6 in sysctl.conf" do
-      expect(sysctl_config).to receive(:disable_ipv6=).with(true)
-      expect(sysctl_config).to receive(:save)
-      subject.writeIPv6
-    end
-
-    it "disables IPv6 using sysctl" do
-      expect(Yast::SCR).to receive(:Execute)
-        .with(path(".target.bash"), /sysctl -w net.ipv6.conf.all.disable_ipv6=1/)
-      subject.writeIPv6
-    end
-
-    it "disables IPv6 for KDE" do
-      expect(Yast::SCR).to receive(:Write)
-        .with(path(".sysconfig.windowmanager.KDE_USE_IPV6"), "no")
-      subject.writeIPv6
     end
   end
 end
