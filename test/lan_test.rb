@@ -512,6 +512,8 @@ describe "Yast::LanClass#writeIPv6" do
     allow(Yast::SCR).to receive(:Read)
       .with(path(".target.string"), /sysctl.conf/)
       .and_return(sysctl_content)
+    allow(Yast::SCR).to receive(:Execute)
+      .with(path(".target.bash"), /sysctl -w/)
     allow(Yast::SCR).to receive(:Write)
       .with(path(".sysconfig.windowmanager.KDE_USE_IPV6"), String)
   end
