@@ -651,6 +651,7 @@ module Yast
     end
 
     def ProposeVirtualized
+      read_config unless yast_config
       Y2Network::VirtualizationConfig.new(yast_config).create
     end
 
