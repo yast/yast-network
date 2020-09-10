@@ -321,11 +321,20 @@ describe "LanClass" do
 
   describe "#ProposeVirtualized" do
     let(:yast_config) { instance_double(Y2Network::Config, "YaST") }
+
     before do
-      subject.add_config(:yast, yast_config)
+      Yast::Lan.clear_configs
+      allow_any_instance_of(Y2Network::VirtualizationConfig).to receive(:create)
+    end
+
+    it "reads the network configuration if there is not config present" do
+      expect(Yast::Lan).to receive(:read_config)
+
+      Yast::Lan.ProposeVirtualized
     end
 
     it "creates a new configuration for virtualization" do
+      subject.add_config(:yast, yast_config)
       expect_any_instance_of(Y2Network::VirtualizationConfig).to receive(:create)
 
       Yast::Lan.ProposeVirtualized
