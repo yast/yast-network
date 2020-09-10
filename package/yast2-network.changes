@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Sep 10 08:16:52 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
+
+- When proposing the virtualization network configuration, force a
+  read of the current configuration in case that it is not present
+  (bsc#1176313)
+- 4.2.76
+
+-------------------------------------------------------------------
 Tue Jul 28 08:45:12 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
 
 - Do not crash when configuring an IPv6 route through AutoYaST
