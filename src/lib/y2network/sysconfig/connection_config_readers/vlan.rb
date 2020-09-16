@@ -30,7 +30,14 @@ module Y2Network
         # @see Y2Network::Sysconfig::ConnectionConfigReaders::Base#update_connection_config
         def update_connection_config(conn)
           conn.parent_device = file.etherdevice
-          conn.vlan_id = file.vlan_id
+          conn.vlan_id = vlan_id_for(file)
+        end
+
+        def vlan_id_for(file)
+          return file.vlan_id if file.vlan_id
+          return file.interface.gsub("vlan", "").to_i if file.interface.start_with?("vlan")
+
+          file.interface.split(".")[1].to_i
         end
       end
     end
