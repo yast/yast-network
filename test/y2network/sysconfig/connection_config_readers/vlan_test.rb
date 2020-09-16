@@ -43,5 +43,27 @@ describe Y2Network::Sysconfig::ConnectionConfigReaders::Vlan do
       expect(vlan_conn.parent_device).to eq("eth0")
       expect(vlan_conn.bootproto).to eq(Y2Network::BootProtocol::STATIC)
     end
+
+    context "when the interface file does not contain the VLAN_ID" do
+      context "and the interface name uses the vlan prefix" do
+        let(:interface_name) { "vlan100" }
+
+        it "infers the vlan_id from the interface name" do
+          vlan_conn = handler.connection_config
+          expect(vlan_conn.interface).to eq("vlan100")
+          expect(vlan_conn.vlan_id).to eq(100)
+        end
+      end
+
+      context "and the interface name uses the name.<VLAN-ID> scheme" do
+        let(:interface_name) { "eth0.100" }
+
+        it "infers the vlan_id from the interface name" do
+          vlan_conn = handler.connection_config
+          expect(vlan_conn.interface).to eq("eth0.100")
+          expect(vlan_conn.vlan_id).to eq(100)
+        end
+      end
+    end
   end
 end
