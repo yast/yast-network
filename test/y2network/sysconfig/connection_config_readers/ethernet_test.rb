@@ -71,7 +71,7 @@ describe Y2Network::Sysconfig::ConnectionConfigReaders::Ethernet do
       context "and a hostname is specified" do
         it "sets the hostname" do
           eth = handler.connection_config
-          expect(eth.hostname).to eq("foo")
+          expect(eth.hostname).to eq("foo.example.com")
         end
       end
 

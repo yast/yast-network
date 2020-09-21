@@ -129,7 +129,9 @@ module Y2Network
           return nil unless conn.ip
 
           Yast::Host.Read
-          Yast::Host.names(conn.ip.address.address.to_s).first
+          aliases = Yast::Host.names(conn.ip.address.address.to_s).first
+          # Use the fqdn when defined
+          aliases.to_s.split(" ").first
         end
       end
     end
