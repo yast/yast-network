@@ -188,6 +188,14 @@ sub Write {
 sub Dir {
 }
 
+sub OtherCommand ()
+{
+    my $class = shift;
+    my $command = shift;
+    y2warning ("OtherCommand ($command) not implemented in this agent");
+    return undef;
+}
+
 package main;
 
 ag_udev_persistent->Run ();
