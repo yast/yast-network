@@ -40,7 +40,7 @@ describe Y2Network::Sysconfig::ConnectionConfigReaders::Bridge do
       bridge_conn = handler.connection_config
       expect(bridge_conn.interface).to eq("br0")
       expect(bridge_conn.ports).to eq(["eth0", "eth1"])
-      expect(bridge_conn.stp).to eq("on")
+      expect(bridge_conn.stp).to eq(true)
       expect(bridge_conn.forward_delay).to eq(5)
     end
   end

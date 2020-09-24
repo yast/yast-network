@@ -28,7 +28,7 @@ module Y2Network
         # @see Y2Network::Sysconfig::ConnectionConfigReaders::Base#update_connection_config
         def update_connection_config(conn)
           conn.ports = file.bridge_ports ? file.bridge_ports.split(" ") : []
-          conn.stp = file.bridge_stp
+          conn.stp = file.bridge_stp == "on"
           conn.forward_delay = file.bridge_forwarddelay
         end
       end
