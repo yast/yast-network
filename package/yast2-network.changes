@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Sep 24 15:20:15 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
+
+- Fixed initialization of the bridge STP configuration
+  (bsc#1176820)
+- 4.2.79
+
+-------------------------------------------------------------------
 Mon Sep 21 07:58:22 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
 
 - Fix connection hostname initialization (bsc#1175579)
