@@ -109,7 +109,7 @@ module Yast
       # wait for rebooting into just installed target
       return if Lan.yast_config == Lan.system_config
 
-      Lan.yast_config.write
+      Lan.write_config
     end
 
     # Propose DNS and Hostname setup
