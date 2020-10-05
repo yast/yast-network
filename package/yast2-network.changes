@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Oct  5 11:28:46 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
+
+- Modified the way the current hostnames are (static & transient)
+  read and write (bsc#1173915)
+- 4.3.25
+
+-------------------------------------------------------------------
 Mon Sep 28 13:44:08 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
 
 - Write the virtualization network configuration properly during an
