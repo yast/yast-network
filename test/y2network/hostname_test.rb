@@ -98,40 +98,4 @@ describe Y2Network::Hostname do
       end
     end
   end
-
-  describe "#save_hostname?" do
-    context "When used in installer" do
-      before(:each) do
-        allow(Yast::Stage).to receive(:initial).and_return(true)
-      end
-
-      context "without explicitly set hostname" do
-        let(:installer_hostname) { nil }
-
-        it "do not propose the hostname to be stored" do
-          expect(hostname.save_hostname?).to be false
-        end
-      end
-
-      context "with explicitly set hostname" do
-        let(:installer_hostname) { "install_inf_hostname" }
-
-        it "proposese the hostname to be saved" do
-          expect(hostname.save_hostname?).to be true
-        end
-      end
-    end
-
-    context "When used in running system" do
-      before(:each) do
-        allow(Yast::Stage).to receive(:initial).and_return(false)
-      end
-
-      let(:installer_hostname) { nil }
-
-      it "always proposes the hostname to be saved" do
-        expect(hostname.save_hostname?).to be true
-      end
-    end
-  end
 end

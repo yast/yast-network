@@ -23,6 +23,8 @@ require "y2network/sysconfig/hostname_reader"
 describe Y2Network::Sysconfig::HostnameReader do
   subject(:reader) { described_class.new }
 
+  around { |e| change_scr_root(File.join(DATA_PATH, "scr_read"), &e) }
+
   describe "#config" do
     let(:install_inf_hostname) { "linuxrc" }
     let(:dhcp_hostname) { "dhcp" }
@@ -34,38 +36,18 @@ describe Y2Network::Sysconfig::HostnameReader do
       allow(reader).to receive(:hostname_from_dhcp).and_return(dhcp_hostname)
       allow(reader).to receive(:hostname_from_system).and_return(system_hostname)
       allow(reader).to receive(:hostname_from_resolver).and_return(resolver_hostname)
-
-      allow(Yast::Stage).to receive(:initial).and_return(installation)
     end
 
-    RSpec.shared_examples "installer and static" do
-      it "reads the installer hostname from /etc/install.conf" do
-        expect(reader.config.installer).to eq("linuxrc")
-      end
-
-      it "reads the static hostname from the system" do
-        expect(reader.config.static).to eq("system")
-      end
+    it "reads the installer hostname from /etc/install.conf" do
+      expect(reader.config.installer).to eq("linuxrc")
     end
 
-    context "during installation" do
-      let(:installation) { true }
-
-      include_examples "installer and static"
-
-      it "reads the transient hostname from DHCP" do
-        expect(reader.config.transient).to eq("dhcp")
-      end
+    it "reads the static hostname from /etc_hostname" do
+      expect(reader.config.static).to eq("test")
     end
 
-    context "in an installed system" do
-      let(:installation) { false }
-
-      include_examples "installer and static"
-
-      it "reads the transient hostname from the resolver" do
-        expect(reader.config.transient).to eq("system.suse.de")
-      end
+    it "reads the current hostname from the system" do
+      expect(reader.config.transient).to eq("system")
     end
   end
 
@@ -149,8 +131,6 @@ describe Y2Network::Sysconfig::HostnameReader do
 
       allow(File).to receive(:file?).and_return(false)
     end
-
-    around { |e| change_scr_root(File.join(DATA_PATH, "scr_read"), &e) }
 
     it "returns name provided as part of dhcp configuration when available on any interface" do
       allow(File)

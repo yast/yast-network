@@ -34,7 +34,7 @@ module Y2Network
         return if old_hostname && hostname == old_hostname
 
         update_sysconfig_dhcp(hostname, old_hostname)
-        update_hostname(hostname) if hostname.save_hostname?
+        update_hostname(hostname) if update_needed?(hostname, old_hostname)
       end
 
     private
@@ -69,18 +69,29 @@ module Y2Network
         end
       end
 
+      def update_needed?(hostname, old_hostname)
+        # If we disable the set of the hostname through dhcp, then we should
+        # modify the current hostname to the static one
+        if old_hostname && old_hostname.dhcp_hostname != hostname.dhcp_hostname
+          return true if hostname.dhcp_hostname == :none
+        end
+
+        hostname.static_modified?
+      end
+
       # Sets the hostname
       #
       # @param hostname [Y2Network::Hostname] Hostname configuration
       def update_hostname(hostname)
-        hostname = hostname.static.to_s
+        static_hostname = hostname.static.to_s
+
         # 1) when user asked for erasing hostname from /etc/hostname, we keep runtime as it is
         # 2) we will write whatever user wants even FQDN - no changes under the hood
-        Yast::Execute.locally!("/usr/bin/hostname", hostname) if !hostname.empty?
+        Yast::Execute.locally!("/usr/bin/hostname", static_hostname) if !static_hostname.empty?
         Yast::SCR.Write(
           Yast::Path.new(".target.string"),
           HOSTNAME_PATH,
-          hostname.empty? ? "" : hostname + "\n"
+          static_hostname.empty? ? "" : static_hostname + "\n"
         )
       end
     end

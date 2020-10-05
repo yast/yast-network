@@ -22,6 +22,7 @@ require "y2network/sysconfig/interface_file"
 require "y2network/hostname"
 require "network/wicked"
 
+Yast.import "Systemd"
 Yast.import "Hostname"
 Yast.import "IP"
 Yast.import "Stage"
@@ -44,16 +45,10 @@ module Y2Network
       #
       # @return [Y2Network::Hostname] Hostname configuration
       def config
-        transient_hostname = if Yast::Stage.initial
-          hostname_from_dhcp
-        else
-          hostname_from_resolver
-        end
-
         Y2Network::Hostname.new(
           installer:     hostname_from_install_inf,
-          static:        hostname_from_system,
-          transient:     transient_hostname,
+          static:        static_hostname,
+          transient:     hostname_from_system,
           dhcp_hostname: dhcp_hostname
         )
       end
@@ -106,6 +101,14 @@ module Y2Network
         nil
       end
 
+      def current_static_hostname
+        systemd? ? hostnamectl("--static") : static_hostname
+      end
+
+      def current_transient_hostname
+        systemd? ? hostnamectl("--transient") : hostname_from_system
+      end
+
       # Reads the transient hostname or system (local) hostname
       #
       # @return [String, nil] Hostname
@@ -121,6 +124,16 @@ module Y2Network
       def static_hostname
         name = Yast::SCR.Read(Yast::Path.new(".target.string"), "/etc/hostname").to_s.strip
         name.empty? ? nil : name
+      end
+
+      def systemd?
+        Yast::Systemd.Running
+      end
+
+      HOSTNAMECTL_CMD = "/usr/bin/hostnamectl".freeze
+
+      def hostnamectl(query)
+        Yast::Execute.stdout.on_target!(HOSTNAMECTL_CMD, query).to_s.strip
       end
 
       # Queries for hostname obtained as part of dhcp configuration
