@@ -50,9 +50,7 @@ module Yast
     # @return [String] hostname
     def parse_hostname(iface)
       result = query_wicked(iface, "//hostname")
-
-      raise "Malformed wicked runtime configuration" if result.count > 1
-
+      # If there is more than one just pick the first one
       result.first
     end
 
