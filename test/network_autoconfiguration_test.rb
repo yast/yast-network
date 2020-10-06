@@ -72,8 +72,8 @@ describe Yast::NetworkAutoconfiguration do
   before do
     Y2Network::Config.add(:yast, yast_config)
     Y2Network::Config.add(:system, system_config)
-    allow(yast_config).to receive(:write)
     allow(Yast::Lan).to receive(:Read)
+    allow(Yast::Lan).to receive(:write_config)
   end
 
   describe "it sets DHCLIENT_SET_DEFAULT_ROUTE properly" do

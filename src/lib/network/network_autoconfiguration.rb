@@ -91,6 +91,10 @@ module Yast
       end
 
       activate_changes(dhcp_cards.map(&:name))
+
+      # Force a read of the configuration just for reading the transient
+      # hostname as it could be modified through dhcp since previous read.
+      Lan.read_config
     end
 
     # Propose configuration for virtual devices
@@ -152,16 +156,12 @@ module Yast
       config.delete_interface(interface.name)
     end
 
-    def write_configuration
-      config.write
-    end
-
     # Writes and activates changes in devices configurations
     #
     # @param devnames [Array] list of device names
     # @return true when changes were successfully applied
     def activate_changes(devnames)
-      write_configuration
+      Lan.write_config
 
       reload_config(devnames)
     end
