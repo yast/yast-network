@@ -36,6 +36,7 @@ module Y2Network
     class ConfigWriter
       include Yast::Logger
 
+      # @return [Array<Symbol>] The different sections handled by the writer
       SECTIONS = [:routing, :drivers, :interfaces, :connections, :dns, :hostname].freeze
 
       # Writes the configuration into YaST network related modules
@@ -46,15 +47,9 @@ module Y2Network
         sections = SECTIONS if sections == :all
         log.info "Writing configuration: #{config.inspect}"
         log.info "Old configuration: #{old_config.inspect}"
-        write_ip_forwarding(config.routing) if sections.include?(:routing)
         write_interface_changes(config, old_config) if sections.include?(:interfaces)
 
-        write_routes(config.routing.routes) if sections.include?(:routing)
-        write_drivers(config.drivers) if sections.include?(:drivers)
-        write_interfaces(config.interfaces) if sections.include?(:interfaces)
-        write_connections(config.connections, old_config) if sections.include?(:connections)
-        write_dns_settings(config, old_config) if sections.include?(:dns)
-        write_hostname_settings(config, old_config) if sections.include?(:hostname)
+        SECTIONS.each { |s| send(:"write_#{s}", config, old_config) if sections.include?(s) }
 
         # NOTE: This code might be moved outside of the Sysconfig namespace, as it is generic.
         Yast::Host.Write(gui: false)
@@ -62,10 +57,16 @@ module Y2Network
 
     private
 
-      def write_routes(routes)
+      # Updates the routing configuration
+      #
+      # @param config     [Y2Network::Config] Current config object
+      # @param old_config [Y2Network::Config,nil] Config object with original configuration
+      def write_routing(config, _old_config)
+        write_ip_forwarding(config.routing)
+
         # update /etc/sysconfig/network/routes file
         file = routes_file_for(nil)
-        file.routes = find_routes_for(nil, routes)
+        file.routes = find_routes_for(nil, config.routing.routes)
         file.save
       end
 
@@ -171,9 +172,9 @@ module Y2Network
 
       # Updates the DNS configuration
       #
-      # @param config     [Y2Network::Config] Current DNS configuration
-      # @param old_config [Y2Network::Config,nil] Old DNS configuration; nil if it is unknown
-      def write_dns_settings(config, old_config)
+      # @param config     [Y2Network::Config] Current config object
+      # @param old_config [Y2Network::Config,nil] Config object with original configuration
+      def write_dns(config, old_config)
         old_dns = old_config.dns if old_config
         writer = Y2Network::Sysconfig::DNSWriter.new
         writer.write(config.dns, old_dns)
@@ -183,7 +184,7 @@ module Y2Network
       #
       # @param config     [Y2Network::Config] Current config object
       # @param old_config [Y2Network::Config,nil] Config object with original configuration
-      def write_hostname_settings(config, old_config)
+      def write_hostname(config, old_config)
         old_hostname = old_config.hostname if old_config
         writer = Y2Network::Sysconfig::HostnameWriter.new
         writer.write(config.hostname, old_hostname)
@@ -191,25 +192,25 @@ module Y2Network
 
       # Updates the interfaces configuration
       #
-      # @param interfaces [Y2Network::InterfacesCollection]
-      # @see Y2Network::Sysconfig::InterfacesWriter
-      def write_interfaces(interfaces)
+      # @param config     [Y2Network::Config] Current config object
+      # @param old_config [Y2Network::Config,nil] Config object with original configuration
+      def write_interfaces(config, _old_config)
         writer = Y2Network::Sysconfig::InterfacesWriter.new(reload: !Yast::Lan.write_only)
-        writer.write(interfaces)
+        writer.write(config.interfaces)
       end
 
       # Writes connections configuration
       #
       # @todo Handle old connections (removing those that are not needed, etc.)
       #
-      # @param conns [Array<Y2Network::ConnectionConfig::Base>] Connections to write
-      # @param old_config [Y2Network::Config,nil] Old configuration; nil if it is unknown
-      def write_connections(conns, old_config)
+      # @param config     [Y2Network::Config] Current config object
+      # @param old_config [Y2Network::Config,nil] Config object with original configuration
+      def write_connections(config, old_config)
         # FIXME: this code might live in its own class
         writer = Y2Network::Sysconfig::ConnectionConfigWriter.new
-        remove_old_connections(conns, old_config.connections, writer) if old_config
-        conns.each do |conn|
-          old_conn =  old_config ? old_config.connections.by_ids(conn.id).first : nil
+        remove_old_connections(config.connections, old_config.connections, writer) if old_config
+        config.connections.each do |conn|
+          old_conn = old_config ? old_config.connections.by_ids(conn.id).first : nil
           writer.write(conn, old_conn)
         end
       end
@@ -217,8 +218,8 @@ module Y2Network
       # Writes drivers options
       #
       # @param drivers [Array<Y2Network::Driver>] Drivers to write options
-      def write_drivers(drivers)
-        Y2Network::Driver.write_options(drivers)
+      def write_drivers(config, _old_config)
+        Y2Network::Driver.write_options(config.drivers)
       end
 
       # Removes old connections files
