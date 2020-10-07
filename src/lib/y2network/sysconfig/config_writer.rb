@@ -60,23 +60,26 @@ module Y2Network
       # belongs to a particular interface
       #
       # @param config     [Y2Network::Config] Current config object
-      # @param _old_config [Y2Network::Config,nil] Config object with original configuration
-      def write_routing(config, _old_config)
+      # @param old_config [Y2Network::Config,nil] Config object with original configuration
+      def write_routing(config, old_config)
         write_ip_forwarding(config.routing)
 
         # update /etc/sysconfig/network/routes file
         file = routes_file_for(nil)
         file.routes = find_routes_for(nil, config.routing.routes)
         file.save
+
+        write_interface_routes(config, old_config)
       end
 
-      # Writes changes per interface
+      # Writes the routes for the configured interfaces removing the ones not
+      # configured
       #
       # @param config     [Y2Network::Config] current configuration for writing
       # @param old_config [Y2Network::Config, nil] original configuration used
       #                   for detecting changes. When nil, no actions related to
       #                   configuration changes are processed.
-      def write_interface_changes(config, old_config)
+      def write_interface_routes(config, old_config)
         # Write ifroute files
         config.interfaces.each do |dev|
           # S390 devices that have not been activated yet will be part of the
@@ -99,7 +102,6 @@ module Y2Network
           file = routes_file_for(iface)
           file.remove
         end
-
         nil
       end
 
@@ -194,10 +196,8 @@ module Y2Network
       # them
       #
       # @param config     [Y2Network::Config] Current config object
-      # @param old_config [Y2Network::Config,nil] Config object with original configuration
-      def write_interfaces(config, old_config)
-        write_interface_changes(config, old_config)
-
+      # @param _old_config [Y2Network::Config,nil] Config object with original configuration
+      def write_interfaces(config, _old_config)
         writer = Y2Network::Sysconfig::InterfacesWriter.new(reload: !Yast::Lan.write_only)
         writer.write(config.interfaces)
       end
