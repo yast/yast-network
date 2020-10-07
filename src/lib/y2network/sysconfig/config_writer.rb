@@ -47,7 +47,6 @@ module Y2Network
         sections = SECTIONS if sections == :all
         log.info "Writing configuration: #{config.inspect}"
         log.info "Old configuration: #{old_config.inspect}"
-        write_interface_changes(config, old_config) if sections.include?(:interfaces)
 
         SECTIONS.each { |s| send(:"write_#{s}", config, old_config) if sections.include?(s) }
 
@@ -57,10 +56,11 @@ module Y2Network
 
     private
 
-      # Updates the routing configuration
+      # Updates the ip forwarding config and the routing config which does not
+      # belongs to a particular interface
       #
       # @param config     [Y2Network::Config] Current config object
-      # @param old_config [Y2Network::Config,nil] Config object with original configuration
+      # @param _old_config [Y2Network::Config,nil] Config object with original configuration
       def write_routing(config, _old_config)
         write_ip_forwarding(config.routing)
 
@@ -190,11 +190,14 @@ module Y2Network
         writer.write(config.hostname, old_hostname)
       end
 
-      # Updates the interfaces configuration
+      # Updates the interfaces configuration and the routes associated with
+      # them
       #
       # @param config     [Y2Network::Config] Current config object
       # @param old_config [Y2Network::Config,nil] Config object with original configuration
-      def write_interfaces(config, _old_config)
+      def write_interfaces(config, old_config)
+        write_interface_changes(config, old_config)
+
         writer = Y2Network::Sysconfig::InterfacesWriter.new(reload: !Yast::Lan.write_only)
         writer.write(config.interfaces)
       end
@@ -217,7 +220,8 @@ module Y2Network
 
       # Writes drivers options
       #
-      # @param drivers [Array<Y2Network::Driver>] Drivers to write options
+      # @param config     [Y2Network::Config] Current config object
+      # @param _old_config [Y2Network::Config,nil] Config object with original configuration
       def write_drivers(config, _old_config)
         Y2Network::Driver.write_options(config.drivers)
       end
