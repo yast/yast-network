@@ -36,32 +36,38 @@ module Y2Network
     class ConfigWriter
       include Yast::Logger
 
+      SECTIONS = [:routing, :drivers, :interfaces, :connections, :dns, :hostname].freeze
+
       # Writes the configuration into YaST network related modules
       #
       # @param config     [Y2Network::Config] Configuration to write
       # @param old_config [Y2Network::Config] Old configuration
-      def write(config, old_config = nil)
+      def write(config, old_config = nil, sections: :all)
+        sections = SECTIONS if sections == :all
         log.info "Writing configuration: #{config.inspect}"
         log.info "Old configuration: #{old_config.inspect}"
-        write_ip_forwarding(config.routing) if config.routing
-        write_interface_changes(config, old_config)
+        write_ip_forwarding(config.routing) if sections.include?(:routing)
+        write_interface_changes(config, old_config) if sections.include?(:interfaces)
 
-        # update /etc/sysconfig/network/routes file
-        file = routes_file_for(nil)
-        file.routes = find_routes_for(nil, config.routing.routes)
-        file.save
-
-        write_drivers(config.drivers)
-        write_interfaces(config.interfaces)
-        write_connections(config.connections, old_config)
-        write_dns_settings(config, old_config)
-        write_hostname_settings(config, old_config)
+        write_routes(config.routing.routes) if sections.include?(:routing)
+        write_drivers(config.drivers) if sections.include?(:drivers)
+        write_interfaces(config.interfaces) if sections.include?(:interfaces)
+        write_connections(config.connections, old_config) if sections.include?(:connections)
+        write_dns_settings(config, old_config) if sections.include?(:dns)
+        write_hostname_settings(config, old_config) if sections.include?(:hostname)
 
         # NOTE: This code might be moved outside of the Sysconfig namespace, as it is generic.
         Yast::Host.Write(gui: false)
       end
 
     private
+
+      def write_routes(routes)
+        # update /etc/sysconfig/network/routes file
+        file = routes_file_for(nil)
+        file.routes = find_routes_for(nil, routes)
+        file.save
+      end
 
       # Writes changes per interface
       #

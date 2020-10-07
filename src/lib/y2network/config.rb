@@ -129,9 +129,9 @@ module Y2Network
     # @param target   [Symbol] Target to write the configuration to (:sysconfig)
     #
     # @see Y2Network::ConfigWriter
-    def write(original: nil, target: nil)
+    def write(original: nil, target: nil, sections: :all)
       target ||= source
-      Y2Network::ConfigWriter.for(target).write(self, original)
+      Y2Network::ConfigWriter.for(target).write(self, original, sections: sections)
     end
 
     # Determines whether two configurations are equal

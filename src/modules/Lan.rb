@@ -827,9 +827,9 @@ module Yast
     end
 
     # Writes current yast config and replaces the system config with it
-    def write_config
+    def write_config(sections: :all)
       target = :sysconfig if Mode.auto
-      yast_config.write(original: system_config, target: target)
+      yast_config.write(original: system_config, target: target, sections: sections)
       # Force a refresh of the system_config bsc#1162987
       add_config(:system, yast_config.copy)
     end

@@ -138,8 +138,10 @@ module Yast
       ret = DNSMainDialog(true)
       Builtins.y2debug("ret == %1", ret)
 
-      if ret == :next && DNS.modified
-        DNS.Write
+      if ret == :next && config_modified?
+        DNS.Write if DNS.modified
+        Lan.write_config(sections: [:hostname])
+
         # no more workarounds with dhcp-clients
         # do a full network restart (bnc#528937)
         NetworkService.StartStop
@@ -147,6 +149,10 @@ module Yast
 
       UI.CloseDialog
       deep_copy(ret)
+    end
+
+    def config_modified?
+      Lan.system_config != Lan.yast_config
     end
 
     # Handler for action "list"
