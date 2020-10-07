@@ -46,7 +46,7 @@ module Y2Network
     # @option opts [String] :static
     # @option opts [String] :transient
     # @option opts [String] :installer
-    # @option opts [Boolean] :dhcp_hostname
+    # @option opts [String, Symbol] :dhcp_hostname
     def initialize(opts = {})
       @static = opts[:static]
       @transient = opts[:transient] || @static
@@ -68,16 +68,6 @@ module Y2Network
 
     alias_method :hostname, :proposal
 
-    # Checks whether the hostname should be stored when writing configuration
-    #
-    # Currently this is relevant only in installer when only explicitly set hostname
-    # via hostname linuxrc option should be stored
-    #
-    # @return [Boolean]
-    def save_hostname?
-      !Yast::Stage.initial || !@installer.nil?
-    end
-
     # @return [Array<Symbol>] Methods to check when comparing two instances
     ATTRS = [
       :dhcp_hostname, :static, :transient, :installer
@@ -90,6 +80,21 @@ module Y2Network
     # @return [Boolean]
     def ==(other)
       ATTRS.all? { |a| public_send(a) == other.public_send(a) }
+    end
+
+    # Reads the static hostname from /etc/hostname
+    #
+    # @return [String, nil]
+    def current_static
+      name = Yast::SCR.Read(Yast::Path.new(".target.string"), "/etc/hostname").to_s.strip
+      name.empty? ? nil : name
+    end
+
+    # Returns whether the static hostname is different than the current one
+    #
+    # #@return [Boolean]
+    def static_modified?
+      @static != current_static.to_s
     end
 
   private

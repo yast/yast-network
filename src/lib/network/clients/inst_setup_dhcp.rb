@@ -43,8 +43,6 @@ module Yast
         log.info("Network is not managed by wicked, skipping DHCP setup")
       end
 
-      # if this is not wrapped in a def, ruby -cw says
-      # warning: possibly useless use of a literal in void context
       :next
     end
 

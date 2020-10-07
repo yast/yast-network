@@ -44,16 +44,10 @@ module Y2Network
       #
       # @return [Y2Network::Hostname] Hostname configuration
       def config
-        transient_hostname = if Yast::Stage.initial
-          hostname_from_dhcp
-        else
-          hostname_from_resolver
-        end
-
         Y2Network::Hostname.new(
           installer:     hostname_from_install_inf,
-          static:        hostname_from_system,
-          transient:     transient_hostname,
+          static:        static_hostname,
+          transient:     hostname_from_system,
           dhcp_hostname: dhcp_hostname
         )
       end
