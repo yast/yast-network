@@ -43,7 +43,7 @@ module Y2Network
       #
       # @param config     [Y2Network::Config] Configuration to write
       # @param old_config [Y2Network::Config] Old configuration
-      # @param sections [Array] explicit sections to be written, by default if no
+      # @param sections [Array<symbol>, :all] explicit sections to be written, by default if no
       #   parameter is given then all changes will be written
       def write(config, old_config = nil, sections: :all)
         # TODO: Improve the loging using better format
