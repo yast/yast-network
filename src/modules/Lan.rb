@@ -828,7 +828,7 @@ module Yast
 
     # Writes current yast config and replaces the system config with it
     #
-    # @param only [Array<Symbol>, :all] explicit sections to be written, by default if no
+    # @param only [Array<Symbol>, nil] explicit sections to be written, by default if no
     #   parameter is given then all changes will be written
     #
     # @see Y2Network::ConfigWriter

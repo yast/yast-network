@@ -276,7 +276,7 @@ module Y2Network
       end
 
       def write_config
-        Yast::Lan.write_config(sections: [:dns, :hostname])
+        Yast::Lan.write_config(only: [:dns, :hostname])
       end
     end
   end
