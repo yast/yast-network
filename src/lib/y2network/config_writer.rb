@@ -22,6 +22,8 @@ module Y2Network
     #
     # @param source [Symbol] Source name (e.g., :sysconfig)
     # @return [Y2Network::Sysconfig::ConfigWriter]
+    #
+    # @see Y2Network::Sysconfig::ConfigWriter
     def self.for(source)
       require "y2network/#{source}/config_writer"
       modname = source.to_s.split("_").map(&:capitalize).join
