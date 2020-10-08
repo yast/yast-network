@@ -2,7 +2,7 @@
 Wed Oct  7 11:45:04 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
 
 - Write hostname changes when modified through the 'dns' client
-  (bs#1177191).
+  (bsc#1177191).
 - 4.2.82
 
 -------------------------------------------------------------------
@@ -10437,4 +10437,3 @@ Thu Jun  8 20:46:57 MEST 2000 - dan@suse.cz
 Fri May 19 09:44:08 CEST 2000 - kkaempf@suse.de
 
 - initial version
-
