@@ -116,7 +116,7 @@ describe Y2Network::Config do
     end
 
     it "writes the config using the required writer" do
-      expect(writer).to receive(:write).with(config, nil)
+      expect(writer).to receive(:write).with(config, nil, only: nil)
       config.write
     end
   end
