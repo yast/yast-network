@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Oct  7 11:45:04 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
+
+- Write hostname changes when modified through the 'dns' client
+  (bsc#1177191).
+- 4.3.26
+
+-------------------------------------------------------------------
 Mon Oct  5 11:28:46 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
 
 - Modified the way the current hostnames are (static & transient)

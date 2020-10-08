@@ -539,7 +539,8 @@ describe "LanClass" do
     end
 
     it "writes the current yast_config passing the system config as the original" do
-      expect(Yast::Lan.yast_config).to receive(:write).with(original: system_config, target: nil)
+      expect(Yast::Lan.yast_config).to receive(:write)
+        .with(original: system_config, target: nil, only: nil)
       subject.write_config
     end
 

@@ -174,8 +174,7 @@ module Y2Network
           one_ip = Yast::UI.QueryWidget(Id(:bootproto_ipaddr), :Value)
           if one_ip.empty?
             current_hostname = Yast::Hostname.MergeFQ(Yast::DNS.hostname, Yast::DNS.domain)
-
-            if current_hostname.empty? || (current_hostname == "localhost")
+            unless current_hostname.empty? || (current_hostname == "localhost")
               log.info "Presetting global hostname"
               Yast::UI.ChangeWidget(Id(:bootproto_hostname), :Value, current_hostname)
             end
