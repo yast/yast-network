@@ -18,6 +18,7 @@
 # find current contact information at www.suse.com.
 
 require "yast"
+require "y2network/config"
 require "y2network/sysconfig/routes_file"
 require "y2network/sysconfig/dns_writer"
 require "y2network/sysconfig/hostname_writer"
@@ -43,18 +44,16 @@ module Y2Network
       #
       # @param config     [Y2Network::Config] Configuration to write
       # @param old_config [Y2Network::Config] Old configuration
-      # @param sections [Array<symbol>, :all] explicit sections to be written, by default if no
+      # @param only [Array<symbol>, nil] explicit sections to be written, by default if no
       #   parameter is given then all changes will be written
-      def write(config, old_config = nil, sections: :all)
+      def write(config, old_config = nil, only: nil)
+        sections = only || SECTIONS
+
         # TODO: Improve the loging using better format
         log.info "Writing configuration: #{config.inspect}\n"
         log.info "Old configuration: #{old_config.inspect}\n"
 
-        if sections == :all
-          sections = SECTIONS
-        else
-          log.info("Writing sections: #{sections.inspect}")
-        end
+        log.info("Writing sections: #{sections.inspect}") if only
 
         SECTIONS.each { |s| send(:"write_#{s}", config, old_config) if sections.include?(s) }
 

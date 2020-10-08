@@ -828,13 +828,13 @@ module Yast
 
     # Writes current yast config and replaces the system config with it
     #
-    # @param sections [Array<Symbol>, :all] explicit sections to be written, by default if no
+    # @param only [Array<Symbol>, :all] explicit sections to be written, by default if no
     #   parameter is given then all changes will be written
     #
-    # @see Y2Network::Sysconfig::ConfigWriter::SECTIONS
-    def write_config(sections: :all)
+    # @see Y2Network::ConfigWriter
+    def write_config(only: nil)
       target = :sysconfig if Mode.auto
-      yast_config.write(original: system_config, target: target, sections: sections)
+      yast_config.write(original: system_config, target: target, only: only)
       # Force a refresh of the system_config bsc#1162987
       add_config(:system, yast_config.copy)
     end
