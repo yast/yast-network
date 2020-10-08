@@ -95,9 +95,8 @@ module Y2Network
         log.info("----------------------------------------")
         log.info("Dns module started")
         ret = block.call
-        log.debug("ret=#{ret}")
         # Finish
-        log.info("Dns module finished")
+        log.info("Dns module finished with ret=#{ret.inspect}")
         log.info("----------------------------------------")
         ret
       end

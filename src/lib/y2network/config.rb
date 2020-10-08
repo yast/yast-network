@@ -127,6 +127,8 @@ module Y2Network
     #
     # @param original [Y2Network::Config] configuration used for detecting changes
     # @param target   [Symbol] Target to write the configuration to (:sysconfig)
+    # @param sections [Array] explicit sections to be written, by default if no
+    #   parameter is given then all changes will be written.
     #
     # @see Y2Network::ConfigWriter
     def write(original: nil, target: nil, sections: :all)

@@ -43,10 +43,18 @@ module Y2Network
       #
       # @param config     [Y2Network::Config] Configuration to write
       # @param old_config [Y2Network::Config] Old configuration
+      # @param sections [Array] explicit sections to be written, by default if no
+      #   parameter is given then all changes will be written
       def write(config, old_config = nil, sections: :all)
-        sections = SECTIONS if sections == :all
-        log.info "Writing configuration: #{config.inspect}"
-        log.info "Old configuration: #{old_config.inspect}"
+        # TODO: Improve the loging using better format
+        log.info "Writing configuration: #{config.inspect}\n"
+        log.info "Old configuration: #{old_config.inspect}\n"
+
+        if sections == :all
+          sections = SECTIONS
+        else
+          log.info("Writing sections: #{sections.inspect}")
+        end
 
         SECTIONS.each { |s| send(:"write_#{s}", config, old_config) if sections.include?(s) }
 
