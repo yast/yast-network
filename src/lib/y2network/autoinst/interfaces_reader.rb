@@ -88,8 +88,11 @@ module Y2Network
         config.name = name_from_section(interface_section)
         config.interface = config.name # in autoyast name and interface is same
         if config.bootproto == BootProtocol::STATIC
-          # TODO: report if ipaddr missing for static config
-          ipaddr = IPAddress.from_string(interface_section.ipaddr)
+          if !interface_section.ipaddr
+            raise ArgumentError, "Configuration for #{config.name} is invalid #{interface_section.inspect}"
+          end
+
+          ipaddr = IPAddress.from_string(interface_section.ipaddr) if !interface_section.ipaddr.empty?
           # Assign first netmask, as prefixlen has precedence so it will overwrite it
           ipaddr.netmask = interface_section.netmask if !interface_section.netmask.to_s.empty?
           if !interface_section.prefixlen.to_s.empty?
