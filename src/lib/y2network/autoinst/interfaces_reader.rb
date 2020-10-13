@@ -89,10 +89,13 @@ module Y2Network
         config.interface = config.name # in autoyast name and interface is same
         if config.bootproto == BootProtocol::STATIC
           if !interface_section.ipaddr
-            raise ArgumentError, "Configuration for #{config.name} is invalid #{interface_section.inspect}"
+            msg = "Configuration for #{config.name} is invalid #{interface_section.inspect}"
+            raise ArgumentError, msg
           end
 
-          ipaddr = IPAddress.from_string(interface_section.ipaddr) if !interface_section.ipaddr.empty?
+          if !interface_section.ipaddr.empty?
+            ipaddr = IPAddress.from_string(interface_section.ipaddr)
+          end
           # Assign first netmask, as prefixlen has precedence so it will overwrite it
           ipaddr.netmask = interface_section.netmask if !interface_section.netmask.to_s.empty?
           if !interface_section.prefixlen.to_s.empty?
