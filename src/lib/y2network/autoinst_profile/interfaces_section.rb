@@ -80,6 +80,7 @@ module Y2Network
       #
       # @param hash [Array] see {.new_from_hashes}. In this case it is array of interfaces
       def init_from_hashes(hash)
+        # we expect list of hashes here, remove everything else
         h = hash.delete_if { |v| !v.is_a?(Hash) }
         @interfaces = interfaces_from_hash(h)
       end
