@@ -77,7 +77,6 @@ module Y2Network
       end
 
       def import(profile)
-        res = true
         modified_profile = Yast::Lan.FromAY(profile)
 
         # see bnc#498993
@@ -88,14 +87,9 @@ module Y2Network
           modified_profile = Yast::NetworkAutoYast.instance.merge_configs(modified_profile)
         end
 
-        begin
-          Yast::Lan.Import(modified_profile)
-        rescue ArgumentError => e
-          log.error("Network section import crashed with: #{e.inspect}")
-          res = Popup.ContinueCancel(_("Network section in the profile is malformed."))
-        end
+        Yast::Lan.Import(modified_profile)
 
-        res
+        true
       end
 
       def packages
