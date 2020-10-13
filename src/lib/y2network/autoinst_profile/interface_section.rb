@@ -286,8 +286,9 @@ module Y2Network
         @bootproto = config.bootproto.name
         @name = config.name
         if config.bootproto == BootProtocol::STATIC && config.ip
-          @ipaddr = config.ip.address.address.to_s
-          @prefixlen = config.ip.address.prefix.to_s
+          # missing ip is valid scenario for wicked - so use empty string here
+          @ipaddr = config.ip.address&.address.to_s
+          @prefixlen = config.ip.address&.prefix.to_s
           @remote_ipaddr = config.ip.remote_address.address.to_s if config.ip.remote_address
           @broadcast = config.ip.broadcast.address.to_s if config.ip.broadcast
         end
