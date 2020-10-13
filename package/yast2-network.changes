@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Tue Oct 13 12:57:36 UTC 2020 - Michal Filka <mfilka@suse.com>
+
+- bnc#1175360
+  - more robust AY profile parser. Do not crash with internal error
+    on unknown node in interfaces section
+  - support for static configurations without ip address
+- 4.2.83 
+
+-------------------------------------------------------------------
 Wed Oct  7 11:45:04 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
 
 - Write hostname changes when modified through the 'dns' client
