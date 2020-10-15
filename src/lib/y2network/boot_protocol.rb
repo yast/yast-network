@@ -35,7 +35,7 @@ module Y2Network
       # Returns the boot protocol with a given name
       #
       # @param name [String]
-      # @return [BootProtocol,nil] Boot protocol or nil is not found
+      # @return [BootProtocol,nil] Boot protocol or nil if not found
       def from_name(name)
         all.find { |t| t.name == name }
       end

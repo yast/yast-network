@@ -283,7 +283,8 @@ module Y2Network
       # @param config [Y2Network::ConnectionConfig]
       # @return [Boolean]
       def init_from_config(config)
-        @bootproto = config.bootproto.name
+        # nil bootproto is valid use case (missing explicit setup) - wicked defaults to static then
+        @bootproto = config.bootproto&.name
         @name = config.name
         if config.bootproto == BootProtocol::STATIC && config.ip
           # missing ip is valid scenario for wicked - so use empty string here
