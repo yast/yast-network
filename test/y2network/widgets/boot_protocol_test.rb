@@ -304,4 +304,22 @@ describe Y2Network::Widgets::BootProtocol do
       end
     end
   end
+
+  describe "#handle" do
+    context "switched to static boot protocol" do
+      let(:value) { "static" }
+
+      before do
+        allow(Yast::UI).to receive(:QueryWidget).with(Id(:bootproto_ipaddr), :Value)
+          .and_return("")
+      end
+
+      it "does not propose hostname if current hostname is missing" do
+        allow(Yast::DNS).to receive(:hostname).and_return(nil)
+
+        expect(Yast::UI).to_not receive(:ChangeWidget)
+          .with(Id(:bootproto_hostname), :Value, anything)
+      end
+    end
+  end
 end
