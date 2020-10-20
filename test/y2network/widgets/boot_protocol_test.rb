@@ -317,7 +317,8 @@ describe Y2Network::Widgets::BootProtocol do
       it "does not propose hostname if current hostname is missing" do
         allow(Yast::DNS).to receive(:hostname).and_return(nil)
 
-        expect(Yast::UI).to_not receive(:ChangeWidget).with(Id(:bootproto_hostname), :Value, anything)
+        expect(Yast::UI).to_not receive(:ChangeWidget)
+          .with(Id(:bootproto_hostname), :Value, anything)
       end
     end
   end
