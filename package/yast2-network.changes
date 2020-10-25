@@ -5,6 +5,8 @@ Tue Oct 13 12:57:36 UTC 2020 - Michal Filka <mfilka@suse.com>
   - more robust AY profile parser. Do not crash with internal error
     on unknown node in interfaces section
   - support for static configurations without ip address
+- bnc#1175206
+  - support for defined default when missing bootproto in AY
 - 4.2.83 
 
 -------------------------------------------------------------------
