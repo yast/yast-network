@@ -40,7 +40,7 @@ module Y2Network
         #
         # @param conn [Y2Network::ConnectionConfig::Base] Connection to take settings from
         def write(conn)
-          file.bootproto = conn.bootproto.name
+          file.bootproto = conn.bootproto&.name
           file.name = conn.description
           file.lladdr = conn.lladdress
           file.startmode = conn.startmode.to_s

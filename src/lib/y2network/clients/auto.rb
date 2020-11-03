@@ -88,6 +88,7 @@ module Y2Network
         end
 
         Yast::Lan.Import(modified_profile)
+
         true
       end
 
