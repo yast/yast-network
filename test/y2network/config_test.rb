@@ -137,6 +137,18 @@ describe Y2Network::Config do
   end
 
   describe "#==" do
+    let(:bond0) { Y2Network::VirtualInterface.new("bond0") }
+    let(:bond0_conn) do
+      Y2Network::ConnectionConfig::Bonding.new.tap do |conn|
+        conn.interface = "bond0"
+        conn.name = "bond0"
+        conn.slaves = ["eth0"]
+      end
+    end
+
+    let(:interfaces) { Y2Network::InterfacesCollection.new([eth0, bond0]) }
+    let(:connections) { Y2Network::ConnectionConfigsCollection.new([eth0_conn, bond0_conn]) }
+
     let(:copy) { config.copy }
 
     context "when both configuration contains the same information" do
@@ -154,7 +166,9 @@ describe Y2Network::Config do
 
     context "when connection list is different" do
       it "returns false" do
-        copy.connections = Y2Network::ConnectionConfigsCollection.new([])
+        modified_bond = copy.connections.by_name("bond0")
+        modified_bond.options = "mode=active-backup miimon=300"
+
         expect(copy).to_not eq(config)
       end
     end

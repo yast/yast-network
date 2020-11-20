@@ -44,6 +44,8 @@ module Y2Network
           public_send(method) == other.public_send(method)
         end
       end
+
+      alias_method :eql?, :==
     end
   end
 end
