@@ -49,6 +49,8 @@ module Y2Network
         stp == other.stp && forward_delay == other.forward_delay &&
           ((ports - other.ports) + (other.ports - ports)).empty?
       end
+
+      alias_method :eql?, :==
     end
   end
 end

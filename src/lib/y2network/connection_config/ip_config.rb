@@ -62,6 +62,8 @@ module Y2Network
           remote_address == other.remote_address && broadcast == other.broadcast &&
           id == other.id
       end
+
+      alias_method :eql?, :==
     end
   end
 end

@@ -63,6 +63,8 @@ module Y2Network
         end
       end
 
+      alias_method :eql?, :==
+
       # Returns the complete device id which contains the read ad write
       # channels joined by ':'
       #

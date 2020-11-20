@@ -103,6 +103,8 @@ module Y2Network
         end
       end
 
+      alias_method :eql?, :==
+
       # @param wireless_mode [String]
       def mode=(wireless_mode)
         @mode = wireless_mode.to_s.downcase
