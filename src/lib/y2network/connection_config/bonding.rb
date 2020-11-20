@@ -42,6 +42,8 @@ module Y2Network
         options == other.options && ((slaves - other.slaves) + (other.slaves - slaves)).empty?
       end
 
+      alias_method :eql?, :==
+
       def virtual?
         true
       end
