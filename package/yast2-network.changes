@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Nov 20 07:23:27 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
+
+- Fixed detection of connection configuration changes bsc#1178950)
+- 4.2.84
+
+-------------------------------------------------------------------
 Tue Oct 13 12:57:36 UTC 2020 - Michal Filka <mfilka@suse.com>
 
 - bnc#1175360
