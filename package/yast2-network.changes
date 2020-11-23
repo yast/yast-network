@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Nov 23 08:03:17 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
+
+- Do not show a warn message when modifying a bonding configuration
+  and all the slaves are already configured with BOOTPROTO='none'
+  (bsc#1178950)
+- 4.2.85
+
+-------------------------------------------------------------------
 Fri Nov 20 07:23:27 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
 
 - Fixed detection of connection configuration changes (bsc#1178950)
