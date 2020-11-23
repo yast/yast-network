@@ -28,6 +28,30 @@ describe Y2Network::InterfaceConfigBuilders::Bonding do
   let(:config) { Y2Network::Config.new(source: :test) }
 
   before do
+    allow(config).to receive(:interfaces).and_return(interfaces_collection)
+    allow(config).to receive(:connections).and_return(connection_configs_collection)
+    allow(connection_config).to receive(:name).and_return(connection_name)
+    allow(connection_config).to receive(:find_master).and_return(connection_master)
+    allow(Yast::Arch).to receive(:s390).and_return(s390)
+  end
+
+  let(:s390) { false }
+
+  let(:interfaces_collection) do
+    Y2Network::InterfacesCollection.new([interface1, interface2])
+  end
+
+  let(:connection_configs_collection) do
+    Y2Network::ConnectionConfigsCollection.new([connection_config])
+  end
+
+  let(:interface1) { Y2Network::Interface.new("iface1") }
+  let(:interface2) { Y2Network::Interface.new("iface2") }
+  let(:connection_config) { Y2Network::ConnectionConfig::Bonding.new }
+  let(:connection_name) { "" }
+  let(:connection_master) { nil }
+
+  before do
     allow(Y2Network::Config)
       .to receive(:find)
       .with(:yast)
@@ -35,7 +59,7 @@ describe Y2Network::InterfaceConfigBuilders::Bonding do
   end
 
   subject(:config_builder) do
-    res = Y2Network::InterfaceConfigBuilders::Bonding.new
+    res = Y2Network::InterfaceConfigBuilders::Bonding.new(config: connection_config)
     res.name = "bond0"
     res
   end
@@ -47,38 +71,6 @@ describe Y2Network::InterfaceConfigBuilders::Bonding do
   end
 
   describe "#bondable_interfaces" do
-    before do
-      allow(config).to receive(:interfaces).and_return(interfaces_collection)
-
-      allow(config).to receive(:connections).and_return(connection_configs_collection)
-
-      allow(connection_config).to receive(:name).and_return(connection_name)
-
-      allow(connection_config).to receive(:find_master).and_return(connection_master)
-
-      allow(Yast::Arch).to receive(:s390).and_return(s390)
-    end
-
-    let(:interfaces_collection) do
-      Y2Network::InterfacesCollection.new([interface1, interface2])
-    end
-
-    let(:connection_configs_collection) do
-      Y2Network::ConnectionConfigsCollection.new([connection_config])
-    end
-
-    let(:interface1) { Y2Network::Interface.new("iface1") }
-
-    let(:interface2) { Y2Network::Interface.new("iface2") }
-
-    let(:connection_config) { Y2Network::ConnectionConfig::Bonding.new }
-
-    let(:connection_name) { "" }
-
-    let(:connection_master) { nil }
-
-    let(:s390) { false }
-
     shared_examples "interface filters" do
       context "when an interface does not have a connection config yet" do
         let(:connection_name) { "iface2" } # only iface2 has a config
@@ -145,6 +137,54 @@ describe Y2Network::InterfaceConfigBuilders::Bonding do
       let(:s390) { false }
 
       include_examples "interface filters"
+    end
+  end
+
+  describe "config_need_to_be_adapted?" do
+    before do
+      connection_config.slaves = ["iface1", "iface2"]
+    end
+
+    context "when there is no slave configured" do
+      it "returns false" do
+        expect(subject.config_need_to_be_adapted?(connection_config.slaves)).to eql(false)
+      end
+    end
+
+    context "when all the slaves are properly configure do" do
+      it "return false" do
+        subject.save
+        expect(subject.config_need_to_be_adapted?(connection_config.slaves)).to eql(false)
+      end
+    end
+    context "when at least one configured slave need to be adapted" do
+      it "return true" do
+        subject.save
+        iface1_conn = connection_configs_collection.by_name("iface1")
+        iface1_conn.bootproto = Y2Network::BootProtocol::DHCP
+        expect(subject.config_need_to_be_adapted?(connection_config.slaves)).to eql(true)
+      end
+    end
+
+  end
+
+  describe "#save" do
+    let(:connection_name) { "bond0" }
+
+    it "adapts the selected slaves configuration when needed" do
+      connection_config.slaves = ["iface1", "iface2"]
+
+      expect(Y2Network::InterfaceConfigBuilder)
+        .to receive(:for).with(anything, config: nil).twice.and_call_original
+      subject.save
+      iface1_conn = connection_configs_collection.by_name("iface1")
+      iface2_conn = connection_configs_collection.by_name("iface2")
+      iface2_conn.bootproto = Y2Network::BootProtocol::DHCP
+      expect(Y2Network::InterfaceConfigBuilder)
+        .to receive(:for).with(anything, config: iface2_conn).once.and_call_original
+      expect(Y2Network::InterfaceConfigBuilder)
+        .to_not receive(:for).with(anything, config: iface1_conn)
+      subject.save
     end
   end
 end
