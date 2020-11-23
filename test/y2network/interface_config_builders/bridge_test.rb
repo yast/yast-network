@@ -53,9 +53,9 @@ describe Y2Network::InterfaceConfigBuilders::Bridge do
     end
   end
 
-  describe "#already_configured?" do
+  describe "#require_adaptation?" do
     it "returns boolean" do
-      expect(subject.already_configured?([])).to eq false
+      expect(subject.require_adaptation?([])).to eq false
     end
   end
 end
