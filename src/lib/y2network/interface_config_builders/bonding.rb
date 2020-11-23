@@ -56,7 +56,7 @@ module Y2Network
       # @param devices [Array<String>] devices to check
       # return [Boolean] true if there is a device config that needs
       #   to be adaptated; false otherwise
-      def config_need_to_be_adapted?(devices)
+      def require_adaptation?(devices)
         devices.any? do |device|
           next false unless yast_config.configured_interface?(device)
 

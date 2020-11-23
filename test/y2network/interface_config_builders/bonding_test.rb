@@ -140,21 +140,21 @@ describe Y2Network::InterfaceConfigBuilders::Bonding do
     end
   end
 
-  describe "config_need_to_be_adapted?" do
+  describe "require_adaptation?" do
     before do
       connection_config.slaves = ["iface1", "iface2"]
     end
 
     context "when there is no slave configured" do
       it "returns false" do
-        expect(subject.config_need_to_be_adapted?(connection_config.slaves)).to eql(false)
+        expect(subject.require_adaptation?(connection_config.slaves)).to eql(false)
       end
     end
 
     context "when all the slaves are properly configure do" do
       it "return false" do
         subject.save
-        expect(subject.config_need_to_be_adapted?(connection_config.slaves)).to eql(false)
+        expect(subject.require_adaptation?(connection_config.slaves)).to eql(false)
       end
     end
     context "when at least one configured slave need to be adapted" do
@@ -162,7 +162,7 @@ describe Y2Network::InterfaceConfigBuilders::Bonding do
         subject.save
         iface1_conn = connection_configs_collection.by_name("iface1")
         iface1_conn.bootproto = Y2Network::BootProtocol::DHCP
-        expect(subject.config_need_to_be_adapted?(connection_config.slaves)).to eql(true)
+        expect(subject.require_adaptation?(connection_config.slaves)).to eql(true)
       end
     end
 

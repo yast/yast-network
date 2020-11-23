@@ -130,7 +130,7 @@ module Y2Network
           return false unless continue_with_duplicates?(physical_ports)
         end
 
-        if @settings.config_need_to_be_adapted?(selected_items || [])
+        if @settings.require_adaptation?(selected_items || [])
           return Yast::Popup.ContinueCancel(
             _(
               "At least one selected device is already configured.\n" \
