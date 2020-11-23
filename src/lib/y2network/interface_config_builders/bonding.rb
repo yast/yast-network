@@ -57,7 +57,7 @@ module Y2Network
         devices.any? do |device|
           next false unless yast_config.configured_interface?(device)
 
-          yast_config.connections.by_name(device).startmode.name != "none"
+          yast_config.connections.by_name(device).bootproto.name != "none"
         end
       end
 
@@ -66,7 +66,7 @@ module Y2Network
         slaves.each do |slave|
           interface = yast_config.interfaces.by_name(slave)
           connection = yast_config.connections.by_name(slave)
-          next if connection && connection.startmode.name == "none"
+          next if connection && connection.bootproto.name == "none"
 
           builder = InterfaceConfigBuilder.for(interface.type, config: connection)
           builder.name = interface.name
