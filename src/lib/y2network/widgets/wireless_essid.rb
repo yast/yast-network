@@ -62,6 +62,11 @@ module Y2Network
       def initialize(settings)
         @settings = settings
         textdomain "network"
+        @items = []
+      end
+
+      def items
+        @items
       end
 
       def label
@@ -76,6 +81,12 @@ module Y2Network
       # allow to use not found name e.g. when scan failed or when network is hidden
       def opt
         [:editable]
+      end
+
+      def change_items(new_items)
+        @items = new_items
+
+        super
       end
 
       # updates essid list with given array and ensure that previously selected value is preserved
