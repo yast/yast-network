@@ -69,7 +69,7 @@ module Y2Network
       #
       # @return true if valid or user decision if not
       def validate
-        if @settings.already_configured?(value || [])
+        if @settings.require_adaptation?(value || [])
           Yast::Popup.ContinueCancel(
             _(
               "At least one selected device is already configured.\n" \

@@ -50,14 +50,17 @@ module Y2Network
         connection_config.options
       end
 
-      # Checks if any of given device is already configured and need adaptation for bridge
+      # Returns whether any configuration of the given devices needs to be
+      # adapted in order to be added as a bonding slave
+
       # @param devices [Array<String>] devices to check
-      # @return [Boolean] true if there is device that needs adaptation
-      def already_configured?(devices)
+      # return [Boolean] true if there is a device config that needs
+      #   to be adaptated; false otherwise
+      def require_adaptation?(devices)
         devices.any? do |device|
           next false unless yast_config.configured_interface?(device)
 
-          yast_config.connections.by_name(device).startmode.name != "none"
+          yast_config.connections.by_name(device).bootproto.name != "none"
         end
       end
 
@@ -66,7 +69,7 @@ module Y2Network
         slaves.each do |slave|
           interface = yast_config.interfaces.by_name(slave)
           connection = yast_config.connections.by_name(slave)
-          next if connection && connection.startmode.name == "none"
+          next if connection && connection.bootproto.name == "none"
 
           builder = InterfaceConfigBuilder.for(interface.type, config: connection)
           builder.name = interface.name

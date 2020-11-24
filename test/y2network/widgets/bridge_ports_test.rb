@@ -28,7 +28,7 @@ describe Y2Network::Widgets::BridgePorts do
   subject { described_class.new(builder) }
 
   before do
-    allow(builder).to receive(:already_configured?).and_return(false)
+    allow(builder).to receive(:require_adaptation?).and_return(false)
   end
 
   include_examples "CWM::MultiSelectionBox"
@@ -43,7 +43,7 @@ describe Y2Network::Widgets::BridgePorts do
 
     context "when some of the enslaved interfaces are configured" do
       it "warns the user and request confirmation to continue" do
-        allow(builder).to receive(:already_configured?).and_return(true)
+        allow(builder).to receive(:require_adaptation?).and_return(true)
 
         expect(Yast::Popup).to receive(:ContinueCancel).and_return(true)
 

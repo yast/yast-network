@@ -32,10 +32,13 @@ module Y2Network
         super(type: InterfaceType::BRIDGE, config: config)
       end
 
-      # Checks if any of given device is already configured and need adaptation for bridge
+      # Returns whether any configuration of the given devices needs to be
+      # adapted in order to be added as a bridge port
+      #
       # @param devices [Array<String>] devices to check
-      # @return [Boolean] true if there is device that needs adaptation
-      def already_configured?(devices)
+      # @return [Boolean] true if there is a device config that needs
+      #   to be adaptated; false otherwise
+      def require_adaptation?(devices)
         devices.any? do |device|
           next false unless yast_config.configured_interface?(device)
 
