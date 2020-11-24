@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Nov 25 22:23:00 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
+
+- Fixed update of the scanned wireless networks list (bsc#1178832)
+- 4.3.31
+
+-------------------------------------------------------------------
 Wed Nov 25 10:02:37 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
 
 - Do not crash when trying to replace an /etc/hosts alias using the
