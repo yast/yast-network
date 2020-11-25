@@ -192,8 +192,8 @@ module Yast
 
     # Update hosts according to the current hostname
     # (only one hostname, assigned to all IP)
-    # @param oldhn [String] current hostname
-    # @param newhn [String] current domain name
+    # @param oldhn [String, nil] hostname to be replaced
+    # @param newhn [String] new hostname value
     # @param ip [String] to assign
     # @return [Boolean] true if success
     def Update(oldhn, newhn, ip)
@@ -203,7 +203,7 @@ module Yast
       log.info("Updating /etc/hosts: #{oldhn} -> #{newhn}: #{ip}")
 
       # Remove old hostname from hosts
-      @hosts.delete_hostname(oldhn) if !oldhn.empty?
+      @hosts.delete_hostname(oldhn) if ![nil, ""].include?(oldhn)
 
       # Add localhost if missing
       @hosts.add_entry("127.0.0.1", "localhost") if @hosts.host("127.0.0.1").empty?
@@ -275,7 +275,7 @@ module Yast
       static_ips = StaticIPs().reject { |sip| @hosts.include_ip?(sip) }
       return if static_ips.empty?
 
-      fqhostname = Hostname.MergeFQ(DNS.hostname, DNS.domain)
+      fqhostname = DNS.hostname
 
       # assign system wide hostname to a static ip without particular hostname
       static_ips.each { |sip| Update(fqhostname, fqhostname, sip) }
