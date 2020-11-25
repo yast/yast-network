@@ -81,4 +81,28 @@ describe Y2Network::Widgets::WirelessScan do
       end
     end
   end
+
+  describe "#update_essid_list" do
+    let(:selected) { "YaST" }
+
+    before do
+      allow(essid).to receive(:update_essid_list).and_call_original
+      allow(essid).to receive(:value).and_return(selected)
+    end
+
+    it "populates the ComboBox with the scanned networks list" do
+      essid.update_essid_list(available_networks)
+
+      expect(essid.items).to eql(available_networks.map { |i| [i, i] })
+    end
+
+    context "when the selected value is not part of the scanned networks" do
+      let(:selected) { "hidden_essid" }
+
+      it "also appens the selected value to the ComboBox list" do
+        essid.update_essid_list(available_networks)
+        expect(essid.items).to include(["hidden_essid", "hidden_essid"])
+      end
+    end
+  end
 end
