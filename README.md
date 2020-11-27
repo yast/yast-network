@@ -1,9 +1,11 @@
 ## YaST Network Module
 
-[![Travis Build](https://travis-ci.org/yast/yast-network.svg?branch=master)](https://travis-ci.org/yast/yast-network)
-[![Jenkins Build](http://img.shields.io/jenkins/s/https/ci.opensuse.org/yast-network-master.svg)](https://ci.opensuse.org/view/Yast/job/yast-network-master/)
-[![Code Climate](https://codeclimate.com/github/yast/yast-network/badges/gpa.svg)](https://codeclimate.com/github/yast/yast-network)
+[![Workflow Status](https://github.com/yast/yast-network/workflows/CI/badge.svg?branch=master)](
+https://github.com/yast/yast-network/actions?query=branch%3Amaster)
+[![Jenkins Status](https://ci.opensuse.org/buildStatus/icon?job=yast-yast-network-master)](
+https://ci.opensuse.org/view/Yast/job/yast-yast-network-master/)
 [![Coverage Status](https://coveralls.io/repos/yast/yast-network/badge.png)](https://coveralls.io/r/yast/yast-network)
+[![Code Climate](https://codeclimate.com/github/yast/yast-network/badges/gpa.svg)](https://codeclimate.com/github/yast/yast-network)
 
 The YaST2 Network module manages network configuration including device configuration,
 DNS, Routing and more
