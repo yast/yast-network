@@ -20,6 +20,7 @@
 require "cwm/common_widgets"
 require "cwm/custom_widget"
 require "yast2/feedback"
+require "y2network/dialogs/wireless_networks"
 
 Yast.import "String"
 Yast.import "Package"
@@ -102,9 +103,10 @@ module Y2Network
       # @param settings [Y2network::InterfaceConfigBuilder]
       # @param update [WirelessEssidName]
       def initialize(settings, update:)
+        textdomain "network"
+
         @settings = settings
         @update_widget = update
-        textdomain "network"
       end
 
       def label
@@ -113,8 +115,11 @@ module Y2Network
 
       def handle
         return unless scan_supported?
+        networks = fetch_essid_list
 
-        @update_widget&.update_essid_list(fetch_essid_list)
+        @update_widget&.update_essid_list(networks)
+        Y2Network::Dialogs::WirelessNetworks.new(networks).run
+
         nil
       end
 
