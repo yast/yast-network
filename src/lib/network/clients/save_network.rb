@@ -291,7 +291,7 @@ module Yast
       # that a bridge configuration is present in the profile it should be
       # skipped or even only done in case of missing `networking -> interfaces`
       # section
-      NetworkAutoconfiguration.instance.configure_virtuals
+      NetworkAutoconfiguration.instance.configure_virtuals unless Mode.autoinst
       NetworkAutoconfiguration.instance.configure_dns unless Mode.autoinst
 
       # this depends on DNS configuration
