@@ -420,8 +420,15 @@ module Y2Network
       # to do some clean-up before writing the final values.
       def clean
         @values = self.class.variables.values.each_with_object({}) do |variable, hash|
-          hash[variable.name] = variable.collection? ? {} : nil
+          if variable.collection?
+            clean_collection(variable.name)
+            hash[variable.name] = {}
+          else
+            write_scalar(variable.name, nil)
+            hash[variable.name] = nil
+          end
         end
+
         @defined_variables = nil
       end
 
