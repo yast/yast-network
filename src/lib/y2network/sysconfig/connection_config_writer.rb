@@ -42,6 +42,7 @@ module Y2Network
         handler_class = find_handler_class(conn.type)
         return nil if handler_class.nil?
 
+        remove(old_conn) if old_conn
         file.clean
         handler_class.new(file).write(conn)
         file.save

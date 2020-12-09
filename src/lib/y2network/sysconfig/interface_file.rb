@@ -423,11 +423,10 @@ module Y2Network
           if variable.collection?
             clean_collection(variable.name)
             hash[variable.name] = {}
-            next
+          else
+            write_scalar(variable.name, nil)
+            hash[variable.name] = nil
           end
-
-          hash[variable.name] = nil
-          write_scalar(variable.name, nil)
         end
 
         @defined_variables = nil
