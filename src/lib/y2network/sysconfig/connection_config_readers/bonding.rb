@@ -37,7 +37,7 @@ module Y2Network
         #
         # @return [Array<String>] bonding slaves defined in the file
         def slaves
-          (file.bonding_slaves || {}).values
+          (file.bonding_slaves || {}).sort.to_h.values
         end
       end
     end
