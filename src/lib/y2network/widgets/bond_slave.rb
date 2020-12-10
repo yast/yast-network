@@ -59,9 +59,9 @@ module Y2Network
           current = value.to_s
           index = value_index
           case event["ID"]
-          when :up
+          when :bond_slaves_up
             items[index], items[index - 1] = items[index - 1], items[index]
-          when :down
+          when :bond_slaves_down
             items[index], items[index + 1] = items[index + 1], items[index]
           else
             log.warn("unknown action #{event["ID"]}")
