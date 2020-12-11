@@ -68,8 +68,8 @@ module Y2Network
       attr_accessor :ethtool_options
       # @return [String] assigned firewall zone to interface
       attr_accessor :firewall_zone
-      # @return [String] interface's hostname
-      attr_accessor :hostname
+      # @return [Array<String>] interface's hostnames
+      attr_accessor :hostnames
       # @return [Boolean, nil] set to true if dhcp from this interface sets machine hostname,
       #   false if not and nil if not specified
       attr_accessor :dhclient_set_hostname
@@ -202,6 +202,23 @@ module Y2Network
       #   bootpro; false otherwise
       def static?
         bootproto ? bootproto.static? : true
+      end
+
+      # Return the first hostname associated with the primary IP address
+      #
+      # @return [String, nil]
+      def hostname
+        hostnames&.first
+      end
+
+      # Convenience method in order to modify the canonical hostname mapped to
+      # the primary IP address.
+      #
+      # @param name [String] hostnamme mapped to the primary IP address
+      def hostname=(name)
+        short_name = name&.split(".")&.first
+
+        @hostnames = [name, short_name].uniq.compact
       end
 
     private

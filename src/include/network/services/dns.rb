@@ -20,8 +20,13 @@
 #
 # **************************************************************************
 
+require "ui/text_helpers"
+require "y2network/dialogs/update_hostname_hosts"
+
 module Yast
   module NetworkServicesDnsInclude
+    include ::UI::TextHelpers
+
     # CWM wants id-value pairs
     CUSTOM_RESOLV_POLICIES = {
       "STATIC"          => "STATIC",
@@ -260,7 +265,7 @@ module Yast
     # @param value [String]
     # @return [String] stored hostname
     def store_hostname(value)
-      hostname = Yast::Lan.yast_config.hostname
+      hostname = config.hostname
       hostname.static = value
       hostname.installer = value if Stage.initial
 
@@ -280,7 +285,9 @@ module Yast
         " ,\n\t"
       )
 
-      store_hostname(settings["HOSTNAME"] || "")
+      hostname = settings["HOSTNAME"] || ""
+      update_hostname_hosts(hostname)
+      store_hostname(hostname)
 
       valid_nameservers = NonEmpty(nameservers).each_with_object([]) do |ip_str, all|
         all << IPAddr.new(ip_str) if IP.Check(ip_str)
@@ -290,6 +297,26 @@ module Yast
       DNS.resolv_conf_policy = settings["PLAIN_POLICY"]
 
       nil
+    end
+
+    def current_hostname
+      config&.hostname&.static || ""
+    end
+
+    def update_hostname_hosts(hostname)
+      return false if hostname == current_hostname
+      return false if current_hostname.to_s.empty?
+
+      conn = config.connections.find { |c| c.hostnames.include?(current_hostname) }
+
+      update_hostname = conn && Popup.YesNo(
+        wrap_text(
+          format(_("The interface '%s' static IP address is mapped to the modified hostname.\n\n" \
+                "Would you like to adapt it now?"), conn.name)
+        )
+      )
+
+      Y2Network::Dialogs::UpdateHostnameHosts.new(hostname, conn).run if update_hostname
     end
 
     # Stores actual hostname settings.
