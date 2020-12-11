@@ -17,54 +17,50 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "cwm/popup"
-require "y2network/widgets/hostname"
+require "cwm"
 
 module Y2Network
-  module Dialogs
-    # A popup dialog which permits to modify the hostname mapped to the given
-    # connection primary IP address
-    class UpdateHostnameHosts < CWM::Popup
-      def initialize(connection)
+  module Widgets
+    # Widget that permits to modify the hostname of the given object
+    class Hostname < CWM::InputField
+      # Constructor
+      #
+      # @param settings [Object]
+      # @param empty_allowed [Boolean] whether an empty hostname should be
+      #   valid or not
+      def initialize(settings, empty_allowed: true)
         textdomain "network"
 
-        @connection = connection
+        @settings = settings
+        @empty_allowed = empty_allowed
       end
 
-      def title
-        format(_("Edit '%s' hostname"), @connection.name)
+      def init
+        self.value = @settings.hostname.to_s
       end
 
-      def contents
-        VBox(
-          Left(Label(_("IP Address"))),
-          Left(Label(ip_address)),
-          VSpacing(0.5),
-          hostname_widget,
-          VSpacing(0.5)
-        )
+      def label
+        _("&Hostname")
       end
 
-      def buttons
-        [ok_button, cancel_button]
+      def store
+        @settings.hostname = value
       end
 
-      def ok_button_label
-        Yast::Label.ModifyButton
-      end
+      def validate
+        Yast.import "Hostname"
+        return true if empty_allowed? && value.to_s.empty?
 
-      def min_height
-        8
-      end
-
-      def ip_address
-        @connection&.ip&.address&.address&.to_s
+        Yast::Hostname.CheckFQ(value)
       end
 
     private
 
-      def hostname_widget
-        @hostname_widget ||= Widgets::Hostname.new(@connection)
+      # Return whether an empty value is allowed or not
+      #
+      # @return [Boolean]
+      def empty_allowed?
+        @empty_allowed
       end
     end
   end

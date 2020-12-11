@@ -305,18 +305,18 @@ module Yast
 
     def update_hostname_hosts(hostname)
       return false if hostname == current_hostname
-      return false if current_hostname.to_s.empty?
+      return false if current_hostname.empty?
 
       conn = config.connections.find { |c| c.hostnames.include?(current_hostname) }
 
       update_hostname = conn && Popup.YesNo(
         wrap_text(
-          format(_("The interface '%s' static IP address is mapped to the modified hostname.\n\n" \
-                "Would you like to adapt it now?"), conn.name)
+          format(_("The interface '%s' static IP address is mapped to the hostname '%s'.\n\n" \
+                "Would you like to adapt it now?"), conn.name, current_hostname)
         )
       )
 
-      Y2Network::Dialogs::UpdateHostnameHosts.new(hostname, conn).run if update_hostname
+      Y2Network::Dialogs::UpdateHostnameHosts.new(conn).run if update_hostname
     end
 
     # Stores actual hostname settings.

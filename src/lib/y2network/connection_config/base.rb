@@ -204,9 +204,10 @@ module Y2Network
         bootproto ? bootproto.static? : true
       end
 
-      # Return the first hostname associated with the primary IP address
+      # Return the first hostname associated with the primary IP address.
       #
-      # @return [String, nil]
+      # @return [String, nil] returns the hostname associated with the primary
+      #   IP address or nil
       def hostname
         hostnames&.first
       end
@@ -214,11 +215,12 @@ module Y2Network
       # Convenience method in order to modify the canonical hostname mapped to
       # the primary IP address.
       #
-      # @param name [String] hostnamme mapped to the primary IP address
-      def hostname=(name)
-        short_name = name&.split(".")&.first
+      # @param name [String, nil] hostnamme mapped to the primary IP address
+      def hostname=(hname)
+        short_name = hname&.split(".")&.first
 
-        @hostnames = [name, short_name].uniq.compact
+        @hostnames = [hname, short_name].uniq.compact
+        log.info("Assigned hostnames #{@hostnames.inspect} to connection #{name}")
       end
 
     private
