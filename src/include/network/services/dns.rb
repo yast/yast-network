@@ -307,7 +307,7 @@ module Yast
       return false if hostname == current_hostname
       return false if current_hostname.empty?
 
-      conn = config.connections.find { |c| c.hostnames.include?(current_hostname) }
+      conn = config.connections.find { |c| c.hostnames&.include?(current_hostname) }
 
       update_hostname = conn && Popup.YesNo(
         wrap_text(

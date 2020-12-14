@@ -124,9 +124,9 @@ module Y2Network
 
         # Returns the hostnames for the given connection
         #
-        # @return [Array<String>, nil]
+        # @return [Array<String>]
         def hostnames(conn)
-          return nil unless conn.ip
+          return [] unless conn.ip
 
           Yast::Host.Read
           aliases = Yast::Host.names(conn.ip.address.address.to_s).first

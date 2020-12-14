@@ -83,7 +83,7 @@ describe Y2Network::Clients::DNS do
 
         it "writes the changes" do
           allow(subject).to receive(:write_config).and_call_original
-          expect(Yast::Lan).to receive(:write_config).with(only: [:dns, :hostname])
+          expect(Yast::Lan).to receive(:write_config).with(only: [:dns, :hostname, :connections])
           subject.main
         end
 

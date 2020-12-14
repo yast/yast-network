@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Dec 14 09:36:40 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
+
+- Write also connections in case that the hostname mapped to a
+  connection primary IP address is changed through the DNS
+  standalone client (bsc#1174431)
+- 4.3.34
+
+-------------------------------------------------------------------
 Mon Dec 14 08:27:46 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
 
 - Allow to modify the hostname mapped to a connection primary IP
