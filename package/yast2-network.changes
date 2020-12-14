@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Dec 14 08:27:46 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
+
+- Allow to modify the hostname mapped to a connection primary IP
+  address when the associated hostname is modified (bsc#1174431)
+- 4.3.3
+
+-------------------------------------------------------------------
 Thu Dec 10 10:43:48 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
 
 - Fix bonding slaves sorting (bsc#1178950)
