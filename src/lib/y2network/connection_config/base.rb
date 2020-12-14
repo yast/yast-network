@@ -215,7 +215,7 @@ module Y2Network
       # Convenience method in order to modify the canonical hostname mapped to
       # the primary IP address.
       #
-      # @param name [String, nil] hostnamme mapped to the primary IP address
+      # @param hname [String, nil] hostnamme mapped to the primary IP address
       def hostname=(hname)
         short_name = hname&.split(".")&.first
 
