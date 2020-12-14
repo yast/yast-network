@@ -61,7 +61,7 @@ module Y2Network
             if file.dhclient_set_hostname
               conn.dhclient_set_hostname = file.dhclient_set_hostname == "yes"
             end
-            conn.hostname = hostname(conn)
+            conn.hostnames = hostnames(conn)
             conn.mtu = file.mtu
 
             update_connection_config(conn)
@@ -122,16 +122,15 @@ module Y2Network
           ipaddr
         end
 
-        # Returns the hostname for the given connection
+        # Returns the hostnames for the given connection
         #
-        # @return [String,nil]
-        def hostname(conn)
+        # @return [Array<String>, nil]
+        def hostnames(conn)
           return nil unless conn.ip
 
           Yast::Host.Read
           aliases = Yast::Host.names(conn.ip.address.address.to_s).first
-          # Use the fqdn when defined
-          aliases.to_s.split(" ").first
+          aliases.to_s.split(" ")
         end
       end
     end

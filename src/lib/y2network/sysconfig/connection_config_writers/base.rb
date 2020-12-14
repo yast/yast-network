@@ -100,7 +100,8 @@ module Y2Network
         #
         # @param conn [Y2Network::ConnectionConfig::Base] Connection to take settings from
         def add_hostname(conn)
-          return unless conn.hostname && conn.ip
+          return unless conn.hostnames && conn.ip
+          return if conn.hostnames.empty?
 
           Yast::Host.Update("", conn.hostname, conn.ip.address.address.to_s)
         end

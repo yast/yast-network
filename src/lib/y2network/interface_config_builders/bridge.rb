@@ -70,7 +70,7 @@ module Y2Network
 
       def configure_from(connection)
         [:bootproto, :ip, :ip_aliases, :startmode, :description,
-         :firewall_zone, :hostname].all? do |method|
+         :firewall_zone, :hostnames].all? do |method|
           @connection_config.public_send("#{method}=", connection.public_send(method))
         end
       end
