@@ -91,6 +91,7 @@ module Y2Network
         @description = ""
         @ethtool_options = ""
         @firewall_zone = ""
+        @hostnames = []
       end
 
       # Compares ConnectionConfigs
