@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Dec 15 08:38:07 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
+
+- Fix prefix length assignation when the alias netmask uses
+  dot notation (bsc#1174766).
+- 4.2.88
+
+-------------------------------------------------------------------
 Thu Dec 10 10:43:48 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
 
 - Fix bonding slaves sorting (bsc#1178950)
