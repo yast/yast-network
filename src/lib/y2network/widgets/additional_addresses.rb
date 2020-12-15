@@ -244,11 +244,10 @@ module Y2Network
           end
 
           res[:prefixlen] = if prefixlen.empty?
-            IPAddr.new("#{netmask}/#{netmask}")
+            IPAddr.new("#{netmask}/#{netmask}").prefix
           else
             prefixlen
           end
-          res[:prefixlen] = prefixlen
           res[:id] = id
 
           break
