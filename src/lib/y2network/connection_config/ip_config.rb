@@ -34,6 +34,7 @@ module Y2Network
       # @return [IPAddress,nil] Broadcast address
       attr_accessor :broadcast
       # @return [String] ID (needed for sysconfig backend in order to write suffixes in
+      #   ifcfg-* files)
       attr_accessor :id
 
       # Constructor
