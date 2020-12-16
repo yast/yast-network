@@ -280,7 +280,7 @@ module Y2Network
       {
         label:         data&.label.to_s,
         ip_address:    data&.address&.address.to_s,
-        subnet_prefix: data&.address&.prefix.to_s,
+        subnet_prefix: (data&.address&.prefix) ? "/#{data.address.prefix}" : "",
         id:            data&.id.to_s
       }
     end
@@ -474,7 +474,7 @@ module Y2Network
         .map { |a| a[:id].sub("_", "").to_i }
       aliases.each_with_object([]) do |map, result|
         ipaddr = IPAddress.from_string(map[:ip_address])
-        ipaddr.prefix = map[:prefixlen].delete("/").to_i if map[:subnet_prefix]
+        ipaddr.prefix = map[:subnet_prefix].delete("/").to_i if map[:subnet_prefix]
         id = map[:id]
         if id.nil? || id.empty?
           last_id = id = find_free_alias_id(used_ids, last_id) if id.nil? || id.empty?

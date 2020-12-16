@@ -37,34 +37,44 @@ module Y2Network
       end
 
       def contents
+        focus_label = @settings.label.to_s.empty?
+
         VBox(
-          label_widget,
-          ip_address_widget,
+          label_widget(focus_label),
+          ip_address_widget(!focus_label),
           netmask_widget
         )
+      end
+
+      def run
+        ret = super
+        return ret if ret != :ok || @settings.subnet_prefix.start_with?("/")
+
+        netmask = @settings.subnet_prefix
+        prefix = IPAddr.new("#{netmask}/#{netmask}").prefix
+        @settings.subnet_prefix = "/#{prefix}"
+
+        ret
       end
 
       def buttons
         [ok_button, cancel_button]
       end
 
-      def label_widget
+      def label_widget(focus)
         @label_widget ||= IPAddressLabel.new(@name, @settings)
+        @label_widget.focus if focus
+        @label_widget
       end
 
-      def ip_address_widget
-        @ip_address_widget ||= IPAddress.new(@settings)
+      def ip_address_widget(focus)
+        @ip_address_widget ||= Y2Network::Widgets::IPAddress.new(@settings)
+        @ip_address_widget if focus
+        @ip_address_widget
       end
 
       def netmask_widget
         @netmask_widget ||= Y2Network::Widgets::Netmask.new(@settings)
-      end
-    end
-
-    class IPAddress < Y2Network::Widgets::IPAddress
-      def init
-        super
-        focus unless @settings.label.to_s.empty?
       end
     end
 
@@ -79,7 +89,7 @@ module Y2Network
 
       def init
         self.value = @settings.label
-        focus if @settings.label.to_s.empty?
+        Yast::UI.ChangeWidget(Id(widget_id), :ValidChars, Yast::String.CAlnum)
       end
 
       def label
@@ -91,7 +101,7 @@ module Y2Network
       end
 
       def validate
-        return true unless "#{@name}.#{value}" !~ /^[[:alnum:]._:-]{1,15}\z/
+        return true if "#{@name}.#{value}" =~ /^[[:alnum:]._:-]{1,15}\z/
 
         Yast::Popup.Error(_("Label is too long."))
         focus

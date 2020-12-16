@@ -130,16 +130,16 @@ module Y2Network
         cur = Yast::UI.QueryWidget(Id(:address_table), :CurrentItem).to_i
         case event["ID"]
         when :edit_address
-          settings_struct = settings_struct_for(cur)
-          if Dialogs::AdditionalAddress.new(@settings.name, settings_struct).run == :ok
-            @settings.aliases[cur] = settings_struct.to_h
+          ip_settings = settings_for(cur)
+          if Dialogs::AdditionalAddress.new(@settings.name, ip_settings).run == :ok
+            @settings.aliases[cur] = ip_settings.to_h
             refresh_table
             Yast::UI.ChangeWidget(Id(:address_table), :CurrentItem, cur)
           end
         when :add_address
-          settings_struct = settings_struct_for(nil)
-          if Dialogs::AdditionalAddress.new(@settings.name, settings_struct).run == :ok
-            @settings.aliases << settings_struct.to_h
+          ip_settings = settings_for(nil)
+          if Dialogs::AdditionalAddress.new(@settings.name, ip_settings).run == :ok
+            @settings.aliases << ip_settings.to_h
             refresh_table
             Yast::UI.ChangeWidget(
               Id(:address_table),
@@ -163,7 +163,7 @@ module Y2Network
       # @param index [Integer, nil] the position of the alias to be edited or
       #   nil in case a new one is wanted
       # @return [OpenStruct] additional IP address data
-      def settings_struct_for(index)
+      def settings_for(index)
         OpenStruct.new(index ? @settings.aliases[index] : @settings.alias_for(nil))
       end
     end
