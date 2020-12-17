@@ -29,20 +29,22 @@ describe Y2Network::Widgets::AdditionalAddresses do
   include_examples "CWM::CustomWidget"
 
   describe "#handle" do
+    let(:dialog) { Y2Network::Dialogs::AdditionalAddress }
+
     it "opens address dialog for edit address button" do
-      expect(Yast::UI).to receive(:UserInput).and_return(:cancel)
+      expect_any_instance_of(dialog).to receive(:run).and_return(:cancel)
 
       subject.handle("EventReason" => "Activated", "ID" => :edit_address)
     end
 
     it "opens address dialog for add address button" do
-      expect(Yast::UI).to receive(:UserInput).and_return(:cancel)
+      expect_any_instance_of(dialog).to receive(:run).and_return(:cancel)
 
       subject.handle("EventReason" => "Activated", "ID" => :add_address)
     end
 
     it "do validations in address dialog" do
-      expect(Yast::UI).to receive(:UserInput).and_return(:ok)
+      expect_any_instance_of(dialog).to receive(:run).and_return(:ok)
       allow(Yast::UI).to receive(:QueryWidget)
       allow(Yast::UI).to receive(:QueryWidget).with(Id(:name), :Value).and_return("test")
       allow(Yast::UI).to receive(:QueryWidget).with(Id(:ipaddr), :Value).and_return("10.0.0.1")
