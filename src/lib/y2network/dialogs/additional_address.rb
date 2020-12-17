@@ -18,7 +18,9 @@
 # find current contact information at www.suse.com.
 
 require "cwm/popup"
+require "y2network/ip_address"
 require "y2network/widgets/ip_address"
+require "y2network/widgets/netmask"
 
 module Y2Network
   module Dialogs
@@ -56,6 +58,8 @@ module Y2Network
 
         ret
       end
+
+    private
 
       def buttons
         [ok_button, cancel_button]

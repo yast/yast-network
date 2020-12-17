@@ -146,10 +146,10 @@ describe Y2Network::InterfaceConfigBuilder do
     context "when aliases are defined" do
       before do
         subject.aliases = [
-          { id: "_1", ip: "192.168.122.100", prefixlen: "/24", label: "alias1" },
-          { id: "suffix1", ip: "192.168.123.100", prefixlen: "/24", label: "alias2" },
-          { ip: "10.0.0.2", label: "alias3" },
-          { id: "", ip: "10.0.0.3", label: "alias4" }
+          { id: "_1", ip_address: "192.168.122.100", subnet_prefix: "/24", label: "alias1" },
+          { id: "suffix1", ip_address: "192.168.123.100", subnet_prefix: "/24", label: "alias2" },
+          { ip_address: "10.0.0.2", label: "alias3" },
+          { id: "", ip_address: "10.0.0.3", label: "alias4" }
         ]
       end
 
@@ -247,6 +247,28 @@ describe Y2Network::InterfaceConfigBuilder do
       expect(subject.connection_config).to receive(:hostname=).with("foo").and_call_original
       expect { subject.hostname = "foo" }.to change { subject.hostname }
         .from("").to("foo")
+    end
+  end
+
+  describe "#alias_for" do
+    let(:ip_settings) do
+      Y2Network::ConnectionConfig::IPConfig.new(
+        Y2Network::IPAddress.from_string("192.168.122.100/24"), id: "_1", label: "alias1"
+      )
+    end
+
+    it "obtains a new hash from the given additional IP address config" do
+      expect(subject.alias_for(ip_settings)).to eq(
+        id: "_1", ip_address: "192.168.122.100", subnet_prefix: "/24", label: "alias1"
+      )
+    end
+
+    context "when no IP config is given" do
+      it "generates a new hash with empty values" do
+        expect(subject.alias_for(nil)).to eq(
+          id: "", ip_address: "", subnet_prefix: "", label: ""
+        )
+      end
     end
   end
 end
