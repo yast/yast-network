@@ -23,7 +23,26 @@ require "y2network/widgets/ip_address"
 require "cwm/rspec"
 
 describe Y2Network::Widgets::IPAddress do
-  subject { described_class.new({}) }
+  let(:ip_settings) { OpenStruct.new(ip_address: "192.168.122.20") }
+  subject { described_class.new(ip_settings) }
 
   include_examples "CWM::InputField"
+
+  describe "#init" do
+    it "sets the input value with the IP settings address" do
+      expect(subject).to receive(:value=).with("192.168.122.20")
+
+      subject.init
+    end
+
+    context "when it is initialized with the focus option as true" do
+      subject { described_class.new(ip_settings, focus: true) }
+
+      it "gets the focus" do
+        expect(subject).to receive(:focus)
+
+        subject.init
+      end
+    end
+  end
 end

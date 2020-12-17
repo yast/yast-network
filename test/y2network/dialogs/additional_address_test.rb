@@ -73,13 +73,32 @@ describe Y2Network::Dialogs::IPAddressLabel do
   end
 
   let(:ip_settings) { OpenStruct.new(builder.aliases[0]) }
+  let(:focus) { false }
 
-  subject { described_class.new(builder.name, ip_settings) }
+  subject { described_class.new(builder.name, ip_settings, focus: focus) }
 
   include_examples "CWM::InputField"
 
   before do
     allow(subject).to receive(:value).and_return(label)
+  end
+
+  describe "#init" do
+    it "sets the input value with the IP settings label" do
+      expect(subject).to receive(:value=).with("bar")
+
+      subject.init
+    end
+
+    context "when it is initialized with the focus option as true" do
+      let(:focus) { true }
+
+      it "gets the focus" do
+        expect(subject).to receive(:focus)
+
+        subject.init
+      end
+    end
   end
 
   describe "#validate" do

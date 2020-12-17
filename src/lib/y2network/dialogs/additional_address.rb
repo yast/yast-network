@@ -39,11 +39,9 @@ module Y2Network
       end
 
       def contents
-        focus_label = @settings.label.to_s.empty?
-
         VBox(
-          label_widget(focus_label),
-          ip_address_widget(!focus_label),
+          label_widget,
+          ip_address_widget,
           netmask_widget
         )
       end
@@ -65,16 +63,16 @@ module Y2Network
         [ok_button, cancel_button]
       end
 
-      def label_widget(focus)
-        @label_widget ||= IPAddressLabel.new(@name, @settings)
-        @label_widget.focus if focus
-        @label_widget
+      def focus_label?
+        @settings.label.to_s.empty?
       end
 
-      def ip_address_widget(focus)
-        @ip_address_widget ||= Y2Network::Widgets::IPAddress.new(@settings)
-        @ip_address_widget if focus
-        @ip_address_widget
+      def label_widget
+        @label_widget ||= IPAddressLabel.new(@name, @settings, focus: focus_label?)
+      end
+
+      def ip_address_widget
+        @ip_address_widget ||= Y2Network::Widgets::IPAddress.new(@settings, focus: !focus_label?)
       end
 
       def netmask_widget
@@ -84,15 +82,17 @@ module Y2Network
 
     # Widget to modify the label of an additional IP address configuration
     class IPAddressLabel < CWM::InputField
-      def initialize(name, settings)
+      def initialize(name, settings, focus: false)
         textdomain "network"
 
         @name = name
         @settings = settings
+        @focus = focus
       end
 
       def init
         self.value = @settings.label
+        focus if @focus
         Yast::UI.ChangeWidget(Id(widget_id), :ValidChars, Yast::String.CAlnum)
       end
 
