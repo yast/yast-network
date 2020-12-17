@@ -20,6 +20,8 @@
 require "yast"
 require "cwm/custom_widget"
 require "ipaddr"
+require "ostruct"
+require "y2network/dialogs/additional_address"
 
 Yast.import "IP"
 Yast.import "Popup"
@@ -105,8 +107,7 @@ module Y2Network
 
       def refresh_table
         table_items = @settings.aliases.each_with_index.map do |data, i|
-
-          Item(Id(i), data[:label], data[:ip], "/#{data[:prefixlen]}")
+          Item(Id(i), data[:label], data[:ip_address], data[:subnet_prefix])
         end
 
         Yast::UI.ChangeWidget(Id(:address_table), :Items, table_items)
@@ -129,16 +130,16 @@ module Y2Network
         cur = Yast::UI.QueryWidget(Id(:address_table), :CurrentItem).to_i
         case event["ID"]
         when :edit_address
-          item = dialog(@settings.name, @settings.aliases[cur])
-          if item
-            @settings.aliases[cur] = item
+          ip_settings = settings_for(cur)
+          if Dialogs::AdditionalAddress.new(@settings.name, ip_settings).run == :ok
+            @settings.aliases[cur] = ip_settings.to_h
             refresh_table
             Yast::UI.ChangeWidget(Id(:address_table), :CurrentItem, cur)
           end
         when :add_address
-          item = dialog(@settings.name, nil)
-          if item
-            @settings.aliases << item
+          ip_settings = settings_for(nil)
+          if Dialogs::AdditionalAddress.new(@settings.name, ip_settings).run == :ok
+            @settings.aliases << ip_settings.to_h
             refresh_table
             Yast::UI.ChangeWidget(
               Id(:address_table),
@@ -154,124 +155,16 @@ module Y2Network
         nil
       end
 
-      # Open a dialog to edit a name-ipaddr-netmask triple.
-      # TODO: own class for it
-      # @param name  [String]     device name. Used to ensure label is not too long
-      # @param entry [Yast::Term] an existing entry to be edited, or term(:empty)
-      # @return      [Yast::Term] a table item for OK, nil for Cancel
-      def dialog(name, entry)
-        label = entry ? entry[:label] : ""
-        ip = entry ? entry[:ip] : ""
-        id = entry ? entry[:id] : ""
-        mask = entry ? "/#{entry[:prefixlen]}" : ""
+    private
 
-        Yast::UI.OpenDialog(
-          Opt(:decorated),
-          VBox(
-            HSpacing(1),
-            VBox(
-              # TextEntry label
-              TextEntry(Id(:name), _("&Address Label"), label),
-              # TextEntry label
-              TextEntry(
-                Id(:ipaddr),
-                _("&IP Address"),
-                ip
-              ),
-              # TextEntry label
-              TextEntry(Id(:netmask), _("Net&mask"), mask)
-            ),
-            HSpacing(1),
-            HBox(
-              PushButton(Id(:ok), Opt(:default), Yast::Label.OKButton),
-              PushButton(Id(:cancel), Yast::Label.CancelButton)
-            )
-          )
-        )
-
-        Yast::UI.ChangeWidget(
-          Id(:name),
-          :ValidChars,
-          Yast::String.CAlnum
-        )
-        Yast::UI.ChangeWidget(Id(:ipaddr), :ValidChars, Yast::IP.ValidChars)
-
-        if entry
-          Yast::UI.SetFocus(Id(:ipaddr))
-        else
-          Yast::UI.SetFocus(Id(:name))
-        end
-
-        while (ret = Yast::UI.UserInput) == :ok
-
-          res = {}
-          val = Yast::UI.QueryWidget(Id(:name), :Value)
-
-          if "#{name}.#{val}" !~ /^[[:alnum:]._:-]{1,15}\z/
-            # Popup::Error text
-            Yast::Popup.Error(_("Label is too long."))
-            Yast::UI.SetFocus(Id(:name))
-            next
-          end
-
-          res[:label] = val
-
-          ip = Yast::UI.QueryWidget(Id(:ipaddr), :Value)
-          if !Yast::IP.Check(ip)
-            # Popup::Error text
-            Yast::Popup.Error(_("The IP address is invalid."))
-            Yast::UI.SetFocus(Id(:ipaddr))
-            next
-          end
-          res[:ip] = ip
-
-          val = Yast::UI.QueryWidget(Id(:netmask), :Value)
-          if !valid_prefix_or_netmask(ip, val)
-            # Popup::Error text
-            Yast::Popup.Error(_("The subnet mask is invalid."))
-            Yast::UI.SetFocus(Id(:netmask))
-            next
-          end
-
-          netmask = ""
-          prefixlen = ""
-          if val.start_with?("/")
-            prefixlen = val[1..-1]
-          elsif Yast::Netmask.Check6(val)
-            prefixlen = val
-          else
-            netmask = val
-          end
-
-          res[:prefixlen] = if prefixlen.empty?
-            IPAddr.new("#{netmask}/#{netmask}")
-          else
-            prefixlen
-          end
-          res[:prefixlen] = prefixlen
-          res[:id] = id
-
-          break
-        end
-
-        Yast::UI.CloseDialog
-        return nil if ret != :ok
-
-        res
-      end
-
-      def valid_prefix_or_netmask(ip, mask)
-        valid_mask = false
-        mask = mask[1..-1] if mask.start_with?("/")
-
-        if Yast::IP.Check4(ip) && (Yast::Netmask.Check4(mask) || Yast::Netmask.CheckPrefix4(mask))
-          valid_mask = true
-        elsif Yast::IP.Check6(ip) && Yast::Netmask.Check6(mask)
-          valid_mask = true
-        else
-          log.warn "IP address #{ip} and mask #{mask} is not valid"
-        end
-        valid_mask
+      # Convenience method to obtain an object with the additionl IP address
+      # data.
+      #
+      # @param index [Integer, nil] the position of the alias to be edited or
+      #   nil in case a new one is wanted
+      # @return [OpenStruct] additional IP address data
+      def settings_for(index)
+        OpenStruct.new(index ? @settings.aliases[index] : @settings.alias_for(nil))
       end
     end
   end

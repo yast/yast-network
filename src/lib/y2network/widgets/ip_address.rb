@@ -25,11 +25,18 @@ Yast.import "Popup"
 
 module Y2Network
   module Widgets
+    # Input field that permits to modify an objet IP address
     class IPAddress < CWM::InputField
-      def initialize(settings)
+      # Constructor
+      #
+      # @param settings [Object] Object with an :ip_address accessor
+      # @param focus [Boolean] whether the widget should get the focus when
+      #   init; by default will not get it
+      def initialize(settings, focus: false)
         textdomain "network"
 
         @settings = settings
+        @focus = focus
       end
 
       def label
@@ -47,6 +54,7 @@ module Y2Network
 
       def init
         self.value = @settings.ip_address
+        focus if @focus
       end
 
       def store

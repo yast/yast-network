@@ -262,27 +262,31 @@ module Y2Network
     end
 
     # gets aliases for interface
-    # @return [Array<Hash>] hash values are `:label` for alias label,
-    #   `:ip` for ip address, `:mask` for netmask and `:prefixlen` for prefix.
-    #   Only one of `:mask` and `:prefixlen` is set.
+    # @return [Array<Hash>] array of the connection additional IP address in
+    #   hash format see #alias_for for the hash values
     def aliases
       return @aliases if @aliases
 
-      aliases = @connection_config.ip_aliases.map do |data|
-        {
-          label:     data.label.to_s,
-          ip:        data.address.address.to_s,
-          prefixlen: data.address.prefix.to_s,
-          id:        data.id.to_s
-          # NOTE: new API does not have netmask at all, we need to adapt UI to clearly mention
-          #       only prefix
-        }
-      end
-      @aliases = aliases
+      @aliases = @connection_config.ip_aliases.map { |d| alias_for(d) }
+    end
+
+    # Convenience method to obtain a new hash from the IP additional address
+    # data
+    #
+    # @param data [IPConfig, nil] Additional IP address configuration
+    # @return [Hash<String>] hash values are `:label` for alias label,
+    #   `:ip_address` for ip address, `:mask` for netmask and `:subnet_prefix` for prefix.
+    def alias_for(data)
+      {
+        label:         data&.label.to_s,
+        ip_address:    data&.address&.address.to_s,
+        subnet_prefix: (data&.address&.prefix) ? "/#{data.address.prefix}" : "",
+        id:            data&.id.to_s
+      }
     end
 
     # sets aliases for interface
-    # @param value [Array<Hash>] see #aliases for hash values
+    # @param value [Array<Hash>] see #alias_for for hash values
     def aliases=(value)
       @aliases = value
     end
@@ -469,8 +473,8 @@ module Y2Network
         .select { |a| a[:id] && a[:id] =~ /\A_\d+\z/ }
         .map { |a| a[:id].sub("_", "").to_i }
       aliases.each_with_object([]) do |map, result|
-        ipaddr = IPAddress.from_string(map[:ip])
-        ipaddr.prefix = map[:prefixlen].delete("/").to_i if map[:prefixlen]
+        ipaddr = IPAddress.from_string(map[:ip_address])
+        ipaddr.prefix = map[:subnet_prefix].delete("/").to_i if map[:subnet_prefix]
         id = map[:id]
         if id.nil? || id.empty?
           last_id = id = find_free_alias_id(used_ids, last_id) if id.nil? || id.empty?
