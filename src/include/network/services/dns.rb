@@ -21,7 +21,6 @@
 # **************************************************************************
 
 require "ui/text_helpers"
-require "y2network/dialogs/update_hostname_hosts"
 
 module Yast
   module NetworkServicesDnsInclude
@@ -299,24 +298,35 @@ module Yast
       nil
     end
 
+    # Convenience method to check the current static hostname
+    #
+    # @return [String]
     def current_hostname
       config&.hostname&.static || ""
     end
 
+    # Allow to update a connection hostname using the new hostname when the
+    # connection hostname was the modified hostname
+    #
+    # @param hostname [String] New static hostname
     def update_hostname_hosts(hostname)
       return false if hostname == current_hostname
       return false if current_hostname.empty?
 
       conn = config.connections.find { |c| c.hostnames&.include?(current_hostname) }
+      return false if !conn
 
-      update_hostname = conn && Popup.YesNo(
+      proposed_hostname = propose_hostname_for(conn, hostname)
+
+      return false if !Popup.YesNo(
         wrap_text(
           format(_("The interface '%s' static IP address is mapped to the hostname '%s'.\n\n" \
-                "Would you like to adapt it now?"), conn.name, current_hostname)
+                "Would you like to adapt it to '%s'?"),
+            conn.name, current_hostname, proposed_hostname)
         )
       )
 
-      Y2Network::Dialogs::UpdateHostnameHosts.new(conn).run if update_hostname
+      conn.hostname = proposed_hostname
     end
 
     # Stores actual hostname settings.
@@ -673,6 +683,15 @@ module Yast
       return false unless config&.connections
 
       config.connections.any?(&:dhcp?)
+    end
+
+  private
+
+    def propose_hostname_for(conn, hostname)
+      return hostname if hostname.to_s.empty? || hostname.include?(".")
+
+      _, *domain = conn.hostname.split(".")
+      domain.prepend(hostname).join(".")
     end
   end
 end
