@@ -690,8 +690,7 @@ module Yast
     def propose_hostname_for(conn, hostname)
       return hostname if hostname.to_s.empty? || hostname.include?(".")
 
-      _, *domain = conn.hostname.split(".")
-      domain.prepend(hostname).join(".")
+      conn.hostname.sub(/^[^.]+/, hostname)
     end
   end
 end
