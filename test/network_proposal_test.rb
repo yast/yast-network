@@ -50,10 +50,12 @@ describe Yast::NetworkProposal do
     let(:current_backend) { :wicked }
     let(:nm_available) { true }
     let(:proposal) { subject.make_proposal({}) }
+    let(:virt_installed) { false }
 
     before do
       settings.selected_backend = current_backend
       allow(settings).to receive(:network_manager_available?).and_return(nm_available)
+      allow(settings).to receive(:virtual_proposal_required?).and_return(virt_installed)
     end
 
     it "returns a hash describing the proposal" do
@@ -83,6 +85,14 @@ describe Yast::NetworkProposal do
 
       it "does not include a link for switch to wicked" do
         expect(proposal["preformatted_proposal"]).to_not match(/.*href.*wicked.*/)
+      end
+
+      context "and Xen, KVM or QEMU will be installed" do
+        let(:virt_installed) { true }
+
+        it "includes a link to enable or disable the virt bridge network config proposal" do
+          expect(proposal["preformatted_proposal"]).to match(/.*href.*bridge.*/)
+        end
       end
     end
 

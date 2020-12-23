@@ -290,7 +290,7 @@ module Yast
       # that a bridge configuration is present in the profile it should be
       # skipped or even only done in case of missing `networking -> interfaces`
       # section
-      NetworkAutoconfiguration.instance.configure_virtuals
+      NetworkAutoconfiguration.instance.configure_virtuals if propose_virt_config?
 
       if !Mode.autoinst
         NetworkAutoconfiguration.instance.configure_dns
@@ -315,6 +315,12 @@ module Yast
         Yast::Lan.yast_config.backend = :network_manager
         Yast::Lan.write_config
       end
+    end
+
+    # Convenience method to check whether a bridge network configuration for
+    # virtualization should be proposed or not
+    def propose_virt_config?
+      Y2Network::ProposalSettings.instance.propose_bridge?
     end
 
     # It does an automatic configuration of installed system

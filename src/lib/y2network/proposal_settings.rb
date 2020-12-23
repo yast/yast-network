@@ -20,6 +20,7 @@
 
 require "yast"
 require "y2packager/package"
+require "network/network_autoconfiguration"
 
 module Y2Network
   # Class that stores the proposal settings for network during installation.
@@ -29,6 +30,7 @@ module Y2Network
 
     # @return [Boolean] network service to be used after the installation
     attr_accessor :selected_backend
+    attr_accessor :virt_bridge_proposal
 
     # Constructor
     def initialize
@@ -38,6 +40,7 @@ module Y2Network
       Yast.import "PackagesProposal"
 
       @selected_backend = nil
+      @virt_bridge_proposal = true
     end
 
     def current_backend
@@ -48,6 +51,14 @@ module Y2Network
       default = use_network_manager? ? :network_manager : :wicked
       log.info "The default backend is: #{default}"
       default
+    end
+
+    def propose_bridge?
+      virtual_proposal_required? && virt_bridge_proposal
+    end
+
+    def propose_bridge!(option)
+      @virt_bridge_proposal = option
     end
 
     # Adds the NetworkManager package to the Yast::PackagesProposal and sets
@@ -92,6 +103,11 @@ module Y2Network
       end
       log.info("The NetworkManager package status: #{p.status}")
       true
+    end
+
+    # Decides if a proposal for virtualization host machine is required.
+    def virtual_proposal_required?
+      Yast::NetworkAutoconfiguration.instance.virtual_proposal_required?
     end
 
     # Propose the network service to be use at the end of the installation
