@@ -53,7 +53,7 @@ module Y2Network
           ret = super
           break if ret != :ok
 
-          @settings.subnet_prefix = subnet_prefix_for?(@settings.subnet_prefix)
+          @settings.subnet_prefix = subnet_prefix_for(@settings.subnet_prefix)
 
           begin
             IPAddr.new("#{@settings.ip_address}#{@settings.subnet_prefix}")
@@ -70,7 +70,7 @@ module Y2Network
 
     private
 
-      def subnet_prefix_for?(value)
+      def subnet_prefix_for(value)
         return value if value.start_with?("/")
 
         prefix =
