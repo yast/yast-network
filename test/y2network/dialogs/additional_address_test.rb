@@ -45,11 +45,34 @@ describe Y2Network::Dialogs::AdditionalAddress do
     context "when the modifications are applied" do
       let(:ret_code) { :ok }
 
+      before do
+        ip_settings.ip_address = "192.168.20.200"
+        ip_settings.subnet_prefix = "/24"
+      end
+
+      context "and the address is not valid" do
+        it "reports a validation error" do
+          ip_settings.subnet_prefix = "/64"
+          allow(subject).to receive(:cwm_show).and_return(:ok, :cancel)
+          expect(Yast::Popup).to receive(:Error).with(/Invalid/)
+
+          subject.run
+        end
+      end
+
       context "and the modified IP address settings uses a netmask" do
         it "converts the netmask to its equivalent prefix length" do
           ip_settings.subnet_prefix = "255.255.255.0"
           expect { subject.run }
             .to change { ip_settings.subnet_prefix }.from("255.255.255.0").to("/24")
+        end
+      end
+
+      context "and the modified IP address settings uses a prefix length without '/'" do
+        it "sets the prefix lenght correctly" do
+          ip_settings.subnet_prefix = "32"
+          expect { subject.run }
+            .to change { ip_settings.subnet_prefix }.from("32").to("/32")
         end
       end
     end
