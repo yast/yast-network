@@ -54,7 +54,7 @@ describe Y2Network::Dialogs::AdditionalAddress do
         it "reports a validation error" do
           ip_settings.subnet_prefix = "/64"
           allow(subject).to receive(:cwm_show).and_return(:ok, :cancel)
-          expect(Yast::Popup).to receive(:Error).with(/Invalid/)
+          expect(Yast::Report).to receive(:Error).with(/Invalid/)
 
           subject.run
         end
