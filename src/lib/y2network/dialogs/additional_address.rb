@@ -47,17 +47,41 @@ module Y2Network
       end
 
       def run
-        ret = super
-        return ret if ret != :ok || @settings.subnet_prefix.start_with?("/")
+        ret = nil
 
-        netmask = @settings.subnet_prefix
-        prefix = IPAddr.new("#{netmask}/#{netmask}").prefix
-        @settings.subnet_prefix = "/#{prefix}"
+        loop do
+          ret = super
+          break if ret != :ok
+
+          @settings.subnet_prefix = subnet_prefix_for(@settings.subnet_prefix)
+
+          begin
+            IPAddr.new("#{@settings.ip_address}#{@settings.subnet_prefix}")
+            break
+          rescue IPAddr::InvalidAddressError
+            Yast::Report.Error(
+              format(_("Invalid Address %s%s"), @settings.ip_address, @settings.subnet_prefix)
+            )
+          end
+        end
 
         ret
       end
 
     private
+
+      def subnet_prefix_for(value)
+        return value if value.start_with?("/")
+
+        prefix =
+          if value.size < 3 || value =~ /^\d{3}$/
+            value.to_i
+          else
+            IPAddr.new("#{value}/#{value}").prefix
+          end
+
+        "/#{prefix}"
+      end
 
       def buttons
         [ok_button, cancel_button]
