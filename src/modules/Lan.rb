@@ -169,21 +169,16 @@ module Yast
 
     def read_step_labels
       steps = [
-        # Progress stage 1/7
+        # Progress stage 1/5
         _("Detect network devices"),
-        # Progress stage 2/7
+        # Progress stage 2/5
         _("Read driver information"),
-        # Progress stage 3/7
+        # Progress stage 3/5
         _("Detect current status"),
-        # Progress stage 4/7 - multiple devices may be present, really plural
+        # Progress stage 4/5 - multiple devices may be present, really plural
         _("Read device configuration"),
-        # Progress stage 5/7
-        _("Read network configuration"),
-        # Progress stage 6/7
-        _("Read installation information"),
-        # Progress stage 7/7
-        _("Read routing configuration")
-
+        # Progress stage 5/5
+        _("Read network configuration")
       ]
 
       steps << _("Read firewall configuration") if firewalld.installed?
