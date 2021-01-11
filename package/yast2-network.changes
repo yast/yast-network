@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Jan 11 13:28:26 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
+
+- Fix network configuration progress bar steps (bsc#1180702)
+- 4.2.89
+
+-------------------------------------------------------------------
 Tue Dec 15 08:38:07 UTC 2020 - Knut Anderssen <kanderssen@suse.com>
 
 - Fix prefix length assignation when the alias netmask uses
