@@ -17,7 +17,7 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/sysconfig/interface_file"
+require "cfa/interface_file"
 
 module Y2Network
   module Sysconfig
@@ -33,7 +33,7 @@ module Y2Network
       #
       # @return [Y2Network::ConnectionConfig::Base]
       def read(name, type)
-        file = Y2Network::Sysconfig::InterfaceFile.new(name)
+        file = CFA::InterfaceFile.new(name)
         file.load
         handler_class = find_handler_class(type || file.type)
         return nil if handler_class.nil?

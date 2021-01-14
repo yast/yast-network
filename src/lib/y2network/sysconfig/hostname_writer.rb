@@ -18,7 +18,7 @@
 # find current contact information at www.suse.com.
 require "yast"
 require "yast2/execute"
-require "y2network/sysconfig/interface_file"
+require "cfa/interface_file"
 
 module Y2Network
   module Sysconfig
@@ -59,7 +59,7 @@ module Y2Network
         Yast::SCR.Write(Yast::Path.new(".sysconfig.network.dhcp"), nil)
 
         # Clean-up values from ifcfg-* values
-        Y2Network::Sysconfig::InterfaceFile.all.each do |file|
+        CFA::InterfaceFile.all.each do |file|
           value = (file.interface == hostname.dhcp_hostname) ? "yes" : nil
           file.load
           next if file.dhclient_set_hostname == value

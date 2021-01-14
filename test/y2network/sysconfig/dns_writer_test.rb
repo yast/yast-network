@@ -49,13 +49,13 @@ describe Y2Network::Sysconfig::DNSWriter do
     let(:hostname) { "myhost.example.net" }
     let(:ifcfg_eth0) do
       instance_double(
-        Y2Network::Sysconfig::InterfaceFile, interface: "eth0",
+        CFA::InterfaceFile, interface: "eth0",
         dhclient_set_hostname: "yes", :dhclient_set_hostname= => nil, load: nil, save: nil
       )
     end
     let(:ifcfg_eth1) do
       instance_double(
-        Y2Network::Sysconfig::InterfaceFile, interface: "eth1",
+        CFA::InterfaceFile, interface: "eth1",
         dhclient_set_hostname: "no", :dhclient_set_hostname= => nil, load: nil, save: true
       )
     end
@@ -63,7 +63,7 @@ describe Y2Network::Sysconfig::DNSWriter do
     before do
       allow(Yast::SCR).to receive(:Write)
       allow(Yast::Execute).to receive(:on_target!)
-      allow(Y2Network::Sysconfig::InterfaceFile).to receive(:all)
+      allow(CFA::InterfaceFile).to receive(:all)
         .and_return([ifcfg_eth0, ifcfg_eth1])
     end
 

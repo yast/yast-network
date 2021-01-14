@@ -17,8 +17,8 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/sysconfig/interface_file"
-require "y2network/sysconfig/routes_file"
+require "cfa/interface_file"
+require "cfa/routes_file"
 
 Yast.import "Host"
 Yast.import "Mode"
@@ -38,7 +38,7 @@ module Y2Network
       def write(conn, old_conn = nil)
         return if conn == old_conn
 
-        file = Y2Network::Sysconfig::InterfaceFile.new(conn.interface)
+        file = CFA::InterfaceFile.new(conn.interface)
         handler_class = find_handler_class(conn.type)
         return nil if handler_class.nil?
 
@@ -52,7 +52,7 @@ module Y2Network
       #
       # @param conn [Y2Network::Conn] Connection name to remove
       def remove(conn)
-        ifcfg = Y2Network::Sysconfig::InterfaceFile.find(conn.interface)
+        ifcfg = CFA::InterfaceFile.find(conn.interface)
         ifcfg&.remove
         # During an autoinstallation do not remove /etc/hosts entries
         # associated with the static IP address (bsc#1173213).

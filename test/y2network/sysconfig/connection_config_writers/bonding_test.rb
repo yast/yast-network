@@ -20,7 +20,7 @@
 require_relative "../../../test_helper"
 
 require "y2network/sysconfig/connection_config_writers/bonding"
-require "y2network/sysconfig/interface_file"
+require "cfa/interface_file"
 require "y2network/startmode"
 require "y2network/connection_config/bonding"
 
@@ -39,7 +39,7 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Bonding do
     end
   end
 
-  let(:file) { Y2Network::Sysconfig::InterfaceFile.new(conn.name) }
+  let(:file) { CFA::InterfaceFile.new(conn.name) }
 
   describe "#write" do
     it "writes common properties" do

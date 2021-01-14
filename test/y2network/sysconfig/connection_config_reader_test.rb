@@ -29,7 +29,7 @@ describe Y2Network::Sysconfig::ConnectionConfigReader do
   describe "#read" do
     let(:interface) { instance_double(Y2Network::PhysicalInterface, name: "wlan0", type: "wlan") }
     let(:interface_file) do
-      instance_double(Y2Network::Sysconfig::InterfaceFile, type: "wlan").as_null_object
+      instance_double(CFA::InterfaceFile, type: "wlan").as_null_object
     end
     let(:connection_config) { double("connection_config") }
     let(:handler) do
@@ -43,7 +43,7 @@ describe Y2Network::Sysconfig::ConnectionConfigReader do
       allow(reader).to receive(:require).and_call_original
       allow(Y2Network::Sysconfig::ConnectionConfigReaders::Wireless).to receive(:new)
         .and_return(handler)
-      allow(Y2Network::Sysconfig::InterfaceFile).to receive(:new)
+      allow(CFA::InterfaceFile).to receive(:new)
         .and_return(interface_file)
     end
 
@@ -62,7 +62,7 @@ describe Y2Network::Sysconfig::ConnectionConfigReader do
 
     context "when the interface type is unknown" do
       let(:interface_file) do
-        instance_double(Y2Network::Sysconfig::InterfaceFile, type: :foo).as_null_object
+        instance_double(CFA::InterfaceFile, type: :foo).as_null_object
       end
 
       it "raise exception" do

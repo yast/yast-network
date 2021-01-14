@@ -37,7 +37,7 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Qeth do
     end
   end
 
-  let(:file) { Y2Network::Sysconfig::InterfaceFile.new(conn.name) }
+  let(:file) { CFA::InterfaceFile.new(conn.name) }
 
   describe "#write" do
     it "writes common properties" do

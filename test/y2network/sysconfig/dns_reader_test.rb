@@ -44,7 +44,7 @@ describe Y2Network::Sysconfig::DNSReader do
 
     let(:ifcfg_eth0) do
       instance_double(
-        Y2Network::Sysconfig::InterfaceFile, interface: "eth0", dhclient_set_hostname: nil,
+        CFA::InterfaceFile, interface: "eth0", dhclient_set_hostname: nil,
         load: nil
       )
     end
@@ -55,7 +55,7 @@ describe Y2Network::Sysconfig::DNSReader do
         netconfig.dig(*key_parts[3..-1])
       end
       allow(Y2Network::Sysconfig::HostnameReader).to receive(:new).and_return(hostname_reader)
-      allow(Y2Network::Sysconfig::InterfaceFile).to receive(:all).and_return([ifcfg_eth0])
+      allow(CFA::InterfaceFile).to receive(:all).and_return([ifcfg_eth0])
     end
 
     it "returns the DNS configuration" do

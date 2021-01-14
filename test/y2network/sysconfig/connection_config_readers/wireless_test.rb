@@ -19,7 +19,7 @@
 
 require_relative "../../../test_helper"
 require "y2network/sysconfig/connection_config_readers/wireless"
-require "y2network/sysconfig/interface_file"
+require "cfa/interface_file"
 
 describe Y2Network::Sysconfig::ConnectionConfigReaders::Wireless do
   subject(:handler) { described_class.new(file) }
@@ -33,7 +33,7 @@ describe Y2Network::Sysconfig::ConnectionConfigReaders::Wireless do
   end
 
   let(:file) do
-    Y2Network::Sysconfig::InterfaceFile.find(interface_name).tap(&:load)
+    CFA::InterfaceFile.find(interface_name).tap(&:load)
   end
 
   context "WPA-EAP network configuration" do

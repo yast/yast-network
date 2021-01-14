@@ -20,7 +20,7 @@
 require "yast"
 require "y2network/interface_type"
 require "y2network/type_detector"
-require "y2network/sysconfig/interface_file"
+require "cfa/interface_file"
 
 module Y2Network
   module Sysconfig
@@ -30,7 +30,7 @@ module Y2Network
       class << self
         # Checks wheter iface type can be recognized by interface configuration
         def type_by_config(iface)
-          iface_file = Y2Network::Sysconfig::InterfaceFile.find(iface)
+          iface_file = CFA::InterfaceFile.find(iface)
           return unless iface_file
 
           iface_file.load

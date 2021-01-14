@@ -50,7 +50,7 @@ describe Y2Network::Sysconfig::ConnectionConfigWriter do
 
   let(:file) do
     instance_double(
-      Y2Network::Sysconfig::InterfaceFile, save: nil, clean: nil, remove: nil
+      CFA::InterfaceFile, save: nil, clean: nil, remove: nil
     )
   end
 
@@ -66,7 +66,7 @@ describe Y2Network::Sysconfig::ConnectionConfigWriter do
       allow(writer).to receive(:require).and_call_original
       allow(Y2Network::Sysconfig::ConnectionConfigWriters::Ethernet).to receive(:new)
         .and_return(handler)
-      allow(Y2Network::Sysconfig::InterfaceFile).to receive(:new).and_return(file)
+      allow(CFA::InterfaceFile).to receive(:new).and_return(file)
     end
 
     it "uses the appropiate handler" do
@@ -95,7 +95,7 @@ describe Y2Network::Sysconfig::ConnectionConfigWriter do
   describe "#remove" do
     let(:autoinstallation) { false }
     before do
-      allow(Y2Network::Sysconfig::InterfaceFile).to receive(:find).and_return(file)
+      allow(CFA::InterfaceFile).to receive(:find).and_return(file)
       allow(Yast::Mode).to receive(:auto).and_return(autoinstallation)
     end
 

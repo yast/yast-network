@@ -20,7 +20,7 @@
 require "yast"
 require "y2network/interface_type"
 require "y2network/type_detector"
-require "y2network/sysconfig/interface_file"
+require "cfa/interface_file"
 
 module Y2Network
   module Autoinst

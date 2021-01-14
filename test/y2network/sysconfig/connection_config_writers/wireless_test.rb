@@ -19,7 +19,7 @@
 
 require_relative "../../../test_helper"
 require "y2network/sysconfig/connection_config_writers/wireless"
-require "y2network/sysconfig/interface_file"
+require "cfa/interface_file"
 require "y2network/boot_protocol"
 require "y2network/startmode"
 require "y2network/connection_config/wireless"
@@ -27,7 +27,7 @@ require "y2network/connection_config/wireless"
 describe Y2Network::Sysconfig::ConnectionConfigWriters::Wireless do
   subject(:handler) { described_class.new(file) }
 
-  let(:file) { Y2Network::Sysconfig::InterfaceFile.new("wlan0") }
+  let(:file) { CFA::InterfaceFile.new("wlan0") }
 
   let(:conn) do
     Y2Network::ConnectionConfig::Wireless.new.tap do |c|

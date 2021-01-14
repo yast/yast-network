@@ -19,7 +19,7 @@
 
 require "yast"
 require "y2network/config"
-require "y2network/sysconfig/routes_file"
+require "cfa/routes_file"
 require "y2network/sysconfig/dns_writer"
 require "y2network/sysconfig/hostname_writer"
 require "y2network/sysconfig/connection_config_writer"
@@ -172,11 +172,11 @@ module Y2Network
       #
       # @param iface  [Interface,nil] Interface to search routes for; nil will
       #   return the global routes file
-      # @return [Y2Network::Sysconfig::RoutesFile]
+      # @return [CFA::RoutesFile]
       def routes_file_for(iface)
-        return Y2Network::Sysconfig::RoutesFile.new unless iface
+        return CFA::RoutesFile.new unless iface
 
-        Y2Network::Sysconfig::RoutesFile.new("/etc/sysconfig/network/ifroute-#{iface.name}")
+        CFA::RoutesFile.new("/etc/sysconfig/network/ifroute-#{iface.name}")
       end
 
       # Updates the DNS configuration

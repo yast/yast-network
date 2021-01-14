@@ -32,12 +32,12 @@ module Y2Network
       # The derived classes should implement {#update_connection_config} method.
       # methods.
       class Base
-        # @return [Y2Network::Sysconfig::InterfaceFile] Interface's configuration file
+        # @return [CFA::InterfaceFile] Interface's configuration file
         attr_reader :file
 
         # Constructor
         #
-        # @param file [Y2Network::Sysconfig::InterfaceFile] Interface's configuration file
+        # @param file [CFA::InterfaceFile] Interface's configuration file
         def initialize(file)
           @file = file
         end

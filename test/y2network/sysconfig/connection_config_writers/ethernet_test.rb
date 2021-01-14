@@ -22,7 +22,7 @@ require_relative "../../../test_helper"
 require "y2network/sysconfig/connection_config_writers/ethernet"
 require "y2network/boot_protocol"
 require "y2network/startmode"
-require "y2network/sysconfig/interface_file"
+require "cfa/interface_file"
 require "y2network/connection_config/ethernet"
 require "y2network/connection_config/ip_config"
 
@@ -70,7 +70,7 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Ethernet do
     end
   end
 
-  let(:file) { Y2Network::Sysconfig::InterfaceFile.find(conn.interface) }
+  let(:file) { CFA::InterfaceFile.find(conn.interface) }
 
   describe "#write" do
     it "updates common properties" do

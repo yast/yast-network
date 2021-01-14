@@ -18,7 +18,7 @@
 # find current contact information at www.suse.com.
 require "yast"
 require "yast2/execute"
-require "y2network/sysconfig/interface_file"
+require "cfa/interface_file"
 
 module Y2Network
   module Sysconfig

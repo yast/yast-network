@@ -17,11 +17,11 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require_relative "../../test_helper"
-require "y2network/sysconfig/interface_file"
+require_relative "../test_helper"
+require "cfa/interface_file"
 require "tmpdir"
 
-describe Y2Network::Sysconfig::InterfaceFile do
+describe CFA::InterfaceFile do
   subject(:file) { described_class.new(interface_name).tap(&:load) }
 
   let(:interface_name) { "eth0" }
@@ -59,7 +59,7 @@ describe Y2Network::Sysconfig::InterfaceFile do
   describe ".all" do
     it "returns all the present interfaces files" do
       files = described_class.all
-      expect(files).to be_all(Y2Network::Sysconfig::InterfaceFile)
+      expect(files).to be_all(CFA::InterfaceFile)
       interfaces = files.map(&:interface)
       expect(interfaces).to include("wlan0")
     end

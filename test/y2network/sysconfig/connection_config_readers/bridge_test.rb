@@ -19,7 +19,7 @@
 
 require_relative "../../../test_helper"
 require "y2network/sysconfig/connection_config_readers/bridge"
-require "y2network/sysconfig/interface_file"
+require "cfa/interface_file"
 
 describe Y2Network::Sysconfig::ConnectionConfigReaders::Bridge do
   subject(:handler) { described_class.new(file) }
@@ -32,7 +32,7 @@ describe Y2Network::Sysconfig::ConnectionConfigReaders::Bridge do
 
   let(:interface_name) { "br0" }
   let(:file) do
-    Y2Network::Sysconfig::InterfaceFile.find(interface_name).tap(&:load)
+    CFA::InterfaceFile.find(interface_name).tap(&:load)
   end
 
   describe "#connection_config" do
