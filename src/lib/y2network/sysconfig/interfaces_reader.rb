@@ -115,8 +115,9 @@ module Y2Network
 
       # Finds the connections configurations
       def find_connections
+        empty_collection = ConnectionConfigsCollection.new([])
         @connections =
-          CFA::InterfaceFile.all.each_with_object(ConnectionConfigsCollection.new([])) do |file, conns|
+          CFA::InterfaceFile.all.each_with_object(empty_collection) do |file, conns|
             interface = @interfaces.by_name(file.interface)
             connection = ConnectionConfigReader.new.read(
               file.interface,

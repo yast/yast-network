@@ -17,11 +17,10 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 require_relative "../test_helper"
-require "y2network/sysconfig/hostname_writer"
+require "y2network/config_writers/hostname_writer"
 require "y2network/hostname"
 
-describe Y2Network::Sysconfig::HostnameWriter do
-  subject { Y2Network::Sysconfig::HostnameWriter.new }
+describe Y2Network::ConfigWriters::HostnameWriter do
   let(:static_hostname) { "test" }
   let(:transient_hostname) { "dhcp_test" }
   let(:installer_hostname) { "test" }

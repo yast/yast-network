@@ -20,48 +20,15 @@
 require "yast"
 require "y2network/config"
 require "cfa/routes_file"
-require "y2network/sysconfig/dns_writer"
-require "y2network/sysconfig/hostname_writer"
+require "y2network/config_writer"
 require "y2network/sysconfig/connection_config_writer"
-require "y2network/sysconfig/interfaces_writer"
 require "cfa/sysctl_config"
-
-Yast.import "Host"
 
 module Y2Network
   module Sysconfig
-    # This class imports a configuration into YaST modules
-    #
-    # Ideally, it should be responsible of writing the changes to the underlying
-    # system.
-    class ConfigWriter
-      include Yast::Logger
-
-      # @return [Array<Symbol>] The different sections handled by the writer
-      SECTIONS = [:routing, :drivers, :interfaces, :connections, :dns, :hostname].freeze
-
-      # Writes the configuration into YaST network related modules
-      #
-      # @param config     [Y2Network::Config] Configuration to write
-      # @param old_config [Y2Network::Config] Old configuration
-      # @param only [Array<symbol>, nil] explicit sections to be written, by default if no
-      #   parameter is given then all changes will be written
-      def write(config, old_config = nil, only: nil)
-        sections = only || SECTIONS
-
-        # TODO: Improve the loging using better format
-        log.info "Writing configuration: #{config.inspect}\n"
-        log.info "Old configuration: #{old_config.inspect}\n"
-
-        log.info("Writing sections: #{sections.inspect}") if only
-
-        SECTIONS.each { |s| send(:"write_#{s}", config, old_config) if sections.include?(s) }
-
-        # NOTE: This code might be moved outside of the Sysconfig namespace, as it is generic.
-        Yast::Host.Write(gui: false)
-      end
-
-    private
+    # This class configures Wicked (through sysconfig) according to a given configuration
+    class ConfigWriter < Y2Network::ConfigWriter
+    private # rubocop:disable Layout/IndentationWidth
 
       # Updates the ip forwarding config and the routing config which does not
       # belongs to a particular interface
@@ -112,38 +79,6 @@ module Y2Network
         nil
       end
 
-      # Writes ip forwarding setup
-      #
-      # @param routing [Y2Network::Routing] routing configuration
-      def write_ip_forwarding(routing)
-        sysctl_config = CFA::SysctlConfig.new
-        sysctl_config.load
-        sysctl_config.forward_ipv4 = routing.forward_ipv4
-        sysctl_config.forward_ipv6 = routing.forward_ipv6
-        sysctl_config.save unless sysctl_config.conflict?
-
-        update_ip_forwarding((sysctl_config.forward_ipv4 ? "1" : "0"),
-          :ipv4)
-        update_ip_forwarding((sysctl_config.forward_ipv6 ? "1" : "0"),
-          :ipv6)
-        nil
-      end
-
-      IP_SYSCTL = {
-        ipv4: "net.ipv4.ip_forward",
-        ipv6: "net.ipv6.conf.all.forwarding"
-      }.freeze
-
-      # Updates the IP forwarding configuration of the running kernel
-      #
-      # @param value [String] "1" (enable) or "0" (disable).
-      # @param type  [Symbol] :ipv4 or :ipv6
-      def update_ip_forwarding(value, type)
-        key = IP_SYSCTL[type]
-        Yast::SCR.Execute(Yast::Path.new(".target.bash"),
-          "/usr/sbin/sysctl -w #{key}=#{value.shellescape}")
-      end
-
       # Finds routes for a given interface or the routes not tied to any
       # interface in case of nil
       #
@@ -172,41 +107,11 @@ module Y2Network
       #
       # @param iface  [Interface,nil] Interface to search routes for; nil will
       #   return the global routes file
-      # @return [CFA::RoutesFile]
+      # @return [Y2Network::ConfigWriters::RoutesFile]
       def routes_file_for(iface)
         return CFA::RoutesFile.new unless iface
 
         CFA::RoutesFile.new("/etc/sysconfig/network/ifroute-#{iface.name}")
-      end
-
-      # Updates the DNS configuration
-      #
-      # @param config     [Y2Network::Config] Current config object
-      # @param old_config [Y2Network::Config,nil] Config object with original configuration
-      def write_dns(config, old_config)
-        old_dns = old_config.dns if old_config
-        writer = Y2Network::Sysconfig::DNSWriter.new
-        writer.write(config.dns, old_dns)
-      end
-
-      # Updates the Hostname configuration
-      #
-      # @param config     [Y2Network::Config] Current config object
-      # @param old_config [Y2Network::Config,nil] Config object with original configuration
-      def write_hostname(config, old_config)
-        old_hostname = old_config.hostname if old_config
-        writer = Y2Network::Sysconfig::HostnameWriter.new
-        writer.write(config.hostname, old_hostname)
-      end
-
-      # Updates the interfaces configuration and the routes associated with
-      # them
-      #
-      # @param config     [Y2Network::Config] Current config object
-      # @param _old_config [Y2Network::Config,nil] Config object with original configuration
-      def write_interfaces(config, _old_config)
-        writer = Y2Network::Sysconfig::InterfacesWriter.new(reload: !Yast::Lan.write_only)
-        writer.write(config.interfaces)
       end
 
       # Writes connections configuration
@@ -223,14 +128,6 @@ module Y2Network
           old_conn = old_config ? old_config.connections.by_ids(conn.id).first : nil
           writer.write(conn, old_conn)
         end
-      end
-
-      # Writes drivers options
-      #
-      # @param config     [Y2Network::Config] Current config object
-      # @param _old_config [Y2Network::Config,nil] Config object with original configuration
-      def write_drivers(config, _old_config)
-        Y2Network::Driver.write_options(config.drivers)
       end
 
       # Removes old connections files

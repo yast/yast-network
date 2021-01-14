@@ -21,7 +21,7 @@ require "yast2/execute"
 require "cfa/interface_file"
 
 module Y2Network
-  module Sysconfig
+  module ConfigWriters
     # This class writes Hostname configuration settings.
     class HostnameWriter
       include Yast::Logger

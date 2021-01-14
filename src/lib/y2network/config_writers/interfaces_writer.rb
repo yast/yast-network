@@ -24,7 +24,7 @@ require "cfa/interface_file"
 require "cfa/routes_file"
 
 module Y2Network
-  module Sysconfig
+  module ConfigWriters
     # This class writes interfaces specific configuration
     #
     # Although it might be confusing, this class is only responsible for writing

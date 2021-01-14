@@ -13,8 +13,8 @@ networkd.
 
 The systems' configuration is read using *configuration readers*, which are special classes which
 implements the logic to find out the details and build a proper {Y2Network::Config} object. Once the
-wanted modifications are performed to this configuration object, it could be written in the
-filesystem by using a *configuration writer*.
+wanted modifications are performed to this configuration object (and related objects), it could be
+written in the filesystem by using a *configuration writer*.
 
                  +--------+             +---------+
     reader ----> | config | -- user --> | config' |----> writer
@@ -34,8 +34,8 @@ other classes. These are the most relevant ones:
 
 * {Y2Network::InterfacesCollection}: this class holds a list of interfaces and offers a query API
   (e.g., find all the ethernet interfaces).
-* {Y2Network::Interface}: keeps interfaces information. There are one kind of interfaces at this
-  point of time: physical and virtual ones.
+* {Y2Network::Interface}: keeps interfaces information. There are two kind of interfaces at this
+  point: physical and virtual ones.
 * {Y2Network::ConnectionConfigsCollection}: this class holds a list of connection configurations
   and offers a query API.
 * {Y2Network::ConnectionConfig}: describes a configuration that can be applied to an interface.
@@ -77,10 +77,7 @@ The sysconfig backend support is composed by these files:
     │   ├── wireless.rb
     │   └── ...
     ├── dns_reader.rb
-    ├── dns_writer.rb
-    ├── interface_file.rb
-    ├── interfaces_reader.rb
-    └── routes_file.rb
+    └── interfaces_reader.rb
 
 {Y2Network::Sysconfig::ConfigReader} and {Y2Network::Sysconfig::ConfigWriter} are the reader and
 writer classes. Each of them cooperates with a set of ancillary classes in order to get the job
@@ -92,13 +89,12 @@ to read the configuration for a connection (e.g., `ifcfg-eth0`, `ifcfg-wlan0`, e
 in a set of smaller classes (one for each time of connection) under
 {Y2Network::Sysconfig::ConnectionConfigReaders}.
 
-{Y2Network::Sysconfig::InterfacesWriter}, {Y2Network::Sysconfig::DNSWriter} and
+{Y2Network::ConfigWriters::InterfacesWriter}, {Y2Network::ConfigWriters::DNSWriter} and
 {Y2Network::Sysconfig::ConnectionConfigWriter}, including smaller classes under
 {Y2Network::Sysconfig::ConnectionConfigWriters}, are involved in writing the configuration.
 
-Last but not least, there are additional classes like {Y2Network::Sysconfig::RoutesFile} and
-{Y2Network::Sysconfig::InterfaceFile} which abstract the details of reading/writing `ifroute` and
-`ifcfg` files.
+Last but not least, there are additional classes like {CFA::RoutesFile} and {CFA::InterfaceFile}
+which abstract the details of reading/writing `ifroute` and `ifcfg` files.
 
 #### AutoYaST
 
@@ -122,7 +118,7 @@ is some preprocessing that is still done using the original `Hash`.
 ### Accessing the Configuration
 
 The `Yast::Lan` module is still the entry point to read and write the network configuration.
-Basically, it keeps two configuration objects, one for the running system and another want for the
+Basically, it keeps two configuration objects, one for the running system and another one for the
 wanted configuration.
 
     Yast.import "Lan"

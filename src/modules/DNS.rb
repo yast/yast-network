@@ -206,7 +206,7 @@ module Yast
     #   called after writing the DNS configuration or not
     # @return true if success
     def Write(netconfig_update: true)
-      writer = Y2Network::Sysconfig::DNSWriter.new
+      writer = Y2Network::ConfigWriters::DNSWriter.new
       writer.write(Yast::Lan.yast_config.dns,
         Yast::Lan.system_config.dns,
         netconfig_update: netconfig_update)
