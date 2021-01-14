@@ -19,7 +19,7 @@
 
 require_relative "../../../test_helper"
 require "y2network/sysconfig/connection_config_readers/ethernet"
-require "y2network/sysconfig/interface_file"
+require "cfa/interface_file"
 require "y2network/boot_protocol"
 
 describe Y2Network::Sysconfig::ConnectionConfigReaders::Ethernet do
@@ -33,7 +33,7 @@ describe Y2Network::Sysconfig::ConnectionConfigReaders::Ethernet do
 
   let(:interface_name) { "eth0" }
   let(:file) do
-    Y2Network::Sysconfig::InterfaceFile.find(interface_name).tap(&:load)
+    CFA::InterfaceFile.find(interface_name).tap(&:load)
   end
 
   describe "#connection_config" do

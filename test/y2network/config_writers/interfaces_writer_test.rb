@@ -18,13 +18,13 @@
 # find current contact information at www.suse.com.
 
 require_relative "../../test_helper"
-require "y2network/sysconfig/interfaces_writer"
+require "y2network/config_writers/interfaces_writer"
 require "y2network/udev_rule"
 require "y2network/physical_interface"
 require "y2network/interfaces_collection"
 require "tmpdir"
 
-describe Y2Network::Sysconfig::InterfacesWriter do
+describe Y2Network::ConfigWriters::InterfacesWriter do
   let(:reload) { false }
   subject(:writer) { described_class.new(reload: reload) }
 

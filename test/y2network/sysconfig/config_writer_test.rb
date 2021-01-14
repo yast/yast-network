@@ -86,18 +86,20 @@ describe Y2Network::Sysconfig::ConfigWriter do
     end
 
     let(:ifroute_eth0) do
-      instance_double(Y2Network::Sysconfig::RoutesFile, save: nil, :routes= => nil)
+      instance_double(CFA::RoutesFile, save: nil, :routes= => nil)
     end
 
     let(:routes_file) do
-      instance_double(Y2Network::Sysconfig::RoutesFile, save: nil, :routes= => nil)
+      instance_double(CFA::RoutesFile, save: nil, :routes= => nil)
     end
 
     let(:routes) { [route, default_route] }
 
-    let(:dns_writer) { instance_double(Y2Network::Sysconfig::DNSWriter, write: nil) }
-    let(:hostname_writer) { instance_double(Y2Network::Sysconfig::HostnameWriter, write: nil) }
-    let(:interfaces_writer) { instance_double(Y2Network::Sysconfig::InterfacesWriter, write: nil) }
+    let(:dns_writer) { instance_double(Y2Network::ConfigWriters::DNSWriter, write: nil) }
+    let(:hostname_writer) { instance_double(Y2Network::ConfigWriters::HostnameWriter, write: nil) }
+    let(:interfaces_writer) do
+      instance_double(Y2Network::ConfigWriters::InterfacesWriter, write: nil)
+    end
     let(:sysctl_config_file) do
       CFA::SysctlConfig.new do |f|
         f.forward_ipv4 = false
@@ -106,18 +108,18 @@ describe Y2Network::Sysconfig::ConfigWriter do
     end
 
     before do
-      allow(Y2Network::Sysconfig::RoutesFile).to receive(:new)
+      allow(CFA::RoutesFile).to receive(:new)
         .with("/etc/sysconfig/network/ifroute-eth0")
         .and_return(ifroute_eth0)
-      allow(Y2Network::Sysconfig::RoutesFile).to receive(:new)
+      allow(CFA::RoutesFile).to receive(:new)
         .with(no_args)
         .and_return(routes_file)
-      allow(Y2Network::Sysconfig::DNSWriter).to receive(:new)
+      allow(Y2Network::ConfigWriters::DNSWriter).to receive(:new)
         .and_return(dns_writer)
-      allow(Y2Network::Sysconfig::HostnameWriter).to receive(:new)
+      allow(Y2Network::ConfigWriters::HostnameWriter).to receive(:new)
         .and_return(hostname_writer)
       allow_any_instance_of(Y2Network::Sysconfig::ConnectionConfigWriter).to receive(:write)
-      allow(Y2Network::Sysconfig::InterfacesWriter).to receive(:new)
+      allow(Y2Network::ConfigWriters::InterfacesWriter).to receive(:new)
         .and_return(interfaces_writer)
       allow(CFA::SysctlConfig).to receive(:new).and_return(sysctl_config_file)
       allow(sysctl_config_file).to receive(:load)
@@ -165,11 +167,11 @@ describe Y2Network::Sysconfig::ConfigWriter do
       end
       let(:eth1) { Y2Network::Interface.new("eth1") }
       let(:ifroute_eth1) do
-        instance_double(Y2Network::Sysconfig::RoutesFile, save: nil, :routes= => nil)
+        instance_double(CFA::RoutesFile, save: nil, :routes= => nil)
       end
 
       before do
-        allow(Y2Network::Sysconfig::RoutesFile).to receive(:new)
+        allow(CFA::RoutesFile).to receive(:new)
           .with("/etc/sysconfig/network/ifroute-eth1")
           .and_return(ifroute_eth1)
       end
@@ -199,13 +201,13 @@ describe Y2Network::Sysconfig::ConfigWriter do
 
       let(:conn_writer) { instance_double(Y2Network::Sysconfig::ConnectionConfigWriter) }
       let(:ifroute_eth1) do
-        instance_double(Y2Network::Sysconfig::RoutesFile, save: nil, :routes= => nil, remove: nil)
+        instance_double(CFA::RoutesFile, save: nil, :routes= => nil, remove: nil)
       end
 
       before do
         allow(Y2Network::Sysconfig::ConnectionConfigWriter).to receive(:new)
           .and_return(conn_writer)
-        allow(Y2Network::Sysconfig::RoutesFile).to receive(:new).and_return(ifroute_eth1)
+        allow(CFA::RoutesFile).to receive(:new).and_return(ifroute_eth1)
       end
 
       it "removes the connection" do

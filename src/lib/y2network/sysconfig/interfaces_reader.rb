@@ -24,7 +24,7 @@ require "y2network/virtual_interface"
 require "y2network/physical_interface"
 require "y2network/s390_group_device"
 require "y2network/sysconfig/connection_config_reader"
-require "y2network/sysconfig/interface_file"
+require "cfa/interface_file"
 require "y2network/interfaces_collection"
 require "y2network/connection_configs_collection"
 require "y2network/s390_group_devices_collection"
@@ -115,8 +115,9 @@ module Y2Network
 
       # Finds the connections configurations
       def find_connections
+        empty_collection = ConnectionConfigsCollection.new([])
         @connections =
-          InterfaceFile.all.each_with_object(ConnectionConfigsCollection.new([])) do |file, conns|
+          CFA::InterfaceFile.all.each_with_object(empty_collection) do |file, conns|
             interface = @interfaces.by_name(file.interface)
             connection = ConnectionConfigReader.new.read(
               file.interface,

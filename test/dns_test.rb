@@ -211,12 +211,12 @@ describe Yast::DNS do
   end
 
   describe ".Write" do
-    let(:dns_writer) { instance_double(Y2Network::Sysconfig::DNSWriter) }
+    let(:dns_writer) { instance_double(Y2Network::ConfigWriters::DNSWriter) }
     let(:yast_config) { double("Y2Network::Config", dns: instance_double("Y2Network::DNS")) }
     let(:system_config) { double("Y2Network::Config", dns: instance_double("Y2Network::DNS")) }
 
     before do
-      allow(Y2Network::Sysconfig::DNSWriter).to receive(:new).and_return(dns_writer)
+      allow(Y2Network::ConfigWriters::DNSWriter).to receive(:new).and_return(dns_writer)
       allow(Yast::Lan).to receive(:yast_config).and_return(yast_config)
       allow(Yast::Lan).to receive(:system_config).and_return(system_config)
     end

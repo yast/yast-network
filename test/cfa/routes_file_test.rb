@@ -17,10 +17,10 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require_relative "../../test_helper"
-require "y2network/sysconfig/routes_file"
+require_relative "../test_helper"
+require "cfa/routes_file"
 
-describe Y2Network::Sysconfig::RoutesFile do
+describe CFA::RoutesFile do
   subject(:file) { described_class.new(path) }
 
   let(:scr_route) do

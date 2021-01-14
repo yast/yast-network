@@ -1,4 +1,4 @@
-# Copyright (c) [2019] SUSE LLC
+# Copyright (c) [2021] SUSE LLC
 #
 # All Rights Reserved.
 #
@@ -17,25 +17,30 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "yast"
-require "y2network/interface_type"
-require "y2network/type_detector"
-require "cfa/interface_file"
+require_relative "../test_helper"
+require "cfa/nm_connection"
+require "cfa/memory_file"
 
-module Y2Network
-  module Sysconfig
-    # Detects type of given interface. New implementation of what was in
-    # @see Yast::NetworkInterfaces.GetType
-    class TypeDetector < Y2Network::TypeDetector
-      class << self
-        # Checks wheter iface type can be recognized by interface configuration
-        def type_by_config(iface)
-          iface_file = CFA::InterfaceFile.find(iface)
-          return unless iface_file
+describe CFA::NmConnection do
+  def file_path(filename)
+    File.join(SCRStub::DATA_PATH, filename)
+  end
 
-          iface_file.load
-          iface_file.type
-        end
+  subject { described_class.new(conn_file) }
+  let(:conn_file) { file_path("some_wifi.nmconnection") }
+
+  describe "#connection" do
+    before { subject.load }
+
+    it "returns the [connection] section" do
+      expect(subject.connection["id"]).to eq("MyWifi")
+    end
+
+    context "when the connection section is missing" do
+      let(:conn_file) { file_path("empty.nmconnection") }
+
+      it "returns an empty connection section" do
+        expect(subject.connection["id"]).to be_nil
       end
     end
   end

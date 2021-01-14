@@ -1,4 +1,4 @@
-# Copyright (c) [2019] SUSE LLC
+# Copyright (c) [2021] SUSE LLC
 #
 # All Rights Reserved.
 #
@@ -17,47 +17,26 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "cfa/interface_file"
-require "cfa/routes_file"
-
-Yast.import "Host"
-Yast.import "Mode"
+require "cfa/nm_connection"
+require "pathname"
 
 module Y2Network
-  module Sysconfig
-    # This class is responsible for writing interfaces changes
+  module NetworkManager
     class ConnectionConfigWriter
       include Yast::Logger
 
-      # Writes connection config to the underlying system
-      #
-      # The method can receive the old configuration in order to perform clean-up tasks.
-      #
-      # @param conn [Y2Network::ConnectionConfig::Base] Connection configuration to write
-      # @param old_conn [Y2Network::ConnectionConfig::Base,nil] Connection configuration to write
+      SYSTEM_CONNECTIONS_PATH = Pathname.new("/etc/NetworkManager/system-connections").freeze
+      FILE_EXT = ".nmconnection".freeze
+
       def write(conn, old_conn = nil)
         return if conn == old_conn
 
-        file = CFA::InterfaceFile.new(conn.interface)
+        file = CFA::NmConnection.new(SYSTEM_CONNECTIONS_PATH.join(conn.name).sub_ext(FILE_EXT))
         handler_class = find_handler_class(conn.type)
         return nil if handler_class.nil?
 
-        file.clean
-        remove(old_conn) if old_conn
         handler_class.new(file).write(conn)
         file.save
-      end
-
-      # Removes connection config from the underlying system
-      #
-      # @param conn [Y2Network::Conn] Connection name to remove
-      def remove(conn)
-        ifcfg = CFA::InterfaceFile.find(conn.interface)
-        ifcfg&.remove
-        # During an autoinstallation do not remove /etc/hosts entries
-        # associated with the static IP address (bsc#1173213).
-        # The hook or original behavior was introduced because of (bsc#951330)
-        Yast::Host.remove_ip(conn.ip.address.address.to_s) if !Yast::Mode.auto && conn.ip
       end
 
     private
@@ -67,7 +46,7 @@ module Y2Network
       # @param type [Y2Network::InterfaceType] Interface type
       # @return [Class] A class which belongs to the ConnectionConfigWriters module
       def find_handler_class(type)
-        require "y2network/sysconfig/connection_config_writers/#{type.file_name}"
+        require "y2network/network_manager/connection_config_writers/#{type.file_name}"
         ConnectionConfigWriters.const_get(type.class_name)
       rescue LoadError, NameError => e
         log.info "Unknown connection type: '#{type}'. " \

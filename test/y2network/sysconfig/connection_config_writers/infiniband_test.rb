@@ -56,7 +56,7 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Infiniband do
     end
   end
 
-  let(:file) { Y2Network::Sysconfig::InterfaceFile.new(conn.name) }
+  let(:file) { CFA::InterfaceFile.new(conn.name) }
 
   describe "#write" do
     it "writes the 'ipoib_mode' attribute" do

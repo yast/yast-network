@@ -18,7 +18,7 @@
 # find current contact information at www.suse.com.
 
 require "yast"
-require "y2network/sysconfig/interface_file"
+require "cfa/interface_file"
 require "y2network/hostname"
 require "network/wicked"
 
@@ -60,7 +60,7 @@ module Y2Network
         value = Yast::SCR.Read(Yast::Path.new(".sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME"))
         return :any if value == "yes"
 
-        files = InterfaceFile.all
+        files = CFA::InterfaceFile.all
         file = files.find do |f|
           f.load
           f.dhclient_set_hostname == "yes"
@@ -124,7 +124,7 @@ module Y2Network
         # We currently cannot use connections for getting only dhcp aware configurations here
         # bcs this can be called during Y2Network::Config initialization and this is
         # acceptable replacement for this case.
-        ifaces = Sysconfig::InterfaceFile.all.map(&:interface)
+        ifaces = CFA::InterfaceFile.all.map(&:interface)
         dhcp_hostname = ifaces.map { |i| parse_hostname(i) }.compact.first
 
         log.info("Hostname obtained from DHCP: #{dhcp_hostname}")

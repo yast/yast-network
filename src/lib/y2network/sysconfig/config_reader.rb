@@ -22,7 +22,7 @@ require "y2network/config"
 require "y2network/interface"
 require "y2network/routing"
 require "y2network/routing_table"
-require "y2network/sysconfig/routes_file"
+require "cfa/routes_file"
 require "y2network/sysconfig/dns_reader"
 require "y2network/sysconfig/hostname_reader"
 require "y2network/sysconfig/interfaces_reader"
@@ -100,7 +100,7 @@ module Y2Network
 
       # Load a set of routes for a given path
       def load_routes_from(path = nil)
-        klass = Y2Network::Sysconfig::RoutesFile
+        klass = CFA::RoutesFile
         file = path ? klass.new(path) : klass.new
         file.load
         file.routes
@@ -108,7 +108,7 @@ module Y2Network
 
       # Links routes to interfaces objects
       #
-      # {Y2Network::Sysconfig::RoutesFile} knows nothing about the already detected interfaces, so
+      # {CFA::RoutesFile} knows nothing about the already detected interfaces, so
       # it instantiates a new object for each interface found. This method links the routes
       # with the interfaces found in #interfaces.
       #

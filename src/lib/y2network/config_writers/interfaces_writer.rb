@@ -20,11 +20,11 @@
 require "yast"
 require "y2network/udev_rule"
 require "yast2/execute"
-require "y2network/sysconfig/interface_file"
-require "y2network/sysconfig/routes_file"
+require "cfa/interface_file"
+require "cfa/routes_file"
 
 module Y2Network
-  module Sysconfig
+  module ConfigWriters
     # This class writes interfaces specific configuration
     #
     # Although it might be confusing, this class is only responsible for writing
