@@ -21,7 +21,6 @@ require "yast"
 require "y2network/dns"
 require "y2network/autoinst/type_detector"
 require "ipaddr"
-Yast.import "IP"
 
 module Y2Network
   module Autoinst
@@ -88,54 +87,79 @@ module Y2Network
         config.name = name_from_section(interface_section)
         config.interface = config.name # in autoyast name and interface is same
         if config.bootproto == BootProtocol::STATIC
-          if !interface_section.ipaddr
+          # we need at leas some ip for the static configuration
+          if !interface_section.ipaddr && !interfaces_section.aliases
             msg = "Configuration for #{config.name} is invalid #{interface_section.inspect}"
             raise ArgumentError, msg
           end
 
-          if !interface_section.ipaddr.empty?
-            ipaddr = IPAddress.from_string(interface_section.ipaddr)
-          end
-          # Assign first netmask, as prefixlen has precedence so it will overwrite it
-          ipaddr.netmask = interface_section.netmask if !interface_section.netmask.to_s.empty?
-          if !interface_section.prefixlen.to_s.empty?
-            ipaddr.prefix = interface_section.prefixlen.to_i
-          end
-          if !interface_section.broadcast.empty?
-            broadcast = IPAddress.new(interface_section.broadcast)
-          end
-          if !interface_section.remote_ipaddr.empty?
-            remote = IPAddress.new(interface_section.remote_ipaddr)
-          end
-          config.ip = ConnectionConfig::IPConfig.new(
-            ipaddr, broadcast: broadcast, remote_address: remote
-          )
+          config.ip = load_ipaddr(interface_section)
         end
 
         # handle aliases
         interface_section.aliases.each_value do |alias_h|
-          ipaddr = IPAddress.from_string(alias_h["IPADDR"])
-          # Assign first netmask, as prefixlen has precedence so it will overwrite it
-          ipaddr.netmask = alias_h["NETMASK"] if alias_h["NETMASK"]
-          ipaddr.prefix = alias_h["PREFIXLEN"].delete("/").to_i if alias_h["PREFIXLEN"]
-          config.ip_aliases << ConnectionConfig::IPConfig.new(ipaddr, label: alias_h["LABEL"])
+          config.ip_aliases << load_alias(alias_h)
         end
+
+        # startmode
         if !interface_section.startmode.to_s.empty?
           config.startmode = Startmode.create(interface_section.startmode)
         end
         if config.startmode.name == "ifplugd" && !interface_section.ifplugd_priority.to_s.empty?
           config.startmode.priority = interface_section.ifplugd_priority
         end
+
+        # mtu
         config.mtu = interface_section.mtu.to_i if !interface_section.mtu.to_s.empty?
+
+        # ethtool options
         if interface_section.ethtool_options
           config.ethtool_options = interface_section.ethtool_options
         end
+
+        # fw zone
         config.firewall_zone = interface_section.zone if !interface_section.zone.to_s.empty?
+
+        # DHCLIENT_SETHOSTNAME setup
         if !interface_section.dhclient_set_hostname.empty?
           config.dhclient_set_hostname = interface_section.dhclient_set_hostname == "yes"
         end
 
         config
+      end
+
+      # Loads and intializates interface_section's ipaddr attribute
+      # @return [ConnectionConfig::IPConfig] created ipaddr object
+      def load_ipaddr(interface_section)
+        if !interface_section.ipaddr.empty?
+          ipaddr = IPAddress.from_string(interface_section.ipaddr)
+        end
+        # Assign first netmask, as prefixlen has precedence so it will overwrite it
+        ipaddr.netmask = interface_section.netmask if !interface_section.netmask.to_s.empty?
+        if !interface_section.prefixlen.to_s.empty?
+          ipaddr.prefix = interface_section.prefixlen.to_i
+        end
+        if !interface_section.broadcast.empty?
+          broadcast = IPAddress.new(interface_section.broadcast)
+        end
+        if !interface_section.remote_ipaddr.empty?
+          remote = IPAddress.new(interface_section.remote_ipaddr)
+        end
+
+        ConnectionConfig::IPConfig.new(
+          ipaddr, broadcast: broadcast, remote_address: remote
+        )
+      end
+
+      # Loads and initializates an IP alias according to given hash with alias details
+      # @return [ConnectionConfig::IPConfig] alias details
+      def load_alias(alias_h)
+        ipaddr = IPAddress.from_string(alias_h["IPADDR"])
+        # Assign first netmask, as prefixlen has precedence so it will overwrite it
+        ipaddr.netmask = alias_h["NETMASK"] if alias_h["NETMASK"]
+        ipaddr.prefix = alias_h["PREFIXLEN"].delete("/").to_i if alias_h["PREFIXLEN"]
+
+        ConnectionConfig::IPConfig.new(ipaddr, label: alias_h["LABEL"])
       end
 
       def load_wireless(config, interface_section)
