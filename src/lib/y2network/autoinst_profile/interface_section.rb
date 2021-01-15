@@ -78,6 +78,7 @@ module Y2Network
           { name: :bridge }, # yes/no # why? bridge always have to be yes
           { name: :bridge_ports },
           { name: :bridge_stp }, # on/off
+          { name: :bridge_forwarddelay },
           { name: :bridge_forward_delay },
           { name: :wireless_ap },
           { name: :wireless_auth_mode },
@@ -215,6 +216,9 @@ module Y2Network
 
       # @!attribute bridge_stp
       #  @return [String] "on" if stp is enabled
+
+      # @!attribute bridge_forwarddelay
+      #  @return [String] time of delay
 
       # @!attribute bridge_forward_delay
       #  @return [String] time of delay

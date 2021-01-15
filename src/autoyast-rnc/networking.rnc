@@ -219,7 +219,8 @@ bridge_settings = (
   element bridge              { STRING_ATTR, ("yes" | "no") }? &
   element bridge_ports        { STRING }? &
   element bridge_stp          { STRING_ATTR, ("on" | "off") }? &
-  element bridge_forwarddelay { STRING }?
+  element bridge_forwarddelay { STRING }? &
+  element bridge_forward_delay { STRING }?
 )
 
 #

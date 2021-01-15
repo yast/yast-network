@@ -204,6 +204,11 @@ module Y2Network
         if !interface_section.bridge_stp.to_s.empty?
           config.stp = interface_section.bridge_stp == "on"
         end
+
+        if !interface_section.bridge_forwarddelay.to_s.empty?
+          config.forward_delay = interface_section.bridge_forwarddelay.to_i
+        end
+
         if !interface_section.bridge_forward_delay.to_s.empty?
           config.forward_delay = interface_section.bridge_forward_delay.to_i
         end
