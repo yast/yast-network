@@ -18,6 +18,7 @@
 # find current contact information at www.suse.com.
 
 require_relative "../../test_helper"
+require_relative "../../support/config_writer_examples"
 require "y2network/network_manager/config_writer"
 require "y2network/config"
 require "y2network/connection_configs_collection"
@@ -26,6 +27,8 @@ require "y2network/interfaces_collection"
 
 describe Y2Network::NetworkManager::ConfigWriter do
   subject(:writer) { described_class.new }
+
+  include_examples "ConfigWriter"
 
   describe "#write" do
     let(:old_config) do

@@ -17,6 +17,7 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 require_relative "../../test_helper"
+require_relative "../../support/config_writer_examples"
 require "y2network/sysconfig/config_writer"
 require "y2network/config"
 require "y2network/connection_configs_collection"
@@ -30,6 +31,8 @@ require "y2network/connection_config/ip_config"
 
 describe Y2Network::Sysconfig::ConfigWriter do
   subject(:writer) { described_class.new }
+
+  include_examples "ConfigWriter"
 
   describe "#write" do
     before do
@@ -75,13 +78,9 @@ describe Y2Network::Sysconfig::ConfigWriter do
         gateway:   IPAddr.new("192.168.122.2")
       )
     end
-    let(:forward_ipv4) { false }
-    let(:forward_ipv6) { false }
     let(:routing) do
       Y2Network::Routing.new(
-        tables:       [Y2Network::RoutingTable.new(routes)],
-        forward_ipv4: forward_ipv4,
-        forward_ipv6: forward_ipv6
+        tables: [Y2Network::RoutingTable.new(routes)]
       )
     end
 
@@ -95,16 +94,8 @@ describe Y2Network::Sysconfig::ConfigWriter do
 
     let(:routes) { [route, default_route] }
 
-    let(:dns_writer) { instance_double(Y2Network::ConfigWriters::DNSWriter, write: nil) }
-    let(:hostname_writer) { instance_double(Y2Network::ConfigWriters::HostnameWriter, write: nil) }
     let(:interfaces_writer) do
       instance_double(Y2Network::ConfigWriters::InterfacesWriter, write: nil)
-    end
-    let(:sysctl_config_file) do
-      CFA::SysctlConfig.new do |f|
-        f.forward_ipv4 = false
-        f.forward_ipv6 = false
-      end
     end
 
     before do
@@ -114,28 +105,21 @@ describe Y2Network::Sysconfig::ConfigWriter do
       allow(CFA::RoutesFile).to receive(:new)
         .with(no_args)
         .and_return(routes_file)
-      allow(Y2Network::ConfigWriters::DNSWriter).to receive(:new)
-        .and_return(dns_writer)
-      allow(Y2Network::ConfigWriters::HostnameWriter).to receive(:new)
-        .and_return(hostname_writer)
       allow_any_instance_of(Y2Network::Sysconfig::ConnectionConfigWriter).to receive(:write)
       allow(Y2Network::ConfigWriters::InterfacesWriter).to receive(:new)
         .and_return(interfaces_writer)
-      allow(CFA::SysctlConfig).to receive(:new).and_return(sysctl_config_file)
-      allow(sysctl_config_file).to receive(:load)
-      allow(sysctl_config_file).to receive(:save)
     end
 
     it "saves general routes to main routes file" do
       expect(routes_file).to receive(:routes=).with([default_route])
       expect(routes_file).to receive(:save)
-      writer.write(config)
+      writer.write(config, only: [:routing, :interfaces])
     end
 
     it "saves interface specific routes to the ifroute-* file" do
       expect(ifroute_eth0).to receive(:routes=).with([route])
       expect(ifroute_eth0).to receive(:save)
-      writer.write(config)
+      writer.write(config, only: [:routing, :interfaces])
     end
 
     context "when there are no general routes" do
@@ -144,7 +128,7 @@ describe Y2Network::Sysconfig::ConfigWriter do
       it "removes the ifroute file" do
         expect(routes_file).to_not receive(:remove)
         expect(routes_file).to receive(:save)
-        writer.write(config)
+        writer.write(config, only: [:routing, :interfaces])
       end
     end
 
@@ -153,7 +137,7 @@ describe Y2Network::Sysconfig::ConfigWriter do
 
       it "removes the ifroute file" do
         expect(ifroute_eth0).to receive(:remove)
-        writer.write(config)
+        writer.write(config, only: [:routing, :connections])
       end
     end
 
@@ -178,7 +162,7 @@ describe Y2Network::Sysconfig::ConfigWriter do
 
       it "removes the ifroute file" do
         expect(ifroute_eth1).to receive(:remove)
-        writer.write(config, old_config)
+        writer.write(config, only: [:routing, :connections])
       end
     end
 
@@ -212,52 +196,14 @@ describe Y2Network::Sysconfig::ConfigWriter do
 
       it "removes the connection" do
         expect(conn_writer).to receive(:remove).with(eth0_conn)
-        writer.write(config, old_config)
+        writer.write(config, old_config, only: [:interfaces, :connections])
       end
-    end
-
-    context "When IPv4 forwarding is set" do
-      let(:forward_ipv4) { true }
-
-      it "Writes ip forwarding setup for IPv4" do
-        expect(sysctl_config_file).to receive(:forward_ipv4=).with(true).and_call_original
-        expect(sysctl_config_file).to receive(:forward_ipv6=).with(false).and_call_original
-        expect(sysctl_config_file).to receive(:save)
-        writer.write(config)
-      end
-    end
-
-    context "When IPv6 forwarding is set" do
-      let(:forward_ipv6) { true }
-
-      it "Writes ip forwarding setup for IPv6" do
-        expect(sysctl_config_file).to receive(:forward_ipv4=).with(false).and_call_original
-        expect(sysctl_config_file).to receive(:forward_ipv6=).with(true).and_call_original
-        expect(sysctl_config_file).to receive(:save)
-
-        writer.write(config)
-      end
-    end
-
-    it "writes DNS configuration" do
-      expect(dns_writer).to receive(:write).with(config.dns, old_config.dns)
-      writer.write(config, old_config)
     end
 
     it "writes connections configurations" do
       expect_any_instance_of(Y2Network::Sysconfig::ConnectionConfigWriter)
         .to receive(:write).with(eth0_conn, old_eth0_conn)
-      writer.write(config, old_config)
-    end
-
-    it "writes interfaces configurations" do
-      expect(interfaces_writer).to receive(:write).with(config.interfaces)
-      writer.write(config)
-    end
-
-    it "writes /etc/hosts changes" do
-      expect(Yast::Host).to receive(:Write).with(gui: false)
-      writer.write(config)
+      writer.write(config, old_config, only: [:interfaces, :connections])
     end
   end
 end
