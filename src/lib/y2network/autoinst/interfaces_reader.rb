@@ -97,8 +97,8 @@ module Y2Network
         end
 
         # handle aliases
-        interface_section.aliases.each_value do |alias_h|
-          config.ip_aliases << load_alias(alias_h)
+        interface_section.aliases.values.each_with_index do |alias_h, index|
+          config.ip_aliases << load_alias(alias_h, id: "_#{index}")
         end
 
         # startmode
@@ -153,13 +153,13 @@ module Y2Network
 
       # Loads and initializates an IP alias according to given hash with alias details
       # @return [ConnectionConfig::IPConfig] alias details
-      def load_alias(alias_h)
+      def load_alias(alias_h, id: nil)
         ipaddr = IPAddress.from_string(alias_h["IPADDR"])
         # Assign first netmask, as prefixlen has precedence so it will overwrite it
         ipaddr.netmask = alias_h["NETMASK"] if alias_h["NETMASK"]
         ipaddr.prefix = alias_h["PREFIXLEN"].delete("/").to_i if alias_h["PREFIXLEN"]
 
-        ConnectionConfig::IPConfig.new(ipaddr, label: alias_h["LABEL"])
+        ConnectionConfig::IPConfig.new(ipaddr, id: id, label: alias_h["LABEL"])
       end
 
       def load_wireless(config, interface_section)
