@@ -138,11 +138,23 @@ describe Yast::SaveNetworkClient do
         FileUtils.mkdir_p(File.join(destdir, "etc", "NetworkManager", "system-connections"))
       end
 
-      it "copies the NetworkManager configuration from the instsys" do
+      it "writes the configuration to the underlying system" do
+        expect(Yast::Lan).to receive(:write_config)
         subject.main
-        expect(File).to exist(
-          File.join(destdir, "etc", "NetworkManager", "system-connections", "wlan0.nmconnection")
-        )
+      end
+
+      context "on live installation" do
+        before do
+          allow(Yast::Mode).to receive(:live_installation).and_return(true)
+        end
+
+        it "copies the NetworkManager configuration from the instsys" do
+          expect(Yast::Lan).to_not receive(:write_config)
+          subject.main
+          expect(File).to exist(
+            File.join(destdir, "etc", "NetworkManager", "system-connections", "wlan0.nmconnection")
+          )
+        end
       end
     end
 
