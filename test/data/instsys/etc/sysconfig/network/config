@@ -1,0 +1,7 @@
+## Type:        string
+## Default:     "auto"
+#
+# Defines the DNS merge policy as documented in netconfig(8) manual page.
+# Set to "" to disable DNS configuration.
+#
+NETCONFIG_DNS_POLICY="eth0"

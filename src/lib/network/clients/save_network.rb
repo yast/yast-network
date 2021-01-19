@@ -82,6 +82,8 @@ module Yast
     ETC = "/etc".freeze
     SYSCONFIG = "/etc/sysconfig/network".freeze
     NETWORK_MANAGER = "/etc/NetworkManager".freeze
+    # Make unit testing possible
+    ROOT_PATH = "/".freeze
 
     def CopyConfiguredNetworkFiles
       return if Mode.autoinst && !Lan.autoinst.copy_network?
@@ -113,7 +115,7 @@ module Yast
       # just copy files
       copy_recipes.each do |recipe|
         # can be shell pattern like ifcfg-*
-        file_pattern = ::File.join(recipe[:dir], recipe[:file])
+        file_pattern = ::File.join(ROOT_PATH, recipe[:dir], recipe[:file])
         copy_to = ::File.join(inst_dir, recipe[:dir])
         log.info("Processing copy recipe #{file_pattern.inspect}")
 
@@ -135,7 +137,7 @@ module Yast
 
       # merge files with default installed by sysconfig
       ["dhcp", "config"].each do |file|
-        modified_file = ::File.join(SYSCONFIG, file)
+        modified_file = ::File.join(ROOT_PATH, SYSCONFIG, file)
         dest_file = ::File.join(copy_to, file)
         CFA::GenericSysconfig.merge_files(dest_file, modified_file)
       end
@@ -144,31 +146,20 @@ module Yast
       nil
     end
 
+    # Directory containing udev rules
+    UDEV_RULES_DIR = "/etc/udev/rules.d".freeze
+
     def copy_udev_rules
       dest_root = String.Quote(Installation.destdir)
-
-      if Arch.s390
-        # chzdev creates the rules starting with "41-"
-        log.info("Copy S390 specific udev rule files (/etc/udev/rules/41*)")
-
-        WFM.Execute(
-          path(".local.bash"),
-          Builtins.sformat(
-            "/bin/cp -p %1/41-* '%2%1'",
-            "/etc/udev/rules.d",
-            dest_root.shellescape
-          )
-        )
-      end
 
       # Deleting lockfiles and re-triggering udev events for *net is not needed any more
       # (#292375 c#18)
 
-      udev_rules_srcdir = "/etc/udev/rules.d"
+      udev_rules_srcdir = File.join(ROOT_PATH, UDEV_RULES_DIR)
       net_srcfile = "70-persistent-net.rules"
 
-      udev_rules_destdir = dest_root + udev_rules_srcdir
-      net_destfile = dest_root + udev_rules_srcdir + "/" + net_srcfile
+      udev_rules_destdir = dest_root + UDEV_RULES_DIR
+      net_destfile = dest_root + UDEV_RULES_DIR + "/" + net_srcfile
 
       log.info("udev_rules_destdir #{udev_rules_destdir}")
       log.info("net_destfile #{net_destfile}")
@@ -184,6 +175,21 @@ module Yast
         )
       else
         log.info("File #{udev_rules_destdir} exists")
+      end
+
+      if Arch.s390
+        # chzdev creates the rules starting with "41-"
+        log.info("Copy S390 specific udev rule files (/etc/udev/rules/41*)")
+
+        WFM.Execute(
+          path(".local.bash"),
+          Builtins.sformat(
+            "/bin/cp -p %1/41-* '%2%3'",
+            File.join(ROOT_PATH, UDEV_RULES_DIR),
+            dest_root.shellescape,
+            UDEV_RULES_DIR
+          )
+        )
       end
 
       if !Mode.update
@@ -261,7 +267,7 @@ module Yast
     # @return [Boolean] whether some file was copied
     def copy_files_to_target(files, path)
       dest_dir = ::File.join(Installation.destdir, path)
-      glob_files = ::Dir.glob(files.map { |f| File.join(path, f) })
+      glob_files = ::Dir.glob(files.map { |f| File.join(ROOT_PATH, path, f) })
       return false if glob_files.empty?
 
       ::FileUtils.mkdir_p(dest_dir)

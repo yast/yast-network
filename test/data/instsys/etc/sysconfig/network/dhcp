@@ -1,0 +1,11 @@
+## Path:	Network/DHCP/DHCP client
+## Description:	DHCP client configuration
+## Type:        list(enabled,disabled,default,)
+## Default:     ""
+#
+# Default is to use the FQDN option, when the DHCLIENT_HOSTNAME_OPTION
+# variable is set to a full hostname, that is, when it contains a dot.
+# When DHCLIENT_HOSTNAME_OPTION is set to AUTO, short hostname from
+# /etc/hostname is send via hostname option 12 (same as SLES-11).
+#
+DHCLIENT_FQDN_ENABLED="enabled"

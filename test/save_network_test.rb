@@ -23,9 +23,125 @@ require_relative "test_helper"
 require "y2storage"
 
 require "yast"
+require "y2network/config"
 require "network/clients/save_network"
+require "tmpdir"
+
+Yast.import "Installation"
 
 describe Yast::SaveNetworkClient do
+  describe "#main" do
+    let(:destdir) { Dir.mktmpdir }
+    let(:destdir_sysconfig) { File.join(destdir, "etc", "sysconfig", "network") }
+    let(:scr_root) { File.join(DATA_PATH, "instsys") }
+    let(:yast_config) { Y2Network::Config.new(source: :sysconfig) }
+    let(:system_config) { Y2Network::Config.new(source: :sysconfig) }
+    let(:s390) { false }
+
+    before do
+      stub_const("Yast::SaveNetworkClient::ROOT_PATH", scr_root)
+      allow(Yast::Installation).to receive(:destdir).and_return(destdir)
+
+      FileUtils.mkdir_p(destdir_sysconfig)
+      ["dhcp", "config"].each do |file|
+        FileUtils.cp(File.join(DATA_PATH, "#{file}.original"), File.join(destdir_sysconfig, file))
+      end
+
+      allow(Yast::NetworkAutoconfiguration.instance).to receive(:configure_dns)
+      allow(Yast::Lan).to receive(:yast_config).and_return(yast_config)
+      allow(Yast::Lan).to receive(:system_config).and_return(system_config)
+      allow(Yast::Lan).to receive(:write_config)
+      allow(Yast::Lan).to receive(:Write)
+      allow(Yast::Arch).to receive(:s390).and_return(s390)
+      allow(Yast::NetworkService).to receive(:EnableDisableNow)
+    end
+
+    after do
+      FileUtils.remove_entry(destdir) if Dir.exist?(destdir)
+    end
+
+    it "copies wicked and DHCP files under /var/lib" do
+      subject.main
+      expect(File).to exist(File.join(destdir, "var", "lib", "dhcp", "dhclient.leases"))
+      expect(File).to exist(File.join(destdir, "var", "lib", "wicked", "lease.xml"))
+    end
+
+    it "copies udev rules" do
+      subject.main
+      content = File.read(File.join(destdir, "etc", "udev", "rules.d", "70-persistent-net.rules"))
+      expect(content).to match(/00:11:22:33:44:55/)
+    end
+
+    context "when running in s390" do
+      let(:s390) { true }
+
+      it "copies udev rules to 41-*" do
+        subject.main
+        content = File.read(File.join(destdir, "etc", "udev", "rules.d", "41-persistent-net.rules"))
+        expect(content).to match(/55:44:33:22:11:00/)
+      end
+    end
+
+    it "merges netconfig configuration" do
+      subject.main
+
+      config_file = CFA::GenericSysconfig.new(
+        File.join(destdir, "etc", "sysconfig", "network", "config")
+      )
+      config_file.load
+
+      expect(config_file.attributes["NETCONFIG_DNS_POLICY"])
+        .to eq("eth0")
+      expect(config_file.attributes["LINK_REQUIRED"])
+        .to eq("auto")
+    end
+
+    it "merges DHCP configuration" do
+      subject.main
+
+      dhcp_file = CFA::GenericSysconfig.new(
+        File.join(destdir, "etc", "sysconfig", "network", "dhcp")
+      )
+      dhcp_file.load
+
+      expect(dhcp_file.attributes["DHCLIENT_FQDN_ENABLED"]).to eq("enabled")
+      expect(dhcp_file.attributes["DHCLIENT_SET_HOSTNAME"]).to eq("no")
+    end
+
+    context "when virtualization support is installed" do
+      before do
+        allow(Yast::PackageSystem).to receive(:Installed).and_return(false)
+        allow(Yast::PackageSystem).to receive(:Installed).with("kvm").and_return(true)
+      end
+
+      it "proposes virtual interfaces configuration" do
+        expect(Yast::Lan).to receive(:ProposeVirtualized)
+        subject.main
+      end
+    end
+
+    context "during autoinstallation" do
+      before do
+        allow(Yast::Mode).to receive(:autoinst).and_return(true)
+      end
+
+      it "does not automatically configure the DNS" do
+        expect(Yast::NetworkAutoconfiguration.instance).to_not receive(:configure_dns)
+        subject.main
+      end
+    end
+
+    context "during update" do
+      before do
+        allow(Yast::Mode).to receive(:update).and_return(true)
+      end
+
+      it "does not modify the network" do
+        expect(subject).to_not receive(:save_network)
+        subject.main
+      end
+    end
+  end
 
   describe "#adjust_for_network_disks" do
     let(:template_file) { File.join(SCRStub::DATA_PATH, "ifcfg-eth0.template") }
@@ -65,54 +181,6 @@ describe Yast::SaveNetworkClient do
         subject.send(:adjust_for_network_disks, file)
         expect(::File.read(file)).to eq(::File.read(template_file))
       end
-    end
-  end
-
-  describe "#copy_dhcp_info" do
-    let(:wicked_path) { described_class::WICKED_DHCP_PATH }
-    let(:dhcpv4_path) { described_class::DHCPV4_PATH }
-    let(:dhcpv6_path) { described_class::DHCPV6_PATH }
-    let(:wicked_files) do
-      described_class::WICKED_DHCP_FILES.map { |f| File.join(wicked_path, f) }
-    end
-    let(:dhcpv4_files) { described_class::DHCP_FILES.map { |f| File.join(dhcpv4_path, f) } }
-    let(:dhcpv6_files) { described_class::DHCP_FILES.map { |f| File.join(dhcpv6_path, f) } }
-    before do
-      allow(Yast::Installation).to receive(:destdir).and_return("/mnt")
-      allow(::FileUtils).to receive(:mkdir_p)
-      allow(::FileUtils).to receive(:cp)
-      allow(::Dir).to receive(:glob).with(wicked_files).and_return(["1.xml", "2.xml"])
-      allow(::Dir).to receive(:glob).with(dhcpv4_files).and_return(["3.leases"])
-      allow(::Dir).to receive(:glob).with(dhcpv6_files).and_return(["4.leases"])
-    end
-
-    it "creates the wicked directory if not exist" do
-      expect(::FileUtils).to receive(:mkdir_p).with("/mnt/var/lib/wicked/")
-
-      subject.send(:copy_dhcp_info)
-    end
-
-    it "copies the wicked dhcp files" do
-      expect(::FileUtils).to receive(:cp)
-        .with(["1.xml", "2.xml"], "/mnt/var/lib/wicked/", preserve: true)
-
-      subject.send(:copy_dhcp_info)
-    end
-
-    it "creates the dhcp client dirs if not exist" do
-      expect(::FileUtils).to receive(:mkdir_p).with("/mnt/var/lib/dhcp/")
-      expect(::FileUtils).to receive(:mkdir_p).with("/mnt/var/lib/dhcp6/")
-
-      subject.send(:copy_dhcp_info)
-    end
-
-    it "copies the dhcp client files" do
-      expect(::FileUtils).to receive(:cp)
-        .with(["3.leases"], "/mnt/var/lib/dhcp/", preserve: true)
-      expect(::FileUtils).to receive(:cp)
-        .with(["4.leases"], "/mnt/var/lib/dhcp6/", preserve: true)
-
-      subject.send(:copy_dhcp_info)
     end
   end
 end
