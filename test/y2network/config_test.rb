@@ -27,6 +27,7 @@ require "y2network/connection_config/ethernet"
 require "y2network/connection_configs_collection"
 require "y2network/sysconfig/config_reader"
 require "y2network/sysconfig/config_writer"
+require "y2network/network_manager/config_writer"
 
 describe Y2Network::Config do
   before do
@@ -108,16 +109,53 @@ describe Y2Network::Config do
   end
 
   describe "#write" do
-    let(:writer) { instance_double(Y2Network::Sysconfig::ConfigWriter) }
+    let(:sysconfig_writer) { instance_double(Y2Network::Sysconfig::ConfigWriter) }
+    let(:nm_writer) { instance_double(Y2Network::NetworkManager::ConfigWriter) }
 
     before do
       allow(Y2Network::ConfigWriter).to receive(:for).with(:sysconfig)
-        .and_return(writer)
+        .and_return(sysconfig_writer)
+      allow(Y2Network::ConfigWriter).to receive(:for).with(:network_manager)
+        .and_return(nm_writer)
     end
 
-    it "writes the config using the required writer" do
-      expect(writer).to receive(:write).with(config, nil, only: nil)
-      config.write
+    it "writes the configuration using the writer for the given target" do
+      expect(nm_writer).to receive(:write).with(config, nil, only: nil)
+      config.write(target: :network_manager)
+    end
+
+    context "when the original configuration is given" do
+      let(:original) { instance_double(described_class) }
+
+      it "passes that configuration to the writer" do
+        expect(sysconfig_writer).to receive(:write).with(config, original, only: nil)
+        config.write(original: original)
+      end
+    end
+
+    context "when a set of sections is given" do
+      it "applies the configuration for those sections only" do
+        expect(sysconfig_writer).to receive(:write).with(config, nil, only: [:dns])
+        config.write(only: [:dns])
+      end
+    end
+
+    context "when no target is given" do
+      context "and a backend is set" do
+        before { config.backend = :network_manager }
+
+        it "writes the config using the writer for the backend" do
+          expect(nm_writer).to receive(:write).with(config, nil, only: nil)
+          config.write
+        end
+      end
+
+      context "and no backend is set" do
+        it "writes the config using the writer for the source" do
+          expect(sysconfig_writer).to receive(:write).with(config, nil, only: nil)
+          config.write
+        end
+      end
     end
   end
 
