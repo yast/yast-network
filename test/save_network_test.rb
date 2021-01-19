@@ -131,6 +131,21 @@ describe Yast::SaveNetworkClient do
       end
     end
 
+    context "when the backend is network manager" do
+      before do
+        allow(Y2Network::ProposalSettings.instance).to receive(:network_service)
+          .and_return(:network_manager)
+        FileUtils.mkdir_p(File.join(destdir, "etc", "NetworkManager", "system-connections"))
+      end
+
+      it "copies the NetworkManager configuration from the instsys" do
+        subject.main
+        expect(File).to exist(
+          File.join(destdir, "etc", "NetworkManager", "system-connections", "wlan0.nmconnection")
+        )
+      end
+    end
+
     context "during update" do
       before do
         allow(Yast::Mode).to receive(:update).and_return(true)
