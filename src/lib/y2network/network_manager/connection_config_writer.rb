@@ -31,15 +31,23 @@ module Y2Network
       def write(conn, old_conn = nil)
         return if conn == old_conn
 
-        file = CFA::NmConnection.new(SYSTEM_CONNECTIONS_PATH.join(conn.name).sub_ext(FILE_EXT))
+        path = SYSTEM_CONNECTIONS_PATH.join(conn.name).sub_ext(FILE_EXT)
+        file = CFA::NmConnection.new(path)
         handler_class = find_handler_class(conn.type)
         return nil if handler_class.nil?
+
+        ensure_permissions(path) unless ::File.exist?(path)
 
         handler_class.new(file).write(conn)
         file.save
       end
 
     private
+
+      def ensure_permissions(path)
+        ::FileUtils.touch(path)
+        ::File.chmod(0o600, path)
+      end
 
       # Returns the class to handle a given interface type
       #

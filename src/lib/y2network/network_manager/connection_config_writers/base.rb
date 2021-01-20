@@ -59,18 +59,18 @@ module Y2Network
         def add_ips(conn)
           ips_to_add = conn.ip_aliases.clone
           ips_to_add.append(conn.ip) if conn.ip
-          ipv4 = ips_to_add.select {|i| i&.address&.ipv4? }.map {|i| i.address.to_s }
-          ipv6 = ips_to_add.select {|i| i&.address&.ipv6? }.map {|i| i.address.to_s }
+          ipv4 = ips_to_add.select { |i| i&.address&.ipv4? }.map { |i| i.address.to_s }
+          ipv6 = ips_to_add.select { |i| i&.address&.ipv6? }.map { |i| i.address.to_s }
 
           unless ipv4.empty?
             file.ipv4["method"] = "manual"
             file.add_collection("ipv4", "address", ipv4)
           end
 
-          unless ipv6.empty?
-            file.ipv6["method"] = "manual"
-            file.add_collection("ipv6", "address", ipv6)
-          end
+          return if ipv6.empty?
+
+          file.ipv6["method"] = "manual"
+          file.add_collection("ipv6", "address", ipv6)
         end
 
         # Convenience method for writing the DHCP config

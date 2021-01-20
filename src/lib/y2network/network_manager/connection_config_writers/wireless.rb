@@ -39,8 +39,14 @@ module Y2Network
 
         # Writes autentication settings for WPA-EAP networks
         #
-        # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
+        # @param _conn [Y2Network::ConnectionConfig::Base] Configuration to write
         def write_eap_auth_settings(_conn)
+          # FIXME: incomplete
+          file.wifi_security["key-mgmt"] = "wpa-eap"
+          # wrong section name
+          #
+          # file.802_1x["eap"] = conn.eap_mode
+          # file.802_1x["phase2-auth"] = conn.eap_auth
         end
 
         # Writes authentication settings
@@ -69,9 +75,8 @@ module Y2Network
 
         # Writes autentication settings for WEP networks
         #
-        # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
-        def write_shared_auth_settings(_conn)
-        end
+        # @param _conn [Y2Network::ConnectionConfig::Base] Configuration to write
+        def write_shared_auth_settings(_conn); end
       end
     end
   end

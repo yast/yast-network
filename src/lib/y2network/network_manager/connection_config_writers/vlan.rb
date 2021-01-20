@@ -22,12 +22,15 @@ require "y2network/network_manager/connection_config_writers/base"
 module Y2Network
   module NetworkManager
     module ConnectionConfigWriters
-      # This class is responsible for writing the information from a ConnectionConfig::Ethernet
+      # This class is responsible for writing the information from a ConnectionConfig::Vlan
       # object to the underlying system.
-      class Ethernet < Base
+      class Vlan < Base
         # @see Y2Network::ConnectionConfigWriters::Base#update_file
-        def update_file(_conn)
-          file.connection["type"] = "ethernet"
+        # @param conn [Y2Network::ConnectionConfig::Vlan] Configuration to write
+        def update_file(conn)
+          file.vlan["id"] = conn.vlan_id
+          file.vlan["parent"] = conn.parent_device
+          file.vlan["type"] = "vlan"
         end
       end
     end
