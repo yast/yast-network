@@ -24,6 +24,7 @@ require "y2storage"
 
 require "yast"
 require "y2network/config"
+require "y2network/backends"
 require "network/clients/save_network"
 require "tmpdir"
 
@@ -35,7 +36,10 @@ describe Yast::SaveNetworkClient do
     let(:destdir_sysconfig) { File.join(destdir, "etc", "sysconfig", "network") }
     let(:scr_root) { File.join(DATA_PATH, "instsys") }
     let(:yast_config) { Y2Network::Config.new(source: :sysconfig) }
-    let(:system_config) { Y2Network::Config.new(source: :sysconfig) }
+    let(:system_config) do
+      Y2Network::Config.new(source: :sysconfig, backend: system_backend)
+    end
+    let(:system_backend) { Y2Network::Backends::Wicked.new }
     let(:s390) { false }
 
     before do
@@ -143,10 +147,8 @@ describe Yast::SaveNetworkClient do
         subject.main
       end
 
-      context "on live installation" do
-        before do
-          allow(Yast::Mode).to receive(:live_installation).and_return(true)
-        end
+      context "when running on network manager (e.g., live installation)" do
+        let(:system_backend) { Y2Network::Backends::NetworkManager.new }
 
         it "copies the NetworkManager configuration from the instsys" do
           expect(Yast::Lan).to_not receive(:write_config)

@@ -309,7 +309,7 @@ module Yast
     def configure_network_manager
       return unless Y2Network::ProposalSettings.instance.network_service == :network_manager
 
-      if Yast::Mode.live_installation
+      if Yast::Lan.system_config.backend&.id == :network_manager
         copy_files_to_target(["*"], File.join(NETWORK_MANAGER, "system-connections"))
       else
         Yast::Lan.yast_config.backend = :network_manager
