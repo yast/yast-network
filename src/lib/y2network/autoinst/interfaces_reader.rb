@@ -87,7 +87,7 @@ module Y2Network
         config.name = name_from_section(interface_section)
         config.interface = config.name # in autoyast name and interface is same
         if config.bootproto == BootProtocol::STATIC
-          # we need at leas some ip for the static configuration
+          # we need at least some ip for the static configuration
           if !interface_section.ipaddr && !interfaces_section.aliases
             msg = "Configuration for #{config.name} is invalid #{interface_section.inspect}"
             raise ArgumentError, msg
@@ -129,22 +129,19 @@ module Y2Network
       end
 
       # Loads and intializates interface_section's ipaddr attribute
+      #
+      # @param section [Hash] hash of AY profile's interface section as obtained from parser
+      #
       # @return [ConnectionConfig::IPConfig] created ipaddr object
-      def load_ipaddr(interface_section)
-        if !interface_section.ipaddr.empty?
-          ipaddr = IPAddress.from_string(interface_section.ipaddr)
-        end
+      def load_ipaddr(section)
+        ipaddr = IPAddress.from_string(section.ipaddr) if !section.ipaddr.empty?
+
         # Assign first netmask, as prefixlen has precedence so it will overwrite it
-        ipaddr.netmask = interface_section.netmask if !interface_section.netmask.to_s.empty?
-        if !interface_section.prefixlen.to_s.empty?
-          ipaddr.prefix = interface_section.prefixlen.to_i
-        end
-        if !interface_section.broadcast.empty?
-          broadcast = IPAddress.new(interface_section.broadcast)
-        end
-        if !interface_section.remote_ipaddr.empty?
-          remote = IPAddress.new(interface_section.remote_ipaddr)
-        end
+        ipaddr.netmask = section.netmask if !section.netmask.to_s.empty?
+        ipaddr.prefix = section.prefixlen.to_i if !section.prefixlen.to_s.empty?
+
+        broadcast = IPAddress.new(section.broadcast) if !section.broadcast.empty?
+        remote = IPAddress.new(section.remote_ipaddr) if !section.remote_ipaddr.empty?
 
         ConnectionConfig::IPConfig.new(
           ipaddr, broadcast: broadcast, remote_address: remote
@@ -152,6 +149,9 @@ module Y2Network
       end
 
       # Loads and initializates an IP alias according to given hash with alias details
+      #
+      # @param alias_h [Hash] hash of AY profile's alias section as obtained from parser
+      #
       # @return [ConnectionConfig::IPConfig] alias details
       def load_alias(alias_h, id: nil)
         ipaddr = IPAddress.from_string(alias_h["IPADDR"])
