@@ -137,7 +137,7 @@ module Y2Network
     #
     # @see Y2Network::ConfigWriter
     def write(original: nil, target: nil, only: nil)
-      target ||= source
+      target = target || backend&.id || source
       Y2Network::ConfigWriter.for(target).write(self, original, only: only)
     end
 

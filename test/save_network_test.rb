@@ -24,6 +24,7 @@ require "y2storage"
 
 require "yast"
 require "y2network/config"
+require "y2network/backends"
 require "network/clients/save_network"
 require "tmpdir"
 
@@ -35,7 +36,10 @@ describe Yast::SaveNetworkClient do
     let(:destdir_sysconfig) { File.join(destdir, "etc", "sysconfig", "network") }
     let(:scr_root) { File.join(DATA_PATH, "instsys") }
     let(:yast_config) { Y2Network::Config.new(source: :sysconfig) }
-    let(:system_config) { Y2Network::Config.new(source: :sysconfig) }
+    let(:system_config) do
+      Y2Network::Config.new(source: :sysconfig, backend: system_backend)
+    end
+    let(:system_backend) { Y2Network::Backends::Wicked.new }
     let(:s390) { false }
 
     before do
@@ -128,6 +132,31 @@ describe Yast::SaveNetworkClient do
       it "does not automatically configure the DNS" do
         expect(Yast::NetworkAutoconfiguration.instance).to_not receive(:configure_dns)
         subject.main
+      end
+    end
+
+    context "when the backend is network manager" do
+      before do
+        allow(Y2Network::ProposalSettings.instance).to receive(:network_service)
+          .and_return(:network_manager)
+        FileUtils.mkdir_p(File.join(destdir, "etc", "NetworkManager", "system-connections"))
+      end
+
+      it "writes the configuration to the underlying system" do
+        expect(Yast::Lan).to receive(:write_config)
+        subject.main
+      end
+
+      context "when running on network manager (e.g., live installation)" do
+        let(:system_backend) { Y2Network::Backends::NetworkManager.new }
+
+        it "copies the NetworkManager configuration from the instsys" do
+          expect(Yast::Lan).to_not receive(:write_config)
+          subject.main
+          expect(File).to exist(
+            File.join(destdir, "etc", "NetworkManager", "system-connections", "wlan0.nmconnection")
+          )
+        end
       end
     end
 

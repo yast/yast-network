@@ -105,13 +105,6 @@ module Yast
         { dir: ::File.join(ETC, "sysctl.d"), file: "70-yast.conf" }
       ]
 
-      # NetworkManager is usually the default in a live installation. Any
-      # configuration applied during the installation should be present in the
-      # target system.
-      if Y2Network::ProposalSettings.instance.network_service == :network_manager
-        copy_recipes << { dir: ::File.join(NETWORK_MANAGER, "system-connections"), file: "*" }
-      end
-
       # just copy files
       copy_recipes.each do |recipe|
         # can be shell pattern like ifcfg-*
@@ -298,10 +291,30 @@ module Yast
       # skipped or even only done in case of missing `networking -> interfaces`
       # section
       NetworkAutoconfiguration.instance.configure_virtuals
-      NetworkAutoconfiguration.instance.configure_dns unless Mode.autoinst
+
+      if !Mode.autoinst
+        NetworkAutoconfiguration.instance.configure_dns
+        configure_network_manager
+      end
 
       # this depends on DNS configuration
       configure_hosts
+    end
+
+    # Configures NetworkManager
+    #
+    # When running the live installation, it is just a matter of copying
+    # system-connections to the installed system. In a regular installation,
+    # write the settings in the Yast::Lan.yast_config object.
+    def configure_network_manager
+      return unless Y2Network::ProposalSettings.instance.network_service == :network_manager
+
+      if Yast::Lan.system_config.backend&.id == :network_manager
+        copy_files_to_target(["*"], File.join(NETWORK_MANAGER, "system-connections"))
+      else
+        Yast::Lan.yast_config.backend = :network_manager
+        Yast::Lan.write_config
+      end
     end
 
     # It does an automatic configuration of installed system
