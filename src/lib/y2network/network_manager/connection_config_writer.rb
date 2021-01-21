@@ -30,15 +30,6 @@ module Y2Network
 
       SYSTEM_CONNECTIONS_PATH = Pathname.new("/etc/NetworkManager/system-connections").freeze
       FILE_EXT = ".nmconnection".freeze
-      # @return [String] base directory
-      attr_reader :basedir
-
-      # Constructor
-      #
-      # @param basedir [String]
-      def initialize(basedir = Yast::Installation.destdir)
-        @basedir = basedir
-      end
 
       # @param conn [ConnectionConfig::Base] Connection configuration to be
       #   written
@@ -49,7 +40,7 @@ module Y2Network
       def write(conn, old_conn = nil, routes = [])
         return if conn == old_conn
 
-        path = path_for(conn)
+        path = SYSTEM_CONNECTIONS_PATH.join(conn.name).sub_ext(FILE_EXT)
         file = CFA::NmConnection.new(path)
         handler_class = find_handler_class(conn.type)
         return nil if handler_class.nil?
@@ -62,21 +53,14 @@ module Y2Network
 
     private
 
-      # Convenience method to obtain the path for writing the given connection
-      # configuration
-      #
-      # @param conn [ConnectionConfig::Base] Connection config to be written
-      def path_for(conn)
-        conn_file_path = SYSTEM_CONNECTIONS_PATH.join(conn.name).sub_ext(FILE_EXT)
-        Pathname.new(File.join(basedir, conn_file_path))
-      end
-
       # Convenience method to ensure the new configuration file permissions
       #
       # @param path [Pathname] connection configuration file path
       def ensure_permissions(path)
-        ::FileUtils.touch(path)
-        ::File.chmod(0o600, path)
+        final_path = ::File.join(Yast::WFM.scr_root, path)
+
+        ::FileUtils.touch(final_path)
+        ::File.chmod(0o600, final_path)
       end
 
       # Returns the class to handle a given interface type

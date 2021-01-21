@@ -32,18 +32,14 @@ module CFA
       "bridge", "connection", "ethernet", "ipv4", "ipv6", "vlan", "wifi", "wifi_security"
     ].freeze
 
-    # @return [String] file path
-    attr_reader :path
-
     # Constructor
     #
     # @param path [String] File path
     # @param file_handler [.read, .write] Object to read/write the file.
     def initialize(path, file_handler: nil)
-      @path = path
       # FIXME: The Networkmanager lense writes the values surrounded by double
       # quotes which is not valid
-      super(AugeasParser.new("Puppet.lns"), @path, file_handler: file_handler)
+      super(AugeasParser.new("Puppet.lns"), path, file_handler: file_handler)
     end
 
     # Returns the augeas tree for the given section
