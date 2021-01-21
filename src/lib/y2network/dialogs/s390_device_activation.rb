@@ -21,7 +21,7 @@ require "cwm/dialog"
 require "y2network/s390_device_activator"
 require "y2network/widgets/s390_common"
 require "y2network/widgets/s390_channels"
-require "y2network/sysconfig/interfaces_reader"
+require "y2network/wicked/interfaces_reader"
 require "yast2/popup"
 
 Yast.import "Lan"
@@ -117,7 +117,7 @@ module Y2Network
       end
 
       def reader
-        @reader ||= Y2Network::Sysconfig::InterfacesReader.new
+        @reader ||= Y2Network::Wicked::InterfacesReader.new
       end
 
       def config

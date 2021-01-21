@@ -22,8 +22,8 @@ require "y2network/config_reader"
 describe Y2Network::ConfigReader do
   describe ".for" do
     it "returns the reader for the given source" do
-      reader = Y2Network::ConfigReader.for(:sysconfig)
-      expect(reader).to be_a(Y2Network::Sysconfig::ConfigReader)
+      reader = Y2Network::ConfigReader.for(:wicked)
+      expect(reader).to be_a(Y2Network::Wicked::ConfigReader)
     end
   end
 end

@@ -29,7 +29,7 @@ describe Y2Network::AutoinstProfile::NetworkingSection do
         routing:    routing,
         dns:        dns,
         hostname:   hostname,
-        source:     :sysconfig
+        source:     :wicked
       )
     end
     let(:routing) { double("Y2Network::Routing") }

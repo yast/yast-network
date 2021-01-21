@@ -25,7 +25,7 @@ written in the filesystem by using a *configuration writer*.
                             +--------+
 
 Obviously, we should implement configuration readers and writers for whathever backend we would like
-to support. At this point of time, only `Sysconfig` and `Autoinst` are supported.
+to support. At this point of time, only `Wicked` and `Autoinst` are supported.
 
 ### The Configuration Classes
 
@@ -59,11 +59,11 @@ As a developer, you rarely will need to access to readers/writers because `Yast:
 an API to read and write the configuration. See the [Accessing the
 Configuration](#accessing-the-configuration) section for further details.
 
-#### Sysconfig
+#### Wicked
 
-The sysconfig backend support is composed by these files:
+The Wicked backend support is composed by these files:
 
-    src/lib/y2network/sysconfig
+    src/lib/y2network/wicked
     ├── config_reader.rb <- READER
     ├── config_writer.rb <- WRITER
     ├── connection_config_reader.rb
@@ -79,19 +79,19 @@ The sysconfig backend support is composed by these files:
     ├── dns_reader.rb
     └── interfaces_reader.rb
 
-{Y2Network::Sysconfig::ConfigReader} and {Y2Network::Sysconfig::ConfigWriter} are the reader and
+{Y2Network::Wicked::ConfigReader} and {Y2Network::Wicked::ConfigWriter} are the reader and
 writer classes. Each of them cooperates with a set of ancillary classes in order to get the job
 done.
 
-{Y2Network::Sysconfig::DNSReader}, {Y2Network::Sysconfig::InterfacesReader} and
-{Y2Network::Sysconfig::ConnectionConfigReader} are involved in reading the configuration. The logic
+{Y2Network::Wicked::DNSReader}, {Y2Network::Wicked::InterfacesReader} and
+{Y2Network::Wicked::ConnectionConfigReader} are involved in reading the configuration. The logic
 to read the configuration for a connection (e.g., `ifcfg-eth0`, `ifcfg-wlan0`, etc.) is implemented
 in a set of smaller classes (one for each time of connection) under
-{Y2Network::Sysconfig::ConnectionConfigReaders}.
+{Y2Network::Wicked::ConnectionConfigReaders}.
 
 {Y2Network::ConfigWriters::InterfacesWriter}, {Y2Network::ConfigWriters::DNSWriter} and
-{Y2Network::Sysconfig::ConnectionConfigWriter}, including smaller classes under
-{Y2Network::Sysconfig::ConnectionConfigWriters}, are involved in writing the configuration.
+{Y2Network::Wicked::ConnectionConfigWriter}, including smaller classes under
+{Y2Network::Wicked::ConnectionConfigWriters}, are involved in writing the configuration.
 
 Last but not least, there are additional classes like {CFA::RoutesFile} and {CFA::InterfaceFile}
 which abstract the details of reading/writing `ifroute` and `ifcfg` files.
@@ -100,7 +100,7 @@ which abstract the details of reading/writing `ifroute` and `ifcfg` files.
 
 AutoYaST is a special case in the sense that it reads the information from a profile, instead of
 using the running system as reference. Additionally, it does not implement a writer because the
-configuration will be written using a different backend (like `sysconfig`).
+configuration will be written using a different backend (like `wicked`).
 
     src/lib/y2network/autoinst/
     ├── config_reader.rb

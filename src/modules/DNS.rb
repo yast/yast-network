@@ -29,7 +29,7 @@
 # respecting DHCP.
 require "yast"
 require "shellwords"
-require "y2network/sysconfig/config_writer"
+require "y2network/wicked/config_writer"
 
 module Yast
   class DNSClass < Module

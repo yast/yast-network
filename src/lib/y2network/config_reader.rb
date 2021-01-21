@@ -20,9 +20,9 @@ module Y2Network
   module ConfigReader
     # Config reader for a given source
     #
-    # @param source [Symbol] Source name (e.g., :sysconfig)
+    # @param source [Symbol] Source name (e.g., :wicked)
     # @param opts  [Array<Object>] Reader options
-    # @return [Y2Network::Autoinst::ConfigReader,Y2Network::Sysconfig::ConfigReader]
+    # @return [Y2Network::Autoinst::ConfigReader,Y2Network::Wicked::ConfigReader]
     def self.for(source, *opts)
       require "y2network/#{source}/config_reader"
       modname = source.to_s.split("_").map(&:capitalize).join

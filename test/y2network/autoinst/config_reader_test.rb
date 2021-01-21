@@ -23,7 +23,7 @@ require_relative "../../test_helper"
 require "y2network/config"
 require "y2network/autoinst_profile/networking_section"
 require "y2network/autoinst/config_reader"
-require "y2network/sysconfig/interfaces_reader"
+require "y2network/wicked/interfaces_reader"
 
 describe Y2Network::Autoinst::ConfigReader do
   let(:subject) { described_class.new(networking_section, system_config) }
