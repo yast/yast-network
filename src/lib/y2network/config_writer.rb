@@ -43,7 +43,7 @@ module Y2Network
     class << self
       # Returns a configuration writer for a given source
       #
-      # @param source [Symbol] Source name (e.g., :sysconfig)
+      # @param source [Symbol] Source name (e.g., :wicked)
       # @return [Y2Network::ConfigWriters::ConfigWriter]
       #
       # @see Y2Network::ConfigWriters::ConfigWriter

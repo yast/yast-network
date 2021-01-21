@@ -31,7 +31,7 @@ Yast.import "Lan"
 describe "LanClass" do
   subject { Yast::Lan }
 
-  let(:system_config) { Y2Network::Config.new(interfaces: [], source: :sysconfig) }
+  let(:system_config) { Y2Network::Config.new(interfaces: [], source: :wicked) }
   let(:backend) { :wicked }
 
   describe "#Packages" do

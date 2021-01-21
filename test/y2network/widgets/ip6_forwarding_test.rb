@@ -29,7 +29,7 @@ describe Y2Network::Widgets::IP6Forwarding do
   subject { described_class.new(config) }
   let(:config) do
     Y2Network::Config.new(
-      source:     :sysconfig,
+      source:     :wicked,
       interfaces: [Y2Network::Interface.new("eth0")],
       routing:    Y2Network::Routing.new(tables: [])
     )

@@ -18,7 +18,7 @@
 # find current contact information at www.suse.com.
 
 require "yast"
-require "y2network/sysconfig/hostname_reader"
+require "y2network/wicked/hostname_reader"
 
 Yast.import "Stage"
 

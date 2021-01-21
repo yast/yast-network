@@ -34,7 +34,7 @@ describe Y2Network::Clients::Routing do
   end
 
   let(:table) { Y2Network::RoutingTable.new([route]) }
-  let(:config) { Y2Network::Config.new(interfaces: [], routing: routing, source: :sysconfig) }
+  let(:config) { Y2Network::Config.new(interfaces: [], routing: routing, source: :wicked) }
   let(:routing) { Y2Network::Routing.new(tables: [table], forward_ipv4: true, forward_ipv6: false) }
 
   before do

@@ -22,7 +22,7 @@
 require_relative "../../test_helper"
 require "y2network/autoinst_profile/dns_section"
 require "y2network/autoinst/dns_reader"
-require "y2network/sysconfig/hostname_reader"
+require "y2network/wicked/hostname_reader"
 
 describe Y2Network::Autoinst::DNSReader do
   subject { described_class.new(dns_section) }
@@ -40,10 +40,10 @@ describe Y2Network::Autoinst::DNSReader do
       "resolv_conf_policy" => "some-policy"
     }
   end
-  let(:hostname_reader) { instance_double(Y2Network::Sysconfig::HostnameReader) }
+  let(:hostname_reader) { instance_double(Y2Network::Wicked::HostnameReader) }
 
   before do
-    allow(Y2Network::Sysconfig::HostnameReader).to receive(:new).and_return(hostname_reader)
+    allow(Y2Network::Wicked::HostnameReader).to receive(:new).and_return(hostname_reader)
   end
 
   describe "#config" do

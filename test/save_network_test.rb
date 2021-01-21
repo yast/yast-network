@@ -35,9 +35,9 @@ describe Yast::SaveNetworkClient do
     let(:destdir) { Dir.mktmpdir }
     let(:destdir_sysconfig) { File.join(destdir, "etc", "sysconfig", "network") }
     let(:scr_root) { File.join(DATA_PATH, "instsys") }
-    let(:yast_config) { Y2Network::Config.new(source: :sysconfig) }
+    let(:yast_config) { Y2Network::Config.new(source: :wicked) }
     let(:system_config) do
-      Y2Network::Config.new(source: :sysconfig, backend: system_backend)
+      Y2Network::Config.new(source: :wicked, backend: system_backend)
     end
     let(:system_backend) { Y2Network::Backends::Wicked.new }
     let(:s390) { false }

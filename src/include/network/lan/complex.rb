@@ -175,7 +175,7 @@ module Yast
       # Currently just a smoketest for new config storage -
       # something what should replace Lan module in the bright future
       # TODO: find a suitable place for this config storage
-      Y2Network::Config.from(:sysconfig)
+      Y2Network::Config.from(:wicked)
 
       if Lan.HaveXenBridge
         if !Popup.ContinueCancel(

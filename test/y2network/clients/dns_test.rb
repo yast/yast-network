@@ -27,7 +27,7 @@ describe Y2Network::Clients::DNS do
 
   let(:table) { Y2Network::RoutingTable.new([route]) }
   let(:config) do
-    Y2Network::Config.new(interfaces: [], dns: dns, hostname: hostname, source: :sysconfig)
+    Y2Network::Config.new(interfaces: [], dns: dns, hostname: hostname, source: :wicked)
   end
   let(:dns) { Y2Network::DNS.new(resolv_conf_policy: "auto") }
   let(:hostname) do

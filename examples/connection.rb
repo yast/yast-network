@@ -43,7 +43,7 @@ require "y2network/connection_config/wireless"
 
 # given an interfaces list (interfaces)
 
-config = Y2Network::Config.from(:sysconfig)
+config = Y2Network::Config.from(:wicked)
 
 eth0 = config.interfaces.by_name("eth0")
 eth_conn = Y2Network::ConnectionConfig::Ethernet.new

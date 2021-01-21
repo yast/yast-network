@@ -35,7 +35,7 @@ describe Y2Network::InterfaceConfigBuilder do
     res
   end
 
-  let(:config) { Y2Network::Config.new(interfaces: interfaces, source: :sysconfig) }
+  let(:config) { Y2Network::Config.new(interfaces: interfaces, source: :wicked) }
   let(:interfaces) { Y2Network::InterfacesCollection.new([eth0]) }
   let(:eth0) { Y2Network::PhysicalInterface.new("eth0") }
 

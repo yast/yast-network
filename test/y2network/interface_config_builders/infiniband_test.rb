@@ -33,7 +33,7 @@ describe Y2Network::InterfaceConfigBuilders::Infiniband do
     res
   end
 
-  let(:config) { Y2Network::Config.new(interfaces: interfaces, source: :sysconfig) }
+  let(:config) { Y2Network::Config.new(interfaces: interfaces, source: :wicked) }
   let(:interfaces) { Y2Network::InterfacesCollection.new([ib0]) }
   let(:ib0) { Y2Network::PhysicalInterface.new("ib0") }
 

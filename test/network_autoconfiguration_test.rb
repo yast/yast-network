@@ -66,7 +66,7 @@ def probe_netcard_factory(num)
 end
 
 describe Yast::NetworkAutoconfiguration do
-  let(:yast_config) { Y2Network::Config.new(source: :sysconfig) }
+  let(:yast_config) { Y2Network::Config.new(source: :wicked) }
   let(:system_config) { yast_config.copy }
 
   before do
