@@ -107,7 +107,7 @@ module Y2Network
       #
       # @param iface  [Interface,nil] Interface to search routes for; nil will
       #   return the global routes file
-      # @return [Y2Network::ConfigWriters::RoutesFile]
+      # @return [CFA::RoutesFile]
       def routes_file_for(iface)
         return CFA::RoutesFile.new unless iface
 
