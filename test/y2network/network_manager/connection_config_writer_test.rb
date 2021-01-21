@@ -54,7 +54,7 @@ describe Y2Network::NetworkManager::ConnectionConfigWriter do
   let(:path) { "/etc/NetworkManager/system-connections/eth0.nmconnection" }
 
   let(:file) do
-    instance_double(CFA::NmConnection, save: nil, path: path)
+    instance_double(CFA::NmConnection, save: nil)
   end
 
   describe "#write" do
