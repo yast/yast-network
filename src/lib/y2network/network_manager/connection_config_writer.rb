@@ -17,8 +17,11 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
+require "yast"
 require "cfa/nm_connection"
 require "pathname"
+
+Yast.import "Installation"
 
 module Y2Network
   module NetworkManager
@@ -27,22 +30,37 @@ module Y2Network
 
       SYSTEM_CONNECTIONS_PATH = Pathname.new("/etc/NetworkManager/system-connections").freeze
       FILE_EXT = ".nmconnection".freeze
+      # @return [String] base directory
+      attr_reader :basedir
 
-      def write(conn, old_conn = nil)
+      # Constructor
+      #
+      # @param basedir [String]
+      def initialize(basedir = Yast::Installation.destdir)
+        @basedir = basedir
+      end
+
+      def write(conn, old_conn = nil, routes = [])
         return if conn == old_conn
 
-        path = SYSTEM_CONNECTIONS_PATH.join(conn.name).sub_ext(FILE_EXT)
+        path = path_for(conn)
         file = CFA::NmConnection.new(path)
         handler_class = find_handler_class(conn.type)
         return nil if handler_class.nil?
 
         ensure_permissions(path) unless ::File.exist?(path)
 
-        handler_class.new(file).write(conn)
+        handler_class.new(file).write(conn, routes)
         file.save
       end
 
     private
+
+      def path_for(conn)
+        Yast.import "Installation"
+        conn_file_path = SYSTEM_CONNECTIONS_PATH.join(conn.name).sub_ext(FILE_EXT)
+        Pathname.new(File.join(basedir, conn_file_path))
+      end
 
       def ensure_permissions(path)
         ::FileUtils.touch(path)
