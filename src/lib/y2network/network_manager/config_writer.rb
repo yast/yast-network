@@ -35,8 +35,17 @@ module Y2Network
       def write_connections(config, _old_config)
         writer = Y2Network::NetworkManager::ConnectionConfigWriter.new
         config.connections.each do |conn|
-          writer.write(conn, nil, config.routing.routes) # FIXME
+          writer.write(conn, nil, routes_for(conn, config.routing.routes)) # FIXME
         end
+      end
+
+      # Finds routes for a given connection
+      #
+      # @param conn [ConnectionConfig::Base] Connection configuration
+      # @param routes [Array<Route>] List of routes to search in
+      # @return [Array<Route>] List of routes for the given connection
+      def routes_for(conn, routes)
+        routes.select { |r| r.interface&.name == conn.name }
       end
     end
   end

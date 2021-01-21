@@ -40,6 +40,12 @@ module Y2Network
         @basedir = basedir
       end
 
+      # @param conn [ConnectionConfig::Base] Connection configuration to be
+      #   written
+      # @param old_conn [ConnectionConfig::Base] Original connection
+      #   configuration
+      # @param routes [Array<Routes>] routes associated with the connection to be
+      #   written
       def write(conn, old_conn = nil, routes = [])
         return if conn == old_conn
 
@@ -56,12 +62,18 @@ module Y2Network
 
     private
 
+      # Convenience method to obtain the path for writing the given connection
+      # configuration
+      #
+      # @param conn [ConnectionConfig::Base] Connection config to be written
       def path_for(conn)
-        Yast.import "Installation"
         conn_file_path = SYSTEM_CONNECTIONS_PATH.join(conn.name).sub_ext(FILE_EXT)
         Pathname.new(File.join(basedir, conn_file_path))
       end
 
+      # Convenience method to ensure the new configuration file permissions
+      #
+      # @param path [Pathname] connection configuration file path
       def ensure_permissions(path)
         ::FileUtils.touch(path)
         ::File.chmod(0o600, path)

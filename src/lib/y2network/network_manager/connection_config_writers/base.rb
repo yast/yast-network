@@ -40,7 +40,7 @@ module Y2Network
         # Writes connection information to the interface configuration file
         #
         # @param conn [Y2Network::ConnectionConfig::Base] Connection to take settings from
-        # @param routes [<Array<Route>]
+        # @param routes [<Array<Y2Network::Route>] routes associated with the connection
         def write(conn, routes = [])
           file.connection["id"] = conn.name
           file.connection["autoconnect"] = "false" if ["manual", "off"].include? conn.startmode.name
@@ -48,18 +48,21 @@ module Y2Network
           file.connection["interface-name"] = conn.interface
           file.connection["zone"] = conn.firewall_zone unless ["", nil].include? conn.firewall_zone
           conn.bootproto.dhcp? ? configure_dhcp(conn) : configure_ips(conn)
-          configure_routes(conn, routes)
+          configure_routes(routes)
           update_file(conn)
         end
 
       private
 
-        def configure_routes(conn, routes)
-          routes.select { |r| (r.interface&.name == conn.name) && r.is_default? }.each do |route|
-            configure_gateway(route)
-          end
+        # Convenience method to write routing configuration associated with the
+        # connection config to be written
+        #
+        # @param routes [<Array<Y2Network::Route>] routes associated with the connection
+        def configure_routes(routes)
+          routes.select(&:default?).each { |r| configure_gateway(r) }
         end
 
+        # @param route [Y2Network::Route] route to be written
         def configure_gateway(route)
           section = route.gateway.ipv4? ? file.ipv4 : file.ipv6
           section["gateway"] = route.gateway.to_s
