@@ -40,23 +40,36 @@ module Y2Network
         # Writes connection information to the interface configuration file
         #
         # @param conn [Y2Network::ConnectionConfig::Base] Connection to take settings from
-        def write(conn)
+        # @param routes [<Array<Route>]
+        def write(conn, routes = [])
           file.connection["id"] = conn.name
           file.connection["autoconnect"] = "false" if ["manual", "off"].include? conn.startmode.name
           file.connection["permissions"] = nil
           file.connection["interface-name"] = conn.interface
           file.connection["zone"] = conn.firewall_zone unless ["", nil].include? conn.firewall_zone
-          conn.bootproto.dhcp? ? configure_dhcp(conn) : add_ips(conn)
+          conn.bootproto.dhcp? ? configure_dhcp(conn) : configure_ips(conn)
+          configure_routes(conn, routes)
           update_file(conn)
         end
 
       private
 
+        def configure_routes(conn, routes)
+          routes.select { |r| (r.interface&.name == conn.name) && r.is_default? }.each do |route|
+            configure_gateway(route)
+          end
+        end
+
+        def configure_gateway(route)
+          section = route.gateway.ipv4? ? file.ipv4 : file.ipv6
+          section["gateway"] = route.gateway.to_s
+        end
+
         # FIXME: Gateway is missing
         # Convenience method for writing the static IP configuration
         #
         # @param conn [Y2Network::ConnectionConfig::Base] Connection to take settings from
-        def add_ips(conn)
+        def configure_ips(conn)
           ips_to_add = conn.ip_aliases.clone
           ips_to_add.append(conn.ip) if conn.ip
           ipv4 = ips_to_add.select { |i| i&.address&.ipv4? }.map { |i| i.address.to_s }

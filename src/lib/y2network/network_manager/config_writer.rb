@@ -35,7 +35,7 @@ module Y2Network
       def write_connections(config, _old_config)
         writer = Y2Network::NetworkManager::ConnectionConfigWriter.new
         config.connections.each do |conn|
-          writer.write(conn, nil) # FIXME
+          writer.write(conn, nil, config.routing.routes) # FIXME
         end
       end
     end
