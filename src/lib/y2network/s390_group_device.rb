@@ -40,16 +40,19 @@ module Y2Network
     attr_accessor :id
     # @return [Y2Network::Interface,nil)
     attr_accessor :interface
+    # @return [Boolean]
+    attr_accessor :online
 
     alias_method :name, :id
 
     # @param type [String]
     # @param id [String]
     # @param interface [String, nil]
-    def initialize(type, id, interface = nil)
+    def initialize(type, id, interface = nil, online = true)
       @type = Y2Network::InterfaceType.from_short_name(type)
       @id = id
       @interface = interface
+      @online = online
     end
 
     # Obtains the hwinfo associated with the read channel
@@ -86,12 +89,12 @@ module Y2Network
       #   not
       # @return [Array<Y2Network::S390GroupDevice>] list of s390 group devices
       def list(type, offline = true)
-        cmd = [LIST_CMD, type, "-c", "id,names", "-n"]
+        cmd = [LIST_CMD, type, "-c", "id,on,names", "-n"]
         cmd << "--offline" if offline
 
         Yast::Execute.stdout.locally!(*cmd).split("\n").map do |device|
-          id, iface_name = device.split(" ")
-          new(type, id, iface_name)
+          id, online, iface_name = device.split(" ")
+          new(type, id, iface_name, online == "yes")
         end
       end
 
