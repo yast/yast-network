@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Jan 22 17:03:54 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
+
+- Suggest to modify the VLAN interface name when the VLAN ID is
+  modified (bsc#1174363)
+- 4.2.90
+
+-------------------------------------------------------------------
 Mon Jan 11 13:28:26 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
 
 - Fix network configuration progress bar steps (bsc#1180702)
