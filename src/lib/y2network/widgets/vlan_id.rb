@@ -42,6 +42,9 @@ module Y2Network
       end
 
       def store
+        return unless modified?
+
+        @config.name = suggested_name if suggest_vlan_name
         @config.vlan_id = value
       end
 
@@ -51,6 +54,25 @@ module Y2Network
 
       def maximum
         9999
+      end
+
+    private
+
+      def modified?
+        @config.vlan_id != value
+      end
+
+      def suggested_name
+        "vlan#{value}"
+      end
+
+      def suggest_vlan_name
+        Yast::Popup.YesNo(
+          format(
+            _("Would you like to adapt the interface name from '%s' to '%s'?"),
+            @config.name, suggested_name
+          )
+        )
       end
     end
   end
