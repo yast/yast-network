@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Jan 22 09:19:05 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
+
+- Added basic support for writing the network configuration to the
+  NetworkManager backend (bsc#1180716)
+- 4.3.39
+
+-------------------------------------------------------------------
 Mon Jan 11 13:28:26 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
 
 - Fix network configuration progress bar steps (bsc#1180702)
