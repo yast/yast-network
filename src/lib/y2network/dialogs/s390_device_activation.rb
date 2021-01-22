@@ -88,7 +88,7 @@ module Y2Network
           if configured
             interface_name = activator.configured_interface
             builder.name = interface_name
-            add_interface(interface_name)
+            online!(builder)
           end
 
           if !configured || builder.name.empty?
@@ -122,6 +122,16 @@ module Y2Network
 
       def config
         Yast::Lan.yast_config
+      end
+
+      def online!(builder)
+        add_interface(builder.name)
+
+        device = config.s390_devices.by_id(builder.device_id)
+        return unless device
+
+        device.online = true
+        device.interface = builder.name
       end
 
       def add_interface(name)

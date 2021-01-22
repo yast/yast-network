@@ -47,8 +47,9 @@ module Y2Network
 
     # @param type [String]
     # @param id [String]
+    # @param online [Boolean]
     # @param interface [String, nil]
-    def initialize(type, id, interface = nil, online = true)
+    def initialize(type, id, online = false, interface = nil)
       @type = Y2Network::InterfaceType.from_short_name(type)
       @id = id
       @interface = interface
@@ -60,11 +61,9 @@ module Y2Network
       Y2Network::Hwinfo.netcards.find { |h| h.busid == id.to_s.split(":").first }
     end
 
-    # Check whether the device is online or not
-    def online?
-      cmd = [LIST_CMD, id, "-c", "on", "-n"]
-
-      Yast::Execute.stdout.locally!(cmd).split("\n").first == "yes"
+    # Check whether the device is offline or not
+    def offline?
+      !online
     end
 
     # Determines whether two s390 group devices are the same
@@ -94,7 +93,7 @@ module Y2Network
 
         Yast::Execute.stdout.locally!(*cmd).split("\n").map do |device|
           id, online, iface_name = device.split(" ")
-          new(type, id, iface_name, online == "yes")
+          new(type, id, online == "yes", iface_name)
         end
       end
 
