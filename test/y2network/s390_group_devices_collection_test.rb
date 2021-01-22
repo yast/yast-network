@@ -24,7 +24,9 @@ describe Y2Network::S390GroupDevicesCollection do
   subject(:collection) { described_class.new(devices) }
 
   let(:qeth_0700) { Y2Network::S390GroupDevice.new("qeth", "0.0.0700:0.0.0701:0.0.0702") }
-  let(:qeth_0800) { Y2Network::S390GroupDevice.new("qeth", "0.0.0800:0.0.0801:0.0.0802", "eth0") }
+  let(:qeth_0800) do
+    Y2Network::S390GroupDevice.new("qeth", "0.0.0800:0.0.0801:0.0.0802", true, "eth0")
+  end
   let(:devices) { [qeth_0700, qeth_0800] }
 
   describe "#by_id" do

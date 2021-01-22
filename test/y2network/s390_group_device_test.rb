@@ -25,7 +25,7 @@ describe Y2Network::S390GroupDevice do
   let(:qeth_0800_id) { "0.0.0800:0.0.0801:0.0.0802" }
   let(:ctc_c000_id) { "0.0.c000:0.0.c001" }
   let(:qeth_0700) { described_class.new("qeth", qeth_0700_id) }
-  let(:qeth_0800) { described_class.new("qeth", qeth_0800_id, "eth0") }
+  let(:qeth_0800) { described_class.new("qeth", qeth_0800_id, true, "eth0") }
   let(:ctc0) { described_class.new("ctc", ctc_c000_id) }
   subject(:device) { qeth_0700 }
 
@@ -34,19 +34,16 @@ describe Y2Network::S390GroupDevice do
     allow(Yast::Execute).to receive(:stdout).and_return(executor)
   end
 
-  describe "#online?" do
-    context "when the s390 group device is online according to lszdev" do
+  describe "#offline?" do
+    context "when the s390 group device is offline" do
       it "returns true" do
-        expect(executor).to receive(:locally!).and_return("yes\n")
-
-        expect(device.online?).to eq(true)
+        expect(device.offline?).to eq(true)
       end
     end
 
-    context "when the s390 group device is offline according to lszdev" do
+    context "when the s390 group device is online" do
       it "returns false" do
-        expect(executor).to receive(:locally!).and_return("no\n")
-        expect(device.online?).to eq(false)
+        expect(qeth_0800.offline?).to eq(false)
       end
     end
   end

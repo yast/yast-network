@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Jan 22 13:01:40 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
+
+- Cache the online status of s390 group devices speeding up the
+  population of the devices overview table (bsc#1180702)
+- 4.3.40
+
+-------------------------------------------------------------------
 Fri Jan 22 09:19:05 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
 
 - Added basic support for writing the network configuration to the

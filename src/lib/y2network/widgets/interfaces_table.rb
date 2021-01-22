@@ -57,7 +57,9 @@ module Y2Network
       def items
         items_list = []
         config.interfaces.each { |i| items_list << interface_item(i) }
-        config.s390_devices.each { |d| items_list << device_item(d) unless d.online? }
+        config.s390_devices.select(&:offline?).each do |device|
+          items_list << device_item(device)
+        end
 
         items_list
       end
