@@ -34,6 +34,15 @@ describe Y2Network::Dialogs::S390DeviceActivation do
   let(:yast_config) { Y2Network::Config.new(source: :wicked, s390_devices: s390_devices) }
   let(:s390_devices) { Y2Network::S390GroupDevicesCollection.new([qeth_0700]) }
   let(:qeth_0700) { Y2Network::S390GroupDevice.new("qeth", "0.0.0700:0.0.0701:0.0.0702") }
+  let(:new_interface) { Y2Network::Interface.new("eth4") }
+  let(:interfaces_reader) do
+    double(Y2Network::Wicked::InterfacesReader,
+      interfaces: Y2Network::InterfacesCollection.new([new_interface]))
+  end
+
+  before do
+    allow(subject).to receive(:reader).and_return(interfaces_reader)
+  end
 
   subject { described_class.new(activator) }
 
@@ -55,8 +64,7 @@ describe Y2Network::Dialogs::S390DeviceActivation do
     before do
       allow(subject).to receive(:config).and_return(yast_config)
       allow(activator).to receive(:configure).and_return(configure_output)
-      allow(activator).to receive(:configured_interface).and_return("eth4")
-      allow(subject).to receive(:add_interface)
+      allow(activator).to receive(:configured_interface).and_return(new_interface.name)
       allow(subject).to receive(:cwm_show).and_return(dialog_action)
       allow(Yast::Popup).to receive(:ReallyAbort)
     end
@@ -70,16 +78,16 @@ describe Y2Network::Dialogs::S390DeviceActivation do
       context "when activated the device" do
         it "sets the builder name with the associated interface" do
           subject.run
-          expect(builder.name).to eql("eth4")
+          expect(builder.name).to eql(new_interface.name)
         end
 
         it "adds the new interface to the config" do
-          expect(subject).to receive(:add_interface).with("eth4")
+          expect(yast_config.interfaces).to receive(:<<).with(new_interface)
           subject.run
-          expect(qeth_0700.interface).to eq("eth4")
+          expect(qeth_0700.interface).to eq(new_interface.name)
         end
 
-        it "sets the s390 group device as online" do
+        it "refresh the s390 group device online status" do
           expect { subject.run }.to change { qeth_0700.online }.from(false).to(true)
         end
 
