@@ -35,7 +35,7 @@ describe Yast::DNS do
   let(:logger) { double(info: true, debug: true) }
   let(:lan_config) do
     Y2Network::Config.new(
-      dns: dns_config, hostname: hostname_config, source: :sysconfig,
+      dns: dns_config, hostname: hostname_config, source: :wicked,
       connections: connections, interfaces: interfaces
     )
   end

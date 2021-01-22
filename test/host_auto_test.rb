@@ -41,6 +41,10 @@ describe Yast::HostAutoClient do
       allow(Yast::WFM).to receive(:Args).with(1).and_return(hosts)
     end
 
+    after do
+      Yast::Host.clear
+    end
+
     context "when func is Import" do
       let(:func) { "Import" }
       let(:i_list) { double("IssuesList", add: nil) }

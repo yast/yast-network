@@ -152,7 +152,7 @@ describe Y2Network::Clients::Auto do
   end
 
   describe "#write" do
-    let(:system_config) { Y2Network::Config.new(source: :sysconfig) }
+    let(:system_config) { Y2Network::Config.new(source: :wicked) }
 
     before do
       allow(Yast::Lan).to receive(:Read)

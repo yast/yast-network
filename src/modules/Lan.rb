@@ -743,7 +743,7 @@ module Yast
     #
     # It resets already read configuration.
     def read_config
-      system_config = Y2Network::Config.from(:sysconfig)
+      system_config = Y2Network::Config.from(:wicked)
       system_config.backend = NetworkService.cached_name
       Yast::Lan.add_config(:system, system_config)
       Yast::Lan.add_config(:yast, system_config.copy)
@@ -756,7 +756,7 @@ module Yast
     #
     # @see Y2Network::ConfigWriter
     def write_config(only: nil)
-      target = :sysconfig if Mode.auto
+      target = :wicked if Mode.auto
       yast_config.write(original: system_config, target: target, only: only)
       # Force a refresh of the system_config bsc#1162987
       add_config(:system, yast_config.copy)

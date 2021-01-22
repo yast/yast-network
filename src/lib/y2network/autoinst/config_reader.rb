@@ -26,7 +26,7 @@ require "y2network/autoinst/hostname_reader"
 require "y2network/autoinst/interfaces_reader"
 require "y2network/autoinst/udev_rules_reader"
 require "y2network/autoinst_profile/networking_section"
-require "y2network/sysconfig/interfaces_reader"
+require "y2network/wicked/interfaces_reader"
 
 Yast.import "Lan"
 

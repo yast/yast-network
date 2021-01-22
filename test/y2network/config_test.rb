@@ -25,8 +25,9 @@ require "y2network/interfaces_collection"
 require "y2network/connection_config/bridge"
 require "y2network/connection_config/ethernet"
 require "y2network/connection_configs_collection"
-require "y2network/sysconfig/config_reader"
-require "y2network/sysconfig/config_writer"
+require "y2network/wicked/config_reader"
+require "y2network/wicked/config_writer"
+require "y2network/network_manager/config_writer"
 
 describe Y2Network::Config do
   before do
@@ -36,7 +37,7 @@ describe Y2Network::Config do
   subject(:config) do
     described_class.new(
       interfaces: interfaces, connections: connections, routing: routing,
-      drivers: drivers, source: :sysconfig
+      drivers: drivers, source: :wicked
     )
   end
 
@@ -64,16 +65,16 @@ describe Y2Network::Config do
 
   describe ".from" do
     let(:reader) do
-      instance_double(Y2Network::Sysconfig::ConfigReader, config: config)
+      instance_double(Y2Network::Wicked::ConfigReader, config: config)
     end
 
     before do
-      allow(Y2Network::ConfigReader).to receive(:for).with(:sysconfig)
+      allow(Y2Network::ConfigReader).to receive(:for).with(:wicked)
         .and_return(reader)
     end
 
     it "returns the configuration from the given reader" do
-      expect(described_class.from(:sysconfig)).to eq(config)
+      expect(described_class.from(:wicked)).to eq(config)
     end
   end
 
@@ -108,16 +109,53 @@ describe Y2Network::Config do
   end
 
   describe "#write" do
-    let(:writer) { instance_double(Y2Network::Sysconfig::ConfigWriter) }
+    let(:wicked_writer) { instance_double(Y2Network::Wicked::ConfigWriter) }
+    let(:nm_writer) { instance_double(Y2Network::NetworkManager::ConfigWriter) }
 
     before do
-      allow(Y2Network::ConfigWriter).to receive(:for).with(:sysconfig)
-        .and_return(writer)
+      allow(Y2Network::ConfigWriter).to receive(:for).with(:wicked)
+        .and_return(wicked_writer)
+      allow(Y2Network::ConfigWriter).to receive(:for).with(:network_manager)
+        .and_return(nm_writer)
     end
 
-    it "writes the config using the required writer" do
-      expect(writer).to receive(:write).with(config, nil, only: nil)
-      config.write
+    it "writes the configuration using the writer for the given target" do
+      expect(nm_writer).to receive(:write).with(config, nil, only: nil)
+      config.write(target: :network_manager)
+    end
+
+    context "when the original configuration is given" do
+      let(:original) { instance_double(described_class) }
+
+      it "passes that configuration to the writer" do
+        expect(wicked_writer).to receive(:write).with(config, original, only: nil)
+        config.write(original: original)
+      end
+    end
+
+    context "when a set of sections is given" do
+      it "applies the configuration for those sections only" do
+        expect(wicked_writer).to receive(:write).with(config, nil, only: [:dns])
+        config.write(only: [:dns])
+      end
+    end
+
+    context "when no target is given" do
+      context "and a backend is set" do
+        before { config.backend = :network_manager }
+
+        it "writes the config using the writer for the backend" do
+          expect(nm_writer).to receive(:write).with(config, nil, only: nil)
+          config.write
+        end
+      end
+
+      context "and no backend is set" do
+        it "writes the config using the writer for the source" do
+          expect(wicked_writer).to receive(:write).with(config, nil, only: nil)
+          config.write
+        end
+      end
     end
   end
 

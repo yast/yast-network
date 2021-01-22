@@ -17,8 +17,11 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
+require "yast"
 require "cfa/nm_connection"
 require "pathname"
+
+Yast.import "Installation"
 
 module Y2Network
   module NetworkManager
@@ -28,18 +31,37 @@ module Y2Network
       SYSTEM_CONNECTIONS_PATH = Pathname.new("/etc/NetworkManager/system-connections").freeze
       FILE_EXT = ".nmconnection".freeze
 
-      def write(conn, old_conn = nil)
+      # @param conn [ConnectionConfig::Base] Connection configuration to be
+      #   written
+      # @param old_conn [ConnectionConfig::Base] Original connection
+      #   configuration
+      # @param routes [Array<Routes>] routes associated with the connection to be
+      #   written
+      def write(conn, old_conn = nil, routes = [])
         return if conn == old_conn
 
-        file = CFA::NmConnection.new(SYSTEM_CONNECTIONS_PATH.join(conn.name).sub_ext(FILE_EXT))
+        path = SYSTEM_CONNECTIONS_PATH.join(conn.name).sub_ext(FILE_EXT)
+        file = CFA::NmConnection.new(path)
         handler_class = find_handler_class(conn.type)
         return nil if handler_class.nil?
 
-        handler_class.new(file).write(conn)
+        ensure_permissions(path) unless ::File.exist?(path)
+
+        handler_class.new(file).write(conn, routes)
         file.save
       end
 
     private
+
+      # Convenience method to ensure the new configuration file permissions
+      #
+      # @param path [Pathname] connection configuration file path
+      def ensure_permissions(path)
+        final_path = ::File.join(Yast::WFM.scr_root, path)
+
+        ::FileUtils.touch(final_path)
+        ::File.chmod(0o600, final_path)
+      end
 
       # Returns the class to handle a given interface type
       #

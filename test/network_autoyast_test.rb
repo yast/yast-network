@@ -22,7 +22,7 @@
 require_relative "test_helper"
 
 require "network/network_autoyast"
-require "y2network/sysconfig/config_reader"
+require "y2network/wicked/config_reader"
 require "y2network/s390_device_activators/qeth"
 
 Yast.import "Profile"
@@ -36,7 +36,7 @@ describe "NetworkAutoYast" do
       interfaces: Y2Network::InterfacesCollection.new([]),
       routing:    Y2Network::Routing.new(tables: []),
       dns:        Y2Network::DNS.new,
-      source:     :sysconfig
+      source:     :wicked
     )
   end
 

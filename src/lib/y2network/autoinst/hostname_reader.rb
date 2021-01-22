@@ -19,7 +19,7 @@
 
 require "yast"
 require "y2network/hostname"
-require "y2network/sysconfig/hostname_reader"
+require "y2network/wicked/hostname_reader"
 
 module Y2Network
   module Autoinst
@@ -51,7 +51,7 @@ module Y2Network
       #
       # @return [String]
       def static_hostname
-        Y2Network::Sysconfig::HostnameReader.new.static_hostname
+        Y2Network::Wicked::HostnameReader.new.static_hostname
       end
 
       # Returns the value for the dhcp_hostname option selected in the profile.
@@ -63,7 +63,7 @@ module Y2Network
         # config, but we do not want to override current config if the value is
         # not present and the merge is missing for whatever reason, for example
         # in case AutoYaST is called in config mode
-        return Y2Network::Sysconfig::HostnameReader.new.dhcp_hostname if section_value.nil?
+        return Y2Network::Wicked::HostnameReader.new.dhcp_hostname if section_value.nil?
 
         section_value ? :any : :none
       end

@@ -33,11 +33,11 @@ module Y2Network
   # routes, etc.
   #
   # @example Reading from wicked
-  #   config = Y2Network::Config.from(:sysconfig)
+  #   config = Y2Network::Config.from(:wicked)
   #   config.interfaces.map(&:name) #=> ["lo", eth0", "wlan0"]
   #
   # @example Adding a default route to the first routing table
-  #   config = Y2Network::Config.from(:sysconfig)
+  #   config = Y2Network::Config.from(:wicked)
   #   route = Y2Network::Route.new(to: :default)
   #   config.routing.tables.first << route
   #   config.write
@@ -131,13 +131,13 @@ module Y2Network
     # is provided
     #
     # @param original [Y2Network::Config] configuration used for detecting changes
-    # @param target   [Symbol] Target to write the configuration to (:sysconfig)
+    # @param target   [Symbol] Target to write the configuration to (:wicked)
     # @param only [Array<symbol>, nil] explicit sections to be written, by default if no
     #   parameter is given then all changes will be written.
     #
     # @see Y2Network::ConfigWriter
     def write(original: nil, target: nil, only: nil)
-      target ||= source
+      target = target || backend&.id || source
       Y2Network::ConfigWriter.for(target).write(self, original, only: only)
     end
 

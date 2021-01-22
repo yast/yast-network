@@ -33,9 +33,9 @@ describe Y2Network::Autoinst::HostnameReader do
   let(:current_dhcp_hostname) { :any }
 
   before do
-    allow_any_instance_of(Y2Network::Sysconfig::HostnameReader)
+    allow_any_instance_of(Y2Network::Wicked::HostnameReader)
       .to receive(:static_hostname).and_return(current_static_hostname)
-    allow_any_instance_of(Y2Network::Sysconfig::HostnameReader)
+    allow_any_instance_of(Y2Network::Wicked::HostnameReader)
       .to receive(:dhcp_hostname).and_return(current_dhcp_hostname)
   end
 

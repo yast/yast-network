@@ -26,7 +26,9 @@ module Y2Network
       # object to the underlying system.
       class Ethernet < Base
         # @see Y2Network::ConnectionConfigWriters::Base#update_file
-        def update_file(_conn); end
+        def update_file(_conn)
+          file.connection["type"] = "ethernet"
+        end
       end
     end
   end
