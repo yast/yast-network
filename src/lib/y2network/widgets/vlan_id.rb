@@ -67,10 +67,19 @@ module Y2Network
       end
 
       def suggest_vlan_name
+        # If the interface name is modified before the VLAN ID, we should not
+        # suggest any change
+        return false if @config.name == suggested_name
+
         Yast::Popup.YesNo(
           format(
-            _("Would you like to adapt the interface name from '%s' to '%s'?"),
-            @config.name, suggested_name
+            # TRANSLATORS: Suggest the user to modify the interface name
+            # %{vlanid} is the modified VLAN ID, %{name} is the current
+            # interface name and %{sname} is the interface name
+            # proposed based on the new VLAN ID
+            _("VLAN with ID '%{vlanid}' has been defined.\n\n" \
+              "Would you like to adapt the interface name from '%{name}' to '%{sname}'?"),
+            vlanid: value, name: @config.name, sname: suggested_name
           )
         )
       end
