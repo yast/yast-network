@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Tue Jan 26 11:23:33 UTC 2021 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
+
+- Fixes some usability issues (bsc#1177834):
+  - Disable "Edit" and "Delete" buttons when no interfaces
+    are detected.
+  - Disable the "Scan Network" button when the interface does not
+    exist.
+
+-------------------------------------------------------------------
 Fri Jan 22 17:03:54 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
 
 - Suggest to modify the VLAN interface name when the VLAN ID is

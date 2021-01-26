@@ -27,8 +27,10 @@ require "y2network/virtual_interface"
 Yast.import "Lan"
 
 describe Y2Network::Widgets::DeleteInterface do
-  subject { described_class.new(double(value: interface_to_delete)) }
+  subject { described_class.new(table) }
 
+  let(:table) { double("table", value: selected) }
+  let(:selected) { "eth0" }
   let(:eth0) { Y2Network::Interface.new("eth0") }
   let(:br0) { Y2Network::VirtualInterface.new("br0", type: Y2Network::InterfaceType::BRIDGE) }
   let(:interfaces) { Y2Network::InterfacesCollection.new([eth0, br0]) }
@@ -49,7 +51,7 @@ describe Y2Network::Widgets::DeleteInterface do
     Y2Network::Config.new(interfaces: interfaces, connections: connections, source: :testing)
   end
 
-  let(:interface_to_delete) { "eth0" }
+  let(:selected) { "eth0" }
 
   before do
     allow(Yast::Lan).to receive(:yast_config).and_return(config)
@@ -57,11 +59,29 @@ describe Y2Network::Widgets::DeleteInterface do
 
   include_examples "CWM::PushButton"
 
+  describe "#init" do
+    context "when an element is selected" do
+      it "does not disable the widget" do
+        expect(subject).to_not receive(:disable)
+        subject.init
+      end
+    end
+
+    context "when no element is selected" do
+      let(:selected) { nil }
+
+      it "disables the widget" do
+        expect(subject).to receive(:disable)
+        subject.init
+      end
+    end
+  end
+
   describe "#handle" do
     context "interface does not have connection config" do
       let(:eth1) { Y2Network::Interface.new("eth1") }
       let(:interfaces) { Y2Network::InterfacesCollection.new([eth0, br0, eth1]) }
-      let(:interface_to_delete) { "eth1" }
+      let(:selected) { "eth1" }
 
       it "do nothing" do
         expect(config).to_not receive(:delete_interface)
