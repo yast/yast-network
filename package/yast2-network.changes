@@ -1,5 +1,15 @@
 -------------------------------------------------------------------
+Fri Feb 26 15:23:33 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
+
+- Fixes some usability issues (bsc#1177834, bsc#1182781):
+  - Disable "Edit" and "Delete" buttons when no interfaces
+    are detected.
+  - Disable the "Scan Network" button when the interface does not
+    exist.
+- 4.2.92
+
 Tue Feb 16 10:32:34 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
+-------------------------------------------------------------------
 
 - Improve the AutoYaST interfaces reader handling better the IP
   Addresses configuration. (bsc#1174353, bsc#1178107)

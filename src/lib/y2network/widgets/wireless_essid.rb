@@ -111,6 +111,10 @@ module Y2Network
         _("Scan Network")
       end
 
+      def init
+        disable if @settings.newly_added?
+      end
+
       def handle
         return unless scan_supported?
 
