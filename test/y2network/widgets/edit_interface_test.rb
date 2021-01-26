@@ -49,6 +49,24 @@ describe Y2Network::Widgets::EditInterface do
 
   include_examples "CWM::PushButton"
 
+  describe "#init" do
+    context "when an element is selected" do
+      it "does not disable the widget" do
+        expect(subject).to_not receive(:disable)
+        subject.init
+      end
+    end
+
+    context "when no element is selected" do
+      let(:selected) { nil }
+
+      it "disables the widget" do
+        expect(subject).to receive(:disable)
+        subject.init
+      end
+    end
+  end
+
   describe "#handle" do
     it "runs the interface edition sequence" do
       expect(sequence).to receive(:edit) do |builder|

@@ -38,6 +38,11 @@ module Y2Network
         Yast::Label.DeleteButton
       end
 
+      # @see CWM::AbstractWidget#init
+      def init
+        disable unless @table.value
+      end
+
       def handle
         config = Yast::Lan.yast_config
         connection_config = config.connections.by_name(@table.value)

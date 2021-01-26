@@ -36,6 +36,11 @@ module Y2Network
         @table = table
       end
 
+      # @see CWM::AbstractWidget#init
+      def init
+        disable unless @table.value
+      end
+
       def label
         Yast::Label.EditButton
       end
