@@ -46,6 +46,30 @@ describe Y2Network::Widgets::WirelessScan do
     allow(essid).to receive(:update_essid_list)
   end
 
+  describe "#init" do
+    before do
+      allow(builder).to receive(:newly_added?).and_return(newly_added?)
+    end
+
+    context "when the interface exists" do
+      let(:newly_added?) { false }
+
+      it "does not disable the button" do
+        expect(subject).to_not receive(:disable)
+        subject.init
+      end
+    end
+
+    context "when the interface does not exist" do
+      let(:newly_added?) { true }
+
+      it "disables the button" do
+        expect(subject).to receive(:disable)
+        subject.init
+      end
+    end
+  end
+
   describe "#handle" do
     context "when the package for scanning wireless networks is not installed" do
       let(:installed) { false }
