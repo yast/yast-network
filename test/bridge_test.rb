@@ -122,7 +122,7 @@ describe Yast::LanItems do
       .and_return(Y2Network::InterfaceType::ETHERNET)
   end
 
-  describe "#GetBridgeableInterfaces" do
+  xdescribe "#GetBridgeableInterfaces" do
     # when converting to new API new API is used
     # for selecting bridgable devices but imports interfaces
     # from LanItems internally

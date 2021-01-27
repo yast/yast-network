@@ -233,7 +233,7 @@ describe Y2Network::Widgets::BootProtocol do
         expect(builder.subnet_prefix).to eq "/124"
       end
 
-      it "sets netmask for ipv4 netmask value" do
+      xit "sets netmask for ipv4 netmask value" do
         pending "drop netmask"
         allow(Yast::UI).to receive(:QueryWidget).with(:bootproto_netmask, :Value)
           .and_return("255.255.0.0")
