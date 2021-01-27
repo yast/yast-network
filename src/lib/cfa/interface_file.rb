@@ -264,6 +264,10 @@ module CFA
     #   @return [String] client private key used for encryption in TLS
     define_variable(:wireless_client_key)
 
+    # @!attribute [r] wireless_client_key_password
+    #   @return [String] client private key password used for encryption in TLS
+    define_variable(:wireless_client_key_password)
+
     # @!attribute [r] wireless_eap_mode
     #   @return [String] WPA-EAP outer authentication method
     define_variable(:wireless_eap_mode)

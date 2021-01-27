@@ -33,8 +33,11 @@ module Y2Network
 
       def contents
         HBox(
-          InputField(Id(text_id), label),
-          PushButton(Id(button_id), button_label)
+          InputField(Id(text_id), Opt(:hstretch), label),
+          VBox(
+            VSpacing(1),
+            PushButton(Id(button_id), button_label)
+          )
         )
       end
 

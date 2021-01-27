@@ -100,7 +100,7 @@ module Y2Network
         [:mode, :essid, :nwid, :auth_mode, :wpa_psk, :key_length, :keys, :default_key, :nick,
          :eap_mode, :eap_auth, :channel, :frequency, :bitrate, :ap, :ap_scanmode,
          :wpa_password, :wpa_identity, :wpa_anonymous_identity, :ca_cert, :client_cert,
-         :client_key].all? do |method|
+         :client_key, :client_key_password].all? do |method|
           public_send(method) == other.public_send(method)
         end
       end
