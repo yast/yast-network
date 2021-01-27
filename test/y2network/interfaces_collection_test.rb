@@ -26,8 +26,12 @@ describe Y2Network::InterfacesCollection do
   subject(:collection) { described_class.new(interfaces) }
 
   let(:eth0) { Y2Network::PhysicalInterface.new("eth0") }
-  let(:br0) { Y2Network::VirtualInterface.new("br0", type: Y2Network::InterfaceType::BRIDGE) }
-  let(:wlan0) { Y2Network::PhysicalInterface.new("wlan0", type: Y2Network::InterfaceType::WIRELESS) }
+  let(:br0) do
+    Y2Network::VirtualInterface.new("br0", type: Y2Network::InterfaceType::BRIDGE)
+  end
+  let(:wlan0) do
+    Y2Network::PhysicalInterface.new("wlan0", type: Y2Network::InterfaceType::WIRELESS)
+  end
   let(:interfaces) { [eth0, br0, wlan0] }
 
   describe "#by_name" do
