@@ -80,15 +80,30 @@ module Y2Network
         #
         # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
         def write_psk_auth_settings(conn)
-          file.wifi_security["auth-alg"] = "open"
           file.wifi_security["key-mgmt"] = "wpa-psk"
+          file.wifi_security["auth-alg"] = "open"
           file.wifi_security["psk"] = conn.wpa_psk
         end
 
         # Writes autentication settings for WEP networks
         #
-        # @param _conn [Y2Network::ConnectionConfig::Base] Configuration to write
-        def write_shared_auth_settings(_conn); end
+        # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
+        def write_shared_auth_settings(conn)
+          file.wifi_secutiry["auth-alg"] = "shared"
+
+          return if (conn.keys || []).empty?
+
+          file.wifi_security["key-mgmt"] = "none"
+          default_key_idx = conn.default_key || 0
+          file.wifi_security["wep-tx-keyidx"] = default_key_idx
+          conn.keys.each_with_index do |v, i|
+            file.wifi_security["wep-key#{i}"] = v.gsub(/^[sh:]/, "")
+          end
+          passphrase_used = conn.keys[conn.default_key_idx].to_s.start_with(/h:/)
+          # see https://developer.gnome.org/libnm/stable/NMSettingWirelessSecurity.html#NMWepKeyType
+          # 1: Hex or ASCII, 2: 104/128-bit Passphrase
+          file.wifi_security["wep-key-type"] = passphrase_used ? 2 : 1
+        end
       end
     end
   end
