@@ -86,8 +86,8 @@ module Y2Network
     # @param type [InterfaceType,String,Symbol] device type or its short name
     # @return [InterfacesCollection] list of found interfaces
     def by_type(type)
-      short_name = type.is_a?(Y2Network::InterfaceType) ? type.short_name : type.to_s
-      InterfacesCollection.new(interfaces.select { |i| i.type.short_name == short_name })
+      type = InterfaceType.from_short_name(type.to_s) unless type.is_a?(InterfaceType)
+      InterfacesCollection.new(interfaces.select { |i| i.type == type })
     end
 
     # Returns the list of physical interfaces
