@@ -25,13 +25,15 @@ module Y2Network
       # This class is responsible for writing the information from a ConnectionConfig::Wireless
       # object to the underlying system.
       class Wireless < Base
+        DEFAULT_MODE = "infrastructure".freeze
         MODE = { "ad-hoc" => "ad-hoc", "master" => "ap", "managed" => "infrastructure" }.freeze
+        SCHEME_PATH = "file://".freeze
 
         # @see Y2Network::ConnectionConfigWriters::Base#update_file
         def update_file(conn)
           file.connection["type"] = "wifi"
           file.wifi["ssid"] = conn.essid unless conn.essid.to_s.empty?
-          file.wifi["mode"] = MODE[conn.mode]
+          file.wifi["mode"] = MODE[conn.mode] || DEFAULT_MODE
           file.wifi["channel"] = con.channel if conn.channel
 
           write_auth_settings(conn)
@@ -39,14 +41,24 @@ module Y2Network
 
         # Writes autentication settings for WPA-EAP networks
         #
-        # @param _conn [Y2Network::ConnectionConfig::Base] Configuration to write
-        def write_eap_auth_settings(_conn)
+        # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
+        def write_eap_auth_settings(conn)
           # FIXME: incomplete
           file.wifi_security["key-mgmt"] = "wpa-eap"
-          # wrong section name
-          #
-          # file.802_1x["eap"] = conn.eap_mode
-          # file.802_1x["phase2-auth"] = conn.eap_auth
+          section = file.section_for("802-1x")
+
+          section["eap"] = conn.eap_mode
+          section["phase2-auth"] = conn.eap_auth if conn.eap_auth
+          section["password"] = conn.wpa_password if conn.wpa_password
+          section["anonymous-identity"] = conn.wpa_anonymous_identity if conn.eap_mode == "TTLS"
+          section["identity"] = conn.wpa_identity if conn.wpa_identity
+          section["ca-cert"] = File.join(SCHEME_PATH, conn.ca_cert) if conn.ca_cert
+
+          return unless conn.eap_mode == "TLS"
+
+          section["client-cert"] = File.join(SCHEME_PATH, conn.client_cert)
+          section["private-key"] = File.join(SCHEME_PATH, conn.client_key)
+          section["private-key-password"] = File.join(SCHEME_PATH, conn.client_key_password)
         end
 
         # Writes authentication settings
