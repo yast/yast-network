@@ -661,7 +661,10 @@ module Yast
         pkgs << "NetworkManager" if !PackageSystem.Installed("NetworkManager")
       elsif !PackageSystem.Installed("wpa_supplicant")
         # we have to add wpa_supplicant when wlan is in game, wicked relies on it
-        wlan_present = yast_config.interfaces.any? { |i| i.type == Y2Network::InterfaceType::WIRELESS }
+        wlan_present = yast_config.interfaces.any? do |iface|
+          iface.type == Y2Network::InterfaceType::WIRELESS
+        end
+
         pkgs << "wpa_supplicant" if wlan_present
       end
 
