@@ -86,40 +86,4 @@ describe "NetworkLanComplexInclude" do
       end
     end
   end
-
-  describe "#DeviceProtocol" do
-    let(:ipaddr) { "192.168.0.120" }
-    let(:managed) { { "STARTMODE" => "managed" } }
-    let(:static) { { "BOOTPROTO" => "static", "IPADDR" => ipaddr } }
-    let(:empty) { { "BOOTPROTO" => "", "IPADDR" => ipaddr } }
-    let(:no_bootproto) { { "IPADDR" => ipaddr } }
-    # IPADDR are set just to show that returns the protocol instead of the IP
-    let(:dhcp) { { "BOOTPROTO" => "dhcp", "IPADDR" => ipaddr } }
-    let(:none) { { "BOOTPROTO" => "none", "IPADDR" => ipaddr } }
-
-    it "returns _('Managed') if the interface is managed by NetworkManager" do
-      expect(subject.DeviceProtocol(managed)).to eql(_("Managed"))
-    end
-
-    it "returns the IP address in case that BOOTPROTO is empty" do
-      expect(subject.DeviceProtocol(empty)).to eql(ipaddr)
-    end
-
-    it "returns the IP address in case of no BOOTPROTO" do
-      expect(subject.DeviceProtocol(no_bootproto)).to eql(ipaddr)
-    end
-
-    it "returns 'NONE' in case of static config and IPADDR == '0.0.0.0'" do
-      expect(subject.DeviceProtocol(static.merge("IPADDR" => "0.0.0.0"))).to eql("NONE")
-    end
-
-    it "returns the IP address in case of static config" do
-      expect(subject.DeviceProtocol(static)).to eql(ipaddr)
-    end
-
-    it "returns BOOTPROTO converted to uppercase" do
-      expect(subject.DeviceProtocol(none)).to eql("NONE")
-      expect(subject.DeviceProtocol(dhcp)).to eql("DHCP")
-    end
-  end
 end

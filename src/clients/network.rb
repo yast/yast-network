@@ -160,10 +160,6 @@ module Yast
 
       (ret == :next) ? WFM.CallFunction(launch, WFM.Args) : :back
     end
-
-    def runHandler(_options)
-      true
-    end
   end
 end
 

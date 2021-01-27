@@ -616,36 +616,6 @@ module Yast
       end
     end
 
-    # Uses product info and is subject to installed packages.
-    # @return Should NM be enabled?
-    def UseNetworkManager
-      nm_default = false
-      nm_feature = ProductFeatures.GetStringFeature(
-        "network",
-        "network_manager"
-      )
-
-      case nm_feature
-      when ""
-        # compatibility: use the boolean feature
-        # (defaults to false)
-        nm_default = ProductFeatures.GetBooleanFeature(
-          "network",
-          "network_manager_is_default"
-        )
-      when "always"
-        nm_default = true
-      when "laptop"
-        nm_default = Arch.is_laptop
-        log.info("Is a laptop: #{nm_default}")
-      end
-
-      nm_installed = Package.Installed("NetworkManager")
-      log.info("NetworkManager wanted: #{nm_default}, installed: #{nm_installed}")
-
-      nm_default && nm_installed
-    end
-
     def ProposeVirtualized
       read_config unless yast_config
       Y2Network::VirtualizationConfig.new(yast_config).create

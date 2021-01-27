@@ -125,61 +125,6 @@ module Y2Network
 
     alias_method :eql?, :==
 
-    # Returns the interfaces that are enslaved in the given bridge
-    #
-    # @param master [String] bridge name
-    # @return [Array<String>] a list of interface names
-    # TODO: move to class of interface type br, also change return type to InterfaceCollection
-    def bridge_slaves(master)
-      bridge_index.select { |_k, v| v == master }.keys
-    end
-
-    # Creates list of devices enslaved in the bond device.
-    #
-    # @param bond_iface [String] a name of an interface of bond type
-    # @return list of names of interfaces enslaved in the bond_iface
-    # TODO: move to class of interface type bond, also change return type to InterfaceCollection
-    def bond_slaves(bond_iface)
-      bond_map = Yast::NetworkInterfaces::FilterDevices("netcard")
-        .fetch("bond", {}).fetch(bond_iface, {})
-
-      bond_map.select { |k, _| k.start_with?("BONDING_SLAVE") }.values
-    end
-
-    # Creates a map where the keys are the interfaces enslaved and the values
-    # are the bridges where them are taking part.
-    def bridge_index
-      index = {}
-
-      # TODO: should use by_type
-      bridge_devs = Yast::NetworkInterfaces.FilterDevices("netcard").fetch("br", {})
-
-      bridge_devs.each do |bridge_master, value|
-        value["BRIDGE_PORTS"].to_s.split.each do |if_name|
-          index[if_name] = bridge_master
-        end
-      end
-
-      index
-    end
-
-    def bond_index
-      index = {}
-
-      # TODO: should use by_type
-      bond_devs = Yast::NetworkInterfaces.FilterDevices("netcard").fetch("bond", {})
-
-      bond_devs.each do |bond_master, _value|
-        bond_slaves(bond_master).each do |slave|
-          index[slave] = bond_master
-        end
-      end
-
-      log.debug("bond slaves index: #{index}")
-
-      index
-    end
-
     # @return [String] returns free interface name for given prefix
     def free_name(prefix)
       free_names(prefix, 1).first
