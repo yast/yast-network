@@ -26,7 +26,6 @@ require "y2network/widgets/general_tab.rb"
 require "y2network/widgets/hardware_tab.rb"
 require "y2network/widgets/wireless_tab.rb"
 
-Yast.import "LanItems"
 Yast.import "Label"
 
 module Y2Network
