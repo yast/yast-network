@@ -394,6 +394,7 @@ module Y2Network
         @wireless_channel = config.channel.to_s if config.channel
         @wireless_client_cert = config.client_cert
         @wireless_client_key = config.client_key
+        @wireless_client_key_password = config.client_key_password
         @wireless_essid = config.essid
         @wireless_auth_mode = config.auth_mode.to_s
         @wireless_nick = config.nick

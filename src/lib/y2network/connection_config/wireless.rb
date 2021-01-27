@@ -73,6 +73,8 @@ module Y2Network
       attr_accessor :client_cert
       # @return [String] client private key used to encrypt for TLS
       attr_accessor :client_key
+      # @return [String] client private key password
+      attr_accessor :client_key_password
 
       def initialize
         super

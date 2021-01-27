@@ -60,6 +60,7 @@ module Y2Network
         # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
         def write_eap_auth_settings(conn)
           file.wireless_eap_mode = conn.eap_mode
+          file.wireless_eap_auth = conn.eap_auth
           file.wireless_wpa_password = conn.wpa_password
           file.wireless_wpa_identity = conn.wpa_identity
           file.wireless_ca_cert = conn.ca_cert

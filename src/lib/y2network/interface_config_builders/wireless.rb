@@ -53,6 +53,7 @@ module Y2Network
         :wpa_anonymous_identity, :wpa_anonymous_identity=,
         :ca_cert, :ca_cert=,
         :client_key, :client_key=,
+        :client_key_password, :client_key_password=,
         :client_cert, :client_cert=,
         :channel, :channel=,
         :bitrate, :bitrate=,
