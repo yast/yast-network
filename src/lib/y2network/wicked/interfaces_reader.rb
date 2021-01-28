@@ -25,84 +25,39 @@ require "y2network/physical_interface"
 require "y2network/s390_group_device"
 require "y2network/wicked/connection_config_reader"
 require "cfa/interface_file"
-require "y2network/interfaces_collection"
 require "y2network/connection_configs_collection"
+require "y2network/hwinfo"
+require "y2network/interfaces_collection"
 require "y2network/s390_group_devices_collection"
-require "y2network/wicked/type_detector"
 require "y2network/udev_rule"
+require "y2network/wicked/type_detector"
 
 Yast.import "Arch"
 
 module Y2Network
   module Wicked
-    # This class reads interfaces configuration from sysconfig files
-    #
-    # * Physical interfaces are read from the hardware.
-    # * Virtual interfaces + Connections are read from sysconfig.
+    # This class reads physical interfaces and drivers
     #
     # @see Y2Network::InterfacesCollection
-    # @see Y2Network::ConnectionConfig
     class InterfacesReader
-      # Returns the interfaces and connections configuration
-      #
-      # @return [Hash<Symbol,Object>] Returns a hash containing
-      #   an interfaces collection (with the key `:interfaces`)
-      #   and an array of connection config objects.
-      def config
-        return @config if @config
-
-        Hwinfo.reset
-        find_s390_devices
-        find_physical_interfaces
-        find_connections
-        find_drivers
-        @config = { interfaces: @interfaces, connections: @connections,
-                    drivers: @drivers, s390_devices: @s390_devices }
-      end
-
-      # Convenience method to get the s390 group devices collection
+      # Returns the collection of s390 group devices
       #
       # @return [Array<Y2Network::ConnectionConfig::Base>] Array of connection
       #   config objects.
-
       def s390_devices
-        config[:s390_devices]
-      end
+        return @s390_devices if @s390_devices
 
-      # Convenience method to get connections configuration
-      #
-      # @return [Array<Y2Network::ConnectionConfig::Base>] Array of connection
-      #   config objects.
-      def connections
-        config[:connections]
-      end
-
-      # Convenience method to get the interfaces list
-      #
-      # @return [Y2Network::InterfacesCollection]
-      def interfaces
-        config[:interfaces]
-      end
-
-      # Convenience method to get the drivers list
-      #
-      # @return [Array<Y2Network::Driver>]
-      def drivers
-        config[:drivers]
-      end
-
-    private
-
-      # Finds the s390 group devices that are not active
-      def find_s390_devices
         devices = Yast::Arch.s390 ? S390GroupDevice.all : []
         @s390_devices = Y2Network::S390GroupDevicesCollection.new(devices)
       end
 
-      # Finds the physical interfaces
-      def find_physical_interfaces
-        return if @interfaces
+      # Returns the collection of physical interfaces
+      #
+      # @return [Y2Network::InterfacesCollection]
+      def interfaces
+        return @interfaces if @interfaces
 
+        Hwinfo.reset
         physical_interfaces = Hwinfo.netcards.each_with_object([]) do |hwinfo, interfaces|
           physical_interface = build_physical_interface(hwinfo)
           next if physical_interface.type == InterfaceType::UNKNOWN
@@ -114,34 +69,23 @@ module Y2Network
         @interfaces = Y2Network::InterfacesCollection.new(physical_interfaces)
       end
 
-      # Finds the connections configurations
-      def find_connections
-        empty_collection = ConnectionConfigsCollection.new([])
-        @connections =
-          CFA::InterfaceFile.all.each_with_object(empty_collection) do |file, conns|
-            interface = @interfaces.by_name(file.interface)
-            connection = ConnectionConfigReader.new.read(
-              file.interface,
-              interface ? interface.type : nil
-            )
-            next unless connection
-
-            add_interface(connection) if interface.nil?
-            conns << connection
-          end
-      end
-
       # Finds the available drivers
-      def find_drivers
-        physical_interfaces = @interfaces.physical
-        drivers_names = physical_interfaces.flat_map(&:drivers).map(&:name)
-        drivers_names += @interfaces.physical.map(&:custom_driver).compact
-        drivers_names.uniq!
+      #
+      # The available drivers are extracted from the physical interface
+      # drivers.
+      #
+      # @return [Array<Y2Network::Driver>] List of drivers
+      def drivers
+        return @drivers if @drivers
 
-        @drivers = drivers_names.map do |name|
-          Y2Network::Driver.from_system(name)
-        end
+        physical_interfaces = interfaces.physical
+        drivers_names = physical_interfaces.flat_map(&:drivers).map(&:name)
+        drivers_names += interfaces.physical.map(&:custom_driver).compact
+        drivers_names.uniq!
+        @drivers = drivers_names.map { |n| Y2Network::Driver.from_system(n) }
       end
+
+    private
 
       # Instantiates an interface given a hash containing hardware details
       #
@@ -154,24 +98,6 @@ module Y2Network
           iface.type = InterfaceType.from_short_name(hwinfo.type) ||
             TypeDetector.type_of(iface.name) || InterfaceType::UNKNOWN
         end
-      end
-
-      # Adds a fake or virtual interface for a given connection
-      #
-      # It may happen that a configured interface is not plugged
-      # while reading the configuration. In such situations, a fake one
-      # should be added.
-      #
-      # @param conn [ConnectionConfig] Connection configuration related to the
-      #   network interface
-      def add_interface(conn)
-        interface =
-          if conn.virtual?
-            VirtualInterface.from_connection(conn)
-          else
-            PhysicalInterface.new(conn.name, hardware: Hwinfo.for(conn.name))
-          end
-        @interfaces << interface
       end
 
       # Detects the renaming mechanism used by the interface
