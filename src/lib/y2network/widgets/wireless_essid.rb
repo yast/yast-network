@@ -75,7 +75,7 @@ module Y2Network
 
       # allow to use not found name e.g. when scan failed or when network is hidden
       def opt
-        [:editable]
+        [:editable, :hstretch]
       end
 
       # updates essid list with given array and ensure that previously selected value is preserved

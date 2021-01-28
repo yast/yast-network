@@ -34,14 +34,12 @@ module Y2Network
       end
 
       def contents
-        VBox(
-          Frame(
-            _("Device Settings"),
-            VBox(
-              Left(essid_widget),
-              VSpacing(0.2),
-              Left(mode_widget),
-            )
+        Frame(
+          _("Device Settings"),
+          VBox(
+            Left(essid_widget),
+            VSpacing(0.2),
+            Left(mode_widget),
           )
         )
       end
