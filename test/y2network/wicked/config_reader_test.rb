@@ -26,8 +26,13 @@ describe Y2Network::Wicked::ConfigReader do
   let(:eth0) { Y2Network::Interface.new("eth0") }
   let(:wlan0) { Y2Network::Interface.new("wlan0") }
   let(:interfaces) { [eth0, wlan0] }
-  let(:eth0_config) { instance_double(Y2Network::ConnectionConfig::Ethernet) }
-  let(:connections) { [eth0_config] }
+  let(:eth0_conn) do
+    Y2Network::ConnectionConfig::Ethernet.new.tap do |conn|
+      conn.interface = "eth0"
+      conn.name = "eth0"
+    end
+  end
+  let(:connections) { [eth0_conn] }
   let(:s390_devices) { [] }
   let(:drivers) { Y2Network::Driver.new("virtio_net", "") }
   let(:routes_file) { instance_double(CFA::RoutesFile, load: nil, routes: []) }
@@ -37,9 +42,14 @@ describe Y2Network::Wicked::ConfigReader do
     instance_double(
       Y2Network::Wicked::InterfacesReader,
       interfaces:   Y2Network::InterfacesCollection.new(interfaces),
-      connections:  connections,
       s390_devices: s390_devices,
       drivers:      drivers
+    )
+  end
+  let(:connection_configs_reader) do
+    instance_double(
+      Y2Network::Wicked::ConnectionConfigsReader,
+      connections: connections
     )
   end
 
@@ -50,6 +60,8 @@ describe Y2Network::Wicked::ConfigReader do
     allow(Y2Network::Wicked::DNSReader).to receive(:new).and_return(dns_reader)
     allow(Y2Network::Wicked::HostnameReader).to receive(:new).and_return(hostname_reader)
     allow(Y2Network::Wicked::InterfacesReader).to receive(:new).and_return(interfaces_reader)
+    allow(Y2Network::Wicked::ConnectionConfigsReader).to receive(:new)
+      .and_return(connection_configs_reader)
   end
 
   around { |e| change_scr_root(File.join(DATA_PATH, "scr_read"), &e) }
@@ -58,6 +70,47 @@ describe Y2Network::Wicked::ConfigReader do
     it "returns a configuration including network devices" do
       config = reader.config
       expect(config.interfaces.map(&:name)).to eq(["eth0", "wlan0"])
+    end
+
+    it "returns a configuration including connection configurations" do
+      config = reader.config
+      expect(config.connections).to eq([eth0_conn])
+    end
+
+    context "when a connection for a not existing device is found" do
+      let(:connections) { [eth0_conn, extra_config] }
+
+      context "and it is a virtual connection" do
+        let(:extra_config) do
+          Y2Network::ConnectionConfig::Bridge.new.tap do |conn|
+            conn.interface = "br0"
+            conn.name = "br0"
+            conn.ports = ["eth0"]
+          end
+        end
+
+        it "creates a virtual interface" do
+          config = reader.config
+          bridge = config.interfaces.by_name("br0")
+          expect(bridge).to be_a Y2Network::VirtualInterface
+        end
+      end
+
+      context "and it is not a virtual connection" do
+        let(:extra_config) do
+          Y2Network::ConnectionConfig::Ethernet.new.tap do |conn|
+            conn.interface = "eth1"
+            conn.name = "eth1"
+          end
+        end
+
+        it "creates a not present physical interface" do
+          config = reader.config
+          eth1 = config.interfaces.by_name("eth1")
+          expect(eth1).to be_a Y2Network::PhysicalInterface
+          expect(eth1).to_not be_present
+        end
+      end
     end
 
     it "links routes with detected network devices" do

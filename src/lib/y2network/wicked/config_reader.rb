@@ -26,7 +26,7 @@ require "cfa/routes_file"
 require "y2network/wicked/dns_reader"
 require "y2network/wicked/hostname_reader"
 require "y2network/wicked/interfaces_reader"
-require "y2network/interfaces_collection"
+require "y2network/wicked/connection_configs_reader"
 
 Yast.import "NetworkInterfaces"
 Yast.import "Host"
@@ -45,7 +45,12 @@ module Y2Network
         # NOTE: /etc/hosts cache - nothing to do with /etc/hostname
         Yast::Host.Read
 
-        routing_tables = find_routing_tables(interfaces_reader.interfaces)
+        interfaces = interfaces_reader.interfaces
+        s390_devices = interfaces_reader.s390_devices
+        connections = connections_configs_reader.connections(interfaces)
+        add_missing_interfaces(interfaces, connections)
+
+        routing_tables = find_routing_tables(interfaces)
         routing = Routing.new(
           tables:       routing_tables,
           forward_ipv4: sysctl_config_file.forward_ipv4,
@@ -53,9 +58,9 @@ module Y2Network
         )
 
         result = Config.new(
-          interfaces:   interfaces_reader.interfaces,
-          connections:  interfaces_reader.connections,
-          s390_devices: interfaces_reader.s390_devices,
+          interfaces:   interfaces,
+          connections:  connections,
+          s390_devices: s390_devices,
           drivers:      interfaces_reader.drivers,
           routing:      routing,
           dns:          dns,
@@ -71,9 +76,34 @@ module Y2Network
 
       # Returns an interfaces reader instance
       #
-      # @return [SysconfigInterfaces] Interfaces reader
+      # @return [InterfacesReader] Interfaces reader
       def interfaces_reader
         @interfaces_reader ||= Y2Network::Wicked::InterfacesReader.new
+      end
+
+      # @param interfaces [Y2Network::InterfacesCollection] Known interfaces
+      # @return [Y2Network::ConnectionConfigsCollection] Connection configurations collection
+      def connections_configs_reader
+        @connection_configs_reader ||= Y2Network::Wicked::ConnectionConfigsReader.new
+      end
+
+      # Adds missing interfaces from connections
+      #
+      # @param interfaces [Y2Network::InterfacesCollection] Known interfaces
+      # @param interfaces [Y2Network::ConnectionConfigsCollection] Known interfaces
+      def add_missing_interfaces(interfaces, connections)
+        connections.each do |conn|
+          interface = interfaces.by_name(conn.interface)
+          next if interface
+
+          missing_interface =
+            if conn.virtual?
+              VirtualInterface.from_connection(conn)
+            else
+              PhysicalInterface.new(conn.name, hardware: Hwinfo.for(conn.name))
+            end
+          interfaces << missing_interface
+        end
       end
 
       # Reads routes
