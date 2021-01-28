@@ -27,7 +27,6 @@ module Y2Network
       class Wireless < Base
         DEFAULT_MODE = "infrastructure".freeze
         MODE = { "ad-hoc" => "ad-hoc", "master" => "ap", "managed" => "infrastructure" }.freeze
-        SCHEME_PATH = "file://".freeze
 
         # @see Y2Network::ConnectionConfigWriters::Base#update_file
         def update_file(conn)
@@ -37,28 +36,6 @@ module Y2Network
           file.wifi["channel"] = con.channel if conn.channel
 
           write_auth_settings(conn)
-        end
-
-        # Writes autentication settings for WPA-EAP networks
-        #
-        # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
-        def write_eap_auth_settings(conn)
-          # FIXME: incomplete
-          file.wifi_security["key-mgmt"] = "wpa-eap"
-          section = file.section_for("802-1x")
-
-          section["eap"] = conn.eap_mode
-          section["phase2-auth"] = conn.eap_auth if conn.eap_auth
-          section["password"] = conn.wpa_password if conn.wpa_password
-          section["anonymous-identity"] = conn.wpa_anonymous_identity if conn.eap_mode == "TTLS"
-          section["identity"] = conn.wpa_identity if conn.wpa_identity
-          section["ca-cert"] = File.join(SCHEME_PATH, conn.ca_cert) if conn.ca_cert
-
-          return unless conn.eap_mode == "TLS"
-
-          section["client-cert"] = File.join(SCHEME_PATH, conn.client_cert)
-          section["private-key"] = File.join(SCHEME_PATH, conn.client_key)
-          section["private-key-password"] = File.join(SCHEME_PATH, conn.client_key_password)
         end
 
         # Writes authentication settings
@@ -76,6 +53,28 @@ module Y2Network
           send(meth, conn) if respond_to?(meth, true)
         end
 
+        # Writes autentication settings for WPA-EAP networks
+        #
+        # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
+        def write_eap_auth_settings(conn)
+          # FIXME: incomplete
+          file.wifi_security["key-mgmt"] = "wpa-eap"
+          section = file.section_for("802-1x")
+
+          section["eap"] = conn.eap_mode
+          section["phase2-auth"] = conn.eap_auth if conn.eap_auth
+          section["password"] = conn.wpa_password if conn.wpa_password
+          section["anonymous-identity"] = conn.wpa_anonymous_identity if conn.eap_mode == "TTLS"
+          section["identity"] = conn.wpa_identity if conn.wpa_identity
+          section["ca-cert"] = conn.ca_cert if conn.ca_cert
+
+          return unless conn.eap_mode == "TLS"
+
+          section["client-cert"] = conn.client_cert
+          section["private-key"] = conn.client_key
+          section["private-key-password"] = conn.client_key_password
+        end
+
         # Writes autentication settings for WPA-PSK networks
         #
         # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
@@ -88,21 +87,39 @@ module Y2Network
         # Writes autentication settings for WEP networks
         #
         # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
-        def write_shared_auth_settings(conn)
-          file.wifi_secutiry["auth-alg"] = "shared"
-
-          return if (conn.keys || []).empty?
-
+        def write_wep_auth_settings(conn)
           file.wifi_security["key-mgmt"] = "none"
+
+          return if (conn.keys || []).all?(&:empty?)
+
           default_key_idx = conn.default_key || 0
-          file.wifi_security["wep-tx-keyidx"] = default_key_idx
+          file.wifi_security["wep-tx-keyidx"] = default_key_idx.to_s if !default_key_idx.zero?
           conn.keys.each_with_index do |v, i|
+            next if v.empty?
             file.wifi_security["wep-key#{i}"] = v.gsub(/^[sh:]/, "")
           end
-          passphrase_used = conn.keys[conn.default_key_idx].to_s.start_with(/h:/)
+          passphrase_used = conn.keys[default_key_idx].to_s.start_with?(/h:/)
           # see https://developer.gnome.org/libnm/stable/NMSettingWirelessSecurity.html#NMWepKeyType
           # 1: Hex or ASCII, 2: 104/128-bit Passphrase
-          file.wifi_security["wep-key-type"] = passphrase_used ? 2 : 1
+          file.wifi_security["wep-key-type"] = passphrase_used ? "2" : "1"
+        end
+
+        # Writes autentication settings for WEP networks (open auth)
+        #
+        # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
+        def write_open_auth_settings(conn)
+          file.wifi_security["auth-alg"] = "open"
+
+          write_wep_auth_settings(conn)
+        end
+
+        # Writes autentication settings for WEP networks (shared auth)
+        #
+        # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
+        def write_shared_auth_settings(conn)
+          file.wifi_security["auth-alg"] = "shared"
+
+          write_wep_auth_settings(conn)
         end
       end
     end
