@@ -79,14 +79,26 @@ module Y2Network
           file.wireless_wpa_psk = conn.wpa_psk
         end
 
-        # Writes autentication settings for WEP networks
+        # Writes autentication settings for WEP networks (open or shared)
         #
         # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
-        def write_shared_auth_settings(conn)
+        def write_wep_auth_settings(conn)
+          return if (conn.keys || []).empty?
+
           file.wireless_keys = conn.keys
           file.wireless_key_length = conn.key_length
           file.wireless_default_key = conn.default_key
         end
+      end
+
+      # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
+      def write_open_auth_settings(conn)
+        write_wep_auth_settings(conn)
+      end
+
+      # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
+      def write_shared_auth_settings(conn)
+        write_wep_auth_settings(conn)
       end
     end
   end
