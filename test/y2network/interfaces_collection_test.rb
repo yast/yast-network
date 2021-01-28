@@ -26,8 +26,12 @@ describe Y2Network::InterfacesCollection do
   subject(:collection) { described_class.new(interfaces) }
 
   let(:eth0) { Y2Network::PhysicalInterface.new("eth0") }
-  let(:br0) { Y2Network::VirtualInterface.new("br0") }
-  let(:wlan0) { Y2Network::PhysicalInterface.new("wlan0") }
+  let(:br0) do
+    Y2Network::VirtualInterface.new("br0", type: Y2Network::InterfaceType::BRIDGE)
+  end
+  let(:wlan0) do
+    Y2Network::PhysicalInterface.new("wlan0", type: Y2Network::InterfaceType::WIRELESS)
+  end
   let(:interfaces) { [eth0, br0, wlan0] }
 
   describe "#by_name" do
@@ -48,6 +52,32 @@ describe Y2Network::InterfacesCollection do
 
       it "returns the interface with the given name" do
         expect(collection.by_name("wlan0")).to be(wlan0)
+      end
+    end
+  end
+
+  describe "#by_type" do
+    context "when an InterfaceType instance is given" do
+      it "returns a collection containing the interfaces with the given type" do
+        by_type = collection.by_type(Y2Network::InterfaceType::WIRELESS)
+        expect(by_type.to_a).to eq([wlan0])
+        expect(by_type).to be_a(described_class)
+      end
+    end
+
+    context "when type's shortname is given as string" do
+      it "returns a collection containing the interfaces with the given type" do
+        by_type = collection.by_type("br")
+        expect(by_type.to_a).to eq([br0])
+        expect(by_type).to be_a(described_class)
+      end
+    end
+
+    context "when type's shortname is given as symbol" do
+      it "returns a collection containing the interfaces with the given type" do
+        by_type = collection.by_type(:eth)
+        expect(by_type.to_a).to eq([eth0])
+        expect(by_type).to be_a(described_class)
       end
     end
   end
