@@ -31,7 +31,7 @@ module Y2Network
           conn.ap_scanmode = file.wireless_ap_scanmode
           conn.auth_mode = transform_auth_mode(file.wireless_auth_mode)
           conn.default_key = file.wireless_default_key
-          conn.eap_auth = file.wireless_eap_auth
+          conn.eap_auth = file.wireless_eap_auth if file.wireless_eap_auth
           conn.eap_mode = file.wireless_eap_mode
           conn.essid = file.wireless_essid
           conn.key_length = file.wireless_key_length

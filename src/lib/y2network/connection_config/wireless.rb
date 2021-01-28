@@ -88,7 +88,7 @@ module Y2Network
         self.keys = []
         self.default_key = 0
         self.eap_mode = "PEAP"
-        self.eap_auth = "MSCHAPV2"
+        self.eap_auth = "mschapv2"
         self.ap_scanmode = 1
         # For WIFI DHCP makes more sense as majority of wifi routers act as dhcp servers
         self.bootproto = BootProtocol::DHCP
