@@ -264,6 +264,31 @@ module Y2Network
       @backend = Y2Network::Backend.all.find { |b| b.id == id }
     end
 
+    # Updates configuration section
+    #
+    # This method returns a new instance of Config, leaving the received
+    # as it is.
+    #
+    # @example Update interfaces list
+    #   config.update(interfaces: InterfacesCollection.new)
+    #
+    # @param changes [Hash<Symbol,Object>] A hash where the keys are the
+    #   sections to update and the values are the new values
+    # @return [Y2Network::Config]
+    def update(changes = {})
+      self.class.new(
+        interfaces:   changes[:interfaces] || interfaces,
+        connections:  changes[:connections] || connections,
+        s390_devices: changes[:s390_devices] || s390_devices,
+        drivers:      changes[:drivers] || drivers,
+        routing:      changes[:routing] || routing,
+        dns:          changes[:dns] || dns,
+        hostname:     changes[:hostname] || hostname,
+        source:       changes[:source] || source,
+        backend:      changes[:backend] || backend
+      )
+    end
+
     alias_method :eql?, :==
 
   private

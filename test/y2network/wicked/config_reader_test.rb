@@ -19,6 +19,9 @@
 require_relative "../../test_helper"
 require "y2network/wicked/config_reader"
 require "y2network/wicked/dns_reader"
+require "y2network/connection_configs_collection"
+require "y2network/interfaces_collection"
+require "y2network/s390_group_devices_collection"
 
 describe Y2Network::Wicked::ConfigReader do
   subject(:reader) { described_class.new }
@@ -32,8 +35,8 @@ describe Y2Network::Wicked::ConfigReader do
       conn.name = "eth0"
     end
   end
-  let(:connections) { [eth0_conn] }
-  let(:s390_devices) { [] }
+  let(:connections) { Y2Network::ConnectionConfigsCollection.new([eth0_conn]) }
+  let(:s390_devices) { Y2Network::S390GroupDevicesCollection.new([]) }
   let(:drivers) { Y2Network::Driver.new("virtio_net", "") }
   let(:routes_file) { instance_double(CFA::RoutesFile, load: nil, routes: []) }
   let(:dns_reader) { instance_double(Y2Network::Wicked::DNSReader, config: dns) }
@@ -74,11 +77,13 @@ describe Y2Network::Wicked::ConfigReader do
 
     it "returns a configuration including connection configurations" do
       config = reader.config
-      expect(config.connections).to eq([eth0_conn])
+      expect(config.connections.to_a).to eq([eth0_conn])
     end
 
     context "when a connection for a not existing device is found" do
-      let(:connections) { [eth0_conn, extra_config] }
+      let(:connections) do
+        Y2Network::ConnectionConfigsCollection.new([eth0_conn, extra_config])
+      end
 
       context "and it is a virtual connection" do
         let(:extra_config) do

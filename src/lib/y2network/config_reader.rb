@@ -16,18 +16,41 @@
 #
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
+
+require "yast"
+
 module Y2Network
-  module ConfigReader
-    # Config reader for a given source
+  # This class is responsible for reading the configuration from the system
+  #
+  # It implements a {#config} method which returns a configuration object
+  # containing the information from the corresponding backend.
+  #
+  # It is expect that a configuration reader exists for each supported backend
+  # by inheriting from this class.
+  class ConfigReader
+    include Yast::Logger
+
+    class << self
+      # Returns a configuration reader for a given source
+      #
+      # @param source [Symbol] Source name (e.g., :wicked)
+      # @param opts  [Array<Object>] Reader options
+      # @return [Y2Network::Autoinst::ConfigReader,Y2Network::Wicked::ConfigReader]
+      def for(source, *opts)
+        require "y2network/#{source}/config_reader"
+        modname = source.to_s.split("_").map(&:capitalize).join
+        klass = Y2Network.const_get("#{modname}::ConfigReader")
+        klass.new(*opts)
+      end
+    end
+
+    def initialize(_opts = {}); end
+
+    # Returns the configuration from the given backend
     #
-    # @param source [Symbol] Source name (e.g., :wicked)
-    # @param opts  [Array<Object>] Reader options
-    # @return [Y2Network::Autoinst::ConfigReader,Y2Network::Wicked::ConfigReader]
-    def self.for(source, *opts)
-      require "y2network/#{source}/config_reader"
-      modname = source.to_s.split("_").map(&:capitalize).join
-      klass = Y2Network.const_get("#{modname}::ConfigReader")
-      klass.new(*opts)
+    # @return [Y2Network::Config] Network configuration
+    def config
+      Y2Network::Config.new
     end
   end
 end

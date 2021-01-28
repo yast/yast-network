@@ -583,4 +583,22 @@ describe Y2Network::Config do
       end
     end
   end
+
+  describe "#update" do
+    let(:wlan0) { Y2Network::PhysicalInterface.new("wlan0") }
+    let(:wlan0_conn) { Y2Network::ConnectionConfig::Wireless.new }
+    let(:updated_interfaces) { Y2Network::InterfacesCollection.new([wlan0]) }
+    let(:updated_connections) { Y2Network::ConnectionConfigsCollection.new([wlan0_conn]) }
+
+    it "returns an updated configuration" do
+      new_config = config.update(
+        interfaces:  updated_interfaces,
+        connections: updated_connections,
+        source:      :network_manager
+      )
+      expect(config.interfaces).to eq(interfaces)
+      expect(new_config.interfaces).to eq(updated_interfaces)
+      expect(new_config.connections).to eq(updated_connections)
+    end
+  end
 end
