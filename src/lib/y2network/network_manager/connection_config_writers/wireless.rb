@@ -61,7 +61,7 @@ module Y2Network
           file.wifi_security["key-mgmt"] = "wpa-eap"
           section = file.section_for("802-1x")
 
-          section["eap"] = conn.eap_mode
+          section["eap"] = conn.eap_mode.downcase if conn.eap_mode
           section["phase2-auth"] = conn.eap_auth if conn.eap_auth
           section["password"] = conn.wpa_password if conn.wpa_password
           section["anonymous-identity"] = conn.wpa_anonymous_identity if conn.eap_mode == "TTLS"
