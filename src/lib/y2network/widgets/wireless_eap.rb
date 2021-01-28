@@ -38,6 +38,7 @@ module Y2Network
       end
 
       def init
+        eap_mode.init
         refresh
       end
 
@@ -134,6 +135,7 @@ module Y2Network
       def contents
         VBox(
           HStretch(),
+          EapUser.new(@settings),
           ClientCertPath.new(@settings),
           HBox(
             ClientKeyPath.new(@settings),

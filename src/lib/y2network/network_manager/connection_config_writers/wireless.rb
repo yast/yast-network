@@ -96,6 +96,7 @@ module Y2Network
           file.wifi_security["wep-tx-keyidx"] = default_key_idx.to_s if !default_key_idx.zero?
           conn.keys.each_with_index do |v, i|
             next if v.empty?
+
             file.wifi_security["wep-key#{i}"] = v.gsub(/^[sh:]/, "")
           end
           passphrase_used = conn.keys[default_key_idx].to_s.start_with?(/h:/)
