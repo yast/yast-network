@@ -34,7 +34,7 @@ module Y2Network
           file.wireless_nwid = conn.nwid
           file.wireless_channel = conn.channel
           file.wireless_rate = conn.bitrate
-          write_auth_settings(conn) if conn.auth_mode
+          write_auth_settings(conn)
         end
 
       private
@@ -50,8 +50,8 @@ module Y2Network
         # @see #write_psk_auth_settings
         # @see #write_shared_auth_settings
         def write_auth_settings(conn)
-          file.wireless_auth_mode = conn.auth_mode || :open
-          meth = "write_#{conn.auth_mode}_auth_settings".to_sym
+          file.wireless_auth_mode = conn.auth_mode
+          meth = "write_#{conn.auth_mode || :open}_auth_settings".to_sym
           send(meth, conn) if respond_to?(meth, true)
         end
 
@@ -60,12 +60,16 @@ module Y2Network
         # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
         def write_eap_auth_settings(conn)
           file.wireless_eap_mode = conn.eap_mode
+          file.wireless_eap_auth = conn.eap_auth
           file.wireless_wpa_password = conn.wpa_password
           file.wireless_wpa_identity = conn.wpa_identity
           file.wireless_ca_cert = conn.ca_cert
           file.wireless_wpa_anonid = conn.wpa_anonymous_identity if conn.eap_mode == "TTLS"
-          file.wireless_client_cert = conn.client_cert if conn.eap_mode == "TLS"
-          file.wireless_client_key = conn.client_key if conn.eap_mode == "TLS"
+          return unless conn.eap_mode == "TLS"
+
+          file.wireless_client_cert = conn.client_cert
+          file.wireless_client_key = conn.client_key
+          file.wireless_client_key_password = conn.client_key_password
         end
 
         # Writes autentication settings for WPA-PSK networks
@@ -75,13 +79,25 @@ module Y2Network
           file.wireless_wpa_psk = conn.wpa_psk
         end
 
-        # Writes autentication settings for WEP networks
+        # Writes autentication settings for WEP networks (open or shared)
         #
         # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
-        def write_shared_auth_settings(conn)
+        def write_wep_auth_settings(conn)
+          return if (conn.keys || []).compact.all?(&:empty?)
+
           file.wireless_keys = conn.keys
           file.wireless_key_length = conn.key_length
           file.wireless_default_key = conn.default_key
+        end
+
+        # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
+        def write_open_auth_settings(conn)
+          write_wep_auth_settings(conn)
+        end
+
+        # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
+        def write_shared_auth_settings(conn)
+          write_wep_auth_settings(conn)
         end
       end
     end

@@ -21,6 +21,34 @@ require "y2network/widgets/path_widget"
 
 module Y2Network
   module Widgets
+    # Widget that represent EAP Client Key password
+    class ClientKeyPassword < CWM::Password
+      def initialize(builder)
+        @builder = builder
+        textdomain "network"
+      end
+
+      def opt
+        [:hstretch]
+      end
+
+      def label
+        _("Client Key Password")
+      end
+
+      def init
+        self.value = @builder.client_key_password
+      end
+
+      def store
+        @builder.client_key_password = value
+      end
+
+      def help
+        "" # TODO: write it
+      end
+    end
+
     class ClientKeyPath < PathWidget
       def initialize(builder)
         textdomain "network"

@@ -73,6 +73,8 @@ module Y2Network
       attr_accessor :client_cert
       # @return [String] client private key used to encrypt for TLS
       attr_accessor :client_key
+      # @return [String] client private key password
+      attr_accessor :client_key_password
 
       def initialize
         super
@@ -86,7 +88,7 @@ module Y2Network
         self.keys = []
         self.default_key = 0
         self.eap_mode = "PEAP"
-        self.eap_auth = "MSCHAPV2"
+        self.eap_auth = "mschapv2"
         self.ap_scanmode = 1
         # For WIFI DHCP makes more sense as majority of wifi routers act as dhcp servers
         self.bootproto = BootProtocol::DHCP
@@ -98,7 +100,7 @@ module Y2Network
         [:mode, :essid, :nwid, :auth_mode, :wpa_psk, :key_length, :keys, :default_key, :nick,
          :eap_mode, :eap_auth, :channel, :frequency, :bitrate, :ap, :ap_scanmode,
          :wpa_password, :wpa_identity, :wpa_anonymous_identity, :ca_cert, :client_cert,
-         :client_key].all? do |method|
+         :client_key, :client_key_password].all? do |method|
           public_send(method) == other.public_send(method)
         end
       end
@@ -108,6 +110,13 @@ module Y2Network
       # @param wireless_mode [String]
       def mode=(wireless_mode)
         @mode = wireless_mode.to_s.downcase
+      end
+
+      # Convenience method to check whether there are some WEP key defined
+      #
+      # @return [Boolean] return true if there is at least one not empty key
+      def keys?
+        !(keys || []).compact.all?(&:empty?)
       end
     end
   end

@@ -23,7 +23,7 @@ require "cwm/replace_point"
 require "y2network/widgets/wireless_eap_mode"
 require "y2network/widgets/server_ca_path"
 require "y2network/widgets/client_cert_path"
-require "y2network/widgets/client_key_path"
+require "y2network/widgets/client_key"
 
 module Y2Network
   module Widgets
@@ -38,6 +38,7 @@ module Y2Network
       end
 
       def init
+        eap_mode.init
         refresh
       end
 
@@ -50,6 +51,7 @@ module Y2Network
 
       def contents
         VBox(
+          HStretch(),
           eap_mode,
           VSpacing(0.2),
           replace_widget
@@ -99,7 +101,7 @@ module Y2Network
 
       def contents
         VBox(
-          HBox(EapUser.new(@settings), EapPassword.new(@settings)),
+          HBox(EapUser.new(@settings), HSpacing(1), EapPassword.new(@settings)),
           ServerCAPath.new(@settings)
         )
       end
@@ -115,7 +117,7 @@ module Y2Network
 
       def contents
         VBox(
-          HBox(EapUser.new(@settings), EapPassword.new(@settings)),
+          HBox(EapUser.new(@settings), HSpacing(1), EapPassword.new(@settings)),
           EapAnonymousUser.new(@settings),
           ServerCAPath.new(@settings)
         )
@@ -132,9 +134,13 @@ module Y2Network
 
       def contents
         VBox(
+          HStretch(),
+          EapUser.new(@settings),
+          ClientCertPath.new(@settings),
           HBox(
-            ClientCertPath.new(@settings),
-            ClientKeyPath.new(@settings)
+            ClientKeyPath.new(@settings),
+            HSpacing(1),
+            ClientKeyPassword.new(@settings)
           ),
           ServerCAPath.new(@settings)
         )
@@ -150,6 +156,10 @@ module Y2Network
 
       def label
         _("Password")
+      end
+
+      def opt
+        [:hstretch]
       end
 
       def init
