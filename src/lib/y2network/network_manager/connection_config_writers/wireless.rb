@@ -109,7 +109,7 @@ module Y2Network
         #
         # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
         def write_open_auth_settings(conn)
-          return if !conn.keys?
+          return unless conn.keys?
 
           file.wifi_security["auth-alg"] = "open"
           write_wep_auth_settings(conn)
@@ -119,7 +119,7 @@ module Y2Network
         #
         # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
         def write_shared_auth_settings(conn)
-          return if !conn.keys?
+          return unless conn.keys?
 
           file.wifi_security["auth-alg"] = "shared"
           write_wep_auth_settings(conn)
