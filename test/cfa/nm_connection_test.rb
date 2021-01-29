@@ -29,6 +29,17 @@ describe CFA::NmConnection do
   subject { described_class.new(conn_file) }
   let(:conn_file) { file_path("some_wifi.nmconnection") }
 
+  describe ".all" do
+    around do |example|
+      change_scr_root(File.join(DATA_PATH, "instsys"), &example)
+    end
+
+    it "returns all connections files" do
+      files = described_class.all
+      expect(files).to be_all(CFA::NmConnection)
+    end
+  end
+
   describe "#connection" do
     before { subject.load }
 

@@ -19,6 +19,8 @@
 
 require "cfa/base_model"
 
+Yast.import "Installation"
+
 module CFA
   # Class to handle NetworkManager connection configuration files
   #
@@ -31,7 +33,18 @@ module CFA
     KNOWN_SECTIONS = [
       "bridge", "connection", "ethernet", "ipv4", "ipv6", "vlan", "wifi", "wifi_security"
     ].freeze
+    SYSTEM_CONNECTIONS_DIR = "/etc/NetworkManager/system-connections".freeze
 
+    class << self
+      # Returns all connection definition files
+      #
+      # @return [Array<NmConnection>]
+      def all
+        directory = File.join(Yast::Installation.destdir, SYSTEM_CONNECTIONS_DIR)
+        files = Dir[File.join(directory, "*.nmconnection")].to_a
+        files.map { |f| new(f) }
+      end
+    end
     # Constructor
     #
     # @param path [String] File path
