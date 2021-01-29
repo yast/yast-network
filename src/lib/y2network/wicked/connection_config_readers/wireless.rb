@@ -57,7 +57,7 @@ module Y2Network
 
         # Reads the array of wireless keys from the file
         def wireless_keys
-          (0..MAX_WIRELESS_KEYS - 1).map { |i| file.wireless_keys["_#{i}"].to_s }
+          (0..MAX_WIRELESS_KEYS - 1).map { |i| file.wireless_keys["_#{i}"] }
         end
 
         BACKWARD_MAPPING = {

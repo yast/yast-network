@@ -34,7 +34,7 @@ module Y2Network
           file.wireless_nwid = conn.nwid
           file.wireless_channel = conn.channel
           file.wireless_rate = conn.bitrate
-          write_auth_settings(conn) if conn.auth_mode
+          write_auth_settings(conn)
         end
 
       private
@@ -50,8 +50,8 @@ module Y2Network
         # @see #write_psk_auth_settings
         # @see #write_shared_auth_settings
         def write_auth_settings(conn)
-          file.wireless_auth_mode = conn.auth_mode || :open
-          meth = "write_#{conn.auth_mode}_auth_settings".to_sym
+          file.wireless_auth_mode = conn.auth_mode
+          meth = "write_#{conn.auth_mode || :open}_auth_settings".to_sym
           send(meth, conn) if respond_to?(meth, true)
         end
 
@@ -83,22 +83,22 @@ module Y2Network
         #
         # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
         def write_wep_auth_settings(conn)
-          return if (conn.keys || []).empty?
+          return if (conn.keys || []).compact.all?(&:empty?)
 
           file.wireless_keys = conn.keys
           file.wireless_key_length = conn.key_length
           file.wireless_default_key = conn.default_key
         end
-      end
 
-      # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
-      def write_open_auth_settings(conn)
-        write_wep_auth_settings(conn)
-      end
+        # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
+        def write_open_auth_settings(conn)
+          write_wep_auth_settings(conn)
+        end
 
-      # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
-      def write_shared_auth_settings(conn)
-        write_wep_auth_settings(conn)
+        # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
+        def write_shared_auth_settings(conn)
+          write_wep_auth_settings(conn)
+        end
       end
     end
   end

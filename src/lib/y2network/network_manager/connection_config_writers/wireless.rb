@@ -47,9 +47,11 @@ module Y2Network
         #
         # @see #write_eap_auth_settings
         # @see #write_psk_auth_settings
+        # @see #write_open_auth_settings
         # @see #write_shared_auth_settings
         def write_auth_settings(conn)
-          meth = "write_#{conn.auth_mode}_auth_settings".to_sym
+          auth_mode = conn.auth_mode || :open
+          meth = "write_#{auth_mode}_auth_settings".to_sym
           send(meth, conn) if respond_to?(meth, true)
         end
 
@@ -63,7 +65,7 @@ module Y2Network
 
           section["eap"] = conn.eap_mode.downcase if conn.eap_mode
           section["phase2-auth"] = conn.eap_auth if conn.eap_auth
-          section["password"] = conn.wpa_password if conn.wpa_password
+          section["password"] = conn.wpa_password if conn.wpa_password && conn.eap_mode != "TLS"
           section["anonymous-identity"] = conn.wpa_anonymous_identity if conn.eap_mode == "TTLS"
           section["identity"] = conn.wpa_identity if conn.wpa_identity
           section["ca-cert"] = conn.ca_cert if conn.ca_cert
@@ -89,28 +91,28 @@ module Y2Network
         # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
         def write_wep_auth_settings(conn)
           file.wifi_security["key-mgmt"] = "none"
-
-          return if (conn.keys || []).all?(&:empty?)
-
           default_key_idx = conn.default_key || 0
           file.wifi_security["wep-tx-keyidx"] = default_key_idx.to_s if !default_key_idx.zero?
           conn.keys.each_with_index do |v, i|
-            next if v.empty?
+            next if v.to_s.empty?
 
-            file.wifi_security["wep-key#{i}"] = v.gsub(/^[sh:]/, "")
+            file.wifi_security["wep-key#{i}"] = v.gsub(/^[sh]:/, "")
           end
           passphrase_used = conn.keys[default_key_idx].to_s.start_with?(/h:/)
           # see https://developer.gnome.org/libnm/stable/NMSettingWirelessSecurity.html#NMWepKeyType
           # 1: Hex or ASCII, 2: 104/128-bit Passphrase
           file.wifi_security["wep-key-type"] = passphrase_used ? "2" : "1"
+
+          true
         end
 
         # Writes autentication settings for WEP networks (open auth)
         #
         # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
         def write_open_auth_settings(conn)
-          file.wifi_security["auth-alg"] = "open"
+          return if (conn.keys || []).compact.all?(&:empty?)
 
+          file.wifi_security["auth-alg"] = "open"
           write_wep_auth_settings(conn)
         end
 
@@ -118,8 +120,9 @@ module Y2Network
         #
         # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
         def write_shared_auth_settings(conn)
-          file.wifi_security["auth-alg"] = "shared"
+          return if (conn.keys || []).compact.all?(&:empty?)
 
+          file.wifi_security["auth-alg"] = "shared"
           write_wep_auth_settings(conn)
         end
       end
