@@ -51,7 +51,7 @@ module Y2Network
         # @see #write_shared_auth_settings
         def write_auth_settings(conn)
           auth_mode = conn.auth_mode || :open
-          meth = "write_#{auth_mode}_auth_settings".to_sym
+          meth = "write_#{auth_mode}_auth_settings"
           send(meth, conn) if respond_to?(meth, true)
         end
 
@@ -59,7 +59,6 @@ module Y2Network
         #
         # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
         def write_eap_auth_settings(conn)
-          # FIXME: incomplete
           file.wifi_security["key-mgmt"] = "wpa-eap"
           section = file.section_for("802-1x")
 
@@ -110,7 +109,7 @@ module Y2Network
         #
         # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
         def write_open_auth_settings(conn)
-          return if (conn.keys || []).compact.all?(&:empty?)
+          return if !conn.keys?
 
           file.wifi_security["auth-alg"] = "open"
           write_wep_auth_settings(conn)
@@ -120,7 +119,7 @@ module Y2Network
         #
         # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
         def write_shared_auth_settings(conn)
-          return if (conn.keys || []).compact.all?(&:empty?)
+          return if !conn.keys?
 
           file.wifi_security["auth-alg"] = "shared"
           write_wep_auth_settings(conn)

@@ -29,4 +29,23 @@ describe Y2Network::ConnectionConfig::Wireless do
       expect(config.type).to eq(Y2Network::InterfaceType::WIRELESS)
     end
   end
+
+  describe "#keys?" do
+    let(:keys) { [nil, nil, nil, ""] }
+    before { config.keys = keys }
+
+    context "when the connection has not defined any WEP key" do
+      it "returns false" do
+        expect(config.keys?).to eql(false)
+      end
+    end
+
+    context "when the connection has defined at least one WEP key" do
+      let(:keys) { ["0123456789", nil, nil, ""] }
+
+      it "returns true" do
+        expect(config.keys?).to eql(true)
+      end
+    end
+  end
 end

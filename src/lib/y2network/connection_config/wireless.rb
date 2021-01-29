@@ -111,6 +111,13 @@ module Y2Network
       def mode=(wireless_mode)
         @mode = wireless_mode.to_s.downcase
       end
+
+      # Convenience method to check whether there are some WEP key defined
+      #
+      # @return [Boolean] return true if there is at least one not empty key
+      def keys?
+        !(keys || []).compact.all?(&:empty?)
+      end
     end
   end
 end
