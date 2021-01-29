@@ -39,7 +39,7 @@ module CFA
     def initialize(path, file_handler: nil)
       # FIXME: The Networkmanager lense writes the values surrounded by double
       # quotes which is not valid
-      super(AugeasParser.new("Puppet.lns"), path, file_handler: file_handler)
+      super(AugeasParser.new("Desktop.lns"), path, file_handler: file_handler)
     end
 
     # Returns the augeas tree for the given section
