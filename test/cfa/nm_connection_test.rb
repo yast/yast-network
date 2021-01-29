@@ -55,4 +55,30 @@ describe CFA::NmConnection do
       end
     end
   end
+
+  describe "#type" do
+    before { subject.load }
+
+    context "when the file corresponds to a ethernet connection" do
+      let(:conn_file) { file_path("cable.nmconnection") }
+
+      it "returns Y2Network::InterfaceType::ETHERNET" do
+        expect(subject.type).to eq(Y2Network::InterfaceType::ETHERNET)
+      end
+    end
+
+    context "when the file corresponds to a wireless connection" do
+      it "returns Y2Network::InterfaceType::WIRELESS" do
+        expect(subject.type).to eq(Y2Network::InterfaceType::WIRELESS)
+      end
+    end
+
+    context "when no type is defined" do
+      let(:conn_file) { file_path("unknown.nmconnection") }
+
+      it "returns Y2Network::InterfaceType::UNKNOWN" do
+        expect(subject.type).to eq(Y2Network::InterfaceType::UNKNOWN)
+      end
+    end
+  end
 end

@@ -1,0 +1,20 @@
+[connection]
+id=Cable Connection #1
+uuid=3e8c118c-ccf5-4434-ac43-b2012d167573
+type=ethernet
+permissions=
+timestamp=1602835990
+
+[ethernet]
+mtu=1024
+
+[ipv4]
+dns-search=
+method=auto
+
+[ipv6]
+addr-gen-mode=stable-privacy
+dns-search=
+method=auto
+
+[proxy]

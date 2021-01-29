@@ -17,7 +17,9 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
+require "yast"
 require "cfa/base_model"
+require "y2network/interface_type"
 
 Yast.import "Installation"
 
@@ -91,6 +93,20 @@ module CFA
       values.each_with_index do |ip, index|
         section["#{name}#{index + 1}"] = ip
       end
+    end
+
+    TYPES_MAP = {
+      wifi:     Y2Network::InterfaceType::WIRELESS,
+      ethernet: Y2Network::InterfaceType::ETHERNET
+    }.freeze
+    private_constant :TYPES_MAP
+
+    # Determines the interface type according to the content of the file
+    #
+    # @return [Y2Network::InterfaceType] Interface type
+    def type
+      TYPES_MAP[connection["type"]&.to_sym] ||
+        Y2Network::InterfaceType::UNKNOWN
     end
 
     KNOWN_SECTIONS.each { |s| define_method(s) { section_for(s) } }

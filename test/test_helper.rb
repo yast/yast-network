@@ -61,11 +61,13 @@ Yast.import "Lan"
 require "y2storage"
 
 require_relative "scr_stub"
+require_relative "support/network_helpers"
 
 RSpec.configure do |c|
   c.extend Yast::I18n # available in context/describe
   c.include Yast::I18n
   c.include SCRStub
+  c.include Yast::RSpec::NetworkHelpers
   c.mock_with :rspec do |mocks|
     mocks.verify_partial_doubles = true
   end

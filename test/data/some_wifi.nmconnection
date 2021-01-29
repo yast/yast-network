@@ -9,6 +9,7 @@ timestamp=1602835990
 mac-address-blacklist=
 mode=infrastructure
 ssid=MY_WIFI
+mtu=1024
 
 [wifi-security]
 key-mgmt=wpa-psk
