@@ -45,6 +45,7 @@ describe Y2Network::Autoinst::InterfacesReader do
         "bootproto"             => "dhcp",
         "name"                  => "eth0",
         "startmode"             => "auto",
+        "lladdr"                => "02:0b:0c:0d:0e:02",
         "dhclient_set_hostname" => "yes",
         "aliases"               => {
           "alias0" => {
@@ -74,6 +75,7 @@ describe Y2Network::Autoinst::InterfacesReader do
       expect(eth0_config.bootproto).to eq Y2Network::BootProtocol.from_name("dhcp")
       expect(eth0_config.ip_aliases.size).to eq 2
       expect(eth0_config.dhclient_set_hostname).to eq true
+      expect(eth0_config.lladdress).to eq("02:0b:0c:0d:0e:02")
       eth1_config = subject.config.by_name("eth1")
       expect(eth1_config.name).to eq("eth1")
       expect(eth1_config.ip.address.to_s).to eq("192.168.10.10/24")

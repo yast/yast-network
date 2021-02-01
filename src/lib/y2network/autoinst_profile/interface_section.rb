@@ -27,6 +27,7 @@ module Y2Network
     #    <bootproto>static</bootproto>
     #    <broadcast>127.255.255.255</broadcast>
     #    <device>lo</device>
+    #    <lladdr>02:02:02:02:02:02</lladdr>
     #    <firewall>no</firewall>
     #    <ipaddr>127.0.0.1</ipaddr>
     #    <netmask>255.0.0.0</netmask>
@@ -44,6 +45,7 @@ module Y2Network
           { name: :broadcast },
           { name: :device },
           { name: :name }, # has precedence over device
+          { name: :lladdr },
           { name: :ipaddr },
           { name: :remote_ipaddr },
           { name: :netmask },
@@ -123,6 +125,9 @@ module Y2Network
 
       # @!attribute name
       #  @return [String] device name.
+
+      # @!attribute lladdr
+      #  @return [String] ip address.
 
       # @!attribute ipaddr
       #  @return [String] ip address.
@@ -287,6 +292,7 @@ module Y2Network
         # nil bootproto is valid use case (missing explicit setup) - wicked defaults to static then
         @bootproto = config.bootproto&.name
         @name = config.name
+        @lladdr = config.lladdress
         if config.bootproto == BootProtocol::STATIC && config.ip
           # missing ip is valid scenario for wicked - so use empty string here
           @ipaddr = config.ip.address&.address.to_s

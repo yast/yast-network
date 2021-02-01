@@ -34,6 +34,7 @@ describe Y2Network::AutoinstProfile::InterfaceSection do
         c.firewall_zone = "DMZ"
         c.ethtool_options = "test=1"
         c.interface = "eth0"
+        c.lladdress = "02:0b:0c:0d:0e:02"
         c.ip = Y2Network::ConnectionConfig::IPConfig.new(
           Y2Network::IPAddress.from_string("10.100.0.1/24")
         )
@@ -55,6 +56,7 @@ describe Y2Network::AutoinstProfile::InterfaceSection do
       expect(section.bootproto).to eq("static")
       expect(section.ipaddr).to eq("10.100.0.1")
       expect(section.prefixlen).to eq("24")
+      expect(section.lladdr).to eq("02:0b:0c:0d:0e:02")
       expect(section.aliases).to eq(
         "alias0" => { "IPADDR" => "10.100.0.1", "PREFIXLEN" => "24", "LABEL" => "test" },
         "alias1" => { "IPADDR" => "10.100.0.2", "PREFIXLEN" => "24", "LABEL" => "test1" }

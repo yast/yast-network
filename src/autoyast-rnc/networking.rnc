@@ -51,6 +51,7 @@ interface =
       element device { STRING }? &	#overloaded
       element name { STRING }? &
 
+      lladdr? &
       bootproto? &
       startmode? &
       ifplugd_priority? &
@@ -140,6 +141,7 @@ bootproto = element bootproto { STRING }
 broadcast = element broadcast { STRING }
 dhclient_set_down_link = element dhclient_set_down_link { STRING }
 dhclient_set_default_route = element dhclient_set_default_route { STRING_ATTR, ("yes" | "no") }
+lladdrr = element lladdr { STRING }
 ipaddr = element ipaddr { STRING }
 prefixlen = element prefixlen { STRING }
 usercontrol = element usercontrol { STRING }

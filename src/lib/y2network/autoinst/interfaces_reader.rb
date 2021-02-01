@@ -86,6 +86,7 @@ module Y2Network
       def load_generic(config, interface_section)
         config.bootproto = BootProtocol.from_name(interface_section.bootproto)
         config.name = name_from_section(interface_section)
+        config.lladdress = interface_section.lladdr if !interface_section.to_s.empty?
         config.interface = config.name # in autoyast name and interface is same
         if config.bootproto == BootProtocol::STATIC
           if !interface_section.ipaddr
