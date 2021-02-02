@@ -36,6 +36,7 @@ module Y2Network
     #       <device>lo</device>
     #       <firewall>no</firewall>
     #       <ipaddr>127.0.0.1</ipaddr>
+    #       <lladdr>02:02:02:02:02:02</lladdr>
     #       <netmask>255.0.0.0</netmask>
     #       <network>127.0.0.0</network>
     #       <prefixlen>8</prefixlen>
