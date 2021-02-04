@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Feb  4 15:05:25 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
+
+- Cache the hardware netcards information in order to speed up the
+  access (bsc#1180702)
+- 4.3.44
+
+-------------------------------------------------------------------
 Mon Feb  1 20:05:05 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
 
 - Added lladdr attribute to the interface section in the networking
