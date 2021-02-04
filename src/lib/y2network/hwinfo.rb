@@ -113,6 +113,8 @@ module Y2Network
       #
       # @return [HardWrapper]
       def hardware_wrapper
+        return @hardware_wrapper if @hardware_wrapper
+
         @hardware_wrapper = HardwareWrapper.new
       end
 
