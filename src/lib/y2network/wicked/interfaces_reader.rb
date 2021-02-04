@@ -51,6 +51,7 @@ module Y2Network
       def config
         return @config if @config
 
+        Hwinfo.reset
         find_s390_devices
         find_physical_interfaces
         find_connections
