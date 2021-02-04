@@ -21,6 +21,8 @@ module Y2Network
   module NetworkManager
     # Reads a connection configuration from a given file
     class ConnectionConfigReader
+      include Yast::Logger
+
       # TODO: make this signature consistent with Wicked::ConnectionConfigReader
       def read(file)
         file.load
@@ -39,7 +41,7 @@ module Y2Network
       def find_handler_class(type)
         require "y2network/network_manager/connection_config_readers/#{type.file_name}"
         ConnectionConfigReaders.const_get(type.class_name)
-      rescue LoadeError, NameError => e
+      rescue LoadError, NameError => e
         log.info "Unknown connection type: '#{type}'. " \
                  "Connection handler could not be loaded: #{e.message}"
       end
