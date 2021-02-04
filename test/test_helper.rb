@@ -72,6 +72,7 @@ RSpec.configure do |c|
 
   c.before do
     Yast::Lan.clear_configs
+    Y2Network::Hwinfo.reset
     allow(Yast::NetworkInterfaces).to receive(:Write)
     allow(Y2Network::Hwinfo).to receive(:hwinfo_from_hardware)
     Y2Storage::StorageManager.create_test_instance
