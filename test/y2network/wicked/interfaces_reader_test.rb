@@ -114,34 +114,6 @@ describe Y2Network::Wicked::InterfacesReader do
         expect(interfaces.size).to eq(1)
       end
     end
-
-    context "when a connection for a not existing device is found" do
-      let(:configured_interfaces) { ["lo", "eth0", "eth1"] }
-
-      context "and it is a virtual connection" do
-        it "creates a virtual interface" do
-          vlan = reader.interfaces.by_name("eth0.100")
-          expect(vlan).to_not be_nil
-          expect(vlan).to be_a Y2Network::VirtualInterface
-        end
-      end
-
-      context "and it is not a virtual connection" do
-        it "creates a not present physical interface" do
-          eth1 = reader.interfaces.by_name("eth1")
-          expect(eth1).to be_a Y2Network::PhysicalInterface
-          expect(eth1).to_not be_present
-        end
-      end
-    end
-  end
-
-  describe "#connections" do
-    it "reads ethernet connections" do
-      connections = reader.connections
-      conn = connections.by_name("eth0")
-      expect(conn.interface).to eq("eth0")
-    end
   end
 
   describe "#drivers" do

@@ -148,4 +148,14 @@ describe Y2Network::InterfacesCollection do
       expect(collection.free_names("eth", 3)).to eq(["eth1", "eth2", "eth3"])
     end
   end
+
+  describe "#+" do
+    let(:interfaces) { [eth0] }
+    let(:other) { Y2Network::InterfacesCollection.new([br0]) }
+
+    it "returns a collection containing all the objects" do
+      new_collection = collection + other
+      expect(new_collection.to_a).to eq([eth0, br0])
+    end
+  end
 end

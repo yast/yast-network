@@ -18,7 +18,7 @@
 # find current contact information at www.suse.com.
 require "yast"
 require "cfa/sysctl_config"
-require "y2network/config"
+require "y2network/config_reader"
 require "y2network/interface"
 require "y2network/routing"
 require "y2network/routing_table"
@@ -26,7 +26,7 @@ require "cfa/routes_file"
 require "y2network/wicked/dns_reader"
 require "y2network/wicked/hostname_reader"
 require "y2network/wicked/interfaces_reader"
-require "y2network/interfaces_collection"
+require "y2network/wicked/connection_configs_reader"
 
 Yast.import "NetworkInterfaces"
 Yast.import "Host"
@@ -34,10 +34,12 @@ Yast.import "Host"
 module Y2Network
   module Wicked
     # This class reads the current configuration from `/etc/sysconfig` files
-    class ConfigReader
+    class ConfigReader < Y2Network::ConfigReader
       include Yast::Logger
 
-      def initialize(_opts = {}); end
+      SECTIONS = [
+        :interfaces, :connections, :drivers, :routing, :dns, :hostname
+      ].freeze
 
       # @return [Y2Network::Config] Network configuration
       def config
@@ -45,35 +47,114 @@ module Y2Network
         # NOTE: /etc/hosts cache - nothing to do with /etc/hostname
         Yast::Host.Read
 
-        routing_tables = find_routing_tables(interfaces_reader.interfaces)
+        initial_config = Config.new(source: :wicked)
+
+        result = SECTIONS.reduce(initial_config) do |current_config, section|
+          send("read_#{section}", current_config)
+        end
+
+        log.info "Sysconfig reader result: #{result.inspect}"
+        result
+      end
+
+    protected
+
+      # Reads the network interfaces
+      #
+      # @param config [Y2Network::Config] Initial configuration object
+      # @return [Y2Network::Config] A new configuration object including the interfaces
+      def read_interfaces(config)
+        config.update(
+          interfaces:   interfaces_reader.interfaces,
+          s390_devices: interfaces_reader.s390_devices
+        )
+      end
+
+      # Reads the connections
+      #
+      # @param config [Y2Network::Config] Initial configuration object
+      # @return [Y2Network::Config] A new configuration object including the connections
+      def read_connections(config)
+        connections = connection_configs_reader.connections(config.interfaces)
+        missing_interfaces = find_missing_interfaces(
+          connections, config.interfaces
+        )
+        config.update(
+          interfaces:  config.interfaces + missing_interfaces,
+          connections: connections
+        )
+      end
+
+      # Reads the drivers
+      #
+      # @param config [Y2Network::Config] Initial configuration object
+      # @return [Y2Network::Config] A new configuration object including the connections
+      def read_drivers(config)
+        config.update(drivers: interfaces_reader.drivers)
+      end
+
+      # Reads the routing information
+      #
+      # @param config [Y2Network::Config] Initial configuration object
+      # @return [Y2Network::Config] A new configuration object including the routing information
+      def read_routing(config)
+        routing_tables = find_routing_tables(config.interfaces)
         routing = Routing.new(
           tables:       routing_tables,
           forward_ipv4: sysctl_config_file.forward_ipv4,
           forward_ipv6: sysctl_config_file.forward_ipv6
         )
+        config.update(routing: routing)
+      end
 
-        result = Config.new(
-          interfaces:   interfaces_reader.interfaces,
-          connections:  interfaces_reader.connections,
-          s390_devices: interfaces_reader.s390_devices,
-          drivers:      interfaces_reader.drivers,
-          routing:      routing,
-          dns:          dns,
-          hostname:     hostname,
-          source:       :wicked
-        )
+      # Reads the DNS information
+      #
+      # @param config [Y2Network::Config] Initial configuration object
+      # @return [Y2Network::Config] A new configuration object including the DNS configuration
+      def read_dns(config)
+        config.update(dns: Y2Network::Wicked::DNSReader.new.config)
+      end
 
-        log.info "Sysconfig reader result: #{result.inspect}"
-        result
+      # Returns the Hostname configuration
+      #
+      # @param config [Y2Network::Config] Initial configuration object
+      # @return [Y2Network::Config] A new configuration object including the hostname information
+      def read_hostname(config)
+        config.update(hostname: Y2Network::Wicked::HostnameReader.new.config)
       end
 
     private
 
       # Returns an interfaces reader instance
       #
-      # @return [SysconfigInterfaces] Interfaces reader
+      # @return [InterfacesReader] Interfaces reader
       def interfaces_reader
         @interfaces_reader ||= Y2Network::Wicked::InterfacesReader.new
+      end
+
+      # @return [Y2Network::ConnectionConfigsCollection] Connection configurations collection
+      def connection_configs_reader
+        @connection_configs_reader ||= Y2Network::Wicked::ConnectionConfigsReader.new
+      end
+
+      # Adds missing interfaces from connections
+      #
+      # @param connections [Y2Network::InterfacesCollection] Known interfaces
+      # @param interfaces [Y2Network::ConnectionConfigsCollection] Known interfaces
+      def find_missing_interfaces(connections, interfaces)
+        empty_collection = Y2Network::InterfacesCollection.new
+        connections.to_a.each_with_object(empty_collection) do |conn, all|
+          interface = interfaces.by_name(conn.interface)
+          next if interface
+
+          missing_interface =
+            if conn.virtual?
+              VirtualInterface.from_connection(conn)
+            else
+              PhysicalInterface.new(conn.name, hardware: Hwinfo.for(conn.name))
+            end
+          all << missing_interface
+        end
       end
 
       # Reads routes
@@ -121,20 +202,6 @@ module Y2Network
           interface = interfaces.by_name(route.interface.name)
           route.interface = interface if interface
         end
-      end
-
-      # Returns the DNS configuration
-      #
-      # @return [Y2Network::DNS]
-      def dns
-        Y2Network::Wicked::DNSReader.new.config
-      end
-
-      # Returns the Hostname configuration
-      #
-      # @return [Y2Network::Hostname]
-      def hostname
-        Y2Network::Wicked::HostnameReader.new.config
       end
 
       # Returns the Sysctl_Config file class

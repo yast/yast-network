@@ -197,5 +197,13 @@ module Y2Network
         return result if result.size == count
       end
     end
+
+    # Returns a new collection including elements from both collections
+    #
+    # @param other [InterfacesCollection] Other interfaces collection
+    # @return [InterfacesCollection] New interfaces collection
+    def +(other)
+      self.class.new(to_a + other.to_a)
+    end
   end
 end
