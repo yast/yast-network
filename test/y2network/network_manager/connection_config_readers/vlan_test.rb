@@ -33,7 +33,7 @@ describe Y2Network::NetworkManager::ConnectionConfigReaders::Vlan do
       ethernet:   hash_to_augeas_tree("mtu" => "1024"),
       ipv4:       hash_to_augeas_tree({}),
       ipv6:       hash_to_augeas_tree({}),
-      vlan:       hash_to_augeas_tree({"id" => "0", "parent" => "eth0"})
+      vlan:       hash_to_augeas_tree("id" => "0", "parent" => "eth0")
     )
   end
 
@@ -49,7 +49,7 @@ describe Y2Network::NetworkManager::ConnectionConfigReaders::Vlan do
 
     it "sets the vlan ID" do
       eth = handler.connection_config
-      expect(eth.vlan_id).to eq("0")
+      expect(eth.vlan_id).to eq(0)
     end
 
     it "sets the parent device" do
@@ -58,4 +58,3 @@ describe Y2Network::NetworkManager::ConnectionConfigReaders::Vlan do
     end
   end
 end
-

@@ -26,7 +26,7 @@ module Y2Network
       class Vlan < Base
         # @see Y2Network::NetworkManager::ConnectionConfigReaders::Base#update_connection_config
         def update_connection_config(conn)
-          conn.vlan_id = file.vlan["id"]
+          conn.vlan_id = file.vlan["id"]&.to_i
           conn.parent_device = file.vlan["parent"]
         end
       end
