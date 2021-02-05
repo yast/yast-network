@@ -25,15 +25,30 @@ module Y2Network
     class Ctc < InterfaceConfigBuilder
       extend Forwardable
 
+      Yast.import "NetworkConfig"
+
       def initialize(config: nil)
         super(type: InterfaceType::CTC, config: config)
       end
+
+      def save
+        # TODO: no one knows whether this ctc specific thing is still needed
+        wfi = Yast::NetworkConfig.Config["WAIT_FOR_INTERFACES"].to_i
+
+        Yast::Network.Config["WAIT_FOR_INTERFACES"] = [wfi, WAIT_FOR_INTERFACES].max
+
+        super
+      end
+
+      WAIT_FOR_INTERFACES = 40
+      private_constant :WAIT_FOR_INTERFACES
 
       def_delegators :@connection_config,
         :read_channel, :read_channel=,
         :write_channel, :write_channel=,
         :protocol, :protocol=,
         :device_id, :device_id=
+
     end
   end
 end
