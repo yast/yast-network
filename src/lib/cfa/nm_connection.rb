@@ -42,7 +42,7 @@ module CFA
       #
       # @return [Array<NmConnection>]
       def all
-        directory = File.join(Yast::Installation.destdir, SYSTEM_CONNECTIONS_DIR)
+        directory = File.join(Yast::WFM.scr_root, SYSTEM_CONNECTIONS_DIR)
         files = Dir[File.join(directory, "*.nmconnection")].to_a
         files.map { |f| new(f) }
       end
