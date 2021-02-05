@@ -97,7 +97,8 @@ module CFA
 
     TYPES_MAP = {
       wifi:     Y2Network::InterfaceType::WIRELESS,
-      ethernet: Y2Network::InterfaceType::ETHERNET
+      ethernet: Y2Network::InterfaceType::ETHERNET,
+      vlan:     Y2Network::InterfaceType::VLAN
     }.freeze
     private_constant :TYPES_MAP
 
