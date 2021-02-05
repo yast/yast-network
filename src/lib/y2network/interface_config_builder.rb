@@ -30,8 +30,6 @@ require "y2firewall/firewalld/interface"
 module Y2Network
   # Collects data from the UI until we have enough of it to create a
   # {Y2Network::ConnectionConfig::Base} object.
-  #
-  # {Yast::LanItemsClass#Commit Yast::LanItems.Commit(builder)} use it.
   class InterfaceConfigBuilder
     include Yast::Logger
     extend Forwardable
@@ -107,9 +105,6 @@ module Y2Network
     end
 
     # saves builder content to backend
-    # @ TODO now still LanItems actively query config attribute and write it
-    #   down, so here mainly workarounds, but ideally this save should change
-    #   completely backend
     def save
       @connection_config.name = name
       @connection_config.interface = name

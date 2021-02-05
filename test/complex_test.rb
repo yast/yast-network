@@ -56,18 +56,6 @@ describe "NetworkLanComplexInclude" do
 
         expect(subject.input_done?(:abort)).to eql true
       end
-
-      it "asks user for abort confirmation for input equal to :abort and user did modifications" do
-        allow(Yast::LanItems)
-          .to receive(:GetModified)
-          .and_return(true)
-
-        expect(subject)
-          .to receive(:ReallyAbort)
-          .and_return(BOOLEAN_PLACEHOLDER)
-
-        expect(subject.input_done?(:abort)).to eql BOOLEAN_PLACEHOLDER
-      end
     end
 
     context "when running in installer" do

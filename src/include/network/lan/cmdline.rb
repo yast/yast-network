@@ -40,7 +40,6 @@ module Yast
       Yast.import "CommandLine"
       Yast.import "Lan"
       Yast.import "Report"
-      Yast.import "LanItems"
     end
 
     def validateId(options, config)
@@ -120,7 +119,7 @@ module Yast
       builder.name = options.fetch("name")
       update_builder_from_options!(builder, options)
 
-      LanItems.Commit(builder)
+      builder.save
       ListHandler({})
 
       true
@@ -144,7 +143,7 @@ module Yast
       builder.name = interface.name
       update_builder_from_options!(builder, options)
 
-      LanItems.Commit(builder)
+      builder.save
       ShowHandler(options)
       true
     rescue InvalidOption => e

@@ -29,7 +29,7 @@ module Y2Network
       include Yast::I18n
 
       # Builds content for slave configuration dialog (used e.g. when configuring
-      # bond slaves) according the given list of item_ids (see LanItems::Items)
+      # bond slaves)
       #
       # @param [Array<String>] slaves             list of device names
       # @param [Array<String>] enslaved_ifaces    list of device names of already enslaved devices

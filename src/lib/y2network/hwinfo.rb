@@ -68,10 +68,9 @@ module Y2Network
     class << self
       # Creates a new instance containing hardware information for a given interface
       #
-      # It retrieves the information from two sources:
+      # It retrieves the information from
       #
-      # * hardware (through {Yast::LanItems} for the time being),
-      # * from existing udev rules.
+      # * existing udev rules.
       #
       # @todo Probably, this logic should be moved to a separate class.
       #
@@ -98,8 +97,6 @@ module Y2Network
     private
 
       # Returns hardware information for the given device
-      #
-      # It relies on the {Yast::LanItems} module.
       #
       # @param name [String] Interface's name
       # @return [Hwinfo,nil] Hardware info or nil if not found
