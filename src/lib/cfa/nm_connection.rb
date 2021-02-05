@@ -52,8 +52,9 @@ module CFA
     # @param path [String] File path
     # @param file_handler [.read, .write] Object to read/write the file.
     def initialize(path, file_handler: nil)
-      # FIXME: The Networkmanager lense writes the values surrounded by double
-      # quotes which is not valid
+      # FIXME: The Networkmanager lense writes the values surrounded by double quotes which is not
+      # valid and makes NetworkManager to fail. The "Puppet" lens was OK for writing but not for
+      # reading. The "Desktop" lens seems to work.
       super(AugeasParser.new("Desktop.lns"), path, file_handler: file_handler)
     end
 
