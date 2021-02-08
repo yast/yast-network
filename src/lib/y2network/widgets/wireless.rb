@@ -39,7 +39,7 @@ module Y2Network
           VBox(
             Left(essid_widget),
             VSpacing(0.2),
-            Left(mode_widget),
+            Left(mode_widget)
           )
         )
       end

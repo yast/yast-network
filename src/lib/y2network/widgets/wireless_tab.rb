@@ -70,6 +70,5 @@ module Y2Network
         nil
       end
     end
-
   end
 end
