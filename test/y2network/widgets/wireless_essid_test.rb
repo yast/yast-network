@@ -48,11 +48,11 @@ describe Y2Network::Widgets::WirelessScan do
 
   describe "#init" do
     before do
-      allow(builder).to receive(:newly_added?).and_return(newly_added?)
+      allow(subject).to receive(:present?).and_return(iface_present?)
     end
 
     context "when the interface exists" do
-      let(:newly_added?) { false }
+      let(:iface_present?) { true }
 
       it "does not disable the button" do
         expect(subject).to_not receive(:disable)
@@ -61,7 +61,7 @@ describe Y2Network::Widgets::WirelessScan do
     end
 
     context "when the interface does not exist" do
-      let(:newly_added?) { true }
+      let(:iface_present?) { false }
 
       it "disables the button" do
         expect(subject).to receive(:disable)
