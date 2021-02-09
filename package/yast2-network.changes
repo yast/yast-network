@@ -1,9 +1,9 @@
 -------------------------------------------------------------------
 Tue Feb  9 08:18:26 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
 
-- Fix check for not present interfaces when deciding if disable
-  the "Scan Network" button during a wireless configuration.
-  (bsc#1177834).
+- Fix for not present interfaces when deciding whether
+  the "Scan Network" button should be disabled or not during a
+  wireless configuration (bsc#1177834).
 - 4.3.45
 
 -------------------------------------------------------------------
