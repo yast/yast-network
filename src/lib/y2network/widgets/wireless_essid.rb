@@ -112,7 +112,7 @@ module Y2Network
       end
 
       def init
-        disable if @settings.newly_added?
+        disable unless present?
       end
 
       def handle
@@ -125,6 +125,10 @@ module Y2Network
     private
 
       IWLIST_PKG = "wireless-tools".freeze
+
+      def present?
+        !!@settings.interface&.hardware&.present?
+      end
 
       def scan_supported?
         return true if install_needed_packages
