@@ -33,6 +33,11 @@ module Yast
       SWITCH_TO_NETWORK_MANAGER = "network--switch-to-nm".freeze
     ].freeze
 
+    VIRT_PROPOSAL_LINKS = [
+      PROPOSE_BRIDGE = "network--propose-bridge".freeze,
+      PROPOSE_NON_BRIDGE = "network--dont-propose-bridge".freeze
+    ].freeze
+
     def initialize
       Yast.import "UI"
       Yast.import "Lan"
@@ -55,7 +60,7 @@ module Yast
       {
         "preformatted_proposal" => preformatted_proposal,
         "label_proposal"        => [proposal_summary.one_line_text],
-        "links"                 => BACKEND_LINKS
+        "links"                 => BACKEND_LINKS + VIRT_PROPOSAL_LINKS
       }
     end
 
@@ -66,6 +71,10 @@ module Yast
           switch_to_wicked
         when "network--switch-to-nm"
           switch_to_network_manager
+        when "network--propose-bridge"
+          propose_bridge(true)
+        when "network--dont-propose-bridge"
+          propose_bridge(false)
         else
           launch_network_configuration(args)
         end
@@ -87,8 +96,25 @@ module Yast
       return proposal_summary.text unless settings.network_manager_available?
 
       proposal_text = switch_backend_link
+      proposal_text << toggle_virt_proposal_link if settings.virtual_proposal_required?
       proposal_text.prepend(proposal_summary.text) if wicked_backend?
       proposal_text
+    end
+
+    def toggle_virt_proposal_link
+      propose = _("Propose bridge configuration for virtual machine network")
+      non_propose = _("Use non-bridged configuration")
+      use_bridge = _("Use bridged configuration")
+      use_non_bridge = _("Use non-bridged configuration")
+
+      text =
+        if propose_bridge?
+          "#{propose} (#{Hyperlink(PROPOSE_NON_BRIDGE, use_non_bridge)})"
+        else
+          "#{non_propose} (#{Hyperlink(PROPOSE_BRIDGE, use_bridge)})"
+        end
+
+      "<ul><li>#{text}</li></ul>"
     end
 
     def switch_backend_link
@@ -118,6 +144,15 @@ module Yast
       result
     ensure
       Yast::Wizard.CloseDialog
+    end
+
+    def propose_bridge?
+      settings.propose_bridge?
+    end
+
+    def propose_bridge(option)
+      settings.propose_bridge!(option)
+      :next
     end
 
     def switch_to_wicked

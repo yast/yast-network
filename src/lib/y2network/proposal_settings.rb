@@ -20,6 +20,8 @@
 
 require "yast"
 require "y2packager/package"
+require "y2packager/resolvable"
+require "network/network_autoconfiguration"
 
 module Y2Network
   # Class that stores the proposal settings for network during installation.
@@ -29,15 +31,19 @@ module Y2Network
 
     # @return [Boolean] network service to be used after the installation
     attr_accessor :selected_backend
+    attr_accessor :virt_bridge_proposal
 
     # Constructor
     def initialize
       Yast.import "Arch"
       Yast.import "ProductFeatures"
+
       Yast.import "Package"
       Yast.import "PackagesProposal"
+      Yast.import "Lan"
 
       @selected_backend = nil
+      @virt_bridge_proposal = autoinst_disabled_proposal? ? false : true
     end
 
     def current_backend
@@ -48,6 +54,14 @@ module Y2Network
       default = use_network_manager? ? :network_manager : :wicked
       log.info "The default backend is: #{default}"
       default
+    end
+
+    def propose_bridge?
+      virtual_proposal_required? && virt_bridge_proposal
+    end
+
+    def propose_bridge!(option)
+      @virt_bridge_proposal = option
     end
 
     # Adds the NetworkManager package to the Yast::PackagesProposal and sets
@@ -94,6 +108,17 @@ module Y2Network
       true
     end
 
+    # Decides if a proposal for virtualization host machine is required.
+    def virtual_proposal_required?
+      return false if Yast::Arch.s390
+
+      return true if package_selected?("xen") && Yast::Arch.is_xen0
+      return true if package_selected?("kvm")
+      return true if package_selected?("qemu")
+
+      false
+    end
+
     # Propose the network service to be use at the end of the installation
     # depending on the backend selected during the proposal and the packages
     # installed
@@ -123,6 +148,18 @@ module Y2Network
     end
 
   private
+
+    # Convenience method to check whether the bridge configuration proposal for
+    # configuration was disabled in the AutoYaST profile.
+    def autoinst_disabled_proposal?
+      Yast::Lan.autoinst.virt_bridge_proposal == false
+    end
+
+    # Convenience method to check whether a specific package is selected to be
+    # installed
+    def package_selected?(name)
+      Y2Packager::Resolvable.any?(kind: :package, name: name, status: :selected)
+    end
 
     # Convenienve method that verify if Network Manager should be used or not
     # according to the control file defaults and package availability.

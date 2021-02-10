@@ -41,6 +41,7 @@ describe Yast::SaveNetworkClient do
     end
     let(:system_backend) { Y2Network::Backends::Wicked.new }
     let(:s390) { false }
+    let(:propose_bridge) { false }
 
     before do
       stub_const("Yast::SaveNetworkClient::ROOT_PATH", scr_root)
@@ -59,6 +60,7 @@ describe Yast::SaveNetworkClient do
       allow(Yast::Lan).to receive(:Write)
       allow(Yast::Arch).to receive(:s390).and_return(s390)
       allow(Yast::NetworkService).to receive(:EnableDisableNow)
+      allow(subject).to receive(:propose_virt_config?).and_return(propose_bridge)
     end
 
     after do
@@ -113,13 +115,13 @@ describe Yast::SaveNetworkClient do
       expect(dhcp_file.attributes["DHCLIENT_SET_HOSTNAME"]).to eq("no")
     end
 
-    context "when virtualization support is installed" do
-      before do
-        allow(Yast::PackageSystem).to receive(:Installed).with("kvm").and_return(true)
-      end
+    context "when virtualization bridge network config proposal is wanted" do
+      let(:propose_bridge) { true }
 
-      it "proposes virtual interfaces configuration" do
-        expect(Yast::Lan).to receive(:ProposeVirtualized)
+      it "configures the network according to the proposal" do
+        expect(subject).to receive(:propose_virt_config?).and_return(propose_bridge)
+        expect(Yast::NetworkAutoconfiguration.instance).to receive(:configure_virtuals)
+
         subject.main
       end
     end

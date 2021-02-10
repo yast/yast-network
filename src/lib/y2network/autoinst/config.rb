@@ -33,6 +33,9 @@ module Y2Network
       attr_accessor :keep_install_network
       # @return [Integer]
       attr_accessor :ip_check_timeout
+      # @return [Boolean] controls whether a bridge configuration for
+      #   virtualization network should be proposed or not
+      attr_accessor :virt_bridge_proposal
 
       # Constructor
       #
@@ -41,11 +44,13 @@ module Y2Network
       # @option opts [Boolean] :start_immediately
       # @option opts [Boolean] :keep_install_network
       # @option opts [Integer] :ip_check_timetout
+      # @option opts [Boolean] :virt_bridge_proposal
       def initialize(opts = {})
         @before_proposal = opts.fetch(:before_proposal, false)
         @start_immediately = opts.fetch(:start_immediately, false)
         @keep_install_network = opts.fetch(:keep_install_network, true)
         @ip_check_timeout = opts.fetch(:ip_check_timeout, -1)
+        @virt_bridge_proposal = opts.fetch(:virt_bridge_proposal, true)
       end
 
       # Return whether the network should be copied at the end

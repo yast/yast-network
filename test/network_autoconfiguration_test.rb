@@ -68,6 +68,7 @@ end
 describe Yast::NetworkAutoconfiguration do
   let(:yast_config) { Y2Network::Config.new(source: :wicked) }
   let(:system_config) { yast_config.copy }
+  let(:instance) { Yast::NetworkAutoconfiguration.instance }
 
   before do
     Y2Network::Config.add(:yast, yast_config)
@@ -77,7 +78,6 @@ describe Yast::NetworkAutoconfiguration do
   end
 
   describe "it sets DHCLIENT_SET_DEFAULT_ROUTE properly" do
-    let(:instance) { Yast::NetworkAutoconfiguration.instance }
     let(:network_interfaces) { double("NetworkInterfaces") }
 
     before(:each) do
@@ -143,8 +143,6 @@ describe Yast::NetworkAutoconfiguration do
   describe "#any_iface_active?" do
     IFACE = "eth0".freeze
 
-    let(:instance) { Yast::NetworkAutoconfiguration.instance }
-
     it "returns true if any of available interfaces has configuration and is up" do
       allow(Yast::Lan).to receive(:yast_config)
         .and_return(
@@ -159,6 +157,68 @@ describe Yast::NetworkAutoconfiguration do
         .and_return(0)
 
       expect(instance.any_iface_active?).to be true
+    end
+  end
+
+  describe "#virtual_proposal_required?" do
+    let(:is_s390) { false }
+    let(:installed) { [] }
+
+    before do
+      allow(Yast::Arch).to receive(:s390).and_return(is_s390)
+      allow(Yast::PackageSystem).to receive(:Installed).and_return(false)
+      installed.map do |package|
+        allow(Yast::PackageSystem).to receive(:Installed).with(package).and_return(true)
+      end
+    end
+
+    context "in s390 arch" do
+      let(:is_s390) { true }
+
+      it "returns false" do
+        expect(instance.virtual_proposal_required?).to eql(false)
+      end
+    end
+
+    context "when KVM, Xen or QEMU packages are not installed" do
+      it "returns false" do
+        expect(instance.virtual_proposal_required?).to eql(false)
+      end
+    end
+
+    context "when XEN is installed" do
+      let(:installed) { ["xen"] }
+
+      context "and we are in a guest machine" do
+        it "returns false" do
+          allow(Yast::Arch).to receive(:is_xen0).and_return(false)
+          expect(instance.virtual_proposal_required?).to eql(false)
+        end
+      end
+
+      context "and we are in the host machine" do
+        it "returns true" do
+          allow(Yast::Arch).to receive(:is_xen0).and_return(true)
+          expect(instance.virtual_proposal_required?).to eql(true)
+        end
+      end
+
+      context "when KVM is installed" do
+        let(:installed) { ["kvm"] }
+
+        it "returns true" do
+          expect(instance.virtual_proposal_required?).to eql(true)
+        end
+      end
+
+      context "when QEMU is installed" do
+        let(:installed) { ["qemu"] }
+
+        it "returns true" do
+          expect(instance.virtual_proposal_required?).to eql(true)
+        end
+      end
+
     end
   end
 
@@ -177,7 +237,6 @@ describe Yast::NetworkAutoconfiguration do
     let(:yast_config) do
       Y2Network::Config.new(interfaces: interfaces, routing: routing, source: :testing)
     end
-    let(:instance) { Yast::NetworkAutoconfiguration.instance }
     let(:proposal) { false }
     let(:eth0_profile) do
       {

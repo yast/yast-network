@@ -320,4 +320,66 @@ describe Y2Network::ProposalSettings do
       end
     end
   end
+
+  describe "#virtual_proposal_required?" do
+    let(:settings) { described_class.instance }
+    let(:is_s390) { false }
+    let(:installed) { [] }
+
+    before do
+      allow(Yast::Arch).to receive(:s390).and_return(is_s390)
+      allow(settings).to receive(:package_selected?).and_return(false)
+      installed.map do |package|
+        allow(settings).to receive(:package_selected?).with(package).and_return(true)
+      end
+    end
+
+    context "in s390 arch" do
+      let(:is_s390) { true }
+
+      it "returns false" do
+        expect(settings.virtual_proposal_required?).to eql(false)
+      end
+    end
+
+    context "when KVM, Xen or QEMU packages are not installed" do
+      it "returns false" do
+        expect(settings.virtual_proposal_required?).to eql(false)
+      end
+    end
+
+    context "when XEN is installed" do
+      let(:installed) { ["xen"] }
+
+      context "and we are in a guest machine" do
+        it "returns false" do
+          allow(Yast::Arch).to receive(:is_xen0).and_return(false)
+          expect(settings.virtual_proposal_required?).to eql(false)
+        end
+      end
+
+      context "and we are in the host machine" do
+        it "returns true" do
+          allow(Yast::Arch).to receive(:is_xen0).and_return(true)
+          expect(settings.virtual_proposal_required?).to eql(true)
+        end
+      end
+
+      context "when KVM is installed" do
+        let(:installed) { ["kvm"] }
+
+        it "returns true" do
+          expect(settings.virtual_proposal_required?).to eql(true)
+        end
+      end
+
+      context "when QEMU is installed" do
+        let(:installed) { ["qemu"] }
+
+        it "returns true" do
+          expect(settings.virtual_proposal_required?).to eql(true)
+        end
+      end
+    end
+  end
 end

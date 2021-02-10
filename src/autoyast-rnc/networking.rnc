@@ -12,6 +12,7 @@ networking =
       element setup_before_proposal { BOOLEAN }? &
       element start_immediately { BOOLEAN }? &
       element keep_install_network { BOOLEAN }? &
+      element virt_bridge_proposal { BOOLEAN }? &
       ipv6? &
       managed? &
       strict_IP_check_timeout? &

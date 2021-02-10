@@ -97,6 +97,21 @@ module Yast
       Lan.read_config
     end
 
+    # Decides if a proposal for virtualization host machine is required.
+    #
+    # @return [Boolean] whether the bridge network configuration for
+    #   virtualization should be proposed or not
+    def virtual_proposal_required?
+      # S390 has special requirements. See bnc#817943
+      return false if Arch.s390
+
+      return true if PackageSystem.Installed("xen") && Arch.is_xen0
+      return true if PackageSystem.Installed("kvm")
+      return true if PackageSystem.Installed("qemu")
+
+      false
+    end
+
     # Propose configuration for virtual devices
     #
     # It checks if any of supported virtual machines were installed. If found,
@@ -217,18 +232,6 @@ module Yast
     # @param [String] value "yes" or "no", as in sysconfig
     def set_default_route_flag(devname, value)
       # TODO: not implemented
-    end
-
-    # Decides if a proposal for virtualization host machine is required.
-    def virtual_proposal_required?
-      # S390 has special requirements. See bnc#817943
-      return false if Arch.s390
-
-      return true if PackageSystem.Installed("xen") && !Arch.is_xenU
-      return true if PackageSystem.Installed("kvm")
-      return true if PackageSystem.Installed("qemu")
-
-      false
     end
 
     def config

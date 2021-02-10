@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Feb 10 10:30:53 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
+
+- Allow to disable the proposal of the bridge network configuration
+  for virtualization in the installation summary or by the new
+  'virt_bridge_proposal' AutoYaST option (bsc#1178603)
+- 4.3.46
+
+-------------------------------------------------------------------
 Tue Feb  9 08:18:26 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
 
 - Fix for not present interfaces when deciding whether

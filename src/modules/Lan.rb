@@ -814,7 +814,8 @@ module Yast
         before_proposal:      section.setup_before_proposal,
         start_immediately:    section.start_immediately,
         keep_install_network: section.keep_install_network,
-        ip_check_timeout:     section.strict_ip_check_timeout
+        ip_check_timeout:     section.strict_ip_check_timeout,
+        virt_bridge_proposal: section.virt_bridge_proposal
       )
     end
 
@@ -823,7 +824,8 @@ module Yast
 
       !section.start_immediately.nil? ||
         !section.keep_install_network.nil? ||
-        !section.setup_before_proposal.nil?
+        !section.setup_before_proposal.nil? ||
+        !section.virt_bridge_proposal.nil?
     end
 
     def activate_network_service
