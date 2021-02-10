@@ -824,7 +824,8 @@ module Yast
 
       !section.start_immediately.nil? ||
         !section.keep_install_network.nil? ||
-        !section.setup_before_proposal.nil?
+        !section.setup_before_proposal.nil? ||
+        !section.virt_bridge_proposal.nil?
     end
 
     def activate_network_service

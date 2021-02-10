@@ -320,7 +320,7 @@ module Yast
     # Convenience method to check whether a bridge network configuration for
     # virtualization should be proposed or not
     def propose_virt_config?
-      Y2Network::ProposalSettings.instance.propose_bridge?
+      Y2Network::ProposalSettings.instance.virt_bridge_proposal
     end
 
     # It does an automatic configuration of installed system
