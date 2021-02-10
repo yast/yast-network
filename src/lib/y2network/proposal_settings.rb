@@ -112,7 +112,7 @@ module Y2Network
     def virtual_proposal_required?
       return false if Yast::Arch.s390
 
-      return true if package_selected?("xen") && !Yast::Arch.is_xenU
+      return true if package_selected?("xen") && Yast::Arch.is_xen0
       return true if package_selected?("kvm")
       return true if package_selected?("qemu")
 
@@ -149,10 +149,14 @@ module Y2Network
 
   private
 
+    # Convenience method to check whether the bridge configuration proposal for
+    # configuration was disabled in the AutoYaST profile.
     def autoinst_disabled_proposal?
       Yast::Lan.autoinst.virt_bridge_proposal == false
     end
 
+    # Convenience method to check whether a specific package is selected to be
+    # installed
     def package_selected?(name)
       Y2Packager::Resolvable.any?(kind: :package, name: name, status: :selected)
     end
