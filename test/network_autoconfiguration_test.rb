@@ -191,14 +191,14 @@ describe Yast::NetworkAutoconfiguration do
 
       context "and we are in a guest machine" do
         it "returns false" do
-          allow(Yast::Arch).to receive(:is_xen0).and_return(true)
+          allow(Yast::Arch).to receive(:is_xen0).and_return(false)
           expect(instance.virtual_proposal_required?).to eql(false)
         end
       end
 
       context "and we are in the host machine" do
         it "returns true" do
-          allow(Yast::Arch).to receive(:is_xen0).and_return(false)
+          allow(Yast::Arch).to receive(:is_xen0).and_return(true)
           expect(instance.virtual_proposal_required?).to eql(true)
         end
       end
