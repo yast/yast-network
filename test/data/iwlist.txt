@@ -1,0 +1,97 @@
+wlo1      Scan completed :
+          Cell 01 - Address: 68:FF:7B:65:C0:D2
+                    Channel:10
+                    Frequency:2.457 GHz (Channel 10)
+                    Quality=70/70  Signal level=-34 dBm  
+                    Encryption key:on
+                    ESSID:"TP-Link_R2D2"
+                    Bit Rates:1 Mb/s; 2 Mb/s; 5.5 Mb/s; 11 Mb/s; 9 Mb/s
+                              18 Mb/s; 36 Mb/s; 54 Mb/s
+                    Bit Rates:6 Mb/s; 12 Mb/s; 24 Mb/s; 48 Mb/s
+                    Mode:Master
+                    Extra:tsf=000000b15f96d71a
+                    Extra: Last beacon: 64ms ago
+                    IE: Unknown: 000C54502D4C696E6B5F43304432
+                    It: Unknown: 010882848B961224486C
+                    IE: Unknown: 03010A
+                    IE: Unknown: 2A0104
+                    IE: Unknown: 32040C183060
+                    IE: Unknown: 2D1AEE1117FFFF000001000000000000000000000000000000000000
+                    IE: Unknown: 3D160A070600000000000000000000000000000000000000
+                    IE: WPA Version 1
+                        Group Cipher : CCMP
+                        Pairwise Ciphers (1) : CCMP
+                        Authentication Suites (1) : PSK
+                    IE: IEEE 802.11i/WPA2 Version 1
+                        Group Cipher : CCMP
+                        Pairwise Ciphers (1) : CCMP
+                        Authentication Suites (1) : PSK
+                    IE: Unknown: 7F09010000000000000000
+                    IE: Unknown: 0B05020000127A
+                    IE: Unknown: DD180050F2020101800003A4000027A4000042435E0062322F00
+                    IE: Unknown: 4A0E14000A002C01C800140005001900
+                    IE: Unknown: 7F09010000000000000000
+                    IE: Unknown: DD07000C4303000000
+          Cell 02 - Address: 7E:ED:69:D5:89:A5
+                    Channel:1
+                    Frequency:2.412 GHz (Channel 1)
+                    Quality=42/70  Signal level=-68 dBm  
+                    Encryption key:on
+                    ESSID:"TP-Link_C3PO"
+                    Bit Rates:1 Mb/s; 2 Mb/s; 5.5 Mb/s; 11 Mb/s; 18 Mb/s
+                              24 Mb/s; 36 Mb/s; 54 Mb/s
+                    Bit Rates:6 Mb/s; 9 Mb/s; 12 Mb/s; 48 Mb/s
+                    Mode:Master
+                    Extra:tsf=00000007ccd9e442
+                    Extra: Last beacon: 64ms ago
+                    IE: Unknown: 000C766F6461666F6E6535394542
+                    IE: Unknown: 010882848B962430486C
+                    IE: Unknown: 030101
+                    IE: Unknown: 2A0100
+                    IE: Unknown: 32040C121860
+                    IE: IEEE 802.11i/WPA2 Version 1
+                        Group Cipher : CCMP
+                        Pairwise Ciphers (1) : CCMP
+                        Authentication Suites (1) : PSK
+                    IE: Unknown: 46053000000000
+                    IE: Unknown: 2D1A3C081BFFFF000000000000000000000000000000000000000000
+                    IE: Unknown: 3D1601080000000000000000000000000000000000000000
+                    IE: Unknown: 4A0E14000A002C01C800140005001900
+                    IE: Unknown: 7F080500080000400040
+                    IE: Unknown: DD9B0050F204104A0001101044000102103B0001031047001090B505A718A258CDA043C4F9B18CC5881021000B546563686E69636F6C6F721023000B4D6564696141636365737310240010566F6461666F6E652D482D3530302D74104200093138333142413145371054000800060050F204000110110010566F6461666F6E652D482D3530302D74100800020784103C0001031049000600372A000120
+                    IE: Unknown: DD090010180200000C0000
+                    IE: Unknown: DD180050F2020101040003A4000027A4000042435E0062322F00
+          Cell 03 - Address: 68:FF:7B:65:C0:D3
+                    Channel:10
+                    Frequency:2.457 GHz (Channel 10)
+                    Quality=30/70  Signal level=-34 dBm  
+                    Encryption key:on
+                    ESSID:"TP-Link_R2D2"
+                    Bit Rates:1 Mb/s; 2 Mb/s; 5.5 Mb/s; 11 Mb/s; 9 Mb/s
+                              18 Mb/s; 36 Mb/s; 54 Mb/s
+                    Bit Rates:6 Mb/s; 12 Mb/s; 24 Mb/s; 48 Mb/s
+                    Mode:Master
+                    Extra:tsf=000000b15f96d71a
+                    Extra: Last beacon: 64ms ago
+                    IE: Unknown: 000C54502D4C696E6B5F43304432
+                    It: Unknown: 010882848B961224486C
+                    IE: Unknown: 03010A
+                    IE: Unknown: 2A0104
+                    IE: Unknown: 32040C183060
+                    IE: Unknown: 2D1AEE1117FFFF000001000000000000000000000000000000000000
+                    IE: Unknown: 3D160A070600000000000000000000000000000000000000
+                    IE: WPA Version 1
+                        Group Cipher : CCMP
+                        Pairwise Ciphers (1) : CCMP
+                        Authentication Suites (1) : PSK
+                    IE: IEEE 802.11i/WPA2 Version 1
+                        Group Cipher : CCMP
+                        Pairwise Ciphers (1) : CCMP
+                        Authentication Suites (1) : PSK
+                    IE: Unknown: 7F09010000000000000000
+                    IE: Unknown: 0B05020000127A
+                    IE: Unknown: DD180050F2020101800003A4000027A4000042435E0062322F00
+                    IE: Unknown: 4A0E14000A002C01C800140005001900
+                    IE: Unknown: 7F09010000000000000000
+                    IE: Unknown: DD07000C4303000000
+

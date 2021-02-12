@@ -119,6 +119,7 @@ module Y2Network
 
       def handle
         return unless scan_supported?
+
         networks = fetch_essid_list
 
         @update_widget&.update_essid_list(networks)

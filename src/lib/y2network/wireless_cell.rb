@@ -1,4 +1,4 @@
-# Copyright (c) [2020] SUSE LLC
+# Copyright (c) [2021] SUSE LLC
 #
 # All Rights Reserved.
 #
@@ -17,27 +17,24 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "yast"
-require "cwm/table"
-
 module Y2Network
-  module Widgets
-    class WirelessNetworks < CWM::Table
-      def initialize(networks)
-        textdomain "network"
+  # This auxiliary class holds wireless cells (access points and ad-hoc devices) information
+  class WirelessCell
+    attr_reader :address, :essid, :mode, :channel, :rate, :quality, :security
 
-        @networks = networks
-      end
+    def initialize(address:, essid:, mode:, channel:, rate:, quality:, security:)
+      @address = address
+      @essid = essid
+      @mode = mode
+      @channel = channel
+      @rate = rate
+      @quality = quality
+      @security = security
+    end
 
-      def header
-        [
-          _("SSID"), _("Mode"), "Channel", "Rate", "Signal", "Security"
-        ]
-      end
-
-      def items
-        @networks.map { |n| [n, n, "Master", "6", "54 Mbit/s", "79", "WPA2"] }
-      end
+    def to_h
+      { address: address, essid: essid, mode: mode, channel: channel, rate: rate,
+        quality: quality, security: security }
     end
   end
 end
