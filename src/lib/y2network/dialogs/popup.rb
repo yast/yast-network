@@ -52,7 +52,7 @@ module Y2Network
         )
       end
 
-  protected
+    protected
 
       # Popup min width
       #
