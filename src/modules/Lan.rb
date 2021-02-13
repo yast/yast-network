@@ -643,9 +643,19 @@ module Yast
       end
 
       NetworkConfig.Import(settings["config"] || {})
+
       # Ensure that the /etc/hosts has been read to no blank out it in case of
       # not defined <host> section (bsc#1058396)
       Host.Read
+
+      # FIXME: hotfix for Host::ResolveHostnameToStaticIPs - the functionality is
+      # not implemented in new config readers/writers which are used in second stage
+      static_connections = config.connections.select { |c| c.static? }
+      static_ips = static_connections.map { |c| c.ip.address.address.to_s }
+
+      log.info("Lan::Import: updating /etc/hosts with static ips #{static_ips} and hostname #{config.hostname.static}")
+
+      static_ips.each { |sip| Host.Update(config.hostname.static, config.hostname.static, sip) }
 
       @ipv6 = settings.fetch("ipv6", true)
 
