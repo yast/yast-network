@@ -86,18 +86,13 @@ module Y2Network
         config.bootproto = BootProtocol.from_name(interface_section.bootproto)
         config.name = name_from_section(interface_section)
         config.interface = config.name # in autoyast name and interface is same
-        if config.bootproto == BootProtocol::STATIC
-          # we need at least some ip for the static configuration
-          if !interface_section.ipaddr && !interfaces_section.aliases
-            msg = "Configuration for #{config.name} is invalid #{interface_section.inspect}"
-            raise ArgumentError, msg
-          end
 
-          config.ip = load_ipaddr(interface_section)
-        end
+        config.ip = load_ipaddr(interface_section)
 
         # handle aliases
         interface_section.aliases.values.each_with_index do |alias_h, index|
+          next if alias_h.fetch("IPADDR", "").empty?
+
           config.ip_aliases << load_alias(alias_h, id: "_#{index}")
         end
 
@@ -134,18 +129,32 @@ module Y2Network
       #
       # @return [ConnectionConfig::IPConfig] created ipaddr object
       def load_ipaddr(section)
-        ipaddr = IPAddress.from_string(section.ipaddr) if !section.ipaddr.empty?
+        return if section.ipaddr.empty?
+
+        ipaddr = IPAddress.from_string(section.ipaddr)
 
         # Assign first netmask, as prefixlen has precedence so it will overwrite it
-        ipaddr.netmask = section.netmask if !section.netmask.to_s.empty?
-        ipaddr.prefix = section.prefixlen.to_i if !section.prefixlen.to_s.empty?
+        ipaddr.prefix = prefix_for(section.netmask) if !section.netmask.to_s.empty?
+        ipaddr.prefix = prefix_for(section.prefixlen) if !section.prefixlen.to_s.empty?
 
         broadcast = IPAddress.new(section.broadcast) if !section.broadcast.empty?
         remote = IPAddress.new(section.remote_ipaddr) if !section.remote_ipaddr.empty?
 
-        ConnectionConfig::IPConfig.new(
-          ipaddr, broadcast: broadcast, remote_address: remote
-        )
+        ConnectionConfig::IPConfig.new(ipaddr, broadcast: broadcast, remote_address: remote)
+      end
+
+      def prefix_for(value)
+        if value.empty?
+          nil
+        elsif value.start_with?("/")
+          value[1..-1].to_i
+        elsif value.size < 3 # one or two digits can be only prefixlen
+          value.to_i
+        elsif value =~ /^\d{3}$/
+          value.to_i
+        else
+          IPAddr.new("#{value}/#{value}").prefix
+        end
       end
 
       # Loads and initializates an IP alias according to given hash with alias details
@@ -156,8 +165,8 @@ module Y2Network
       def load_alias(alias_h, id: nil)
         ipaddr = IPAddress.from_string(alias_h["IPADDR"])
         # Assign first netmask, as prefixlen has precedence so it will overwrite it
-        ipaddr.netmask = alias_h["NETMASK"] if alias_h["NETMASK"]
-        ipaddr.prefix = alias_h["PREFIXLEN"].delete("/").to_i if alias_h["PREFIXLEN"]
+        ipaddr.prefix = prefix_for(alias_h["NETMASK"]) if !alias_h.fetch("NETMASK", "").empty?
+        ipaddr.prefix = prefix_for(alias_h["PREFIXLEN"]) if !alias_h.fetch("PREFIXLEN", "").empty?
 
         ConnectionConfig::IPConfig.new(ipaddr, id: id, label: alias_h["LABEL"])
       end
