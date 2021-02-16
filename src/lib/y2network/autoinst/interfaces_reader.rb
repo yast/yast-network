@@ -143,14 +143,18 @@ module Y2Network
         ConnectionConfig::IPConfig.new(ipaddr, broadcast: broadcast, remote_address: remote)
       end
 
+      # Converts a given IP Address netmask or prefix length in different
+      # formats to its prefix length value.
+      #
+      # @param value [String] IP Address prefix length or netmask in its different formats
+      # @return [Integer,nil] the given value in IP Address prefix length
+      #   format
       def prefix_for(value)
         if value.empty?
           nil
         elsif value.start_with?("/")
           value[1..-1].to_i
-        elsif value.size < 3 # one or two digits can be only prefixlen
-          value.to_i
-        elsif value =~ /^\d{3}$/
+        elsif value =~ /^\d{1,3}$/
           value.to_i
         else
           IPAddr.new("#{value}/#{value}").prefix
