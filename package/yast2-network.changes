@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Feb 16 10:32:34 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
+
+- Improve the AutoYaST interfaces reader handling better the IP
+  Addresses configuration. (bsc#1174353, bsc#1178107)
+- 4.2.91
+
+-------------------------------------------------------------------
 Fri Jan 22 17:03:54 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
 
 - Suggest to modify the VLAN interface name when the VLAN ID is
