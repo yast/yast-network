@@ -89,6 +89,16 @@ describe Y2Network::Autoinst::InterfacesReader do
       expect(eth1_config.dhclient_set_hostname).to eq false
     end
 
+    context "when a interface section does not provide an interface or device name" do
+      before do
+        eth1["device"] = ""
+      end
+
+      it "skips the connection configuration for that interface section" do
+        expect(subject.config.size).to eq(1)
+      end
+    end
+
     context "when an interface is configured using an static IP configuration" do
       context "but does not provide an ipaddr" do
         before do

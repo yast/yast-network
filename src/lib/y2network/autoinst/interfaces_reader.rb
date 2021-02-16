@@ -46,7 +46,10 @@ module Y2Network
           log.info "Creating config for interface section: #{interface_section.inspect}"
           config = create_config(interface_section)
           config.propose # propose reasonable defaults for not set attributes
-          load_generic(config, interface_section)
+          unless load_generic(config, interface_section)
+            log.info "Skipping interface as the configuration was wrongly defined"
+            next
+          end
 
           case config
           when ConnectionConfig::Vlan
@@ -63,7 +66,7 @@ module Y2Network
           config
         end
 
-        ConnectionConfigsCollection.new(configs)
+        ConnectionConfigsCollection.new(configs.compact)
       end
 
     private
@@ -85,6 +88,11 @@ module Y2Network
       def load_generic(config, interface_section)
         config.bootproto = BootProtocol.from_name(interface_section.bootproto)
         config.name = name_from_section(interface_section)
+        if config.name.empty?
+          log.info "The interface section does not provide an interface name"
+          return
+        end
+
         config.interface = config.name # in autoyast name and interface is same
 
         config.ip = load_ipaddr(interface_section)
