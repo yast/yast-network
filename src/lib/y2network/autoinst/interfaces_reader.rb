@@ -88,6 +88,7 @@ module Y2Network
       def load_generic(config, interface_section)
         config.bootproto = BootProtocol.from_name(interface_section.bootproto)
         config.name = name_from_section(interface_section)
+
         if config.name.empty?
           log.info "The interface section does not provide an interface name"
           return
@@ -106,9 +107,12 @@ module Y2Network
 
         # startmode
         if !interface_section.startmode.to_s.empty?
-          config.startmode = Startmode.create(interface_section.startmode)
+          startmode = Startmode.create(interface_section.startmode)
+          # Use proposed startmode in case that there is a typo
+          config.startmode = startmode if startmode
         end
-        if config.startmode.name == "ifplugd" && !interface_section.ifplugd_priority.to_s.empty?
+
+        if config.startmode&.name == "ifplugd" && !interface_section.ifplugd_priority.to_s.empty?
           config.startmode.priority = interface_section.ifplugd_priority
         end
 
