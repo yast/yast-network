@@ -71,8 +71,18 @@ describe Y2Network::Widgets::WirelessScan do
   end
 
   describe "#handle" do
+    let(:networks_dialog) do
+      instance_double(Y2Network::Dialogs::WirelessNetworks, run: nil)
+    end
+
+    before do
+      allow(Y2Network::Dialogs::WirelessNetworks).to receive(:new)
+        .and_return(networks_dialog)
+    end
+
     context "when the package for scanning wireless networks is not installed" do
       let(:installed) { false }
+
       before do
         allow(subject).to receive(:scan_supported?).and_call_original
       end
