@@ -18,6 +18,7 @@
 # find current contact information at www.suse.com.
 
 require "cwm/common_widgets"
+require "y2network/wireless_mode"
 
 module Y2Network
   module Widgets
@@ -47,11 +48,7 @@ module Y2Network
       end
 
       def items
-        [
-          ["ad-hoc", _("Ad-hoc")],
-          ["managed", _("Managed")],
-          ["master", _("Master")]
-        ]
+        Y2Network::WirelessMode.all.map { |m| [m.short_name, m.to_human_string] }
       end
     end
   end
