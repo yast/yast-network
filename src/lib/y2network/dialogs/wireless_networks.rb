@@ -27,7 +27,7 @@ module Y2Network
     private
 
       def networks_table
-        @table ||= Y2Network::Widgets::WirelessNetworks.new(@networks)
+        @networks_table ||= Y2Network::Widgets::WirelessNetworks.new(@networks)
       end
     end
   end

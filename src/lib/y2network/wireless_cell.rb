@@ -42,6 +42,7 @@ module Y2Network
     #   @return [Array<String>] Security mechanisms
     attr_reader :address, :essid, :mode, :channel, :rate, :quality, :security
 
+    # rubocop:disable Metrics/ParameterLists
     def initialize(address:, essid:, mode:, channel:, rate:, quality:, security:)
       @address = address
       @essid = essid
@@ -51,6 +52,7 @@ module Y2Network
       @quality = quality
       @security = security
     end
+    # rubocop:enable Metrics/ParameterLists
 
     # Exports the cell properties to a hash
     #
