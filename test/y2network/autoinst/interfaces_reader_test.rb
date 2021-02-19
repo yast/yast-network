@@ -122,7 +122,7 @@ describe Y2Network::Autoinst::InterfacesReader do
     end
 
     context "when the interface section defines a set of IP aliases" do
-      it "initializes the IP aliases correctly" do
+      it "initializes the IPConfig object properly" do
         eth0_config = subject.config.by_name("eth0")
         expect(eth0_config.ip_aliases.size).to eq(3)
         expect(eth0_config.ip_aliases.map(&:id)).to eql(["_0", "_1", "_2"])
@@ -138,7 +138,7 @@ describe Y2Network::Autoinst::InterfacesReader do
           eth0["aliases"]["alias1"].delete("IPADDR")
         end
 
-        it "aliases without the IPADDR are skipped" do
+        it "skips those aliases with no IPADDR" do
           eth0_config = subject.config.by_name("eth0")
           expect(eth0_config.ip_aliases.size).to eq(2)
           expect(eth0_config.ip_aliases.map(&:id)).to eql(["_0", "_2"])
