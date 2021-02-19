@@ -21,7 +21,6 @@ require "yast"
 require "y2network/dns"
 require "y2network/autoinst/type_detector"
 require "ipaddr"
-Yast.import "IP"
 
 module Y2Network
   module Autoinst
@@ -47,7 +46,10 @@ module Y2Network
           log.info "Creating config for interface section: #{interface_section.inspect}"
           config = create_config(interface_section)
           config.propose # propose reasonable defaults for not set attributes
-          load_generic(config, interface_section)
+          unless load_generic(config, interface_section)
+            log.info "Skipping interface as the configuration was wrongly defined"
+            next
+          end
 
           case config
           when ConnectionConfig::Vlan
@@ -64,7 +66,7 @@ module Y2Network
           config
         end
 
-        ConnectionConfigsCollection.new(configs)
+        ConnectionConfigsCollection.new(configs.compact)
       end
 
     private
@@ -86,56 +88,103 @@ module Y2Network
       def load_generic(config, interface_section)
         config.bootproto = BootProtocol.from_name(interface_section.bootproto)
         config.name = name_from_section(interface_section)
-        config.interface = config.name # in autoyast name and interface is same
-        if config.bootproto == BootProtocol::STATIC
-          if !interface_section.ipaddr
-            msg = "Configuration for #{config.name} is invalid #{interface_section.inspect}"
-            raise ArgumentError, msg
-          end
 
-          if !interface_section.ipaddr.empty?
-            ipaddr = IPAddress.from_string(interface_section.ipaddr)
-          end
-          # Assign first netmask, as prefixlen has precedence so it will overwrite it
-          ipaddr.netmask = interface_section.netmask if !interface_section.netmask.to_s.empty?
-          if !interface_section.prefixlen.to_s.empty?
-            ipaddr.prefix = interface_section.prefixlen.to_i
-          end
-          if !interface_section.broadcast.empty?
-            broadcast = IPAddress.new(interface_section.broadcast)
-          end
-          if !interface_section.remote_ipaddr.empty?
-            remote = IPAddress.new(interface_section.remote_ipaddr)
-          end
-          config.ip = ConnectionConfig::IPConfig.new(
-            ipaddr, broadcast: broadcast, remote_address: remote
-          )
+        if config.name.empty?
+          log.info "The interface section does not provide an interface name"
+          return
         end
+
+        config.interface = config.name # in autoyast name and interface is same
+
+        config.ip = load_ipaddr(interface_section)
 
         # handle aliases
-        interface_section.aliases.each_value do |alias_h|
-          ipaddr = IPAddress.from_string(alias_h["IPADDR"])
-          # Assign first netmask, as prefixlen has precedence so it will overwrite it
-          ipaddr.netmask = alias_h["NETMASK"] if alias_h["NETMASK"]
-          ipaddr.prefix = alias_h["PREFIXLEN"].delete("/").to_i if alias_h["PREFIXLEN"]
-          config.ip_aliases << ConnectionConfig::IPConfig.new(ipaddr, label: alias_h["LABEL"])
+        interface_section.aliases.values.each_with_index do |alias_h, index|
+          next if alias_h.fetch("IPADDR", "").empty?
+
+          config.ip_aliases << load_alias(alias_h, id: "_#{index}")
         end
+
+        # startmode
         if !interface_section.startmode.to_s.empty?
-          config.startmode = Startmode.create(interface_section.startmode)
+          startmode = Startmode.create(interface_section.startmode)
+          # Use proposed startmode in case that there is a typo
+          config.startmode = startmode if startmode
         end
-        if config.startmode.name == "ifplugd" && !interface_section.ifplugd_priority.to_s.empty?
+
+        if config.startmode&.name == "ifplugd" && !interface_section.ifplugd_priority.to_s.empty?
           config.startmode.priority = interface_section.ifplugd_priority
         end
+
+        # mtu
         config.mtu = interface_section.mtu.to_i if !interface_section.mtu.to_s.empty?
+
+        # ethtool options
         if interface_section.ethtool_options
           config.ethtool_options = interface_section.ethtool_options
         end
+
+        # fw zone
         config.firewall_zone = interface_section.zone if !interface_section.zone.to_s.empty?
+
+        # DHCLIENT_SETHOSTNAME setup
         if !interface_section.dhclient_set_hostname.empty?
           config.dhclient_set_hostname = interface_section.dhclient_set_hostname == "yes"
         end
 
         config
+      end
+
+      # Loads and intializates interface_section's ipaddr attribute
+      #
+      # @param section [Hash] hash of AY profile's interface section as obtained from parser
+      #
+      # @return [ConnectionConfig::IPConfig] created ipaddr object
+      def load_ipaddr(section)
+        return if section.ipaddr.empty?
+
+        ipaddr = IPAddress.from_string(section.ipaddr)
+
+        # Assign first netmask, as prefixlen has precedence so it will overwrite it
+        ipaddr.prefix = prefix_for(section.netmask) if !section.netmask.to_s.empty?
+        ipaddr.prefix = prefix_for(section.prefixlen) if !section.prefixlen.to_s.empty?
+
+        broadcast = IPAddress.new(section.broadcast) if !section.broadcast.empty?
+        remote = IPAddress.new(section.remote_ipaddr) if !section.remote_ipaddr.empty?
+
+        ConnectionConfig::IPConfig.new(ipaddr, broadcast: broadcast, remote_address: remote)
+      end
+
+      # Converts a given IP Address netmask or prefix length in different
+      # formats to its prefix length value.
+      #
+      # @param value [String] IP Address prefix length or netmask in its different formats
+      # @return [Integer,nil] the given value in IP Address prefix length
+      #   format
+      def prefix_for(value)
+        if value.empty?
+          nil
+        elsif value.start_with?("/")
+          value[1..-1].to_i
+        elsif value =~ /^\d{1,3}$/
+          value.to_i
+        else
+          IPAddr.new("#{value}/#{value}").prefix
+        end
+      end
+
+      # Loads and initializates an IP alias according to given hash with alias details
+      #
+      # @param alias_h [Hash] hash of AY profile's alias section as obtained from parser
+      #
+      # @return [ConnectionConfig::IPConfig] alias details
+      def load_alias(alias_h, id: nil)
+        ipaddr = IPAddress.from_string(alias_h["IPADDR"])
+        # Assign first netmask, as prefixlen has precedence so it will overwrite it
+        ipaddr.prefix = prefix_for(alias_h["NETMASK"]) if !alias_h.fetch("NETMASK", "").empty?
+        ipaddr.prefix = prefix_for(alias_h["PREFIXLEN"]) if !alias_h.fetch("PREFIXLEN", "").empty?
+
+        ConnectionConfig::IPConfig.new(ipaddr, id: id, label: alias_h["LABEL"])
       end
 
       def load_wireless(config, interface_section)

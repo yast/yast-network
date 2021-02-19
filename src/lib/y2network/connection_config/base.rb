@@ -52,7 +52,7 @@ module Y2Network
 
       # @return [BootProtocol] Bootproto
       attr_accessor :bootproto
-      # @return [IPConfig] Primary IP configuration
+      # @return [IPConfig, nil] Primary IP configuration
       attr_accessor :ip
       # @return [Array<IPConfig>] Additional IP configurations (also known as 'aliases')
       attr_accessor :ip_aliases

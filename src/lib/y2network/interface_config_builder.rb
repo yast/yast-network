@@ -321,9 +321,7 @@ module Y2Network
         ip_config_default.address.prefix = nil
       elsif value.start_with?("/")
         ip_config_default.address.prefix = value[1..-1].to_i
-      elsif value.size < 3 # one or two digits can be only prefixlen
-        ip_config_default.address.prefix = value.to_i
-      elsif value =~ /^\d{3}$/
+      elsif value =~ /^\d{1,3}$/
         ip_config_default.address.prefix = value.to_i
       else
         ip_config_default.address.netmask = value
