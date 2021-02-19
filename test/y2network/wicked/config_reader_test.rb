@@ -70,6 +70,14 @@ describe Y2Network::Wicked::ConfigReader do
   around { |e| change_scr_root(File.join(DATA_PATH, "scr_read"), &e) }
 
   describe "#config" do
+    let(:sysctl_file) do
+      instance_double(CFA::SysctlConfig, forward_ipv4: true).as_null_object
+    end
+
+    before do
+      allow(CFA::SysctlConfig).to receive(:new).and_return(sysctl_file)
+    end
+
     it "returns a configuration including network devices" do
       config = reader.config
       expect(config.interfaces.map(&:name)).to eq(["eth0", "wlan0"])

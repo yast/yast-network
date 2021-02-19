@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Feb 19 10:28:29 UTC 2021 - Ancor Gonzalez Sosa <ancor@suse.com>
+
+- Adapted unit test to recent changes in Yast::Report (related to
+  bsc#1179893).
+- 4.3.47
+
+-------------------------------------------------------------------
 Wed Feb 10 10:30:53 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
 
 - Allow to disable the proposal of the bridge network configuration
