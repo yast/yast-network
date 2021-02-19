@@ -54,7 +54,7 @@ module Y2Network
           add_ips(conn)
 
           update_file(conn)
-          add_hostname(conn) if conn.bootproto.static?
+          add_hostname(conn) if conn.static?
         end
 
       private
