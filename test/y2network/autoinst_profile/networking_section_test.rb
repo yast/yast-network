@@ -65,16 +65,9 @@ describe Y2Network::AutoinstProfile::NetworkingSection do
     let(:dns_section) { double("DNSSection") }
     let(:net_udev) { {} }
 
-    before do
-      allow(Y2Network::AutoinstProfile::RoutingSection).to receive(:new_from_hashes)
-        .with(routing, described_class).and_return(routing_section)
-      allow(Y2Network::AutoinstProfile::DNSSection).to receive(:new_from_hashes)
-        .with(dns, described_class).and_return(dns_section)
-    end
-
     it "initializes the routing section" do
       section = described_class.new_from_hashes(hash)
-      expect(section.routing).to eq(routing_section)
+      expect(section.routing).to be_a(Y2Network::AutoinstProfile::RoutingSection)
     end
 
     context "when no routing section is present" do
@@ -88,7 +81,7 @@ describe Y2Network::AutoinstProfile::NetworkingSection do
 
     it "initializes the dns section" do
       section = described_class.new_from_hashes(hash)
-      expect(section.dns).to eq(dns_section)
+      expect(section.dns).to be_a(Y2Network::AutoinstProfile::DNSSection)
     end
 
     context "when no dns section is present" do

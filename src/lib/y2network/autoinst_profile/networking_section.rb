@@ -36,29 +36,46 @@ module Y2Network
     #
     # @see RoutingSection
     class NetworkingSection < Installation::AutoinstProfile::SectionWithAttributes
-      # @return [Boolean]
-      attr_accessor :setup_before_proposal
-      # @return [Boolean]
-      attr_accessor :start_immediately
-      # @return [Boolean]
-      attr_accessor :keep_install_network
-      # @return [Boolean]
-      attr_accessor :virt_bridge_proposal
-      # @return [Integer]
-      attr_accessor :strict_ip_check_timeout
+      def self.attributes
+        [
+          { name: :setup_before_proposal },
+          { name: :start_immediately },
+          { name: :keep_install_network },
+          { name: :virt_bridge_proposal },
+          { name: :strict_ip_check_timeout },
+          { name: :routing },
+          { name: :dns },
+          { name: :interfaces },
+          { name: :udev_rules },
+          { name: :s390_devices },
+          { name: :managed }
+        ]
+      end
 
-      # @return [RoutingSection]
-      attr_accessor :routing
-      # @return [DNSSection]
-      attr_accessor :dns
-      # @return [InterfacesSection]
-      attr_accessor :interfaces
-      # @return [UdevRulesSection]
-      attr_accessor :udev_rules
-      # @return [S390DevicesSection]
-      attr_accessor :s390_devices
-      # @return [Boolean]
-      attr_accessor :managed
+      define_attr_accessors
+
+      # @!attribute setup_before_proposal
+      #  @return [Boolean]
+      # @!attribute start_immediately
+      #  @return [Boolean]
+      # @!attribute keep_install_network
+      #  @return [Boolean]
+      # @!attribute virt_bridge_proposal
+      #  @return [Boolean]
+      # @!attribute strict_ip_check_timeout
+      #  @return [Boolean]
+      # @!attribute routing
+      #   @return [RoutingSection]
+      # @!attribute dns
+      #   @return [DNSSection]
+      # @!attribute interfaces
+      #   @return [InterfacesSection]
+      # @!attribute udev_rules
+      #   @return [UdevRulesSection]
+      # @!attribute s390_devices
+      #   @return [S390DevicesSection]
+      # @!attribute managed
+      #  @return [Boolean]
 
       # Creates an instance based on the profile representation used by the AutoYaST modules
       # (hash with nested hashes and arrays).

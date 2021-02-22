@@ -20,7 +20,11 @@
 require "yast"
 require "y2network/dns"
 require "y2network/autoinst/type_detector"
+require "y2storage/autoinst_issues/invalid_value"
+require "y2storage/autoinst_issues/missing_value"
 require "ipaddr"
+
+Yast.import "AutoInstall"
 
 module Y2Network
   module Autoinst
@@ -46,6 +50,7 @@ module Y2Network
           log.info "Creating config for interface section: #{interface_section.inspect}"
           config = create_config(interface_section)
           config.propose # propose reasonable defaults for not set attributes
+
           unless load_generic(config, interface_section)
             log.info "Skipping interface as the configuration was wrongly defined"
             next
@@ -71,6 +76,10 @@ module Y2Network
 
     private
 
+      def issues_list
+        Yast::AutoInstall.issues_list
+      end
+
       def name_from_section(interface_section)
         # device is just fallback
         return interface_section.device if interface_section.name.to_s.empty?
@@ -86,11 +95,22 @@ module Y2Network
       end
 
       def load_generic(config, interface_section)
-        config.bootproto = BootProtocol.from_name(interface_section.bootproto)
+        if !interface_section.bootproto.to_s.empty?
+          bootproto = BootProtocol.from_name(interface_section.bootproto)
+          if bootproto
+            config.bootproto = bootproto
+          else
+            issues_list.add(Y2Storage::AutoinstIssues::InvalidValue,
+              interface_section, :bootproto, config.bootproto)
+          end
+        else
+          issues_list.add(Y2Storage::AutoinstIssues::MissingValue, interface_section, :bootproto)
+        end
+
         config.name = name_from_section(interface_section)
 
         if config.name.empty?
-          log.info "The interface section does not provide an interface name"
+          issues_list.add(Y2Storage::AutoinstIssues::MissingValue, interface_section, :name)
           return
         end
 
@@ -108,8 +128,12 @@ module Y2Network
         # startmode
         if !interface_section.startmode.to_s.empty?
           startmode = Startmode.create(interface_section.startmode)
-          # Use proposed startmode in case that there is a typo
-          config.startmode = startmode if startmode
+          if startmode
+            config.startmode = startmode
+          else
+            issues_list.add(Y2Storage::AutoinstIssues::InvalidValue,
+              interface_section, :startmode, config.startmode)
+          end
         end
 
         if config.startmode&.name == "ifplugd" && !interface_section.ifplugd_priority.to_s.empty?
