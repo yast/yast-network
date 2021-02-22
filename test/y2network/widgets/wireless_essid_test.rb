@@ -35,15 +35,22 @@ describe Y2Network::Widgets::WirelessScan do
   let(:essid) { Y2Network::Widgets::WirelessEssidName.new(builder) }
   let(:installed) { true }
   let(:initial_stage) { false }
-  let(:available_networks) { ["YaST", "Guests"] }
+  let(:selected_network) do
+    instance_double(Y2Network::WirelessNetwork, essid: "YaST")
+  end
+  let(:wireless_dialog) do
+    instance_double(Y2Network::Dialogs::WirelessNetworks, run: selected_network)
+  end
+
   subject { described_class.new(builder, update: essid) }
 
   before do
     allow(subject).to receive(:scan_supported?).and_return(installed)
     allow(Yast::Package).to receive(:Installed).and_return(installed)
     allow(Yast::Stage).to receive(:initial).and_return(initial_stage)
-    allow(subject).to receive(:fetch_essid_list).and_return(available_networks)
-    allow(essid).to receive(:update_essid_list)
+    allow(essid).to receive(:value=)
+    allow(Y2Network::Dialogs::WirelessNetworks).to receive(:new)
+      .and_return(wireless_dialog)
   end
 
   describe "#init" do
@@ -71,15 +78,6 @@ describe Y2Network::Widgets::WirelessScan do
   end
 
   describe "#handle" do
-    let(:networks_dialog) do
-      instance_double(Y2Network::Dialogs::WirelessNetworks, run: nil)
-    end
-
-    before do
-      allow(Y2Network::Dialogs::WirelessNetworks).to receive(:new)
-        .and_return(networks_dialog)
-    end
-
     context "when the package for scanning wireless networks is not installed" do
       let(:installed) { false }
 
@@ -96,7 +94,6 @@ describe Y2Network::Widgets::WirelessScan do
         it "returns without scanning the available network" do
           allow(Yast::Package).to receive(:Install).and_return(false)
           expect(Yast::Popup).to receive(:Error).with(/was not installed/)
-          expect(subject).to_not receive(:fetch_essid_list)
 
           expect(subject.handle).to eql(nil)
         end
@@ -105,12 +102,13 @@ describe Y2Network::Widgets::WirelessScan do
 
     context "when the package for scanning wireless networks is installed" do
       it "scans the list of available essids" do
-        expect(subject).to receive(:fetch_essid_list).and_return(available_networks)
+        expect(Y2Network::Dialogs::WirelessNetworks).to receive(:new)
+          .and_return(wireless_dialog)
         subject.handle
       end
 
       it "updates the widget with the list of the available essids with the obtained one" do
-        expect(essid).to receive(:update_essid_list).with(available_networks)
+        expect(essid).to receive(:value=).with(selected_network.essid)
         subject.handle
       end
     end

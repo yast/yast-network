@@ -53,7 +53,7 @@ module Y2Network
             network.essid,
             network.mode,
             network.channel,
-            "54 Mbit/s",
+            network.rates.max.to_s,
             network.quality,
             "WPA2"
           ]

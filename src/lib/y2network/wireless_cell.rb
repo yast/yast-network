@@ -33,22 +33,22 @@ module Y2Network
     # @!attribute [r] mode
     #   @return [WirelessMode,nil] Wireless mode
     # @!attribute [r] channel
-    #   @return [Integer,nil] Wireless channel
-    # @!attribute [r] rate
-    #   @return [Array<String>] Wireles rates
+    #   @return [Integer] Wireless channel
+    # @!attribute [r] rates
+    #   @return [Array<Bitrate>] Wireles rates
     # @!attribute [r] quality
     #   @return [Integer] Signal quality
     # @!attribute [r] security
     #   @return [Array<String>] Security mechanisms
-    attr_reader :address, :essid, :mode, :channel, :rate, :quality, :security
+    attr_reader :address, :essid, :mode, :channel, :rates, :quality, :security
 
     # rubocop:disable Metrics/ParameterLists
-    def initialize(address:, essid:, mode:, channel:, rate:, quality:, security:)
+    def initialize(address:, essid:, mode:, channel:, rates:, quality:, security:)
       @address = address
       @essid = essid
       @mode = mode
       @channel = channel
-      @rate = rate
+      @rates = rates
       @quality = quality
       @security = security
     end
@@ -59,7 +59,7 @@ module Y2Network
     # @return [Hash<Symbol,Object>] Hash containing cell properties, using the property
     #   names as keys.
     def to_h
-      { address: address, essid: essid, mode: mode, channel: channel, rate: rate,
+      { address: address, essid: essid, mode: mode, channel: channel, rates: rates,
         quality: quality, security: security }
     end
   end

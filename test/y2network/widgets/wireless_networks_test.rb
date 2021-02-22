@@ -19,6 +19,7 @@
 
 require_relative "../../test_helper"
 require "y2network/widgets/wireless_networks"
+require "y2network/bitrate"
 require "y2network/wireless_network"
 require "cwm/rspec"
 
@@ -28,7 +29,8 @@ describe Y2Network::Widgets::WirelessNetworks do
   describe "#update" do
     let(:network) do
       Y2Network::WirelessNetwork.new(
-        essid: "MY_WIFI", mode: "Master", channel: 10, rate: ["54 Mb/s"],
+        essid: "MY_WIFI", mode: "Master", channel: 10,
+        rates: [Y2Network::Bitrate.parse("54 Mb/s")],
         quality: 70, security: []
       )
     end
@@ -36,13 +38,13 @@ describe Y2Network::Widgets::WirelessNetworks do
     it "refreshes the list of networks" do
       expect(subject).to receive(:change_items) do |args|
         expect(args).to eq(
-          [["MY_WIFI", "MY_WIFI", "Master", 10, "54 Mbit/s", 70, "WPA2"]]
+          [["MY_WIFI", "MY_WIFI", "Master", 10, "54 Mb/s", 70, "WPA2"]]
         )
       end
       subject.update([network])
     end
 
-    context "when a network was alreay selected" do
+    context "when a network was already selected" do
       before do
         allow(Yast::UI).to receive(:QueryWidget)
           .with(Id(subject.widget_id), :SelectedItems)

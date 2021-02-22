@@ -39,6 +39,7 @@
 
 require "yast"
 require "yast2/execute"
+require "y2network/bitrate"
 require "y2network/wireless_network"
 require "y2network/wireless_cell"
 
@@ -113,7 +114,7 @@ module Y2Network
         essid:    fetch_essid(fields),
         mode:     field_single_value("Mode", fields),
         channel:  fetch_channel(fields),
-        rate:     fetch_bit_rates(fields),
+        rates:    fetch_bit_rates(fields),
         quality:  fetch_quality(fields),
         security: fetch_security(fields)
       )
@@ -189,7 +190,7 @@ module Y2Network
         .join("\n")
         .gsub("\n", ";")
         .split(";")
-        .map(&:strip)
+        .map { |b| Bitrate.parse(b.strip) }
     end
 
     # Returns the quality from the list of fields
