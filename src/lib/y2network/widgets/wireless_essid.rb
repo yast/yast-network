@@ -19,7 +19,6 @@
 
 require "cwm/common_widgets"
 require "cwm/custom_widget"
-require "yast2/feedback"
 require "y2network/dialogs/wireless_networks"
 
 Yast.import "String"
@@ -58,7 +57,7 @@ module Y2Network
     end
 
     # Widget for network name combobox
-    class WirelessEssidName < CWM::ComboBox
+    class WirelessEssidName < CWM::InputField
       # @param settings [Y2network::InterfaceConfigBuilder]
       def initialize(settings)
         @settings = settings
@@ -72,19 +71,6 @@ module Y2Network
       def init
         Yast::UI.ChangeWidget(Id(widget_id), :ValidChars, valid_chars)
         self.value = @settings.essid.to_s
-      end
-
-      # allow to use not found name e.g. when scan failed or when network is hidden
-      def opt
-        [:editable]
-      end
-
-      # updates essid list with given array and ensure that previously selected value is preserved
-      # @param networks [Array<String>]
-      def update_essid_list(networks)
-        old_value = value
-        change_items(networks.map { |n| [n, n] })
-        self.value = old_value
       end
 
       def store
@@ -120,10 +106,8 @@ module Y2Network
       def handle
         return unless scan_supported?
 
-        networks = fetch_essid_list
-
-        @update_widget&.update_essid_list(networks)
-        Y2Network::Dialogs::WirelessNetworks.new(networks).run
+        selected = network_selector.run
+        @update_widget&.value = selected.essid if selected
 
         nil
       end
@@ -156,39 +140,8 @@ module Y2Network
           Yast::Package.Install(IWLIST_PKG)
       end
 
-      def fetch_essid_list
-        networks = []
-
-        Yast2::Feedback.show("Obtaining essid list", headline: "Scanning network") do |_f|
-          networks = essid_list
-          log.info("Found networks: #{networks}")
-        end
-
-        networks
-      end
-
-      # TODO: own class and do not call directly in widget.
-      def essid_list
-        command = "#{link_up} && #{scan} | #{grep_and_cut_essid} | #{sort}"
-
-        output = Yast::SCR.Execute(Yast::Path.new(".target.bash_output"), command)
-        output["stdout"].split("\n")
-      end
-
-      def sort
-        "/usr/bin/sort -u"
-      end
-
-      def grep_and_cut_essid
-        "/usr/bin/grep ESSID | /usr/bin/cut -d':' -f2 | /usr/bin/cut -d'\"' -f2"
-      end
-
-      def link_up
-        "/usr/sbin/ip link set #{interface} up"
-      end
-
-      def scan
-        "/usr/sbin/iwlist #{interface} scan"
+      def network_selector
+        @network_selector ||= Y2Network::Dialogs::WirelessNetworks.new(@settings.interface)
       end
 
       def interface

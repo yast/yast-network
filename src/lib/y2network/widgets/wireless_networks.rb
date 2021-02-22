@@ -22,21 +22,57 @@ require "cwm/table"
 
 module Y2Network
   module Widgets
+    # This class
     class WirelessNetworks < CWM::Table
-      def initialize(networks)
-        textdomain "network"
+      attr_reader :selected
 
+      # Constructor
+      #
+      # @param network [Array<WirelessNetwork>] List of available wifi networks
+      def initialize(networks = [])
+        textdomain "network"
         @networks = networks
       end
 
+      # Returns table headers
+      #
+      # @return [Array<String>]
       def header
-        [
-          _("SSID"), _("Mode"), "Channel", "Rate", "Signal", "Security"
-        ]
+        [_("SSID"), _("Mode"), _("Channel"), _("Rate"), _("Signal"), _("Security")]
       end
 
+      # Returns table items
+      #
+      # Each item corresponds to a wireless network.
+      #
+      # @return [Array<Array<String>>]
       def items
-        @networks.map { |n| [n, n, "Master", "6", "54 Mbit/s", "79", "WPA2"] }
+        @networks.map do |network|
+          [
+            network.essid,
+            network.essid,
+            network.mode,
+            network.channel,
+            "54 Mbit/s",
+            network.quality,
+            "WPA2"
+          ]
+        end
+      end
+
+      # Updates the list of networks
+      #
+      # @param [Array<WirelessNetwork>] List of wireless networks
+      def update(networks)
+        @networks = networks
+        old_value = Yast::UI.QueryWidget(Id(widget_id), :SelectedItems)
+        change_items(items)
+        self.value = old_value if old_value
+      end
+
+      # @see CWM::AbstractWidget
+      def store
+        @selected = @networks.find { |n| n.essid == value }
       end
     end
   end
