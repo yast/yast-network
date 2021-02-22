@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Feb 16 10:32:34 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
+
+- Improve the AutoYaST interfaces reader handling better the IP
+  Addresses configuration. (bsc#1174353, bsc#1178107)
+- 4.3.48
+
+-------------------------------------------------------------------
 Fri Feb 19 10:28:29 UTC 2021 - Ancor Gonzalez Sosa <ancor@suse.com>
 
 - Adapted unit test to recent changes in Yast::Report (related to

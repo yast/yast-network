@@ -45,7 +45,7 @@ module Y2Network
           file.lladdr = conn.lladdress
           file.startmode = conn.startmode.to_s
           file.dhclient_set_hostname = dhclient_set_hostname(conn)
-          file.ifplugd_priority = conn.startmode.priority if conn.startmode.name == "ifplugd"
+          file.ifplugd_priority = conn.startmode.priority if conn.startmode&.name == "ifplugd"
           if conn.ethtool_options && !conn.ethtool_options.empty?
             file.ethtool_options = conn.ethtool_options
           end
@@ -54,7 +54,7 @@ module Y2Network
           add_ips(conn)
 
           update_file(conn)
-          add_hostname(conn) if conn.bootproto.static?
+          add_hostname(conn) if conn.static?
         end
 
       private
