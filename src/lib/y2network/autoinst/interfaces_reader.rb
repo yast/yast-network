@@ -101,7 +101,7 @@ module Y2Network
             config.bootproto = bootproto
           else
             issues_list.add(Y2Storage::AutoinstIssues::InvalidValue,
-              interface_section, :bootproto, config.bootproto)
+              interface_section, :bootproto, config.bootproto&.name)
           end
         else
           issues_list.add(Y2Storage::AutoinstIssues::MissingValue, interface_section, :bootproto)
@@ -132,7 +132,7 @@ module Y2Network
             config.startmode = startmode
           else
             issues_list.add(Y2Storage::AutoinstIssues::InvalidValue,
-              interface_section, :startmode, config.startmode)
+              interface_section, :startmode, config.startmode&.name)
           end
         end
 

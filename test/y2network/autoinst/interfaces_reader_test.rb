@@ -139,7 +139,7 @@ describe Y2Network::Autoinst::InterfacesReader do
         end
 
         it "adds an invalid value issue to the AutoInstall issues list" do
-          expect(i_list).to receive(:add).with(invalid_value, anything, :bootproto, default)
+          expect(i_list).to receive(:add).with(invalid_value, anything, :bootproto, "static")
           subject.config
         end
       end
