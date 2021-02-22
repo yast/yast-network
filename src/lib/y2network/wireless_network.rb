@@ -56,5 +56,14 @@ module Y2Network
       @quality = quality
       @security = security
     end
+
+    # Returns the quality as a percentage
+    #
+    # @return [Integer] Quality as percentage
+    def quality_percent
+      return 0 if @quality.nil?
+
+      (@quality.to_f * 100 / 70).round
+    end
   end
 end

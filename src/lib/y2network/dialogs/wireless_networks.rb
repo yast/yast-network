@@ -19,7 +19,7 @@
 
 require "yast2/feedback"
 require "y2network/widgets/wireless_networks"
-require "y2network/wireless_scanner"
+require "y2network/wireless_network"
 require "cwm/popup"
 
 Yast.import "Label"
@@ -117,8 +117,7 @@ module Y2Network
       def find_networks
         found_networks = nil
         Yast2::Feedback.show("Obtaining essid list", headline: "Scanning network") do |_f|
-          scanner = Y2Network::WirelessScanner.new(@interface.name)
-          found_networks = scanner.cells
+          found_networks = Y2Network::WirelessNetwork.all(@interface.name)
           log.info("Found networks: #{found_networks.map(&:essid)}")
         end
 

@@ -35,7 +35,6 @@ module Y2Network
     UNITS = ["b", "kb", "Mb", "Gb"].freeze
     private_constant :UNITS
 
-
     class << self
       # Parses a string and converts the value to a string
       #
