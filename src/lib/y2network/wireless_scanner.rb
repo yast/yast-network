@@ -50,7 +50,7 @@ module Y2Network
   #
   # @example Getting cells through the an interfaced named "wlo1"
   #   scanner = WirelessScanner.new("wlo1")
-  #   scanner.cells #=> []
+  #   scanner.cells #=> [#<Y2Network::WirelessNetwork...>]
   class WirelessScanner
     include Yast::Logger
 
@@ -214,13 +214,18 @@ module Y2Network
 
     # Returns the channel from the list of fields
     #
-    # @todo It just returns a raw string. It should be improved.
-    #
     # @param fields [Array<Hash>] Cell fields
-    # @return [Array<String>] Returns the security settings
+    # @return [Symbol] Authentication mode (:open, :shared, :psk or :eap)
     def fetch_security(fields)
-      field_multi_values("IE", fields)
+      values = field_multi_values("IE", fields)
         .reject { |i| i.start_with?("Unknown:") }
+      auth_modes = values.map { |v| v.split("\n").first }
+
+      return :psk if auth_modes.any? { |a| a.include?("WPA") }
+
+      return :shared if field_single_value("Encryption key", fields) == "on"
+
+      :open
     end
   end
 end

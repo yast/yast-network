@@ -40,15 +40,15 @@ describe Y2Network::WirelessScanner do
       expect(scanner.cells).to contain_exactly(
         an_object_having_attributes(
           address: "68:FF:7B:65:C0:D2", essid: "TP-Link_R2D2", mode: "Master",
-          channel: 10, quality: 70
+          channel: 10, quality: 70, security: :psk
         ),
         an_object_having_attributes(
           address: "7E:ED:69:D5:89:A5", essid: "TP-Link_C3PO", mode: "Master",
-          channel: 1, quality: 42
+          channel: 1, quality: 42, security: :shared
         ),
         an_object_having_attributes(
-          address: "68:FF:7B:65:C0:D3", essid: "TP-Link_R2D2", mode: "Master",
-          channel: 10, quality: 30
+          address: "68:FF:7B:65:C0:D3", essid: "GUESTS", mode: "Master",
+          channel: 10, quality: 30, security: :open
         )
       )
     end
