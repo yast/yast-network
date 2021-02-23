@@ -63,7 +63,7 @@ module Y2Network
 
       # @see CWM::AbstractWidget
       def title
-        _("Wireless Available Networks")
+        _("Available Wireless Networks")
       end
 
       # @see CWM::CustomWidget
