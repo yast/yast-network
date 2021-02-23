@@ -20,19 +20,25 @@
 require "yast"
 require "y2network/dns"
 require "y2network/autoinst/type_detector"
+require "installation/autoinst_issues"
 require "ipaddr"
+
+Yast.import "AutoInstall"
 
 module Y2Network
   module Autoinst
     # This class is responsible of importing the AutoYast interfaces section
     class InterfacesReader
       include Yast::Logger
+      include Yast::I18n
 
       # @return [AutoinstProfile::InterfacesSection]
       attr_reader :section
 
       # @param section [AutoinstProfile::InterfacesSection]
       def initialize(section)
+        textdomain "network"
+
         @section = section
       end
 
@@ -46,6 +52,7 @@ module Y2Network
           log.info "Creating config for interface section: #{interface_section.inspect}"
           config = create_config(interface_section)
           config.propose # propose reasonable defaults for not set attributes
+
           unless load_generic(config, interface_section)
             log.info "Skipping interface as the configuration was wrongly defined"
             next
@@ -71,11 +78,21 @@ module Y2Network
 
     private
 
+      def issues_list
+        Yast::AutoInstall.issues_list
+      end
+
       def name_from_section(interface_section)
         # device is just fallback
         return interface_section.device if interface_section.name.to_s.empty?
 
         interface_section.name
+      end
+
+      def add_invalid_issue(section, value, new_value)
+        issues_list.add(::Installation::AutoinstIssues::InvalidValue,
+          section, value, section.public_send(value),
+          format(_("replaced by '%{value}'"), value: new_value))
       end
 
       def create_config(interface_section)
@@ -86,11 +103,23 @@ module Y2Network
       end
 
       def load_generic(config, interface_section)
-        config.bootproto = BootProtocol.from_name(interface_section.bootproto)
+        if !interface_section.bootproto.to_s.empty?
+          bootproto = BootProtocol.from_name(interface_section.bootproto)
+          if bootproto
+            config.bootproto = bootproto
+          else
+            add_invalid_issue(interface_section, :bootproto, config.bootproto&.name)
+          end
+        else
+          issues_list.add(::Installation::AutoinstIssues::MissingValue,
+            interface_section, :bootproto)
+        end
+
         config.name = name_from_section(interface_section)
 
         if config.name.empty?
-          log.info "The interface section does not provide an interface name"
+          issues_list.add(::Installation::AutoinstIssues::MissingValue,
+            interface_section, :name, _("The section will be skipped"))
           return
         end
 
@@ -108,8 +137,11 @@ module Y2Network
         # startmode
         if !interface_section.startmode.to_s.empty?
           startmode = Startmode.create(interface_section.startmode)
-          # Use proposed startmode in case that there is a typo
-          config.startmode = startmode if startmode
+          if startmode
+            config.startmode = startmode
+          else
+            add_invalid_issue(interface_section, :startmode, config.startmode&.name)
+          end
         end
 
         if config.startmode&.name == "ifplugd" && !interface_section.ifplugd_priority.to_s.empty?

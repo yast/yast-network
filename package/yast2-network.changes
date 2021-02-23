@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Feb 22 13:53:49 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
+
+- Added AutoYaST interfaces section errors reporting (bsc#1174353,
+  bsc#1178107).
+- 4.3.49
+
+-------------------------------------------------------------------
 Mon Feb 22 09:32:34 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
 
 - Improve the AutoYaST interfaces reader handling better the IP
