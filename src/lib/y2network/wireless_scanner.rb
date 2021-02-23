@@ -134,7 +134,7 @@ module Y2Network
       key = cell[/\A[^:=]+/]
       end_pos = cell.index(/\n[^ ]/) || cell.size
       value = cell[(key.size + 1)..end_pos - 1]
-      remaining = cell[(end_pos + 1)..]
+      remaining = cell[(end_pos + 1)..-1]
 
       current = { key: key, value: value&.strip }
       return [current] if remaining.nil?
