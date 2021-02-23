@@ -88,7 +88,7 @@ module Y2Network
 
       # Returns the label for the 'Accept' button
       #
-      # @returnh [String]
+      # @return [String]
       def ok_button_label
         Yast::Label.SelectButton
       end

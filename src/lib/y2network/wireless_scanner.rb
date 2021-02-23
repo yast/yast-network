@@ -67,7 +67,7 @@ module Y2Network
     # Returns the wireless cells
     #
     #
-    # @return Array<WirelessNetwork>
+    # @return [Array<WirelessNetwork>] List of wireless cells
     def cells
       raw_cells_from_iwlist(fetch_iwlist).map do |cell|
         cell_from_raw_data(cell)
@@ -164,7 +164,7 @@ module Y2Network
 
     # Returns the cell MAC address from the list of fields
     #
-    # @params [Array<Hash>] Cell fields
+    # @param fields [Array<Hash>] Cell fields
     # @return [String,nil] Returns the MAC address or nil if it was not found
     def fetch_address(fields)
       field_single_value("Address", fields)
@@ -172,7 +172,7 @@ module Y2Network
 
     # Returns the ESSID from the list of fields
     #
-    # @params [Array<Hash>] Cell fields
+    # @param fields [Array<Hash>] Cell fields
     # @return [String,nil] Returns the ESSID or nil if it was not found
     def fetch_essid(fields)
       value = field_single_value("ESSID", fields)
@@ -183,7 +183,7 @@ module Y2Network
 
     # Returns the bit rates from the list of fields
     #
-    # @params [Array<Hash>] Cell fields
+    # @param fields [Array<Hash>] Cell fields
     # @return [Array<String>] Returns bit rates
     def fetch_bit_rates(fields)
       field_multi_values("Bit Rates", fields)
@@ -195,7 +195,7 @@ module Y2Network
 
     # Returns the quality from the list of fields
     #
-    # @params [Array<Hash>] Cell fields
+    # @param fields [Array<Hash>] Cell fields
     # @return [Integer,nil] Returns the quality or nil if it was not found
     def fetch_quality(fields)
       value = field_single_value("Quality", fields)
@@ -206,7 +206,7 @@ module Y2Network
 
     # Returns the channel from the list of fields
     #
-    # @params [Array<Hash>] Cell fields
+    # @param fields [Array<Hash>] Cell fields
     # @return [Integer,nil] Returns the channel or nil if it was not found
     def fetch_channel(fields)
       field_single_value("Channel", fields)&.to_i
@@ -216,7 +216,7 @@ module Y2Network
     #
     # @todo It just returns a raw string. It should be improved.
     #
-    # @params [Array<Hash>] Cell fields
+    # @param fields [Array<Hash>] Cell fields
     # @return [Array<String>] Returns the security settings
     def fetch_security(fields)
       field_multi_values("IE", fields)

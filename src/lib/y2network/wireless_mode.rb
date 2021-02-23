@@ -35,9 +35,9 @@ module Y2Network
       end
     end
 
-    # @!attribute [r]
+    # @!attribute [r] name
     #   @return [String] Wireless mode name
-    # @!attribute [r]
+    # @!attribute [r] short_name
     #   @return [String] Wireless mode short name (to be used in configuration files)
     attr_reader :name, :short_name
 

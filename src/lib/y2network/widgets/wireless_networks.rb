@@ -28,7 +28,7 @@ module Y2Network
 
       # Constructor
       #
-      # @param network [Array<WirelessNetwork>] List of available wifi networks
+      # @param networks [Array<WirelessNetwork>] List of available wifi networks
       def initialize(networks = [])
         textdomain "network"
         @networks = networks
@@ -62,7 +62,7 @@ module Y2Network
 
       # Updates the list of networks
       #
-      # @param [Array<WirelessNetwork>] List of wireless networks
+      # @param networks [Array<WirelessNetwork>] List of wireless networks
       def update(networks)
         @networks = networks
         old_value = Yast::UI.QueryWidget(Id(widget_id), :SelectedItems)
