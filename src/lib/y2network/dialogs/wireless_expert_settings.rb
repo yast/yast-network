@@ -49,6 +49,8 @@ module Y2Network
                 HSpacing(2),
                 VBox(
                   VSpacing(1),
+                  mode_widget,
+                  VSpacing(0.2),
                   channel_widget, # TODO: channel only when mode is master or adhoc
                   VSpacing(0.2),
                   bitrate_widget,
@@ -103,6 +105,10 @@ module Y2Network
       end
 
     private
+
+      def mode_widget
+        @mode_widget ||= Y2Network::Widgets::WirelessMode.new(@settings)
+      end
 
       def channel_widget
         @channel_widget ||= Y2Network::Widgets::WirelessChannel.new(@settings)
