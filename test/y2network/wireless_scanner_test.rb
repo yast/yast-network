@@ -39,13 +39,16 @@ describe Y2Network::WirelessScanner do
     it "returns the wireless networks" do
       expect(scanner.cells).to contain_exactly(
         an_object_having_attributes(
-          essid: "TP-Link_R2D2", mode: "Master", channel: 10, quality: 70
+          address: "68:FF:7B:65:C0:D2", essid: "TP-Link_R2D2", mode: "Master",
+          channel: 10, quality: 70
         ),
         an_object_having_attributes(
-          essid: "TP-Link_C3PO", mode: "Master", channel: 1, quality: 42
+          address: "7E:ED:69:D5:89:A5", essid: "TP-Link_C3PO", mode: "Master",
+          channel: 1, quality: 42
         ),
         an_object_having_attributes(
-          essid: "TP-Link_R2D2", mode: "Master", channel: 10, quality: 30
+          address: "68:FF:7B:65:C0:D3", essid: "TP-Link_R2D2", mode: "Master",
+          channel: 10, quality: 30
         )
       )
     end

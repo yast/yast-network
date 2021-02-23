@@ -136,7 +136,7 @@ module Y2Network
       value = cell[(key.size + 1)..end_pos - 1]
       remaining = cell[(end_pos + 1)..-1]
 
-      current = { key: key, value: value&.strip }
+      current = { key: key.strip, value: value&.strip }
       return [current] if remaining.nil?
 
       [current] + cell_fields(remaining)
