@@ -114,9 +114,15 @@ module Y2Network
         @networks_table ||= Y2Network::Widgets::WirelessNetworks.new
       end
 
+      # Scans for wireless networks
+      #
+      # @return [Array<WirelessNetwork>] List of found wireless networks
+      # @see Y2Network::WirelessNetwork.all
       def find_networks
         found_networks = nil
-        Yast2::Feedback.show("Obtaining essid list", headline: "Scanning network") do |_f|
+        Yast2::Feedback.show(
+          _("Scanning for wireless networks..."), headline: _("Scanning network")
+        ) do
           found_networks = Y2Network::WirelessNetwork.all(@interface.name)
           log.info("Found networks: #{found_networks.map(&:essid)}")
         end
