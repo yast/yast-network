@@ -73,8 +73,8 @@ describe Y2Network::Autoinst::InterfacesReader do
 
   describe "#config" do
     let(:i_list) { double("IssuesList", add: nil) }
-    let(:missing_value) { Y2Storage::AutoinstIssues::MissingValue }
-    let(:invalid_value) { Y2Storage::AutoinstIssues::InvalidValue }
+    let(:missing_value) { ::Installation::AutoinstIssues::MissingValue }
+    let(:invalid_value) { ::Installation::AutoinstIssues::InvalidValue }
 
     before do
       allow(Yast::AutoInstall).to receive(:issues_list).and_return(i_list)
@@ -110,7 +110,9 @@ describe Y2Network::Autoinst::InterfacesReader do
         end
 
         it "adds an missing value issue to the AutoInstall issues list" do
-          expect(i_list).to receive(:add).with(missing_value, anything, :name)
+          eth1_section = interfaces_section.interfaces[0]
+          expect(i_list).to receive(:add)
+            .with(missing_value, eth1_section, :name, "The section will be skipped")
           subject.config
         end
       end
@@ -121,7 +123,8 @@ describe Y2Network::Autoinst::InterfacesReader do
         end
 
         it "adds an missing value issue to the AutoInstall issues list" do
-          expect(i_list).to receive(:add).with(missing_value, anything, :bootproto)
+          eth1_section = interfaces_section.interfaces[0]
+          expect(i_list).to receive(:add).with(missing_value, eth1_section, :bootproto)
           subject.config
         end
       end
@@ -139,7 +142,9 @@ describe Y2Network::Autoinst::InterfacesReader do
         end
 
         it "adds an invalid value issue to the AutoInstall issues list" do
-          expect(i_list).to receive(:add).with(invalid_value, anything, :bootproto, "static")
+          eth1_section = interfaces_section.interfaces[0]
+          expect(i_list).to receive(:add)
+            .with(invalid_value, eth1_section, :bootproto, "dchp", "replaced by 'static'")
           subject.config
         end
       end
@@ -155,7 +160,8 @@ describe Y2Network::Autoinst::InterfacesReader do
         end
 
         it "adds an invalid value issue to the AutoInstall issues list" do
-          expect(i_list).to receive(:add).with(invalid_value, anything, :startmode, anything)
+          eth1_section = interfaces_section.interfaces[0]
+          expect(subject).to receive(:add_invalid_issue).with(eth1_section, :startmode, anything)
           subject.config
         end
       end

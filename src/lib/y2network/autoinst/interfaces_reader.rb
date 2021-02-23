@@ -20,8 +20,7 @@
 require "yast"
 require "y2network/dns"
 require "y2network/autoinst/type_detector"
-require "y2storage/autoinst_issues/invalid_value"
-require "y2storage/autoinst_issues/missing_value"
+require "installation/autoinst_issues"
 require "ipaddr"
 
 Yast.import "AutoInstall"
@@ -31,12 +30,15 @@ module Y2Network
     # This class is responsible of importing the AutoYast interfaces section
     class InterfacesReader
       include Yast::Logger
+      include Yast::I18n
 
       # @return [AutoinstProfile::InterfacesSection]
       attr_reader :section
 
       # @param section [AutoinstProfile::InterfacesSection]
       def initialize(section)
+        textdomain "network"
+
         @section = section
       end
 
@@ -87,6 +89,12 @@ module Y2Network
         interface_section.name
       end
 
+      def add_invalid_issue(section, value, new_value)
+        issues_list.add(::Installation::AutoinstIssues::InvalidValue,
+          section, value, section.public_send(value),
+          format(_("replaced by '%{value}'"), value: new_value))
+      end
+
       def create_config(interface_section)
         name = name_from_section(interface_section)
         type = TypeDetector.type_of(name, interface_section)
@@ -100,17 +108,18 @@ module Y2Network
           if bootproto
             config.bootproto = bootproto
           else
-            issues_list.add(Y2Storage::AutoinstIssues::InvalidValue,
-              interface_section, :bootproto, config.bootproto&.name)
+            add_invalid_issue(interface_section, :bootproto, config.bootproto&.name)
           end
         else
-          issues_list.add(Y2Storage::AutoinstIssues::MissingValue, interface_section, :bootproto)
+          issues_list.add(::Installation::AutoinstIssues::MissingValue,
+            interface_section, :bootproto)
         end
 
         config.name = name_from_section(interface_section)
 
         if config.name.empty?
-          issues_list.add(Y2Storage::AutoinstIssues::MissingValue, interface_section, :name)
+          issues_list.add(::Installation::AutoinstIssues::MissingValue,
+            interface_section, :name, _("The section will be skipped"))
           return
         end
 
@@ -131,8 +140,7 @@ module Y2Network
           if startmode
             config.startmode = startmode
           else
-            issues_list.add(Y2Storage::AutoinstIssues::InvalidValue,
-              interface_section, :startmode, config.startmode&.name)
+            add_invalid_issue(interface_section, :startmode, config.startmode&.name)
           end
         end
 
