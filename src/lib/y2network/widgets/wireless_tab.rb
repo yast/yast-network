@@ -23,6 +23,7 @@ require "cwm/tabs"
 # used widgets
 require "y2network/widgets/wireless"
 require "y2network/widgets/wireless_auth"
+require "y2network/dialogs/wireless_expert_settings"
 
 module Y2Network
   module Widgets
@@ -36,19 +37,37 @@ module Y2Network
       end
 
       def label
-        _("&Wireless Specific")
+        _("&Wireless")
       end
 
       def contents
         VBox(
-          VSpacing(0.5),
+          VSpacing(0.2),
           Y2Network::Widgets::Wireless.new(@builder),
-          VSpacing(0.5),
+          VSpacing(0.2),
           Y2Network::Widgets::WirelessAuth.new(@builder),
-          VSpacing(0.5),
-          # TODO: wireless auth widget
+          VSpacing(0.2),
+          Right(Y2Network::Widgets::WirelessExpertSettings.new(@builder)),
           VStretch()
         )
+      end
+    end
+
+    class WirelessExpertSettings < CWM::PushButton
+      def initialize(settings)
+        @settings = settings
+
+        textdomain "network"
+      end
+
+      def label
+        _("E&xpert Settings")
+      end
+
+      def handle
+        Y2Network::Dialogs::WirelessExpertSettings.new(@settings).run
+
+        nil
       end
     end
   end

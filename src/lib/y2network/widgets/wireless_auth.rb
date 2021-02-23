@@ -54,13 +54,11 @@ module Y2Network
 
       def contents
         Frame(
-          _("Wireless Authentication"),
+          _("Authentication"),
           VBox(
-            VSpacing(0.5),
             auth_mode_widget,
             VSpacing(0.2),
-            replace_widget,
-            VSpacing(0.5)
+            replace_widget
           )
         )
       end

@@ -34,28 +34,13 @@ module Y2Network
       end
 
       def contents
-        VBox(
-          VSpacing(0.5),
-          # Frame label
-          Frame(
-            _("Wireless Device Settings"),
-            HBox(
-              HSpacing(2),
-              VBox(
-                VSpacing(0.5),
-                # ComboBox label
-                mode_widget,
-                VSpacing(0.2),
-                # Text entry label
-                essid_widget,
-                VSpacing(0.2),
-                expert_settings_widget,
-                VSpacing(0.5)
-              ),
-              HSpacing(2)
-            )
-          ),
-          VSpacing(0.5)
+        Frame(
+          _("Device Settings"),
+          VBox(
+            Left(essid_widget),
+            VSpacing(0.2),
+            Left(mode_widget)
+          )
         )
       end
 
@@ -88,24 +73,6 @@ module Y2Network
 
       def expert_settings_widget
         @expert_settings_widget ||= Y2Network::Widgets::WirelessExpertSettings.new(settings)
-      end
-    end
-
-    class WirelessExpertSettings < CWM::PushButton
-      def initialize(settings)
-        @settings = settings
-
-        textdomain "network"
-      end
-
-      def label
-        _("E&xpert Settings")
-      end
-
-      def handle
-        Y2Network::Dialogs::WirelessExpertSettings.new(@settings).run
-
-        nil
       end
     end
   end

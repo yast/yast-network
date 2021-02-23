@@ -44,7 +44,7 @@ module Y2Network
       # generate event when changed so higher level widget can change content
       # @see Y2Network::Widgets::WirelessEap
       def opt
-        [:notify]
+        [:notify, :hstretch]
       end
 
       def items

@@ -44,7 +44,7 @@ module Y2Network
           VBox(
             VSpacing(0.5),
             Frame(
-              _("Wireless Expert Settings"),
+              _("Expert Settings"),
               HBox(
                 HSpacing(2),
                 VBox(

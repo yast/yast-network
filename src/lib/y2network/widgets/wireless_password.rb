@@ -29,6 +29,10 @@ module Y2Network
         @builder = builder
       end
 
+      def opt
+        [:hstretch]
+      end
+
       def label
         _("Password")
       end
