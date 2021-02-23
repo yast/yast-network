@@ -35,6 +35,7 @@ module Y2Network
         textdomain "network"
       end
 
+      # @see CWM::CustomWidget
       def contents
         HBox(
           essid,
@@ -47,16 +48,17 @@ module Y2Network
 
     private
 
+      # Returns the ESSID input field
+      #
+      # Its value can be set manually or through the WirelessNetworks dialog.
+      #
+      # @return [WirelessEssidName]
       def essid
         @essid ||= WirelessEssidName.new(@settings)
       end
-
-      def scan
-        @scan ||= WirelessScan.new(@settings, update: essid)
-      end
     end
 
-    # Widget for network name combobox
+    # Widget for network name input field
     class WirelessEssidName < CWM::InputField
       # @param settings [Y2network::InterfaceConfigBuilder]
       def initialize(settings)
@@ -81,71 +83,6 @@ module Y2Network
 
       def valid_chars
         Yast::String.CPrint
-      end
-    end
-
-    # Button for scan network sites
-    class WirelessScan < CWM::PushButton
-      # @param settings [Y2network::InterfaceConfigBuilder]
-      # @param update [WirelessEssidName]
-      def initialize(settings, update:)
-        textdomain "network"
-
-        @settings = settings
-        @update_widget = update
-      end
-
-      def label
-        _("Scan Network")
-      end
-
-      def init
-        disable unless present?
-      end
-
-      def handle
-        return unless scan_supported?
-
-        selected = network_selector.run
-        @update_widget&.value = selected.essid if selected
-
-        nil
-      end
-
-    private
-
-      IWLIST_PKG = "wireless-tools".freeze
-
-      def present?
-        !!@settings.interface&.hardware&.present?
-      end
-
-      def scan_supported?
-        return true if install_needed_packages
-
-        Yast::Popup.Error(
-          _("The package %s was not installed. It is needed in order to " \
-            "be able to scan the network") % IWLIST_PKG
-        )
-        false
-      end
-
-      # Require wireless-tools installation in order to be able to scan the
-      # wlan network (bsc#1112952, bsc#1168479)
-      #
-      # TODO: drop it when supported by wicked directly
-      def install_needed_packages
-        Yast::Stage.initial ||
-          Yast::Package.Installed(IWLIST_PKG) ||
-          Yast::Package.Install(IWLIST_PKG)
-      end
-
-      def network_selector
-        @network_selector ||= Y2Network::Dialogs::WirelessNetworks.new(@settings.interface)
-      end
-
-      def interface
-        @settings.name
       end
     end
   end
