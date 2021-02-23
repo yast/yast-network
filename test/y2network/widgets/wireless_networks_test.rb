@@ -38,7 +38,7 @@ describe Y2Network::Widgets::WirelessNetworks do
     it "refreshes the list of networks" do
       expect(subject).to receive(:change_items) do |args|
         expect(args).to eq(
-          [["MY_WIFI", "MY_WIFI", "Master", 10, "54 Mb/s", 70, "WPA2"]]
+          [["MY_WIFI", "MY_WIFI", "Master", 10, "54 Mb/s", "100%", "WPA2"]]
         )
       end
       subject.update([network])
