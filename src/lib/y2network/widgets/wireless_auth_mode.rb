@@ -33,7 +33,7 @@ module Y2Network
       end
 
       def label
-        _("&Authentication Mode")
+        _("Mode")
       end
 
       def opt
