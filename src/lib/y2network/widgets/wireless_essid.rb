@@ -19,47 +19,13 @@
 
 require "cwm/common_widgets"
 require "cwm/custom_widget"
-require "y2network/dialogs/wireless_networks"
 
 Yast.import "String"
-Yast.import "Package"
-Yast.import "Stage"
 
 module Y2Network
   module Widgets
-    # Widget to setup wifi network essid
-    class WirelessEssid < CWM::CustomWidget
-      # @param settings [Y2network::InterfaceConfigBuilder]
-      def initialize(settings)
-        @settings = settings
-        textdomain "network"
-      end
-
-      # @see CWM::CustomWidget
-      def contents
-        HBox(
-          essid,
-          VBox(
-            VSpacing(1),
-            scan
-          )
-        )
-      end
-
-    private
-
-      # Returns the ESSID input field
-      #
-      # Its value can be set manually or through the WirelessNetworks dialog.
-      #
-      # @return [WirelessEssidName]
-      def essid
-        @essid ||= WirelessEssidName.new(@settings)
-      end
-    end
-
     # Widget for network name input field
-    class WirelessEssidName < CWM::InputField
+    class WirelessEssid < CWM::InputField
       # @param settings [Y2network::InterfaceConfigBuilder]
       def initialize(settings)
         @settings = settings

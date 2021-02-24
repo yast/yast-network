@@ -22,8 +22,10 @@ require "cwm/tabs"
 
 # used widgets
 require "y2network/widgets/wireless"
+require "y2network/widgets/wireless_essid"
 require "y2network/widgets/wireless_auth"
 require "y2network/dialogs/wireless_expert_settings"
+require "y2network/widgets/wireless_scan_button"
 
 module Y2Network
   module Widgets
@@ -42,14 +44,42 @@ module Y2Network
 
       def contents
         VBox(
-          VSpacing(0.2),
-          Y2Network::Widgets::Wireless.new(@builder),
-          VSpacing(0.2),
-          Y2Network::Widgets::WirelessAuth.new(@builder),
-          VSpacing(0.2),
+          VSpacing(1),
+          HBox(essid_widget, scan_button),
+          VSpacing(1),
+          auth_widget,
+          VSpacing(1),
           Right(Y2Network::Widgets::WirelessExpertSettings.new(@builder)),
           VStretch()
         )
+      end
+
+      # Selects the network
+      #
+      # It sets the ESSID and the authentication mode according to the given network.
+      #
+      # @param network [Y2Network::WirelessNetwork] Selected network
+      def select_network(network)
+        essid_widget.value = network.essid
+        auth_widget.auth_mode = network.security
+      end
+
+    private
+
+      # Returns the button to scan for wireless networks
+      #
+      # @return [WirelessScan]
+      def scan_button
+        @scan_button ||= WirelessScanButton.new(@builder) { |n| select_network(n) }
+      end
+
+      # Returns the widget to set the wireless ESSID
+      def essid_widget
+        @essid_widget ||= Y2Network::Widgets::WirelessEssid.new(@builder)
+      end
+
+      def auth_widget
+        @auth_widget ||= Y2Network::Widgets::WirelessAuth.new(@builder)
       end
     end
 

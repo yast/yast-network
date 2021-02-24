@@ -63,6 +63,16 @@ module Y2Network
         )
       end
 
+      # Sets the authentication mode
+      #
+      # It sets the auth mode to the given value and refreshes the widgets accordingly.
+      #
+      # @param [Symbol] Authentication mode
+      def auth_mode=(mode)
+        auth_mode_widget.value = mode.to_s
+        refresh
+      end
+
     private
 
       def refresh

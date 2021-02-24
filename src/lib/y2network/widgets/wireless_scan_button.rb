@@ -30,11 +30,11 @@ module Y2Network
     class WirelessScanButton < CWM::PushButton
       # @param settings [Y2network::InterfaceConfigBuilder]
       # @param update [WirelessEssidName]
-      def initialize(settings, update:)
+      def initialize(settings, &select_callback)
         textdomain "network"
 
         @settings = settings
-        @update_widget = update
+        @select_callback = select_callback
       end
 
       def label
@@ -49,7 +49,7 @@ module Y2Network
         return unless scan_supported?
 
         selected = network_selector.run
-        @update_widget&.value = selected.essid if selected
+        @select_callback.call(selected) if selected
 
         nil
       end

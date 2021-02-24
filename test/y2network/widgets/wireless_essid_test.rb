@@ -27,5 +27,5 @@ describe Y2Network::Widgets::WirelessEssid do
   let(:builder) { Y2Network::InterfaceConfigBuilder.for("wlan") }
   subject { described_class.new(builder) }
 
-  include_examples "CWM::CustomWidget"
+  include_examples "CWM::InputField"
 end

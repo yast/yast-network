@@ -27,7 +27,6 @@ require "y2network/interface_config_builder"
 
 describe Y2Network::Widgets::WirelessScanButton do
   let(:builder) { Y2Network::InterfaceConfigBuilder.for("wlan") }
-  let(:widget_to_update) { double("widget_to_update") }
   let(:installed) { true }
   let(:initial_stage) { false }
   let(:selected_network) do
@@ -36,14 +35,15 @@ describe Y2Network::Widgets::WirelessScanButton do
   let(:wireless_dialog) do
     instance_double(Y2Network::Dialogs::WirelessNetworks, run: selected_network)
   end
+  let(:block) { -> {} }
 
-  subject { described_class.new(builder, update: widget_to_update) }
+  subject { described_class.new(builder, &block) }
 
   before do
     allow(subject).to receive(:scan_supported?).and_return(installed)
     allow(Yast::Package).to receive(:Installed).and_return(installed)
     allow(Yast::Stage).to receive(:initial).and_return(initial_stage)
-    allow(widget_to_update).to receive(:value=)
+    allow(block).to receive(:call)
     allow(Y2Network::Dialogs::WirelessNetworks).to receive(:new)
       .and_return(wireless_dialog)
   end
@@ -102,8 +102,8 @@ describe Y2Network::Widgets::WirelessScanButton do
         subject.handle
       end
 
-      it "updates the widget with the list of the available essids with the obtained one" do
-        expect(widget_to_update).to receive(:value=).with(selected_network.essid)
+      it "calls the callback block with the selected network" do
+        expect(block).to receive(:call).with(selected_network)
         subject.handle
       end
     end
