@@ -650,10 +650,10 @@ module Yast
 
       # FIXME: hotfix for Host::ResolveHostnameToStaticIPs - the functionality is
       # not implemented in new config readers/writers which are used in second stage
-      static_connections = config.connections.select { |c| c.static? }
+      static_connections = config.connections.select(&:static?)
       static_ips = static_connections.map { |c| c.ip.address.address.to_s }
 
-      log.info("Lan::Import: updating /etc/hosts with static ips #{static_ips} and hostname #{config.hostname.static}")
+      log.info("Lan::Import: updating /etc/hosts with #{static_ips} #{config.hostname.static}")
 
       static_ips.each { |sip| Host.Update(config.hostname.static, config.hostname.static, sip) }
 
