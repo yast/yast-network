@@ -225,10 +225,8 @@ module Y2Network
       wpa_modes = auth_modes.select { |a| a.name.include?("WPA") }
 
       if !wpa_modes.empty?
-        auth_suites = wpa_modes.map(&:auth_suite).flatten
-        return auth_suites.include?("802.1x") ?
-          WirelessAuthMode::WPA_EAP :
-          WirelessAuthMode::WPA_PSK
+        suites = wpa_modes.map(&:auth_suite).flatten
+        return suites.include?("802.1x") ? WirelessAuthMode::WPA_EAP : WirelessAuthMode::WPA_PSK
       end
 
       return WirelessAuthMode::WEP_OPEN if field_single_value("Encryption key", fields) == "on"
