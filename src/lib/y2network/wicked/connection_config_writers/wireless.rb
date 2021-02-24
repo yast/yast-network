@@ -85,7 +85,7 @@ module Y2Network
         def write_wep_auth_settings(conn)
           return if (conn.keys || []).compact.all?(&:empty?)
 
-          file.wireless_keys = conn.keys
+          file.wireless_keys = file_keys(conn)
           file.wireless_key_length = conn.key_length
           file.wireless_default_key = conn.default_key
         end
@@ -98,6 +98,15 @@ module Y2Network
         # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
         def write_shared_auth_settings(conn)
           write_wep_auth_settings(conn)
+        end
+
+        # Convenience method to obtain the map of wireless keys in the file
+        # format
+        #
+        # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
+        # @return [Hash<Integer, String>] indexed wireless wep keys
+        def file_keys(conn)
+          conn.keys.each_with_index.with_object({}) { |(k, i), h| h["_#{i}"] = k }
         end
       end
     end

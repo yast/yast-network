@@ -144,7 +144,7 @@ describe Y2Network::Wicked::ConnectionConfigWriters::Wireless do
       handler.write(conn)
       expect(file).to have_attributes(
         wireless_auth_mode:   "shared",
-        wireless_keys:        ["123456", "abcdef"],
+        wireless_keys:        { "_0" => "123456", "_1" => "abcdef" },
         wireless_key_length:  128,
         wireless_default_key: 1
       )
