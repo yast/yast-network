@@ -19,12 +19,13 @@
 
 require_relative "../test_helper"
 require "y2network/wireless_network"
+require "y2network/wireless_auth_mode"
 
 describe Y2Network::WirelessNetwork do
   subject(:network) do
     described_class.new(
       essid: "MY_WIFI", mode: "Master", channel: "Channel", rates: ["54 Mb/s"],
-      quality: 70, security: []
+      quality: 70, auth_mode: Y2Network::WirelessAuthMode::NONE
     )
   end
 
@@ -38,21 +39,21 @@ describe Y2Network::WirelessNetwork do
     let(:my_wifi_cell0) do
       Y2Network::WirelessCell.new(
         address: "00:11:22:33:44:55:01", essid: "MY_WIFI", mode: "Master", channel: 10,
-        rates: ["54 Mb/s"], quality: 30, security: []
+        rates: ["54 Mb/s"], quality: 30, auth_mode: Y2Network::WirelessAuthMode::NONE
       )
     end
 
     let(:my_wifi_cell1) do
       Y2Network::WirelessCell.new(
         address: "00:11:22:33:44:02", essid: "MY_WIFI", mode: "Master", channel: 10,
-        rates: ["54 Mb/s"], quality: 65, security: []
+        rates: ["54 Mb/s"], quality: 65, auth_mode: Y2Network::WirelessAuthMode::NONE
       )
     end
 
     let(:another_wifi_cell) do
       Y2Network::WirelessCell.new(
         address: "00:11:22:33:44:03", essid: "ANOTHER_WIFI", mode: "Master", channel: 3,
-        rates: ["54 Mb/s"], quality: 42, security: []
+        rates: ["54 Mb/s"], quality: 42, auth_mode: Y2Network::WirelessAuthMode::NONE
       )
     end
 

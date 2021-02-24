@@ -21,10 +21,6 @@ require "y2network/wireless_mode"
 
 module Y2Network
   # This auxiliary class holds wireless cells (access points and ad-hoc devices) information
-  #
-  # @todo Consider all rates properly.
-  # @todo Use a rounded percentage for signal quality
-  # @todo Properly parse security mechanisms
   class WirelessCell
     # @!attribute [r] address
     #   @return [String,nil] Cell MAC address
@@ -38,19 +34,19 @@ module Y2Network
     #   @return [Array<Bitrate>] Wireles rates
     # @!attribute [r] quality
     #   @return [Integer] Signal quality
-    # @!attribute [r] security
+    # @!attribute [r] auth_mode
     #   @return [Array<String>] Security mechanisms
-    attr_reader :address, :essid, :mode, :channel, :rates, :quality, :security
+    attr_reader :address, :essid, :mode, :channel, :rates, :quality, :auth_mode
 
     # rubocop:disable Metrics/ParameterLists
-    def initialize(address:, essid:, mode:, channel:, rates:, quality:, security:)
+    def initialize(address:, essid:, mode:, channel:, rates:, quality:, auth_mode:)
       @address = address
       @essid = essid
       @mode = mode
       @channel = channel
       @rates = rates
       @quality = quality
-      @security = security
+      @auth_mode = auth_mode
     end
     # rubocop:enable Metrics/ParameterLists
 
@@ -60,7 +56,7 @@ module Y2Network
     #   names as keys.
     def to_h
       { address: address, essid: essid, mode: mode, channel: channel, rates: rates,
-        quality: quality, security: security }
+        quality: quality, auth_mode: auth_mode }
     end
   end
 end

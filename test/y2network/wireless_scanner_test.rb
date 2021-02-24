@@ -21,6 +21,7 @@
 require_relative "../test_helper"
 
 require "y2network/wireless_scanner"
+require "y2network/wireless_auth_mode"
 
 describe Y2Network::WirelessScanner do
   subject(:scanner) { described_class.new("wlo1") }
@@ -40,19 +41,19 @@ describe Y2Network::WirelessScanner do
       expect(scanner.cells).to contain_exactly(
         an_object_having_attributes(
           address: "68:FF:7B:65:C0:D2", essid: "TP-Link_R2D2", mode: "Master",
-          channel: 10, quality: 70, security: :psk
+          channel: 10, quality: 70, auth_mode: Y2Network::WirelessAuthMode::WPA_PSK
         ),
         an_object_having_attributes(
           address: "7E:ED:69:D5:89:A5", essid: "TP-Link_C3PO", mode: "Master",
-          channel: 1, quality: 42, security: :open
+          channel: 1, quality: 42, auth_mode: Y2Network::WirelessAuthMode::WEP_OPEN
         ),
         an_object_having_attributes(
           address: "68:FF:7B:65:C0:D3", essid: "GUESTS", mode: "Master",
-          channel: 10, quality: 30, security: :no_encryption
+          channel: 10, quality: 30, auth_mode: Y2Network::WirelessAuthMode::NONE
         ),
         an_object_having_attributes(
           address: "02:00:00:00:00:00", essid: "COMPANY", mode: "Master",
-          channel: 1, quality: 70, security: :eap
+          channel: 1, quality: 70, auth_mode: Y2Network::WirelessAuthMode::WPA_EAP
         )
       )
     end

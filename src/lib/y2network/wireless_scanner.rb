@@ -42,6 +42,7 @@ require "yast2/execute"
 require "y2network/bitrate"
 require "y2network/wireless_network"
 require "y2network/wireless_cell"
+require "y2network/wireless_auth_mode"
 
 module Y2Network
   # Scans for wireless cells (access points and ad-hoc cells)
@@ -110,13 +111,13 @@ module Y2Network
     def cell_from_raw_data(raw_cell)
       fields = cell_fields(raw_cell)
       WirelessCell.new(
-        address:  fetch_address(fields),
-        essid:    fetch_essid(fields),
-        mode:     field_single_value("Mode", fields),
-        channel:  fetch_channel(fields),
-        rates:    fetch_bit_rates(fields),
-        quality:  fetch_quality(fields),
-        security: fetch_security(fields)
+        address:   fetch_address(fields),
+        essid:     fetch_essid(fields),
+        mode:      field_single_value("Mode", fields),
+        channel:   fetch_channel(fields),
+        rates:     fetch_bit_rates(fields),
+        quality:   fetch_quality(fields),
+        auth_mode: fetch_auth_mode(fields)
       )
     end
 
@@ -216,7 +217,7 @@ module Y2Network
     #
     # @param fields [Array<Hash>] Cell fields
     # @return [Symbol] Authentication mode (:open, :shared, :psk or :eap)
-    def fetch_security(fields)
+    def fetch_auth_mode(fields)
       values = field_multi_values("IE", fields)
         .reject { |i| i.start_with?("Unknown:") }
 
@@ -225,12 +226,14 @@ module Y2Network
 
       if !wpa_modes.empty?
         auth_suites = wpa_modes.map(&:auth_suite).flatten
-        return auth_suites.include?("802.1x") ? :eap : :psk
+        return auth_suites.include?("802.1x") ?
+          WirelessAuthMode::WPA_EAP :
+          WirelessAuthMode::WPA_PSK
       end
 
-      return :open if field_single_value("Encryption key", fields) == "on"
+      return WirelessAuthMode::WEP_OPEN if field_single_value("Encryption key", fields) == "on"
 
-      :no_encryption
+      WirelessAuthMode::NONE
     end
 
     # Auxiliary class to hold the authentication mode information

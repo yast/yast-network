@@ -23,7 +23,7 @@ require "y2network/wireless_scanner"
 module Y2Network
   # Each instance of this class represents a wireless network
   class WirelessNetwork
-    attr_reader :essid, :mode, :channel, :rates, :quality, :security
+    attr_reader :essid, :mode, :channel, :rates, :quality, :auth_mode
 
     class << self
       # Returns the wireless networks found through a given interface
@@ -48,13 +48,13 @@ module Y2Network
     end
 
     # Constructor
-    def initialize(essid:, mode:, channel:, rates:, quality:, security:)
+    def initialize(essid:, mode:, channel:, rates:, quality:, auth_mode:)
       @essid = essid
       @mode = mode
       @channel = channel
       @rates = rates
       @quality = quality
-      @security = security
+      @auth_mode = auth_mode
     end
 
     # Returns the quality as a percentage
