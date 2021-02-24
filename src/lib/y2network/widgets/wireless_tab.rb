@@ -45,7 +45,7 @@ module Y2Network
       def contents
         VBox(
           VSpacing(1),
-          HBox(essid_widget, scan_button),
+          HBox(essid_widget, VBox(VSpacing(1), scan_button)),
           VSpacing(1),
           auth_widget,
           VSpacing(1),
