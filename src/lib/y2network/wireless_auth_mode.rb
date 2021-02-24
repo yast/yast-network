@@ -20,6 +20,10 @@
 require "yast"
 
 module Y2Network
+  # This enum-like class represents the wireless authentication modes
+  #
+  # @todo Use this class whenever one of these symbols is used: :no_encryption, :open, :shared,
+  # :psk, :eap.
   class WirelessAuthMode
     extend Yast::I18n
     include Yast::I18n
@@ -33,6 +37,14 @@ module Y2Network
           .map { |c| WirelessAuthMode.const_get(c) }
           .select { |c| c.is_a?(WirelessAuthMode) }
       end
+
+      # Returns the auth mode with the given short name
+      #
+      # @param short_name [String] Short name
+      # @return [WirelessAuthMode,nil] Authentication mode or nil if not found
+      def from_short_name(short_name)
+        all.find { |t| t.short_name == short_name }
+      end
     end
 
     # @!attribute [r] name
@@ -44,7 +56,7 @@ module Y2Network
     # Constructor
     #
     # @param name [String] Wireless mode name
-    # @param short_name [String] Wireles mode short name (e.g., "ad-hoc")
+    # @param short_name [String] Wireles mode short name (e.g., "none")
     def initialize(name, short_name)
       textdomain "network"
       @name = name
@@ -58,7 +70,7 @@ module Y2Network
       _(name)
     end
 
-    NONE = new(N_("No Encryption"))
+    NONE = new(N_("No Encryption"), "none")
     WEP_OPEN = new(N_("WEP - Open"), "open")
     WEP_SHARED = new(N_("WEP - Shared Key"), "shared")
     WPA_PSK = new(N_("WPA-PSK (\"home\")"), "psk")
