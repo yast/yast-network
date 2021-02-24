@@ -18,6 +18,7 @@
 # find current contact information at www.suse.com.
 
 require "cwm/common_widgets"
+require "y2network/wireless_auth_mode"
 
 module Y2Network
   module Widgets
@@ -41,13 +42,9 @@ module Y2Network
       end
 
       def items
-        [
-          ["no_encryption", _("No Encryption")],
-          ["open", _("WEP - Open")],
-          ["sharedkey", _("WEP - Shared Key")],
-          ["psk", _("WPA-PSK (\"home\")")],
-          ["eap", _("WPA-EAP (\"Enterprise\")")]
-        ]
+        Y2Network::WirelessAuthMode.all.map do |mode|
+          [mode.short_name, mode.to_human_string]
+        end
       end
 
       def help

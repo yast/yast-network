@@ -55,7 +55,7 @@ module Y2Network
             network.channel,
             network.rates.max.to_s,
             network.quality_percent ? "#{network.quality_percent}%" : "",
-            "WPA2"
+            network.auth_mode&.to_human_string
           ]
         end
       end

@@ -21,6 +21,7 @@ require_relative "../../test_helper"
 require "y2network/widgets/wireless_networks"
 require "y2network/bitrate"
 require "y2network/wireless_network"
+require "y2network/wireless_auth_mode"
 require "cwm/rspec"
 
 describe Y2Network::Widgets::WirelessNetworks do
@@ -31,14 +32,14 @@ describe Y2Network::Widgets::WirelessNetworks do
       Y2Network::WirelessNetwork.new(
         essid: "MY_WIFI", mode: "Master", channel: 10,
         rates: [Y2Network::Bitrate.parse("54 Mb/s")],
-        quality: 70, security: []
+        quality: 70, auth_mode: Y2Network::WirelessAuthMode::NONE
       )
     end
 
     it "refreshes the list of networks" do
       expect(subject).to receive(:change_items) do |args|
         expect(args).to eq(
-          [["MY_WIFI", "MY_WIFI", "Master", 10, "54 Mb/s", "100%", "WPA2"]]
+          [["MY_WIFI", "MY_WIFI", "Master", 10, "54 Mb/s", "100%", "No Encryption"]]
         )
       end
       subject.update([network])
