@@ -49,6 +49,10 @@ describe Y2Network::WirelessScanner do
         an_object_having_attributes(
           address: "68:FF:7B:65:C0:D3", essid: "GUESTS", mode: "Master",
           channel: 10, quality: 30, security: :open
+        ),
+        an_object_having_attributes(
+          address: "02:00:00:00:00:00", essid: "COMPANY", mode: "Master",
+          channel: 1, quality: 70, security: :eap
         )
       )
     end

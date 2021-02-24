@@ -219,13 +219,38 @@ module Y2Network
     def fetch_security(fields)
       values = field_multi_values("IE", fields)
         .reject { |i| i.start_with?("Unknown:") }
-      auth_modes = values.map { |v| v.split("\n").first }
 
-      return :psk if auth_modes.any? { |a| a.include?("WPA") }
+      auth_modes = values.map { |v| auth_mode_fields(v) }
+      wpa_modes = auth_modes.select { |a| a.name.include?("WPA") }
+
+      if !wpa_modes.empty?
+        auth_suites = wpa_modes.map(&:auth_suite).flatten
+        return auth_suites.include?("802.1x") ? :eap : :psk
+      end
 
       return :shared if field_single_value("Encryption key", fields) == "on"
 
       :open
+    end
+
+    # Auxiliary class to hold the authentication mode information
+    AuthMode = Struct.new(:name, :auth_suite)
+
+    # Extracts the authentication mode information from a "IE" element of the iwlist output
+    #
+    # @param str [String] IE section
+    # @return [AuthMode] Authentication mode information
+    def auth_mode_fields(str)
+      lines = str.split("\n").map(&:strip)
+      name = lines.shift
+      auth_suites_line = lines.find { |l| l.start_with?("Authentication Suites") }
+
+      if auth_suites_line
+        suites = auth_suites_line[/: (.+)\Z/, 1]
+        auth_suites = suites ? suites.split(" ") : []
+      end
+
+      AuthMode.new(name, auth_suites)
     end
   end
 end

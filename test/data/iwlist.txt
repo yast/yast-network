@@ -82,4 +82,28 @@ wlo1      Scan completed :
                     IE: Unknown: 4A0E14000A002C01C800140005001900
                     IE: Unknown: 7F09010000000000000000
                     IE: Unknown: DD07000C4303000000
+          Cell 04 - Address: 02:00:00:00:00:00
+                    Channel:1
+                    Frequency:2.412 GHz (Channel 1)
+                    Quality=70/70  Signal level=-30 dBm  
+                    Encryption key:on
+                    ESSID:"COMPANY"
+                    Bit Rates:1 Mb/s; 2 Mb/s; 5.5 Mb/s; 11 Mb/s; 6 Mb/s
+                              9 Mb/s; 12 Mb/s; 18 Mb/s
+                    Bit Rates:24 Mb/s; 36 Mb/s; 48 Mb/s; 54 Mb/s
+                    Mode:Master
+                    Extra:tsf=0005bc0275ed1d74
+                    Extra: Last beacon: 8ms ago
+                    IE: Unknown: 000474657374
+                    IE: Unknown: 010882848B960C121824
+                    IE: Unknown: 030101
+                    IE: Unknown: 2A0104
+                    IE: Unknown: 32043048606C
+                    IE: IEEE 802.11i/WPA2 Version 1
+                        Group Cipher : CCMP
+                        Pairwise Ciphers (1) : CCMP
+                        Authentication Suites (1) : 802.1x
+                    IE: Unknown: 3B025100
+                    IE: Unknown: 7F080400400200000040
+                    IE: Unknown: DD180050F2020101010003A4000027A4000042435E0062322F00
 
