@@ -42,7 +42,7 @@ module Y2Network
 
       def items
         [
-          ["no-encryption", _("No Encryption")],
+          ["no_encryption", _("No Encryption")],
           ["open", _("WEP - Open")],
           ["sharedkey", _("WEP - Shared Key")],
           ["psk", _("WPA-PSK (\"home\")")],

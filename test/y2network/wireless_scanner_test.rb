@@ -44,11 +44,11 @@ describe Y2Network::WirelessScanner do
         ),
         an_object_having_attributes(
           address: "7E:ED:69:D5:89:A5", essid: "TP-Link_C3PO", mode: "Master",
-          channel: 1, quality: 42, security: :shared
+          channel: 1, quality: 42, security: :open
         ),
         an_object_having_attributes(
           address: "68:FF:7B:65:C0:D3", essid: "GUESTS", mode: "Master",
-          channel: 10, quality: 30, security: :open
+          channel: 10, quality: 30, security: :no_encryption
         ),
         an_object_having_attributes(
           address: "02:00:00:00:00:00", essid: "COMPANY", mode: "Master",

@@ -228,9 +228,9 @@ module Y2Network
         return auth_suites.include?("802.1x") ? :eap : :psk
       end
 
-      return :shared if field_single_value("Encryption key", fields) == "on"
+      return :open if field_single_value("Encryption key", fields) == "on"
 
-      :open
+      :no_encryption
     end
 
     # Auxiliary class to hold the authentication mode information
