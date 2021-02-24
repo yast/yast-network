@@ -29,7 +29,7 @@ module Y2Network
     # Button for scan network sites
     class WirelessScanButton < CWM::PushButton
       # @param settings [Y2network::InterfaceConfigBuilder]
-      # @param update [WirelessEssidName]
+      # @param select_callback [Proc] Proc to be called when a network is selected
       def initialize(settings, &select_callback)
         textdomain "network"
 
