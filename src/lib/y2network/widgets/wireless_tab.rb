@@ -21,7 +21,6 @@ require "yast"
 require "cwm/tabs"
 
 # used widgets
-require "y2network/widgets/wireless"
 require "y2network/widgets/wireless_essid"
 require "y2network/widgets/wireless_auth"
 require "y2network/dialogs/wireless_expert_settings"

@@ -19,7 +19,6 @@
 
 require "yast"
 require "cwm/dialog"
-require "y2network/widgets/wireless"
 require "y2network/widgets/wireless_expert"
 
 module Y2Network
