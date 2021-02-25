@@ -123,6 +123,13 @@ module Y2Network
 
         found_networks
       end
+
+      # Returns the dialogs button
+      #
+      # @return [Array<Yast::Term>]
+      def buttons
+        [ok_button, cancel_button]
+      end
     end
   end
 end
