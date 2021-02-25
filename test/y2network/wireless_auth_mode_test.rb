@@ -37,7 +37,7 @@ describe Y2Network::WirelessAuthMode do
         .to eq(Y2Network::WirelessAuthMode::NONE)
     end
 
-    it "returns nil if the given name not found" do
+    it "returns nil if the given name is not found" do
       expect(described_class.from_short_name("dummy")).to eq nil
     end
   end

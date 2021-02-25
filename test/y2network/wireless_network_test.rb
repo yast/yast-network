@@ -73,7 +73,7 @@ describe Y2Network::WirelessNetwork do
       )
     end
 
-    it "memoizes the the results" do
+    it "memoizes the results" do
       described_class.all("wlo1")
       expect(Y2Network::WirelessScanner).to_not receive(:new)
       expect(described_class.all("wlo1", cache: true))

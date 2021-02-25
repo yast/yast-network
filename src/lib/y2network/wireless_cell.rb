@@ -31,11 +31,11 @@ module Y2Network
     # @!attribute [r] channel
     #   @return [Integer] Wireless channel
     # @!attribute [r] rates
-    #   @return [Array<Bitrate>] Wireles rates
+    #   @return [Array<Bitrate>] Wireless rates
     # @!attribute [r] quality
     #   @return [Integer] Signal quality
     # @!attribute [r] auth_mode
-    #   @return [Array<String>] Security mechanisms
+    #   @return [WirelessAuthMode] Security mechanisms
     attr_reader :address, :essid, :mode, :channel, :rates, :quality, :auth_mode
 
     # rubocop:disable Metrics/ParameterLists
