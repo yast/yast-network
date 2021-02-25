@@ -82,6 +82,25 @@ describe Y2Network::Wicked::ConnectionConfigWriters::Wireless do
     )
   end
 
+  context "no encrypted network configuration" do
+    let(:conn) do
+      Y2Network::ConnectionConfig::Wireless.new.tap do |c|
+        c.startmode = Y2Network::Startmode.create("auto")
+        c.bootproto = Y2Network::BootProtocol::STATIC
+        c.mode = "managed"
+        c.essid = "example_essid"
+        c.auth_mode = "none"
+      end
+    end
+
+    it "sets relevant attributes" do
+      handler.write(conn)
+      expect(file).to have_attributes(
+        wireless_auth_mode: "no-encryption"
+      )
+    end
+  end
+
   context "WPA-EAP network configuration" do
     let(:conn) do
       Y2Network::ConnectionConfig::Wireless.new.tap do |c|

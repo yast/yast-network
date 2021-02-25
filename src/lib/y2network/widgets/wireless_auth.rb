@@ -77,7 +77,7 @@ module Y2Network
 
       def refresh
         case auth_mode_widget.value
-        when "no_encryption" then replace_widget.replace(empty_auth_widget)
+        when "none" then replace_widget.replace(empty_auth_widget)
         when "shared", "sharedkey", "open" then replace_widget.replace(wep_keys_widget)
         when "psk" then replace_widget.replace(encryption_widget)
         when "eap" then replace_widget.replace(eap_widget)

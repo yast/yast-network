@@ -22,7 +22,7 @@ require "yast"
 module Y2Network
   # This enum-like class represents the wireless authentication modes
   #
-  # @todo Use this class whenever one of these symbols is used: :no_encryption, :open, :shared,
+  # @todo Use this class whenever one of these symbols is used: :none, :open, :shared,
   # :psk, :eap.
   class WirelessAuthMode
     extend Yast::I18n
