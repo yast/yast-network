@@ -69,7 +69,7 @@ module Y2Network
       # @see CWM::CustomWidget
       def contents
         VBox(
-          networks_table,
+          MinSize(70, 10, networks_table),
           refresh_button
         )
       end
@@ -91,13 +91,6 @@ module Y2Network
       # @return [String]
       def ok_button_label
         Yast::Label.SelectButton
-      end
-
-      # Minimal width
-      #
-      # @return [Integer]
-      def min_width
-        60
       end
 
       # Refresh button
