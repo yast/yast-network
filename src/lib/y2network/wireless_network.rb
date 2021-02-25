@@ -59,17 +59,5 @@ module Y2Network
       @quality = quality
       @auth_mode = auth_mode
     end
-
-    # Returns the quality as a percentage
-    #
-    # @fixme This method assumes '70' as the max value. However, we could get the actual max from
-    # iwlist.
-    #
-    # @return [Integer] Quality as percentage
-    def quality_percent
-      return 0 if @quality.nil?
-
-      (@quality.to_f * 100 / 70).round
-    end
   end
 end

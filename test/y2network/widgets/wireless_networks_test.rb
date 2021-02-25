@@ -36,7 +36,7 @@ describe Y2Network::Widgets::WirelessNetworks do
       Y2Network::WirelessNetwork.new(
         essid: "MY_WIFI", mode: "Master", channel: 10,
         rates: [Y2Network::Bitrate.parse("54 Mb/s")],
-        quality: 70, auth_mode: Y2Network::WirelessAuthMode::NONE
+        quality: 100, auth_mode: Y2Network::WirelessAuthMode::NONE
       )
     end
 

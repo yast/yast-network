@@ -64,7 +64,7 @@ module Y2Network
             network.mode,
             network.channel,
             network.rates.max.to_s,
-            network.quality_percent ? "#{network.quality_percent}%" : "",
+            network.quality ? "#{network.quality}%" : "",
             network.auth_mode&.to_human_string
           ]
         end

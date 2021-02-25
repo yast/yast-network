@@ -202,7 +202,11 @@ module Y2Network
       value = field_single_value("Quality", fields)
       return nil if value.nil?
 
-      value[/(\d+)\/.+/, 1]&.to_i
+      match = value.match(/(\d+)\/(\d+)/)
+      return nil unless match
+
+      num, den = match.captures
+      num.to_i * 100 / den.to_i
     end
 
     # Returns the channel from the list of fields
