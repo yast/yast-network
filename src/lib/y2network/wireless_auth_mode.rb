@@ -70,6 +70,13 @@ module Y2Network
       _(name)
     end
 
+    # Returns the symbol representation
+    #
+    # @return [Symbol]
+    def to_sym
+      short_name.to_sym
+    end
+
     NONE = new(N_("No Encryption"), "none")
     WEP_OPEN = new(N_("WEP - Open"), "open")
     WEP_SHARED = new(N_("WEP - Shared Key"), "shared")

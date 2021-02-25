@@ -29,13 +29,16 @@ module Y2Network
       # Constructor
       #
       # @param networks [Array<WirelessNetwork>] List of available wifi networks
-      def initialize(networks = [])
+      # @param builder [InterfaceConfigBuilder]
+      def initialize(builder, networks = [])
         textdomain "network"
         @networks = networks
+        @builder = builder
       end
 
       # @see CWM::AbstractWidget
       def init
+        self.value = @builder.essid if @builder.essid
         # FIXME: the dialog does not implement this method, so we need to set the focus
         # within the widget. We should find a better way.
         focus

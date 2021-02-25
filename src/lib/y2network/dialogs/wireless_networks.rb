@@ -56,9 +56,11 @@ module Y2Network
       attr_reader :interface
 
       # Constructor
-      def initialize(interface)
+      #
+      # @param builder [InterfaceConfigBuilder]
+      def initialize(builder)
         textdomain "network"
-        @interface = interface
+        @builder = builder
       end
 
       # @see CWM::AbstractWidget
@@ -104,7 +106,7 @@ module Y2Network
       #
       # @return [Y2Network::Widgets::WirelessNetworks] Wireless networks table widget
       def networks_table
-        @networks_table ||= Y2Network::Widgets::WirelessNetworks.new
+        @networks_table ||= Y2Network::Widgets::WirelessNetworks.new(@builder)
       end
 
       # Scans for wireless networks
@@ -117,7 +119,7 @@ module Y2Network
         Yast2::Feedback.show(
           _("Scanning for wireless networks..."), headline: _("Scanning network")
         ) do
-          found_networks = Y2Network::WirelessNetwork.all(@interface.name, cache: cache)
+          found_networks = Y2Network::WirelessNetwork.all(@builder.interface.name, cache: cache)
           log.info("Found networks: #{found_networks.map(&:essid)}")
         end
 

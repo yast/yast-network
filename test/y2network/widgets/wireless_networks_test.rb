@@ -27,6 +27,10 @@ require "cwm/rspec"
 describe Y2Network::Widgets::WirelessNetworks do
   include_examples "CWM::CustomWidget"
 
+  subject { described_class.new(builder) }
+
+  let(:builder) { Y2Network::InterfaceConfigBuilder.for("wlan") }
+
   describe "#update" do
     let(:network) do
       Y2Network::WirelessNetwork.new(

@@ -41,4 +41,10 @@ describe Y2Network::WirelessAuthMode do
       expect(described_class.from_short_name("dummy")).to eq nil
     end
   end
+
+  describe "#to_sym" do
+    it "returns the symbol representation" do
+      expect(subject.to_sym).to eq(:custom)
+    end
+  end
 end

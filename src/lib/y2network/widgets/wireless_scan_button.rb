@@ -83,7 +83,7 @@ module Y2Network
       end
 
       def network_selector
-        @network_selector ||= Y2Network::Dialogs::WirelessNetworks.new(@settings.interface)
+        @network_selector ||= Y2Network::Dialogs::WirelessNetworks.new(@settings)
       end
     end
   end

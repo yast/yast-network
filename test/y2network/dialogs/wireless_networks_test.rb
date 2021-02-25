@@ -24,12 +24,14 @@ require "y2network/wireless_network"
 require "cwm/rspec"
 
 describe Y2Network::Dialogs::WirelessNetworks do
-  subject { described_class.new(interface) }
+  subject { described_class.new(builder) }
 
   include_examples "CWM::CustomWidget"
 
+  let(:builder) { Y2Network::InterfaceConfigBuilder.for("wlan") }
+
   let(:networks_table) do
-    Y2Network::Widgets::WirelessNetworks.new
+    Y2Network::Widgets::WirelessNetworks.new(builder)
   end
 
   let(:selected) do
@@ -48,6 +50,7 @@ describe Y2Network::Dialogs::WirelessNetworks do
     allow(networks_table).to receive(:selected).and_return(selected)
     allow(networks_table).to receive(:update)
     allow(Yast2::Feedback).to receive(:show) { |&block| block.call }
+    allow(builder).to receive(:interface).and_return(interface)
   end
 
   describe "#run" do
