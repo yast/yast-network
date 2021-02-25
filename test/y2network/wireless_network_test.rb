@@ -63,7 +63,7 @@ describe Y2Network::WirelessNetwork do
     end
 
     it "returns one network for each ESSID" do
-      expect(described_class.all("wlo1")).to contain_exactly(
+      expect(described_class.all("wlo1", cache: false)).to contain_exactly(
         an_object_having_attributes(
           essid: "MY_WIFI", mode: "Master", channel: 10, quality: 65
         ),
@@ -71,6 +71,12 @@ describe Y2Network::WirelessNetwork do
           essid: "ANOTHER_WIFI", mode: "Master", channel: 3, quality: 42
         )
       )
+    end
+
+    it "memoizes the the results" do
+      described_class.all("wlo1")
+      expect(Y2Network::WirelessScanner).to_not receive(:new)
+      expect(described_class.all("wlo1", cache: true))
     end
   end
 end

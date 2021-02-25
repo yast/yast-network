@@ -97,7 +97,7 @@ module Y2Network
       #
       # @return [Yast::Term]
       def refresh_button
-        CallbackButton.new(_("Refresh")) { networks_table.update(find_networks) }
+        CallbackButton.new(_("Refresh")) { networks_table.update(find_networks(false)) }
       end
 
       # Embedded wireless networks table
@@ -109,14 +109,15 @@ module Y2Network
 
       # Scans for wireless networks
       #
+      # @param cache [Boolean] Use the cached values if available
       # @return [Array<WirelessNetwork>] List of found wireless networks
       # @see Y2Network::WirelessNetwork.all
-      def find_networks
+      def find_networks(cache = true)
         found_networks = nil
         Yast2::Feedback.show(
           _("Scanning for wireless networks..."), headline: _("Scanning network")
         ) do
-          found_networks = Y2Network::WirelessNetwork.all(@interface.name)
+          found_networks = Y2Network::WirelessNetwork.all(@interface.name, cache: cache)
           log.info("Found networks: #{found_networks.map(&:essid)}")
         end
 

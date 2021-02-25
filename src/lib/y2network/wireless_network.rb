@@ -31,11 +31,14 @@ module Y2Network
       # If there is more than one AP, it selects the one with higher signal quality.
       #
       # @param iface_name [String] Interface to scan for networks
-      def all(iface_name)
+      def all(iface_name, cache: true)
+        @all ||= {}
+        return @all[iface_name] if cache && @all[iface_name]
+
         cells = WirelessScanner.new(iface_name).cells
         known_essids = cells.map(&:essid).uniq
 
-        known_essids.map do |essid|
+        @all[iface_name] = known_essids.map do |essid|
           preferred_cell = cells
             .select { |c| c.essid == essid }
             .max_by { |c| c.quality.to_i }

@@ -43,7 +43,7 @@ describe Y2Network::Dialogs::WirelessNetworks do
   before do
     allow(Y2Network::Widgets::WirelessNetworks).to receive(:new)
       .and_return(networks_table)
-    allow(Y2Network::WirelessNetwork).to receive(:all).with("wlo1")
+    allow(Y2Network::WirelessNetwork).to receive(:all).with("wlo1", cache: true)
       .and_return([selected])
     allow(networks_table).to receive(:selected).and_return(selected)
     allow(networks_table).to receive(:update)
