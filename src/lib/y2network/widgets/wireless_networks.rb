@@ -34,6 +34,13 @@ module Y2Network
         @networks = networks
       end
 
+      # @see CWM::AbstractWidget
+      def init
+        # FIXME: the dialog does not implement this method, so we need to set the focus
+        # within the widget. We should find a better way.
+        focus
+      end
+
       # Returns table headers
       #
       # @return [Array<String>]
