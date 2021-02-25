@@ -42,9 +42,12 @@ module Y2Network
       end
 
       def items
-        Y2Network::WirelessAuthMode.all.map do |mode|
-          [mode.short_name, mode.to_human_string]
-        end
+        return @items if @items
+
+        modes = Y2Network::WirelessAuthMode.all - [Y2Network::WirelessAuthMode::NONE]
+        modes.sort_by!(&:to_human_string)
+        modes.unshift(Y2Network::WirelessAuthMode::NONE)
+        @items = modes.map { |m| [m.short_name, m.to_human_string] }
       end
 
       def help
