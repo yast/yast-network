@@ -60,7 +60,7 @@ module Y2Network
       # @param network [Y2Network::WirelessNetwork] Selected network
       def select_network(network)
         @builder.essid = network.essid
-        @builder.auth_mode.to_sym
+        @builder.auth_mode = network.auth_mode.to_sym
         essid_widget.value = network.essid
         auth_widget.auth_mode = network.auth_mode.short_name
       end
