@@ -50,8 +50,9 @@ module Y2Network
 
     # This widget displays a list of wireless networks and allows the user to select one
     #
-    # @example Returning the ESSID of the selected network
-    #   WirelessNetworks.new("wlo1").run #=> "sample_essid"
+    # @example Returning the selected network
+    #   network = WirelessNetworks.new("wlo1").run #=> #<Y2Network::WirelessNetwork...>
+    #   network.essid => "sample_essid"
     class WirelessNetworks < CWM::Popup
       attr_reader :interface
 
@@ -65,7 +66,7 @@ module Y2Network
 
       # @see CWM::AbstractWidget
       def title
-        _("Available Wireless Networks")
+        _("Available Networks")
       end
 
       # @see CWM::CustomWidget
