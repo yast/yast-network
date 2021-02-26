@@ -51,6 +51,7 @@ describe Y2Network::Dialogs::WirelessNetworks do
     allow(networks_table).to receive(:update)
     allow(Yast2::Feedback).to receive(:show) { |&block| block.call }
     allow(builder).to receive(:interface).and_return(interface)
+    allow(networks_table).to receive(:init)
   end
 
   describe "#run" do

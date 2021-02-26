@@ -41,7 +41,7 @@ module Y2Network
         self.value = @builder.essid if @builder.essid
 
         if value.nil?
-          first_essid = @networks.map(&:essid).sort.first
+          first_essid = @networks.map(&:essid).min
           self.value = first_essid if first_essid
         end
 
