@@ -39,6 +39,12 @@ module Y2Network
       # @see CWM::AbstractWidget
       def init
         self.value = @builder.essid if @builder.essid
+
+        if value.nil?
+          first_essid = @networks.map(&:essid).sort.first
+          self.value = first_essid if first_essid
+        end
+
         # FIXME: the dialog does not implement this method, so we need to set the focus
         # within the widget. We should find a better way.
         focus
