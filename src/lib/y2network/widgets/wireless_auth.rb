@@ -54,23 +54,31 @@ module Y2Network
 
       def contents
         Frame(
-          _("Wireless Authentication"),
+          _("Authentication"),
           VBox(
-            VSpacing(0.5),
             auth_mode_widget,
             VSpacing(0.2),
-            replace_widget,
-            VSpacing(0.5)
+            replace_widget
           )
         )
+      end
+
+      # Sets the authentication mode
+      #
+      # It sets the auth mode to the given value and refreshes the widgets accordingly.
+      #
+      # @param mode [Symbol] Authentication mode
+      def auth_mode=(mode)
+        auth_mode_widget.value = mode.to_s
+        refresh
       end
 
     private
 
       def refresh
         case auth_mode_widget.value
-        when "no-encryption" then replace_widget.replace(empty_auth_widget)
-        when "sharedkey", "open" then replace_widget.replace(wep_keys_widget)
+        when "none" then replace_widget.replace(empty_auth_widget)
+        when "shared", "sharedkey", "open" then replace_widget.replace(wep_keys_widget)
         when "psk" then replace_widget.replace(encryption_widget)
         when "eap" then replace_widget.replace(eap_widget)
         else

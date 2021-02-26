@@ -277,8 +277,8 @@ module CFA
     define_variable(:wireless_eap_auth)
 
     # @!attribute [r] wireless_ap_scanmode
-    #   @return [String] SSID scan mode ("0", "1" and "2")
-    define_variable(:wireless_ap_scanmode)
+    #   @return [Integer] SSID scan mode (0, 1 or 2)
+    define_variable(:wireless_ap_scanmode, :integer)
 
     # @!attribute [r] wireless_ap
     #   @return [String] AP MAC address

@@ -61,9 +61,10 @@ module Y2Network
         end
 
         BACKWARD_MAPPING = {
-          "wpa-eap": :eap,
-          "wpa-psk": :psk,
-          shared:    :sharedkey
+          "wpa-eap":       :eap,
+          "wpa-psk":       :psk,
+          shared:          :sharedkey,
+          "no-encryption": :none
         }.freeze
         # Transform old backwards compatible values to unified ones.
         #

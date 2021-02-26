@@ -1,4 +1,17 @@
 -------------------------------------------------------------------
+Fri Feb 26 06:41:17 UTC 2021 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
+
+- Improve wireless devices configuration UX (bsc#1177834):
+  - Reorganize the widgets, to make the UI easier to understand.
+  - Add a list of wireless networks which displays additional
+    information like Mode, Channel, Rate, Signal and
+    Security method.
+  - Pre-select the authentication method depending on the
+    selected network.
+- Fix initialization of the "AP ScanMode" field.
+- 4.3.50
+
+-------------------------------------------------------------------
 Mon Feb 22 13:53:49 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
 
 - Added AutoYaST interfaces section errors reporting (bsc#1174353,

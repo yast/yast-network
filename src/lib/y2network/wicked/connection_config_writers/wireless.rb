@@ -50,7 +50,7 @@ module Y2Network
         # @see #write_psk_auth_settings
         # @see #write_shared_auth_settings
         def write_auth_settings(conn)
-          file.wireless_auth_mode = conn.auth_mode
+          file.wireless_auth_mode = auth_mode_from_conn(conn)
           meth = "write_#{conn.auth_mode || :open}_auth_settings".to_sym
           send(meth, conn) if respond_to?(meth, true)
         end
@@ -85,7 +85,7 @@ module Y2Network
         def write_wep_auth_settings(conn)
           return if (conn.keys || []).compact.all?(&:empty?)
 
-          file.wireless_keys = conn.keys
+          file.wireless_keys = file_keys(conn)
           file.wireless_key_length = conn.key_length
           file.wireless_default_key = conn.default_key
         end
@@ -98,6 +98,22 @@ module Y2Network
         # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
         def write_shared_auth_settings(conn)
           write_wep_auth_settings(conn)
+        end
+
+        # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
+        def auth_mode_from_conn(conn)
+          return "no-encryption" if conn.auth_mode.to_sym == :none
+
+          conn.auth_mode
+        end
+
+        # Convenience method to obtain the map of wireless keys in the file
+        # format
+        #
+        # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
+        # @return [Hash<Integer, String>] indexed wireless wep keys
+        def file_keys(conn)
+          conn.keys.each_with_index.with_object({}) { |(k, i), h| h["_#{i}"] = k }
         end
       end
     end

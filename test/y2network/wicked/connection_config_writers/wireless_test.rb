@@ -41,7 +41,7 @@ describe Y2Network::Wicked::ConnectionConfigWriters::Wireless do
       c.essid = "example_essid"
       c.auth_mode = :open
       c.ap = "00:11:22:33:44:55"
-      c.ap_scanmode = "1"
+      c.ap_scanmode = 1
     end
   end
 
@@ -80,6 +80,25 @@ describe Y2Network::Wicked::ConnectionConfigWriters::Wireless do
       remote_ipaddrs: { "" => nil, "_0" => ip_alias.remote_address },
       labels:         { "" => nil, "_0" => "my-label" }
     )
+  end
+
+  context "no encrypted network configuration" do
+    let(:conn) do
+      Y2Network::ConnectionConfig::Wireless.new.tap do |c|
+        c.startmode = Y2Network::Startmode.create("auto")
+        c.bootproto = Y2Network::BootProtocol::STATIC
+        c.mode = "managed"
+        c.essid = "example_essid"
+        c.auth_mode = "none"
+      end
+    end
+
+    it "sets relevant attributes" do
+      handler.write(conn)
+      expect(file).to have_attributes(
+        wireless_auth_mode: "no-encryption"
+      )
+    end
   end
 
   context "WPA-EAP network configuration" do
@@ -144,7 +163,7 @@ describe Y2Network::Wicked::ConnectionConfigWriters::Wireless do
       handler.write(conn)
       expect(file).to have_attributes(
         wireless_auth_mode:   "shared",
-        wireless_keys:        ["123456", "abcdef"],
+        wireless_keys:        { "_0" => "123456", "_1" => "abcdef" },
         wireless_key_length:  128,
         wireless_default_key: 1
       )

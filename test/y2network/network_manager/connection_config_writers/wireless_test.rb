@@ -38,7 +38,7 @@ describe Y2Network::NetworkManager::ConnectionConfigWriters::Wireless do
       c.essid = "example_essid"
       c.auth_mode = :open
       c.ap = "00:11:22:33:44:55"
-      c.ap_scanmode = "1"
+      c.ap_scanmode = 1
     end
   end
 

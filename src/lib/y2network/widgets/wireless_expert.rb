@@ -144,7 +144,7 @@ module Y2Network
       end
 
       def init
-        self.value = @settings.ap_scanmode
+        self.value = @settings.ap_scanmode.to_i
       end
 
       def store

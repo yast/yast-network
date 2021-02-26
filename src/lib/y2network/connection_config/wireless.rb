@@ -32,7 +32,7 @@ module Y2Network
       attr_accessor :essid
       # @return [String] Network ID
       attr_accessor :nwid
-      #   @return [Symbol] Authorization mode (:open, :shared, :psk, :eap)
+      # @return [Symbol] Authorization mode (:open, :shared, :psk, :eap)
       attr_accessor :auth_mode
       # FIXME: Consider moving keys to different classes.
       # @return [String] WPA preshared key
