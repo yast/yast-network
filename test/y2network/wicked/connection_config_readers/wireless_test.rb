@@ -50,7 +50,7 @@ describe Y2Network::Wicked::ConnectionConfigReaders::Wireless do
         interface:    "wlan0",
         mode:         "managed",
         essid:        "example_ssid",
-        ap_scanmode:  "1",
+        ap_scanmode:  1,
         auth_mode:    :eap,
         eap_mode:     "PEAP",
         eap_auth:     "mschapv2",
