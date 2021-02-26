@@ -111,6 +111,10 @@ module Y2Network
         _("Scan Network")
       end
 
+      def init
+        disable unless present?
+      end
+
       def handle
         return unless scan_supported?
 
@@ -121,6 +125,10 @@ module Y2Network
     private
 
       IWLIST_PKG = "wireless-tools".freeze
+
+      def present?
+        !!@settings.interface&.hardware&.present?
+      end
 
       def scan_supported?
         return true if install_needed_packages
