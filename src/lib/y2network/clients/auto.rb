@@ -89,7 +89,7 @@ module Y2Network
 
         Yast::Lan.Import(modified_profile)
 
-        update_etc_hosts(profile)
+        update_etc_hosts
 
         true
       end
@@ -128,7 +128,9 @@ module Y2Network
 
         log.info("Updating /etc/hosts with #{static_ips} #{config.hostname.static}")
 
-        static_ips.each { |sip| Yast::Host.Update(config.hostname.static, config.hostname.static, sip) }
+        static_ips.each do |sip|
+          Yast::Host.Update(config.hostname.static, config.hostname.static, sip)
+        end
 
         nil
       end
