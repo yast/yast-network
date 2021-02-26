@@ -48,7 +48,7 @@ module Y2Network
       #
       # @return [Array<String>]
       def header
-        [_("SSID"), _("Mode"), _("Channel"), _("Rate"), _("Signal"), _("Security")]
+        [_("ESSID"), _("Mode"), _("Channel"), _("Rate"), _("Signal"), _("Authentication")]
       end
 
       # Returns table items
