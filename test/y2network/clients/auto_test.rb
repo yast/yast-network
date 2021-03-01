@@ -197,21 +197,23 @@ describe Y2Network::Clients::Auto do
 
   describe "#update_etc_hosts" do
     let(:system_config) { Y2Network::Config.new(source: :sysconfig) }
+    let(:yast_config) { Y2Network::Config.find(:yast) }
 
-    before do
+    before(:each) do
       allow(Yast::Lan).to receive(:Read)
+      allow(Yast::Stage).to receive(:cont).and_return(true)
       Y2Network::Config.add(:system, system_config)
     end
 
     it "updates /etc/hosts with a record for each static ip" do
-      expect(Yast::Host)
-        .to receive(:Update)
-        .with(dns["hostname"], dns["hostname"], static_ip)
-
       extended_profile = profile
       extended_profile["interfaces"] = interfaces + [eth1]
 
       subject.import(extended_profile)
+
+      connection = yast_config.connections.find { |c| c.static? && c.ip.address == static_ip }
+
+      expect(connection.hostname).to eql dns["hostname"]
     end
 
     it "doesn't do anything in case of missing static ips" do
