@@ -22,8 +22,11 @@ require_relative "../../test_helper"
 require "y2network/clients/auto"
 
 describe Y2Network::Clients::Auto do
+  let(:static_ip) { "1.2.3.4" }
+
   let(:network_autoyast) { Yast::NetworkAutoYast.instance }
   let(:eth0) { { "device" => "eth0", "bootproto" => "dhcp", "startmode" => "auto" } }
+  let(:eth1) { { "device" => "eth1", "bootproto" => "static", "ipaddr" => static_ip } }
   let(:interfaces) { [eth0] }
 
   let(:dns) { { "hostname" => "host", "dhcp_hostname" => true, "write_hostname" => true } }
@@ -189,6 +192,32 @@ describe Y2Network::Clients::Auto do
           subject.write
         end
       end
+    end
+  end
+
+  describe "#update_etc_hosts" do
+    let(:system_config) { Y2Network::Config.new(source: :sysconfig) }
+
+    before do
+      allow(Yast::Lan).to receive(:Read)
+      Y2Network::Config.add(:system, system_config)
+    end
+
+    it "updates /etc/hosts with a record for each static ip" do
+      expect(Yast::Host)
+        .to receive(:Update)
+        .with(dns["hostname"], dns["hostname"], static_ip)
+
+      extended_profile = profile
+      extended_profile["interfaces"] = interfaces + [eth1]
+
+      subject.import(extended_profile)
+    end
+
+    it "doesn't do anything in case of missing static ips" do
+      expect(Yast::Host).not_to receive(:Update)
+
+      subject.import(profile)
     end
   end
 end
