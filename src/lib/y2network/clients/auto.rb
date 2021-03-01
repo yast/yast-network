@@ -23,6 +23,7 @@ Yast.import "Lan"
 Yast.import "Progress"
 Yast.import "Map"
 Yast.import "Host"
+Yast.import "Stage"
 
 module Y2Network
   module Clients
@@ -89,7 +90,7 @@ module Y2Network
 
         Yast::Lan.Import(modified_profile)
 
-        update_etc_hosts
+        update_etc_hosts if Yast::Stage.cont
 
         true
       end
@@ -124,12 +125,9 @@ module Y2Network
         return if !config
 
         static_connections = config.connections.select(&:static?)
-        static_ips = static_connections.map { |c| c.ip.address.address.to_s }
-
-        log.info("Updating /etc/hosts with #{static_ips} #{config.hostname.static}")
-
-        static_ips.each do |sip|
-          Yast::Host.Update(config.hostname.static, config.hostname.static, sip)
+        static_connections.each do |connection|
+          log.info("Updating /etc/hosts with #{connection.ip.address.address} #{config.hostname.static}")
+          connection.hostname = config.hostname.static
         end
 
         nil
