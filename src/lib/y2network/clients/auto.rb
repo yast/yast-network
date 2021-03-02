@@ -126,7 +126,8 @@ module Y2Network
 
         static_connections = config.connections.select(&:static?)
         static_connections.each do |connection|
-          log.info("Updating /etc/hosts with #{connection.ip.address.address} #{config.hostname.static}")
+          log.info("Updating /etc/hosts with" \
+                   " #{connection.ip.address.address} #{config.hostname.static}")
           connection.hostname = config.hostname.static
         end
 
