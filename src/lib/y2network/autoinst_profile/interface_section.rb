@@ -272,7 +272,8 @@ module Y2Network
 
       # Overwrite base method to load also nested aliases
       def init_from_hashes(hash)
-        super
+        hash = rename_key(hash, "bridge_forwarddelay", "bridge_forward_delay")
+        super(hash)
 
         self.aliases = hash["aliases"] if hash["aliases"]
       end
@@ -392,6 +393,23 @@ module Y2Network
         # power dropped
         # peap version not supported yet
         # on other hand ap scan mode is not in autoyast
+      end
+
+      # Renames a key from the hash
+      #
+      # It returns a new hash with the key {old_name} renamed to {new_name}. The rename will
+      # not happen if the {to} key already exists.
+      #
+      # @param hash [Hash]
+      # @param old_name [String] Original key name
+      # @param new_name [String] New key name
+      # @return [Hash]
+      def rename_key(hash, old_name, new_name)
+        return hash if hash[new_name] || hash[old_name].nil?
+
+        new_hash = hash.clone
+        new_hash[new_name] = new_hash.delete(old_name)
+        new_hash
       end
     end
   end

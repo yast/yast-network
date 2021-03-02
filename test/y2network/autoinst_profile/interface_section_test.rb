@@ -72,6 +72,37 @@ describe Y2Network::AutoinstProfile::InterfaceSection do
       section = described_class.new_from_hashes(hash)
       expect(section.bootproto).to eq "dhcp4"
     end
+
+    context "when bridge_forwarddelay is set" do
+      let(:hash) do
+        {
+          "bootproto"           => "dhcp4",
+          "device"              => "br0",
+          "bridge_forwarddelay" => "4"
+        }
+      end
+
+      it "sets bridge_forward_delay to the given value" do
+        section = described_class.new_from_hashes(hash)
+        expect(section.bridge_forward_delay).to eq("4")
+      end
+    end
+
+    context "when bridge_forwarddelay and bridge_forward_delay are both set" do
+      let(:hash) do
+        {
+          "bootproto"            => "dhcp4",
+          "device"               => "br0",
+          "bridge_forwarddelay"  => "4",
+          "bridge_forward_delay" => "5"
+        }
+      end
+
+      it "bridge_forward_delay takes precedence" do
+        section = described_class.new_from_hashes(hash)
+        expect(section.bridge_forward_delay).to eq("5")
+      end
+    end
   end
 
   describe "#to_hashes" do

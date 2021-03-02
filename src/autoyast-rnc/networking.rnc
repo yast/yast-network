@@ -204,6 +204,8 @@ bridge_settings = (
   element bridge              { "yes" | "no" }? &
   element bridge_ports        { text }? &
   element bridge_stp          { "on" | "off" }? &
+  element bridge_forward_delay { text }? &
+  # backward compatibility (bsc#1180944)
   element bridge_forwarddelay { text }?
 )
 
