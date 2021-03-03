@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Mar  2 11:48:59 UTC 2021 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
+
+- Support both 'bridge_forwarddelay' and 'bridge_forward_delay'.
+  The latter takes precedence (bsc#1180944).
+- 4.2.93
+
+-------------------------------------------------------------------
 Fri Feb 26 15:23:33 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
 
 - Fixes some usability issues (bsc#1177834, bsc#1182781):
