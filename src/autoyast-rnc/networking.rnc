@@ -219,10 +219,12 @@ wireless_wpa_psk = element wireless_wpa_psk { STRING }
 # Bridge
 #
 bridge_settings = (
-  element bridge              { STRING_ATTR, ("yes" | "no") }? &
-  element bridge_ports        { STRING }? &
-  element bridge_stp          { STRING_ATTR, ("on" | "off") }? &
-  element bridge_forwarddelay { STRING }?
+  element bridge               { STRING_ATTR, ("yes" | "no") }? &
+  element bridge_ports         { STRING }? &
+  element bridge_stp           { STRING_ATTR, ("on" | "off") }? &
+  element bridge_forward_delay { STRING }? &
+  # backward compatibility (bsc#1180944)
+  element bridge_forwarddelay  { STRING }?
 )
 
 #

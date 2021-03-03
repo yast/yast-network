@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Mar  2 11:48:59 UTC 2021 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
+
+- Support both 'bridge_forwarddelay' and 'bridge_forward_delay'.
+  The latter takes precedence (bsc#1180944).
+- 4.3.51
+
+-------------------------------------------------------------------
 Fri Feb 26 06:41:17 UTC 2021 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
 
 - Improve wireless devices configuration UX (bsc#1177834):
