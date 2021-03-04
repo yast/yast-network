@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Mar  3 12:11:39 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
+
+- Do not filter ethernet cards when configuring a bond in s390
+  (bsc#1182911).
+- Only propose a 1492 MTU size when configuring an LCS interface.
+- 4.3.52
+
+-------------------------------------------------------------------
 Tue Mar  2 11:48:59 UTC 2021 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
 
 - Support both 'bridge_forwarddelay' and 'bridge_forward_delay'.

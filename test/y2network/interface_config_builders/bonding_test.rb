@@ -72,7 +72,7 @@ describe Y2Network::InterfaceConfigBuilders::Bonding do
 
   describe "#bondable_interfaces" do
     shared_examples "interface filters" do
-      context "when an interface does not have a connection config yet" do
+      context "and the interface does not have a connection config yet" do
         let(:connection_name) { "iface2" } # only iface2 has a config
 
         it "includes the interface without a connection config" do
@@ -80,7 +80,7 @@ describe Y2Network::InterfaceConfigBuilders::Bonding do
         end
       end
 
-      context "when an interface has a connection config" do
+      context "and the interface has a connection config" do
         let(:connection_name) { "iface1" }
 
         context "and there already is a master connection" do
@@ -109,6 +109,8 @@ describe Y2Network::InterfaceConfigBuilders::Bonding do
 
     context "when the architecture is s390" do
       let(:s390) { true }
+      let(:interface1) { Y2Network::Interface.new("iface1", type: Y2Network::InterfaceType::QETH) }
+      let(:interface2) { Y2Network::Interface.new("iface2", type: Y2Network::InterfaceType::QETH) }
 
       before do
         allow(Yast::FileUtils).to receive(:IsDirectory).and_return(true)
@@ -133,7 +135,7 @@ describe Y2Network::InterfaceConfigBuilders::Bonding do
       end
     end
 
-    context "when the architecture is not s390" do
+    context "when the architecture is not s390 or the interface is an ethernet one" do
       let(:s390) { false }
 
       include_examples "interface filters"
