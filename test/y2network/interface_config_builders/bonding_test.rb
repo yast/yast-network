@@ -110,7 +110,7 @@ describe Y2Network::InterfaceConfigBuilders::Bonding do
     context "when the architecture is s390" do
       let(:s390) { true }
       let(:interface1) { Y2Network::Interface.new("iface1", type: Y2Network::InterfaceType::QETH) }
-      let(:interface2) { Y2Network::Interface.new("iface1", type: Y2Network::InterfaceType::QETH) }
+      let(:interface2) { Y2Network::Interface.new("iface2", type: Y2Network::InterfaceType::QETH) }
 
       before do
         allow(Yast::FileUtils).to receive(:IsDirectory).and_return(true)
