@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Mar  4 15:41:04 UTC 2021 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
+
+- Do not consider proposing 'nfsroot' as startmode when running on
+  installation (bsc#1182818).
+- 4.2.96
+
+-------------------------------------------------------------------
 Wed Mar  3 12:11:39 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
 
 - Do not filter ethernet cards when configuring a bond in s390
