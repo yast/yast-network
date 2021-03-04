@@ -22,8 +22,7 @@ require "installation/auto_client"
 Yast.import "Lan"
 Yast.import "Progress"
 Yast.import "Map"
-Yast.import "Host"
-Yast.import "Stage"
+Yast.import "LanItems"
 
 module Y2Network
   module Clients
@@ -92,8 +91,6 @@ module Y2Network
 
         Yast::Lan.Import(modified_profile)
 
-        update_etc_hosts if Yast::Stage.cont
-
         true
       end
 
@@ -123,21 +120,6 @@ module Y2Network
 
       def merge_current_config?
         !!Yast::Lan.autoinst.keep_install_network
-      end
-
-      # Whatever is needed in /etc/hosts during AY installation
-      def update_etc_hosts
-        config = Yast::Lan.find_config(:yast)
-        return if !config
-
-        static_connections = config.connections.select(&:static?)
-        static_connections.each do |connection|
-          log.info("Updating /etc/hosts with" \
-                   " #{connection.ip.address.address} #{config.hostname.static}")
-          connection.hostname = config.hostname.static
-        end
-
-        nil
       end
 
       # Convert data from native network to autoyast for XML

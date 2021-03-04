@@ -92,15 +92,9 @@ module Y2Network
 
     # Determines whether two addresses are equivalent
     #
-    # @param other [IPAddress, String] The address to compare with.
-    #                                  When string it can look like <ip>/<prefix>
+    # @param other [IPAddress] The address to compare with
     # @return [Boolean]
     def ==(other)
-      if other.is_a?(String)
-        param = other.split("/")
-        other = IPAddress.new(*param)
-      end
-
       address == other.address && prefix == other.prefix
     end
 

@@ -7,13 +7,6 @@ Wed Mar  3 12:11:39 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
 - 4.3.52
 
 -------------------------------------------------------------------
-Wed Mar  3 09:45:02 UTC 2021 - Michal Filka <mfilka@suse.com>
-
-- bnc#1178260
-  - fixed writing a record into /etc/hosts for static ips during
-    AY installation
-
--------------------------------------------------------------------
 Tue Mar  2 11:48:59 UTC 2021 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
 
 - Support both 'bridge_forwarddelay' and 'bridge_forward_delay'.
