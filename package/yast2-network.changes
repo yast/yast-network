@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Mar  3 12:11:39 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
+
+- Do not filter ethernet cards when configuring a bond in s390
+  (bsc#1182911).
+- Only propose a 1492 MTU size when configuring an LCS interface.
+- 4.2.95
+
+-------------------------------------------------------------------
 Wed Mar  3 09:45:02 UTC 2021 - Michal Filka <mfilka@suse.com>
 
 - bnc#1178260

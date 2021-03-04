@@ -115,7 +115,7 @@ module Y2Network
       #   defaults and propose have more tricky config that depends on env, product, etc.
       def propose
         propose_startmode
-        self.mtu = PROPOSED_PPPOE_MTU if Yast::Arch.s390 && (type.lcs? || type.ethernet?)
+        self.mtu = PROPOSED_PPPOE_MTU if Yast::Arch.s390 && type.lcs?
       end
 
       def propose_startmode

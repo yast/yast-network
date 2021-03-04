@@ -97,7 +97,7 @@ module Y2Network
         Yast.include self, "network/lan/s390.rb"
 
         # check if the device is L2 capable on s390
-        if Yast::Arch.s390
+        if Yast::Arch.s390 && !iface.type.ethernet?
           s390_config = s390_ReadQethConfig(iface.name)
 
           # only devices with L2 support can be enslaved in bond. See bnc#719881
