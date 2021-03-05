@@ -18,10 +18,14 @@
 # find current contact information at www.suse.com.
 
 require_relative "../../test_helper"
+require_relative "../../support/connection_config_examples"
 require "y2network/connection_config/qeth"
 require "y2network/interface_type"
 
 describe Y2Network::ConnectionConfig::Qeth do
+
+  include_examples "connection configuration"
+
   describe "#type" do
     it "returns 'qeth'" do
       expect(subject.type).to eq(Y2Network::InterfaceType::QETH)
