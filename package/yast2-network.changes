@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Mar  5 15:46:19 UTC 2021 - Ladislav Slezák <lslezak@suse.cz>
+
+- Define the network configuration buttons for the installer
+  console (related to jsc#PM-1895, jsc#SLE-16263)
+- 4.3.54
+
+-------------------------------------------------------------------
 Thu Mar  4 15:41:04 UTC 2021 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
 
 - Do not consider proposing 'nfsroot' as startmode when running on
