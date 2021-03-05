@@ -25,6 +25,8 @@ require "y2network/boot_protocol"
 require "y2network/startmode"
 require "y2network/connection_config/ip_config"
 
+Yast.import "Mode"
+
 module Y2Network
   module ConnectionConfig
     # This class is reponsible of a connection configuration
@@ -120,11 +122,10 @@ module Y2Network
 
       def propose_startmode
         Yast.import "ProductFeatures"
-        # see bsc#176804
-        devicegraph = Y2Storage::StorageManager.instance.staging
-        if devicegraph.filesystem_in_network?("/")
-          @startmode = Startmode.create("nfsroot")
+
+        if root_filesystem_in_network?
           log.info "startmode nfsroot"
+          @startmode = Startmode.create("nfsroot")
           return
         end
 
@@ -224,6 +225,14 @@ module Y2Network
 
         false
         # TODO: interface is just string so interface.hardware.hotplug does not work
+      end
+
+      def root_filesystem_in_network?
+        return false unless Yast::Mode.normal
+
+        # see bsc#176804
+        devicegraph = Y2Storage::StorageManager.instance.staging
+        devicegraph.filesystem_in_network?("/")
       end
     end
   end

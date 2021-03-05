@@ -18,11 +18,14 @@
 # find current contact information at www.suse.com.
 
 require_relative "../../test_helper"
+require_relative "../../support/connection_config_examples"
 require "y2network/connection_config/wireless"
 require "y2network/interface_type"
 
 describe Y2Network::ConnectionConfig::Wireless do
   subject(:config) { described_class.new }
+
+  include_examples "connection configuration"
 
   describe "#type" do
     it "returns 'wireless'" do
