@@ -18,10 +18,13 @@
 # find current contact information at www.suse.com.
 
 require_relative "../../test_helper"
+require_relative "../../support/connection_config_examples"
 require "y2network/connection_config/ctc"
 require "y2network/interface_type"
 
 describe Y2Network::ConnectionConfig::Ctc do
+  include_examples "connection configuration"
+
   describe "#type" do
     it "returns 'ctc'" do
       expect(subject.type).to eq(Y2Network::InterfaceType::CTC)
