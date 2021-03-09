@@ -203,6 +203,13 @@ describe "NetworkAutoYast" do
     end
   end
 
+  describe "#configure_hosts" do
+    it "writes hosts config" do
+      expect(Yast::Host).to receive(:Write).with(gui: false)
+      network_autoyast.configure_hosts
+    end
+  end
+
   describe "#configure_lan" do
     before do
       Yast::Lan.autoinst = nil

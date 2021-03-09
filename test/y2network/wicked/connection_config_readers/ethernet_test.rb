@@ -27,6 +27,10 @@ describe Y2Network::Wicked::ConnectionConfigReaders::Ethernet do
 
   let(:scr_root) { File.join(DATA_PATH, "scr_read") }
 
+  before do
+    allow(Yast::Host).to receive(:load_hosts).and_call_original
+  end
+
   around do |example|
     change_scr_root(scr_root, &example)
   end
