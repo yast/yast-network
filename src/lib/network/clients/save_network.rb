@@ -283,6 +283,8 @@ module Yast
     # It creates a proposal in case of common installation. In case of AY
     # installation it does full import of <networking> section
     def configure_lan
+      # Do not apply changes at the end of the first stage.
+      Yast::Lan.write_only = true
       copy_udev_rules if Mode.autoinst && NetworkAutoYast.instance.configure_lan
 
       # FIXME: Really make sense to configure it in autoinst mode? At least the
