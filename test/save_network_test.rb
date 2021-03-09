@@ -54,6 +54,7 @@ describe Yast::SaveNetworkClient do
       end
 
       allow(Yast::NetworkAutoconfiguration.instance).to receive(:configure_dns)
+      allow(Yast::NetworkAutoconfiguration.instance).to receive(:configure_hosts)
       allow(Yast::Lan).to receive(:yast_config).and_return(yast_config)
       allow(Yast::Lan).to receive(:system_config).and_return(system_config)
       allow(Yast::Lan).to receive(:write_config)
@@ -127,13 +128,28 @@ describe Yast::SaveNetworkClient do
     end
 
     context "during autoinstallation" do
+      let(:ay_hosts) { true }
       before do
         allow(Yast::Mode).to receive(:autoinst).and_return(true)
+        allow(Yast::NetworkAutoYast.instance).to receive(:configure_hosts).and_return(ay_hosts)
       end
 
       it "does not automatically configure the DNS" do
         expect(Yast::NetworkAutoconfiguration.instance).to_not receive(:configure_dns)
         subject.main
+      end
+
+      it "configures the /etc/hosts according to the profile" do
+        expect(Yast::NetworkAutoYast.instance).to receive(:configure_hosts)
+        subject.main
+      end
+
+      context "if the hosts are not configured by AutoYaST" do
+        it "configures the /etc/hosts automatically" do
+          allow(Yast::NetworkAutoYast.instance).to receive(:configure_hosts).and_return(false)
+          expect(Yast::NetworkAutoconfiguration.instance).to_not receive(:configure_dns)
+          subject.main
+        end
       end
     end
 

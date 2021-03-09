@@ -222,6 +222,27 @@ describe Yast::NetworkAutoconfiguration do
     end
   end
 
+  describe "#configure_hosts" do
+    before do
+      allow(Yast::Host).to receive(:Write)
+    end
+
+    it "ensures the /etc/hosts configuration is read" do
+      expect(Yast::Host).to receive(:Read)
+      instance.configure_hosts
+    end
+
+    it "adds and entry for the static IP addresses without one pointing to the hostname" do
+      expect(Yast::Host).to receive(:ResolveHostnameToStaticIPs)
+      instance.configure_hosts
+    end
+
+    it "writes the /etc/hosts changes" do
+      expect(Yast::Host).to receive(:Write)
+      instance.configure_hosts
+    end
+  end
+
   describe "#configure_virtuals" do
     let(:routing) { Y2Network::Routing.new(tables: [table1]) }
     let(:table1) { Y2Network::RoutingTable.new(routes) }
