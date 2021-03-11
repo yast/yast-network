@@ -190,6 +190,7 @@ module Yast
         ),
         VSpacing(1),
         Left(HBox("MODIFY_RESOLV", HSpacing(1), "PLAIN_POLICY")),
+        VSpacing(1),
         Frame(
           _("Name Servers and Domain Search List"),
           VBox(
