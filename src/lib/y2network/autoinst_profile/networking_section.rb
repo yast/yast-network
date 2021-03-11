@@ -85,11 +85,11 @@ module Y2Network
       def self.new_from_hashes(hash)
         result = new
         result.managed = hash["managed"]
-        result.setup_before_proposal = hash.fetch("setup_before_proposal", false)
-        result.start_immediately = hash.fetch("start_immediately", false)
-        result.keep_install_network = hash.fetch("keep_install_network", true)
-        result.virt_bridge_proposal = hash.fetch("virt_bridge_proposal", true)
-        result.strict_ip_check_timeout = hash.fetch("strict_ip_check_timeout", -1)
+        result.setup_before_proposal = hash["setup_before_proposal"]
+        result.start_immediately = hash["start_immediately"]
+        result.keep_install_network = hash["keep_install_network"]
+        result.virt_bridge_proposal = hash["virt_bridge_proposal"]
+        result.strict_ip_check_timeout = hash["strict_ip_check_timeout"]
         result.routing = RoutingSection.new_from_hashes(hash["routing"], result) if hash["routing"]
         result.dns = DNSSection.new_from_hashes(hash["dns"], result) if hash["dns"]
         if hash["interfaces"]

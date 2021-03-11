@@ -54,7 +54,7 @@ module Y2Network
         config.interfaces = @original_config.interfaces.copy
         # merge devices definitions obtained from inst-sys
         # and those which were read from AY profile. bnc#874259
-        config.connections = @original_config.connections.copy if section.keep_install_network
+        config.connections = @original_config.connections.copy if keep_configured_network?
 
         # apply at first udev rules, so interfaces names are correct
         UdevRulesReader.new(section.udev_rules).apply(config) if section.udev_rules
@@ -71,6 +71,16 @@ module Y2Network
         end
 
         config
+      end
+
+    private
+
+      # Convenience method to check whether the configured network should be
+      # keeped or not (by default returns true)
+      #
+      # @return [Boolean]
+      def keep_configured_network?
+        section.keep_install_network != false
       end
     end
   end
