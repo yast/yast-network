@@ -76,7 +76,7 @@ module Y2Network
     private
 
       # Convenience method to check whether the configured network should be
-      # keeped or not (by default returns true)
+      # kept or not (by default returns true)
       #
       # @return [Boolean]
       def keep_configured_network?

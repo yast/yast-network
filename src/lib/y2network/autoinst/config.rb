@@ -46,7 +46,7 @@ module Y2Network
       # @option opts [Integer] :ip_check_timetout
       # @option opts [Boolean] :virt_bridge_proposal
       def initialize(opts = {})
-        ay_options = opts.delete_if { |_k, v| v.nil? }
+        ay_options = opts.reject { |_k, v| v.nil? }
 
         @before_proposal = ay_options.fetch(:before_proposal, false)
         @start_immediately = ay_options.fetch(:start_immediately, true)

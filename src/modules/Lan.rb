@@ -783,25 +783,20 @@ module Yast
     attr_reader :configs
 
     def autoinst_config(section)
-      return unless autoinst_settings?(section)
+      ay_settings = autoinst_settings(section)
+      return if ay_settings.empty?
 
-      Y2Network::Autoinst::Config.new(
+      Y2Network::Autoinst::Config.new(ay_settings)
+    end
+
+    def autoinst_settings(section)
+      {
         before_proposal:      section.setup_before_proposal,
         start_immediately:    section.start_immediately,
         keep_install_network: section.keep_install_network,
         ip_check_timeout:     section.strict_ip_check_timeout,
         virt_bridge_proposal: section.virt_bridge_proposal
-      )
-    end
-
-    def autoinst_settings?(section)
-      return false unless section
-
-      !section.start_immediately.nil? ||
-        !section.keep_install_network.nil? ||
-        !section.setup_before_proposal.nil? ||
-        !section.virt_bridge_proposal.nil? ||
-        !section.strict_ip_check_timeout.nil?
+      }.reject { |_k, v| v.nil? }
     end
 
     def activate_network_service
