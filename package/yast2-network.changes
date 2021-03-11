@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Mar 11 15:52:10 UTC 2021 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
+
+- AutoYaST: allow the interfaces list in the profile to be
+  empty (bsc#1183257).
+- 4.3.56
+
+-------------------------------------------------------------------
 Thu Mar 11 09:33:05 UTC 2021 - Michal Filka <mfilka@suse.com>
 
 - bnc#1180085
