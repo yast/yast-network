@@ -42,7 +42,7 @@ strict_IP_check_timeout =
 interfaces =
   element interfaces {
     LIST,
-    interface+
+    interface*
   }
 
 interface =
