@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Thu Mar 11 09:33:05 UTC 2021 - Michal Filka <mfilka@suse.com>
+
+- bnc#1180085
+  - fixed proposing wpa_supplicant - adapted to use new network-ng
+    backend.
+- dropped some old pieces of code
+- 4.3.55
+
+-------------------------------------------------------------------
 Fri Mar  5 15:46:19 UTC 2021 - Ladislav Slezák <lslezak@suse.cz>
 
 - Define the network configuration buttons for the installer

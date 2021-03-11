@@ -47,11 +47,6 @@ module Yast
       write_global_netconfig
     end
 
-    # Reports if user asked for using biosdevname pernament device names
-    def AllowUdevModify
-      /biosdevname=1/ !~ InstallInf["Cmdline"]
-    end
-
   private
 
     # create all network files except ifcfg and hwcfg

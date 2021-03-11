@@ -70,25 +70,5 @@ module Yast
         return hwname
       end
     end
-
-    # Return the device protocol or IP address in case of static config
-    # Or indicate that NetworkManager takes over.
-    # @param [Hash] devmap device map
-    # @return textual device protocol
-    def DeviceProtocol(devmap)
-      return _("Not configured") if devmap.nil? || devmap.empty?
-      # Abbreviation for "The interface is Managed by NetworkManager"
-      return _("Managed") if devmap["STARTMODE"] == "managed"
-
-      bootproto = devmap["BOOTPROTO"] || "static"
-
-      if bootproto.empty? || bootproto == "static"
-        return "NONE" if devmap["IPADDR"] == "0.0.0.0"
-
-        devmap["IPADDR"].to_s
-      else
-        bootproto.upcase
-      end
-    end
   end
 end

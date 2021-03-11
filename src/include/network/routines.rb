@@ -180,14 +180,6 @@ module Yast
       drvtype
     end
 
-    def sysfs_card_type(sysfs_id, _hardware)
-      return "none" if sysfs_id == ""
-
-      filename = Ops.add(Ops.add("/sys", sysfs_id), "/card_type")
-      card_type = Convert.to_string(SCR.Read(path(".target.string"), filename))
-      String.FirstChunk(card_type, "\n")
-    end
-
     def DistinguishedName(name, hwdevice)
       hwdevice = deep_copy(hwdevice)
       if Ops.get_string(hwdevice, "sysfs_bus_id", "") != ""

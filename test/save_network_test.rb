@@ -62,6 +62,7 @@ describe Yast::SaveNetworkClient do
       allow(Yast::Arch).to receive(:s390).and_return(s390)
       allow(Yast::NetworkService).to receive(:EnableDisableNow)
       allow(subject).to receive(:propose_virt_config?).and_return(propose_bridge)
+      allow(Yast::NetworkAutoYast.instance).to receive(:configure_hosts).and_return(nil)
     end
 
     after do

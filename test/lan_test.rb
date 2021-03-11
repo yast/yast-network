@@ -46,20 +46,34 @@ describe "LanClass" do
     end
 
     context "When NetworkManager is not going to be installed" do
+      let(:wlan0) { Y2Network::Interface.new("wlan0", type: Y2Network::InterfaceType::WIRELESS) }
+      let(:interfaces) { Y2Network::InterfacesCollection.new([wlan0]) }
+      let(:config) { double(interfaces: interfaces, backend: backend) }
+
       before(:each) do
         allow(Yast::PackageSystem)
           .to receive(:Installed)
           .with("wpa_supplicant")
           .at_least(:once)
           .and_return(false)
+
+        allow(config)
+          .to receive(:backend?)
+          .and_return(false)
+        allow(config)
+          .to receive(:backend?)
+          .with(backend)
+          .and_return(true)
+        allow(Yast::Lan)
+          .to receive(:yast_config)
+          .and_return(config)
       end
 
       it "always proposes wpa_supplicant" do
-        expect(Yast::LanItems)
-          .to receive(:find_type_ifaces)
-          .with("wlan")
-          .at_least(:once)
-          .and_return(["place_holder"])
+        allow(Yast::PackageSystem)
+          .to receive(:Installed)
+          .with("wpa_supplicant")
+          .and_return(false)
 
         expect(Yast::Lan.Packages).to include "wpa_supplicant"
       end
