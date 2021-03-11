@@ -70,6 +70,9 @@ module Y2Network
       #
       # @param interfaces [InterfaceCollection] Interfaces
       def update_udevd(interfaces)
+        # TODO: Currently we don't care about predictable (biosdevname) device names
+        # anymore. If needed in the future we will have to implement it even for
+        # network-ng again
         update_renaming_udev_rules(interfaces)
         update_drivers_udev_rules(interfaces)
         reload_udev_rules if reload?
