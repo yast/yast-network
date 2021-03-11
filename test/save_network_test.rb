@@ -91,6 +91,12 @@ describe Yast::SaveNetworkClient do
       end
     end
 
+    it "ensures that the network configuration changes are written but not applied" do
+      Yast::Lan.write_only = false
+
+      expect { subject.main }.to change { Yast::Lan.write_only }.from(false).to(true)
+    end
+
     it "merges netconfig configuration" do
       subject.main
 
