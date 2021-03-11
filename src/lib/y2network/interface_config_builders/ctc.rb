@@ -48,7 +48,6 @@ module Y2Network
         :write_channel, :write_channel=,
         :protocol, :protocol=,
         :device_id, :device_id=
-
     end
   end
 end
