@@ -68,9 +68,7 @@ module Y2Network
     class << self
       # Creates a new instance containing hardware information for a given interface
       #
-      # It retrieves the information from
-      #
-      # * existing udev rules.
+      # It retrieves the information from existing udev rules.
       #
       # @todo Probably, this logic should be moved to a separate class.
       #
