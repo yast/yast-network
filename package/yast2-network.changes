@@ -1,9 +1,8 @@
 -------------------------------------------------------------------
-Mon Mar 14 08:18:11 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
+Mon Mar 15 08:18:11 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
 
-- Ensure that during an Autoinstallation the network configuration
-  declared in the profile is only written and not applied when it is
-  done at the end of the first stage (bsc#1180535)
+- AutoYaST: configure but not apply the network configuration at
+  the end of the 1st stage (bsc#1180535).
 - 4.3.59
 
 -------------------------------------------------------------------
