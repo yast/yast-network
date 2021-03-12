@@ -55,8 +55,10 @@ describe Y2Network::Widgets::VlanID do
           allow(Yast::Popup).to receive(:YesNo).and_return(true)
         end
 
-        it "modifies the vlan interface name" do
-          expect { subject.store }.to change { builder.name }.from("vlan0").to("vlan20")
+        it "renames the vlan interface name" do
+          expect(builder).to receive(:rename_interface).with("vlan20")
+
+          subject.store
         end
       end
     end

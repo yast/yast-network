@@ -22,6 +22,9 @@ require "cwm/common_widgets"
 module Y2Network
   module Widgets
     class VlanInterface < CWM::ComboBox
+      # Constructor
+      #
+      # @param config [Y2Network::InterfaceConfigBuilder] Interface configuration builder object
       def initialize(config)
         textdomain "network"
 
