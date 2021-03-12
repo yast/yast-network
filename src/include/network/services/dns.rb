@@ -190,17 +190,20 @@ module Yast
         ),
         VSpacing(1),
         Left(HBox("MODIFY_RESOLV", HSpacing(1), "PLAIN_POLICY")),
-        Frame(
-          _("Name Servers and Domain Search List"),
-          VBox(
-            VSquash(
-              HBox(
-                HWeight(1, VBox("NAMESERVER_1", "NAMESERVER_2", "NAMESERVER_3")),
-                HSpacing(1),
-                HWeight(1, "SEARCHLIST_S")
+        MarginBox(
+          0.49,
+          0.49,
+          Frame(
+            _("Name Servers and Domain Search List"),
+            VBox(
+              VSquash(
+                HBox(
+                  HWeight(1, VBox("NAMESERVER_1", "NAMESERVER_2", "NAMESERVER_3")),
+                  HSpacing(1),
+                  HWeight(1, "SEARCHLIST_S")
+                )
               )
-            ),
-            VSpacing(0.49)
+            )
           )
         ),
         VStretch()
