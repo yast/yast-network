@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Mar 12 09:23:04 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
+
+- Fix the VLAN interface renaming when suggested by a VLAN ID
+  change (bsc#1183357)
+- 4.3.57
+
+-------------------------------------------------------------------
 Thu Mar 11 15:52:10 UTC 2021 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
 
 - AutoYaST: allow the interfaces list in the profile to be

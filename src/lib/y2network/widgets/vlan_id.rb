@@ -22,6 +22,9 @@ require "cwm/common_widgets"
 module Y2Network
   module Widgets
     class VlanID < CWM::IntField
+      # Constructor
+      #
+      # @param config [Y2Network::InterfaceConfigBuilder] Interface configuration builder object
       def initialize(config)
         textdomain "network"
 
@@ -44,7 +47,7 @@ module Y2Network
       def store
         return unless modified?
 
-        @config.name = suggested_name if suggest_vlan_name
+        @config.rename_interface(suggested_name) if suggest_vlan_name
         @config.vlan_id = value
       end
 

@@ -33,6 +33,9 @@ require "y2network/widgets/vlan_interface"
 module Y2Network
   module Widgets
     class AddressTab < CWM::Tab
+      # Constructor
+      #
+      # @param settings [Y2Network::InterfaceConfigBuilder] Interface configuration builder object
       def initialize(settings)
         textdomain "network"
 
