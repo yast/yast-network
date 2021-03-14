@@ -70,6 +70,8 @@ module Y2Network
           end
         end
 
+        config.backend = section.managed ? :network_manager : :wicked
+
         config
       end
 

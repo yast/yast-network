@@ -825,6 +825,9 @@ module Yast
     end
 
     def select_network_service
+      # We cannot switch the service during installation
+      return true if Stage.initial
+
       NetworkService.use(yast_config&.backend&.id)
     end
 
