@@ -35,7 +35,7 @@ module Y2Network
         # TODO: no one knows whether this ctc specific thing is still needed
         wfi = Yast::NetworkConfig.Config["WAIT_FOR_INTERFACES"].to_i
 
-        Yast::Network.Config["WAIT_FOR_INTERFACES"] = [wfi, WAIT_FOR_INTERFACES].max
+        Yast::NetworkConfig.Config["WAIT_FOR_INTERFACES"] = [wfi, WAIT_FOR_INTERFACES].max
 
         super
       end
