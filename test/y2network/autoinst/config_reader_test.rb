@@ -70,6 +70,17 @@ describe Y2Network::Autoinst::ConfigReader do
       expect(subject.config.dns).to be_a Y2Network::DNS
       expect(subject.config.hostname.dhcp_hostname).to eq(:any)
       expect(subject.config.hostname.installer).to eq("host")
+      expect(subject.config.backend.id).to eq(:wicked)
+    end
+
+    context "when the networking section sets it to be managed" do
+      before do
+        profile["managed"] = true
+      end
+
+      it "selects :network_manager as the backend to be used" do
+        expect(subject.config.backend.id).to eq(:network_manager)
+      end
     end
   end
 end

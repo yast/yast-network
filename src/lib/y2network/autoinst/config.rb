@@ -46,11 +46,13 @@ module Y2Network
       # @option opts [Integer] :ip_check_timetout
       # @option opts [Boolean] :virt_bridge_proposal
       def initialize(opts = {})
-        @before_proposal = opts.fetch(:before_proposal, false)
-        @start_immediately = opts.fetch(:start_immediately, false)
-        @keep_install_network = opts.fetch(:keep_install_network, true)
-        @ip_check_timeout = opts.fetch(:ip_check_timeout, -1)
-        @virt_bridge_proposal = opts.fetch(:virt_bridge_proposal, true)
+        ay_options = opts.reject { |_k, v| v.nil? }
+
+        @before_proposal = ay_options.fetch(:before_proposal, false)
+        @start_immediately = ay_options.fetch(:start_immediately, true)
+        @keep_install_network = ay_options.fetch(:keep_install_network, true)
+        @ip_check_timeout = ay_options.fetch(:ip_check_timeout, -1)
+        @virt_bridge_proposal = ay_options.fetch(:virt_bridge_proposal, true)
       end
 
       # Return whether the network should be copied at the end

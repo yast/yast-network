@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Mar 15 08:18:11 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
+
+- AutoYaST: configure but not apply the network configuration at
+  the end of the 1st stage (bsc#1180535).
+- 4.3.59
+
+-------------------------------------------------------------------
 Fri Mar 12 11:35:19 UTC 2021 - David Diaz <dgonzalez@suse.com>
 
 - Add more space before the "Name Servers and Domain Search List"
