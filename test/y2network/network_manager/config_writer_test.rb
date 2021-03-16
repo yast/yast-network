@@ -71,7 +71,7 @@ describe Y2Network::NetworkManager::ConfigWriter do
     end
 
     it "writes connections configuration" do
-      expect(conn_config_writer).to receive(:write).with(eth0_conn, nil, [])
+      expect(conn_config_writer).to receive(:write).with(eth0_conn, nil, routes: [])
       writer.write(config)
     end
   end

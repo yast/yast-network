@@ -41,7 +41,8 @@ module Y2Network
         #
         # @param conn [Y2Network::ConnectionConfig::Base] Connection to take settings from
         # @param routes [<Array<Y2Network::Route>] routes associated with the connection
-        def write(conn, routes = [])
+        # @param parent [Y2Network::ConnectionConfig::Bonding, Y2Network::ConnectionConfig::Bridge]
+        def write(conn, routes: [], parent: nil)
           file.connection["id"] = conn.name
           file.connection["autoconnect"] = "false" if ["manual", "off"].include? conn.startmode.name
           file.connection["permissions"] = nil
@@ -49,6 +50,7 @@ module Y2Network
           file.connection["zone"] = conn.firewall_zone unless ["", nil].include? conn.firewall_zone
           conn.bootproto.dhcp? ? configure_dhcp(conn) : configure_ips(conn)
           configure_routes(routes)
+          configure_as_child(conn, parent) if parent
           update_file(conn)
         end
 
@@ -95,6 +97,19 @@ module Y2Network
         def configure_dhcp(conn)
           file.ipv4["method"] = "auto" if conn.bootproto != Y2Network::BootProtocol::DHCP6
           file.ipv6["method"] = "auto" if conn.bootproto != Y2Network::BootProtocol::DHCP4
+        end
+
+        # Convenience method to configure the reference to the parent or master device
+        #
+        # @param conn [Y2Network::ConnectionConfig::Base] Connection to take settings from
+        # @param parent [Y2Network::ConnectionConfig::Base] Connection to take settings from
+        def configure_as_child(_conn, parent)
+          slave_type = "bridge" if parent.type.br?
+          slave_type = "bond" if parent.type.bonding?
+          return unless slave_type
+
+          file.connection["slave-type"] = slave_type
+          file.connection["master"] = parent.name
         end
 
         # Sets file values from the given connection configuration
