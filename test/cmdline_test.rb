@@ -19,6 +19,8 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
+require "y2network/interface_config_builder"
+
 require_relative "test_helper"
 
 class DummyClass < Yast::Module
@@ -125,7 +127,7 @@ describe "NetworkLanCmdlineInclude" do
       end
 
       it "commits the new configuration" do
-        expect(Yast::LanItems).to receive(:Commit).with(anything)
+        expect_any_instance_of(Y2Network::InterfaceConfigBuilder).to receive(:save)
         subject.AddHandler(options)
       end
 
@@ -152,7 +154,7 @@ describe "NetworkLanCmdlineInclude" do
 
     context "when a valid configuration is providen" do
       it "commits the configuration changes" do
-        expect(Yast::LanItems).to receive(:Commit).with(anything)
+        expect_any_instance_of(Y2Network::InterfaceConfigBuilder).to receive(:save)
         subject.EditHandler(options)
       end
 
@@ -178,7 +180,7 @@ describe "NetworkLanCmdlineInclude" do
 
     context "when a valid configuration is providen" do
       it "removes given interface" do
-        expect(Yast::LanItems).to receive(:Commit).with(anything)
+        expect_any_instance_of(Y2Network::InterfaceConfigBuilder).to receive(:save)
         subject.EditHandler(options)
       end
 

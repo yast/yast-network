@@ -38,6 +38,9 @@ describe "NetworkLanComplexInclude" do
   describe "#input_done?" do
     BOOLEAN_PLACEHOLDER = "placeholder (true or false)".freeze
 
+    let(:wicked_config) { Y2Network::Config.new(source: :wicked) }
+    let(:nm_config) { Y2Network::Config.new(source: :network_manager) }
+
     context "when not running in installer" do
       before(:each) do
         allow(Yast::Stage)
@@ -50,23 +53,27 @@ describe "NetworkLanComplexInclude" do
       end
 
       it "returns true for input equal to :abort in case of no user modifications" do
-        allow(Yast::LanItems)
-          .to receive(:GetModified)
-          .and_return(false)
+        allow(Yast::Lan)
+          .to receive(:yast_config)
+          .and_return(wicked_config)
+        allow(Yast::Lan)
+          .to receive(:system_config)
+          .and_return(wicked_config)
 
         expect(subject.input_done?(:abort)).to eql true
       end
 
-      it "asks user for abort confirmation for input equal to :abort and user did modifications" do
-        allow(Yast::LanItems)
-          .to receive(:GetModified)
-          .and_return(true)
+      it "asks for confirmation in case of a user modification" do
+        allow(Yast::Lan)
+          .to receive(:yast_config)
+          .and_return(wicked_config)
+        allow(Yast::Lan)
+          .to receive(:system_config)
+          .and_return(nm_config)
 
-        expect(subject)
-          .to receive(:ReallyAbort)
-          .and_return(BOOLEAN_PLACEHOLDER)
+        expect(subject).to receive(:ReallyAbort)
 
-        expect(subject.input_done?(:abort)).to eql BOOLEAN_PLACEHOLDER
+        subject.input_done?(:abort)
       end
     end
 

@@ -21,8 +21,6 @@ require "installation/auto_client"
 
 Yast.import "Lan"
 Yast.import "Progress"
-Yast.import "Map"
-Yast.import "LanItems"
 
 module Y2Network
   module Clients

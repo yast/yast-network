@@ -54,7 +54,6 @@ module Yast
       Yast.import "TablePopup"
       Yast.import "CWMTab"
       Yast.import "Stage"
-      Yast.import "LanItems"
       Yast.import "Systemd"
 
       Yast.include include_target, "network/routines.rb"
@@ -156,12 +155,7 @@ module Yast
     # Commit changes to internal structures
     # @return always `next
     def Commit(builder:)
-      # 1) update NetworkInterfaces with corresponding devmap
-      # FIXME: new item in NetworkInterfaces was created from handleOverview by
-      # calling Lan.Add and named in HardwareDialog via NetworkInterfaces.Name=
-      #  - all that stuff can (should) be moved here to have it isolated at one place
-      #  and later moved to Interface object
-      LanItems.Commit(builder)
+      builder.save
 
       :next
     end
@@ -172,10 +166,6 @@ module Yast
       Wizard.RestoreHelp(Ops.get_string(@help, "read", ""))
       Lan.AbortFunction = -> { PollAbort() }
       ret = Lan.Read(:cache)
-      # Currently just a smoketest for new config storage -
-      # something what should replace Lan module in the bright future
-      # TODO: find a suitable place for this config storage
-      Y2Network::Config.from(:wicked)
 
       if Lan.HaveXenBridge
         if !Popup.ContinueCancel(
@@ -219,7 +209,7 @@ module Yast
 
       return Popup.ConfirmAbort(:painless) if Stage.initial
 
-      return ReallyAbort() if LanItems.GetModified
+      return ReallyAbort() if Lan.yast_config != Lan.system_config
 
       true
     end

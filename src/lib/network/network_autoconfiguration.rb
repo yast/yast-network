@@ -32,7 +32,6 @@ module Yast
     include Logger
 
     Yast.import "Lan"
-    Yast.import "LanItems"
     Yast.import "NetworkInterfaces"
     Yast.import "NetworkService"
     Yast.import "Package"
@@ -164,7 +163,7 @@ module Yast
       builder.boot_protocol = Y2Network::BootProtocol::DHCP
       builder.startmode = Y2Network::Startmode.create("auto")
 
-      LanItems.Commit(builder)
+      builder.save
     end
 
     def delete_config(interface)

@@ -41,7 +41,6 @@ module Yast
     def initialize
       Yast.import "UI"
       Yast.import "Lan"
-      Yast.import "LanItems"
 
       textdomain "installation"
 

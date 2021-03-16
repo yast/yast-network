@@ -27,7 +27,7 @@ module Y2Network
   #
   # Objects of this class are able to keep a list of interfaces and perform simple queries
   # on such a list. In the end should implement methods for mass operations over network
-  # interfaces like old LanItems::find_dhcp_ifaces.
+  # interfaces
   #
   # @example Finding an interface by its name
   #   interfaces = Y2Network::InterfacesCollection.new([eth0, wlan0])
