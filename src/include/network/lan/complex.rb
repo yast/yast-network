@@ -209,7 +209,7 @@ module Yast
 
       return Popup.ConfirmAbort(:painless) if Stage.initial
 
-      return ReallyAbort() if !(Lan::yast_config == Lan::system_config)
+      return ReallyAbort() if Lan.yast_config != Lan.system_config
 
       true
     end
