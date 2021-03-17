@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Mar 17 09:52:08 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
+
+- NetworkManager: Added support to write bridge and bonding
+  configurations (bsc#1181701)
+- 4.3.60
+
+-------------------------------------------------------------------
 Mon Mar 15 08:18:11 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
 
 - AutoYaST: configure but not apply the network configuration at
