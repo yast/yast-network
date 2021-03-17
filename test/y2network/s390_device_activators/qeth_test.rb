@@ -49,14 +49,14 @@ describe Y2Network::S390DeviceActivators::Qeth do
   describe "#configure" do
     it "tries to activate the group device associated with the defined device id" do
       expect(Yast::Execute).to receive(:on_target!)
-        .with("/sbin/chzdev", "qeth", subject.device_id, "-e",
+        .with("/sbin/chzdev", "qeth", subject.device_id, "-e", "layer2=0",
           stdout: :capture, stderr: :capture, allowed_exitstatus: 0..255)
       subject.configure
     end
 
     it "returns an array with the stdout, stderr, and command status" do
       expect(Yast::Execute).to receive(:on_target!)
-        .with("/sbin/chzdev", "qeth", subject.device_id, "-e",
+        .with("/sbin/chzdev", "qeth", subject.device_id, "-e", "layer2=0",
           stdout: :capture, stderr: :capture, allowed_exitstatus: 0..255)
         .and_return(chzdev_output)
 

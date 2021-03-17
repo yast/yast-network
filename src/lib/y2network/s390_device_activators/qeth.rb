@@ -49,8 +49,7 @@ module Y2Network
         extra_attributes.concat(attributes.split(" ")) if attributes
         # Only set if enable
         extra_attributes << ipa_takeover_attribute if ipa_takeover
-        # Only set if enable
-        extra_attributes << layer2_attribute if layer2
+        extra_attributes << layer2_attribute
         extra_attributes << port_attribute if port_number.to_s != "0"
         extra_attributes
       end
