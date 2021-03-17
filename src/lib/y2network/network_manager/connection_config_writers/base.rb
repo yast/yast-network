@@ -50,7 +50,7 @@ module Y2Network
           file.connection["zone"] = conn.firewall_zone unless ["", nil].include? conn.firewall_zone
           conn.bootproto.dhcp? ? configure_dhcp(conn) : configure_ips(conn)
           configure_routes(routes)
-          configure_as_child(conn, parent) if parent
+          configure_as_child(parent) if parent
           update_file(conn)
         end
 
@@ -101,9 +101,8 @@ module Y2Network
 
         # Convenience method to configure the reference to the parent or master device
         #
-        # @param conn [Y2Network::ConnectionConfig::Base] Connection to take settings from
         # @param parent [Y2Network::ConnectionConfig::Base] Connection to take settings from
-        def configure_as_child(_conn, parent)
+        def configure_as_child(parent)
           slave_type = "bridge" if parent.type.br?
           slave_type = "bond" if parent.type.bonding?
           return unless slave_type
