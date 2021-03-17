@@ -22,6 +22,7 @@ require "y2network/autoinst_profile/s390_devices_section"
 require "y2network/autoinst/s390_devices_reader"
 require "y2network/interface_config_builder"
 require "y2network/s390_device_activator"
+require "y2network/proposal_settings"
 
 module Yast
   # Provides functionality for network AutoYaST client(s)
@@ -78,18 +79,20 @@ module Yast
 
       log.info("Setting network service according to AY profile")
 
-      use_network_manager = Lan.yast_config&.backend?(:network_manager)
-
-      if use_network_manager && Lan.yast_config.backend.available?
+      if use_network_manager?
         log.info("- using NetworkManager")
       else
         log.info("- using wicked")
-        log.warn("- NetworkManager requested but not available") if use_network_manager
         Lan.yast_config&.backend = :wicked
       end
 
       NetworkService.use(Lan.yast_config&.backend&.id)
       NetworkService.EnableDisableNow
+    end
+
+    def use_network_manager?
+      @use_network_manager ||=
+        (Y2Network::ProposalSettings.instance.network_service == :network_manager)
     end
 
     # Writes the autoyast network configuration according to the already
@@ -101,7 +104,14 @@ module Yast
     # @return [Boolean] true when written
     def configure_lan
       log.info("NetworkAutoYast: Lan configuration")
-      return false if Lan.autoinst.before_proposal
+
+      backend = Y2Network::ProposalSettings.instance.network_service
+      Yast::Lan.yast_config.backend = backend
+
+      # We need to ensure the config translation is written to the target
+      # system
+      return false if !use_network_manager? && Lan.autoinst.before_proposal
+
 
       # force a write only as it is run at the end of the installation and it
       # is already chrooted in the target system where restarting services or

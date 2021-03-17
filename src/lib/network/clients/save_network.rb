@@ -346,14 +346,14 @@ module Yast
 
     # Sets default network service
     def set_network_service
-      if Mode.autoinst
-        NetworkAutoYast.instance.set_network_service
-        return
+      if Mode.autoinst && !Yast::Lan.autoinst.managed.nil?
+        log.info("Setting network service according to AutoYaST preferences")
+      else
+        log.info("Setting network service according to product preferences")
       end
 
-      log.info("Setting network service according to product preferences")
-
       backend = Y2Network::ProposalSettings.instance.network_service
+
       # NetworkServices caches the selected backend. That is, it assumes the
       # state in the inst-sys and the chroot is the same but that is not true
       # at all specially in a live installation where NM is the backend by
