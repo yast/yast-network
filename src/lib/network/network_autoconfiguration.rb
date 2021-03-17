@@ -31,15 +31,17 @@ module Yast
     include Singleton
     include Logger
 
-    Yast.import "Lan"
-    Yast.import "NetworkInterfaces"
-    Yast.import "NetworkService"
-    Yast.import "Package"
-    Yast.import "DNS"
-    Yast.import "Arch"
-    Yast.import "Host"
-
     BASH_PATH = Path.new(".target.bash")
+
+    def initialize
+      Yast.import "Lan"
+      Yast.import "NetworkInterfaces"
+      Yast.import "NetworkService"
+      Yast.import "Package"
+      Yast.import "DNS"
+      Yast.import "Arch"
+      Yast.import "Host"
+    end
 
     # Checks if any of available interfaces is configured and active
     #

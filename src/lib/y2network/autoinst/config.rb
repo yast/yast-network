@@ -36,6 +36,8 @@ module Y2Network
       # @return [Boolean] controls whether a bridge configuration for
       #   virtualization network should be proposed or not
       attr_accessor :virt_bridge_proposal
+      # @return [Boolean] returns whether the network is managed by NM or not
+      attr_accessor :managed
 
       # Constructor
       #
@@ -53,6 +55,7 @@ module Y2Network
         @keep_install_network = ay_options.fetch(:keep_install_network, true)
         @ip_check_timeout = ay_options.fetch(:ip_check_timeout, -1)
         @virt_bridge_proposal = ay_options.fetch(:virt_bridge_proposal, true)
+        @managed              = ay_options[:managed]
       end
 
       # Return whether the network should be copied at the end
