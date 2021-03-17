@@ -29,7 +29,7 @@ module CFA
   #   puts file.connection["id"]
   class NmConnection < BaseModel
     KNOWN_SECTIONS = [
-      "bridge", "connection", "ethernet", "ipv4", "ipv6", "vlan", "wifi", "wifi_security"
+      "bond", "bridge", "connection", "ethernet", "ipv4", "ipv6", "vlan", "wifi", "wifi_security"
     ].freeze
 
     # Constructor
