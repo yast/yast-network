@@ -73,23 +73,6 @@ module Yast
       conf
     end
 
-    # Sets network service for target
-    def set_network_service
-      return if !Mode.autoinst
-
-      log.info("Setting network service according to AY profile")
-
-      if use_network_manager?
-        log.info("- using NetworkManager")
-      else
-        log.info("- using wicked")
-        Lan.yast_config&.backend = :wicked
-      end
-
-      NetworkService.use(Lan.yast_config&.backend&.id)
-      NetworkService.EnableDisableNow
-    end
-
     def use_network_manager?
       Y2Network::ProposalSettings.instance.network_service == :network_manager
     end
