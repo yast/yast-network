@@ -40,17 +40,20 @@ module Y2Network
         # Writes connection information to the interface configuration file
         #
         # @param conn [Y2Network::ConnectionConfig::Base] Connection to take settings from
-        # @param routes [<Array<Y2Network::Route>] routes associated with the connection
-        # @param parent [Y2Network::ConnectionConfig::Bonding, Y2Network::ConnectionConfig::Bridge]
-        def write(conn, routes: [], parent: nil)
+        # @param opts [Hash] additional options needed to write properly the
+        #   connection config
+        # @option opts [<Array<Y2Network::Route>] :routes associated with the connection
+        # @option opts [Y2Network::ConnectionConfig::Base] :parent device in
+        #   case that the connection to be written is an slave one.
+        def write(conn, opts = {})
           file.connection["id"] = conn.name
           file.connection["autoconnect"] = "false" if ["manual", "off"].include? conn.startmode.name
           file.connection["permissions"] = nil
           file.connection["interface-name"] = conn.interface
           file.connection["zone"] = conn.firewall_zone unless ["", nil].include? conn.firewall_zone
           conn.bootproto.dhcp? ? configure_dhcp(conn) : configure_ips(conn)
-          configure_routes(routes)
-          configure_as_child(parent) if parent
+          configure_routes(opts[:routes] || [])
+          configure_as_child(opts[:parent]) if opts[:parent]
           update_file(conn)
         end
 

@@ -38,8 +38,8 @@ module Y2Network
           opts = {
             routes: routes_for(conn, config.routing.routes),
             parent: conn.find_master(config.connections)
-          }.reject { |_k, v| v.nil? }
-          writer.write(conn, nil, **opts) # FIXME
+          }
+          writer.write(conn, nil, opts)
         end
       end
 

@@ -36,7 +36,7 @@ module Y2Network
       # @param old_conn [ConnectionConfig::Base] Original connection
       #   configuration
       # @param opts [Hash] writer options
-      def write(conn, old_conn = nil, **opts)
+      def write(conn, old_conn = nil, opts = {})
         return if conn == old_conn
 
         path = SYSTEM_CONNECTIONS_PATH.join(conn.name).sub_ext(FILE_EXT)
@@ -46,7 +46,7 @@ module Y2Network
 
         ensure_permissions(path) unless ::File.exist?(path)
 
-        handler_class.new(file).write(conn, **opts)
+        handler_class.new(file).write(conn, opts)
         file.save
       end
 
