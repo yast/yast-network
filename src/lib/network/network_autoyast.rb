@@ -91,8 +91,7 @@ module Yast
     end
 
     def use_network_manager?
-      @use_network_manager ||=
-        (Y2Network::ProposalSettings.instance.network_service == :network_manager)
+      Y2Network::ProposalSettings.instance.network_service == :network_manager
     end
 
     # Writes the autoyast network configuration according to the already
@@ -111,7 +110,6 @@ module Yast
       # We need to ensure the config translation is written to the target
       # system
       return false if !use_network_manager? && Lan.autoinst.before_proposal
-
 
       # force a write only as it is run at the end of the installation and it
       # is already chrooted in the target system where restarting services or

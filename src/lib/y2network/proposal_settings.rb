@@ -125,6 +125,7 @@ module Y2Network
     def network_service
       if current_backend == :network_manager
         return :network_manager if network_manager_installed?
+
         log.info("NetworkManager is the selected service but it is not installed")
         log.info("- using wicked")
       end
