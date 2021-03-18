@@ -346,12 +346,7 @@ module Yast
 
     # Sets default network service
     def set_network_service
-      if Mode.autoinst && !Yast::Lan.autoinst.managed.nil?
-        log.info("Setting network service according to AutoYaST preferences")
-      else
-        log.info("Setting network service according to product preferences")
-      end
-
+      log.info("Setting target system network service")
       backend = Y2Network::ProposalSettings.instance.network_service
 
       # NetworkServices caches the selected backend. That is, it assumes the
