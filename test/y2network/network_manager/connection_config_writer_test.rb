@@ -75,7 +75,7 @@ describe Y2Network::NetworkManager::ConnectionConfigWriter do
 
     it "uses the appropiate handler" do
       expect(writer).to receive(:require).and_return(handler)
-      expect(handler).to receive(:write).with(conn)
+      expect(handler).to receive(:write).with(conn, {})
       writer.write(conn)
     end
 
