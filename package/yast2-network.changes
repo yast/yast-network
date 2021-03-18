@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Mar 17 18:26:34 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
+
+- Always provide the layer2 argument when activating a qeth device
+  (bsc#1183639).
+- 4.3.61
+
+-------------------------------------------------------------------
 Wed Mar 17 09:52:08 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
 
 - NetworkManager: Added support to write bridge and bonding
