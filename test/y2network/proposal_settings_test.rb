@@ -72,11 +72,24 @@ describe Y2Network::ProposalSettings do
   describe ".create_instance" do
     let(:created_instance) { described_class.create_instance }
     let(:nm_available) { false }
+    let(:managed) { nil }
+
+    before do
+      allow(Yast::Lan.autoinst).to receive(:managed).and_return(managed)
+    end
 
     it "creates a new network proposal settings instance" do
       instance = described_class.instance
       expect(created_instance).to be_a(described_class)
       expect(created_instance).to_not equal(instance)
+    end
+
+    context "when NetworkManager is selected by AutoYaST" do
+      let(:managed) { true }
+
+      it "initializes the selected backend" do
+        expect(created_instance.selected_backend).to eql(:network_manager)
+      end
     end
   end
 

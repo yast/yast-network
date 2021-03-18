@@ -154,7 +154,7 @@ module Y2Network
     def autoinst_backend
       return if Yast::Lan.autoinst.managed.nil?
 
-      Yast::Lan.autoinst.managed ? :network_managed : false
+      Yast::Lan.autoinst.managed ? :network_manager : :wicked
     end
 
     # Convenience method to check whether the bridge configuration proposal for
