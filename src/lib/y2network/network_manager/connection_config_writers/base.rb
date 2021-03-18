@@ -42,8 +42,8 @@ module Y2Network
         # @param conn [Y2Network::ConnectionConfig::Base] Connection to take settings from
         # @param opts [Hash] additional options needed to write properly the
         #   connection config
-        # @param opts [<Array<Y2Network::Route>] :routes associated with the connection
-        # @param opts [Y2Network::ConnectionConfig::Base] :parent device in
+        # @option opts [<Array<Y2Network::Route>] :routes associated with the connection
+        # @option opts [Y2Network::ConnectionConfig::Base] :parent device in
         #   case that the connection to be written is an slave one.
         def write(conn, opts = {})
           file.connection["id"] = conn.name
