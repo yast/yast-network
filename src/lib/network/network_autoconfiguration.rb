@@ -35,8 +35,6 @@ module Yast
 
     def initialize
       Yast.import "Lan"
-      Yast.import "NetworkInterfaces"
-      Yast.import "NetworkService"
       Yast.import "Package"
       Yast.import "DNS"
       Yast.import "Arch"
