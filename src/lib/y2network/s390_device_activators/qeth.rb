@@ -49,8 +49,10 @@ module Y2Network
         extra_attributes.concat(attributes.split(" ")) if attributes
         # Only set if enable
         extra_attributes << ipa_takeover_attribute if ipa_takeover
-        # Only set if enable
-        extra_attributes << layer2_attribute if layer2
+        # By default the activation command uses layer2 autodetection but as
+        # this option is not exposed in the activation dialog we have to add it
+        # always (bsc#1183639)
+        extra_attributes << layer2_attribute
         extra_attributes << port_attribute if port_number.to_s != "0"
         extra_attributes
       end
