@@ -64,6 +64,12 @@ describe Y2Network::Autoinst::ConfigReader do
   end
 
   describe "#config" do
+    let(:first_stage) { true }
+
+    before do
+      allow(Yast::Stage).to receive(:initial).and_return(first_stage)
+    end
+
     it "builds a new Y2Network::Config from a Y2Networking::Section" do
       expect(subject.config).to be_a Y2Network::Config
       expect(subject.config.routing).to be_a Y2Network::Routing
@@ -78,8 +84,18 @@ describe Y2Network::Autoinst::ConfigReader do
         profile["managed"] = true
       end
 
-      it "selects :network_manager as the backend to be used" do
-        expect(subject.config.backend.id).to eq(:network_manager)
+      context "and run in the first stage of the installation" do
+        it "selects :wicked as the backend to be used" do
+          expect(subject.config.backend.id).to eq(:wicked)
+        end
+      end
+
+      context "and not run in the first stage of the installation" do
+        let(:first_stage) { false }
+
+        it "selects :network_manager as the backend to be used" do
+          expect(subject.config.backend.id).to eq(:network_manager)
+        end
       end
     end
   end

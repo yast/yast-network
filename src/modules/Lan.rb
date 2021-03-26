@@ -731,8 +731,7 @@ module Yast
     #
     # @see Y2Network::ConfigWriter
     def write_config(only: nil)
-      target = :wicked if Mode.auto
-      yast_config.write(original: system_config, target: target, only: only)
+      yast_config.write(original: system_config, only: only)
       # Force a refresh of the system_config bsc#1162987
       add_config(:system, yast_config.copy)
     end
@@ -795,7 +794,8 @@ module Yast
         start_immediately:    section.start_immediately,
         keep_install_network: section.keep_install_network,
         ip_check_timeout:     section.strict_ip_check_timeout,
-        virt_bridge_proposal: section.virt_bridge_proposal
+        virt_bridge_proposal: section.virt_bridge_proposal,
+        managed:              section.managed
       }.reject { |_k, v| v.nil? }
     end
 

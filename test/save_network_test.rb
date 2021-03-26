@@ -35,7 +35,7 @@ describe Yast::SaveNetworkClient do
     let(:destdir) { Dir.mktmpdir }
     let(:destdir_sysconfig) { File.join(destdir, "etc", "sysconfig", "network") }
     let(:scr_root) { File.join(DATA_PATH, "instsys") }
-    let(:yast_config) { Y2Network::Config.new(source: :wicked) }
+    let(:yast_config) { Y2Network::Config.new(source: :wicked, backend: system_backend) }
     let(:system_config) do
       Y2Network::Config.new(source: :wicked, backend: system_backend)
     end
@@ -139,6 +139,19 @@ describe Yast::SaveNetworkClient do
       before do
         allow(Yast::Mode).to receive(:autoinst).and_return(true)
         allow(Yast::NetworkAutoYast.instance).to receive(:configure_hosts).and_return(ay_hosts)
+      end
+
+      it "will select the backend according to the profile or the confirm dialog if modified" do
+        allow(Y2Network::ProposalSettings.instance).to receive(:network_service)
+          .and_return(:network_manager)
+
+        expect { subject.main }
+          .to change { yast_config.backend&.id }.from(:wicked).to(:network_manager)
+      end
+
+      it "configures the network according the already imported configuration" do
+        expect(Yast::NetworkAutoYast.instance).to receive(:configure_lan)
+        subject.main
       end
 
       it "does not automatically configure the DNS" do

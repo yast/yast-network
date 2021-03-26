@@ -31,20 +31,23 @@ Yast.import "Call"
 
 describe "NetworkAutoYast" do
   subject(:network_autoyast) { Yast::NetworkAutoYast.instance }
-  let(:config) do
+  let(:yast_config) do
     Y2Network::Config.new(
       interfaces: Y2Network::InterfacesCollection.new([]),
       routing:    Y2Network::Routing.new(tables: []),
       dns:        Y2Network::DNS.new,
+      backend:    system_backend,
       source:     :wicked
     )
   end
+
+  let(:system_backend) { instance_double("Y2Network::Backends::Wicked", id: :wicked) }
 
   before do
     allow(Yast::NetworkInterfaces).to receive(:adapt_old_config!)
     allow(Y2Network::Config).to receive(:from).and_return(double("config").as_null_object)
     allow(Yast::Lan).to receive(:Read)
-    Yast::Lan.add_config(:yast, config)
+    allow(Yast::Lan).to receive(:yast_config).and_return(yast_config)
   end
 
   describe "#merge_dns" do
@@ -123,56 +126,6 @@ describe "NetworkAutoYast" do
     end
   end
 
-  describe "#set_network_service" do
-    Yast.import "NetworkService"
-    Yast.import "Mode"
-
-    let(:network_autoyast) { Yast::NetworkAutoYast.instance }
-    let(:control_use_nm) { "always" }
-    let(:backend) { :network_manager }
-    let(:installed) { true }
-    let(:net_section) { { "managed" => true } }
-    let(:yast_config) do
-      Y2Network::Config.new(source: :autoinst).tap do |config|
-        config.backend = backend
-      end
-    end
-
-    before(:each) do
-      allow(Yast::Mode).to receive(:autoinst).and_return(true)
-      allow(Yast::ProductFeatures).to receive(:GetStringFeature)
-        .with("network", "network_manager").and_return(control_use_nm)
-      allow(Yast::Package).to receive(:Installed).and_return(installed)
-      allow(network_autoyast).to receive(:ay_networking_section).and_return(net_section)
-      Yast::Lan.add_config(:yast, yast_config)
-    end
-
-    context "in SLED product" do
-      it "enables NetworkManager" do
-        expect(Yast::NetworkService).to receive(:is_backend_available)
-          .with(:network_manager).and_return(true)
-        expect(Yast::NetworkService).to receive(:use).with(:network_manager)
-        expect(Yast::NetworkService).to receive(:EnableDisableNow).and_return nil
-
-        network_autoyast.set_network_service
-      end
-    end
-
-    context "in SLES product" do
-      let(:control_use_nm) { "never" }
-      let(:installed) { false }
-      let(:net_section) { {} }
-
-      it "enables wicked" do
-        expect(Yast::PackageSystem).to receive(:Installed).and_return(installed)
-        expect(Yast::NetworkService).to receive(:use).with(:wicked)
-        expect(Yast::NetworkService).to receive(:EnableDisableNow).and_return nil
-
-        network_autoyast.set_network_service
-      end
-    end
-  end
-
   describe "#keep_net_config?" do
     let(:network_autoyast) { Yast::NetworkAutoYast.instance }
     let(:profile) { { "networking" => { "keep_install_network" => true } } }
@@ -216,6 +169,8 @@ describe "NetworkAutoYast" do
       allow(Yast::Profile).to receive(:current)
         .and_return("general" => general_section, "networking" => networking_section)
       allow(Yast::AutoInstall).to receive(:valid_imported_values).and_return(true)
+      allow(Y2Network::ProposalSettings.instance)
+        .to receive(:network_service).and_return(selected_backend)
       allow(Yast::Lan).to receive(:Write)
       Yast::Call.Function("lan_auto", ["Import", networking_section])
     end
@@ -223,48 +178,67 @@ describe "NetworkAutoYast" do
     let(:networking_section) { nil }
     let(:general_section) { nil }
     let(:before_proposal) { false }
+    let(:selected_backend) { :wicked }
 
-    context "when the configuration was done before the proposal" do
-      let(:before_proposal) { true }
-      let(:networking_section) { { "setup_before_proposal" => before_proposal } }
+    context "when the AutoYaST or proposal selected backend is NetworkManager" do
+      let(:selected_backend) { :network_manager }
 
-      it "does not write anything" do
-        expect(Yast::Lan).to_not receive(:Write)
-
-        subject.configure_lan
+      it "selects the backend to be used according to the user selection" do
+        expect { subject.configure_lan }
+          .to change { yast_config.backend.id }.from(:wicked).to(selected_backend)
       end
 
-      it "returns false" do
-        expect(subject.configure_lan).to eql(false)
-      end
-    end
-
-    context "when the configuration is not done before the proposal" do
-      let(:before_proposal) { false }
-      let(:networking_section) { { "setup_before_proposal" => before_proposal } }
-
-      context "and the user wants to keep the installation network" do
-        let(:networking_section) { { "keep_install_network" => true } }
-
-        it "merges the installation configuration" do
-          expect(Yast::NetworkAutoYast.instance).to_not receive(:merge_configs)
-          subject.configure_lan
-        end
-      end
-
-      context "and the user does not want to keep the installation network" do
-        let(:networking_section) { { "keep_install_network" => false } }
-
-        it "does not merge the installation configuration" do
-          expect(Yast::NetworkAutoYast.instance).to_not receive(:merge_configs)
-          subject.configure_lan
-        end
-      end
-
-      it "writes the current configuration without starting it" do
+      it "writes the selected backend config" do
         expect(Yast::Lan).to receive(:Write).with(apply_config: false)
 
         subject.configure_lan
+      end
+    end
+
+    context "when the AutoYaST or proposal selected backend is wicked" do
+      context "and the configuration was done before the proposal" do
+        let(:before_proposal) { true }
+        let(:networking_section) { { "setup_before_proposal" => before_proposal } }
+
+        context "and the backend selected is the inst-sys default (wicked)" do
+          it "does not write anything" do
+            expect(Yast::Lan).to_not receive(:Write)
+
+            subject.configure_lan
+          end
+
+          it "returns false" do
+            expect(subject.configure_lan).to eql(false)
+          end
+        end
+      end
+
+      context "and the configuration is not done before the proposal" do
+        let(:networking_section) { { "setup_before_proposal" => before_proposal } }
+
+        context "and the user wants to keep the installation network" do
+          let(:networking_section) { { "keep_install_network" => true } }
+
+          it "merges the installation configuration" do
+            expect(Yast::NetworkAutoYast.instance).to_not receive(:merge_configs)
+            subject.configure_lan
+          end
+        end
+
+        context "and the user does not want to keep the installation network" do
+          let(:networking_section) { { "keep_install_network" => false } }
+
+          it "does not merge the installation configuration" do
+            expect(Yast::NetworkAutoYast.instance).to_not receive(:merge_configs)
+            subject.configure_lan
+          end
+        end
+
+        it "writes the current configuration without starting it" do
+          expect(Yast::Lan).to receive(:Write).with(apply_config: false)
+
+          subject.configure_lan
+        end
       end
     end
   end

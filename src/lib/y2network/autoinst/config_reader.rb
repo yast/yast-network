@@ -28,7 +28,7 @@ require "y2network/autoinst/udev_rules_reader"
 require "y2network/autoinst_profile/networking_section"
 require "y2network/wicked/interfaces_reader"
 
-Yast.import "Lan"
+Yast.import "Stage"
 
 module Y2Network
   module Autoinst
@@ -70,7 +70,10 @@ module Y2Network
           end
         end
 
-        config.backend = section.managed ? :network_manager : :wicked
+        # During the first stage of an autoinstallation we are not able to
+        # switch to NetworkManager and in case of setup_before_proposal the
+        # config should be written to the inst-sys (:wicked).
+        config.backend = (!Yast::Stage.initial && section.managed) ? :network_manager : :wicked
 
         config
       end

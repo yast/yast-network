@@ -42,7 +42,7 @@ module Y2Network
       Yast.import "PackagesProposal"
       Yast.import "Lan"
 
-      @selected_backend = nil
+      @selected_backend = autoinst_backend
       @virt_bridge_proposal = autoinst_disabled_proposal? ? false : true
     end
 
@@ -123,12 +123,14 @@ module Y2Network
     # depending on the backend selected during the proposal and the packages
     # installed
     def network_service
-      case current_backend
-      when :network_manager
-        network_manager_installed? ? :network_manager : :wicked
-      else
-        :wicked
+      if current_backend == :network_manager
+        return :network_manager if network_manager_installed?
+
+        log.info("NetworkManager is the selected service but it is not installed")
+        log.info("- using wicked")
       end
+
+      :wicked
     end
 
     class << self
@@ -148,6 +150,12 @@ module Y2Network
     end
 
   private
+
+    def autoinst_backend
+      return if Yast::Lan.autoinst.managed.nil?
+
+      Yast::Lan.autoinst.managed ? :network_manager : :wicked
+    end
 
     # Convenience method to check whether the bridge configuration proposal for
     # configuration was disabled in the AutoYaST profile.

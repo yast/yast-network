@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Mar 18 12:59:31 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
+
+- AutoYaST: Write NetworkManager configuration according to the
+  profile (bsc#1181701)
+- 4.3.62
+
+-------------------------------------------------------------------
 Wed Mar 17 18:26:34 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
 
 - Always provide the layer2 argument when activating a qeth device
