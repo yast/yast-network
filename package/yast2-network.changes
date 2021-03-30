@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Mar 29 11:52:08 UTC 2021 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
+
+- Use the ESSID to name the NetworkManager configuration files
+  for wireless networks (bsc#1183733).
+- 4.3.63
+
+-------------------------------------------------------------------
 Thu Mar 18 12:59:31 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
 
 - AutoYaST: Write NetworkManager configuration according to the

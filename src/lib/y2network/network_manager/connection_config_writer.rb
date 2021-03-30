@@ -39,7 +39,7 @@ module Y2Network
       def write(conn, old_conn = nil, opts = {})
         return if conn == old_conn
 
-        path = SYSTEM_CONNECTIONS_PATH.join(conn.name).sub_ext(FILE_EXT)
+        path = SYSTEM_CONNECTIONS_PATH.join(file_basename_for(conn)).sub_ext(FILE_EXT)
         file = CFA::NmConnection.new(path)
         handler_class = find_handler_class(conn.type)
         return nil if handler_class.nil?
@@ -73,6 +73,16 @@ module Y2Network
         log.info "Unknown connection type: '#{type}'. " \
                  "Connection handler could not be loaded: #{e.message}"
         nil
+      end
+
+      # Returns the file base name for the given connection
+      #
+      # @param conn [ConnectionConfig::Base]
+      # @return [String]
+      def file_basename_for(conn)
+        return conn.essid.to_s if conn.is_a?(ConnectionConfig::Wireless)
+
+        conn.name
       end
     end
   end

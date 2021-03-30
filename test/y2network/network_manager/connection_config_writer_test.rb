@@ -21,6 +21,7 @@ require_relative "../../test_helper"
 
 require "y2network/network_manager/connection_config_writer"
 require "y2network/network_manager/connection_config_writers/ethernet"
+require "y2network/network_manager/connection_config_writers/wireless"
 require "y2network/connection_config/ethernet"
 require "y2network/interface_type"
 require "cfa/nm_connection"
@@ -71,10 +72,10 @@ describe Y2Network::NetworkManager::ConnectionConfigWriter do
       allow(CFA::NmConnection).to receive(:new).and_return(file)
       allow(writer).to receive(:ensure_permissions)
       allow(::File).to receive(:exist?).with(Pathname.new(path)).and_return(true)
+      allow(::File).to receive(:exist?).and_call_original
     end
 
     it "uses the appropiate handler" do
-      expect(writer).to receive(:require).and_return(handler)
       expect(handler).to receive(:write).with(conn, {})
       writer.write(conn)
     end
@@ -86,6 +87,42 @@ describe Y2Network::NetworkManager::ConnectionConfigWriter do
 
       it "ensures the file is created with the the correct permissions" do
         expect(writer).to receive(:ensure_permissions).with(Pathname.new(path))
+        writer.write(conn)
+      end
+    end
+
+    it "uses the connection name as base file name" do
+      expect(CFA::NmConnection).to receive(:new) do |path|
+        expect(path.basename).to eq(Pathname.new("eth0.nmconnection"))
+      end.and_return(file)
+      writer.write(conn)
+    end
+
+    context "when writing a wireless connection" do
+      let(:conn) do
+        Y2Network::ConnectionConfig::Wireless.new.tap do |wlo1|
+          wlo1.name = "wlo1"
+          wlo1.interface = "wlo1"
+          wlo1.ip = ip_config
+          wlo1.essid = "MY_WIRELESS"
+        end
+      end
+
+      let(:handler) do
+        instance_double(
+          Y2Network::NetworkManager::ConnectionConfigWriters::Wireless, write: nil
+        )
+      end
+
+      before do
+        allow(Y2Network::NetworkManager::ConnectionConfigWriters::Wireless).to receive(:new)
+          .and_return(handler)
+      end
+
+      it "uses the ESSID as the base file name" do
+        expect(CFA::NmConnection).to receive(:new) do |path|
+          expect(path.basename).to eq(Pathname.new("MY_WIRELESS.nmconnection"))
+        end.and_return(file)
         writer.write(conn)
       end
     end
