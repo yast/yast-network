@@ -55,12 +55,10 @@ module Yast
     # Dialog for setting up IP address
     # @return dialog result
     def AddressDialog(builder:)
-      @builder = builder
-
       ret = Y2Network::Dialogs::EditInterface.run(builder)
 
       if ret != :back && ret != :abort
-        if LanItems.isCurrentDHCP && !LanItems.isCurrentHotplug
+        if builder.boot_protocol.dhcp? && !LanItems.isCurrentHotplug
           # fixed bug #73739 - if dhcp is used, dont set default gw statically
           # but also: reset default gw only if DHCP* is used, this branch covers
           #     "No IP address" case, then default gw must stay (#460262)
