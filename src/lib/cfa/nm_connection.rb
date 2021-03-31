@@ -18,6 +18,8 @@
 # find current contact information at www.suse.com.
 
 require "cfa/base_model"
+require "pathname"
+require "y2network/connection_config/wireless"
 
 module CFA
   # Class to handle NetworkManager connection configuration files
@@ -31,6 +33,37 @@ module CFA
     KNOWN_SECTIONS = [
       "bond", "bridge", "connection", "ethernet", "ipv4", "ipv6", "vlan", "wifi", "wifi_security"
     ].freeze
+
+    # @return [String] File path
+    attr_reader :file_path
+
+    class << self
+      # Returns the file corresponding to a connection
+      #
+      # @param conn [ConnectionConfig::Base] Connection configuration
+      # @return [NmConnection]
+      def for(conn)
+        path = SYSTEM_CONNECTIONS_PATH.join(file_basename_for(conn)).sub_ext(FILE_EXT)
+        new(path)
+      end
+
+    private
+
+      SYSTEM_CONNECTIONS_PATH = Pathname.new("/etc/NetworkManager/system-connections").freeze
+      FILE_EXT = ".nmconnection".freeze
+
+      # Returns the file base name for the given connection
+      #
+      # @param conn [ConnectionConfig::Base]
+      # @return [String]
+      def file_basename_for(conn)
+        if conn.is_a?(Y2Network::ConnectionConfig::Wireless) && conn.essid
+          return conn.essid.to_s 
+        end
+
+        conn.name
+      end
+    end
 
     # Constructor
     #
@@ -78,6 +111,13 @@ module CFA
       values.each_with_index do |ip, index|
         section["#{name}#{index + 1}"] = ip
       end
+    end
+
+    # Determines whether the file exist
+    #
+    # @return [Boolean] true if the file exist, false otherwise
+    def exist?
+      ::File.exist?(file_path)
     end
 
     KNOWN_SECTIONS.each { |s| define_method(s) { section_for(s) } }
