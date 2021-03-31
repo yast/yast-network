@@ -21,6 +21,8 @@ require "cfa/base_model"
 require "pathname"
 require "y2network/connection_config/wireless"
 
+Yast.import "WFM"
+
 module CFA
   # Class to handle NetworkManager connection configuration files
   #
@@ -57,9 +59,7 @@ module CFA
       # @param conn [ConnectionConfig::Base]
       # @return [String]
       def file_basename_for(conn)
-        if conn.is_a?(Y2Network::ConnectionConfig::Wireless) && conn.essid
-          return conn.essid.to_s 
-        end
+        return conn.essid.to_s if conn.is_a?(Y2Network::ConnectionConfig::Wireless) && conn.essid
 
         conn.name
       end
@@ -117,7 +117,7 @@ module CFA
     #
     # @return [Boolean] true if the file exist, false otherwise
     def exist?
-      ::File.exist?(file_path)
+      ::File.exist?(::File.join(Yast::WFM.scr_root, file_path))
     end
 
     KNOWN_SECTIONS.each { |s| define_method(s) { section_for(s) } }

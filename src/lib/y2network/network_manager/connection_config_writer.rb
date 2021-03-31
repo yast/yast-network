@@ -40,7 +40,11 @@ module Y2Network
         handler_class = find_handler_class(conn.type)
         return nil if handler_class.nil?
 
-        ensure_permissions(file.file_path) unless file.file_path.exist?
+        if file.exist?
+          file.load
+        else
+          ensure_permissions(file.file_path)
+        end
 
         handler_class.new(file).write(conn, opts)
         file.save

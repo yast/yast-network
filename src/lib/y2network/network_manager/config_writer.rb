@@ -43,6 +43,25 @@ module Y2Network
         end
       end
 
+      # Updates the DNS configuration
+      #
+      # In case a connection has a static configuration, the DNS nameservers are added
+      # to the configuration file (see bsc#1181701).
+      #
+      # @param config     [Y2Network::Config] Current config object
+      # @param old_config [Y2Network::Config,nil] Config object with original configuration
+      def write_dns(config, old_config)
+        static = config.connections.by_bootproto(Y2Network::BootProtocol::STATIC)
+        return super if static.empty? || config.dns.nameservers.empty?
+
+        ipv4_ns, ipv6_ns = config.dns.nameservers.partition(&:ipv4?)
+        ipv4_dns = ipv4_ns.map(&:to_s).join(";")
+        ipv6_dns = ipv6_ns.map(&:to_s).join(";")
+        static.each do |conn|
+          add_dns_to_conn(conn, ipv4_dns, ipv6_dns)
+        end
+      end
+
       # Finds routes for a given connection
       #
       # @param conn [ConnectionConfig::Base] Connection configuration
@@ -50,6 +69,21 @@ module Y2Network
       # @return [Array<Route>] List of routes for the given connection
       def routes_for(conn, routes)
         routes.select { |r| r.interface&.name == conn.name }
+      end
+
+      # Add the DNS settings to the nmconnection file corresponding to the give conn
+      #
+      # @param conn [Connectionconfig::Base] Connection configuration
+      # @param ipv4_dns [String] Value for the 'dns' key in the ipv4 section
+      # @param ipv6_dns [String] Value for the 'dns' key in the ipv6 section
+      def add_dns_to_conn(conn, ipv4_dns, ipv6_dns)
+        file = CFA::NmConnection.for(conn)
+        return unless file.exist?
+
+        file.load
+        file.ipv4["dns"] = ipv4_dns unless ipv4_dns.empty?
+        file.ipv6["dns"] = ipv6_dns unless ipv6_dns.empty?
+        file.save
       end
     end
   end
