@@ -253,7 +253,7 @@ module Yast
       )
 
       if running_installer
-        Wizard.SetAbortButton(:abort, Label.AbortButton)
+        Wizard.HideAbortButton
       else
         Wizard.SetAbortButton(:abort, Label.CancelButton)
         Wizard.HideBackButton
