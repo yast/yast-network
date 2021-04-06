@@ -287,7 +287,7 @@ module Yast
     def hide_abort_button?
       return false unless running_installer?
 
-      GetInstArgs.argmap["disable_abort_button"] == true
+      GetInstArgs.argmap["hide_abort_button"] == true
     end
 
     # Whether running during installation
