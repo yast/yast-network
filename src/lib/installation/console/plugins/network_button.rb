@@ -41,7 +41,11 @@ module Installation
         end
 
         def handle
-          Yast::WFM.call("inst_lan", [{ "skip_detection" => true }])
+          Yast::WFM.call(
+            "inst_lan",
+            [{ "skip_detection" => true, "disable_abort_button" => true }]
+          )
+
           nil
         end
       end
