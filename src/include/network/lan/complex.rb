@@ -55,6 +55,7 @@ module Yast
       Yast.import "CWMTab"
       Yast.import "Stage"
       Yast.import "Systemd"
+      Yast.import "GetInstArgs"
 
       Yast.include include_target, "network/routines.rb"
       Yast.include include_target, "network/lan/help.rb"
@@ -242,30 +243,58 @@ module Yast
 
       help = CWM.MergeHelps(w)
       contents = CWM.PrepareDialog(contents, w)
-      running_installer = Mode.installation || Mode.update
 
       Wizard.SetContentsButtons(
         caption,
         contents,
         help,
         Label.BackButton,
-        running_installer ? Label.NextButton : Label.OKButton
+        next_button_label
       )
 
-      if running_installer
-        Wizard.HideAbortButton
-      else
-        Wizard.SetAbortButton(:abort, Label.CancelButton)
-        Wizard.HideBackButton
-      end
+      Wizard.SetAbortButton(:abort, abort_button_label)
+      Wizard.HideAbortButton if hide_abort_button?
+      Wizard.HideBackButton unless running_installer?
 
       ret = nil
+
       loop do
         ret = CWM.Run(w, {})
         break if input_done?(ret)
       end
 
       ret
+    end
+
+    # The label for the next/ok button
+    #
+    # @return [String]
+    def next_button_label
+      running_installer? ? Label.NextButton : Label.OKButton
+    end
+
+    # The label for the abort/quit button
+    #
+    # @return [String]
+    def abort_button_label
+      running_installer? ? Label.AbortButton : Label.CancelButton
+    end
+
+    # Whether abort button should be hide
+    #
+    # @return [Boolean] true if running during installation and disable_abort_button inst argument
+    # is present and true; false otherwise
+    def hide_abort_button?
+      return false unless running_installer?
+
+      GetInstArgs.argmap["disable_abort_button"] == true
+    end
+
+    # Whether running during installation
+    #
+    # @return [Boolean] true when running during installation, false otherwise
+    def running_installer?
+      Mode.installation || Mode.update
     end
   end
 end
