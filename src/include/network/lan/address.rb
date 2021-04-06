@@ -63,6 +63,9 @@ module Yast
           # but also: reset default gw only if DHCP* is used, this branch covers
           #     "No IP address" case, then default gw must stay (#460262)
           # and also: don't delete default GW for usb/pcmcia devices (#307102)
+          #
+          # Is check for hotplug really needed? It contained a typo up to SLE-15-SP4 and
+          # nobody complained - something to think of during next refactoring.
           yast_config = Y2Network::Config.find(:yast)
           if yast_config&.routing&.default_route
             remove_gw = Popup.YesNo(
