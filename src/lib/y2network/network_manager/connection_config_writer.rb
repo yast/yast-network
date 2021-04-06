@@ -28,9 +28,6 @@ module Y2Network
     class ConnectionConfigWriter
       include Yast::Logger
 
-      SYSTEM_CONNECTIONS_PATH = Pathname.new("/etc/NetworkManager/system-connections").freeze
-      FILE_EXT = ".nmconnection".freeze
-
       # @param conn [ConnectionConfig::Base] Connection configuration to be
       #   written
       # @param old_conn [ConnectionConfig::Base] Original connection
@@ -39,12 +36,15 @@ module Y2Network
       def write(conn, old_conn = nil, opts = {})
         return if conn == old_conn
 
-        path = SYSTEM_CONNECTIONS_PATH.join(file_basename_for(conn)).sub_ext(FILE_EXT)
-        file = CFA::NmConnection.new(path)
+        file = CFA::NmConnection.for(conn)
         handler_class = find_handler_class(conn.type)
         return nil if handler_class.nil?
 
-        ensure_permissions(path) unless ::File.exist?(path)
+        if file.exist?
+          file.load
+        else
+          ensure_permissions(file.file_path)
+        end
 
         handler_class.new(file).write(conn, opts)
         file.save
@@ -73,16 +73,6 @@ module Y2Network
         log.info "Unknown connection type: '#{type}'. " \
                  "Connection handler could not be loaded: #{e.message}"
         nil
-      end
-
-      # Returns the file base name for the given connection
-      #
-      # @param conn [ConnectionConfig::Base]
-      # @return [String]
-      def file_basename_for(conn)
-        return conn.essid.to_s if conn.is_a?(ConnectionConfig::Wireless)
-
-        conn.name
       end
     end
   end
