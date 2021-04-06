@@ -132,5 +132,10 @@ module Y2Network
           Y2Network::UdevRule.new_bus_id_based_rename(name, hardware.busid, hardware.dev_port)
       end
     end
+
+    # @return [Boolean] true if the interface is hotplug
+    def hotplug?
+      ["usb", "pcmcia"].include?(hardware.hotplug)
+    end
   end
 end

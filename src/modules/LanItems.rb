@@ -263,21 +263,6 @@ module Yast
       true
     end
 
-    # Is current device hotplug or not? I.e. is connected via usb/pcmci?
-    def isCurrentHotplug
-      hotplugtype = Ops.get_string(getCurrentItem, ["hwinfo", "hotplug"], "")
-      ["usb", "pcmci"].include?(hotplugtype)
-    end
-
-    # Check if currently edited device gets its IP address
-    # from DHCP (v4, v6 or both)
-    # @return true if it is
-    def isCurrentDHCP
-      return false unless @bootproto
-
-      Y2Network::BootProtocol.from_name(@bootproto).dhcp?
-    end
-
     # Checks whether given device configuration is set to use a dhcp bootproto
     #
     # ideally should replace @see isCurrentDHCP
