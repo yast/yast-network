@@ -24,6 +24,7 @@ require "y2network/config_writers/dns_writer"
 require "y2network/connection_configs_collection"
 require "y2network/interfaces_collection"
 require "y2network/hostname"
+require "y2network/boot_protocol"
 
 RSpec.shared_examples "ConfigWriter" do
   subject(:writer) { described_class.new }
@@ -50,6 +51,7 @@ RSpec.shared_examples "ConfigWriter" do
     Y2Network::ConnectionConfig::Ethernet.new.tap do |conn|
       conn.interface = "eth0"
       conn.name = "eth0"
+      conn.bootproto = Y2Network::BootProtocol::DHCP
     end
   end
 
