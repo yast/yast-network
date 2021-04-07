@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Apr  7 11:27:26 UTC 2021 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
+
+- Write DNS servers to NetworkManager connection files when using
+  a static configuration (bsc#1181701).
+- 4.3.64
+
+-------------------------------------------------------------------
 Mon Mar 29 11:52:08 UTC 2021 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
 
 - Use the ESSID to name the NetworkManager configuration files
