@@ -3,8 +3,12 @@ Wed Apr  7 11:27:26 UTC 2021 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
 
 - Write DNS servers to NetworkManager connection files when using
   a static configuration (bsc#1181701).
-- Drop isCurrentDHCP and isCurrentHotplug methods from LanItems.
 - 4.4.0
+
+-------------------------------------------------------------------
+Tue Apr  6 08:54:07 UTC 2021 - Michal Filka <mfilka@suse.com>
+
+- Drop isCurrentDHCP and isCurrentHotplug methods from LanItems.
 
 -------------------------------------------------------------------
 Mon Mar 29 11:52:08 UTC 2021 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
