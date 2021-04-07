@@ -1,7 +1,8 @@
 -------------------------------------------------------------------
 Mon Apr  5 15:21:47 UTC 2021 - David Diaz <dgonzalez@suse.com>
 
-- Do not show the "Abort" button during installation (bsc#1183586).
+- Do not show the "Abort" button when the inst_lan client is called
+  from another installation step (bsc#1183586).
 - 4.4.0
 
 -------------------------------------------------------------------
