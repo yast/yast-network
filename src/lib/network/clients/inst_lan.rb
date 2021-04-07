@@ -32,10 +32,15 @@ module Yast
   # sequence.
   #
   # The configuration sequence can be forced passing the 'skip_detection'
-  # argument.
+  # argument. Additionally, the abort button could be hide passing the
+  # 'hide_abort_button' argument
   #
-  # @example calling the client forcing the configuration sequence
-  #   Yast::WFM.CallFunction("inst_lan", [args.merge("skip_detection" => true)])
+  # @example calling the client forcing the configuration sequence and hiding
+  # the abort button
+  #   Yast::WFM.CallFunction(
+  #     "inst_lan",
+  #     [args.merge("skip_detection" => true, "hide_abort_button" => true)]
+  #   )
   #
   # @example firsboot xml forcing the configuration sequence
   #   <module>
