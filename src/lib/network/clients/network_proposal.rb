@@ -138,7 +138,10 @@ module Yast
     def launch_network_configuration(args)
       log.info "Launching network configuration"
       Yast::Wizard.OpenAcceptDialog
-      result = Yast::WFM.CallFunction("inst_lan", [args.merge("skip_detection" => true)])
+      result = Yast::WFM.CallFunction(
+        "inst_lan",
+        [args.merge("skip_detection" => true, "hide_abort_button" => true)]
+      )
       log.info "Returning from the network configuration with: #{result}"
       result
     ensure

@@ -11,6 +11,12 @@ Tue Apr  6 08:54:07 UTC 2021 - Michal Filka <mfilka@suse.com>
 - Drop isCurrentDHCP and isCurrentHotplug methods from LanItems.
 
 -------------------------------------------------------------------
+Mon Apr  5 15:21:47 UTC 2021 - David Diaz <dgonzalez@suse.com>
+
+- Do not show the "Abort" button when the inst_lan client is called
+  from another installation step (bsc#1183586).
+
+-------------------------------------------------------------------
 Mon Mar 29 11:52:08 UTC 2021 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
 
 - Use the ESSID to name the NetworkManager configuration files
