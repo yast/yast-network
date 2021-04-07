@@ -72,6 +72,14 @@ module Y2Network
       select { |c| ids.include?(c.id) }
     end
 
+    # Returns connections with a given bootproto
+    #
+    # @param bootprotos [Array<BootProtocol>] Boot protocols
+    # @return [Array<ConnectionConfig::Base>] Connection configs with the given boot protocol
+    def by_bootproto(*bootprotos)
+      select { |c| bootprotos.include?(c.bootproto) }
+    end
+
     # Adds or updates a connection configuration
     #
     # @note It uses the name to do the matching.

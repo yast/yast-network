@@ -18,6 +18,10 @@
 # find current contact information at www.suse.com.
 
 require "cfa/base_model"
+require "pathname"
+require "y2network/connection_config/wireless"
+
+Yast.import "WFM"
 
 module CFA
   # Class to handle NetworkManager connection configuration files
@@ -32,6 +36,35 @@ module CFA
       "bond", "bridge", "connection", "ethernet", "ipv4", "ipv6", "vlan", "wifi", "wifi_security"
     ].freeze
 
+    # @return [String] File path
+    attr_reader :file_path
+
+    class << self
+      # Returns the file corresponding to a connection
+      #
+      # @param conn [ConnectionConfig::Base] Connection configuration
+      # @return [NmConnection]
+      def for(conn)
+        path = SYSTEM_CONNECTIONS_PATH.join(file_basename_for(conn)).sub_ext(FILE_EXT)
+        new(path)
+      end
+
+    private
+
+      SYSTEM_CONNECTIONS_PATH = Pathname.new("/etc/NetworkManager/system-connections").freeze
+      FILE_EXT = ".nmconnection".freeze
+
+      # Returns the file base name for the given connection
+      #
+      # @param conn [ConnectionConfig::Base]
+      # @return [String]
+      def file_basename_for(conn)
+        return conn.essid.to_s if conn.is_a?(Y2Network::ConnectionConfig::Wireless) && conn.essid
+
+        conn.name
+      end
+    end
+
     # Constructor
     #
     # @param path [String] File path
@@ -39,7 +72,7 @@ module CFA
     def initialize(path, file_handler: nil)
       # FIXME: The Networkmanager lense writes the values surrounded by double
       # quotes which is not valid
-      super(AugeasParser.new("Puppet.lns"), path, file_handler: file_handler)
+      super(AugeasParser.new("Desktop.lns"), path, file_handler: file_handler)
     end
 
     # Returns the augeas tree for the given section
@@ -78,6 +111,13 @@ module CFA
       values.each_with_index do |ip, index|
         section["#{name}#{index + 1}"] = ip
       end
+    end
+
+    # Determines whether the file exist
+    #
+    # @return [Boolean] true if the file exist, false otherwise
+    def exist?
+      ::File.exist?(::File.join(Yast::WFM.scr_root, file_path))
     end
 
     KNOWN_SECTIONS.each { |s| define_method(s) { section_for(s) } }

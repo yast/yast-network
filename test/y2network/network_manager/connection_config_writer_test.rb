@@ -52,11 +52,13 @@ describe Y2Network::NetworkManager::ConnectionConfigWriter do
     Y2Network::ConnectionConfig::IPConfig.new(Y2Network::IPAddress.from_string("10.100.0.1/24"))
   end
 
-  let(:path) { "/etc/NetworkManager/system-connections/eth0.nmconnection" }
+  let(:path) { Pathname.new("/etc/NetworkManager/system-connections/eth0.nmconnection") }
 
   let(:file) do
-    instance_double(CFA::NmConnection, save: nil)
+    instance_double(CFA::NmConnection, save: nil, load: nil, file_path: path, exist?: file_exist?)
   end
+
+  let(:file_exist?) { true }
 
   describe "#write" do
     let(:handler) do
@@ -69,10 +71,8 @@ describe Y2Network::NetworkManager::ConnectionConfigWriter do
       allow(writer).to receive(:require).and_call_original
       allow(Y2Network::NetworkManager::ConnectionConfigWriters::Ethernet).to receive(:new)
         .and_return(handler)
-      allow(CFA::NmConnection).to receive(:new).and_return(file)
+      allow(CFA::NmConnection).to receive(:for).with(conn).and_return(file)
       allow(writer).to receive(:ensure_permissions)
-      allow(::File).to receive(:exist?).with(Pathname.new(path)).and_return(true)
-      allow(::File).to receive(:exist?).and_call_original
     end
 
     it "uses the appropiate handler" do
@@ -81,48 +81,10 @@ describe Y2Network::NetworkManager::ConnectionConfigWriter do
     end
 
     context "when the file does not exist" do
-      before do
-        allow(::File).to receive(:exist?).with(Pathname.new(path)).and_return(false)
-      end
+      let(:file_exist?) { false }
 
       it "ensures the file is created with the the correct permissions" do
-        expect(writer).to receive(:ensure_permissions).with(Pathname.new(path))
-        writer.write(conn)
-      end
-    end
-
-    it "uses the connection name as base file name" do
-      expect(CFA::NmConnection).to receive(:new) do |path|
-        expect(path.basename).to eq(Pathname.new("eth0.nmconnection"))
-      end.and_return(file)
-      writer.write(conn)
-    end
-
-    context "when writing a wireless connection" do
-      let(:conn) do
-        Y2Network::ConnectionConfig::Wireless.new.tap do |wlo1|
-          wlo1.name = "wlo1"
-          wlo1.interface = "wlo1"
-          wlo1.ip = ip_config
-          wlo1.essid = "MY_WIRELESS"
-        end
-      end
-
-      let(:handler) do
-        instance_double(
-          Y2Network::NetworkManager::ConnectionConfigWriters::Wireless, write: nil
-        )
-      end
-
-      before do
-        allow(Y2Network::NetworkManager::ConnectionConfigWriters::Wireless).to receive(:new)
-          .and_return(handler)
-      end
-
-      it "uses the ESSID as the base file name" do
-        expect(CFA::NmConnection).to receive(:new) do |path|
-          expect(path.basename).to eq(Pathname.new("MY_WIRELESS.nmconnection"))
-        end.and_return(file)
+        expect(writer).to receive(:ensure_permissions).with(path)
         writer.write(conn)
       end
     end
