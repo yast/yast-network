@@ -79,11 +79,11 @@ describe Yast::NetworkProposal do
         expect(proposal["preformatted_proposal"]).to include("rich_text_summary")
       end
 
-      it "includes a link for switch to NetworkManager" do
+      it "includes a link to switch to NetworkManager" do
         expect(proposal["preformatted_proposal"]).to match(/.*href.*NetworkManager.*/)
       end
 
-      it "does not include a link for switch to wicked" do
+      it "does not include a link to switch to wicked" do
         expect(proposal["preformatted_proposal"]).to_not match(/.*href.*wicked.*/)
       end
 
@@ -99,15 +99,11 @@ describe Yast::NetworkProposal do
     context "when using the NetworkManager backend" do
       let(:current_backend) { :network_manager }
 
-      it "does not include the Yast::Lan proposal summary" do
-        expect(proposal["preformatted_proposal"]).to_not include("rich_text_summary")
-      end
-
-      it "does not include a link for switch to NetworkManager" do
+      it "does not include a link to switch to NetworkManager" do
         expect(proposal["preformatted_proposal"]).to_not match(/.*href.*NetworkManager.*/)
       end
 
-      it "includes a link for switch to wicked" do
+      it "includes a link to switch to wicked" do
         expect(proposal["preformatted_proposal"]).to match(/.*href.*wicked.*/)
       end
     end

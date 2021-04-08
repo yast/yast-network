@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Apr  8 09:27:47 UTC 2021 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
+
+- Display the network configuration in the installation summary
+  screen even if NetworkManager is the selected backend
+  (bsc#1181354).
+- 4.4.1
+
+-------------------------------------------------------------------
 Wed Apr  7 11:27:26 UTC 2021 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
 
 - Write DNS servers to NetworkManager connection files when using
