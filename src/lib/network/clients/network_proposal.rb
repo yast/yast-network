@@ -96,7 +96,7 @@ module Yast
 
       proposal_text = switch_backend_link
       proposal_text << toggle_virt_proposal_link if settings.virtual_proposal_required?
-      proposal_text.prepend(proposal_summary.text) if wicked_backend?
+      proposal_text.prepend(proposal_summary.text)
       proposal_text
     end
 
@@ -120,7 +120,7 @@ module Yast
       # TRANSLATORS: information about the network backend in use. %s is the name of backend,
       # example "wicked" or "NetworkManager"
       backend_in_use = _("Using <b>%s</b>")
-      # TRANSLATORS: text of link for switch to another network backend. %s is the name of backend,
+      # TRANSLATORS: text of link to switch to another network backend. %s is the name of backend,
       # example "wicked" or "NetworkManager"
       switch_to = _("switch to %s")
 
