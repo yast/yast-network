@@ -43,6 +43,7 @@ module Y2Network
 
     # @return [String] Returns protocol name
     attr_reader :name
+    alias_method :to_s, :name
 
     # Constructor
     #
