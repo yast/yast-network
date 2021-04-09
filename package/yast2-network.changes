@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Fri Apr  9 11:22:42 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
+
+- bsc#1181956
+  - Omit empty values or the '0.0.0.0' IPADDR when writing ifcfg
+    files.
+  - Do not write empty ifroute files.
+- 4.4.2
+
+-------------------------------------------------------------------
 Thu Apr  8 09:27:47 UTC 2021 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
 
 - Display the network configuration in the installation summary
