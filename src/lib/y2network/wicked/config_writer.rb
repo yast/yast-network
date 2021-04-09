@@ -64,10 +64,12 @@ module Y2Network
           file = routes_file_for(dev)
 
           # Remove ifroutes-* if empty or interface is not configured
-          file.remove if routes.empty? || !config.configured_interface?(dev.name)
-
-          file.routes = routes
-          file.save
+          if routes.empty? || !config.configured_interface?(dev.name)
+            file.remove
+          else
+            file.routes = routes
+            file.save
+          end
         end
 
         # Actions needed for removed interfaces

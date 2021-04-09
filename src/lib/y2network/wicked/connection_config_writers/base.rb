@@ -26,8 +26,11 @@ module Y2Network
       #
       # The derived classes should implement {#update_file} method.
       class Base
+        extend Forwardable
         # @return [CFA::InterfaceFile] Interface's configuration file
         attr_reader :file
+
+        def_delegators :@file, :value_as_string
 
         # Constructor
         #
@@ -40,17 +43,15 @@ module Y2Network
         #
         # @param conn [Y2Network::ConnectionConfig::Base] Connection to take settings from
         def write(conn)
-          file.bootproto = conn.bootproto&.name
-          file.name = conn.description
-          file.lladdr = conn.lladdress
-          file.startmode = conn.startmode.to_s
-          file.dhclient_set_hostname = dhclient_set_hostname(conn)
+          file.bootproto = value_as_string(conn.bootproto&.name)
+          file.name = value_as_string(conn.description)
+          file.lladdr = value_as_string(conn.lladdress)
+          file.startmode = value_as_string(conn.startmode.to_s)
+          file.dhclient_set_hostname = value_as_string(dhclient_set_hostname(conn))
           file.ifplugd_priority = conn.startmode.priority if conn.startmode&.name == "ifplugd"
-          if conn.ethtool_options && !conn.ethtool_options.empty?
-            file.ethtool_options = conn.ethtool_options
-          end
-          file.zone = conn.firewall_zone
-          file.mtu = conn.mtu
+          file.ethtool_options = value_as_string(conn.ethtool_options)
+          file.zone = value_as_string(conn.firewall_zone)
+          file.mtu = value_as_string(conn.mtu)
           add_ips(conn)
 
           update_file(conn)
@@ -82,7 +83,7 @@ module Y2Network
         def add_ips(conn)
           file.ipaddrs.clear
           ips_to_add = conn.ip_aliases.clone
-          ips_to_add << conn.ip if conn.ip && !conn.bootproto.dhcp?
+          ips_to_add << conn.ip if static_ip?(conn)
           ips_to_add.each { |i| add_ip(i) }
         end
 
@@ -91,7 +92,7 @@ module Y2Network
         # @param ip [Y2Network::IPAddress] IP address to add
         def add_ip(ip)
           file.ipaddrs[ip.id] = ip.address
-          file.labels[ip.id] = ip.label
+          file.labels[ip.id] = value_as_string(ip.label)
           file.remote_ipaddrs[ip.id] = ip.remote_address
           file.broadcasts[ip.id] = ip.broadcast
         end
@@ -104,6 +105,13 @@ module Y2Network
           return if conn.hostnames.empty?
 
           Yast::Host.Update("", conn.hostname, conn.ip.address.address.to_s)
+        end
+
+        # @param conn [Y2Network::ConnectionConfig::Base] Connection to take settings from
+        def static_ip?(conn)
+          return false unless conn.bootproto.static?
+
+          conn.ip && conn.ip.address.address.to_s != "0.0.0.0"
         end
       end
     end
