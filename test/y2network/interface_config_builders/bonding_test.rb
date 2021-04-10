@@ -26,6 +26,10 @@ require "y2network/interface_config_builders/bonding"
 
 describe Y2Network::InterfaceConfigBuilders::Bonding do
   let(:config) { Y2Network::Config.new(source: :test) }
+  let(:dhcp) { Y2Network::BootProtocol::DHCP }
+  let(:none) { Y2Network::BootProtocol::NONE }
+  let(:hotplug) { Y2Network::Startmode.create("hotplug") }
+  let(:auto) { Y2Network::Startmode.create("auto") }
 
   before do
     allow(config).to receive(:interfaces).and_return(interfaces_collection)
@@ -154,20 +158,20 @@ describe Y2Network::InterfaceConfigBuilders::Bonding do
     end
 
     context "when all the slaves are properly configure do" do
-      it "return false" do
+      it "returns false" do
         subject.save
         expect(subject.require_adaptation?(connection_config.slaves)).to eql(false)
       end
     end
+
     context "when at least one configured slave need to be adapted" do
-      it "return true" do
+      it "returns true" do
         subject.save
         iface1_conn = connection_configs_collection.by_name("iface1")
-        iface1_conn.bootproto = Y2Network::BootProtocol::DHCP
+        iface1_conn.bootproto = dhcp
         expect(subject.require_adaptation?(connection_config.slaves)).to eql(true)
       end
     end
-
   end
 
   describe "#save" do
@@ -181,12 +185,22 @@ describe Y2Network::InterfaceConfigBuilders::Bonding do
       subject.save
       iface1_conn = connection_configs_collection.by_name("iface1")
       iface2_conn = connection_configs_collection.by_name("iface2")
-      iface2_conn.bootproto = Y2Network::BootProtocol::DHCP
+      iface2_conn.bootproto = dhcp
       expect(Y2Network::InterfaceConfigBuilder)
         .to receive(:for).with(anything, config: iface2_conn).once.and_call_original
       expect(Y2Network::InterfaceConfigBuilder)
         .to_not receive(:for).with(anything, config: iface1_conn)
       subject.save
+    end
+
+    it "sets the BOOTPROTO to 'none' and STARTMODE to 'hotplug' in the adapted configs" do
+      connection_config.slaves = ["iface1", "iface2"]
+      subject.save
+      iface2_conn = connection_configs_collection.by_name("iface2")
+      iface2_conn.bootproto = dhcp
+      expect { subject.save }.to change { iface2_conn.bootproto }.from(dhcp).to(none)
+      iface2_conn.startmode = auto
+      expect { subject.save }.to change { iface2_conn.startmode }.from(auto).to(hotplug)
     end
   end
 end

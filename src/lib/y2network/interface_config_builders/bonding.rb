@@ -60,7 +60,7 @@ module Y2Network
         devices.any? do |device|
           next false unless yast_config.configured_interface?(device)
 
-          yast_config.connections.by_name(device).bootproto.name != "none"
+          !valid_slave_config?(device)
         end
       end
 
@@ -68,12 +68,13 @@ module Y2Network
       def save
         slaves.each do |slave|
           interface = yast_config.interfaces.by_name(slave)
-          connection = yast_config.connections.by_name(slave)
-          next if connection && connection.bootproto.name == "none"
+          next if valid_slave_config?(slave)
 
+          connection = yast_config.connections.by_name(slave)
           builder = InterfaceConfigBuilder.for(interface.type, config: connection)
           builder.name = interface.name
           builder.configure_as_slave
+          builder.startmode = "hotplug"
           builder.save
         end
 
@@ -117,6 +118,16 @@ module Y2Network
         return false if iface.name == @name
 
         true
+      end
+
+      # Convenience method to check whether the config of an enslaved interface
+      # is valid or not
+      #
+      # @param iface [String] slave name to be validated
+      def valid_slave_config?(iface)
+        conn = yast_config.connections.by_name(iface)
+
+        conn&.bootproto&.name == "none" && conn&.startmode&.name == "hotplug"
       end
     end
   end

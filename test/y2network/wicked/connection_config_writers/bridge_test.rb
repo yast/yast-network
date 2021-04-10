@@ -47,7 +47,7 @@ describe Y2Network::Wicked::ConnectionConfigWriters::Bridge do
     it "writes common properties" do
       handler.write(conn)
       expect(file).to have_attributes(
-        name:      conn.description,
+        name:      nil,
         startmode: "auto",
         bootproto: "dhcp"
       )
