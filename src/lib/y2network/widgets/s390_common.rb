@@ -369,7 +369,7 @@ module Y2Network
       # @see CWM::AbstractWidget
       def help
         _("<p>Enter the <b>Layer 2 MAC Address</b> if this card has been " \
-          "configured with layer 2 support.</p>")
+          "configured with layer 2 support <b>(optional)</b>.</p>")
       end
     end
   end
