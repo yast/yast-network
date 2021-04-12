@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Apr 12 12:05:02 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
+
+- Do not require a MAC address when activating a qeth device
+  with layer2 support (bsc#1184474).
+- 4.3.65
+
+-------------------------------------------------------------------
 Wed Apr  7 11:27:26 UTC 2021 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
 
 - Write DNS servers to NetworkManager connection files when using
