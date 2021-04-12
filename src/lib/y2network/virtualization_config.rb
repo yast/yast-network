@@ -20,8 +20,6 @@
 require "yast"
 require "y2network/interface_config_builder"
 
-Yast.import "LanItems"
-
 module Y2Network
   # This class is responsible for creating a bridge configuration for
   # virtualization from the interfaces that are connected and bridgeable.
