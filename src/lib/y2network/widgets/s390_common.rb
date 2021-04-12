@@ -244,11 +244,18 @@ module Y2Network
         nil
       end
 
+      # @see CWM::AbstractWidget
       def validate
         return true if !layer2? || valid_mac?(mac_address_widget.value)
 
         report_mac_error
         false
+      end
+
+      # @see CWM::AbstractWidget
+      def store
+        @settings.layer2 = layer2?
+        @settings.lladdress = layer2? ? lladdress_for(mac_address_widget.value) : nil
       end
 
     private
@@ -272,10 +279,21 @@ module Y2Network
       # @return [Boolean] true when valid; false otherwise
       # @param mac_address [String]
       def valid_mac?(mac_address)
-        return false if mac_address.to_s.empty?
-        return false if mac_address == "00:00:00:00:00:00"
+        return true unless lladdress_for(mac_address)
 
         !!(mac_address =~ /^([0-9a-fA-F]{2}[:-]){5}[0-9a-fA-F]{2}$/i)
+      end
+
+      # Return the MAC address in case it is not empty or a zero's MAC address
+      # otherwise it returns nil.
+      #
+      # @param mac_widget_value [String]
+      # @return [String, nil] the MAC address in case it is not empty or a
+      #   zero's MAC address; nil otherwise
+      def lladdress_for(mac_widget_value)
+        return if ["", "00:00:00:00:00:00"].include?(mac_widget_value.to_s)
+
+        mac_widget_value
       end
 
       # Convenience method to enable or disable the mac address widget when the
@@ -326,11 +344,6 @@ module Y2Network
         "<p>Select <b>Enable Layer 2 Support</b> if this card has been " \
          "configured with layer 2 support.</p>"
       end
-
-      # @see CWM::AbstractWidget
-      def store
-        @settings.layer2 = value
-      end
     end
 
     # Widget for setting the mac address to be used in case of layer2 supported
@@ -357,11 +370,6 @@ module Y2Network
       def help
         _("<p>Enter the <b>Layer 2 MAC Address</b> if this card has been " \
           "configured with layer 2 support.</p>")
-      end
-
-      # @see CWM::AbstractWidget
-      def store
-        @settings.lladdress = value
       end
     end
   end
