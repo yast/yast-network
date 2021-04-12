@@ -85,10 +85,7 @@ module Y2Network
     end
 
     # Adds a new interface with the given name
-    #
-    # @todo This method exists just to keep some compatibility during
-    #       the migration to network-ng.
-    def add_device_to_routing(name = current_name)
+    def add_device_to_routing(name)
       config = yast_config
       return if config.nil?
       return if config.interfaces.any? { |i| i.name == name }
