@@ -138,8 +138,19 @@ describe Y2Network::Widgets::S390Layer2 do
       context "and the MAC provided is a valid one" do
         let(:layer2_address) { "02:00:00:00:01:FD" }
 
-        it "returns true" do
+        it "requests user confirmation before storing the defined MAC" do
+          expect(subject).to receive(:use_selected_mac?)
+          subject.validate
+        end
+
+        it "returns true if the user accepts" do
+          allow(subject).to receive(:use_selected_mac?).and_return(true)
           expect(subject.validate).to eql(true)
+        end
+
+        it "returns false if the user reject" do
+          allow(subject).to receive(:use_selected_mac?).and_return(false)
+          expect(subject.validate).to eql(false)
         end
       end
 

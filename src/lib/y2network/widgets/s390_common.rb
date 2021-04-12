@@ -246,10 +246,15 @@ module Y2Network
 
       # @see CWM::AbstractWidget
       def validate
-        return true if !layer2? || valid_mac?(mac_address_widget.value)
+        return true if !layer2? || !lladdress_for(mac_address_widget.value)
 
-        report_mac_error
-        false
+        unless valid_mac?(mac_address_widget.value)
+          report_mac_error
+
+          return false
+        end
+
+        use_selected_mac?
       end
 
       # @see CWM::AbstractWidget
@@ -259,6 +264,19 @@ module Y2Network
       end
 
     private
+
+      def use_selected_mac?
+        Yast::Popup.YesNoHeadline(
+          Yast::Label.WarningMsg,
+          format(
+            # TRANSLATORS: Popup trying to prevent the user to set an specific MAC address
+            _("Specifying a MAC address is optional. \n" \
+            "In most cases letting it empty (default) is the correct choice. \n\n" \
+            "Do you really want to set it it '%s'?"),
+            mac_address_widget.value
+          )
+        )
+      end
 
       def report_mac_error
         # TRANSLATORS: Popup error about not valid MAC address provided
