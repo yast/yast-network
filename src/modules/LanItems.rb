@@ -323,35 +323,6 @@ module Yast
       publish variable: name, type: type
     end
 
-    # Adds a new interface with the given name
-    #
-    # @todo This method exists just to keep some compatibility during
-    #       the migration to network-ng.
-    def add_device_to_routing(name = current_name)
-      config = yast_config
-      return if config.nil?
-      return if config.interfaces.any? { |i| i.name == name }
-
-      yast_config.interfaces << Y2Network::Interface.new(name)
-    end
-
-    # Assigns all the routes from one interface to another
-    #
-    # @param from [String] interface belonging the routes to be moved
-    # @param to [String] target interface
-    def move_routes(from, to)
-      config = yast_config
-      return unless config&.routing
-
-      routing = config.routing
-      add_device_to_routing(to)
-      target_interface = config.interfaces.by_name(to)
-      return unless target_interface
-
-      routing.routes.select { |r| r.interface && r.interface.name == from }
-        .each { |r| r.interface = target_interface }
-    end
-
   private
 
     # Searches available items according sysconfig option

@@ -72,13 +72,46 @@ module Y2Network
         bridge_builder.save
 
         # Move routes from the port member to the bridge (bsc#903889)
-        Yast::LanItems.move_routes(builder.name, bridge_builder.name)
+        move_routes(builder.name, bridge_builder.name)
       end
 
       true
     end
 
   private
+
+    def yast_config
+      Y2Network::Config.find(:yast)
+    end
+
+    # Adds a new interface with the given name
+    #
+    # @todo This method exists just to keep some compatibility during
+    #       the migration to network-ng.
+    def add_device_to_routing(name = current_name)
+      config = yast_config
+      return if config.nil?
+      return if config.interfaces.any? { |i| i.name == name }
+
+      yast_config.interfaces << Y2Network::Interface.new(name)
+    end
+
+    # Assigns all the routes from one interface to another
+    #
+    # @param from [String] interface belonging the routes to be moved
+    # @param to [String] target interface
+    def move_routes(from, to)
+      config = yast_config
+      return unless config&.routing
+
+      routing = config.routing
+      add_device_to_routing(to)
+      target_interface = config.interfaces.by_name(to)
+      return unless target_interface
+
+      routing.routes.select { |r| r.interface && r.interface.name == from }
+        .each { |r| r.interface = target_interface }
+    end
 
     # Convenience method that returns true if the interface given is connected
     # and can be added as a bridge port.
