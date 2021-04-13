@@ -177,7 +177,7 @@ describe Y2Network::Widgets::S390Layer2 do
         subject.store
       end
 
-      context "and the MAC address is not empty and neither is it '00:00:00:00:00:00'" do
+      context "and the MAC address is not empty and neither it is '00:00:00:00:00:00'" do
         let(:layer2_address) { "02:00:00:00:01" }
 
         it "sets the builder lladdress attribute to the MAC address widget value" do

@@ -271,8 +271,8 @@ module Y2Network
           format(
             # TRANSLATORS: Popup trying to prevent the user to set an specific MAC address
             _("Specifying a MAC address is optional. \n" \
-            "In most cases letting it empty (default) is the correct choice. \n\n" \
-            "Do you really want to set it it '%s'?"),
+            "In most cases, letting it empty (default) is the correct choice. \n\n" \
+            "Do you really want to set it to '%s'?"),
             mac_address_widget.value
           )
         )
