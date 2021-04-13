@@ -78,17 +78,12 @@ module Y2Network
 
   private
 
-    def yast_config
-      Y2Network::Config.find(:yast)
-    end
-
     # Adds a new interface with the given name
     def add_device_to_routing(name)
-      config = yast_config
-      return if config.nil?
+      return if !config
       return if config.interfaces.any? { |i| i.name == name }
 
-      yast_config.interfaces << Y2Network::Interface.new(name)
+      config.interfaces << Y2Network::Interface.new(name)
     end
 
     # Assigns all the routes from one interface to another
@@ -96,7 +91,6 @@ module Y2Network
     # @param from [String] interface belonging the routes to be moved
     # @param to [String] target interface
     def move_routes(from, to)
-      config = yast_config
       return unless config&.routing
 
       routing = config.routing

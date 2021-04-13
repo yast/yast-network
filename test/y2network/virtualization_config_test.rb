@@ -106,23 +106,19 @@ describe Y2Network::VirtualizationConfig do
     end
   end
 
-  describe "LanItems.add_device_to_routing" do
+  describe ".add_device_to_routing" do
     let(:eth0) { Y2Network::Interface.new("eth0") }
     let(:wlan0) { Y2Network::Interface.new("wlan0") }
     let(:interfaces) { Y2Network::InterfacesCollection.new([eth0, wlan0]) }
 
-    let(:yast_config) do
-      instance_double(Y2Network::Config, interfaces: interfaces, routing: double("routing"))
-    end
-
-    before do
-      allow(Y2Network::Config).to receive(:find).with(:yast).and_return(yast_config)
+    let(:config) do
+      Y2Network::Config.new(interfaces: interfaces, source: :testing)
     end
 
     context "when a device name is given" do
       it "adds a new device with the given name" do
         virt_config.send(:add_device_to_routing, "br0")
-        names = yast_config.interfaces.map(&:name)
+        names = config.interfaces.map(&:name)
         expect(names).to include("br0")
       end
     end
@@ -130,7 +126,7 @@ describe Y2Network::VirtualizationConfig do
     context "when the interface already exists" do
       it "does not add any interface" do
         virt_config.send(:add_device_to_routing, "wlan0")
-        names = yast_config.interfaces.map(&:name)
+        names = config.interfaces.map(&:name)
         expect(names).to eq(["eth0", "wlan0"])
       end
     end
@@ -148,12 +144,9 @@ describe Y2Network::VirtualizationConfig do
     let(:eth0) { Y2Network::Interface.new("eth0") }
     let(:br0) { Y2Network::Interface.new("br0") }
     let(:interfaces) { Y2Network::InterfacesCollection.new([eth0, br0]) }
-    let(:yast_config) do
-      instance_double(Y2Network::Config, interfaces: interfaces, routing: routing)
-    end
 
-    before do
-      allow(Y2Network::Config).to receive(:find).with(:yast).and_return(yast_config)
+    let(:config) do
+      Y2Network::Config.new(interfaces: interfaces, routing: routing, source: :testing)
     end
 
     it "assigns all the 'from' routes to the 'to' interface" do
