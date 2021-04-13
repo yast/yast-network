@@ -57,31 +57,31 @@ module Yast
     def AddressDialog(builder:)
       ret = Y2Network::Dialogs::EditInterface.run(builder)
 
-      if ret != :back && ret != :abort
-        if builder.boot_protocol.dhcp? && !builder.interface.hotplug?
-          # fixed bug #73739 - if dhcp is used, dont set default gw statically
-          # but also: reset default gw only if DHCP* is used, this branch covers
-          #     "No IP address" case, then default gw must stay (#460262)
-          # and also: don't delete default GW for usb/pcmcia devices (#307102)
-          #
-          # Is check for hotplug really needed? It contained a typo up to SLE-15-SP4 and
-          # nobody complained - something to think of during next refactoring.
-          yast_config = Y2Network::Config.find(:yast)
-          if yast_config&.routing&.default_route
-            remove_gw = Popup.YesNo(
-              _(
-                "A static default route is defined.\n" \
-                "It is suggested to remove the static default route definition \n" \
-                "if one can be obtained also via DHCP.\n" \
-                "Do you want to remove the static default route?"
-              )
-            )
-            yast_config.routing.remove_default_routes if remove_gw
-          end
-        end
+      log.info "AddressDialog res: #{ret.inspect}"
+
+      return ret if [:back, :abort].include?(ret)
+      return ret if builder.interface&.hotplug? || !builder.boot_protocol.dhcp?
+
+      # fixed bug #73739 - if dhcp is used, dont set default gw statically
+      # but also: reset default gw only if DHCP* is used, this branch covers
+      #     "No IP address" case, then default gw must stay (#460262)
+      # and also: don't delete default GW for usb/pcmcia devices (#307102)
+      #
+      # Is check for hotplug really needed? It contained a typo up to SLE-15-SP4 and
+      # nobody complained - something to think of during next refactoring.
+      yast_config = Y2Network::Config.find(:yast)
+      if yast_config&.routing&.default_route
+        remove_gw = Popup.YesNo(
+          _(
+            "A static default route is defined.\n" \
+            "It is suggested to remove the static default route definition \n" \
+            "if one can be obtained also via DHCP.\n" \
+            "Do you want to remove the static default route?"
+          )
+        )
+        yast_config.routing.remove_default_routes if remove_gw
       end
 
-      log.info "AddressDialog res: #{ret.inspect}"
       ret
     end
   end
