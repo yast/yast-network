@@ -40,6 +40,7 @@ require "y2network/virtualization_config"
 require "y2network/interface_config_builder"
 require "y2network/presenters/summary"
 require "y2network/interface_type"
+require "yast2/popup"
 
 require "shellwords"
 
@@ -56,6 +57,7 @@ module Yast
       Yast.import "NetHwDetection"
       Yast.import "Host"
       Yast.import "IP"
+      Yast.import "HTML"
       Yast.import "Map"
       Yast.import "Mode"
       Yast.import "NetworkConfig"
@@ -271,7 +273,7 @@ module Yast
         return false if Abort()
 
         ProgressNextStage(_("Reading device configuration...")) if @gui
-        read_config
+        return false unless read_config
 
         Builtins.sleep(sl)
 
@@ -569,8 +571,8 @@ module Yast
 
       Read(:cache)
       profile = Y2Network::AutoinstProfile::NetworkingSection.new_from_hashes(settings)
-      config = Y2Network::Config.from(:autoinst, profile, system_config)
-      add_config(:yast, config)
+      result = Y2Network::Config.from(:autoinst, profile, system_config)
+      add_config(:yast, result.config)
       @autoinst = autoinst_config(profile)
       if Arch.s390
         NetworkAutoYast.instance.activate_s390_devices(settings.fetch("s390-devices", {}))
@@ -717,11 +719,17 @@ module Yast
     # Reads system configuration
     #
     # It resets already read configuration.
+    #
+    # @return [Boolean] Returns whether the configuration was read.
     def read_config
-      system_config = Y2Network::Config.from(:wicked)
+      result = Y2Network::Config.from(:wicked)
+      system_config = result.config
       system_config.backend = NetworkService.cached_name
       Yast::Lan.add_config(:system, system_config)
       Yast::Lan.add_config(:yast, system_config.copy)
+      return true unless result.errors?
+
+      report_errors(result.errors) == :yes
     end
 
     # Writes current yast config and replaces the system config with it
@@ -873,6 +881,19 @@ module Yast
         hash[tmp_mac] ||= addr if tmp_mac
         log.debug("link_status #{hash.inspect}")
       end
+    end
+
+    # Report errors found while reading the configuration
+    #
+    # @param [Y2Network::Errors::List]
+    def report_errors(errors)
+      msg = Y2Network::Errors::Presenter.new(errors).to_html
+      Yast2::Popup.show(
+        msg + Yast::HTML.Para(_("Do you want to continue?")),
+        headline: _("Invalid Network Configuration"),
+        richtext: true,
+        buttons: :yes_no
+      )
     end
   end
 

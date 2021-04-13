@@ -28,6 +28,13 @@ module Y2Network
     #
     # @see Y2Network::ConnectionConfigsCollection
     class ConnectionConfigsReader
+      attr_reader :errors_list
+
+      # @param errors_list [Errors::List] List to register errors
+      def initialize(errors_list)
+        @errors_list = errors_list
+      end
+
       # Returns the connection configurations from sysconfig
       #
       # It needs the list of known interfaces in order to infer
@@ -41,7 +48,8 @@ module Y2Network
           interface = interfaces.by_name(file.interface)
           connection = ConnectionConfigReader.new.read(
             file.interface,
-            interface ? interface.type : nil
+            interface ? interface.type : nil,
+            errors_list
           )
           conns << connection if connection
         end

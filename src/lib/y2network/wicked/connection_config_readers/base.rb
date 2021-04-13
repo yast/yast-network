@@ -35,11 +35,14 @@ module Y2Network
         # @return [CFA::InterfaceFile] Interface's configuration file
         attr_reader :file
 
+        attr_reader :errors_list
+
         # Constructor
         #
         # @param file [CFA::InterfaceFile] Interface's configuration file
-        def initialize(file)
+        def initialize(file, errors_list)
           @file = file
+          @errors_list = errors_list
         end
 
         # Builds a connection configuration object
@@ -47,7 +50,7 @@ module Y2Network
         # @return [Y2Network::ConnectionConfig::Base]
         def connection_config
           connection_class.new.tap do |conn|
-            conn.bootproto = BootProtocol.from_name(file.bootproto || "static")
+            conn.bootproto = find_bootproto
             conn.description = file.name
             conn.interface = file.interface
             conn.ip = all_ips.find { |i| i.id.empty? }
@@ -69,6 +72,22 @@ module Y2Network
         end
 
       private
+
+        def find_bootproto
+          bootproto = BootProtocol.from_name(file.bootproto.to_s)
+          return bootproto if bootproto
+
+          # TODO: improve boot protocol guessing
+          fallback = BootProtocol::DHCP
+          error = if file.bootproto.to_s.empty?
+            Errors::MissingValue.new("bootproto", fallback.name)
+          else
+            Errors::InvalidValue.new("bootproto", file.bootproto, fallback.name)
+          end
+          errors_list << error
+
+          return fallback
+        end
 
         # Returns the class of the connection configuration
         #
