@@ -381,7 +381,7 @@ module Y2Network
 
       # @see CWM::AbstractWidget
       def label
-        _("Layer2 MAC Address")
+        _("Layer2 MAC Address (optional)")
       end
 
       # @see CWM::AbstractWidget
