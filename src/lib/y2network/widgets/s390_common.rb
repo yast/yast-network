@@ -19,6 +19,7 @@
 
 require "cwm/common_widgets"
 require "cwm/custom_widget"
+require "ui/text_helpers"
 
 module Y2Network
   module Widgets
@@ -212,6 +213,7 @@ module Y2Network
     # and an input field for setting the mac address to be used in case of
     # enablement.
     class S390Layer2 < CWM::CustomWidget
+      include ::UI::TextHelpers
       # Constructor
       #
       # @param settings [Y2Network::InterfaceConfigBuilder]
@@ -244,14 +246,40 @@ module Y2Network
         nil
       end
 
+      # @see CWM::AbstractWidget
       def validate
-        return true if !layer2? || valid_mac?(mac_address_widget.value)
+        return true if !layer2? || !lladdress_for(mac_address_widget.value)
 
-        report_mac_error
-        false
+        unless valid_mac?(mac_address_widget.value)
+          report_mac_error
+
+          return false
+        end
+
+        use_selected_mac?
+      end
+
+      # @see CWM::AbstractWidget
+      def store
+        @settings.layer2 = layer2?
+        @settings.lladdress = layer2? ? lladdress_for(mac_address_widget.value) : nil
       end
 
     private
+
+      def use_selected_mac?
+        Yast::Popup.YesNoHeadline(
+          Yast::Label.WarningMsg,
+          wrap_text(format(
+            # TRANSLATORS: Popup trying to prevent the user to set an specific MAC address
+            _("Specifying a MAC address is optional.\n\n" \
+              "In most cases, leaving it empty and taking the default " \
+              "assigned by the system is the correct choice.\n\n" \
+              "Do you really want to set it to '%s'?"),
+            mac_address_widget.value
+          ))
+        )
+      end
 
       def report_mac_error
         # TRANSLATORS: Popup error about not valid MAC address provided
@@ -272,10 +300,21 @@ module Y2Network
       # @return [Boolean] true when valid; false otherwise
       # @param mac_address [String]
       def valid_mac?(mac_address)
-        return false if mac_address.to_s.empty?
-        return false if mac_address == "00:00:00:00:00:00"
+        return true unless lladdress_for(mac_address)
 
         !!(mac_address =~ /^([0-9a-fA-F]{2}[:-]){5}[0-9a-fA-F]{2}$/i)
+      end
+
+      # Return the MAC address in case it is not empty or a zero's MAC address
+      # otherwise it returns nil.
+      #
+      # @param mac_widget_value [String]
+      # @return [String, nil] the MAC address in case it is not empty or a
+      #   zero's MAC address; nil otherwise
+      def lladdress_for(mac_widget_value)
+        return if ["", "00:00:00:00:00:00"].include?(mac_widget_value.to_s)
+
+        mac_widget_value
       end
 
       # Convenience method to enable or disable the mac address widget when the
@@ -326,11 +365,6 @@ module Y2Network
         "<p>Select <b>Enable Layer 2 Support</b> if this card has been " \
          "configured with layer 2 support.</p>"
       end
-
-      # @see CWM::AbstractWidget
-      def store
-        @settings.layer2 = value
-      end
     end
 
     # Widget for setting the mac address to be used in case of layer2 supported
@@ -350,18 +384,13 @@ module Y2Network
 
       # @see CWM::AbstractWidget
       def label
-        _("Layer2 MAC Address")
+        _("Layer2 MAC Address (optional)")
       end
 
       # @see CWM::AbstractWidget
       def help
         _("<p>Enter the <b>Layer 2 MAC Address</b> if this card has been " \
-          "configured with layer 2 support.</p>")
-      end
-
-      # @see CWM::AbstractWidget
-      def store
-        @settings.lladdress = value
+          "configured with layer 2 support <b>(optional)</b>.</p>")
       end
     end
   end
