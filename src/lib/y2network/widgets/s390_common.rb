@@ -272,9 +272,9 @@ module Y2Network
           Yast::Label.WarningMsg,
           wrap_text(format(
             # TRANSLATORS: Popup trying to prevent the user to set an specific MAC address
-            _("Specifying a MAC address is optional. \n\n" \
+            _("Specifying a MAC address is optional.\n\n" \
               "In most cases, leaving it empty and taking the default " \
-              "assigned by the system is the correct choice. \n\n" \
+              "assigned by the system is the correct choice.\n\n" \
               "Do you really want to set it to '%s'?"),
             mac_address_widget.value
           ))
