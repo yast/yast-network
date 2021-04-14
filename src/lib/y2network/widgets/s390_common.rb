@@ -19,6 +19,7 @@
 
 require "cwm/common_widgets"
 require "cwm/custom_widget"
+require "ui/text_helpers"
 
 module Y2Network
   module Widgets
@@ -212,6 +213,7 @@ module Y2Network
     # and an input field for setting the mac address to be used in case of
     # enablement.
     class S390Layer2 < CWM::CustomWidget
+      include ::UI::TextHelpers
       # Constructor
       #
       # @param settings [Y2Network::InterfaceConfigBuilder]
@@ -268,13 +270,14 @@ module Y2Network
       def use_selected_mac?
         Yast::Popup.YesNoHeadline(
           Yast::Label.WarningMsg,
-          format(
+          wrap_text(format(
             # TRANSLATORS: Popup trying to prevent the user to set an specific MAC address
-            _("Specifying a MAC address is optional. \n" \
-            "In most cases, letting it empty (default) is the correct choice. \n\n" \
-            "Do you really want to set it to '%s'?"),
+            _("Specifying a MAC address is optional. \n\n" \
+              "In most cases, leaving it empty and taking the default " \
+              "assigned by the system is the correct choice. \n\n" \
+              "Do you really want to set it to '%s'?"),
             mac_address_widget.value
-          )
+          ))
         )
       end
 
