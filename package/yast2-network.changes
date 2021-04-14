@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Apr 14 11:05:02 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
+
+- Do not require a MAC address when activating a qeth device
+  with layer2 support (bsc#1184474).
+- 4.4.4
+
+-------------------------------------------------------------------
 Tue Apr 13 12:32:16 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
 
 - Do not crash when checking if an interface is a hotplug one and

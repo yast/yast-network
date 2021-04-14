@@ -121,15 +121,42 @@ describe Y2Network::Widgets::S390Layer2 do
     end
 
     context "when the layer2 support is enabled" do
-      context "and the MAC provided is valid" do
-        let(:layer2_address) { "02:00:00:00:01:FD" }
+      context "and the MAC address is empty" do
+        let(:layer2_address) { "" }
 
         it "returns true" do
           expect(subject.validate).to eql(true)
         end
       end
 
+      context "and the MAC address is '00:00:00:00:00:00'" do
+        it "returns true" do
+          expect(subject.validate).to eql(true)
+        end
+      end
+
+      context "and the MAC provided is a valid one" do
+        let(:layer2_address) { "02:00:00:00:01:FD" }
+
+        it "requests user confirmation before storing the defined MAC" do
+          expect(subject).to receive(:use_selected_mac?)
+          subject.validate
+        end
+
+        it "returns true if the user accepts" do
+          allow(subject).to receive(:use_selected_mac?).and_return(true)
+          expect(subject.validate).to eql(true)
+        end
+
+        it "returns false if the user reject" do
+          allow(subject).to receive(:use_selected_mac?).and_return(false)
+          expect(subject.validate).to eql(false)
+        end
+      end
+
       context "and the MAC address provided is invalid" do
+        let(:layer2_address) { "02:00:00:00:01" }
+
         it "returns false" do
           allow(Yast::Popup).to receive(:Error)
           expect(subject.validate).to eql(false)
@@ -139,6 +166,45 @@ describe Y2Network::Widgets::S390Layer2 do
           expect(Yast::Popup).to receive(:Error).with(/MAC address provided is not valid/)
           expect(subject.validate).to eql(false)
         end
+      end
+    end
+  end
+
+  describe "#store" do
+    context "when the layer2 support checkbox is checked" do
+      it "sets the builder layer2 attribute to true" do
+        expect(builder).to receive("layer2=").with(true)
+        subject.store
+      end
+
+      context "and the MAC address is not empty and neither it is '00:00:00:00:00:00'" do
+        let(:layer2_address) { "02:00:00:00:01" }
+
+        it "sets the builder lladdress attribute to the MAC address widget value" do
+          expect(builder).to receive("lladdress=").with("02:00:00:00:01")
+          subject.store
+        end
+      end
+
+      context "and the MAC address is empty or '00:00:00:00:00:00'" do
+        it "sets the builder lladdress attribute to nil" do
+          expect(builder).to receive("lladdress=").with(nil)
+          subject.store
+        end
+      end
+    end
+
+    context "when the layer2 support checkbox is not checked" do
+      let(:layer2_support) { false }
+
+      it "sets the builder layer2 attribute to false" do
+        expect(builder).to receive("layer2=").with(false)
+        subject.store
+      end
+
+      it "sets the builder lladdress attribute to nil" do
+        expect(builder).to receive("lladdress=").with(nil)
+        subject.store
       end
     end
   end
