@@ -124,12 +124,11 @@ module Y2Network
         config = Yast::Lan.yast_config
         return if [nil, ""].include?(config&.hostname&.static)
 
-        static_connections = config.connections.select { |c| c.static? && c.ip&.address }
+        static_connections = config.connections.select { |c| c.static? && c.ip }
         static_connections.each do |connection|
           next unless connection.hostname.to_s.empty?
 
-          log.info("Updating /etc/hosts with" \
-                   " #{connection.ip.address.address} #{config.hostname.static}")
+          log.info("Setting connection #{connection.name} hostname to #{config.hostname.static}")
           connection.hostname = config.hostname.static
         end
 
