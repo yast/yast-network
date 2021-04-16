@@ -121,8 +121,8 @@ module Y2Network
 
       # Whatever is needed in /etc/hosts during AY installation
       def update_etc_hosts
-        config = Yast::Lan.find_config(:yast)
-        return if [nil, ""].include? config&.hostname&.static
+        config = Yast::Lan.yast_config
+        return if [nil, ""].include?(config&.hostname&.static)
 
         static_connections = config.connections.select { |c| c.static? && c.ip&.address }
         static_connections.each do |connection|

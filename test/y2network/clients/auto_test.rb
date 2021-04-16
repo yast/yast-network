@@ -58,6 +58,10 @@ describe Y2Network::Clients::Auto do
     }
   end
 
+  before do
+    allow(Yast::Host).to receive(:load_hosts).and_return(true)
+  end
+
   describe "#reset" do
     it "clears Yast::Lan internal state" do
       allow(Yast::Lan).to receive(:Import).with({})
@@ -199,27 +203,54 @@ describe Y2Network::Clients::Auto do
     let(:system_config) { Y2Network::Config.new(source: :sysconfig) }
     let(:yast_config) { Y2Network::Config.find(:yast) }
 
-    before(:each) do
+    before do
       allow(Yast::Lan).to receive(:Read)
-      allow(Yast::Stage).to receive(:cont).and_return(true)
       Y2Network::Config.add(:system, system_config)
+      Yast::Lan.Import(profile)
     end
 
-    it "updates /etc/hosts with a record for each static ip" do
-      extended_profile = profile
-      extended_profile["interfaces"] = interfaces + [eth1]
+    context "when there is no static hostname defined" do
+      let(:dns) { nil }
 
-      subject.import(extended_profile)
+      it "returns without touching anything" do
+        yast_config.hostname.static = ""
 
-      connection = yast_config.connections.find { |c| c.static? && c.ip.address == static_ip }
-
-      expect(connection.hostname).to eql dns["hostname"]
+        expect(yast_config).to_not receive(:connections)
+      end
     end
 
-    it "doesn't do anything in case of missing static ips" do
-      expect(Yast::Host).not_to receive(:Update)
+    context "when there is no connection configured with an static IP" do
+      let(:eth2) { eth1.reject { |k, _v| k == "ipaddr" } }
+      let(:interfaces) { [eth0, eth2] }
 
-      subject.import(profile)
+      it "returns without touching anything" do
+        expect { subject.send("update_etc_hosts") }
+          .to_not(change { yast_config.connections.map(&:hostname) })
+      end
+    end
+
+    context "when there is some connection configured with an static IP" do
+      let(:interfaces) { [eth0, eth1] }
+      let(:dns) { { "hostname" => "static_hostname" } }
+
+      context "and the connection does not have a hostname associated with its IP" do
+        it "sets the current static hostname as the connection hostname" do
+          eth1_conn = yast_config.connections.by_name("eth1")
+
+          expect { subject.send("update_etc_hosts") }
+            .to change { eth1_conn.hostname }.from(nil).to("static_hostname")
+        end
+      end
+
+      context "and the connection already has a hostname assosciated with its IP" do
+        it "returns without touching anything" do
+          eth1_conn = yast_config.connections.by_name("eth1")
+          eth1_conn.hostname = "another"
+
+          expect { subject.send("update_etc_hosts") }
+            .to_not(change { yast_config.connections.map(&:hostname) })
+        end
+      end
     end
   end
 end
