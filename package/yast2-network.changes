@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Apr 22 10:15:42 UTC 2021 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
+
+- Do not crash when the BOOTPROTO or STARTMODE ar missing or
+  invalid (bsc#1181295).
+- 4.3.66
+
+-------------------------------------------------------------------
 Mon Apr 12 12:05:02 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
 
 - Do not require a MAC address when activating a qeth device
