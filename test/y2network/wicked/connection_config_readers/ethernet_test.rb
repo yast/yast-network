@@ -23,9 +23,10 @@ require "cfa/interface_file"
 require "y2network/boot_protocol"
 
 describe Y2Network::Wicked::ConnectionConfigReaders::Ethernet do
-  subject(:handler) { described_class.new(file) }
+  subject(:handler) { described_class.new(file, issues_list) }
 
   let(:scr_root) { File.join(DATA_PATH, "scr_read") }
+  let(:issues_list) { Y2Issues::List.new }
 
   before do
     allow(Yast::Host).to receive(:load_hosts).and_call_original
@@ -103,5 +104,72 @@ describe Y2Network::Wicked::ConnectionConfigReaders::Ethernet do
     it "reads dhclient set hostname value as boolean" do
       expect(handler.connection_config.dhclient_set_hostname).to eq true
     end
+
+    context "when the BOOTPROTO is not valid" do
+      before do
+        allow(file).to receive(:bootproto).and_return("something")
+      end
+
+      context "and there is some defined address" do
+        before do
+          allow(file).to receive(:ipaddrs).and_return([double("IP")])
+        end
+
+        it "falls back to STATIC" do
+          eth = handler.connection_config
+          expect(eth.bootproto).to eq(Y2Network::BootProtocol::STATIC)
+        end
+
+        it "registers an issue" do
+          handler.connection_config
+          issue = issues_list.first
+          expect(issue.location.to_s).to eq(
+            "file:/etc/sysconfig/network/ifcfg-eth0:BOOTPROTO"
+          )
+          expect(issue.message).to include("Invalid value 'something'")
+        end
+      end
+
+      context "and there are not defined addresses" do
+        before do
+          allow(file).to receive(:ipaddrs).and_return([])
+        end
+
+        it "falls back to DHCP" do
+          eth = handler.connection_config
+          expect(eth.bootproto).to eq(Y2Network::BootProtocol::DHCP)
+        end
+
+        it "registers an issue" do
+          handler.connection_config
+          issue = issues_list.first
+          expect(issue.location.to_s).to eq(
+            "file:/etc/sysconfig/network/ifcfg-eth0:BOOTPROTO"
+          )
+          expect(issue.message).to include("Invalid value 'something'")
+        end
+      end
+    end
+
+    context "when the STARTMODE is not valid" do
+      before do
+        allow(file).to receive(:startmode).and_return("automatic")
+      end
+
+      it "falls back to MANUAL" do
+        eth = handler.connection_config
+        expect(eth.startmode.to_s).to eq("manual")
+      end
+
+      it "registers an issue" do
+        handler.connection_config
+        issue = issues_list.first
+        expect(issue.location.to_s).to eq(
+          "file:/etc/sysconfig/network/ifcfg-eth0:STARTMODE"
+        )
+        expect(issue.message).to include("Invalid value 'automatic'")
+      end
+    end
+
   end
 end

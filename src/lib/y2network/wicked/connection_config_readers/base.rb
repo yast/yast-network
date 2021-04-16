@@ -78,7 +78,6 @@ module Y2Network
           bootproto = BootProtocol.from_name(file.bootproto.to_s)
           return bootproto if bootproto
 
-          # TODO: improve boot protocol guessing
           fallback = file.ipaddrs.empty? ? BootProtocol::DHCP : BootProtocol::STATIC
           issue_location = "file:#{file.path}:BOOTPROTO"
           issue = Y2Issues::InvalidValue.new(
