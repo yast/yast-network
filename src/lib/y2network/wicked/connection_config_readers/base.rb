@@ -85,7 +85,7 @@ module Y2Network
           )
           issues_list << issue
 
-          return fallback
+          fallback
         end
 
         def find_startmode

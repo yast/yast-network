@@ -111,6 +111,7 @@ describe Y2Network::Wicked::ConnectionConfigReaders::Ethernet do
       end
 
       context "and there is some defined address" do
+
         before do
           allow(file).to receive(:ipaddrs).and_return([double("IP")])
         end
@@ -170,6 +171,5 @@ describe Y2Network::Wicked::ConnectionConfigReaders::Ethernet do
         expect(issue.message).to include("Invalid value 'automatic'")
       end
     end
-
   end
 end
