@@ -29,16 +29,16 @@ module Y2Network
       #
       # @param name [String] Interface name
       # @param type [InterfaceType, string, nil] Interface type; if the type is unknown,
-      #   `nil` can be used and it will be guessed from the configuration file is possible.
+      #   `nil` can be used and it will be guessed from the configuration file if possible.
       #
       # @return [Y2Network::ConnectionConfig::Base]
-      def read(name, type)
+      def read(name, type, issues_list)
         file = CFA::InterfaceFile.new(name)
         file.load
         handler_class = find_handler_class(type || file.type)
         return nil if handler_class.nil?
 
-        handler_class.new(file).connection_config
+        handler_class.new(file, issues_list).connection_config
       end
 
     private

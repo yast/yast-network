@@ -18,6 +18,7 @@
 # find current contact information at www.suse.com.
 require "yast"
 require "cfa/sysctl_config"
+require "y2network/config"
 require "y2network/config_reader"
 require "y2network/interface"
 require "y2network/routing"
@@ -27,6 +28,8 @@ require "y2network/wicked/dns_reader"
 require "y2network/wicked/hostname_reader"
 require "y2network/wicked/interfaces_reader"
 require "y2network/wicked/connection_configs_reader"
+require "y2network/reading_result"
+require "y2issues"
 
 Yast.import "NetworkInterfaces"
 Yast.import "Host"
@@ -49,12 +52,12 @@ module Y2Network
 
         initial_config = Config.new(source: :wicked)
 
-        result = SECTIONS.reduce(initial_config) do |current_config, section|
+        network_config = SECTIONS.reduce(initial_config) do |current_config, section|
           send("read_#{section}", current_config)
         end
 
-        log.info "Sysconfig reader result: #{result.inspect}"
-        result
+        log.info "Sysconfig reader result: #{network_config.inspect}"
+        ReadingResult.new(network_config, issues_list)
       end
 
     protected
@@ -134,7 +137,9 @@ module Y2Network
 
       # @return [Y2Network::ConnectionConfigsCollection] Connection configurations collection
       def connection_configs_reader
-        @connection_configs_reader ||= Y2Network::Wicked::ConnectionConfigsReader.new
+        @connection_configs_reader ||= Y2Network::Wicked::ConnectionConfigsReader.new(
+          issues_list
+        )
       end
 
       # Adds missing interfaces from connections
@@ -213,6 +218,10 @@ module Y2Network
         @sysctl_config_file = CFA::SysctlConfig.new
         @sysctl_config_file.load
         @sysctl_config_file
+      end
+
+      def issues_list
+        @issues_list ||= Y2Issues::List.new
       end
     end
   end

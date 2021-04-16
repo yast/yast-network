@@ -21,6 +21,7 @@ require "y2network/connection_config/ip_config"
 require "y2network/ip_address"
 require "y2network/boot_protocol"
 require "y2network/startmode"
+require "y2issues"
 
 Yast.import "Host"
 
@@ -35,11 +36,14 @@ module Y2Network
         # @return [CFA::InterfaceFile] Interface's configuration file
         attr_reader :file
 
+        attr_reader :issues_list
+
         # Constructor
         #
         # @param file [CFA::InterfaceFile] Interface's configuration file
-        def initialize(file)
+        def initialize(file, issues_list)
           @file = file
+          @issues_list = issues_list
         end
 
         # Builds a connection configuration object
@@ -47,14 +51,14 @@ module Y2Network
         # @return [Y2Network::ConnectionConfig::Base]
         def connection_config
           connection_class.new.tap do |conn|
-            conn.bootproto = BootProtocol.from_name(file.bootproto || "static")
+            conn.bootproto = find_bootproto
             conn.description = file.name
             conn.interface = file.interface
             conn.ip = all_ips.find { |i| i.id.empty? }
             conn.ip_aliases = all_ips.reject { |i| i.id.empty? }
             conn.name = file.interface
             conn.lladdress = file.lladdr
-            conn.startmode = Startmode.create(file.startmode || "manual")
+            conn.startmode = find_startmode
             conn.startmode.priority = file.ifplugd_priority if conn.startmode.name == "ifplugd"
             conn.ethtool_options = file.ethtool_options
             conn.firewall_zone = file.zone
@@ -69,6 +73,34 @@ module Y2Network
         end
 
       private
+
+        def find_bootproto
+          bootproto = BootProtocol.from_name(file.bootproto.to_s)
+          return bootproto if bootproto
+
+          # TODO: improve boot protocol guessing
+          fallback = file.ipaddrs.empty? ? BootProtocol::DHCP : BootProtocol::STATIC
+          issue_location = "file:#{file.path}:BOOTPROTO"
+          issue = Y2Issues::InvalidValue.new(
+            file.bootproto, fallback: fallback, location: issue_location
+          )
+          issues_list << issue
+
+          return fallback
+        end
+
+        def find_startmode
+          startmode = Startmode.create(file.startmode) if file.startmode
+          return startmode if startmode
+
+          issue_location = "file:#{file.path}:STARTMODE"
+          fallback = Startmode.create("manual")
+          issue = Y2Issues::InvalidValue.new(
+            file.startmode, fallback: fallback, location: issue_location
+          )
+          issues_list << issue
+          fallback
+        end
 
         # Returns the class of the connection configuration
         #
