@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri Apr 16 16:27:13 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
+
+- Do not crash during an AutoYaST installation when trying to
+  update the /etc/hosts using a connection without an IP address
+  defined (bsc#1184883)
+- 4.2.98
+
+-------------------------------------------------------------------
 Wed Mar 17 18:26:34 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
 
 - Always provide the layer2 argument when activating a qeth device
