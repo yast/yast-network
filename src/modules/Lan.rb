@@ -718,18 +718,21 @@ module Yast
 
     # Reads system configuration
     #
-    # It resets already read configuration.
+    # It resets the already read configuration. If some issue is detected
+    # while reading the configuration, it is reported to the user.
     #
     # @return [Boolean] Returns whether the configuration was read.
     def read_config
       result = Y2Network::Config.from(:wicked)
+      if result.issues?
+        return false unless Y2Issues.report(result.issues) == :yes
+      end
+
       system_config = result.config
       system_config.backend = NetworkService.cached_name
       Yast::Lan.add_config(:system, system_config)
       Yast::Lan.add_config(:yast, system_config.copy)
-      return true unless result.issues?
-
-      Y2Issues.report(result.issues) == :yes
+      true
     end
 
     # Writes current yast config and replaces the system config with it
