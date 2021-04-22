@@ -50,7 +50,7 @@ module Y2Network
     #
     # @return [Y2Network::ReadingResult] Network configuration
     # @raise NotImplementedError
-    def config
+    def read
       raise NotImplementedError
     end
   end

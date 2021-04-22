@@ -44,8 +44,8 @@ module Y2Network
         :interfaces, :connections, :drivers, :routing, :dns, :hostname
       ].freeze
 
-      # @return [Y2Network::Config] Network configuration
-      def config
+      # @return [ReadingResult] Network configuration
+      def read
         # NOTE: This code might be moved outside of the Sysconfig namespace, as it is generic.
         # NOTE: /etc/hosts cache - nothing to do with /etc/hostname
         Yast::Host.Read

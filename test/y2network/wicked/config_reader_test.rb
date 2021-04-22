@@ -79,12 +79,12 @@ describe Y2Network::Wicked::ConfigReader do
     end
 
     it "returns a configuration including network devices" do
-      config = reader.config
+      config = reader.read.config
       expect(config.interfaces.map(&:name)).to eq(["eth0", "wlan0"])
     end
 
     it "returns a configuration including connection configurations" do
-      config = reader.config
+      config = reader.read.config
       expect(config.connections.to_a).to eq([eth0_conn])
     end
 
@@ -103,7 +103,7 @@ describe Y2Network::Wicked::ConfigReader do
         end
 
         it "creates a virtual interface" do
-          config = reader.config
+          config = reader.read.config
           bridge = config.interfaces.by_name("br0")
           expect(bridge).to be_a Y2Network::VirtualInterface
         end
@@ -118,7 +118,7 @@ describe Y2Network::Wicked::ConfigReader do
         end
 
         it "creates a not present physical interface" do
-          config = reader.config
+          config = reader.read.config
           eth1 = config.interfaces.by_name("eth1")
           expect(eth1).to be_a Y2Network::PhysicalInterface
           expect(eth1).to_not be_present
@@ -127,29 +127,29 @@ describe Y2Network::Wicked::ConfigReader do
     end
 
     it "links routes with detected network devices" do
-      config = reader.config
+      config = reader.read.config
       route = config.routing.routes.find(&:interface)
       iface = config.interfaces.by_name(route.interface.name)
       expect(route.interface).to be(iface)
     end
 
     it "returns a configuration which includes routes" do
-      config = reader.config
+      config = reader.read.config
       expect(config.routing.routes.size).to eq(4)
     end
 
     it "returns a configuration which includes DNS settings" do
-      config = reader.config
+      config = reader.read.config
       expect(config.dns).to eq(dns)
     end
 
     it "returns a configuration which includes available drivers" do
-      config = reader.config
+      config = reader.read.config
       expect(config.drivers).to eq(drivers)
     end
 
     it "sets the config source to :wicked" do
-      config = reader.config
+      config = reader.read.config
       expect(config.source).to eq(:wicked)
     end
   end
@@ -168,7 +168,7 @@ describe Y2Network::Wicked::ConfigReader do
       let(:forward_ipv4) { true }
 
       it "returns true" do
-        expect(reader.config.routing.forward_ipv4).to be true
+        expect(reader.read.config.routing.forward_ipv4).to be true
       end
     end
 
@@ -176,7 +176,7 @@ describe Y2Network::Wicked::ConfigReader do
       let(:forward_ipv4) { false }
 
       it "returns false" do
-        expect(reader.config.routing.forward_ipv4).to be false
+        expect(reader.read.config.routing.forward_ipv4).to be false
       end
     end
   end
@@ -195,7 +195,7 @@ describe Y2Network::Wicked::ConfigReader do
       let(:forward_ipv6) { true }
 
       it "returns true" do
-        expect(reader.config.routing.forward_ipv6).to be true
+        expect(reader.read.config.routing.forward_ipv6).to be true
       end
     end
 
@@ -203,7 +203,7 @@ describe Y2Network::Wicked::ConfigReader do
       let(:forward_ipv6) { false }
 
       it "returns false" do
-        expect(reader.config.routing.forward_ipv6).to be false
+        expect(reader.read.config.routing.forward_ipv6).to be false
       end
     end
   end

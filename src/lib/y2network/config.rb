@@ -68,9 +68,10 @@ module Y2Network
       # @param source [Symbol] Source to read the configuration from
       # @param opts   [Array<Object>] Reader options. Check readers documentation to find out
       #   supported options.
+      # @return [ReadingResult] Result of reading the network configuration
       def from(source, *opts)
         reader = ConfigReader.for(source, *opts)
-        reader.config
+        reader.read
       end
 
       # Adds the configuration to the register
