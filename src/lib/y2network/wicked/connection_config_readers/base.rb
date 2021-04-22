@@ -35,11 +35,10 @@ module Y2Network
         # @return [CFA::InterfaceFile] Interface's configuration file
         attr_reader :file
 
-        attr_reader :issues_list
-
         # Constructor
         #
         # @param file [CFA::InterfaceFile] Interface's configuration file
+        # @param issues_list [Y2Issues::List] List to register issues
         def initialize(file, issues_list)
           @file = file
           @issues_list = issues_list
@@ -72,6 +71,9 @@ module Y2Network
         end
 
       private
+
+        # @return [Y2Issues::List] List to register issues
+        attr_reader :issues_list
 
         DEFAULT_BOOTPROTO = BootProtocol::STATIC
 
