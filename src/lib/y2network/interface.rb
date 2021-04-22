@@ -135,6 +135,8 @@ module Y2Network
 
     # @return [Boolean] true if the interface is hotplug
     def hotplug?
+      return false unless hardware
+
       ["usb", "pcmcia"].include?(hardware.hotplug)
     end
   end
