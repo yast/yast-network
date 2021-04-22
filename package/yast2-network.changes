@@ -2,7 +2,7 @@
 Thu Apr 22 09:12:38 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
 
 - Do not crash when modifying a virtual interface and checking if
-  if it is hotplug (bsc#1184623, bsc#1185106)
+  it is hotplug (bsc#1184623, bsc#1185106)
 - 4.4.5
 
 -------------------------------------------------------------------
