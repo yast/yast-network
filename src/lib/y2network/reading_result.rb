@@ -41,13 +41,5 @@ module Y2Network
     def issues?
       issues.any?
     end
-
-    # Generates a new result containing the updated config and the full list of issues
-    #
-    # @param other [ReadingResult] Result to merge
-    # @return [ReadingResult]
-    def merge(other)
-      ReadingResult.new(other.config, issues + other.issues)
-    end
   end
 end

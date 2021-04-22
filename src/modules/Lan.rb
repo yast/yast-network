@@ -57,7 +57,6 @@ module Yast
       Yast.import "NetHwDetection"
       Yast.import "Host"
       Yast.import "IP"
-      Yast.import "HTML"
       Yast.import "Map"
       Yast.import "Mode"
       Yast.import "NetworkConfig"
