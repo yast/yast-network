@@ -18,6 +18,7 @@
 # find current contact information at www.suse.com.
 
 require "cfa/interface_file"
+require "y2issues"
 
 module Y2Network
   module Wicked

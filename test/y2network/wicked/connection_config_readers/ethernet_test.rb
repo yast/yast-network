@@ -21,12 +21,13 @@ require_relative "../../../test_helper"
 require "y2network/wicked/connection_config_readers/ethernet"
 require "cfa/interface_file"
 require "y2network/boot_protocol"
+require "y2issues"
 
 describe Y2Network::Wicked::ConnectionConfigReaders::Ethernet do
   subject(:handler) { described_class.new(file, issues_list) }
 
-  let(:scr_root) { File.join(DATA_PATH, "scr_read") }
   let(:issues_list) { Y2Issues::List.new }
+  let(:scr_root) { File.join(DATA_PATH, "scr_read") }
 
   before do
     allow(Yast::Host).to receive(:load_hosts).and_call_original

@@ -22,9 +22,10 @@ require "y2network/wicked/connection_configs_reader"
 require "y2network/physical_interface"
 require "y2network/interfaces_collection"
 require "y2network/connection_config"
+require "y2issues"
 
 describe Y2Network::Wicked::ConnectionConfigsReader do
-  subject(:reader) { described_class.new }
+  subject(:reader) { described_class.new(issues_list) }
 
   let(:eth0) do
     Y2Network::PhysicalInterface.new("eth0")
@@ -52,6 +53,7 @@ describe Y2Network::Wicked::ConnectionConfigsReader do
   end
   let(:conn_eth0) { instance_double(Y2Network::ConnectionConfig) }
   let(:conn_br0) { instance_double(Y2Network::ConnectionConfig) }
+  let(:issues_list) { Y2Issues::List.new }
 
   describe "#connections" do
     before do
@@ -62,10 +64,10 @@ describe Y2Network::Wicked::ConnectionConfigsReader do
 
     it "returns a connection for each file" do
       expect(connection_config_reader).to receive(:read)
-        .with("eth0", Y2Network::InterfaceType::ETHERNET)
+        .with("eth0", Y2Network::InterfaceType::ETHERNET, issues_list)
         .and_return(conn_eth0)
       expect(connection_config_reader).to receive(:read)
-        .with("br0", nil)
+        .with("br0", nil, issues_list)
         .and_return(conn_br0)
 
       connections = reader.connections(interfaces)

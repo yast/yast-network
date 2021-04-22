@@ -21,7 +21,6 @@ require "y2network/connection_config/ip_config"
 require "y2network/ip_address"
 require "y2network/boot_protocol"
 require "y2network/startmode"
-require "y2issues"
 
 Yast.import "Host"
 
