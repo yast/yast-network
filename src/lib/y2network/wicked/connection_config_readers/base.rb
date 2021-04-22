@@ -72,20 +72,35 @@ module Y2Network
 
       private
 
+        DEFAULT_BOOTPROTO = BootProtocol::STATIC
+
+        # Finds the boot protocol
+        #
+        # If it is not defined or it has an unknown value, it returns the
+        # fallback value (BootProtocol::STATIC).
+        #
+        # @return [BootProtocol]
         def find_bootproto
           bootproto = BootProtocol.from_name(file.bootproto.to_s)
           return bootproto if bootproto
 
-          fallback = file.ipaddrs.empty? ? BootProtocol::DHCP : BootProtocol::STATIC
-          report_invalid_value("BOOTPROTO", file.bootproto, fallback.name)
-          fallback
+          report_invalid_value("BOOTPROTO", file.bootproto, DEFAULT_BOOTPROTO.name)
+          DEFAULT_BOOTPROTO
         end
 
+        DEFAULT_STARTMODE_NAME = "manual".freeze
+
+        # Finds the start mode
+        #
+        # If it is not defined or it has an unknown value, it returns the
+        # fallback value (manual).
+        #
+        # @return [Startmode]
         def find_startmode
           startmode = Startmode.create(file.startmode) if file.startmode
           return startmode if startmode
 
-          fallback = Startmode.create("manual")
+          fallback = Startmode.create(DEFAULT_STARTMODE_NAME)
           report_invalid_value("STARTMODE", file.startmode, fallback.name)
           fallback
         end
