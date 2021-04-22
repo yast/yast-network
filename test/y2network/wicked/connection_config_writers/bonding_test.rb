@@ -36,6 +36,7 @@ describe Y2Network::Wicked::ConnectionConfigWriters::Bonding do
       c.bootproto = Y2Network::BootProtocol::DHCP
       c.slaves = ["eth0", "eth1"]
       c.options = "mode=active-backup miimon=100"
+      c.mtu     = 9000
     end
   end
 
@@ -46,7 +47,8 @@ describe Y2Network::Wicked::ConnectionConfigWriters::Bonding do
       handler.write(conn)
       expect(file).to have_attributes(
         startmode: "auto",
-        bootproto: "dhcp"
+        bootproto: "dhcp",
+        mtu:       9000
       )
     end
 

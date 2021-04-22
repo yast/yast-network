@@ -79,7 +79,8 @@ describe Y2Network::Wicked::ConnectionConfigWriters::Ethernet do
         name:                  conn.description,
         bootproto:             "static",
         startmode:             "auto",
-        dhclient_set_hostname: "yes"
+        dhclient_set_hostname: "yes",
+        mtu:                   nil
       )
     end
 

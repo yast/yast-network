@@ -51,7 +51,7 @@ module Y2Network
           file.ifplugd_priority = conn.startmode.priority if conn.startmode.to_s == "ifplugd"
           file.ethtool_options = value_as_string(conn.ethtool_options)
           file.zone = value_as_string(conn.firewall_zone)
-          file.mtu = value_as_string(conn.mtu)
+          file.mtu = conn.mtu unless conn.mtu.to_i.zero?
           add_ips(conn)
 
           update_file(conn)

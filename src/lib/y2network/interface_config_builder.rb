@@ -397,7 +397,7 @@ module Y2Network
     def ip_config_default
       return @connection_config.ip if @connection_config.ip
 
-      @connection_config.ip = ConnectionConfig::IPConfig.new(IPAddress.new("0.0.0.0"))
+      @connection_config.ip = ConnectionConfig::IPConfig.new(IPAddress.from_string("0.0.0.0/32"))
     end
 
     # Returns the connection config class for a given type

@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Apr 22 12:22:47 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
+
+- bsc#1185106
+  - Initialize correctly the netmask when using the static bootproto
+    without an IP address defined.
+  - Fix MTU write when using wicked.
+
+-------------------------------------------------------------------
 Thu Apr 22 09:12:38 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
 
 - Do not crash when modifying a virtual interface and checking if
