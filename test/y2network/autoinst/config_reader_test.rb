@@ -63,7 +63,7 @@ describe Y2Network::Autoinst::ConfigReader do
     }
   end
 
-  describe "#config" do
+  describe "#read" do
     let(:first_stage) { true }
 
     before do
@@ -71,12 +71,13 @@ describe Y2Network::Autoinst::ConfigReader do
     end
 
     it "builds a new Y2Network::Config from a Y2Networking::Section" do
-      expect(subject.config).to be_a Y2Network::Config
-      expect(subject.config.routing).to be_a Y2Network::Routing
-      expect(subject.config.dns).to be_a Y2Network::DNS
-      expect(subject.config.hostname.dhcp_hostname).to eq(:any)
-      expect(subject.config.hostname.installer).to eq("host")
-      expect(subject.config.backend.id).to eq(:wicked)
+      config = subject.read.config
+      expect(config).to be_a Y2Network::Config
+      expect(config.routing).to be_a Y2Network::Routing
+      expect(config.dns).to be_a Y2Network::DNS
+      expect(config.hostname.dhcp_hostname).to eq(:any)
+      expect(config.hostname.installer).to eq("host")
+      expect(config.backend.id).to eq(:wicked)
     end
 
     context "when the networking section sets it to be managed" do
@@ -86,7 +87,8 @@ describe Y2Network::Autoinst::ConfigReader do
 
       context "and run in the first stage of the installation" do
         it "selects :wicked as the backend to be used" do
-          expect(subject.config.backend.id).to eq(:wicked)
+          config = subject.read.config
+          expect(config.backend.id).to eq(:wicked)
         end
       end
 
@@ -94,7 +96,8 @@ describe Y2Network::Autoinst::ConfigReader do
         let(:first_stage) { false }
 
         it "selects :network_manager as the backend to be used" do
-          expect(subject.config.backend.id).to eq(:network_manager)
+          config = subject.read.config
+          expect(config.backend.id).to eq(:network_manager)
         end
       end
     end
