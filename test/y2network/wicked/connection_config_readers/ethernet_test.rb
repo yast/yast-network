@@ -111,45 +111,18 @@ describe Y2Network::Wicked::ConnectionConfigReaders::Ethernet do
         allow(file).to receive(:bootproto).and_return("something")
       end
 
-      context "and there is some defined address" do
-
-        before do
-          allow(file).to receive(:ipaddrs).and_return([double("IP")])
-        end
-
-        it "falls back to STATIC" do
-          eth = handler.connection_config
-          expect(eth.bootproto).to eq(Y2Network::BootProtocol::STATIC)
-        end
-
-        it "registers an issue" do
-          handler.connection_config
-          issue = issues_list.first
-          expect(issue.location.to_s).to eq(
-            "file:/etc/sysconfig/network/ifcfg-eth0:BOOTPROTO"
-          )
-          expect(issue.message).to include("Invalid value 'something'")
-        end
+      it "falls back to STATIC" do
+        eth = handler.connection_config
+        expect(eth.bootproto).to eq(Y2Network::BootProtocol::STATIC)
       end
 
-      context "and there are not defined addresses" do
-        before do
-          allow(file).to receive(:ipaddrs).and_return([])
-        end
-
-        it "falls back to DHCP" do
-          eth = handler.connection_config
-          expect(eth.bootproto).to eq(Y2Network::BootProtocol::DHCP)
-        end
-
-        it "registers an issue" do
-          handler.connection_config
-          issue = issues_list.first
-          expect(issue.location.to_s).to eq(
-            "file:/etc/sysconfig/network/ifcfg-eth0:BOOTPROTO"
-          )
-          expect(issue.message).to include("Invalid value 'something'")
-        end
+      it "registers an issue" do
+        handler.connection_config
+        issue = issues_list.first
+        expect(issue.location.to_s).to eq(
+          "file:/etc/sysconfig/network/ifcfg-eth0:BOOTPROTO"
+        )
+        expect(issue.message).to include("Invalid value 'something'")
       end
     end
 
