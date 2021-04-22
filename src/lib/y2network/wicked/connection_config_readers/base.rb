@@ -32,6 +32,8 @@ module Y2Network
       # The derived classes should implement {#update_connection_config} method.
       # methods.
       class Base
+        include Yast::Logger
+
         # @return [CFA::InterfaceFile] Interface's configuration file
         attr_reader :file
 
@@ -47,14 +49,14 @@ module Y2Network
         # @return [Y2Network::ConnectionConfig::Base]
         def connection_config
           connection_class.new.tap do |conn|
-            conn.bootproto = BootProtocol.from_name(file.bootproto || "static")
+            conn.bootproto = find_bootproto
             conn.description = file.name
             conn.interface = file.interface
             conn.ip = all_ips.find { |i| i.id.empty? }
             conn.ip_aliases = all_ips.reject { |i| i.id.empty? }
             conn.name = file.interface
             conn.lladdress = file.lladdr
-            conn.startmode = Startmode.create(file.startmode || "manual")
+            conn.startmode = find_startmode
             conn.startmode.priority = file.ifplugd_priority if conn.startmode.name == "ifplugd"
             conn.ethtool_options = file.ethtool_options
             conn.firewall_zone = file.zone
@@ -69,6 +71,24 @@ module Y2Network
         end
 
       private
+
+        def find_bootproto
+          bootproto = BootProtocol.from_name(file.bootproto.to_s)
+          return bootproto if bootproto
+
+          fallback = file.ipaddrs.empty? ? BootProtocol::DHCP : BootProtocol::STATIC
+          report_invalid_value("BOOTPROTO", file.bootproto, fallback.name)
+          fallback
+        end
+
+        def find_startmode
+          startmode = Startmode.create(file.startmode) if file.startmode
+          return startmode if startmode
+
+          fallback = Startmode.create("manual")
+          report_invalid_value("STARTMODE", file.startmode, fallback.name)
+          fallback
+        end
 
         # Returns the class of the connection configuration
         #
@@ -131,6 +151,15 @@ module Y2Network
           Yast::Host.Read
           aliases = Yast::Host.names(conn.ip.address.address.to_s).first
           aliases.to_s.split(" ")
+        end
+
+        # It reports an invalid value for a given key.
+        #
+        # @param key      [#to_s] Key name
+        # @param value    [#to_s] Invalid value
+        # @param fallback [#to_s] Fallback value
+        def report_invalid_value(key, value, fallback)
+          log.warn "Invalid value '#{value}' for '#{key}'. Using '#{fallback}' instead."
         end
       end
     end
