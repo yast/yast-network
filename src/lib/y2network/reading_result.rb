@@ -26,8 +26,6 @@ module Y2Network
 
     # Represents a reading operation result
     #
-    # @fixme does it make sense when writing changes?
-    #
     # @param config [Config] Read configuration
     # @param issues [Errors::List] Errors list
     def initialize(config, issues = Y2Issues::List.new)
