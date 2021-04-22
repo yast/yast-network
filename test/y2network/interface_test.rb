@@ -155,4 +155,53 @@ describe Y2Network::Interface do
       end
     end
   end
+
+  describe "#hotplug?" do
+    context "when the interface does not contain hardware information" do
+      subject(:interface) { Y2Network::PhysicalInterface.new("br0") }
+
+      it "returns false" do
+        expect(interface.hotplug?).to eql(false)
+      end
+    end
+
+    context "when the interface contains hardware information" do
+      let(:hardware) do
+        Y2Network::Hwinfo.new(name: "Ethernet Connection I217-LM",
+          dev_name: "enp0s25", mac: "01:23:45:67:89:ab")
+      end
+
+      subject(:interface) do
+        Y2Network::PhysicalInterface.new("eth0", hardware: hardware)
+      end
+
+      context "and it is not a hotplug interface" do
+        it "returns false" do
+          expect(interface.hotplug?).to eql(false)
+        end
+      end
+
+      context "and it is an usb hotplug interface" do
+        let(:hardware) do
+          Y2Network::Hwinfo.new(name: "100Mbps Network Card Adapter",
+            dev_name: "enp0s20u5c2", mac: "01:23:45:67:89:ab", hotplug: "usb")
+        end
+
+        it "returns true" do
+          expect(interface.hotplug?).to eql(true)
+        end
+      end
+
+      context "and it is a pcmcia hotplug interface" do
+        let(:hardware) do
+          Y2Network::Hwinfo.new(name: "100Mbps Network Card Adapter",
+            dev_name: "enp0s20u5c2", mac: "01:23:45:67:89:ab", hotplug: "pcmcia")
+        end
+
+        it "returns true" do
+          expect(interface.hotplug?).to eql(true)
+        end
+      end
+    end
+  end
 end
