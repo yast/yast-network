@@ -51,24 +51,9 @@ module Y2Network
         )
       end
 
-      # initialize legacy stuff, that should be removed soon
-      def legacy_init
-        # FIXME: This is for backward compatibility only
-        # dhclient needs to set just one dhcp enabled interface to
-        # DHCLIENT_SET_DEFAULT_ROUTE=yes. Otherwise interface is selected more
-        # or less randomly (bnc#868187). However, UI is not ready for such change yet.
-        # As it could easily happen that all interfaces are set to "no" (and
-        # default route is unreachable in such case) this explicit setup was
-        # added.
-        # FIXME: not implemented in network-ng
-        Yast::LanItems.set_default_route = true
-      end
-
       # @return [Y2Network::InterfaceConfigBuilder, nil] returns new builder when type selected
       #   or nil if canceled
       def run
-        legacy_init
-
         ret = super
         log.info "AddInterface result #{ret}"
         ret = :back if ret == :abort
