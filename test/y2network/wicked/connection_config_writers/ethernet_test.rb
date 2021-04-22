@@ -66,6 +66,7 @@ describe Y2Network::Wicked::ConnectionConfigWriters::Ethernet do
       c.ip_aliases = [ip_alias]
       c.startmode = Y2Network::Startmode.create("auto")
       c.hostname = "foo"
+      c.mtu = 1518
       c.dhclient_set_hostname = true
     end
   end
@@ -79,7 +80,8 @@ describe Y2Network::Wicked::ConnectionConfigWriters::Ethernet do
         name:                  conn.description,
         bootproto:             "static",
         startmode:             "auto",
-        dhclient_set_hostname: "yes"
+        dhclient_set_hostname: "yes",
+        mtu:                   1518
       )
     end
 
