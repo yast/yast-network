@@ -93,7 +93,7 @@ module Yast
 
       # Force a read of the configuration just for reading the transient
       # hostname as it could be modified through dhcp since previous read.
-      Lan.read_config
+      Lan.read_config(report: false)
     end
 
     # Decides if a proposal for virtualization host machine is required.
@@ -120,7 +120,7 @@ module Yast
 
       log.info("NetworkAutoconfiguration: proposing virtual devices")
 
-      Lan.ProposeVirtualized
+      return unless Lan.ProposeVirtualized
 
       # avoid restarting network (installation can run via ssh, vnc, ...)
       # Moreover virtual devices are not needed during first stage. So, it can

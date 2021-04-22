@@ -720,10 +720,11 @@ module Yast
     # It resets the already read configuration. If some issue is detected
     # while reading the configuration, it is reported to the user.
     #
+    # @param report [Boolean] Report any found issue if set to true
     # @return [Boolean] Returns whether the configuration was read.
-    def read_config
+    def read_config(report: true)
       result = Y2Network::Config.from(:wicked)
-      if result.issues?
+      if result.issues? && report
         return false unless Y2Issues.report(result.issues) == :yes
       end
 
