@@ -69,7 +69,6 @@ module Yast
       Yast.import "String"
       Yast.import "FileUtils"
       Yast.import "PackageSystem"
-      Yast.import "LanItems"
       Yast.import "ModuleLoading"
       Yast.import "Linuxrc"
 
@@ -397,9 +396,7 @@ module Yast
     def Write(gui: true, apply_config: !write_only)
       log.info("Writing configuration")
 
-      # Query modified flag in all components, not just LanItems - DNS,
-      # Routing, NetworkConfig too in order not to discard changes made
-      # outside LanItems (bnc#439235)
+      # Query modified flag in all components
       if !Modified()
         log.info("No changes to network setup -> nothing to write")
         return true
