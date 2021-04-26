@@ -21,8 +21,8 @@ require_relative "../test_helper"
 require "y2network/backend"
 
 describe Y2Network::Backend do
-  let(:supported_backends) { [:netconfig, :network_manager, :wicked] }
-  let(:installed_backends) { [:netconfig, :wicked] }
+  let(:supported_backends) { [:netconfig, :network_manager, :none, :wicked] }
+  let(:installed_backends) { [:netconfig, :none, :wicked] }
   let(:network_manager) { described_class.by_id(:network_manager) }
 
   describe "#all" do

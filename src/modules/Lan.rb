@@ -769,7 +769,7 @@ module Yast
       end
 
       system_config = result.config
-      system_config.backend = NetworkService.cached_name
+      system_config.backend = (NetworkService.cached_name || :none)
       Yast::Lan.add_config(:system, system_config)
       Yast::Lan.add_config(:yast, system_config.copy)
       true

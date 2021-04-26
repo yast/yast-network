@@ -68,13 +68,6 @@ module Yast
         )
       end
 
-      items << Item(
-        Id("disabled"),
-        # used when no network service is active or to disable network service
-        _("Network Services Disabled"),
-        Lan.yast_config&.backend.nil?
-      )
-
       UI.ChangeWidget(Id(:managed), :Items, items)
 
       nil

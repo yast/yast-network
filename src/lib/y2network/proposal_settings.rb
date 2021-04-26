@@ -84,13 +84,22 @@ module Y2Network
       selected_backend
     end
 
+    def disable_network!
+      log.info "Disabling all network services"
+      self.selected_backend = :none
+    end
+
     def refresh_packages
-      if current_backend == :network_manager
+      case current_backend
+      when :network_manager
         Yast::PackagesProposal.AddResolvables("network", :package, ["NetworkManager"])
         Yast::PackagesProposal.RemoveResolvables("network", :package, ["wicked"])
-      else
+      when :wicked
         Yast::PackagesProposal.AddResolvables("network", :package, ["wicked"])
         Yast::PackagesProposal.RemoveResolvables("network", :package, ["NetworkManager"])
+      when :none
+        Yast::PackagesProposal.RemoveResolvables("network", :package, ["NetworkManager"])
+        Yast::PackagesProposal.RemoveResolvables("network", :package, ["wicked"])
       end
     end
 
@@ -128,9 +137,11 @@ module Y2Network
 
         log.info("NetworkManager is the selected service but it is not installed")
         log.info("- using wicked")
+
+        return :wicked
       end
 
-      :wicked
+      current_backend
     end
 
     class << self

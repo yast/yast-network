@@ -30,8 +30,6 @@ module Y2Network
         # @return [CFA::InterfaceFile] Interface's configuration file
         attr_reader :file
 
-        def_delegators :@file, :value_as_string
-
         # Constructor
         #
         # @param file [CFA::InterfaceFile] Interface's configuration file
@@ -117,6 +115,14 @@ module Y2Network
           return false unless conn.bootproto.static?
 
           conn.ip && conn.ip.address.address.to_s != "0.0.0.0"
+        end
+
+        # Converts the value into a string (or nil if empty)
+        #
+        # @param [String] value
+        # @return [String,nil]
+        def value_as_string(value)
+          (value.nil? || value.empty?) ? nil : value
         end
       end
     end

@@ -30,7 +30,8 @@ module Yast
 
     BACKEND_LINKS = [
       SWITCH_TO_WICKED = "network--switch-to-wicked".freeze,
-      SWITCH_TO_NETWORK_MANAGER = "network--switch-to-nm".freeze
+      SWITCH_TO_NETWORK_MANAGER = "network--switch-to-nm".freeze,
+      DISABLE_SERVICES = "network--disable".freeze
     ].freeze
 
     VIRT_PROPOSAL_LINKS = [
@@ -70,6 +71,8 @@ module Yast
           switch_to_wicked
         when "network--switch-to-nm"
           switch_to_network_manager
+        when "network--disable"
+          disable_services
         when "network--propose-bridge"
           propose_bridge(true)
         when "network--dont-propose-bridge"
@@ -92,9 +95,9 @@ module Yast
     end
 
     def preformatted_proposal
-      return proposal_summary.text unless settings.network_manager_available?
-
       proposal_text = switch_backend_link
+      return proposal_text if settings.current_backend == :none
+
       proposal_text << toggle_virt_proposal_link if settings.virtual_proposal_required?
       proposal_text.prepend(proposal_summary.text)
       proposal_text
@@ -120,19 +123,23 @@ module Yast
       # TRANSLATORS: information about the network backend in use. %s is the name of backend,
       # example "wicked" or "NetworkManager"
       backend_in_use = _("Using <b>%s</b>")
-      # TRANSLATORS: text of link to switch to another network backend. %s is the name of backend,
-      # example "wicked" or "NetworkManager"
-      switch_to = _("switch to %s")
 
-      if wicked_backend?
-        current_backend         = "wicked"
-        link_to_another_backend = Hyperlink(SWITCH_TO_NETWORK_MANAGER, switch_to % "NetworkManager")
+      case settings.current_backend
+      when :wicked
+        current_backend = "wicked"
+        links = [disable_link]
+        links.prepend(network_manager_link) if settings.network_manager_available?
+      when :network_manager
+        current_backend = "NetworkManager"
+        links = [wicked_link, disable_link]
       else
-        current_backend         = "NetworkManager"
-        link_to_another_backend = Hyperlink(SWITCH_TO_WICKED, switch_to % "wicked")
+        backend_in_use = "<b>%s</b>"
+        current_backend = _("Network Services Disabled")
+        links = [wicked_link]
+        links.append(network_manager_link) if settings.network_manager_available?
       end
 
-      "<ul><li>#{backend_in_use % current_backend} (#{link_to_another_backend})</li></ul>"
+      "<ul><li>#{backend_in_use % current_backend} (#{links.join(", ")})</li></ul>"
     end
 
     def launch_network_configuration(args)
@@ -146,6 +153,20 @@ module Yast
       result
     ensure
       Yast::Wizard.CloseDialog
+    end
+
+    def network_manager_link
+      # TRANSLATORS: text of link to switch to another network backend. %s is the name of backend,
+      # example "wicked" or "NetworkManager"
+      Hyperlink(SWITCH_TO_NETWORK_MANAGER, _("switch to %s") % "NetworkManager")
+    end
+
+    def wicked_link
+      Hyperlink(SWITCH_TO_WICKED, _("switch to %s") % "wicked")
+    end
+
+    def disable_link
+      Hyperlink(DISABLE_SERVICES, _("disable services"))
     end
 
     def propose_bridge?
@@ -167,8 +188,13 @@ module Yast
       :next
     end
 
+    def disable_services
+      settings.disable_network!
+      :next
+    end
+
     def wicked_backend?
-      settings.current_backend != :network_manager
+      settings.current_backend == :wicked
     end
 
     # TODO: move to HTML.ycp

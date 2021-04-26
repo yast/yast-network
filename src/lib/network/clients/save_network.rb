@@ -358,9 +358,13 @@ module Yast
       when :network_manager
         log.info("- using NetworkManager")
         NetworkService.use_network_manager
-      else
+      when :wicked
         log.info("- using wicked")
         NetworkService.use_wicked
+      when :none
+        NetworkService.send(:disable_service, :wicked)
+        NetworkService.send(:disable_service, :network_manager)
+        return
       end
 
       NetworkService.EnableDisableNow
