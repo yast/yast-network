@@ -30,26 +30,6 @@ require "y2network/routing"
 require "y2network/route"
 require "y2network/routing_table"
 
-describe "LanItemsClass#IsItemConfigured" do
-  it "succeeds when item has configuration" do
-    allow(Yast::LanItems).to receive(:GetLanItem) { { "ifcfg" => "enp0s3" } }
-
-    expect(Yast::LanItems.IsItemConfigured(0)).to be true
-  end
-
-  it "fails when item doesn't exist" do
-    allow(Yast::LanItems).to receive(:GetLanItem) { {} }
-
-    expect(Yast::LanItems.IsItemConfigured(0)).to be false
-  end
-
-  it "fails when item's configuration doesn't exist" do
-    allow(Yast::LanItems).to receive(:GetLanItem) { { "ifcfg" => nil } }
-
-    expect(Yast::LanItems.IsItemConfigured(0)).to be false
-  end
-end
-
 describe "LanItems#dhcp_ntp_servers" do
   it "lists ntp servers for every device which provides them" do
     result = {
@@ -76,131 +56,116 @@ describe "LanItems#dhcp_ntp_servers" do
   end
 end
 
-describe "DHCLIENT_SET_HOSTNAME helpers" do
-  def mock_items(dev_maps)
-    # mock LanItems#Items
-    item_maps = dev_maps.keys.map { |dev| { "ifcfg" => dev } }
-    lan_items = [*0..dev_maps.keys.size - 1].zip(item_maps).to_h
-    allow(Yast::LanItems)
-      .to receive(:Items)
-      .and_return(lan_items)
-
-    # mock each device sysconfig map
-    allow(Yast::LanItems)
-      .to receive(:GetDeviceMap)
-      .and_return({})
-
-    lan_items.each_pair do |index, item_map|
-      allow(Yast::LanItems)
-        .to receive(:GetDeviceMap)
-        .with(index)
-        .and_return(dev_maps[item_map["ifcfg"]])
-      allow(Yast::LanItems)
-        .to receive(:GetDeviceName)
-        .with(index)
-        .and_return(item_map["ifcfg"])
-    end
+context "when handling DHCLIENT_SET_HOSTNAME configuration" do
+  let(:config) do
+    instance_double("Y2Network::Config", connections: connections, hostname: hostname)
   end
 
-  describe "LanItems#find_dhcp_ifaces" do
-    let(:dhcp_maps) do
-      {
-        "eth0" => { "BOOTPROTO" => "dhcp" },
-        "eth1" => { "BOOTPROTO" => "dhcp4" },
-        "eth2" => { "BOOTPROTO" => "dhcp6" },
-        "eth3" => { "BOOTPROTO" => "dhcp+autoip" }
-      }.freeze
-    end
-    let(:non_dhcp_maps) do
-      {
-        "eth4" => { "BOOTPROTO" => "static" },
-        "eth5" => { "BOOTPROTO" => "none" }
-      }.freeze
-    end
-    let(:dhcp_invalid_maps) do
-      { "eth6" => { "BOOT" => "dhcp" } }.freeze
-    end
-
-    it "finds all dhcp aware interfaces" do
-      mock_items(dhcp_maps.merge(non_dhcp_maps.merge(dhcp_invalid_maps)))
-
-      expect(Yast::LanItems.find_dhcp_ifaces).to eql ["eth0", "eth1", "eth2", "eth3"]
-    end
-
-    it "returns empty array when no dhcp configuration is present" do
-      mock_items(non_dhcp_maps.merge(dhcp_invalid_maps))
-
-      expect(Yast::LanItems.find_dhcp_ifaces).to eql []
-    end
+  let(:conn_yes) do
+    instance_double(
+      Y2Network::ConnectionConfig::Base,
+      interface: "eth0",
+      dhclient_set_hostname: "yes"
+    )
   end
 
-  describe "LanItems#find_set_hostname_ifaces" do
-    let(:dhcp_yes_maps) do
-      {
-        "eth0" => { "DHCLIENT_SET_HOSTNAME" => "yes" }
-      }.freeze
-    end
-    let(:dhcp_no_maps) do
-      {
-        "eth1" => { "DHCLIENT_SET_HOSTNAME" => "no" }
-      }.freeze
-    end
-    let(:dhcp_invalid_maps) do
-      { "eth2" => { "DHCP_SET_HOSTNAME" => "yes" } }.freeze
+  let(:conn_no) do
+    instance_double(
+      Y2Network::ConnectionConfig::Base,
+      interface: "eth1",
+      dhclient_set_hostname: "no"
+    )
+  end
+
+  let(:conn_undef) do
+    instance_double(
+      Y2Network::ConnectionConfig::Base,
+      interface: "eth1",
+      dhclient_set_hostname: nil
+    )
+  end
+
+  let(:connections) do
+    Y2Network::ConnectionConfigsCollection.new([conn_yes, conn_no, conn_undef])
+  end
+
+  let(:hostname) { nil }
+
+  before(:each) do
+    allow(Yast::Lan).to receive(:yast_config).and_return(config)
+  end
+
+  describe "#find_set_hostname_ifaces" do
+    context "when any configuration has DHCLIENT_SET_HOSTNAME set to \"yes\"" do
+      it "returns a list of all devices with DHCLIENT_SET_HOSTNAME=\"yes\"" do
+        expect(Yast::Lan.find_set_hostname_ifaces).to eql ["eth0"]
+      end
     end
 
-    it "returns a list of all devices with DHCLIENT_SET_HOSTNAME=\"yes\"" do
-      mock_items(dhcp_yes_maps.merge(dhcp_no_maps.merge(dhcp_invalid_maps)))
+    context "when no configuration has DHCLIENT_SET_HOSTNAME set to \"yes\"" do
+      let(:connections) do
+        Y2Network::ConnectionConfigsCollection.new([conn_no, conn_undef])
+      end
 
-      expect(Yast::LanItems.find_set_hostname_ifaces).to eql ["eth0"]
-    end
-
-    it "returns empty list when no DHCLIENT_SET_HOSTNAME=\"yes\" is found" do
-      mock_items(dhcp_no_maps.merge(dhcp_invalid_maps))
-
-      expect(Yast::LanItems.find_set_hostname_ifaces).to be_empty
+      it "returns empty list" do
+        expect(Yast::Lan.find_set_hostname_ifaces).to be_empty
+      end
     end
   end
 
   describe "LanItems#valid_dhcp_cfg?" do
-    def mock_dhcp_setup(ifaces, global)
-      allow(Yast::LanItems)
-        .to receive(:find_set_hostname_ifaces)
-        .and_return(ifaces)
-      allow(Yast::DNS)
-        .to receive(:dhcp_hostname)
-        .and_return(global)
+    let(:hostname) do
+      instance_double(Y2Network::Hostname, dhcp_hostname: true)
     end
 
-    it "fails when DHCLIENT_SET_HOSTNAME is set for multiple ifaces" do
-      mock_dhcp_setup(["eth0", "eth1"], false)
+    context "fails when DHCLIENT_SET_HOSTNAME is set for multiple ifaces" do
+      let(:conn_yes_2) do
+        instance_double(
+          Y2Network::ConnectionConfig::Base,
+          interface: "eth1",
+          dhclient_set_hostname: "yes"
+        )
+      end
 
-      expect(Yast::LanItems.invalid_dhcp_cfgs).not_to include("dhcp")
-      expect(Yast::LanItems.invalid_dhcp_cfgs).to include("ifcfg-eth0")
-      expect(Yast::LanItems.invalid_dhcp_cfgs).to include("ifcfg-eth1")
-      expect(Yast::LanItems.valid_dhcp_cfg?).to be false
+      let(:connections) do
+        Y2Network::ConnectionConfigsCollection.new([conn_yes, conn_yes_2])
+      end
+
+      it "reports configuration as invalid" do
+        puts "invalid_dhcp_cfgs: #{Yast::Lan.invalid_dhcp_cfgs}"
+        expect(Yast::Lan.invalid_dhcp_cfgs).not_to include("dhcp")
+        expect(Yast::Lan.invalid_dhcp_cfgs).to include("ifcfg-eth0")
+        expect(Yast::Lan.invalid_dhcp_cfgs).to include("ifcfg-eth1")
+        expect(Yast::Lan.valid_dhcp_cfg?).to be false
+      end
     end
 
     it "fails when DHCLIENT_SET_HOSTNAME is set globaly even in an ifcfg" do
-      mock_dhcp_setup(["eth0"], true)
-
-      expect(Yast::LanItems.invalid_dhcp_cfgs).to include("dhcp")
-      expect(Yast::LanItems.invalid_dhcp_cfgs).to include("ifcfg-eth0")
-      expect(Yast::LanItems.valid_dhcp_cfg?).to be false
+      expect(Yast::Lan.invalid_dhcp_cfgs).to include("dhcp")
+      expect(Yast::Lan.invalid_dhcp_cfgs).to include("ifcfg-eth0")
+      expect(Yast::Lan.valid_dhcp_cfg?).to be false
     end
 
-    it "succeedes when DHCLIENT_SET_HOSTNAME is set for one iface" do
-      mock_dhcp_setup(["eth0"], false)
+    context "succeedes when DHCLIENT_SET_HOSTNAME is set for one iface" do
+      let(:hostname) do
+        instance_double(Y2Network::Hostname, dhcp_hostname: false)
+      end
 
-      expect(Yast::LanItems.invalid_dhcp_cfgs).to be_empty
-      expect(Yast::LanItems.valid_dhcp_cfg?).to be true
+      it "validates the setup" do
+        expect(Yast::Lan.invalid_dhcp_cfgs).to be_empty
+        expect(Yast::Lan.valid_dhcp_cfg?).to be true
+      end
     end
 
-    it "succeedes when only global DHCLIENT_SET_HOSTNAME is set" do
-      mock_dhcp_setup([], true)
+    context "when only global DHCLIENT_SET_HOSTNAME is set" do
+      let(:connections) do
+        Y2Network::ConnectionConfigsCollection.new([])
+      end
 
-      expect(Yast::LanItems.invalid_dhcp_cfgs).to be_empty
-      expect(Yast::LanItems.valid_dhcp_cfg?).to be true
+      it "validates the setup" do
+        expect(Yast::Lan.invalid_dhcp_cfgs).to be_empty
+        expect(Yast::Lan.valid_dhcp_cfg?).to be true
+      end
     end
   end
 end
