@@ -407,7 +407,7 @@ describe "LanClass" do
     before do
       allow(Yast::NetworkService).to receive(:isNetworkRunning).and_return(running)
       allow(Yast::NetworkService).to receive(:is_network_manager).and_return(nm_enabled)
-      allow(Yast::LanItems).to receive(:dhcp_ntp_servers).and_return(servers)
+      allow(Yast::Lan).to receive(:ifaces_dhcp_ntp_servers).and_return(servers)
     end
 
     context "when the network is not running" do

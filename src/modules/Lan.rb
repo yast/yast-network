@@ -31,6 +31,7 @@ require "yast"
 require "cfa/sysctl_config"
 require "network/network_autoyast"
 require "network/confirm_virt_proposal"
+require "network/wicked"
 require "ui/text_helpers"
 require "y2firewall/firewalld"
 require "y2network/autoinst_profile/networking_section"
@@ -702,7 +703,7 @@ module Yast
       return [] if !NetworkService.isNetworkRunning || Yast::NetworkService.is_network_manager
 
       ReadWithCacheNoGUI()
-      dhcp_ntp_servers.values.flatten.uniq
+      ifaces_dhcp_ntp_servers.values.flatten.uniq
     end
 
     # Returns hash of NTP servers
@@ -711,7 +712,7 @@ module Yast
     #
     # @return [Hash<String, Array<String>] key is device name, value
     #                                      is list of ntp servers obtained from the device
-    def dhcp_ntp_servers
+    def ifaces_dhcp_ntp_servers
       dhcp_ifaces = yast_config.connections.map { |c| c.interface if c.dhcp? }.compact
 
       result = dhcp_ifaces.map { |iface| [iface, parse_ntp_servers(iface)] }.to_h
