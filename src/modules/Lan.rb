@@ -702,7 +702,20 @@ module Yast
       return [] if !NetworkService.isNetworkRunning || Yast::NetworkService.is_network_manager
 
       ReadWithCacheNoGUI()
-      Yast::LanItems.dhcp_ntp_servers.values.flatten.uniq
+      dhcp_ntp_servers.values.flatten.uniq
+    end
+
+    # Returns hash of NTP servers
+    #
+    # Provides map with NTP servers obtained via any of dhcp aware interfaces
+    #
+    # @return [Hash<String, Array<String>] key is device name, value
+    #                                      is list of ntp servers obtained from the device
+    def dhcp_ntp_servers
+      dhcp_ifaces = yast_config.connections.map { |c| c.interface if c.dhcp? }.compact
+
+      result = dhcp_ifaces.map { |iface| [iface, parse_ntp_servers(iface)] }.to_h
+      result.delete_if { |_, ntps| ntps.empty? }
     end
 
     # Returns the network configuration with the given ID
