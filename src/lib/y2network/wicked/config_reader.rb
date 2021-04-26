@@ -66,7 +66,7 @@ module Y2Network
       # Reads the network interfaces
       #
       # @param config [Y2Network::Config] Initial configuration object
-      # @param _issues_list [Y2Issues::List] Issues list
+      # @param _issues_list [Y2Issues::List] Issues list. Used to register issues when reading.
       # @return [Y2Network::Config] A new configuration object including the interfaces
       def read_interfaces(config, _issues_list)
         config.update(
@@ -78,7 +78,7 @@ module Y2Network
       # Reads the connections
       #
       # @param config [Y2Network::Config] Initial configuration object
-      # @param issues_list [Y2Issues::List] Issues list
+      # @param issues_list [Y2Issues::List] Issues list. Used to register issues when reading.
       # @return [Y2Network::Config] A new configuration object including the connections
       def read_connections(config, issues_list)
         connection_configs_reader = ConnectionConfigsReader.new(issues_list)
@@ -95,7 +95,7 @@ module Y2Network
       # Reads the drivers
       #
       # @param config [Y2Network::Config] Initial configuration object
-      # @param _issues_list [Y2Issues::List] Issues list
+      # @param _issues_list [Y2Issues::List] Issues list. Used to register issues when reading.
       # @return [Y2Network::Config] A new configuration object including the connections
       def read_drivers(config, _issues_list)
         config.update(drivers: interfaces_reader.drivers)
@@ -104,7 +104,7 @@ module Y2Network
       # Reads the routing information
       #
       # @param config [Y2Network::Config] Initial configuration object
-      # @param _issues_list [Y2Issues::List] Issues list
+      # @param _issues_list [Y2Issues::List] Issues list. Used to register issues when reading.
       # @return [Y2Network::Config] A new configuration object including the routing information
       def read_routing(config, _issues_list)
         routing_tables = find_routing_tables(config.interfaces)
@@ -119,7 +119,7 @@ module Y2Network
       # Reads the DNS information
       #
       # @param config [Y2Network::Config] Initial configuration object
-      # @param _issues_list [Y2Issues::List] Issues list
+      # @param _issues_list [Y2Issues::List] Issues list. Used to register issues when reading.
       # @return [Y2Network::Config] A new configuration object including the DNS configuration
       def read_dns(config, _issues_list)
         config.update(dns: Y2Network::Wicked::DNSReader.new.config)
@@ -128,7 +128,7 @@ module Y2Network
       # Returns the Hostname configuration
       #
       # @param config [Y2Network::Config] Initial configuration object
-      # @param _issues_list [Y2Issues::List] Issues list
+      # @param _issues_list [Y2Issues::List] Issues list. Used to register issues when reading.
       # @return [Y2Network::Config] A new configuration object including the hostname information
       def read_hostname(config, _issues_list)
         config.update(hostname: Y2Network::Wicked::HostnameReader.new.config)
