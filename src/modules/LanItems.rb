@@ -205,35 +205,6 @@ module Yast
       find_by_sysconfig { |ifcfg| dhcp?(ifcfg) }
     end
 
-    # Finds all devices which has DHCLIENT_SET_HOSTNAME set to "yes"
-    #
-    # @return [Array<String>] list of NIC names which has the option set to "yes"
-    def find_set_hostname_ifaces
-      find_by_sysconfig do |ifcfg|
-        ifcfg["DHCLIENT_SET_HOSTNAME"] == "yes"
-      end
-    end
-
-    # Creates a list of config files which contain corrupted DHCLIENT_SET_HOSTNAME setup
-    #
-    # @return [Array] list of config file names
-    def invalid_dhcp_cfgs
-      devs = LanItems.find_set_hostname_ifaces
-      dev_ifcfgs = devs.map { |d| "ifcfg-#{d}" }
-
-      return dev_ifcfgs if devs.size > 1
-      return dev_ifcfgs << "dhcp" if !devs.empty? && DNS.dhcp_hostname
-
-      []
-    end
-
-    # Checks if system DHCLIENT_SET_HOSTNAME is valid
-    #
-    # @return [Boolean]
-    def valid_dhcp_cfg?
-      invalid_dhcp_cfgs.empty?
-    end
-
     # Clears internal cache of the module to default values
     #
     # TODO: LanItems consists of several sets of internal variables.

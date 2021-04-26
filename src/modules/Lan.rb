@@ -313,11 +313,40 @@ module Yast
 
       @initialized = true
 
-      fix_dhclient_warning(LanItems.invalid_dhcp_cfgs) if @gui && !LanItems.valid_dhcp_cfg?
+      fix_dhclient_warning(invalid_dhcp_cfgs) if @gui && !valid_dhcp_cfg?
 
       Progress.Finish if @gui
 
       true
+    end
+
+    # Creates a list of config files which contain corrupted DHCLIENT_SET_HOSTNAME setup
+    #
+    # @return [Array] list of config file names
+    def invalid_dhcp_cfgs
+      devs = find_set_hostname_ifaces
+      dev_ifcfgs = devs.map { |d| "ifcfg-#{d}" }
+
+      return dev_ifcfgs if devs.size > 1
+      return dev_ifcfgs << "dhcp" if !devs.empty? && DNS.dhcp_hostname
+
+      []
+    end
+
+    # Checks if system DHCLIENT_SET_HOSTNAME is valid
+    #
+    # @return [Boolean]
+    def valid_dhcp_cfg?
+      invalid_dhcp_cfgs.empty?
+    end
+
+    # Finds all devices which has DHCLIENT_SET_HOSTNAME set to "yes"
+    #
+    # @return [Array<String>] list of NIC names which has the option set to "yes"
+    def find_set_hostname_ifaces
+      yast_config.connections.map do |conn|
+        conn.interface if conn.dhclient_set_hostname == "yes"
+      end.compact
     end
 
     # (a specialization used when a parameterless function is needed)
