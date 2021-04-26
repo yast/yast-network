@@ -64,7 +64,7 @@ context "when handling DHCLIENT_SET_HOSTNAME configuration" do
   let(:conn_yes) do
     instance_double(
       Y2Network::ConnectionConfig::Base,
-      interface: "eth0",
+      interface:             "eth0",
       dhclient_set_hostname: "yes"
     )
   end
@@ -72,7 +72,7 @@ context "when handling DHCLIENT_SET_HOSTNAME configuration" do
   let(:conn_no) do
     instance_double(
       Y2Network::ConnectionConfig::Base,
-      interface: "eth1",
+      interface:             "eth1",
       dhclient_set_hostname: "no"
     )
   end
@@ -80,7 +80,7 @@ context "when handling DHCLIENT_SET_HOSTNAME configuration" do
   let(:conn_undef) do
     instance_double(
       Y2Network::ConnectionConfig::Base,
-      interface: "eth1",
+      interface:             "eth1",
       dhclient_set_hostname: nil
     )
   end
@@ -122,7 +122,7 @@ context "when handling DHCLIENT_SET_HOSTNAME configuration" do
       let(:conn_yes_2) do
         instance_double(
           Y2Network::ConnectionConfig::Base,
-          interface: "eth1",
+          interface:             "eth1",
           dhclient_set_hostname: "yes"
         )
       end

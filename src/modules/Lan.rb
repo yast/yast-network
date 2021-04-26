@@ -343,7 +343,7 @@ module Yast
     #
     # @return [Array<String>] list of NIC names which has the option set to "yes"
     def find_set_hostname_ifaces
-      ifaces = yast_config.connections.map do |conn|
+      yast_config.connections.map do |conn|
         conn.interface if conn.dhclient_set_hostname == "yes"
       end.compact
     end
