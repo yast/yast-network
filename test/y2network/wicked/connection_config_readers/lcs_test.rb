@@ -21,10 +21,12 @@ require_relative "../../../test_helper"
 require "y2network/wicked/connection_config_readers/lcs"
 require "cfa/interface_file"
 require "y2network/boot_protocol"
+require "y2issues"
 
 describe Y2Network::Wicked::ConnectionConfigReaders::Lcs do
-  subject(:handler) { described_class.new(file) }
+  subject(:handler) { described_class.new(file, issues_list) }
 
+  let(:issues_list) { Y2Issues::List.new }
   let(:scr_root) { File.join(DATA_PATH, "scr_read") }
 
   around do |example|

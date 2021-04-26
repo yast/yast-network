@@ -65,7 +65,9 @@ describe Y2Network::Config do
 
   describe ".from" do
     let(:reader) do
-      instance_double(Y2Network::Wicked::ConfigReader, config: config)
+      instance_double(
+        Y2Network::Wicked::ConfigReader, read: Y2Network::ReadingResult.new(config)
+      )
     end
 
     before do
@@ -74,7 +76,8 @@ describe Y2Network::Config do
     end
 
     it "returns the configuration from the given reader" do
-      expect(described_class.from(:wicked)).to eq(config)
+      result = described_class.from(:wicked)
+      expect(result.config).to eq(config)
     end
   end
 

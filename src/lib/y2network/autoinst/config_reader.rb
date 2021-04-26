@@ -27,6 +27,7 @@ require "y2network/autoinst/interfaces_reader"
 require "y2network/autoinst/udev_rules_reader"
 require "y2network/autoinst_profile/networking_section"
 require "y2network/wicked/interfaces_reader"
+require "y2network/reading_result"
 
 Yast.import "Stage"
 
@@ -46,8 +47,8 @@ module Y2Network
         @original_config = original_config
       end
 
-      # @return [Y2Network::Config] Network configuration
-      def config
+      # @return [ReadingResult] Network configuration
+      def read
         config = Y2Network::Config.new(source: :autoinst)
         # We need the current interfaces in order to rewrite the config
         # properly but the rest should be imported from the profile
@@ -75,7 +76,7 @@ module Y2Network
         # config should be written to the inst-sys (:wicked).
         config.backend = (!Yast::Stage.initial && section.managed) ? :network_manager : :wicked
 
-        config
+        Y2Network::ReadingResult.new(config)
       end
 
     private

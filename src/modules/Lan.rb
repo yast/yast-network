@@ -40,6 +40,7 @@ require "y2network/virtualization_config"
 require "y2network/interface_config_builder"
 require "y2network/presenters/summary"
 require "y2network/interface_type"
+require "y2issues"
 
 require "shellwords"
 
@@ -271,7 +272,7 @@ module Yast
         return false if Abort()
 
         ProgressNextStage(_("Reading device configuration...")) if @gui
-        read_config
+        return false unless read_config
 
         Builtins.sleep(sl)
 
@@ -569,8 +570,8 @@ module Yast
 
       Read(:cache)
       profile = Y2Network::AutoinstProfile::NetworkingSection.new_from_hashes(settings)
-      config = Y2Network::Config.from(:autoinst, profile, system_config)
-      add_config(:yast, config)
+      result = Y2Network::Config.from(:autoinst, profile, system_config)
+      add_config(:yast, result.config)
       @autoinst = autoinst_config(profile)
       if Arch.s390
         NetworkAutoYast.instance.activate_s390_devices(settings.fetch("s390-devices", {}))
@@ -716,12 +717,22 @@ module Yast
 
     # Reads system configuration
     #
-    # It resets already read configuration.
-    def read_config
-      system_config = Y2Network::Config.from(:wicked)
+    # It resets the already read configuration. If some issue is detected
+    # while reading the configuration, it is reported to the user.
+    #
+    # @param report [Boolean] Report any found issue if set to true
+    # @return [Boolean] Returns whether the configuration was read.
+    def read_config(report: true)
+      result = Y2Network::Config.from(:wicked)
+      if result.issues? && report
+        return false unless Y2Issues.report(result.issues) == :yes
+      end
+
+      system_config = result.config
       system_config.backend = NetworkService.cached_name
       Yast::Lan.add_config(:system, system_config)
       Yast::Lan.add_config(:yast, system_config.copy)
+      true
     end
 
     # Writes current yast config and replaces the system config with it

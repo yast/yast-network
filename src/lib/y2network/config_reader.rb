@@ -22,7 +22,7 @@ require "yast"
 module Y2Network
   # This class is responsible for reading the configuration from the system
   #
-  # It implements a {#config} method which returns a configuration object
+  # It implements a {#read} method which returns a configuration object
   # containing the information from the corresponding backend.
   #
   # It is expect that a configuration reader exists for each supported backend
@@ -48,9 +48,10 @@ module Y2Network
 
     # Returns the configuration from the given backend
     #
-    # @return [Y2Network::Config] Network configuration
-    def config
-      Y2Network::Config.new
+    # @return [Y2Network::ReadingResult] Network configuration
+    # @raise NotImplementedError
+    def read
+      raise NotImplementedError
     end
   end
 end

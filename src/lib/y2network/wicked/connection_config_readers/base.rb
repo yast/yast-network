@@ -38,8 +38,10 @@ module Y2Network
         # Constructor
         #
         # @param file [CFA::InterfaceFile] Interface's configuration file
-        def initialize(file)
+        # @param issues_list [Y2Issues::List] List to register issues
+        def initialize(file, issues_list)
           @file = file
+          @issues_list = issues_list
         end
 
         # Builds a connection configuration object
@@ -47,14 +49,14 @@ module Y2Network
         # @return [Y2Network::ConnectionConfig::Base]
         def connection_config
           connection_class.new.tap do |conn|
-            conn.bootproto = BootProtocol.from_name(file.bootproto || "static")
+            conn.bootproto = find_bootproto
             conn.description = file.name
             conn.interface = file.interface
             conn.ip = all_ips.find { |i| i.id.empty? }
             conn.ip_aliases = all_ips.reject { |i| i.id.empty? }
             conn.name = file.interface
             conn.lladdress = file.lladdr
-            conn.startmode = Startmode.create(file.startmode || "manual")
+            conn.startmode = find_startmode
             conn.startmode.priority = file.ifplugd_priority if conn.startmode.name == "ifplugd"
             conn.ethtool_options = file.ethtool_options
             conn.firewall_zone = file.zone
@@ -69,6 +71,51 @@ module Y2Network
         end
 
       private
+
+        # @return [Y2Issues::List] List to register issues
+        attr_reader :issues_list
+
+        DEFAULT_BOOTPROTO = BootProtocol::STATIC
+
+        # Finds the boot protocol
+        #
+        # If it is not defined or it has an unknown value, it returns the
+        # fallback value (BootProtocol::STATIC).
+        #
+        # @return [BootProtocol]
+        def find_bootproto
+          bootproto = BootProtocol.from_name(file.bootproto.to_s)
+          return bootproto if bootproto
+
+          issue_location = "file:#{file.path}:BOOTPROTO"
+          issue = Y2Issues::InvalidValue.new(
+            file.bootproto, fallback: BootProtocol::STATIC, location: issue_location
+          )
+          issues_list << issue
+
+          BootProtocol::STATIC
+        end
+
+        DEFAULT_STARTMODE_NAME = "manual".freeze
+
+        # Finds the start mode
+        #
+        # If it is not defined or it has an unknown value, it returns the
+        # fallback value (manual).
+        #
+        # @return [Startmode]
+        def find_startmode
+          startmode = Startmode.create(file.startmode) if file.startmode
+          return startmode if startmode
+
+          issue_location = "file:#{file.path}:STARTMODE"
+          fallback = Startmode.create(DEFAULT_STARTMODE_NAME)
+          issue = Y2Issues::InvalidValue.new(
+            file.startmode, fallback: fallback, location: issue_location
+          )
+          issues_list << issue
+          fallback
+        end
 
         # Returns the class of the connection configuration
         #

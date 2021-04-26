@@ -25,6 +25,7 @@ require "yast"
 require "y2network/config"
 require "y2network/routing"
 require "y2network/interface_config_builder"
+require "y2network/reading_result"
 
 Yast.import "Lan"
 
@@ -517,16 +518,20 @@ describe "LanClass" do
 
   describe "#read_config" do
     let(:system_config_copy) { double.as_null_object }
+    let(:issues_list) { Y2Issues::List.new(issues) }
+    let(:issues) { [] }
 
     before do
       subject.main
-      allow(Y2Network::Config).to receive(:from).and_return(system_config)
+      allow(Y2Network::Config).to receive(:from)
+        .and_return(Y2Network::ReadingResult.new(system_config, issues_list))
       allow(system_config).to receive(:copy).and_return(system_config_copy)
       allow(Yast::Lan).to receive(:add_config)
     end
 
     it "reads the Y2Network::Config from sysconfig" do
-      expect(Y2Network::Config).to receive(:from).and_return(system_config)
+      expect(Y2Network::Config).to receive(:from)
+        .and_return(Y2Network::ReadingResult.new(system_config, issues_list))
       subject.read_config
     end
 
@@ -539,6 +544,40 @@ describe "LanClass" do
       expect(Yast::Lan).to receive(:add_config).with(:yast, system_config_copy)
       subject.read_config
     end
+
+    context "when some problem appears while reading the configuration" do
+      let(:issues) do
+        [Y2Issues::InvalidValue.new("wrong", location: "file:/etc/sysconfig/network/ifcfg-eth0")]
+      end
+
+      before do
+        allow(Y2Issues).to receive(:report).and_return(user_answer)
+      end
+
+      context "when the user asks to continue" do
+        let(:user_answer) { :yes }
+
+        it "returns true" do
+          expect(subject.read_config).to eq(true)
+        end
+      end
+
+      context "when the user asks to not continue" do
+        let(:user_answer) { :no }
+
+        it "returns false" do
+          expect(subject.read_config).to eq(false)
+        end
+      end
+
+      context "when the user asks to abort" do
+        let(:user_answer) { :abort }
+
+        it "returns false" do
+          expect(subject.read_config).to eq(false)
+        end
+      end
+    end
   end
 
   describe "#write_config" do
@@ -546,7 +585,8 @@ describe "LanClass" do
 
     before do
       subject.main
-      allow(Y2Network::Config).to receive(:from).and_return(system_config)
+      allow(Y2Network::Config).to receive(:from)
+        .and_return(Y2Network::ReadingResult.new(system_config))
       subject.read_config
       allow(Yast::Lan.yast_config).to receive(:write)
       allow(Yast::Lan.yast_config).to receive(:copy).and_return(yast_config_copy)

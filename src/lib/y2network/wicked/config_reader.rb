@@ -18,6 +18,7 @@
 # find current contact information at www.suse.com.
 require "yast"
 require "cfa/sysctl_config"
+require "y2network/config"
 require "y2network/config_reader"
 require "y2network/interface"
 require "y2network/routing"
@@ -27,6 +28,8 @@ require "y2network/wicked/dns_reader"
 require "y2network/wicked/hostname_reader"
 require "y2network/wicked/interfaces_reader"
 require "y2network/wicked/connection_configs_reader"
+require "y2network/reading_result"
+require "y2issues"
 
 Yast.import "NetworkInterfaces"
 Yast.import "Host"
@@ -41,20 +44,21 @@ module Y2Network
         :interfaces, :connections, :drivers, :routing, :dns, :hostname
       ].freeze
 
-      # @return [Y2Network::Config] Network configuration
-      def config
+      # @return [ReadingResult] Network configuration
+      def read
         # NOTE: This code might be moved outside of the Sysconfig namespace, as it is generic.
         # NOTE: /etc/hosts cache - nothing to do with /etc/hostname
         Yast::Host.Read
 
         initial_config = Config.new(source: :wicked)
+        issues_list = Y2Issues::List.new
 
-        result = SECTIONS.reduce(initial_config) do |current_config, section|
-          send("read_#{section}", current_config)
+        network_config = SECTIONS.reduce(initial_config) do |current_config, section|
+          send("read_#{section}", current_config, issues_list)
         end
 
-        log.info "Sysconfig reader result: #{result.inspect}"
-        result
+        log.info "Sysconfig reader result: #{network_config.inspect}"
+        ReadingResult.new(network_config, issues_list)
       end
 
     protected
@@ -62,8 +66,9 @@ module Y2Network
       # Reads the network interfaces
       #
       # @param config [Y2Network::Config] Initial configuration object
+      # @param _issues_list [Y2Issues::List] Issues list. Used to register issues when reading.
       # @return [Y2Network::Config] A new configuration object including the interfaces
-      def read_interfaces(config)
+      def read_interfaces(config, _issues_list)
         config.update(
           interfaces:   interfaces_reader.interfaces,
           s390_devices: interfaces_reader.s390_devices
@@ -73,8 +78,10 @@ module Y2Network
       # Reads the connections
       #
       # @param config [Y2Network::Config] Initial configuration object
+      # @param issues_list [Y2Issues::List] Issues list. Used to register issues when reading.
       # @return [Y2Network::Config] A new configuration object including the connections
-      def read_connections(config)
+      def read_connections(config, issues_list)
+        connection_configs_reader = ConnectionConfigsReader.new(issues_list)
         connections = connection_configs_reader.connections(config.interfaces)
         missing_interfaces = find_missing_interfaces(
           connections, config.interfaces
@@ -88,16 +95,18 @@ module Y2Network
       # Reads the drivers
       #
       # @param config [Y2Network::Config] Initial configuration object
+      # @param _issues_list [Y2Issues::List] Issues list. Used to register issues when reading.
       # @return [Y2Network::Config] A new configuration object including the connections
-      def read_drivers(config)
+      def read_drivers(config, _issues_list)
         config.update(drivers: interfaces_reader.drivers)
       end
 
       # Reads the routing information
       #
       # @param config [Y2Network::Config] Initial configuration object
+      # @param _issues_list [Y2Issues::List] Issues list. Used to register issues when reading.
       # @return [Y2Network::Config] A new configuration object including the routing information
-      def read_routing(config)
+      def read_routing(config, _issues_list)
         routing_tables = find_routing_tables(config.interfaces)
         routing = Routing.new(
           tables:       routing_tables,
@@ -110,16 +119,18 @@ module Y2Network
       # Reads the DNS information
       #
       # @param config [Y2Network::Config] Initial configuration object
+      # @param _issues_list [Y2Issues::List] Issues list. Used to register issues when reading.
       # @return [Y2Network::Config] A new configuration object including the DNS configuration
-      def read_dns(config)
+      def read_dns(config, _issues_list)
         config.update(dns: Y2Network::Wicked::DNSReader.new.config)
       end
 
       # Returns the Hostname configuration
       #
       # @param config [Y2Network::Config] Initial configuration object
+      # @param _issues_list [Y2Issues::List] Issues list. Used to register issues when reading.
       # @return [Y2Network::Config] A new configuration object including the hostname information
-      def read_hostname(config)
+      def read_hostname(config, _issues_list)
         config.update(hostname: Y2Network::Wicked::HostnameReader.new.config)
       end
 
@@ -130,11 +141,6 @@ module Y2Network
       # @return [InterfacesReader] Interfaces reader
       def interfaces_reader
         @interfaces_reader ||= Y2Network::Wicked::InterfacesReader.new
-      end
-
-      # @return [Y2Network::ConnectionConfigsCollection] Connection configurations collection
-      def connection_configs_reader
-        @connection_configs_reader ||= Y2Network::Wicked::ConnectionConfigsReader.new
       end
 
       # Adds missing interfaces from connections

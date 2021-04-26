@@ -22,9 +22,11 @@ require_relative "../../test_helper"
 require "y2network/wicked/connection_config_reader"
 require "y2network/wicked/connection_config_readers/wireless"
 require "y2network/physical_interface"
+require "y2issues"
 
 describe Y2Network::Wicked::ConnectionConfigReader do
   subject(:reader) { described_class.new }
+  let(:issues_list) { Y2Issues::List.new }
 
   describe "#read" do
     let(:interface) { instance_double(Y2Network::PhysicalInterface, name: "wlan0", type: "wlan") }
@@ -50,13 +52,13 @@ describe Y2Network::Wicked::ConnectionConfigReader do
     it "uses the appropiate handler" do
       expect(reader).to receive(:require)
         .with("y2network/wicked/connection_config_readers/wireless")
-      conn = reader.read(interface, "wlan")
+      conn = reader.read(interface, "wlan", issues_list)
       expect(conn).to be(connection_config)
     end
 
     context "when the interface type is not given" do
       it "infers the type from the interface's sysconfig file" do
-        expect(reader.read(interface, nil)).to be(connection_config)
+        expect(reader.read(interface, nil, issues_list)).to be(connection_config)
       end
     end
 
@@ -66,7 +68,7 @@ describe Y2Network::Wicked::ConnectionConfigReader do
       end
 
       it "raise exception" do
-        expect { reader.read(interface, :null) }.to raise_error(RuntimeError)
+        expect { reader.read(interface, :null, issues_list) }.to raise_error(RuntimeError)
       end
     end
   end
