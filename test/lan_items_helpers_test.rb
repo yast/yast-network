@@ -92,6 +92,7 @@ context "when handling DHCLIENT_SET_HOSTNAME configuration" do
   let(:hostname) { nil }
 
   before(:each) do
+    allow(Yast::Lan).to receive(:Read)
     allow(Yast::Lan).to receive(:yast_config).and_return(config)
   end
 
