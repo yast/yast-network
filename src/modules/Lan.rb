@@ -31,6 +31,7 @@ require "yast"
 require "cfa/sysctl_config"
 require "network/network_autoyast"
 require "network/confirm_virt_proposal"
+require "network/wicked"
 require "ui/text_helpers"
 require "y2firewall/firewalld"
 require "y2network/autoinst_profile/networking_section"
@@ -68,7 +69,6 @@ module Yast
       Yast.import "String"
       Yast.import "FileUtils"
       Yast.import "PackageSystem"
-      Yast.import "LanItems"
       Yast.import "ModuleLoading"
       Yast.import "Linuxrc"
 
@@ -396,9 +396,7 @@ module Yast
     def Write(gui: true, apply_config: !write_only)
       log.info("Writing configuration")
 
-      # Query modified flag in all components, not just LanItems - DNS,
-      # Routing, NetworkConfig too in order not to discard changes made
-      # outside LanItems (bnc#439235)
+      # Query modified flag in all components
       if !Modified()
         log.info("No changes to network setup -> nothing to write")
         return true
@@ -702,7 +700,20 @@ module Yast
       return [] if !NetworkService.isNetworkRunning || Yast::NetworkService.is_network_manager
 
       ReadWithCacheNoGUI()
-      Yast::LanItems.dhcp_ntp_servers.values.flatten.uniq
+      ifaces_dhcp_ntp_servers.values.flatten.uniq
+    end
+
+    # Returns hash of NTP servers
+    #
+    # Provides map with NTP servers obtained via any of dhcp aware interfaces
+    #
+    # @return [Hash<String, Array<String>] key is device name, value
+    #                                      is list of ntp servers obtained from the device
+    def ifaces_dhcp_ntp_servers
+      dhcp_ifaces = yast_config.connections.select(&:dhcp?).map(&:interface)
+
+      result = dhcp_ifaces.map { |iface| [iface, parse_ntp_servers(iface)] }.to_h
+      result.delete_if { |_, ntps| ntps.empty? }
     end
 
     # Returns the network configuration with the given ID

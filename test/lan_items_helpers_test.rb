@@ -23,36 +23,60 @@ require_relative "test_helper"
 
 require "yast"
 
-Yast.import "LanItems"
 require "y2network/config"
 require "y2network/interface"
 require "y2network/routing"
 require "y2network/route"
 require "y2network/routing_table"
 
-describe "LanItems#dhcp_ntp_servers" do
-  it "lists ntp servers for every device which provides them" do
-    result = {
-      "eth0" => ["1.0.0.1"],
-      "eth1" => ["1.0.0.2", "1.0.0.3"]
-    }
+describe "#ifaces_dhcp_ntp_servers" do
+  let(:config) do
+    instance_double("Y2Network::Config", connections: connections)
+  end
 
-    allow(Yast::LanItems)
+  let(:conn_eth0) do
+    instance_double(
+      Y2Network::ConnectionConfig::Base,
+      interface: "eth0",
+      dhcp?:     true
+    )
+  end
+
+  let(:conn_eth1) do
+    instance_double(
+      Y2Network::ConnectionConfig::Base,
+      interface: "eth1",
+      dhcp?:     true
+    )
+  end
+
+  let(:connections) do
+    Y2Network::ConnectionConfigsCollection.new([conn_eth0, conn_eth1])
+  end
+
+  result = {
+    "eth0" => ["1.0.0.1"],
+    "eth1" => ["1.0.0.2", "1.0.0.3"]
+  }
+
+  before(:each) do
+    allow(Yast::Lan).to receive(:yast_config).and_return(config)
+  end
+
+  it "lists ntp servers for every device which provides them" do
+    allow(Yast::Lan)
       .to receive(:parse_ntp_servers)
       .and_return([])
-    allow(Yast::LanItems)
+    allow(Yast::Lan)
       .to receive(:parse_ntp_servers)
       .with("eth0")
       .and_return(["1.0.0.1"])
-    allow(Yast::LanItems)
+    allow(Yast::Lan)
       .to receive(:parse_ntp_servers)
       .with("eth1")
       .and_return(["1.0.0.2", "1.0.0.3"])
-    allow(Yast::LanItems)
-      .to receive(:find_dhcp_ifaces)
-      .and_return(["eth0", "eth1", "eth2"])
 
-    expect(Yast::LanItems.dhcp_ntp_servers).to eql result
+    expect(Yast::Lan.ifaces_dhcp_ntp_servers).to eql result
   end
 end
 
@@ -114,7 +138,7 @@ context "when handling DHCLIENT_SET_HOSTNAME configuration" do
     end
   end
 
-  describe "LanItems#valid_dhcp_cfg?" do
+  describe "#valid_dhcp_cfg?" do
     let(:hostname) do
       instance_double(Y2Network::Hostname, dhcp_hostname: true)
     end
