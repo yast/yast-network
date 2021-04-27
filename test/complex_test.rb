@@ -23,7 +23,6 @@ require_relative "test_helper"
 
 require "yast"
 
-Yast.import "LanItems"
 Yast.import "Stage"
 
 class NetworkLanComplexIncludeClass < Yast::Module

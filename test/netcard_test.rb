@@ -89,8 +89,6 @@ MOCKED_ITEMS = {
 
 require "yast"
 
-Yast.import "LanItems"
-
 class NetworkComplexIncludeClass < Yast::Module
   def initialize
     Yast.include self, "network/complex.rb"
@@ -133,25 +131,5 @@ describe "NetworkComplexInclude#HardwareName" do
 
   it "returns empty string when querying unknown id" do
     expect(subject.HardwareName(@hwinfo, "unknown")).to be_empty
-  end
-end
-
-describe "LanItemsClass#GetItemName" do
-  before(:each) do
-    @lan_items = Yast::LanItems
-    @lan_items.main
-    @lan_items.Items = Yast.deep_copy(MOCKED_ITEMS)
-  end
-
-  it "returns name provided by hwinfo if not configured" do
-    MOCKED_ITEMS.reject { |_k, v| v.key?("ifcfg") }.each_pair do |item_id, conf|
-      expect(@lan_items.GetDeviceName(item_id)).to eql conf["hwinfo"]["dev_name"]
-    end
-  end
-
-  it "returns name according configuration if available" do
-    MOCKED_ITEMS.select { |_k, v| v.key?("ifcfg") }.each_pair do |item_id, conf|
-      expect(@lan_items.GetDeviceName(item_id)).to eql conf["ifcfg"]
-    end
   end
 end

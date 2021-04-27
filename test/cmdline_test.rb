@@ -89,7 +89,6 @@ describe "NetworkLanCmdlineInclude" do
 
     before do
       allow(Yast::Report).to receive(:Error)
-      allow(Yast::LanItems).to receive(:Commit)
     end
 
     context "when called without type" do
@@ -148,7 +147,6 @@ describe "NetworkLanCmdlineInclude" do
     before do
       allow(subject).to receive(:ShowHandler)
       allow(Yast::Report).to receive(:Error)
-      allow(Yast::LanItems).to receive(:Commit)
     end
 
     context "when a valid configuration is providen" do
@@ -174,7 +172,6 @@ describe "NetworkLanCmdlineInclude" do
 
     before do
       allow(Yast::Report).to receive(:Error)
-      allow(Yast::LanItems).to receive(:Commit)
     end
 
     context "when a valid configuration is providen" do
