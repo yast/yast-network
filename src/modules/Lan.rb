@@ -710,7 +710,7 @@ module Yast
     # @return [Hash<String, Array<String>] key is device name, value
     #                                      is list of ntp servers obtained from the device
     def ifaces_dhcp_ntp_servers
-      dhcp_ifaces = yast_config.connections.select(&:dhcp?).map(&:interface)
+      dhcp_ifaces = yast_config.connections.select(&:dhcp?).map(&:interface).compact
 
       result = dhcp_ifaces.map { |iface| [iface, parse_ntp_servers(iface)] }.to_h
       result.delete_if { |_, ntps| ntps.empty? }
