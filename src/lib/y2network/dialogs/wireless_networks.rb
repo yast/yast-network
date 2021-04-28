@@ -121,6 +121,7 @@ module Y2Network
           _("Scanning for wireless networks..."), headline: _("Scanning network")
         ) do
           found_networks = Y2Network::WirelessNetwork.all(@builder.interface.name, cache: cache)
+            .reject { |n| n.essid.to_s.empty? }
           log.info("Found networks: #{found_networks.map(&:essid)}")
         end
 
