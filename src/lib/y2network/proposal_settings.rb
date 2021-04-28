@@ -21,6 +21,7 @@
 require "yast"
 require "y2packager/package"
 require "y2packager/resolvable"
+require "y2network/backend"
 require "network/network_autoconfiguration"
 
 module Y2Network
@@ -163,9 +164,12 @@ module Y2Network
   private
 
     def autoinst_backend
-      return if Yast::Lan.autoinst.managed.nil?
+      auto_config = Yast::Lan.autoinst
 
-      Yast::Lan.autoinst.managed ? :network_manager : :wicked
+      return auto_config.backend.to_sym unless [nil, ""].include?(auto_config.backend)
+      return if auto_config.managed.nil?
+
+      auto_config.managed ? :network_manager : :wicked
     end
 
     # Convenience method to check whether the bridge configuration proposal for

@@ -846,7 +846,8 @@ module Yast
         keep_install_network: section.keep_install_network,
         ip_check_timeout:     section.strict_ip_check_timeout,
         virt_bridge_proposal: section.virt_bridge_proposal,
-        managed:              section.managed
+        managed:              section.managed,
+        backend:              section.backend
       }.reject { |_k, v| v.nil? }
     end
 

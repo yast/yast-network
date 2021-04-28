@@ -38,6 +38,8 @@ module Y2Network
       attr_accessor :virt_bridge_proposal
       # @return [Boolean] returns whether the network is managed by NM or not
       attr_accessor :managed
+      # @return [Symbol] backend id
+      attr_accessor :backend
 
       # Constructor
       #
@@ -56,6 +58,7 @@ module Y2Network
         @ip_check_timeout = ay_options.fetch(:ip_check_timeout, -1)
         @virt_bridge_proposal = ay_options.fetch(:virt_bridge_proposal, true)
         @managed              = ay_options[:managed]
+        @backend              = ay_options[:backend]
       end
 
       # Return whether the network should be copied at the end
