@@ -34,6 +34,14 @@ describe Y2Network::Dialogs::WirelessNetworks do
     Y2Network::Widgets::WirelessNetworks.new(builder)
   end
 
+  let(:scanned_networks) do
+    [hidden, selected]
+  end
+
+  let(:hidden) do
+    instance_double(Y2Network::WirelessNetwork, essid: nil)
+  end
+
   let(:selected) do
     instance_double(Y2Network::WirelessNetwork, essid: "TESTING")
   end
@@ -46,7 +54,7 @@ describe Y2Network::Dialogs::WirelessNetworks do
     allow(Y2Network::Widgets::WirelessNetworks).to receive(:new)
       .and_return(networks_table)
     allow(Y2Network::WirelessNetwork).to receive(:all).with("wlo1", cache: true)
-      .and_return([selected])
+      .and_return(scanned_networks)
     allow(networks_table).to receive(:selected).and_return(selected)
     allow(networks_table).to receive(:update)
     allow(Yast2::Feedback).to receive(:show) { |&block| block.call }
@@ -55,13 +63,18 @@ describe Y2Network::Dialogs::WirelessNetworks do
   end
 
   describe "#run" do
+    let(:event) { { "ID" => :ok, "EventReason" => "Activated" } }
+
     before do
       allow(Yast::UI).to receive(:WaitForEvent).and_return(event)
     end
 
-    context "if the user clicks the 'Select' button" do
-      let(:event) { { "ID" => :ok, "EventReason" => "Activated" } }
+    it "does not show networks without and essid in the table selection" do
+      expect(networks_table).to receive(:update).with([selected])
+      subject.run
+    end
 
+    context "if the user clicks the 'Select' button" do
       it "returns the selected network" do
         expect(subject.run).to eq(selected)
       end
