@@ -1,7 +1,7 @@
 -------------------------------------------------------------------
 Wed Apr 28 09:18:27 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
 
-- Omit hidden networks from the list of wireless network to be
+- Omit hidden networks from the list of wireless networks to be
   selected preventing the dialog to crash (bsc#1185372)
 - 4.3.67
 
