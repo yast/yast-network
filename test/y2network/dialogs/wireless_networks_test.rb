@@ -87,6 +87,5 @@ describe Y2Network::Dialogs::WirelessNetworks do
         expect(subject.run).to eq(nil)
       end
     end
-
   end
 end
