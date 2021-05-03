@@ -198,6 +198,20 @@ describe Yast::SaveNetworkClient do
       end
     end
 
+    context "when it is selected to disable the network services" do
+      before do
+        allow(Y2Network::ProposalSettings.instance).to receive(:network_service)
+          .and_return(:none)
+      end
+
+      it "disables wicked and NetworkManager services" do
+        expect(Yast::NetworkService).to receive(:disable_service).with(:wicked)
+        expect(Yast::NetworkService).to receive(:disable_service).with(:network_manager)
+
+        subject.main
+      end
+    end
+
     context "during update" do
       before do
         allow(Yast::Mode).to receive(:update).and_return(true)

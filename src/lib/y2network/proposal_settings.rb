@@ -62,6 +62,7 @@ module Y2Network
     end
 
     def propose_bridge!(option)
+      log.info("Bridge proposal set to: #{option.inspect}")
       @virt_bridge_proposal = option
     end
 

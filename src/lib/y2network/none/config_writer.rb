@@ -21,7 +21,11 @@ require "y2network/wicked/config_writer"
 
 module Y2Network
   module None
-    # This class configures Wicked (through sysconfig) according to a given configuration
+    # By now this class configures Wicked (through sysconfig) according to a
+    # given configuration.
+    #
+    # TODO: Determine which configuration makes sense to be written when no
+    # service will be enable disabling the rest in the different dialogs.
     class ConfigWriter < Y2Network::Wicked::ConfigWriter
     end
   end

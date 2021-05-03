@@ -86,18 +86,14 @@ describe Yast::NetworkProposal do
       it "does not include a link to switch to wicked" do
         expect(proposal["preformatted_proposal"]).to_not match(/.*href.*wicked.*/)
       end
-
-      context "and Xen, KVM or QEMU will be installed" do
-        let(:virt_installed) { true }
-
-        it "includes a link to enable or disable the virt bridge network config proposal" do
-          expect(proposal["preformatted_proposal"]).to match(/.*href.*bridge.*/)
-        end
-      end
     end
 
     context "when using the NetworkManager backend" do
       let(:current_backend) { :network_manager }
+
+      it "includes the Yast::Lan proposal summary" do
+        expect(proposal["preformatted_proposal"]).to include("rich_text_summary")
+      end
 
       it "does not include a link to switch to NetworkManager" do
         expect(proposal["preformatted_proposal"]).to_not match(/.*href.*NetworkManager.*/)
@@ -105,6 +101,43 @@ describe Yast::NetworkProposal do
 
       it "includes a link to switch to wicked" do
         expect(proposal["preformatted_proposal"]).to match(/.*href.*wicked.*/)
+      end
+    end
+
+    context "when selected to disable network services" do
+      let(:current_backend) { :none }
+
+      it "does not include the Yast::Lan proposal summary" do
+        expect(proposal["preformatted_proposal"]).to_not include("rich_text_summary")
+      end
+
+      it "shows that network services will be disabled" do
+        expect(proposal["preformatted_proposal"]).to match(/Network Services Disabled/)
+      end
+
+      it "includes a link to switch to wicked" do
+        expect(proposal["preformatted_proposal"]).to match(/.*href.*wicked.*/)
+      end
+
+      it "includes a link to switch to NetworkManager" do
+        expect(proposal["preformatted_proposal"]).to match(/.*href.*NetworkManager.*/)
+      end
+    end
+
+    context "when Xen, KVM or QEMU will be installed" do
+      let(:virt_installed) { true }
+
+      context "and the bridge proposal is enabled" do
+        it "includes a link to disable the virt bridge network config proposal" do
+          expect(proposal["preformatted_proposal"]).to match(/.*href.*Use non-bridge.*/)
+        end
+      end
+
+      context "and the bridge proposal is disabled" do
+        it "includes a link to enable the virt bridge network config proposal" do
+          settings.propose_bridge!(false)
+          expect(proposal["preformatted_proposal"]).to match(/.*href.*Use bridge.*/)
+        end
       end
     end
   end
@@ -171,6 +204,48 @@ describe Yast::NetworkProposal do
 
       it "changes the netwotk backend to NetworkManager" do
         expect(settings).to receive(:enable_network_manager!)
+
+        subject.ask_user(args)
+      end
+
+      it "returns :next as 'workflow_sequence'" do
+        expect(subject.ask_user(args)).to include("workflow_sequence" => :next)
+      end
+    end
+
+    context "when 'chosen_id' is 'network--disable'" do
+      let(:args) { { "chosen_id" => "network--disable" } }
+
+      it "sets the network backend to none" do
+        expect(settings).to receive(:disable_network!)
+
+        subject.ask_user(args)
+      end
+
+      it "returns :next as 'workflow_sequence'" do
+        expect(subject.ask_user(args)).to include("workflow_sequence" => :next)
+      end
+    end
+
+    context "when 'chosen_id' is 'network--propose-bridge'" do
+      let(:args) { { "chosen_id" => "network--propose-bridge" } }
+
+      it "sets the bridge config for virtualization to be proposed" do
+        expect(settings).to receive(:propose_bridge!).with(true)
+
+        subject.ask_user(args)
+      end
+
+      it "returns :next as 'workflow_sequence'" do
+        expect(subject.ask_user(args)).to include("workflow_sequence" => :next)
+      end
+    end
+
+    context "when 'chosen_id' is 'network--dont-propose-bridge'" do
+      let(:args) { { "chosen_id" => "network--dont-propose-bridge" } }
+
+      it "sets the bridge config for virtualization to not be proposed" do
+        expect(settings).to receive(:propose_bridge!).with(false)
 
         subject.ask_user(args)
       end

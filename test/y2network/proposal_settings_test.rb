@@ -213,6 +213,17 @@ describe Y2Network::ProposalSettings do
     end
   end
 
+  describe "propose_bridge!" do
+    it "sets bridge proposal to the given value" do
+      subject.virt_bridge_proposal = true
+
+      expect { subject.propose_bridge!(false) }
+        .to change { subject.virt_bridge_proposal }.from(true).to(false)
+      expect { subject.propose_bridge!(true) }
+        .to change { subject.virt_bridge_proposal }.from(false).to(true)
+    end
+  end
+
   describe "#refresh_packages" do
     let(:backend) { :wicked }
 
@@ -248,6 +259,25 @@ describe Y2Network::ProposalSettings do
           .with("network", :package, ["wicked"])
         subject.refresh_packages
       end
+    end
+
+    context "when it is selected to disable the network services" do
+      let(:backend) { :none }
+
+      it "removes wicked and NetworkManager from the list of resolvables " do
+        expect(Yast::PackagesProposal).to receive(:RemoveResolvables)
+          .with("network", :package, ["NetworkManager"])
+        expect(Yast::PackagesProposal).to receive(:RemoveResolvables)
+          .with("network", :package, ["wicked"])
+        subject.refresh_packages
+      end
+    end
+  end
+
+  describe "#disable_network!" do
+    it "sets :none as the user selected backend" do
+      subject.disable_network!
+      expect(subject.selected_backend).to eql(:none)
     end
   end
 
