@@ -143,6 +143,7 @@ module Y2Network
 
         result.keys.each { |k| result.delete(k) if result[k].empty? }
         result["managed"] = true if managed
+        result["backend"] = backend if backend
         result
       end
     end
