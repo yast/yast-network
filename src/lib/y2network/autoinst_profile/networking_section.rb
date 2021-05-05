@@ -48,7 +48,8 @@ module Y2Network
           { name: :interfaces },
           { name: :udev_rules },
           { name: :s390_devices },
-          { name: :managed }
+          { name: :managed },
+          { name: :backend }
         ]
       end
 
@@ -75,7 +76,9 @@ module Y2Network
       # @!attribute s390_devices
       #   @return [S390DevicesSection]
       # @!attribute managed
-      #  @return [Boolean]
+      #   @return [Boolean]
+      # @!attribute backend
+      #   @return [String]
 
       # Creates an instance based on the profile representation used by the AutoYaST modules
       # (hash with nested hashes and arrays).
@@ -84,6 +87,7 @@ module Y2Network
       # @return [NetworkingSection]
       def self.new_from_hashes(hash)
         result = new
+        result.backend = hash["backend"]
         result.managed = hash["managed"]
         result.setup_before_proposal = hash["setup_before_proposal"]
         result.start_immediately = hash["start_immediately"]
@@ -113,6 +117,7 @@ module Y2Network
         return result unless config
 
         result.managed = config.backend?(:network_manager)
+        result.backend = config.backend&.id.to_s if config.backend
         build_dns = config.dns || config.hostname
 
         result.routing = RoutingSection.new_from_network(config.routing) if config.routing
@@ -138,6 +143,7 @@ module Y2Network
 
         result.keys.each { |k| result.delete(k) if result[k].empty? }
         result["managed"] = true if managed
+        result["backend"] = backend if backend
         result
       end
     end

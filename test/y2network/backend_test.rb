@@ -21,9 +21,11 @@ require_relative "../test_helper"
 require "y2network/backend"
 
 describe Y2Network::Backend do
-  let(:supported_backends) { [:netconfig, :network_manager, :wicked] }
-  let(:installed_backends) { [:netconfig, :wicked] }
+  let(:supported_backends) { [:netconfig, :network_manager, :none, :wicked] }
+  let(:installed_backends) { [:netconfig, :none, :wicked] }
   let(:network_manager) { described_class.by_id(:network_manager) }
+  let(:wicked) { described_class.by_id(:wicked) }
+  let(:none) { described_class.by_id(:none) }
 
   describe "#all" do
     it "returns all the supported backends" do
@@ -46,8 +48,8 @@ describe Y2Network::Backend do
 
   describe "#by_id" do
     it "returns the backend with the given id when present" do
-      expect(described_class.by_id(:wicked).class).to eql(Y2Network::Backends::Wicked)
-      expect(described_class.by_id(:wicked).id).to eql(:wicked)
+      expect(wicked.class).to eql(Y2Network::Backends::Wicked)
+      expect(wicked.id).to eql(:wicked)
     end
 
     it "returns nil when the backend is not supported" do
@@ -62,6 +64,8 @@ describe Y2Network::Backend do
 
     it "returns the translated backend label when implemented" do
       expect(network_manager.label).to eq("Network Manager")
+      expect(wicked.label).to eq("Wicked Service")
+      expect(none.label).to eq("Network Services Disabled")
     end
   end
 

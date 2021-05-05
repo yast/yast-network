@@ -1,4 +1,4 @@
-# Copyright (c) [2019] SUSE LLC
+# Copyright (c) [2020] SUSE LLC
 #
 # All Rights Reserved.
 #
@@ -16,9 +16,25 @@
 #
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
-require_relative "../../test_helper"
-require_relative "config_reader_examples"
 
-describe Y2Network::Wicked::ConfigReader do
-  include_examples "WickedConfigReader"
+require "y2network/backend"
+
+module Y2Network
+  module Backends
+    # This class represents an absence of the network backend
+    class None < Backend
+      def initialize
+        textdomain "network"
+        super(:none)
+      end
+
+      def label
+        _("Network Services Disabled")
+      end
+
+      def available?
+        true
+      end
+    end
+  end
 end

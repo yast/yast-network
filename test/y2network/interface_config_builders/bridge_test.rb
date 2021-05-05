@@ -25,7 +25,7 @@ require "yast"
 require "y2network/interface_config_builders/bridge"
 
 describe Y2Network::InterfaceConfigBuilders::Bridge do
-  let(:config) { Y2Network::Config.new(source: :test) }
+  let(:config) { Y2Network::Config.new(source: :test, connections: connections) }
 
   before do
     allow(Y2Network::Config)
@@ -38,6 +38,18 @@ describe Y2Network::InterfaceConfigBuilders::Bridge do
     res = Y2Network::InterfaceConfigBuilders::Bridge.new
     res.name = "br0"
     res
+  end
+
+  let(:connections) { Y2Network::ConnectionConfigsCollection.new([eth0_conn]) }
+  let(:interfaces) { [eth0, eth1] }
+  let(:eth0) { Y2Network::Interface.new("eth0") }
+  let(:eth1) { Y2Network::Interface.new("eth1") }
+  let(:eth0_conn) do
+    Y2Network::ConnectionConfig::Ethernet.new.tap do |conn|
+      conn.name = "eth0"
+      conn.interface = "eth0"
+      conn.bootproto = Y2Network::BootProtocol::NONE
+    end
   end
 
   describe "#type" do
@@ -56,6 +68,26 @@ describe Y2Network::InterfaceConfigBuilders::Bridge do
   describe "#require_adaptation?" do
     it "returns boolean" do
       expect(subject.require_adaptation?([])).to eq false
+    end
+
+    context "when there is no bridge port configured" do
+      it "returns false" do
+        expect(subject.require_adaptation?(["eth1"])).to eql(false)
+      end
+    end
+
+    context "when there is at least one bridge port configured without a none bootproto" do
+      let(:eth0_conn) do
+        Y2Network::ConnectionConfig::Ethernet.new.tap do |conn|
+          conn.name = "eth0"
+          conn.bootproto = Y2Network::BootProtocol::STATIC
+          conn.interface = "eth0"
+        end
+      end
+
+      it "returns true" do
+        expect(subject.require_adaptation?(["eth0"])).to eql(true)
+      end
     end
   end
 end

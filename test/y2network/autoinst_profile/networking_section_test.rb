@@ -29,7 +29,8 @@ describe Y2Network::AutoinstProfile::NetworkingSection do
         routing:    routing,
         dns:        dns,
         hostname:   hostname,
-        source:     :wicked
+        source:     :wicked,
+        backend:    backend
       )
     end
     let(:routing) { double("Y2Network::Routing") }
@@ -37,6 +38,7 @@ describe Y2Network::AutoinstProfile::NetworkingSection do
     let(:dns) { double("Y2Network::DNS") }
     let(:hostname) { double("Y2Network::Hostname") }
     let(:dns_section) { double("DNSSection") }
+    let(:backend) { Y2Network::Backend.by_id(:none) }
 
     before do
       allow(Y2Network::AutoinstProfile::RoutingSection).to receive(:new_from_network)
@@ -48,6 +50,11 @@ describe Y2Network::AutoinstProfile::NetworkingSection do
     it "initializes the routing section" do
       section = described_class.new_from_network(config)
       expect(section.routing).to eq(routing_section)
+    end
+
+    it "initializes the backend according to the one in use" do
+      section = described_class.new_from_network(config)
+      expect(section.backend).to eq("none")
     end
   end
 

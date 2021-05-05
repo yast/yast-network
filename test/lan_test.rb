@@ -505,6 +505,7 @@ describe "LanClass" do
       expect(exported_profile).to_not include("interfaces")
       expect(exported_profile).to_not include("net-udev")
       expect(exported_profile).to_not include("s390-devices")
+      expect(exported_profile.fetch("backend")).to eql("wicked")
     end
 
     context "when NetworkManager is the network service" do

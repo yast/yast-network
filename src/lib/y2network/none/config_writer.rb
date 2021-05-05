@@ -1,4 +1,4 @@
-# Copyright (c) [2019] SUSE LLC
+# Copyright (c) [2021] SUSE LLC
 #
 # All Rights Reserved.
 #
@@ -16,9 +16,19 @@
 #
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
-require_relative "../../test_helper"
-require_relative "config_reader_examples"
 
-describe Y2Network::Wicked::ConfigReader do
-  include_examples "WickedConfigReader"
+require "y2network/wicked/config_writer"
+
+module Y2Network
+  module None
+    # By now it has been allowed to modify the sysconfig or wicked configuration even
+    # when the network service is disabled. By now the same behavior will be applied
+    # and therefore this class configures wicked (through sysconfig) according to a
+    # given configuration.
+    #
+    # TODO: Determine which configuration makes sense to be written when no
+    # service will be enable disabling the rest in the different dialogs.
+    class ConfigWriter < Y2Network::Wicked::ConfigWriter
+    end
+  end
 end

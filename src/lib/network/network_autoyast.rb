@@ -73,8 +73,8 @@ module Yast
       conf
     end
 
-    def use_network_manager?
-      Y2Network::ProposalSettings.instance.network_service == :network_manager
+    def selected_backend
+      Y2Network::ProposalSettings.instance.network_service
     end
 
     # Writes the autoyast network configuration according to the already
@@ -87,12 +87,11 @@ module Yast
     def configure_lan
       log.info("NetworkAutoYast: Lan configuration")
 
-      backend = Y2Network::ProposalSettings.instance.network_service
-      Yast::Lan.yast_config.backend = backend
+      Yast::Lan.yast_config.backend = selected_backend
 
       # We need to ensure the config translation is written to the target
       # system
-      return false if !use_network_manager? && Lan.autoinst.before_proposal
+      return false if (selected_backend == :wicked) && Lan.autoinst.before_proposal
 
       # force a write only as it is run at the end of the installation and it
       # is already chrooted in the target system where restarting services or

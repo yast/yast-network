@@ -21,6 +21,7 @@
 require "yast"
 require "y2packager/package"
 require "y2packager/resolvable"
+require "y2network/backend"
 require "network/network_autoconfiguration"
 
 module Y2Network
@@ -61,6 +62,7 @@ module Y2Network
     end
 
     def propose_bridge!(option)
+      log.info("Bridge proposal set to: #{option.inspect}")
       @virt_bridge_proposal = option
     end
 
@@ -84,13 +86,22 @@ module Y2Network
       selected_backend
     end
 
+    def disable_network!
+      log.info "Disabling all network services"
+      self.selected_backend = :none
+    end
+
     def refresh_packages
-      if current_backend == :network_manager
+      case current_backend
+      when :network_manager
         Yast::PackagesProposal.AddResolvables("network", :package, ["NetworkManager"])
         Yast::PackagesProposal.RemoveResolvables("network", :package, ["wicked"])
-      else
+      when :wicked
         Yast::PackagesProposal.AddResolvables("network", :package, ["wicked"])
         Yast::PackagesProposal.RemoveResolvables("network", :package, ["NetworkManager"])
+      when :none
+        Yast::PackagesProposal.RemoveResolvables("network", :package, ["NetworkManager"])
+        Yast::PackagesProposal.RemoveResolvables("network", :package, ["wicked"])
       end
     end
 
@@ -128,9 +139,11 @@ module Y2Network
 
         log.info("NetworkManager is the selected service but it is not installed")
         log.info("- using wicked")
+
+        return :wicked
       end
 
-      :wicked
+      current_backend
     end
 
     class << self
@@ -152,9 +165,12 @@ module Y2Network
   private
 
     def autoinst_backend
-      return if Yast::Lan.autoinst.managed.nil?
+      auto_config = Yast::Lan.autoinst
 
-      Yast::Lan.autoinst.managed ? :network_manager : :wicked
+      return auto_config.backend.to_sym unless [nil, ""].include?(auto_config.backend)
+      return if auto_config.managed.nil?
+
+      auto_config.managed ? :network_manager : :wicked
     end
 
     # Convenience method to check whether the bridge configuration proposal for

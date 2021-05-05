@@ -71,10 +71,7 @@ module Y2Network
           end
         end
 
-        # During the first stage of an autoinstallation we are not able to
-        # switch to NetworkManager and in case of setup_before_proposal the
-        # config should be written to the inst-sys (:wicked).
-        config.backend = (!Yast::Stage.initial && section.managed) ? :network_manager : :wicked
+        config.backend = ay_backend
 
         Y2Network::ReadingResult.new(config)
       end
@@ -87,6 +84,16 @@ module Y2Network
       # @return [Boolean]
       def keep_configured_network?
         section.keep_install_network != false
+      end
+
+      def ay_backend
+        # During the first stage of an autoinstallation we are not able to
+        # switch to another backend and in case of setup_before_proposal the
+        # config should be written to the inst-sys (:wicked).
+        return :wicked if Yast::Stage.initial
+        return section.backend.to_sym unless [nil, ""].include?(section.backend)
+
+        section.managed ? :network_manager : :wicked
       end
     end
   end

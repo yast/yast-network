@@ -80,20 +80,31 @@ describe Y2Network::Autoinst::ConfigReader do
       expect(config.backend.id).to eq(:wicked)
     end
 
-    context "when the networking section sets it to be managed" do
-      before do
-        profile["managed"] = true
+    context "when running during the first stage of the installation" do
+      it "selects :wicked as the backend to be used" do
+        config = subject.read.config
+        expect(config.backend.id).to eq(:wicked)
       end
+    end
 
-      context "and run in the first stage of the installation" do
-        it "selects :wicked as the backend to be used" do
+    context "when not running in the first stage of the installation" do
+      let(:first_stage) { false }
+
+      context "and it is selected to use a particular network backend" do
+        before do
+          profile["backend"] = "none"
+        end
+
+        it "selects the given backend as the one to be used" do
           config = subject.read.config
-          expect(config.backend.id).to eq(:wicked)
+          expect(config.backend.id).to eq(:none)
         end
       end
 
-      context "and not run in the first stage of the installation" do
-        let(:first_stage) { false }
+      context "and it is not backend selected but it sets the network to be managed" do
+        before do
+          profile["managed"] = true
+        end
 
         it "selects :network_manager as the backend to be used" do
           config = subject.read.config

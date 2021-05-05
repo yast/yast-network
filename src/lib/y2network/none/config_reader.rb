@@ -1,4 +1,4 @@
-# Copyright (c) [2019] SUSE LLC
+# Copyright (c) [2021] SUSE LLC
 #
 # All Rights Reserved.
 #
@@ -16,9 +16,14 @@
 #
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
-require_relative "../../test_helper"
-require_relative "config_reader_examples"
+require "y2network/wicked/config_reader"
 
-describe Y2Network::Wicked::ConfigReader do
-  include_examples "WickedConfigReader"
+module Y2Network
+  module None
+    # By now it has been allowed to modify the sysconfig or wicked configuration even
+    # when the network service is disabled. By now the same behavior will be applied
+    # and therefore this class reads the current configuration from `/etc/sysconfig` files.
+    class ConfigReader < Y2Network::Wicked::ConfigReader
+    end
+  end
 end
