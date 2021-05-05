@@ -34,13 +34,8 @@ module Y2Network
         super(type: InterfaceType::WIRELESS, config: config)
       end
 
-      def access_point
-        @connection_config.ap
-      end
-
-      def access_point=(value)
-        @connection_config.ap = value
-      end
+      def_delegator :@connection_config, :ap, :access_point
+      def_delegator :@connection_config, :ap=, :access_point=
 
       def_delegators :@connection_config,
         :auth_mode, :auth_mode=,

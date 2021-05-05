@@ -42,6 +42,7 @@ describe Yast::SaveNetworkClient do
     let(:system_backend) { Y2Network::Backends::Wicked.new }
     let(:s390) { false }
     let(:propose_bridge) { false }
+    let(:selected_backend) { :wicked }
 
     before do
       stub_const("Yast::SaveNetworkClient::ROOT_PATH", scr_root)
@@ -53,6 +54,10 @@ describe Yast::SaveNetworkClient do
         FileUtils.cp(File.join(DATA_PATH, "#{file}.original"), File.join(destdir_sysconfig, file))
       end
 
+      allow(Y2Network::ProposalSettings.instance).to receive(:network_service)
+        .and_return(selected_backend)
+      allow(Y2Network::ProposalSettings.instance).to receive(:virt_bridge_proposal)
+        .and_return(propose_bridge)
       allow(Yast::NetworkAutoconfiguration.instance).to receive(:configure_dns)
       allow(Yast::NetworkAutoconfiguration.instance).to receive(:configure_hosts)
       allow(Yast::Lan).to receive(:yast_config).and_return(yast_config)
@@ -61,7 +66,6 @@ describe Yast::SaveNetworkClient do
       allow(Yast::Lan).to receive(:Write)
       allow(Yast::Arch).to receive(:s390).and_return(s390)
       allow(Yast::NetworkService).to receive(:EnableDisableNow)
-      allow(subject).to receive(:propose_virt_config?).and_return(propose_bridge)
       allow(Yast::NetworkAutoYast.instance).to receive(:configure_hosts).and_return(nil)
     end
 
@@ -136,15 +140,14 @@ describe Yast::SaveNetworkClient do
 
     context "during autoinstallation" do
       let(:ay_hosts) { true }
+      let(:selected_backend) { :network_manager }
+
       before do
         allow(Yast::Mode).to receive(:autoinst).and_return(true)
         allow(Yast::NetworkAutoYast.instance).to receive(:configure_hosts).and_return(ay_hosts)
       end
 
       it "will select the backend according to the profile or the confirm dialog if modified" do
-        allow(Y2Network::ProposalSettings.instance).to receive(:network_service)
-          .and_return(:network_manager)
-
         expect { subject.main }
           .to change { yast_config.backend&.id }.from(:wicked).to(:network_manager)
       end
@@ -174,9 +177,9 @@ describe Yast::SaveNetworkClient do
     end
 
     context "when the backend is network manager" do
+      let(:selected_backend) { :network_manager }
+
       before do
-        allow(Y2Network::ProposalSettings.instance).to receive(:network_service)
-          .and_return(:network_manager)
         FileUtils.mkdir_p(File.join(destdir, "etc", "NetworkManager", "system-connections"))
       end
 
@@ -195,14 +198,35 @@ describe Yast::SaveNetworkClient do
             File.join(destdir, "etc", "NetworkManager", "system-connections", "wlan0.nmconnection")
           )
         end
+
+        it "selects NetworkManager as the service to be used after installation" do
+          expect(Yast::NetworkService).to receive(:use_network_manager)
+          subject.main
+        end
+
+        it "enables the selected service in the target system" do
+          expect(Yast::NetworkService).to receive(:EnableDisableNow)
+          subject.main
+        end
+      end
+    end
+
+    context "when the backend selected is wicked" do
+      let(:selected_backend) { :wicked }
+
+      it "selects wicked as the service to be used after installation" do
+        expect(Yast::NetworkService).to receive(:use_wicked)
+        subject.main
+      end
+
+      it "enables the selected service in the target system" do
+        expect(Yast::NetworkService).to receive(:EnableDisableNow)
+        subject.main
       end
     end
 
     context "when it is selected to disable the network services" do
-      before do
-        allow(Y2Network::ProposalSettings.instance).to receive(:network_service)
-          .and_return(:none)
-      end
+      let(:selected_backend) { :none }
 
       it "disables wicked and NetworkManager services" do
         expect(Yast::NetworkService).to receive(:disable_service).with(:wicked)

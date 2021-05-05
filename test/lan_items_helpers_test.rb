@@ -157,7 +157,6 @@ context "when handling DHCLIENT_SET_HOSTNAME configuration" do
       end
 
       it "reports configuration as invalid" do
-        puts "invalid_dhcp_cfgs: #{Yast::Lan.invalid_dhcp_cfgs}"
         expect(Yast::Lan.invalid_dhcp_cfgs).not_to include("dhcp")
         expect(Yast::Lan.invalid_dhcp_cfgs).to include("ifcfg-eth0")
         expect(Yast::Lan.invalid_dhcp_cfgs).to include("ifcfg-eth1")
