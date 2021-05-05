@@ -21,7 +21,9 @@ require "y2network/wicked/config_writer"
 
 module Y2Network
   module None
-    # By now this class configures Wicked (through sysconfig) according to a
+    # By now it has been allowed to modify the sysconfig or wicked configuration even
+    # when the network service is disabled. By now the same behavior will be applied
+    # and therefore this class configures wicked (through sysconfig) according to a
     # given configuration.
     #
     # TODO: Determine which configuration makes sense to be written when no

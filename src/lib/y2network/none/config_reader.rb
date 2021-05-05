@@ -20,7 +20,9 @@ require "y2network/wicked/config_reader"
 
 module Y2Network
   module None
-    # This class reads the current configuration from `/etc/sysconfig` files
+    # By now it has been allowed to modify the sysconfig or wicked configuration even
+    # when the network service is disabled. By now the same behavior will be applied
+    # and therefore this class reads the current configuration from `/etc/sysconfig` files.
     class ConfigReader < Y2Network::Wicked::ConfigReader
     end
   end
