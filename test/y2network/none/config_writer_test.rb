@@ -1,4 +1,4 @@
-# Copyright (c) [2019] SUSE LLC
+# Copyright (c) [2021] SUSE LLC
 #
 # All Rights Reserved.
 #
@@ -17,8 +17,9 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 require_relative "../../test_helper"
-require_relative "config_reader_examples"
+require_relative "../wicked/config_writer_examples"
+require "y2network/none/config_writer"
 
-describe Y2Network::Wicked::ConfigReader do
-  include_examples "WickedConfigReader"
+describe Y2Network::None::ConfigWriter do
+  include_examples "WickedConfigWriter"
 end
