@@ -31,7 +31,6 @@ require "y2network/wicked/connection_configs_reader"
 require "y2network/reading_result"
 require "y2issues"
 
-Yast.import "NetworkInterfaces"
 Yast.import "Host"
 
 module Y2Network

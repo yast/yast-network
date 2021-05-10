@@ -32,8 +32,6 @@ module Yast
 
       textdomain "network"
 
-      Yast.import "NetworkInterfaces"
-
       Yast.include include_target, "network/routines.rb"
     end
 
