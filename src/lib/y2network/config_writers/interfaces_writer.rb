@@ -102,7 +102,7 @@ module Y2Network
         Yast::Execute.on_target("/usr/bin/udevadm", "control", "--reload")
         Yast::Execute.on_target("/usr/bin/udevadm", "trigger", "--subsystem-match=net",
           "--action=add")
-        # wait so that ifcfgs written in NetworkInterfaces are newer
+        # wait so that ifcfgs written are newer
         # (1-second-wise) than netcontrol status files,
         # and rcnetwork reload actually works (bnc#749365)
         Yast::Execute.on_target("/usr/bin/udevadm", "settle")

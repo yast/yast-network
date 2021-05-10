@@ -36,7 +36,6 @@ module Yast
       # This is just a start.
 
       Yast.import "IP"
-      Yast.import "NetworkInterfaces"
       Yast.import "NetworkService"
       Yast.import "Lan"
 

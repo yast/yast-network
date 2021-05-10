@@ -61,7 +61,6 @@ module Yast
       Yast.import "Map"
       Yast.import "Mode"
       Yast.import "NetworkConfig"
-      Yast.import "NetworkInterfaces"
       Yast.import "NetworkService"
       Yast.import "Package"
       Yast.import "ProductFeatures"

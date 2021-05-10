@@ -20,7 +20,6 @@
 require "yast"
 require "y2network/dns"
 Yast.import "Summary"
-Yast.import "NetworkInterfaces"
 
 module Y2Network
   module Presenters
