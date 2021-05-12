@@ -645,10 +645,6 @@ module Yast
       nil
     end
 
-    def ReallyAbortInst
-      Popup.ConfirmAbort(:incomplete)
-    end
-
     # Standalone dialog only - embedded one is handled separately
     # via CWMTab
     def DNSMainDialog(_standalone)

@@ -41,12 +41,8 @@ module Yast
 
     def initialize
       # import has to be done here, there are some collisions otherwise
-      Yast.import "Arch"
       Yast.import "Lan"
-      Yast.import "Linuxrc"
       Yast.import "Host"
-      Yast.import "AutoInstall"
-      Yast.import "Stage"
     end
 
     # Merges existing config from system into given configuration map

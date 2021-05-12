@@ -692,6 +692,7 @@ module Yast
     #
     # @note parsing dhcp ntp servers when NetworkManager is in use is not
     #   supported yet (bsc#798886)
+    # @note called from installer
     #
     # @return [Array<String>] list of ntp servers obtained byg DHCP
     def dhcp_ntp_servers
