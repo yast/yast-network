@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed May 12 16:46:00 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
+
+- Write IP addresses in order preventing an alias to set the
+  primary IP address (bsc#1185967)
+- 4.3.68
+
+-------------------------------------------------------------------
 Wed Apr 28 09:18:27 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
 
 - Omit hidden networks from the list of wireless networks to be
