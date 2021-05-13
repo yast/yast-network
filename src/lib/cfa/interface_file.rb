@@ -608,7 +608,7 @@ module CFA
     # @see #clean_collection
     def write_collection(key, values)
       clean_collection(key)
-      values.each do |suffix, value|
+      values.sort_by { |s, _v| (s == :default) ? "" : s.to_s }.each do |suffix, value|
         write_key = (suffix == :default) ? key : "#{key}#{suffix}"
         write_scalar(write_key, value)
       end
