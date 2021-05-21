@@ -49,7 +49,7 @@ module Y2Network
     alias_method :to_a, :interfaces
 
     def_delegators :@interfaces, :each, :push, :<<, :reject!, :map, :flat_map, :any?, :size,
-      :select, :find
+      :select, :find, :none?
 
     # Constructor
     #
