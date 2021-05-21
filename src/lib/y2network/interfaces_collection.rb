@@ -119,10 +119,26 @@ module Y2Network
     # @return [Boolean] true when both collections contain only equal interfaces,
     #                   false otherwise
     def ==(other)
-      ((interfaces - other.interfaces) + (other.interfaces - interfaces)).empty?
+      ((self - other) + (other - self)).empty?
     end
 
     alias_method :eql?, :==
+
+    # Returns a new collection including elements from both collections
+    #
+    # @param other [InterfacesCollection] Other interfaces collection
+    # @return [InterfacesCollection] New interfaces collection
+    def +(other)
+      self.class.new(to_a + other.to_a)
+    end
+
+    # Returns a new collection including only the elements that are not in the given collection
+    #
+    # @param other [InterfacesCollection] Other interfaces collection
+    # @return [InterfacesCollection] New interfaces collection
+    def -(other)
+      self.class.new(select { |i| other.none? { |oi| i == oi } }.to_a)
+    end
 
     # Returns the interfaces that are enslaved in the given bridge
     #
