@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon May 24 10:47:46 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
+
+- Fix error when determining the removed interfaces in order to
+  remove their associated routes too (bsc#1186082)
+- 4.3.69
+
+-------------------------------------------------------------------
 Wed May 12 16:46:00 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
 
 - Write IP addresses in order preventing an alias to set the
