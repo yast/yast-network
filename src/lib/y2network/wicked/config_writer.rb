@@ -73,7 +73,7 @@ module Y2Network
         end
 
         # Actions needed for removed interfaces
-        removed_ifaces = old_config ? old_config.interfaces.to_a - config.interfaces.to_a : []
+        removed_ifaces = old_config ? old_config.interfaces - config.interfaces : []
         removed_ifaces.each do |iface|
           file = routes_file_for(iface)
           file.remove

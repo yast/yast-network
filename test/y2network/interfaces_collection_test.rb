@@ -158,4 +158,24 @@ describe Y2Network::InterfacesCollection do
       expect(new_collection.to_a).to eq([eth0, br0])
     end
   end
+
+  describe "#-" do
+    let(:fake_interfaces) { 24.times.map { |i| Y2Network::PhysicalInterface.new("iface#{i}") } }
+    let(:interfaces) do
+      fake_interfaces + [br0, wlan0]
+    end
+
+    let(:other) { Y2Network::InterfacesCollection.new(fake_interfaces[0..18] + [br0]) }
+    let(:other2) { Y2Network::InterfacesCollection.new(fake_interfaces) }
+
+    it "returns a new collection with the interfaces which are only present in the object" do
+      new_collection = collection - other
+      # Using hash comparison
+      expect(new_collection.to_a).to eq(fake_interfaces[19..23] + [wlan0])
+
+      # Usin eql? comparison
+      new_collection -= other2
+      expect(new_collection.to_a).to eq([wlan0])
+    end
+  end
 end

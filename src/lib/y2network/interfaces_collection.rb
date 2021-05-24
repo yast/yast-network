@@ -150,5 +150,13 @@ module Y2Network
     def +(other)
       self.class.new(to_a + other.to_a)
     end
+
+    # Returns a new collection including only the elements that are not in the given collection
+    #
+    # @param other [InterfacesCollection] Other interfaces collection
+    # @return [InterfacesCollection] New interfaces collection
+    def -(other)
+      self.class.new(to_a - other.to_a)
+    end
   end
 end

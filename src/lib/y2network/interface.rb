@@ -95,6 +95,11 @@ module Y2Network
     # https://ruby-doc.org/core-2.3.3/Object.html#method-i-eql-3F
     alias_method :eql?, :==
 
+    # Used by Array or Hash in order to compare equality of elements (bsc#1186082)
+    def hash
+      name.hash
+    end
+
     # Complete configuration of the interface
     #
     # @return [Hash<String, String>] option, value hash map
