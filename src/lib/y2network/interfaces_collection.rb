@@ -86,6 +86,7 @@ module Y2Network
     # @param type [InterfaceType] device type
     # @return [InterfacesCollection] list of found interfaces
     def by_type(type)
+      type = InterfaceType.from_short_name(type.to_s) unless type.is_a?(InterfaceType)
       InterfacesCollection.new(interfaces.select { |i| i.type == type })
     end
 
@@ -123,6 +124,22 @@ module Y2Network
     end
 
     alias_method :eql?, :==
+
+    # Returns a new collection including elements from both collections
+    #
+    # @param other [InterfacesCollection] Other interfaces collection
+    # @return [InterfacesCollection] New interfaces collection
+    def +(other)
+      self.class.new(to_a + other.to_a)
+    end
+
+    # Returns a new collection including only the elements that are not in the given collection
+    #
+    # @param other [InterfacesCollection] Other interfaces collection
+    # @return [InterfacesCollection] New interfaces collection
+    def -(other)
+      self.class.new(to_a - other.to_a)
+    end
 
     # Returns the interfaces that are enslaved in the given bridge
     #
