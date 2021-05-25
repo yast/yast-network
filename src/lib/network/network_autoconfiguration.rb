@@ -175,7 +175,7 @@ module Yast
     # @param devnames [Array] list of device names
     # @return true when changes were successfully applied
     def activate_changes(devnames)
-      Lan.write_config
+      Lan.write_config(only: [:connections])
 
       reload_config(devnames)
     end
