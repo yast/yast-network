@@ -278,7 +278,11 @@ module Y2Network
     # @param other [Hwinfo] Object to compare with
     # @return [Boolean]
     def ==(other)
-      hwinfo.compact == other.hwinfo.compact
+      hash == other.hash
+    end
+
+    def hash
+      hwinfo.compact.hash
     end
 
     alias_method :eql?, :==

@@ -27,6 +27,7 @@ require "y2network/connection_configs_collection"
 require "y2network/physical_interface"
 require "y2network/can_be_copied"
 require "y2network/backend"
+require "y2network/equatable"
 
 module Y2Network
   # This class represents the current network configuration including interfaces,
@@ -42,6 +43,7 @@ module Y2Network
   #   config.routing.tables.first << route
   #   config.write
   class Config
+    include Equatable
     include CanBeCopied
     include Yast::Logger
 
@@ -142,19 +144,7 @@ module Y2Network
       Y2Network::ConfigWriter.for(target).write(self, original, only: only)
     end
 
-    # Determines whether two configurations are equal
-    #
-    # @return [Boolean] true if both configurations are equal; false otherwise
-    def ==(other)
-      source == other.source &&
-        backend == other.backend &&
-        interfaces == other.interfaces &&
-        routing == other.routing &&
-        dns == other.dns &&
-        hostname == other.hostname &&
-        connections == other.connections &&
-        s390_devices == other.s390_devices
-    end
+    eql_attr :source, :backend, :interfaces, :routing, :dns, :hostname, :connections, :s390_devices
 
     # Renames a given interface and the associated connections
     #
@@ -289,8 +279,6 @@ module Y2Network
         backend:      changes[:backend] || backend
       )
     end
-
-    alias_method :eql?, :==
 
   private
 

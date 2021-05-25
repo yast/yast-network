@@ -16,9 +16,13 @@
 #
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
+
+require "y2network/equatable"
+
 module Y2Network
   # This class represents a network route
   class Route
+    include Equatable
     # @return [IPAddr,:default] Destination; :default if it is the default route
     attr_accessor :to
     # @return [Interface,nil] Interface to associate the route to
@@ -27,6 +31,8 @@ module Y2Network
     attr_accessor :gateway
     # @return [String] Additional options
     attr_accessor :options
+
+    eql_attr :to, :interface, :gateway, :options
 
     # @param to        [IPAddr,:default] Destination
     # @param interface [Interface, nil] Interface to associate the root to
@@ -45,16 +51,5 @@ module Y2Network
     def default?
       to == :default
     end
-
-    # Determines whether two routes are equal
-    #
-    # @param other [Route] Route to compare with
-    # @return [Boolean]
-    def ==(other)
-      to == other.to && interface == other.interface && gateway == other.gateway &&
-        options == other.options
-    end
-
-    alias_method :eql?, :==
   end
 end

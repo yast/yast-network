@@ -54,20 +54,12 @@ module Y2Network
       # @see https://github.com/SUSE/s390-tools/blob/master/ctc_configure#L16
       attr_accessor :protocol
 
+      eql_attr :read_channel, :write_channel, :protocol
+
       def initialize
         super()
         @protocol = 0
       end
-
-      def ==(other)
-        return false unless super
-
-        [:read_channel, :write_channel, :protocol].all? do |method|
-          public_send(method) == other.public_send(method)
-        end
-      end
-
-      alias_method :eql?, :==
 
       # Returns the complete device id which contains the read ad write
       # channels joined by ':'

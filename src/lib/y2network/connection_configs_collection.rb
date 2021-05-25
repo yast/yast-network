@@ -20,6 +20,7 @@
 require "yast"
 require "y2network/can_be_copied"
 require "forwardable"
+require "y2network/equatable"
 
 module Y2Network
   # A container for connection configurations objects.
@@ -34,9 +35,12 @@ module Y2Network
     extend Forwardable
     include Yast::Logger
     include CanBeCopied
+    include Equatable
 
     attr_reader :connection_configs
     alias_method :to_a, :connection_configs
+
+    eql_attr :connection_configs
 
     def_delegators :@connection_configs, :each, :find, :push, :<<, :reject!, :map, :flat_map,
       :any?, :size, :first, :empty?, :each_with_object
@@ -46,6 +50,15 @@ module Y2Network
     # @param connection_configs [Array<ConnectionConfig>] List of connection configurations
     def initialize(connection_configs = [])
       @connection_configs = connection_configs
+    end
+
+    def hash
+      h = ([[:class, self.class]] + self.class.eql_attrs.map { |a| [a, send(a)] }).to_h
+      if h.keys.include?(:connection_configs)
+        h[:connection_configs] = h[:connection_configs].sort_by(&:hash)
+      end
+
+      h.hash
     end
 
     # Returns a connection configuration with the given name if present
@@ -112,18 +125,5 @@ module Y2Network
     def select(&block)
       self.class.new(to_a.select(&block))
     end
-
-    # Compares ConnectionConfigsCollection
-    #
-    # @return [Boolean] true when both collections contain only equal connections,
-    #                   false otherwise
-    def ==(other)
-      (
-        (connection_configs - other.connection_configs) +
-        (other.connection_configs - connection_configs)
-      ).empty?
-    end
-
-    alias_method :eql?, :==
   end
 end

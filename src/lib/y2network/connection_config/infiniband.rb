@@ -29,21 +29,13 @@ module Y2Network
       # @return [IpoibMode] transport mode
       attr_accessor :ipoib_mode
 
+      eql_attr :ipoib_mode
+
       def initialize
         super
 
         self.ipoib_mode = IpoibMode::DEFAULT
       end
-
-      def ==(other)
-        return false unless super
-
-        [:ipoib_mode].all? do |method|
-          public_send(method) == other.public_send(method)
-        end
-      end
-
-      alias_method :eql?, :==
     end
   end
 end

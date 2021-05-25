@@ -19,6 +19,7 @@
 
 require "yast"
 require "yaml"
+require "y2network/equatable"
 
 Yast.import "Product"
 
@@ -28,12 +29,16 @@ module Y2Network
   # It includes basic information about NTP servers. It could be extended
   # in the future as needed.
   class NtpServer
+    include Equatable
+
     # @return [String] Server's hostname
     attr_reader :hostname
     # @return [String,nil] Country code where the server is located
     attr_reader :country
     # @return [String,nil] Server's location
     attr_reader :location
+
+    eql_attr :hostname, :country, :location
 
     class << self
       DEFAULT_SERVERS = 4
@@ -71,15 +76,5 @@ module Y2Network
       @country = country
       @location = location
     end
-
-    # Determines when two servers are the same
-    #
-    # @param other [NtpServer] Object to compare with
-    # @return [Boolean] true if both objects contain the same information; false otherwise
-    def ==(other)
-      hostname == other.hostname && country == other.country && location == other.location
-    end
-
-    alias_method :eql?, :==
   end
 end

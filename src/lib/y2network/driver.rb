@@ -19,6 +19,7 @@
 
 require "yast"
 require "y2network/can_be_copied"
+require "y2network/equatable"
 
 module Y2Network
   # This class represents a driver for an interface
@@ -26,6 +27,7 @@ module Y2Network
   # It is composed of a kernel module name and a string representing the module options
   class Driver
     include CanBeCopied
+    include Equatable
 
     class << self
       # Returns a driver using the information from the system
@@ -56,6 +58,8 @@ module Y2Network
     # @return [String] Kernel module parameters
     attr_accessor :params
 
+    eql_attr :name, :params
+
     # Constructor
     #
     # @param name   [String] Driver name
@@ -63,17 +67,6 @@ module Y2Network
     def initialize(name, params = "")
       @name = name
       @params = params
-    end
-
-    # Determines whether two drivers are equal
-    #
-    # @param other [Object] Driver to compare with
-    # @return [Boolean] true if +other+ is a Driver instance with the same name and params;
-    #   false otherwise.
-    def ==(other)
-      return false unless other.is_a?(Driver)
-
-      name == other.name && params == other.params
     end
 
     # Adds driver parameters to be written to the underlying system
@@ -93,9 +86,5 @@ module Y2Network
       end
       Yast::SCR.Write(Yast::Path.new(".modules.options.#{name}"), params_hash)
     end
-
-    # eql? (hash key equality) should alias ==, see also
-    # https://ruby-doc.org/core-2.3.3/Object.html#method-i-eql-3F
-    alias_method :eql?, :==
   end
 end

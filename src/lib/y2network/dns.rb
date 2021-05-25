@@ -17,9 +17,13 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
+require "y2network/equatable"
+
 module Y2Network
   # DNS configuration (nameservers, search domains, etc.).
   class DNS
+    include Equatable
+
     # @return [Array<IPAddr>] List of nameservers
     attr_accessor :nameservers
 
@@ -28,6 +32,8 @@ module Y2Network
 
     # @return [String] resolv.conf update policy
     attr_accessor :resolv_conf_policy
+
+    eql_attr :nameservers, :searchlist, :resolv_conf_policy
 
     # @todo receive an array instead all these arguments
     #
@@ -39,20 +45,6 @@ module Y2Network
       @nameservers = opts[:nameservers] || []
       @searchlist = opts[:searchlist] || []
       @resolv_conf_policy = opts[:resolv_conf_policy]
-    end
-
-    # @return [Array<Symbol>] Methods to check when comparing two instances
-    ATTRS = [
-      :nameservers, :searchlist, :resolv_conf_policy
-    ].freeze
-    private_constant :ATTRS
-
-    # Determines whether two set of DNS settings are equal
-    #
-    # @param other [DNS] DNS settings to compare with
-    # @return [Boolean]
-    def ==(other)
-      ATTRS.all? { |a| public_send(a) == other.public_send(a) }
     end
   end
 end

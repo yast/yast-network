@@ -21,6 +21,7 @@ require "yast"
 require "y2network/s390_group_device"
 require "y2network/can_be_copied"
 require "forwardable"
+require "y2network/equatable"
 
 module Y2Network
   # A container for network devices.
@@ -36,10 +37,13 @@ module Y2Network
     extend Forwardable
     include Yast::Logger
     include CanBeCopied
+    include Equatable
 
     # @return [Array<S390GroupDevice>] List of devices
     attr_reader :devices
     alias_method :to_a, :devices
+
+    eql_attr :devices
 
     def_delegators :@devices, :each, :push, :<<, :reject!, :map, :flat_map, :any?, :size,
       :select, :find
@@ -49,6 +53,12 @@ module Y2Network
     # @param devices [Array<S390GroupDevice>] List of devices
     def initialize(devices = [])
       @devices = devices
+    end
+
+    def hash
+      h = ([[:class, self.class]] + self.class.eql_attrs.map { |a| [a, send(a)] }).to_h
+      h[:devices] = h[:devices].sort_by(&:hash) if h.keys.include?(:devices)
+      h.hash
     end
 
     # Returns an s390 group device with the given id if present
@@ -74,15 +84,5 @@ module Y2Network
       devices.delete_if(&block)
       self
     end
-
-    # Compares S390GroupDevicesCollections
-    #
-    # @return [Boolean] true when both collections contain only equal devices,
-    #                   false otherwise
-    def ==(other)
-      ((devices - other.devices) + (other.devices - devices)).empty?
-    end
-
-    alias_method :eql?, :==
   end
 end

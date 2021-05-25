@@ -18,11 +18,14 @@
 # find current contact information at www.suse.com.
 
 require "y2network/connection_config/base"
+require "y2network/equatable"
 
 module Y2Network
   module ConnectionConfig
     # Configuration for wireless connections
     class Wireless < Base
+      include Equatable
+
       # wireless options
       #
       # FIXME: Consider an enum
@@ -94,18 +97,10 @@ module Y2Network
         self.bootproto = BootProtocol::DHCP
       end
 
-      def ==(other)
-        return false unless super
-
-        [:mode, :essid, :nwid, :auth_mode, :wpa_psk, :key_length, :keys, :default_key, :nick,
-         :eap_mode, :eap_auth, :channel, :frequency, :bitrate, :ap, :ap_scanmode,
-         :wpa_password, :wpa_identity, :wpa_anonymous_identity, :ca_cert, :client_cert,
-         :client_key, :client_key_password].all? do |method|
-          public_send(method) == other.public_send(method)
-        end
-      end
-
-      alias_method :eql?, :==
+      eql_attr :mode, :essid, :nwid, :auth_mode, :wpa_psk, :key_length, :keys, :default_key, :nick,
+        :eap_mode, :eap_auth, :channel, :frequency, :bitrate, :ap, :ap_scanmode, :wpa_password,
+        :wpa_identity, :wpa_anonymous_identity, :ca_cert, :client_cert, :client_key,
+        :client_key_password
 
       # @param wireless_mode [String]
       def mode=(wireless_mode)

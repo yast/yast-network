@@ -54,6 +54,9 @@ module Y2Network
       # @return [String] configuration extra attributes
       attr_accessor :attributes
 
+      eql_attr :read_channel, :write_channel, :data_channel, :layer2,
+        :port_number, :ipa_takeover, :attributes
+
       # Constructor
       def initialize
         super()
@@ -61,17 +64,6 @@ module Y2Network
         @port_number = 0
         @ipa_takeover = false
       end
-
-      def ==(other)
-        return false unless super
-
-        [:read_channel, :write_channel, :data_channel, :layer2,
-         :port_number, :ipa_takeover, :attributes].all? do |method|
-          public_send(method) == other.public_send(method)
-        end
-      end
-
-      alias_method :eql?, :==
 
       # Returns the complete device id which contains the read, write and data
       # channels joined by ':'

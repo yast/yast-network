@@ -253,7 +253,7 @@ describe Yast::NetworkAutoconfiguration do
                            interface: eth5)
     end
     let(:eth5) { Y2Network::Interface.new("eth5") }
-    let(:br0) { Y2Network::Interface.new("br0") }
+    let(:br0) { Y2Network::VirtualInterface.new("br0") }
     let(:interfaces) { Y2Network::InterfacesCollection.new([eth5, br0]) }
     let(:yast_config) do
       Y2Network::Config.new(interfaces: interfaces, routing: routing, source: :testing)

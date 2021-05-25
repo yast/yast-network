@@ -19,6 +19,7 @@
 
 require "ipaddr"
 require "forwardable"
+require "y2network/equatable"
 
 module Y2Network
   # This class represents an IP address
@@ -44,12 +45,15 @@ module Y2Network
   #   ip = IPAddress.new("192.168.122.1")
   #   ip.to_s #=> "192.168.122.1"
   class IPAddress
+    include Equatable
     extend Forwardable
 
     # @return [IPAddr] IP address
     attr_reader :address
     # @return [Integer] Prefix
     attr_accessor :prefix
+
+    eql_attr :address, :prefix
 
     def_delegators :@address, :ipv4?, :ipv6?
 
@@ -89,16 +93,6 @@ module Y2Network
     def address=(value)
       @address = IPAddr.new(value)
     end
-
-    # Determines whether two addresses are equivalent
-    #
-    # @param other [IPAddress] The address to compare with
-    # @return [Boolean]
-    def ==(other)
-      address == other.address && prefix == other.prefix
-    end
-
-    alias_method :eql?, :==
 
     # Determines whether a prefix is defined
     #

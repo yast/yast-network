@@ -21,12 +21,14 @@ require "yast"
 require "yast2/execute"
 require "y2network/interface_type"
 require "y2network/hwinfo"
+require "y2network/equatable"
 
 module Y2Network
   # This class represents z Systems network devices which requires the use of
   # multiple I/O subchannels as 'QETH', 'CTC' and 'LCS' devices.
   class S390GroupDevice
     include Yast::Logger
+    include Equatable
 
     # Command for configuring z Systems specific devices
     CONFIGURE_CMD = "/sbin/chzdev".freeze
@@ -42,6 +44,8 @@ module Y2Network
     attr_accessor :interface
     # @return [Boolean]
     attr_accessor :online
+
+    eql_attr :id
 
     alias_method :name, :id
 
@@ -65,20 +69,6 @@ module Y2Network
     def offline?
       !online
     end
-
-    # Determines whether two s390 group devices are the same
-    #
-    # @param other [S390GroupDevice] device to compare with
-    # @return [Boolean]
-    def ==(other)
-      return false unless other.is_a?(S390GroupDevice)
-
-      id == other.id
-    end
-
-    # eql? (hash key equality) should alias ==, see also
-    # https://ruby-doc.org/core-2.3.3/Object.html#method-i-eql-3F
-    alias_method :eql?, :==
 
     class << self
       # Returns the list of S390 group devices of the given type

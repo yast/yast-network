@@ -19,12 +19,15 @@
 
 require "yast"
 require "y2network/wicked/hostname_reader"
+require "y2network/equatable"
 
 Yast.import "Stage"
 
 module Y2Network
   # Hostname configuration
   class Hostname
+    include Equatable
+
     # @return [String] hostname as got from /etc/hostname
     attr_accessor :static
 
@@ -68,19 +71,7 @@ module Y2Network
 
     alias_method :hostname, :proposal
 
-    # @return [Array<Symbol>] Methods to check when comparing two instances
-    ATTRS = [
-      :dhcp_hostname, :static, :transient, :installer
-    ].freeze
-    private_constant :ATTRS
-
-    # Determines whether two set of DNS settings are equal
-    #
-    # @param other [Hostname] Hostname settings to compare with
-    # @return [Boolean]
-    def ==(other)
-      ATTRS.all? { |a| public_send(a) == other.public_send(a) }
-    end
+    eql_attr :dhcp_hostname, :static, :transient, :installer
 
     # Reads the static hostname from /etc/hostname
     #
