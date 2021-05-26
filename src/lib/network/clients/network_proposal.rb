@@ -46,6 +46,7 @@ module Yast
       textdomain "installation"
 
       settings.refresh_packages
+      settings.apply_defaults
     end
 
     def description
