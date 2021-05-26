@@ -33,6 +33,11 @@ module Y2Network
     # @return [Boolean] network service to be used after the installation
     attr_accessor :selected_backend
     attr_accessor :virt_bridge_proposal
+    attr_accessor :ipv4_forwarding
+    attr_accessor :ipv6_forwarding
+    attr_accessor :defaults_applied
+
+    DEFAULTS = [:ipv4_forwarding, :ipv6_forwarding].freeze
 
     # Constructor
     def initialize
@@ -45,6 +50,37 @@ module Y2Network
 
       @selected_backend = autoinst_backend
       @virt_bridge_proposal = autoinst_disabled_proposal? ? false : true
+      @defaults_applied = false
+    end
+
+    def modify_defaults(settings)
+      load_features # Networking section first
+      load_features(settings)
+      @defaults_applied = false
+    end
+
+    def apply_defaults
+      return if defaults_applied
+      return @defaults_applied = true if DEFAULTS.all? { |k, _| public_send(k).nil? }
+
+      Yast::Lan.read_config(report: false) unless yast_config
+      yast_config.routing.forward_ipv4 = ipv4_forwarding unless ipv4_forwarding.nil?
+      yast_config.routing.forward_ipv6 = ipv6_forwarding unless ipv6_forwarding.nil?
+      @defaults_applied = true
+    end
+
+    def load_features(source = networking_section)
+      return unless source.is_a?(Hash)
+      source.keys.each { |k| load_feature(k, k, source: source) if respond_to?("#{k}=") }
+    end
+
+    def load_feature(feature, to, source: networking_section)
+      value = Yast::Ops.get(source, feature.to_s)
+      public_send("#{to}=", value) unless value.nil?
+    end
+
+    def networking_section
+      Yast::ProductFeatures.GetSection("network")
     end
 
     def current_backend
@@ -163,6 +199,10 @@ module Y2Network
     end
 
   private
+
+    def yast_config
+      Yast::Lan.yast_config
+    end
 
     def autoinst_backend
       auto_config = Yast::Lan.autoinst
