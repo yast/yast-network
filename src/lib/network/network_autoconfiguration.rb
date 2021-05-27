@@ -125,7 +125,7 @@ module Yast
       # avoid restarting network (installation can run via ssh, vnc, ...)
       # Moreover virtual devices are not needed during first stage. So, it can
       # wait for rebooting into just installed target
-      return if Lan.yast_config == Lan.system_config
+      return if Lan.config == Lan.system_config
 
       Lan.write_config
     end
@@ -145,6 +145,12 @@ module Yast
       Host.Read
       Host.ResolveHostnameToStaticIPs
       Host.Write
+    end
+
+    def configure_routing
+      return if config.routing == Lan.system_config.routing
+
+      Lan.write_config(only: [:routing])
     end
 
   private
