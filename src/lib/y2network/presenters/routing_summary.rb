@@ -92,9 +92,10 @@ module Y2Network
 
       # Converts a boolean into a on/off string
       #
-      # @param value [Boolean] Value to convert
+      # @param value [Boolean, nil] Value to convert
       # @return [String] "on" if +value+ is true; false otherwise
       def boolean_to_human(value)
+        return _("Not set (defaults)") if value.nil?
         value ? _("on") : _("off")
       end
     end

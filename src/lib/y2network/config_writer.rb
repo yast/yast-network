@@ -138,6 +138,8 @@ module Y2Network
     #
     # @param routing [Y2Network::Routing] routing configuration
     def write_ip_forwarding(routing)
+      return if [routing.forward_ipv4, routing.forward_ipv6].compact.empty?
+
       sysctl_config = CFA::SysctlConfig.new
       sysctl_config.load
       sysctl_config.forward_ipv4 = routing.forward_ipv4

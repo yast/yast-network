@@ -71,11 +71,12 @@ RSpec.shared_examples "WickedConfigReader" do
 
   describe "#config" do
     let(:sysctl_file) do
-      instance_double(CFA::SysctlConfig, forward_ipv4: true).as_null_object
+      instance_double(Y2Network::SysctlConfig, forward_ipv4: true, present?: false).as_null_object
     end
 
     before do
-      allow(CFA::SysctlConfig).to receive(:new).and_return(sysctl_file)
+      allow(Y2Network::SysctlConfig).to receive(:new).and_return(sysctl_file)
+      allow(sysctl_file).to receive(:present?).with(:forward_ipv4).and_return(true)
     end
 
     it "returns a configuration including network devices" do
@@ -156,12 +157,12 @@ RSpec.shared_examples "WickedConfigReader" do
 
   describe "#forward_ipv4" do
     let(:sysctl_file) do
-      instance_double(CFA::SysctlConfig,
+      instance_double(Y2Network::SysctlConfig,
         forward_ipv4: forward_ipv4).as_null_object
     end
 
     before do
-      allow(CFA::SysctlConfig).to receive(:new).and_return(sysctl_file)
+      allow(Y2Network::SysctlConfig).to receive(:new).and_return(sysctl_file)
     end
 
     context "when IPv4 forwarding is allowed" do
@@ -183,12 +184,12 @@ RSpec.shared_examples "WickedConfigReader" do
 
   describe "#forward_ipv6" do
     let(:sysctl_file) do
-      instance_double(CFA::SysctlConfig,
+      instance_double(Y2Network::SysctlConfig,
         forward_ipv6: forward_ipv6).as_null_object
     end
 
     before do
-      allow(CFA::SysctlConfig).to receive(:new).and_return(sysctl_file)
+      allow(Y2Network::SysctlConfig).to receive(:new).and_return(sysctl_file)
     end
 
     context "when IPv6 forwarding is allowed" do

@@ -17,7 +17,7 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 require "yast"
-require "cfa/sysctl_config"
+require "y2network/sysctl_config"
 require "y2network/config"
 require "y2network/config_reader"
 require "y2network/interface"
@@ -109,8 +109,8 @@ module Y2Network
         routing_tables = find_routing_tables(config.interfaces)
         routing = Routing.new(
           tables:       routing_tables,
-          forward_ipv4: sysctl_config_file.forward_ipv4,
-          forward_ipv6: sysctl_config_file.forward_ipv6
+          forward_ipv4: sysctl_value(:forward_ipv4),
+          forward_ipv6: sysctl_value(:forward_ipv6)
         )
         config.update(routing: routing)
       end
@@ -215,9 +215,17 @@ module Y2Network
       def sysctl_config_file
         return @sysctl_config_file if @sysctl_config_file
 
-        @sysctl_config_file = CFA::SysctlConfig.new
+        @sysctl_config_file = Y2Network::SysctlConfig.new
         @sysctl_config_file.load
         @sysctl_config_file
+      end
+
+      def sysctl_present?(attr)
+        sysctl_config_file.present?(attr)
+      end
+
+      def sysctl_value(attr)
+        sysctl_config_file.public_send(attr) if sysctl_present?(attr)
       end
     end
   end

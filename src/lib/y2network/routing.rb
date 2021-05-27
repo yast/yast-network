@@ -22,12 +22,12 @@ module Y2Network
   class Routing
     # @return [Array<RoutingTable>]
     attr_reader :tables
-    # @return [Boolean] whether IPv4 forwarding is enabled
+    # @return [Boolean, nil] when set whether IPv4 forwarding is enabled
     attr_accessor :forward_ipv4
-    # @return [Boolean] whether IPv6 forwarding is enabled
+    # @return [Boolean, nil] when set whether IPv6 forwarding is enabled
     attr_accessor :forward_ipv6
 
-    def initialize(tables: [], forward_ipv4: false, forward_ipv6: false)
+    def initialize(tables: [], forward_ipv4: nil, forward_ipv6: nil)
       @tables = tables
       @forward_ipv4 = forward_ipv4
       @forward_ipv6 = forward_ipv6

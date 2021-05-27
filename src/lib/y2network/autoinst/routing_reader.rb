@@ -41,8 +41,8 @@ module Y2Network
       def config
         tables = section.routes ? [Y2Network::RoutingTable.new(build_routes)] : []
         Y2Network::Routing.new(tables:       tables,
-                               forward_ipv4: !!section.ipv4_forward,
-                               forward_ipv6: !!section.ipv6_forward)
+                               forward_ipv4: section.ipv4_forward,
+                               forward_ipv6: section.ipv6_forward)
       end
 
     private

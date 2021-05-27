@@ -88,12 +88,12 @@ describe Y2Network::Autoinst::RoutingReader do
     context "when ip forwarding is not set" do
       let(:routing_profile) { { "routing" => { "routes" => routes } } }
 
-      it "disables ipv4_forward" do
-        expect(subject.config.forward_ipv4).to eq(false)
+      it "does not set ipv4_forward" do
+        expect(subject.config.forward_ipv4).to eq(nil)
       end
 
-      it "disables ipv6_forward" do
-        expect(subject.config.forward_ipv6).to eq(false)
+      it "does not set ipv6_forward" do
+        expect(subject.config.forward_ipv6).to eq(nil)
       end
     end
 
