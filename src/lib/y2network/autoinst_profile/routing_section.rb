@@ -82,8 +82,8 @@ module Y2Network
       def init_from_hashes(hash)
         super
         ip_forward = hash["ip_forward"]
-        @ipv4_forward = hash["ipv4_forward"] || ip_forward
-        @ipv6_forward = hash["ipv6_forward"] || ip_forward
+        @ipv4_forward = hash.fetch("ipv4_forward", ip_forward)
+        @ipv6_forward = hash.fetch("ipv6_forward", ip_forward)
         @routes = routes_from_hash(hash)
       end
 

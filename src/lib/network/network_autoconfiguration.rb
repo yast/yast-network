@@ -147,6 +147,12 @@ module Yast
       Host.Write
     end
 
+    def configure_routing
+      return if config.routing == Lan.system_config.routing
+
+      Lan.write_config(only: [:routing])
+    end
+
   private
 
     # Makes DHCP setup persistent
