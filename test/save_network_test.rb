@@ -60,6 +60,7 @@ describe Yast::SaveNetworkClient do
         .and_return(propose_bridge)
       allow(Yast::NetworkAutoconfiguration.instance).to receive(:configure_dns)
       allow(Yast::NetworkAutoconfiguration.instance).to receive(:configure_hosts)
+      allow(Yast::NetworkAutoconfiguration.instance).to receive(:configure_routing)
       allow(Yast::Lan).to receive(:yast_config).and_return(yast_config)
       allow(Yast::Lan).to receive(:system_config).and_return(system_config)
       allow(Yast::Lan).to receive(:write_config)
@@ -170,9 +171,18 @@ describe Yast::SaveNetworkClient do
       context "if the hosts are not configured by AutoYaST" do
         it "configures the /etc/hosts automatically" do
           allow(Yast::NetworkAutoYast.instance).to receive(:configure_hosts).and_return(false)
-          expect(Yast::NetworkAutoconfiguration.instance).to_not receive(:configure_dns)
+          expect(Yast::NetworkAutoconfiguration.instance).to receive(:configure_hosts)
           subject.main
         end
+      end
+    end
+
+    context "in case of not written previously" do
+      it "configures dns, hosts and routing according to the proposal" do
+        expect(Yast::NetworkAutoconfiguration.instance).to receive(:configure_dns)
+        expect(Yast::NetworkAutoconfiguration.instance).to receive(:configure_routing)
+        expect(Yast::NetworkAutoconfiguration.instance).to receive(:configure_hosts)
+        subject.main
       end
     end
 

@@ -55,9 +55,8 @@ module Y2Network
 
     # Modifies the proposal according to the given settings
     #
-    # @param settings [Hash] networking default settings to be loaded
-    def modify_defaults(settings)
-      load_features # Networking section first
+    # @param settings [Hash] network default settings to be loaded
+    def modify_defaults(settings = network_section)
       load_features(settings)
       @defaults_applied = false
     end
