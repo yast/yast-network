@@ -196,7 +196,7 @@ module Y2Network
     def load_features(source = network_section)
       return unless source.is_a?(Hash)
 
-      source.keys.each { |k| load_feature(k, k, source: source) if respond_to?("#{k}=") }
+      source.keys.each { |k| load_feature(k, k, source: source) }
     end
 
     # Reads a feature from a given hash and assign it to the corresponding object attribute
@@ -205,8 +205,10 @@ module Y2Network
     # @param to [String, Symbol] attribute name where to store the feature value
     # @param source [Hash] from where to read the feature
     def load_feature(feature, to, source: network_section)
+      return unless respond_to?("#{to}=")
+
       value = source[feature.to_s]
-      public_send("#{to}=", value) unless value.nil?
+      public_send("#{to}=", value)
     end
 
     # Convenience method to read the control file network section
