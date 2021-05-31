@@ -147,6 +147,12 @@ module Yast
       Host.Write
     end
 
+    def configure_routing
+      return if config.routing == Lan.system_config.routing
+
+      Lan.write_config(only: [:routing])
+    end
+
   private
 
     # Makes DHCP setup persistent
@@ -175,7 +181,7 @@ module Yast
     # @param devnames [Array] list of device names
     # @return true when changes were successfully applied
     def activate_changes(devnames)
-      Lan.write_config
+      Lan.write_config(only: [:connections])
 
       reload_config(devnames)
     end

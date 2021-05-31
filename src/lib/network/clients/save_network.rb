@@ -296,6 +296,7 @@ module Yast
 
       if !Mode.autoinst
         NetworkAutoconfiguration.instance.configure_dns
+        NetworkAutoconfiguration.instance.configure_routing
         configure_network_manager
       end
 

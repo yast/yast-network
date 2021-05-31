@@ -33,6 +33,11 @@ module Y2Network
     # @return [Boolean] network service to be used after the installation
     attr_accessor :selected_backend
     attr_accessor :virt_bridge_proposal
+    attr_accessor :ipv4_forward
+    attr_accessor :ipv6_forward
+    attr_accessor :defaults_applied
+
+    DEFAULTS = [:ipv4_forward, :ipv6_forward].freeze
 
     # Constructor
     def initialize
@@ -45,6 +50,27 @@ module Y2Network
 
       @selected_backend = autoinst_backend
       @virt_bridge_proposal = autoinst_disabled_proposal? ? false : true
+      @defaults_applied = false
+    end
+
+    # Modifies the proposal according to the given settings
+    #
+    # @param settings [Hash] network default settings to be loaded
+    def modify_defaults(settings = network_section)
+      load_features(settings)
+      @defaults_applied = false
+    end
+
+    # Modifies the current network configuration according to the proposal. It does not touch the
+    # network configuration if the proposal settings were already applied
+    def apply_defaults
+      return if defaults_applied
+      return @defaults_applied = true if DEFAULTS.all? { |o| public_send(o).nil? }
+
+      Yast::Lan.read_config(report: false) unless yast_config
+      yast_config.routing.forward_ipv4 = ipv4_forward unless ipv4_forward.nil?
+      yast_config.routing.forward_ipv6 = ipv6_forward unless ipv6_forward.nil?
+      @defaults_applied = true
     end
 
     def current_backend
@@ -163,6 +189,36 @@ module Y2Network
     end
 
   private
+
+    # Convenience method to load some features from a installation control file section
+    #
+    # @param source [Hash] network section to be loaded
+    def load_features(source = network_section)
+      return unless source.is_a?(Hash)
+
+      source.keys.each { |k| load_feature(k, k, source: source) }
+    end
+
+    # Reads a feature from a given hash and assign it to the corresponding object attribute
+    #
+    # @param feature [String, Symbol] feature name to be read
+    # @param to [String, Symbol] attribute name where to store the feature value
+    # @param source [Hash] from where to read the feature
+    def load_feature(feature, to, source: network_section)
+      return unless respond_to?("#{to}=")
+
+      value = source[feature.to_s]
+      public_send("#{to}=", value)
+    end
+
+    # Convenience method to read the control file network section
+    def network_section
+      Yast::ProductFeatures.GetSection("network")
+    end
+
+    def yast_config
+      Yast::Lan.yast_config
+    end
 
     def autoinst_backend
       auto_config = Yast::Lan.autoinst
