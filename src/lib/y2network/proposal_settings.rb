@@ -33,11 +33,11 @@ module Y2Network
     # @return [Boolean] network service to be used after the installation
     attr_accessor :selected_backend
     attr_accessor :virt_bridge_proposal
-    attr_accessor :ipv4_forwarding
-    attr_accessor :ipv6_forwarding
+    attr_accessor :ipv4_forward
+    attr_accessor :ipv6_forward
     attr_accessor :defaults_applied
 
-    DEFAULTS = [:ipv4_forwarding, :ipv6_forwarding].freeze
+    DEFAULTS = [:ipv4_forward, :ipv6_forward].freeze
 
     # Constructor
     def initialize
@@ -65,11 +65,11 @@ module Y2Network
     # network configuration if the proposal settings were already applied
     def apply_defaults
       return if defaults_applied
-      return @defaults_applied = true if DEFAULTS.all? { |k, _| public_send(k).nil? }
+      return @defaults_applied = true if DEFAULTS.all? { |o| public_send(o).nil? }
 
       Yast::Lan.read_config(report: false) unless yast_config
-      yast_config.routing.forward_ipv4 = ipv4_forwarding unless ipv4_forwarding.nil?
-      yast_config.routing.forward_ipv6 = ipv6_forwarding unless ipv6_forwarding.nil?
+      yast_config.routing.forward_ipv4 = ipv4_forward unless ipv4_forward.nil?
+      yast_config.routing.forward_ipv6 = ipv6_forward unless ipv6_forward.nil?
       @defaults_applied = true
     end
 

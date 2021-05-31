@@ -428,7 +428,7 @@ describe Y2Network::ProposalSettings do
 
   describe "#modify_defaults" do
     let(:settings) { described_class.create_instance }
-    let(:feature) { { "network" => { "ipv4_forwarding" => true } } }
+    let(:feature) { { "network" => { "ipv4_forward" => true } } }
 
     context "in case of defined IP forwarding features in the control file" do
       context "and no specific section is given" do
@@ -440,14 +440,14 @@ describe Y2Network::ProposalSettings do
 
       it "sets the IPv4 forwarding settings according to the feature value" do
         settings.modify_defaults
-        expect(settings.ipv4_forwarding).to eql(true)
-        expect(settings.ipv6_forwarding).to eql(nil)
+        expect(settings.ipv4_forward).to eql(true)
+        expect(settings.ipv6_forward).to eql(nil)
       end
 
       it "sets the IPv6 forwarding settings according to the feature value" do
-        role_feature = { "network" => { "ipv6_forwarding" => true } }
+        role_feature = { "network" => { "ipv6_forward" => true } }
         settings.modify_defaults(role_feature["network"])
-        expect(settings.ipv6_forwarding).to eql(true)
+        expect(settings.ipv6_forward).to eql(true)
       end
 
       it "sets the modified defaults as not applied" do
@@ -462,7 +462,7 @@ describe Y2Network::ProposalSettings do
     let(:settings) { described_class.create_instance }
     let(:config) { Y2Network::Config.new(source: "test", routing: routing) }
     let(:routing) { Y2Network::Routing.new(forward_ipv4: false, forward_ipv6: false, tables: []) }
-    let(:feature) { { "network" => { "ipv4_forwarding" => true } } }
+    let(:feature) { { "network" => { "ipv4_forward" => true } } }
 
     before do
       allow(Yast::Lan).to receive(:yast_config).and_return(config)
