@@ -20,7 +20,7 @@
 require "yast"
 require "y2network/can_be_copied"
 require "forwardable"
-require "y2network/equatable"
+require "yast2/equatable"
 
 module Y2Network
   # A container for connection configurations objects.
@@ -35,7 +35,7 @@ module Y2Network
     extend Forwardable
     include Yast::Logger
     include CanBeCopied
-    include Equatable
+    include Yast2::Equatable
 
     attr_reader :connection_configs
     alias_method :to_a, :connection_configs
@@ -52,13 +52,12 @@ module Y2Network
       @connection_configs = connection_configs
     end
 
-    def hash
-      h = ([[:class, self.class]] + self.class.eql_attrs.map { |a| [a, send(a)] }).to_h
+    def eql_hash
+      h = super
       if h.keys.include?(:connection_configs)
         h[:connection_configs] = h[:connection_configs].sort_by(&:hash)
       end
-
-      h.hash
+      h
     end
 
     # Returns a connection configuration with the given name if present

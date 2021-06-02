@@ -18,14 +18,14 @@
 # find current contact information at www.suse.com.
 
 require "yast"
-require "y2network/equatable"
+require "yast2/equatable"
 
 module Y2Network
   # This class represents the supported IPoIB transport modes.
   # @see https://www.kernel.org/doc/html/latest/infiniband/ipoib.html
   #      IP over InfiniBand
   class IpoibMode
-    include Equatable
+    include Yast2::Equatable
     class << self
       # Returns all the existing modes
       #

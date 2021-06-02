@@ -27,7 +27,7 @@ require "y2network/connection_configs_collection"
 require "y2network/physical_interface"
 require "y2network/can_be_copied"
 require "y2network/backend"
-require "y2network/equatable"
+require "yast2/equatable"
 
 module Y2Network
   # This class represents the current network configuration including interfaces,
@@ -43,7 +43,7 @@ module Y2Network
   #   config.routing.tables.first << route
   #   config.write
   class Config
-    include Equatable
+    include Yast2::Equatable
     include CanBeCopied
     include Yast::Logger
 

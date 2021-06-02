@@ -19,14 +19,14 @@
 
 require "yast"
 require "y2network/wicked/hostname_reader"
-require "y2network/equatable"
+require "yast2/equatable"
 
 Yast.import "Stage"
 
 module Y2Network
   # Hostname configuration
   class Hostname
-    include Equatable
+    include Yast2::Equatable
 
     # @return [String] hostname as got from /etc/hostname
     attr_accessor :static

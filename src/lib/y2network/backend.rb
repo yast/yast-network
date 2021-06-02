@@ -18,14 +18,14 @@
 # find current contact information at www.suse.com.
 
 require "yast"
-require "y2network/equatable"
+require "yast2/equatable"
 
 module Y2Network
   # This class is the base class for the different network backends and also
   # responsible of listing the supported ones.
   class Backend
     include Yast::I18n
-    include Equatable
+    include Yast2::Equatable
 
     # @return [Symbol] backend id
     attr_reader :id

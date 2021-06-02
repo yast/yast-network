@@ -19,7 +19,7 @@
 
 require "ipaddr"
 require "forwardable"
-require "y2network/equatable"
+require "yast2/equatable"
 
 module Y2Network
   # This class represents an IP address
@@ -45,7 +45,7 @@ module Y2Network
   #   ip = IPAddress.new("192.168.122.1")
   #   ip.to_s #=> "192.168.122.1"
   class IPAddress
-    include Equatable
+    include Yast2::Equatable
     extend Forwardable
 
     # @return [IPAddr] IP address

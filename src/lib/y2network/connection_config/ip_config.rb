@@ -19,13 +19,13 @@
 
 require "y2network/can_be_copied"
 require "y2network/ip_address"
-require "y2network/equatable"
+require "yast2/equatable"
 
 module Y2Network
   module ConnectionConfig
     class IPConfig
       include CanBeCopied
-      include Equatable
+      include Yast2::Equatable
 
       # @return [IPAddress] IP address
       attr_accessor :address

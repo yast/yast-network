@@ -17,12 +17,12 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/equatable"
+require "yast2/equatable"
 
 module Y2Network
   # This class represents a network route
   class Route
-    include Equatable
+    include Yast2::Equatable
     # @return [IPAddr,:default] Destination; :default if it is the default route
     attr_accessor :to
     # @return [Interface,nil] Interface to associate the route to

@@ -17,12 +17,12 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/equatable"
+require "yast2/equatable"
 
 module Y2Network
   # General routing configuration storage (routing tables, forwarding setup, ...)
   class Routing
-    include Equatable
+    include Yast2::Equatable
 
     # @return [Array<RoutingTable>]
     attr_reader :tables

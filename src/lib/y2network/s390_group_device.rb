@@ -21,14 +21,14 @@ require "yast"
 require "yast2/execute"
 require "y2network/interface_type"
 require "y2network/hwinfo"
-require "y2network/equatable"
+require "yast2/equatable"
 
 module Y2Network
   # This class represents z Systems network devices which requires the use of
   # multiple I/O subchannels as 'QETH', 'CTC' and 'LCS' devices.
   class S390GroupDevice
     include Yast::Logger
-    include Equatable
+    include Yast2::Equatable
 
     # Command for configuring z Systems specific devices
     CONFIGURE_CMD = "/sbin/chzdev".freeze

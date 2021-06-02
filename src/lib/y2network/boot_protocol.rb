@@ -18,12 +18,12 @@
 # find current contact information at www.suse.com.
 
 require "yast"
-require "y2network/equatable"
+require "yast2/equatable"
 
 module Y2Network
   # This class represents the boot protocols which are supported (not all by all backends).
   class BootProtocol
-    include Equatable
+    include Yast2::Equatable
 
     class << self
       # Returns all the existing protocols

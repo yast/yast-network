@@ -17,12 +17,12 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/equatable"
+require "yast2/equatable"
 
 module Y2Network
   # DNS configuration (nameservers, search domains, etc.).
   class DNS
-    include Equatable
+    include Yast2::Equatable
 
     # @return [Array<IPAddr>] List of nameservers
     attr_accessor :nameservers

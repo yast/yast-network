@@ -41,10 +41,10 @@ module Y2Network
         @forward_delay = 15
       end
 
-      def hash
-        h = ([[:class, self.class]] + self.class.eql_attrs.map { |a| [a, send(a)] }).to_h
+      def eql_hash
+        h = super
         h[:ports] = h[:ports].sort_by(&:hash) if h.keys.include?(:ports)
-        h.hash
+        h
       end
 
       def virtual?

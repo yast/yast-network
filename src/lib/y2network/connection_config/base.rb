@@ -19,7 +19,7 @@
 
 require "yast"
 require "y2storage"
-require "y2network/equatable"
+require "yast2/equatable"
 require "y2network/ip_address"
 require "y2network/interface_type"
 require "y2network/boot_protocol"
@@ -40,7 +40,7 @@ module Y2Network
     # between two different {Y2Network::Config} objects. When they are copied, the same IDs are
     # kept, so it is easy to find out which connections have been added, removed or simply changed.
     class Base
-      include Equatable
+      include Yast2::Equatable
       include Yast::Logger
 
       # A connection could belongs to a specific interface or not. In case of

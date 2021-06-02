@@ -18,7 +18,7 @@
 # find current contact information at www.suse.com.
 
 require "yast"
-require "y2network/equatable"
+require "yast2/equatable"
 
 module Y2Network
   # Simple class to represent a key-value pair in a {UdevRule}.
@@ -26,7 +26,7 @@ module Y2Network
   # This class does not check whether operators or keys/values are valid or not. We can implement
   # that logic later if required.
   class UdevRulePart
-    include Equatable
+    include Yast2::Equatable
     include Yast::Logger
     # Regular expression to match a udev rule part
     PART_REGEXP = Regexp.new("\\A(?<key>[A-Za-z\{\}_]+)(?<operator>[^\"]+)\"(?<value>.+)\"\\Z")

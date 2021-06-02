@@ -18,13 +18,13 @@
 # find current contact information at www.suse.com.
 
 require "y2network/connection_config/base"
-require "y2network/equatable"
+require "yast2/equatable"
 
 module Y2Network
   module ConnectionConfig
     # Configuration for wireless connections
     class Wireless < Base
-      include Equatable
+      include Yast2::Equatable
 
       # wireless options
       #

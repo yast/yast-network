@@ -19,7 +19,7 @@
 
 require "yast"
 require "y2network/can_be_copied"
-require "y2network/equatable"
+require "yast2/equatable"
 
 module Y2Network
   # This class represents a driver for an interface
@@ -27,7 +27,7 @@ module Y2Network
   # It is composed of a kernel module name and a string representing the module options
   class Driver
     include CanBeCopied
-    include Equatable
+    include Yast2::Equatable
 
     class << self
       # Returns a driver using the information from the system

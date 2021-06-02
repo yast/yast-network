@@ -21,7 +21,7 @@ require "yast"
 require "y2network/interface"
 require "y2network/can_be_copied"
 require "forwardable"
-require "y2network/equatable"
+require "yast2/equatable"
 
 module Y2Network
   # A container for network devices.
@@ -44,7 +44,7 @@ module Y2Network
     extend Forwardable
     include Yast::Logger
     include CanBeCopied
-    include Equatable
+    include Yast2::Equatable
 
     # @return [Array<Interface>] List of interfaces
     attr_reader :interfaces
@@ -62,10 +62,10 @@ module Y2Network
       @interfaces = interfaces
     end
 
-    def hash
-      h = ([[:class, self.class]] + self.class.eql_attrs.map { |a| [a, send(a)] }).to_h
+    def eql_hash
+      h = super
       h[:interfaces] = h[:interfaces].sort_by(&:hash) if h.keys.include?(:interfaces)
-      h.hash
+      h
     end
 
     # Returns an interface with the given name if present

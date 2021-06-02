@@ -20,7 +20,7 @@
 require "yast"
 require "y2network/interface_type"
 require "y2network/udev_rule"
-require "y2network/equatable"
+require "yast2/equatable"
 
 module Y2Network
   # Network interface.
@@ -38,7 +38,7 @@ module Y2Network
   class Interface
     extend Forwardable
     include Yast::Logger
-    include Equatable
+    include Yast2::Equatable
 
     # @return [String] Device name ('eth0', 'wlan0', etc.)
     attr_accessor :name

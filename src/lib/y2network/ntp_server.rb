@@ -19,7 +19,7 @@
 
 require "yast"
 require "yaml"
-require "y2network/equatable"
+require "yast2/equatable"
 
 Yast.import "Product"
 
@@ -29,7 +29,7 @@ module Y2Network
   # It includes basic information about NTP servers. It could be extended
   # in the future as needed.
   class NtpServer
-    include Equatable
+    include Yast2::Equatable
 
     # @return [String] Server's hostname
     attr_reader :hostname

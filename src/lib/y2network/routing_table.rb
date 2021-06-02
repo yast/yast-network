@@ -18,7 +18,7 @@
 # find current contact information at www.suse.com.
 
 require "forwardable"
-require "y2network/equatable"
+require "yast2/equatable"
 
 module Y2Network
   # Represents a {https://en.wikipedia.org/wiki/Routing_table routing table}
@@ -33,7 +33,7 @@ module Y2Network
   class RoutingTable
     extend Forwardable
     include Enumerable
-    include Equatable
+    include Yast2::Equatable
 
     # @return [Array<Route>] Routes included in the table
     attr_reader :routes

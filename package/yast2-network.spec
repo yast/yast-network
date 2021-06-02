@@ -33,8 +33,8 @@ BuildRequires:  yast2-devtools >= 3.1.15
 #for install task
 BuildRequires:  rubygem(%rb_default_ruby_abi:yast-rake)
 BuildRequires:  yast2-storage-ng
-# Y2Issues
-BuildRequires:  yast2 >= 4.4.1
+# Yast::Equatable
+BuildRequires:  yast2 >= 4.4.7
 
 BuildRequires:  yast2-packager >= 4.0.18
 # Product control need xml agent
@@ -49,8 +49,8 @@ PreReq:         /bin/rm
 Requires:       sysconfig >= 0.80.0
 Requires:       yast2-proxy
 Requires:       yast2-storage-ng
-# Y2Issues
-Requires:       yast2 >= 4.4.1
+# Yast::Equatable
+Requires:       yast2 >= 4.4.7
 # Packages::vnc_packages
 Requires:       yast2-packager >= 4.0.18
 Requires:       rubygem(%rb_default_ruby_abi:cfa) >= 0.6.4
