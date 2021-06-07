@@ -30,19 +30,13 @@ module Y2Network
       # @return [String] bond driver options
       attr_accessor :options
 
+      eql_attr :slaves, :options
+
       def initialize
         super()
         @slaves = []
         @options = "mode=active-backup miimon=100"
       end
-
-      def ==(other)
-        return false unless super
-
-        options == other.options && ((slaves - other.slaves) + (other.slaves - slaves)).empty?
-      end
-
-      alias_method :eql?, :==
 
       def virtual?
         true

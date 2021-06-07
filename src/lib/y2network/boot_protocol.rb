@@ -18,10 +18,13 @@
 # find current contact information at www.suse.com.
 
 require "yast"
+require "yast2/equatable"
 
 module Y2Network
   # This class represents the boot protocols which are supported (not all by all backends).
   class BootProtocol
+    include Yast2::Equatable
+
     class << self
       # Returns all the existing protocols
       #
@@ -45,6 +48,8 @@ module Y2Network
     attr_reader :name
     alias_method :to_s, :name
 
+    eql_attr :name
+
     # Constructor
     #
     # @param name [String] protocol name
@@ -65,18 +70,6 @@ module Y2Network
     def static?
       STATIC == self
     end
-
-    # Determines whether two objects are equivalent
-    #
-    # They are equal when they refer to the same boot protocol (through the name).
-    #
-    # @param other [BootProtocol] Boot protocol to compare with
-    # @return [Boolean]
-    def ==(other)
-      name == other.name
-    end
-
-    alias_method :eql?, :==
 
     # iBFT boot protocol
     IBFT = new("ibft")

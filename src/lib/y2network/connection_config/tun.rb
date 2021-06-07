@@ -28,6 +28,8 @@ module Y2Network
       # @return [String] tunnel group (name or GID)
       attr_accessor :group
 
+      eql_attr :owner, :group
+
       def initialize
         super()
         @owner = ""
@@ -37,16 +39,6 @@ module Y2Network
       def virtual?
         true
       end
-
-      def ==(other)
-        return false unless super
-
-        [:owner, :group].all? do |method|
-          public_send(method) == other.public_send(method)
-        end
-      end
-
-      alias_method :eql?, :==
     end
   end
 end

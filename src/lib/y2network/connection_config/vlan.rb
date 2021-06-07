@@ -32,20 +32,12 @@ module Y2Network
       # @return [Integer, nil]
       attr_accessor :vlan_id
 
+      eql_attr :parent_device, :vlan_id
+
       # @see Y2Network::ConnectionConfig::Base#virtual?
       def virtual?
         true
       end
-
-      def ==(other)
-        return false unless super
-
-        [:parent_device, :vlan_id].all? do |method|
-          public_send(method) == other.public_send(method)
-        end
-      end
-
-      alias_method :eql?, :==
     end
   end
 end

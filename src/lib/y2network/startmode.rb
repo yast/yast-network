@@ -18,6 +18,7 @@
 # find current contact information at www.suse.com.
 
 require "yast"
+require "yast2/equatable"
 
 module Y2Network
   # Base class for startmode. It allows to create new one according to name or anlist all.
@@ -25,10 +26,13 @@ module Y2Network
   # TODO: as backends differs, we probably also need to have flag there to which backends
   #   mode exists
   class Startmode
+    include Yast2::Equatable
     include Yast::Logger
 
     attr_reader :name
     alias_method :to_s, :name
+
+    eql_attr :name
 
     def initialize(name)
       @name = name
@@ -49,11 +53,5 @@ module Y2Network
       require "y2network/startmodes"
       Startmodes.constants.map { |c| Startmodes.const_get(c).new }
     end
-
-    def ==(other)
-      name == other.name
-    end
-
-    alias_method :eql?, :==
   end
 end

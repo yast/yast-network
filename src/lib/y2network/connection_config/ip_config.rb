@@ -19,11 +19,13 @@
 
 require "y2network/can_be_copied"
 require "y2network/ip_address"
+require "yast2/equatable"
 
 module Y2Network
   module ConnectionConfig
     class IPConfig
       include CanBeCopied
+      include Yast2::Equatable
 
       # @return [IPAddress] IP address
       attr_accessor :address
@@ -36,6 +38,8 @@ module Y2Network
       # @return [String] ID (needed for sysconfig backend in order to write suffixes in
       #   ifcfg-* files)
       attr_accessor :id
+
+      eql_attr :address, :label, :remote_address, :broadcast, :id
 
       # Constructor
       #
@@ -52,19 +56,6 @@ module Y2Network
         @remote_address = remote_address
         @broadcast = broadcast
       end
-
-      # Determines whether IP configurations are equal
-      #
-      # @return [Boolean] true if both are equal; false otherwise
-      def ==(other)
-        return false if other.nil?
-
-        address == other.address && label == other.label &&
-          remote_address == other.remote_address && broadcast == other.broadcast &&
-          id == other.id
-      end
-
-      alias_method :eql?, :==
     end
   end
 end

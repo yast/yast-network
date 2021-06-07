@@ -21,6 +21,7 @@ require "yast"
 require "y2network/interface"
 require "y2network/can_be_copied"
 require "forwardable"
+require "yast2/equatable"
 
 module Y2Network
   # A container for network devices.
@@ -43,10 +44,13 @@ module Y2Network
     extend Forwardable
     include Yast::Logger
     include CanBeCopied
+    include Yast2::Equatable
 
     # @return [Array<Interface>] List of interfaces
     attr_reader :interfaces
     alias_method :to_a, :interfaces
+
+    eql_attr :interfaces
 
     def_delegators :@interfaces, :each, :push, :<<, :reject!, :map, :flat_map, :any?, :size,
       :select, :find
@@ -56,6 +60,12 @@ module Y2Network
     # @param interfaces [Array<Interface>] List of interfaces
     def initialize(interfaces = [])
       @interfaces = interfaces
+    end
+
+    def eql_hash
+      h = super
+      h[:interfaces] = h[:interfaces].sort_by(&:hash) if h.keys.include?(:interfaces)
+      h
     end
 
     # Returns an interface with the given name if present
@@ -114,16 +124,6 @@ module Y2Network
     def known_names
       @interfaces.map { |i| [i.old_name, i.name] }.flatten.compact
     end
-
-    # Compares InterfacesCollections
-    #
-    # @return [Boolean] true when both collections contain only equal interfaces,
-    #                   false otherwise
-    def ==(other)
-      ((interfaces - other.interfaces) + (other.interfaces - interfaces)).empty?
-    end
-
-    alias_method :eql?, :==
 
     # @return [String] returns free interface name for given prefix
     def free_name(prefix)

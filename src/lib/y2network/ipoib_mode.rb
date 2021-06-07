@@ -18,12 +18,14 @@
 # find current contact information at www.suse.com.
 
 require "yast"
+require "yast2/equatable"
 
 module Y2Network
   # This class represents the supported IPoIB transport modes.
   # @see https://www.kernel.org/doc/html/latest/infiniband/ipoib.html
   #      IP over InfiniBand
   class IpoibMode
+    include Yast2::Equatable
     class << self
       # Returns all the existing modes
       #
@@ -46,24 +48,14 @@ module Y2Network
     # @return [String] Returns mode name
     attr_reader :name
 
+    eql_attr :name
+
     # Constructor
     #
     # @param name [String] mode name
     def initialize(name)
       @name = name
     end
-
-    # Determines whether two objects are equivalent
-    #
-    # They are equal when they refer to the same IPoIB mode (through the name).
-    #
-    # @param other [IpoibMode] IPoIB mode to compare with
-    # @return [Boolean]
-    def ==(other)
-      name == other.name
-    end
-
-    alias_method :eql?, :==
 
     DATAGRAM = new("datagram")
     CONNECTED = new("connected")

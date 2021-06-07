@@ -32,6 +32,8 @@ module Y2Network
       # @return [Integer]
       attr_accessor :forward_delay
 
+      eql_attr :ports, :stp, :forward_delay
+
       def initialize
         super()
         @ports = []
@@ -39,18 +41,15 @@ module Y2Network
         @forward_delay = 15
       end
 
+      def eql_hash
+        h = super
+        h[:ports] = h[:ports].sort_by(&:hash) if h.keys.include?(:ports)
+        h
+      end
+
       def virtual?
         true
       end
-
-      def ==(other)
-        return false unless super
-
-        stp == other.stp && forward_delay == other.forward_delay &&
-          ((ports - other.ports) + (other.ports - ports)).empty?
-      end
-
-      alias_method :eql?, :==
     end
   end
 end

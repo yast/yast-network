@@ -17,15 +17,21 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
+require "yast2/equatable"
+
 module Y2Network
   # General routing configuration storage (routing tables, forwarding setup, ...)
   class Routing
+    include Yast2::Equatable
+
     # @return [Array<RoutingTable>]
     attr_reader :tables
     # @return [Boolean] whether IPv4 forwarding is enabled
     attr_accessor :forward_ipv4
     # @return [Boolean] whether IPv6 forwarding is enabled
     attr_accessor :forward_ipv6
+
+    eql_attr :tables, :forward_ipv4, :forward_ipv6
 
     def initialize(tables: [], forward_ipv4: false, forward_ipv6: false)
       @tables = tables
@@ -62,16 +68,5 @@ module Y2Network
     def remove_default_routes
       tables.each(&:remove_default_routes)
     end
-
-    # Determines whether two set of routing settings are equal
-    #
-    # @param other [Routing] Routing settings to compare with
-    # @return [Boolean]
-    def ==(other)
-      forward_ipv4 == other.forward_ipv4 && forward_ipv6 == other.forward_ipv6 &&
-        ((tables - other.tables) | (other.tables - tables)).empty?
-    end
-
-    alias_method :eql?, :==
   end
 end

@@ -49,21 +49,13 @@ module Y2Network
       # @see https://www.ibm.com/support/knowledgecenter/en/linuxonibm/com.ibm.linux.z.ljdd/ljdd_t_lcs_wrk_timeout.html
       attr_accessor :timeout
 
+      eql_attr :read_channel, :write_channel, :timeout
+
       # Constructor
       def initialize
         super()
         @timeout = 5
       end
-
-      def ==(other)
-        return false unless super
-
-        [:read_channel, :write_channel, :protocol, :timeout].all? do |method|
-          public_send(method) == other.public_send(method)
-        end
-      end
-
-      alias_method :eql?, :==
 
       # Returns the complete device id which contains the read ad write
       # channels joined by ':'

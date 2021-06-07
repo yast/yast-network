@@ -18,6 +18,7 @@
 # find current contact information at www.suse.com.
 
 require "forwardable"
+require "yast2/equatable"
 
 module Y2Network
   # Represents a {https://en.wikipedia.org/wiki/Routing_table routing table}
@@ -32,9 +33,12 @@ module Y2Network
   class RoutingTable
     extend Forwardable
     include Enumerable
+    include Yast2::Equatable
 
     # @return [Array<Route>] Routes included in the table
     attr_reader :routes
+
+    eql_attr :routes
 
     def_delegator :@routes, :each
 
@@ -46,15 +50,5 @@ module Y2Network
     def remove_default_routes
       @routes.reject!(&:default?)
     end
-
-    # Determines whether two routing tables are equal
-    #
-    # @param other [RoutingTable] Routing table to compare with
-    # @return [Boolean]
-    def ==(other)
-      routes == other.routes
-    end
-
-    alias_method :eql?, :==
   end
 end

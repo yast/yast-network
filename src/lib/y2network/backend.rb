@@ -18,15 +18,19 @@
 # find current contact information at www.suse.com.
 
 require "yast"
+require "yast2/equatable"
 
 module Y2Network
   # This class is the base class for the different network backends and also
   # responsible of listing the supported ones.
   class Backend
     include Yast::I18n
+    include Yast2::Equatable
 
     # @return [Symbol] backend id
     attr_reader :id
+
+    eql_attr :id
 
     # Constructor
     #
@@ -44,14 +48,6 @@ module Y2Network
     def name
       id.to_s
     end
-
-    def ==(other)
-      return false unless other
-
-      id == other.id
-    end
-
-    alias_method :eql?, :==
 
     # Return the translated backend label
     #
