@@ -20,6 +20,7 @@
 require "yast"
 require "y2network/driver"
 require "y2network/udev_rule"
+require "yast2/equatable"
 
 module Y2Network
   # A helper for {Hwinfo}.
@@ -61,9 +62,12 @@ module Y2Network
   # FIXME: decide whether it should read hwinfo (on demand or at once) for a network
   # device and store only necessary info or just parse provided hash
   class Hwinfo
+    include Yast2::Equatable
     # TODO: this method should be private
     # @return [Hash]
     attr_reader :hwinfo
+
+    eql_attr :hwinfo
 
     class << self
       # Creates a new instance containing hardware information for a given interface
@@ -271,18 +275,8 @@ module Y2Network
       @hwinfo["mac"]
     end
 
-    # Determines whether two objects are equivalent
-    #
-    # Ignores any element having a nil value.
-    #
-    # @param other [Hwinfo] Object to compare with
-    # @return [Boolean]
-    def ==(other)
-      hash == other.hash
-    end
-
-    def hash
-      hwinfo.compact.hash
+    def eql_hash
+      hwinfo.compact
     end
 
     alias_method :eql?, :==
