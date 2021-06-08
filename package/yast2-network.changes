@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Jun  8 08:44:23 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
+
+- Use the linuxrc proxy settings for the HTTPS and FTP proxies
+  (bsc#1185016)
+- 4.3.70
+
+-------------------------------------------------------------------
 Mon May 24 10:47:46 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
 
 - Fix error when determining the removed interfaces in order to
