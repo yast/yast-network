@@ -95,6 +95,11 @@ module Yast
       ex["proxy_password"] = proxy.password
       proxy.password = nil
       ex["#{proxyProto}_proxy"] = proxy.to_s
+      # Use the proxy also for https and ftp
+      if proxyProto == "http"
+        ex["https_proxy"] = proxy.to_s
+        ex["ftp_proxy"] = proxy.to_s
+      end
       ex["enabled"] = true
       log.info "Writing proxy settings: #{proxyProto}_proxy = '#{proxy}'"
       log.debug "Writing proxy settings: #{ex}"

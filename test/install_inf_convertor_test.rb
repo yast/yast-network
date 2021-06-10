@@ -138,7 +138,8 @@ describe "InstallInfConvertor" do
       )
       expect(Yast::Proxy).to receive(:Import) do |config|
         # proxy is enabled and the URL is set
-        expect(config).to include("enabled" => true, "http_proxy" => proxy_url)
+        expect(config).to include("enabled" => true, "http_proxy" => proxy_url,
+          "https_proxy" => proxy_url, "ftp_proxy" => proxy_url)
       end
       expect(Yast::Proxy).to receive(:Write).and_return(true)
 
@@ -162,6 +163,7 @@ describe "InstallInfConvertor" do
       expect(Yast::Proxy).to receive(:Import) do |config|
         # proxy is enabled and the URL without credentials is set
         expect(config).to include("enabled" => true, "http_proxy" => proxy_url,
+          "https_proxy" => proxy_url, "ftp_proxy" => proxy_url,
           "proxy_user" => "user", "proxy_password" => "passwd")
       end
       expect(Yast::Proxy).to receive(:Write).and_return(true)
