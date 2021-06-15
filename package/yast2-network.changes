@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Jun 15 09:17:24 UTC 2021 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
+
+- Fix the Comment entry in the desktop file so the tooltip
+  in the control center is properly translated (bsc#1187270).
+- 4.2.101
+
+-------------------------------------------------------------------
 Mon May 24 10:47:46 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
 
 - Fix error when determining the removed interfaces in order to
