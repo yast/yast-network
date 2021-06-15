@@ -22,6 +22,6 @@ Exec=xdg-su -c "/sbin/yast2 lan"
 
 Name=YaST Network
 GenericName=Network Settings
-Comment=Configure network cards, hostname and routing
+Comment="Configure network cards, hostname and routing"
 StartupNotify=true
 X-SuSE-YaST-Keywords=network,lan,dns,routing
