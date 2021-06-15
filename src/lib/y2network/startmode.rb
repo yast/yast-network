@@ -27,6 +27,14 @@ module Y2Network
   class Startmode
     include Yast::Logger
 
+    # To be backward compliant 'boot', 'on' and 'onboot' are aliases
+    # for 'auto' (bsc#1186910)
+    ALIASES = {
+      "boot"   => "auto",
+      "onboot" => "auto",
+      "on"     => "auto"
+    }.freeze
+
     attr_reader :name
     alias_method :to_s, :name
 
@@ -35,8 +43,8 @@ module Y2Network
     end
 
     # gets new instance of startmode for given type and its params
-    def self.create(name)
-      name = "auto" if name == "onboot" # onboot is alias for auto
+    def self.create(mode)
+      name = ALIASES[mode] || mode
       # avoid circular dependencies
       require "y2network/startmodes"
       Startmodes.const_get(name.capitalize).new
