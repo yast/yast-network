@@ -33,7 +33,7 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Wireless do
     Y2Network::ConnectionConfig::Wireless.new.tap do |c|
       c.interface = "wlan0"
       c.description = "Wireless Card 0"
-      c.startmode = Y2Network::Startmode.create("auto")
+      c.startmode = Y2Network::Startmode.create("onboot")
       c.bootproto = Y2Network::BootProtocol::STATIC
       c.ip = ip
       c.ip_aliases = [ip_alias]
@@ -62,7 +62,7 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Wireless do
   it "sets relevant attributes" do
     handler.write(conn)
     expect(file).to have_attributes(
-      startmode:            "auto",
+      startmode:            "onboot",
       bootproto:            "static",
       wireless_mode:        conn.mode,
       wireless_essid:       conn.essid,

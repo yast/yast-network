@@ -33,7 +33,7 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Bridge do
       c.name = "br1"
       c.interface = "br1"
       c.description = ""
-      c.startmode = Y2Network::Startmode.create("auto")
+      c.startmode = Y2Network::Startmode.create("on")
       c.bootproto = Y2Network::BootProtocol::DHCP
       c.ports = ["eth0", "eth1"]
       c.stp = false
@@ -48,7 +48,7 @@ describe Y2Network::Sysconfig::ConnectionConfigWriters::Bridge do
       handler.write(conn)
       expect(file).to have_attributes(
         name:      conn.description,
-        startmode: "auto",
+        startmode: "on",
         bootproto: "dhcp"
       )
     end
