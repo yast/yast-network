@@ -36,18 +36,24 @@ module Y2Network
     }.freeze
 
     attr_reader :name
+    attr_reader :alias_name
+
     alias_method :to_s, :name
 
-    def initialize(name)
+    def initialize(name, alias_name: nil)
       @name = name
+      @alias_name = alias_name
     end
 
     # gets new instance of startmode for given type and its params
     def self.create(mode)
       name = ALIASES[mode] || mode
+      alias_name = ALIASES[mode] ? mode : nil
+
       # avoid circular dependencies
       require "y2network/startmodes"
-      Startmodes.const_get(name.capitalize).new
+      const = Startmodes.const_get(name.capitalize)
+      alias_name ? const.new(alias_name: alias_name) : const.new
     rescue NameError => e
       log.error "Invalid startmode #{e.inspect}"
       nil

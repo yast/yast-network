@@ -43,7 +43,7 @@ module Y2Network
           file.bootproto = conn.bootproto&.name
           file.name = conn.description
           file.lladdr = conn.lladdress
-          file.startmode = conn.startmode.to_s
+          file.startmode = startmode_for(conn)
           file.dhclient_set_hostname = dhclient_set_hostname(conn)
           file.ifplugd_priority = conn.startmode.priority if conn.startmode&.name == "ifplugd"
           if conn.ethtool_options && !conn.ethtool_options.empty?
@@ -103,6 +103,16 @@ module Y2Network
           return unless conn.hostname && conn.ip
 
           Yast::Host.Update("", conn.hostname, conn.ip.address.address.to_s)
+        end
+
+        # Obtains the startmode to be used for the connection given
+        #
+        # @param conn [Y2Network::ConnectionConfig::Base] Connection to take settings from
+        # @return [String] startmode be written
+        def startmode_for(conn)
+          return "" unless conn.startmode
+
+          conn.startmode.alias_name || conn.startmode.name
         end
       end
     end
