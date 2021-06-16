@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Jun 15 09:17:24 UTC 2021 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
+
+- Fix the Comment entry in the desktop file so the tooltip
+  in the control center is properly translated (bsc#1187270).
+- 4.3.71
+
+-------------------------------------------------------------------
 Tue Jun  8 08:44:23 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
 
 - Use the linuxrc proxy settings for the HTTPS and FTP proxies
