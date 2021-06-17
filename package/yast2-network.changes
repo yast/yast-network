@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Jun 17 15:42:01 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
+
+- Fallback to NetworkManager if wicked is the backend selected but
+  it is not installed at the end of the installation (bsc#1187423)
+- 4.4.17
+
+-------------------------------------------------------------------
 Tue Jun 15 09:17:24 UTC 2021 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
 
 - Fix the Comment entry in the desktop file so the tooltip
