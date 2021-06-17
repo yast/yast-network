@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Jun 16 18:00:44 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
+
+- Support 'boot' and 'on' as aliases for the 'auto' startmode
+  (bsc#1186910)
+- 4.3.72
+
+-------------------------------------------------------------------
 Tue Jun 15 09:17:24 UTC 2021 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
 
 - Fix the Comment entry in the desktop file so the tooltip
