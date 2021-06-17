@@ -160,13 +160,23 @@ module Y2Network
     # depending on the backend selected during the proposal and the packages
     # installed
     def network_service
-      if current_backend == :network_manager
+      case current_backend
+      when :network_manager
         return :network_manager if network_manager_installed?
 
         log.info("NetworkManager is the selected service but it is not installed")
         log.info("- using wicked")
 
         return :wicked
+      when :wicked
+        return :wicked if wicked_installed?
+
+        return :none unless network_manager_installed?
+
+        log.info("Wicked is the selected service but it is not installed")
+        log.info("- using Network Manager")
+
+        return :network_manager
       end
 
       current_backend
@@ -256,6 +266,13 @@ module Y2Network
     # @return [Boolean] true if NetworkManager is installed; false otherwise
     def network_manager_installed?
       Yast::Package.Installed("NetworkManager")
+    end
+
+    # Convenience method to determine if the NM package is installed or not
+    #
+    # @return [Boolean] true if wickedis installed; false otherwise
+    def wicked_installed?
+      Yast::Package.Installed("wicked")
     end
 
     # Determine whether NetworkManager should be selected by default according

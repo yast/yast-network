@@ -332,16 +332,38 @@ describe Y2Network::ProposalSettings do
     let(:settings) { described_class.instance }
     let(:backend) { :wicked }
     let(:nm_installed) { true }
+    let(:wicked_installed) { true }
 
     before do
       allow(settings).to receive(:current_backend).and_return(backend)
-      allow(Yast::Package).to receive(:Installed)
-        .with("NetworkManager").and_return(nm_installed)
+      allow(settings).to receive(:network_manager_installed?).and_return(nm_installed)
+      allow(settings).to receive(:wicked_installed?).and_return(wicked_installed)
     end
 
     context "when the backend selected is wicked" do
-      it "returns :wicked" do
-        expect(settings.network_service).to eql(:wicked)
+      context "and wicked is installed" do
+        it "returns :wicked" do
+          expect(settings.network_service).to eql(:wicked)
+        end
+      end
+
+      context "and wicked is not installed" do
+        let(:wicked_installed) { false }
+
+        context "but NetworkManager is" do
+          it "returns :network_manager as the fallback network service" do
+            expect(settings.network_service).to eql(:network_manager)
+          end
+        end
+
+        context "and NetworkManager is not installed either" do
+          let(:wicked_installed) { false }
+          let(:nm_installed) { false }
+
+          it "returns :none" do
+            expect(settings.network_service).to eql(:none)
+          end
+        end
       end
     end
 
@@ -357,7 +379,7 @@ describe Y2Network::ProposalSettings do
       context "and the NetworkManager package is not installed" do
         let(:nm_installed) { false }
 
-        it "returns :wicked" do
+        it "returns :wicked as the fallback network service" do
           expect(settings.network_service).to eql(:wicked)
         end
       end
