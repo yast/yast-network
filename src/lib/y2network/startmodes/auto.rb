@@ -31,10 +31,10 @@ module Y2Network
     class Auto < Startmode
       include Yast::I18n
 
-      def initialize
+      def initialize(alias_name: nil)
         textdomain "network"
 
-        super("auto")
+        super("auto", alias_name: alias_name)
       end
 
       def to_human_string
