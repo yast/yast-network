@@ -46,7 +46,7 @@ describe Y2Network::Autoinst::InterfacesReader do
     {
       "bootproto"             => "dhcp",
       "name"                  => "eth0",
-      "startmode"             => "auto",
+      "startmode"             => "boot",
       "dhclient_set_hostname" => "yes",
       "lladdr"                => "02:0b:0c:0d:0e:02",
       "aliases"               => {
@@ -87,7 +87,8 @@ describe Y2Network::Autoinst::InterfacesReader do
 
     it "assign properly all values in profile" do
       eth0_config = subject.config.by_name("eth0")
-      expect(eth0_config.startmode).to eq Y2Network::Startmode.create("auto")
+      expect(eth0_config.startmode.name).to eq("auto")
+      expect(eth0_config.startmode.alias_name).to eq("boot")
       expect(eth0_config.bootproto).to eq Y2Network::BootProtocol.from_name("dhcp")
       expect(eth0_config.ip_aliases.size).to eq 3
       expect(eth0_config.dhclient_set_hostname).to eq true
