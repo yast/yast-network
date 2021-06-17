@@ -173,8 +173,7 @@ module Y2Network
 
         return :none unless network_manager_installed?
 
-        log.info("Wicked is the selected service but it is not installed")
-        log.info("- using Network Manager")
+        log.info("Wicked is the selected service but it is not installed - using Network Manager")
 
         return :network_manager
       end
