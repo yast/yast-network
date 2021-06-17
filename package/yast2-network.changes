@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Jun 17 16:20:44 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
+
+- Support 'boot' and 'on' as aliases for the 'auto' startmode
+  (bsc#1186910)
+- 4.4.18
+
+-------------------------------------------------------------------
 Thu Jun 17 15:42:01 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
 
 - Fallback to NetworkManager if wicked is the backend selected but

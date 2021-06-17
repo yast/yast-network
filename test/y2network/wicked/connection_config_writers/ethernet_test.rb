@@ -64,7 +64,7 @@ describe Y2Network::Wicked::ConnectionConfigWriters::Ethernet do
       c.bootproto = Y2Network::BootProtocol::STATIC
       c.ip = ip
       c.ip_aliases = [ip_alias]
-      c.startmode = Y2Network::Startmode.create("auto")
+      c.startmode = Y2Network::Startmode.create("boot")
       c.hostname = "foo"
       c.dhclient_set_hostname = true
     end
@@ -78,7 +78,7 @@ describe Y2Network::Wicked::ConnectionConfigWriters::Ethernet do
       expect(file).to have_attributes(
         name:                  conn.description,
         bootproto:             "static",
-        startmode:             "auto",
+        startmode:             "boot",
         dhclient_set_hostname: "yes",
         mtu:                   nil
       )

@@ -44,7 +44,7 @@ module Y2Network
           file.bootproto = value_as_string(conn.bootproto.to_s)
           file.name = value_as_string(conn.description)
           file.lladdr = value_as_string(conn.lladdress)
-          file.startmode = value_as_string(conn.startmode.to_s)
+          file.startmode = value_as_string(startmode_for(conn))
           file.dhclient_set_hostname = value_as_string(dhclient_set_hostname(conn))
           file.ifplugd_priority = conn.startmode.priority if conn.startmode.to_s == "ifplugd"
           file.ethtool_options = value_as_string(conn.ethtool_options)
@@ -123,6 +123,16 @@ module Y2Network
         # @return [String,nil]
         def value_as_string(value)
           (value.nil? || value.empty?) ? nil : value
+        end
+
+        # Obtains the startmode to be used for the connection given
+        #
+        # @param conn [Y2Network::ConnectionConfig::Base] Connection to take settings from
+        # @return [String] startmode be written
+        def startmode_for(conn)
+          return "" unless conn.startmode
+
+          conn.startmode.alias_name || conn.startmode.name
         end
       end
     end
