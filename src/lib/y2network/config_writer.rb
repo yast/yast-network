@@ -149,6 +149,16 @@ module Y2Network
       update_ip_forwarding((sysctl_config.forward_ipv6 ? "1" : "0"),
         :ipv6)
       nil
+
+    rescue CFA::AugeasSerializingError
+      Yast::Report.Error(
+        Yast::Message.CannotWriteSettingsToBecause(
+          "sysctl",
+          _("Configuration update failed. The files might be corrupted")
+        )
+      )
+
+      nil
     end
 
     IP_SYSCTL = {
