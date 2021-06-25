@@ -556,23 +556,15 @@ describe "LanClass" do
       end
 
       context "when the user asks to continue" do
-        let(:user_answer) { :yes }
+        let(:user_answer) { true }
 
         it "returns true" do
           expect(subject.read_config).to eq(true)
         end
       end
 
-      context "when the user asks to not continue" do
-        let(:user_answer) { :no }
-
-        it "returns false" do
-          expect(subject.read_config).to eq(false)
-        end
-      end
-
-      context "when the user asks to abort" do
-        let(:user_answer) { :abort }
+      context "when the user does not want to continue" do
+        let(:user_answer) { false }
 
         it "returns false" do
           expect(subject.read_config).to eq(false)

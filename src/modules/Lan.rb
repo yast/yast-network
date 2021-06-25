@@ -764,7 +764,7 @@ module Yast
     def read_config(report: true)
       result = Y2Network::Config.from(:wicked)
       if result.issues? && report
-        return false unless Y2Issues.report(result.issues) == :yes
+        return false unless Y2Issues.report(result.issues)
       end
 
       system_config = result.config
