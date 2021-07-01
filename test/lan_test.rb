@@ -25,7 +25,7 @@ require "yast"
 require "y2network/config"
 require "y2network/routing"
 require "y2network/interface_config_builder"
-require "y2network/reading_result"
+require "y2network/issues_result"
 
 Yast.import "Lan"
 
@@ -525,14 +525,14 @@ describe "LanClass" do
     before do
       subject.main
       allow(Y2Network::Config).to receive(:from)
-        .and_return(Y2Network::ReadingResult.new(system_config, issues_list))
+        .and_return(Y2Network::IssuesResult.new(system_config, issues_list))
       allow(system_config).to receive(:copy).and_return(system_config_copy)
       allow(Yast::Lan).to receive(:add_config)
     end
 
     it "reads the Y2Network::Config from sysconfig" do
       expect(Y2Network::Config).to receive(:from)
-        .and_return(Y2Network::ReadingResult.new(system_config, issues_list))
+        .and_return(Y2Network::IssuesResult.new(system_config, issues_list))
       subject.read_config
     end
 
@@ -579,7 +579,7 @@ describe "LanClass" do
     before do
       subject.main
       allow(Y2Network::Config).to receive(:from)
-        .and_return(Y2Network::ReadingResult.new(system_config))
+        .and_return(Y2Network::IssuesResult.new(system_config))
       subject.read_config
       allow(Yast::Lan.yast_config).to receive(:write)
       allow(Yast::Lan.yast_config).to receive(:copy).and_return(yast_config_copy)

@@ -28,7 +28,7 @@ require "y2network/wicked/dns_reader"
 require "y2network/wicked/hostname_reader"
 require "y2network/wicked/interfaces_reader"
 require "y2network/wicked/connection_configs_reader"
-require "y2network/reading_result"
+require "y2network/issues_result"
 require "y2issues"
 
 Yast.import "Host"
@@ -43,7 +43,7 @@ module Y2Network
         :interfaces, :connections, :drivers, :routing, :dns, :hostname
       ].freeze
 
-      # @return [ReadingResult] Network configuration
+      # @return [IssuesResult] Network configuration
       def read
         # NOTE: This code might be moved outside of the Sysconfig namespace, as it is generic.
         # NOTE: /etc/hosts cache - nothing to do with /etc/hostname
@@ -57,7 +57,7 @@ module Y2Network
         end
 
         log.info "Sysconfig reader result: #{network_config.inspect}"
-        ReadingResult.new(network_config, issues_list)
+        IssuesResult.new(network_config, issues_list)
       end
 
     protected

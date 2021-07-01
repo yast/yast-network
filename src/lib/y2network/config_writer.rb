@@ -23,7 +23,7 @@ require "y2network/config_writers/dns_writer"
 require "y2network/config_writers/hostname_writer"
 require "y2network/config_writers/interfaces_writer"
 require "y2network/driver"
-require "y2network/writing_result"
+require "y2network/issues_result"
 
 Yast.import "Host"
 
@@ -68,7 +68,7 @@ module Y2Network
     # @param only [Array<symbol>, nil] explicit sections to be written, by default if no
     #   parameter is given then all changes will be written
     #
-    # @return [WritingResult] write result with issues list
+    # @return [IssuesResult] write result with issues list
     def write(config, old_config = nil, only: nil)
       sections = only || SECTIONS
 
@@ -86,7 +86,7 @@ module Y2Network
 
       Yast::Host.Write(gui: false)
 
-      WritingResult.new(config, issues_list)
+      IssuesResult.new(config, issues_list)
     end
 
   private

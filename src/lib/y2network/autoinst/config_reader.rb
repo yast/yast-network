@@ -1,4 +1,4 @@
-# Copyright (c) [2019] SUSE LLC
+# Copyright c) [2019] SUSE LLC
 #
 # All Rights Reserved.
 #
@@ -27,7 +27,7 @@ require "y2network/autoinst/interfaces_reader"
 require "y2network/autoinst/udev_rules_reader"
 require "y2network/autoinst_profile/networking_section"
 require "y2network/wicked/interfaces_reader"
-require "y2network/reading_result"
+require "y2network/issues_result"
 
 Yast.import "Stage"
 
@@ -47,7 +47,7 @@ module Y2Network
         @original_config = original_config
       end
 
-      # @return [ReadingResult] Network configuration
+      # @return [IssuesResult] Network configuration
       def read
         config = Y2Network::Config.new(source: :autoinst)
         # We need the current interfaces in order to rewrite the config
@@ -73,7 +73,7 @@ module Y2Network
 
         config.backend = ay_backend
 
-        Y2Network::ReadingResult.new(config)
+        Y2Network::IssuesResult.new(config)
       end
 
     private

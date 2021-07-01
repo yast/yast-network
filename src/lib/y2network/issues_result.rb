@@ -21,12 +21,12 @@ require "yast"
 require "y2issues"
 
 module Y2Network
-  class WritingResult
+  class IssuesResult
     attr_reader :config, :issues
 
-    # Represents a writing operation result
+    # Represents a reading operation result
     #
-    # @param config [Config] Write configuration
+    # @param config [Config] Read configuration
     # @param issues [Errors::List] Errors list
     def initialize(config, issues = Y2Issues::List.new)
       @config = config

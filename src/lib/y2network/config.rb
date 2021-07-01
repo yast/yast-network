@@ -70,7 +70,7 @@ module Y2Network
       # @param source [Symbol] Source to read the configuration from
       # @param opts   [Array<Object>] Reader options. Check readers documentation to find out
       #   supported options.
-      # @return [ReadingResult] Result of reading the network configuration
+      # @return [IssuesResult] Result of reading the network configuration
       def from(source, *opts)
         reader = ConfigReader.for(source, *opts)
         reader.read
@@ -138,7 +138,7 @@ module Y2Network
     # @param only [Array<symbol>, nil] explicit sections to be written, by default if no
     #   parameter is given then all changes will be written.
     #
-    # @return [WritingResult] Result of writing the network configuration
+    # @return [IssuesResult] Result of writing the network configuration
     #
     # @see Y2Network::ConfigWriter
     def write(original: nil, target: nil, only: nil)

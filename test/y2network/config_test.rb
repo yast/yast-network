@@ -66,7 +66,7 @@ describe Y2Network::Config do
   describe ".from" do
     let(:reader) do
       instance_double(
-        Y2Network::Wicked::ConfigReader, read: Y2Network::ReadingResult.new(config)
+        Y2Network::Wicked::ConfigReader, read: Y2Network::IssuesResult.new(config)
       )
     end
 
