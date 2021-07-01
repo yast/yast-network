@@ -156,7 +156,6 @@ module Y2Network
       update_ip_forwarding((sysctl_config.forward_ipv6 ? "1" : "0"),
         :ipv6)
       nil
-
     rescue CFA::AugeasSerializingError
       issues_list << Y2Issues::Issue.new(
         "Sysctl configuration update failed. The files might be corrupted",

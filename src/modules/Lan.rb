@@ -782,7 +782,7 @@ module Yast
     # @see Y2Network::ConfigWriter
     def write_config(only: nil, report: true)
       result = yast_config.write(original: system_config, only: only)
-      if result && result.issues? && report
+      if result&.issues? && report
         return false unless Y2Issues.report(result.issues) == :yes
       end
 
