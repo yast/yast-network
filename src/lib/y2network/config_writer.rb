@@ -67,6 +67,8 @@ module Y2Network
     # @param old_config [Y2Network::Config] Old configuration
     # @param only [Array<symbol>, nil] explicit sections to be written, by default if no
     #   parameter is given then all changes will be written
+    #
+    # @return [WritingResult] write result with issues list
     def write(config, old_config = nil, only: nil)
       sections = only || SECTIONS
 
