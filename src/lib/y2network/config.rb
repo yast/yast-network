@@ -138,6 +138,8 @@ module Y2Network
     # @param only [Array<symbol>, nil] explicit sections to be written, by default if no
     #   parameter is given then all changes will be written.
     #
+    # @return [WritingResult] Result of writing the network configuration
+    #
     # @see Y2Network::ConfigWriter
     def write(original: nil, target: nil, only: nil)
       target = target || backend&.id || source

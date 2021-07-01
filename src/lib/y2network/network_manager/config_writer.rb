@@ -32,7 +32,7 @@ module Y2Network
       #
       # @param config     [Y2Network::Config] Current config object
       # @param _old_config [Y2Network::Config,nil] Config object with original configuration
-      def write_connections(config, _old_config)
+      def write_connections(config, _old_config, _issues_list)
         writer = Y2Network::NetworkManager::ConnectionConfigWriter.new
         config.connections.each do |conn|
           opts = {
@@ -50,7 +50,7 @@ module Y2Network
       #
       # @param config     [Y2Network::Config] Current config object
       # @param old_config [Y2Network::Config,nil] Config object with original configuration
-      def write_dns(config, old_config)
+      def write_dns(config, old_config, _issues_list)
         static = config.connections.by_bootproto(Y2Network::BootProtocol::STATIC)
         return super if static.empty? || config.dns.nameservers.empty?
 

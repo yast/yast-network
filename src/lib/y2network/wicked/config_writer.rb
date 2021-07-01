@@ -35,15 +35,15 @@ module Y2Network
       #
       # @param config     [Y2Network::Config] Current config object
       # @param old_config [Y2Network::Config,nil] Config object with original configuration
-      def write_routing(config, old_config)
-        write_ip_forwarding(config.routing)
+      def write_routing(config, old_config, issues_list)
+        write_ip_forwarding(config.routing, issues_list)
 
         # update /etc/sysconfig/network/routes file
         file = routes_file_for(nil)
         file.routes = find_routes_for(nil, config.routing.routes)
         file.save
 
-        write_interface_routes(config, old_config)
+        write_interface_routes(config, old_config, issues_list)
       end
 
       # Writes the routes for the configured interfaces removing the ones not
@@ -53,7 +53,7 @@ module Y2Network
       # @param old_config [Y2Network::Config, nil] original configuration used
       #                   for detecting changes. When nil, no actions related to
       #                   configuration changes are processed.
-      def write_interface_routes(config, old_config)
+      def write_interface_routes(config, old_config, _issues_list)
         # Write ifroute files
         config.interfaces.each do |dev|
           # S390 devices that have not been activated yet will be part of the
@@ -122,7 +122,7 @@ module Y2Network
       #
       # @param config     [Y2Network::Config] Current config object
       # @param old_config [Y2Network::Config,nil] Config object with original configuration
-      def write_connections(config, old_config)
+      def write_connections(config, old_config, _issues_list)
         # FIXME: this code might live in its own class
         writer = Y2Network::Wicked::ConnectionConfigWriter.new
         remove_old_connections(config.connections, old_config.connections, writer) if old_config
