@@ -783,7 +783,7 @@ module Yast
     def write_config(only: nil, report: true)
       result = yast_config.write(original: system_config, only: only)
       if result&.issues? && report
-        return false unless Y2Issues.report(result.issues) == :yes
+        return false unless Y2Issues.report(result.issues)
       end
 
       # Force a refresh of the system_config bsc#1162987
