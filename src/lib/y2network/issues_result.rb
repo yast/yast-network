@@ -21,7 +21,7 @@ require "yast"
 require "y2issues"
 
 module Y2Network
-  class ReadingResult
+  class IssuesResult
     attr_reader :config, :issues
 
     # Represents a reading operation result

@@ -780,8 +780,12 @@ module Yast
     #   parameter is given then all changes will be written
     #
     # @see Y2Network::ConfigWriter
-    def write_config(only: nil)
-      yast_config.write(original: system_config, only: only)
+    def write_config(only: nil, report: true)
+      result = yast_config.write(original: system_config, only: only)
+      if result&.issues? && report
+        return false unless Y2Issues.report(result.issues)
+      end
+
       # Force a refresh of the system_config bsc#1162987
       add_config(:system, yast_config.copy)
     end

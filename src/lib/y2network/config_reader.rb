@@ -48,7 +48,7 @@ module Y2Network
 
     # Returns the configuration from the given backend
     #
-    # @return [Y2Network::ReadingResult] Network configuration
+    # @return [Y2Network::IssuesResult] Network configuration
     # @raise NotImplementedError
     def read
       raise NotImplementedError
