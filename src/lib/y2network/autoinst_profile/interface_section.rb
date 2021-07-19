@@ -279,9 +279,9 @@ module Y2Network
       # Overwrite base method to load also nested aliases
       def init_from_hashes(hash)
         hash = rename_key(hash, "bridge_forwarddelay", "bridge_forward_delay")
-        super(hash)
+        super(hash.reject { |k, _| k == "aliases" })
 
-        self.aliases = hash["aliases"] if hash["aliases"]
+        self.aliases = hash["aliases"] if hash["aliases"].is_a?(Hash)
       end
 
       # Method used by {.new_from_network} to populate the attributes when cloning a network
