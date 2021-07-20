@@ -281,7 +281,7 @@ module Y2Network
         hash = rename_key(hash, "bridge_forwarddelay", "bridge_forward_delay")
         super(hash)
 
-        self.aliases = hash["aliases"] if hash["aliases"]
+        self.aliases = hash["aliases"].is_a?(Hash) ? hash["aliases"] : {}
       end
 
       # Method used by {.new_from_network} to populate the attributes when cloning a network
