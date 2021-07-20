@@ -120,6 +120,20 @@ describe Y2Network::AutoinstProfile::InterfaceSection do
         expect(section.bridge_forward_delay).to eq("5")
       end
     end
+
+    context "when the aliases are declared as an string" do
+      let(:hash) do
+        {
+          "device"  => "eth0",
+          "aliases" => ""
+        }
+      end
+
+      it "does not break and initializes the aliases as an empty hash" do
+        section = described_class.new_from_hashes(hash)
+        expect(section.aliases).to eql({})
+      end
+    end
   end
 
   describe "#to_hashes" do
