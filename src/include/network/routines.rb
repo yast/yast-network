@@ -159,27 +159,6 @@ module Yast
       TypeRepository.IsEmpty(value)
     end
 
-    # For s390 hwinfo gives us a multitude of types but some are handled
-    # the same, mostly acording to the driver which is used. So let's group
-    # them under the name Driver Type.
-    # @param [String] type a type, as in Lan::type
-    # @return driver type, like formerly type2 for s390
-    def DriverType(type)
-      drvtype = type
-      # handle HSI like qeth, S#40692#c15
-      case type
-      when "hsi"
-        drvtype = "qeth"
-      # Should eth occur on s390?
-      when "tr", "eth"
-        drvtype = "lcs"
-      # N#82891
-      when "escon", "ficon"
-        drvtype = "ctc"
-      end
-      drvtype
-    end
-
     def DistinguishedName(name, hwdevice)
       hwdevice = deep_copy(hwdevice)
       if Ops.get_string(hwdevice, "sysfs_bus_id", "") != ""
