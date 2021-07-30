@@ -83,6 +83,9 @@ module Y2Network
 
     # Determines whether two interfaces are equal
     #
+    # @note although it is preferable to use Yast2::Equatable it uses the class
+    #   hash for comparing objects and it will fail when comparing with
+    #   subclasses objects (bsc#1188908)
     # @param other [Interface] Interface to compare with
     # @return [Boolean]
     def ==(other)
