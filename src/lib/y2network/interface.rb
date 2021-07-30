@@ -20,7 +20,6 @@
 require "yast"
 require "y2network/interface_type"
 require "y2network/udev_rule"
-require "yast2/equatable"
 
 module Y2Network
   # Network interface.
@@ -38,7 +37,6 @@ module Y2Network
   class Interface
     extend Forwardable
     include Yast::Logger
-    include Yast2::Equatable
 
     # @return [String] Device name ('eth0', 'wlan0', etc.)
     attr_accessor :name
@@ -83,7 +81,27 @@ module Y2Network
       @renaming_mechanism = :none
     end
 
-    eql_attr :name
+    # Determines whether two interfaces are equal
+    #
+    # @note although it is preferable to use Yast2::Equatable it uses the class
+    #   hash for comparing objects and it will fail when comparing with
+    #   subclasses objects (bsc#1188908)
+    # @param other [Interface] Interface to compare with
+    # @return [Boolean]
+    def ==(other)
+      return false unless other.is_a?(Interface)
+
+      name == other.name
+    end
+
+    # eql? (hash key equality) should alias ==, see also
+    # https://ruby-doc.org/core-2.3.3/Object.html#method-i-eql-3F
+    alias_method :eql?, :==
+
+    # Used by Array or Hash in order to compare equality of elements (bsc#1186082)
+    def hash
+      name.hash
+    end
 
     # Complete configuration of the interface
     #

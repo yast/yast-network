@@ -48,7 +48,7 @@ describe Y2Network::Route do
 
   describe "==" do
     let(:other_to) { IPAddr.new("192.168.122.0/24") }
-    let(:other_interface) { Y2Network::Interface.new("eth0") }
+    let(:other_interface) { Y2Network::PhysicalInterface.new("eth0") }
     let(:other_gateway) { nil }
     let(:other_options) { "" }
 
