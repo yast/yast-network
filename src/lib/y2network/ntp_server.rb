@@ -30,6 +30,7 @@ module Y2Network
   # in the future as needed.
   class NtpServer
     include Yast2::Equatable
+    include Yast::Logger
 
     # @return [String] Server's hostname
     attr_reader :hostname
@@ -53,6 +54,10 @@ module Y2Network
       # @param products [Array<Hash>] List of base products
       # @return [Array<NtpServer>] Default NTP servers
       def default_servers(products = nil)
+        (control_servers || product_servers(products)).map { |s| new(s) }
+      end
+
+      def product_servers(products)
         base_products = products || Yast::Product.FindBaseProducts
 
         host =
@@ -62,7 +67,16 @@ module Y2Network
             "suse"
           end
 
-        (0..DEFAULT_SERVERS - 1).map { |i| new("#{i}.#{host}.#{DEFAULT_SUBDOMAIN}") }
+        log.info "Using ntp product servers (#{host})"
+
+        (0..DEFAULT_SERVERS - 1).map { |i| "#{i}.#{host}.#{DEFAULT_SUBDOMAIN}" }
+      end
+
+      def control_servers
+        Yast.import "ProductFeatures"
+        servers = Yast::ProductFeatures.GetSection("globals")["default_ntp_servers"]
+        log.info "Using the servers defined in the control file: #{servers.inspect}"
+        servers
       end
     end
 

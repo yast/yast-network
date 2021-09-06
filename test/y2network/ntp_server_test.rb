@@ -23,49 +23,72 @@ require "y2network/ntp_server"
 
 describe Y2Network::NtpServer do
   describe ".default_servers" do
+    let(:servers) { nil }
+    let(:globals) { { "default_ntp_servers" => servers } }
+
     before do
-      allow(Yast::Product).to receive(:FindBaseProducts)
-        .and_return(products)
+      allow(Yast::ProductFeatures).to receive(:GetSection).with("globals").and_return(globals)
     end
 
-    context "when running in an openSUSE system" do
-      let(:products) do
-        [{ "name" => "openSUSE" }]
+    context "when defined a list of servers in the control file" do
+      let(:servers) { ["1.suse.pool.ntp.org", "2.suse.pool.ntp.org"] }
+
+      it "returns the list of defined servers" do
+        expect(described_class.default_servers.map(&:hostname)).to eql(servers)
       end
 
-      it "returns a set of opensuse.pool.ntp.org servers" do
-        domain = "opensuse.pool.ntp.org"
-        expect(described_class.default_servers.map(&:hostname)).to eq(
-          ["0.#{domain}", "1.#{domain}", "2.#{domain}", "3.#{domain}"]
-        )
-      end
-    end
-
-    context "when not running in an openSUSE system" do
-      let(:products) do
-        [{ "name" => "SLES" }]
-      end
-
-      it "returns a set of suse.pool.ntp.org servers" do
-        domain = "suse.pool.ntp.org"
-        expect(described_class.default_servers.map(&:hostname)).to eq(
-          ["0.#{domain}", "1.#{domain}", "2.#{domain}", "3.#{domain}"]
-        )
+      context "and the list of servers is empty" do
+        it "returns an empty list" do
+          expect(described_class.default_servers.map(&:hostname)).to eql(servers)
+        end
       end
     end
 
-    context "when a list of base product is given" do
-      let(:products) do
-        [{ "name" => "openSUSE" }]
+    context "when no defined a list of servers in the control file" do
+      before do
+        allow(Yast::Product).to receive(:FindBaseProducts)
+          .and_return(products)
       end
 
-      it "returns the set of servers for that product" do
-        domain = "opensuse.pool.ntp.org"
-        expect(Yast::Product).to_not receive(:FindBaseProducts)
-        servers = described_class.default_servers(products)
-        expect(servers.map(&:hostname)).to eq(
-          ["0.#{domain}", "1.#{domain}", "2.#{domain}", "3.#{domain}"]
-        )
+      context "when running in an openSUSE system" do
+        let(:products) do
+          [{ "name" => "openSUSE" }]
+        end
+
+        it "returns a set of opensuse.pool.ntp.org servers" do
+          domain = "opensuse.pool.ntp.org"
+          expect(described_class.default_servers.map(&:hostname)).to eq(
+            ["0.#{domain}", "1.#{domain}", "2.#{domain}", "3.#{domain}"]
+          )
+        end
+      end
+
+      context "when not running in an openSUSE system" do
+        let(:products) do
+          [{ "name" => "SLES" }]
+        end
+
+        it "returns a set of suse.pool.ntp.org servers" do
+          domain = "suse.pool.ntp.org"
+          expect(described_class.default_servers.map(&:hostname)).to eq(
+            ["0.#{domain}", "1.#{domain}", "2.#{domain}", "3.#{domain}"]
+          )
+        end
+      end
+
+      context "when a list of base product is given" do
+        let(:products) do
+          [{ "name" => "openSUSE" }]
+        end
+
+        it "returns the set of servers for that product" do
+          domain = "opensuse.pool.ntp.org"
+          expect(Yast::Product).to_not receive(:FindBaseProducts)
+          servers = described_class.default_servers(products)
+          expect(servers.map(&:hostname)).to eq(
+            ["0.#{domain}", "1.#{domain}", "2.#{domain}", "3.#{domain}"]
+          )
+        end
       end
     end
   end
