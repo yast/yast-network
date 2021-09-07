@@ -67,7 +67,7 @@ module Y2Network
             "suse"
           end
 
-        log.info "Using ntp product servers (#{host})"
+        log.info "Using the '#{host}' NTP product servers"
 
         (0..DEFAULT_SERVERS - 1).map { |i| "#{i}.#{host}.#{DEFAULT_SUBDOMAIN}" }
       end
@@ -75,7 +75,7 @@ module Y2Network
       def control_servers
         Yast.import "ProductFeatures"
         servers = Yast::ProductFeatures.GetSection("globals")["default_ntp_servers"]
-        log.info "Using the servers defined in the control file: #{servers.inspect}"
+        log.info "Using the servers defined in the control file: #{servers.inspect}" if servers
         servers
       end
     end
