@@ -22,6 +22,7 @@ require "yaml"
 require "yast2/equatable"
 
 Yast.import "Product"
+Yast.import "ProductFeatures"
 
 module Y2Network
   # Represents an NTP server
@@ -30,6 +31,7 @@ module Y2Network
   # in the future as needed.
   class NtpServer
     include Yast2::Equatable
+    include Yast::Logger
 
     # @return [String] Server's hostname
     attr_reader :hostname
@@ -48,11 +50,31 @@ module Y2Network
 
       # Determines the default servers
       #
-      # The content of this list depends on the base product.
+      # It reads the default NTP servers from the control file, in case of not defined
+      # the content of this list will depend on the base product.
       #
       # @param products [Array<Hash>] List of base products
       # @return [Array<NtpServer>] Default NTP servers
       def default_servers(products = nil)
+        servers = control_servers
+
+        if servers
+          log.info "Using the servers defined in the control file: #{servers.inspect}"
+        else
+          servers = product_servers(products)
+          log.info "Using the NTP product servers: #{servers.inspect}"
+        end
+
+        servers.map { |s| new(s) }
+      end
+
+    private
+
+      # It returns a list of NTP servers based on the base products list.
+      #
+      # @param products [Array<Hash>] List of base products
+      # @return [Array<NtpServer>] Default NTP servers
+      def product_servers(products)
         base_products = products || Yast::Product.FindBaseProducts
 
         host =
@@ -62,7 +84,14 @@ module Y2Network
             "suse"
           end
 
-        (0..DEFAULT_SERVERS - 1).map { |i| new("#{i}.#{host}.#{DEFAULT_SUBDOMAIN}") }
+        (0..DEFAULT_SERVERS - 1).map { |i| "#{i}.#{host}.#{DEFAULT_SUBDOMAIN}" }
+      end
+
+      # Convenience method to fetch the default NTP servers from the control file
+      #
+      # @return [Array<NtpServer>] Default NTP servers
+      def control_servers
+        Yast::ProductFeatures.GetSection("globals")["default_ntp_servers"]
       end
     end
 
