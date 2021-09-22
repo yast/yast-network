@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Sep 22 08:46:16 UTC 2021 - Michal Filka <mfilka@suse.com>
+
+- bnc#1190645
+  - display user defined device name in the devices overview
+- 4.2.103
+
+-------------------------------------------------------------------
 Wed Jun 16 18:00:44 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
 
 - Support 'boot' and 'on' as aliases for the 'auto' startmode
