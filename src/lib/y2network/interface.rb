@@ -40,8 +40,6 @@ module Y2Network
 
     # @return [String] Device name ('eth0', 'wlan0', etc.)
     attr_accessor :name
-    # @return [String] Interface description
-    attr_accessor :description
     # @return [InterfaceType] Interface type
     attr_accessor :type
     # @return [HwInfo]
@@ -75,7 +73,6 @@ module Y2Network
     # @param type [InterfaceType] Interface type
     def initialize(name, type: InterfaceType::ETHERNET)
       @name = name.freeze
-      @description = ""
       @type = type
       # TODO: move renaming logic to physical interfaces only
       @renaming_mechanism = :none
