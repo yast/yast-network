@@ -107,8 +107,10 @@ module Y2Network
       def interface_item(interface)
         conn = config.connections.by_name(interface.name)
         [
-          interface.name, # first is ID in table
-          conn.description || friendly_name(interface), # if user named the connection explicitly, it will have precendence
+          # first is (item) ID in table
+          interface.name,
+          # if user named the connection explicitly, it will have precendence
+          conn.description || friendly_name(interface),
           interface_protocol(conn),
           interface.name,
           note(interface, conn)
