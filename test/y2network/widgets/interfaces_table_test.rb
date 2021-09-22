@@ -123,6 +123,19 @@ describe Y2Network::Widgets::InterfacesTable do
         expect(description).to receive(:value=).with(/Device Name: eth0/)
         subject.handle
       end
+
+      context "and when the device is named by user" do
+        let(:eth0_conn) do
+          Y2Network::ConnectionConfig::Ethernet.new.tap do |c|
+            c.name = "eth0"
+            c.description = "Custom description"
+          end
+        end
+
+        it "uses custom device name" do
+          expect(subject.items).to include(a_collection_including(/Custom description/))
+        end
+      end
     end
 
     context "when the device is not configured" do
