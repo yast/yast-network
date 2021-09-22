@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Sep 22 08:46:16 UTC 2021 - Michal Filka <mfilka@suse.com>
+
+- bnc#1190645
+  - display user defined device name in the devices overview
+- 4.4.24
+
+-------------------------------------------------------------------
 Tue Sep  7 07:41:52 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
 
 - Add support for reading the default NTP servers from the control

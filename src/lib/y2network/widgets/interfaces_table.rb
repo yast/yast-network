@@ -99,15 +99,19 @@ module Y2Network
         ""
       end
 
+      # Constructs device description for inactive s390 devices
       def device_item(device)
         [device.id, friendly_name(device), _("Not activated"), device.id, ""]
       end
 
+      # Generic device description handler
       def interface_item(interface)
         conn = config.connections.by_name(interface.name)
         [
-          interface.name, # first is ID in table
-          friendly_name(interface),
+          # first is (item) ID in table
+          interface.name,
+          # if user named the connection explicitly, it will have precendence
+          conn.description || friendly_name(interface),
           interface_protocol(conn),
           interface.name,
           note(interface, conn)
