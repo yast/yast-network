@@ -39,9 +39,6 @@ describe Y2Network::AutoinstProfile::InterfaceSection do
         c.ip_aliases = [
           Y2Network::ConnectionConfig::IPConfig.new(
             Y2Network::IPAddress.from_string("10.100.0.1/24"), label: "test"
-          ),
-          Y2Network::ConnectionConfig::IPConfig.new(
-            Y2Network::IPAddress.from_string("10.100.0.2/24"), label: "test1"
           )
         ]
       end
@@ -52,10 +49,10 @@ describe Y2Network::AutoinstProfile::InterfaceSection do
       expect(section.bootproto).to eq("static")
       expect(section.ipaddr).to eq("10.100.0.1")
       expect(section.prefixlen).to eq("24")
-      expect(section.aliases).to eq(
-        "alias0" => { "IPADDR" => "10.100.0.1", "PREFIXLEN" => "24", "LABEL" => "test" },
-        "alias1" => { "IPADDR" => "10.100.0.2", "PREFIXLEN" => "24", "LABEL" => "test1" }
-      )
+      alias0 = section.aliases.first
+      expect(alias0.ipaddr).to eq("10.100.0.1")
+      expect(alias0.prefixlen).to eq("24")
+      expect(alias0.label).to eq("test")
     end
   end
 
@@ -109,12 +106,16 @@ describe Y2Network::AutoinstProfile::InterfaceSection do
     subject(:section) do
       described_class.new_from_hashes(
         "device"  => "eth0",
-        "aliases" => { "alias0" => { "IPADDR" => "10.100.0.1", "PREFIXLEN" => "24" } }
+        "aliases" => aliases_hash
       )
     end
 
+    let(:aliases_hash) do
+      { "alias0" => { "ipaddr" => "10.100.0.1", "prefixlen" => "24" } }
+    end
+
     it "exports the aliases key" do
-      expect(section.to_hashes["aliases"]).to eq(section.aliases)
+      expect(section.to_hashes["aliases"]).to eq(aliases_hash)
     end
 
     context "when the list of aliases is empty" do
