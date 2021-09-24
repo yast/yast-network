@@ -18,6 +18,7 @@
 # find current contact information at www.suse.com.
 
 require "installation/autoinst_profile/section_with_attributes"
+require "y2network/autoinst_profile/alias_section"
 
 module Y2Network
   module AutoinstProfile
@@ -167,23 +168,7 @@ module Y2Network
       #  @return [String] bonding options
 
       # @!attribute aliases
-      # @example xml section for aliases from SLE15
-      #   <aliases>
-      #     <alias0>
-      #       <IPADDR>10.100.0.1</IPADDR>
-      #       <LABEL>test</LABEL>
-      #       <NETMASK>255.255.255.0</NETMASK>
-      #       <PREFIXLEN>24</PREFIXLEN>
-      #     </alias0>
-      #     <alias1>
-      #       <IPADDR>10.100.0.2</IPADDR>
-      #       <LABEL>test2</LABEL>
-      #       <NETMASK>255.255.255.0</NETMASK>
-      #       <PREFIXLEN>24</PREFIXLEN>
-      #     </alias1>
-      #   </aliases>
-      #
-      # @return [Object] aliases for interface
+      #  @return [Array<AliasSection>] list of IP aliases
 
       # @!attribute mtu
       #  @return [String] MTU for interface
@@ -273,7 +258,7 @@ module Y2Network
           public_send(:"#{attr[:name]}=", "")
         end
 
-        self.aliases = {}
+        self.aliases = []
       end
 
       # Overwrite base method to load also nested aliases
@@ -281,7 +266,9 @@ module Y2Network
         hash = rename_key(hash, "bridge_forwarddelay", "bridge_forward_delay")
         super(hash)
 
-        self.aliases = hash["aliases"].is_a?(Hash) ? hash["aliases"] : {}
+        return unless hash["aliases"].is_a?(Hash)
+
+        self.aliases = hash["aliases"].values.map { |h| AliasSection.new_from_hashes(h) }
       end
 
       # Method used by {.new_from_network} to populate the attributes when cloning a network
@@ -313,13 +300,7 @@ module Y2Network
         @ethtool_options = config.ethtool_options if config.ethtool_options
         @zone = config.firewall_zone.to_s
         # see aliases for example output
-        @aliases = config.ip_aliases.each_with_index.each_with_object({}) do |(ip, index), res|
-          res["alias#{index}"] = {
-            "IPADDR"    => ip.address.address.to_s,
-            "LABEL"     => ip.label || "",
-            "PREFIXLEN" => ip.address.prefix.to_s
-          }
-        end
+        @aliases = config.ip_aliases.map { |ip| AliasSection.new_from_network(ip) }
 
         case config
         when ConnectionConfig::Vlan
@@ -345,7 +326,12 @@ module Y2Network
       # @see SectionWithAttributes#to_hashes
       def to_hashes
         hash = super
-        hash.delete("aliases") if hash.key?("aliases") && hash["aliases"].empty?
+        alias_sections = hash.delete("aliases")
+        if alias_sections && !alias_sections.empty?
+          hash["aliases"] = alias_sections.each_with_object({}).each_with_index do |(a, all), idx|
+            all["alias#{idx}"] = a
+          end
+        end
         hash
       end
 

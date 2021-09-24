@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Sep 23 10:01:21 UTC 2021 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
+
+- Consider aliases sections as case insensitive (bsc#1190739).
+- 4.3.75
+
+-------------------------------------------------------------------
 Wed Sep 22 08:46:16 UTC 2021 - Michal Filka <mfilka@suse.com>
 
 - bnc#1190645

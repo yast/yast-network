@@ -128,10 +128,10 @@ module Y2Network
         config.ip = load_ipaddr(interface_section)
 
         # handle aliases
-        interface_section.aliases.values.each_with_index do |alias_h, index|
-          next if alias_h.fetch("IPADDR", "").empty?
+        interface_section.aliases.each_with_index do |section, index|
+          next if section.ipaddr.to_s.empty?
 
-          config.ip_aliases << load_alias(alias_h, id: "_#{index}")
+          config.ip_aliases << load_alias(section, id: "_#{index}")
         end
 
         # startmode
@@ -207,16 +207,16 @@ module Y2Network
 
       # Loads and initializates an IP alias according to given hash with alias details
       #
-      # @param alias_h [Hash] hash of AY profile's alias section as obtained from parser
+      # @param section[AliasSection] hash of AY profile's alias section as obtained from parser
       #
       # @return [ConnectionConfig::IPConfig] alias details
-      def load_alias(alias_h, id: nil)
-        ipaddr = IPAddress.from_string(alias_h["IPADDR"])
+      def load_alias(section, id: nil)
+        ipaddr = IPAddress.from_string(section.ipaddr)
         # Assign first netmask, as prefixlen has precedence so it will overwrite it
-        ipaddr.prefix = prefix_for(alias_h["NETMASK"]) if !alias_h.fetch("NETMASK", "").empty?
-        ipaddr.prefix = prefix_for(alias_h["PREFIXLEN"]) if !alias_h.fetch("PREFIXLEN", "").empty?
+        ipaddr.prefix = prefix_for(section.netmask) unless section.netmask.to_s.empty?
+        ipaddr.prefix = prefix_for(section.prefixlen) unless section.prefixlen.to_s.empty?
 
-        ConnectionConfig::IPConfig.new(ipaddr, id: id, label: alias_h["LABEL"])
+        ConnectionConfig::IPConfig.new(ipaddr, id: id, label: section.label)
       end
 
       def load_wireless(config, interface_section)
