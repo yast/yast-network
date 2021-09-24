@@ -40,7 +40,7 @@ module Y2Network
           { name: :ipaddr },
           { name: :label },
           { name: :prefixlen },
-          { name: :netmask },
+          { name: :netmask }
         ]
       end
 
@@ -79,7 +79,7 @@ module Y2Network
       end
 
       # Method used by {.new_from_hashes} to populate the attributes using a hash
-      # 
+      #
       # @param config [Hash]
       # @return [Boolean]
       def init_from_hashes(config)
