@@ -60,7 +60,7 @@ module Y2Network
 
       # Clones an IP config into an AutoYaST alias section
       #
-      # @param ip_config [Y2Network::ConnectionConfig::IPConfig] Network connection config
+      # @param config [Y2Network::ConnectionConfig::IPConfig] IP address configuration
       # @return [AliasSection]
       def self.new_from_network(config)
         result = new
