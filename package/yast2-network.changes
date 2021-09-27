@@ -3,7 +3,13 @@ Mon Sep 27 09:15:26 UTC 2021 - Michal Filka <mfilka@suse.com>
 
 - bnc#1190915
   - do not crash with internal error on empty connection.
-- 4.2.104 
+- 4.2.105 
+
+-------------------------------------------------------------------
+Thu Sep 23 10:01:21 UTC 2021 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
+
+- Consider aliases sections as case insensitive (bsc#1190739).
+- 4.2.104
 
 -------------------------------------------------------------------
 Wed Sep 22 08:46:16 UTC 2021 - Michal Filka <mfilka@suse.com>
