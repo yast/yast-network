@@ -90,7 +90,6 @@ module Y2Network
         @bootproto = BootProtocol::STATIC
         @ip = IPConfig.new(IPAddress.from_string("0.0.0.0/32"))
         @startmode = Startmode.create("manual")
-        @description = ""
         @ethtool_options = ""
         @firewall_zone = ""
       end
