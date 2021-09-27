@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Sep 27 09:15:26 UTC 2021 - Michal Filka <mfilka@suse.com>
+
+- bnc#1190915
+  - do not crash with internal error on empty connection.
+- 4.2.104 
+
+-------------------------------------------------------------------
 Wed Sep 22 08:46:16 UTC 2021 - Michal Filka <mfilka@suse.com>
 
 - bnc#1190645
