@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Sep 27 09:12:23 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
+
+- Do not crash when the interfaces table contains a not configured
+  one (bnc#1190645)
+- 4.2.105
+
+-------------------------------------------------------------------
 Thu Sep 23 10:01:21 UTC 2021 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
 
 - Consider aliases sections as case insensitive (bsc#1190739).
