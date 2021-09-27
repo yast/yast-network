@@ -145,7 +145,7 @@ module Y2Network
       # Returns the connection description if given or the interface friendly name if not
       #
       # @param interface [Interface] Network interface
-      # @param conn [ConnectionConfig::Base] Connection configuration
+      # @param conn [ConnectionConfig::Base, nil] Connection configuration
       # @return [String] Connection description if given or the friendly name for the interface (
       #   description or name) if not
       def description_for(interface, conn)

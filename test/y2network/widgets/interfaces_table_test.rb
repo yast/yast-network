@@ -66,7 +66,6 @@ describe Y2Network::Widgets::InterfacesTable do
     context "when it includes a configured device" do
       it "includes the connection device name" do
         expect(subject.items).to include(a_collection_including(/eth0/))
-        subject.handle
       end
 
       context "and the device is named by user" do
@@ -89,7 +88,6 @@ describe Y2Network::Widgets::InterfacesTable do
       it "shows the hwinfo interface description if present or the interface name if not" do
         expect(subject.items).to include(a_collection_including(/Cool device/, /eth0/),
           a_collection_including(/br0/))
-        subject.items
       end
     end
 
