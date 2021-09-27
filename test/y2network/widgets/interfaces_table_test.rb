@@ -21,6 +21,7 @@ require_relative "../../test_helper"
 require "cwm/rspec"
 
 require "y2network/widgets/interfaces_table"
+require "y2network/virtual_interface"
 
 Yast.import "Lan"
 
@@ -38,7 +39,7 @@ describe Y2Network::Widgets::InterfacesTable do
   let(:interfaces) { Y2Network::InterfacesCollection.new([eth0, br0]) }
   let(:hwinfo) do
     instance_double(Y2Network::Hwinfo, link: link, mac: mac, busid: busid,
-      exists?: exists?, present?: true, description: "", name: "Coold device")
+      exists?: exists?, present?: true, description: "Cool device", name: "Cool device")
   end
   let(:mac) { "01:23:45:67:89:ab" }
   let(:busid) { "0000:04:00.0" }
@@ -61,8 +62,40 @@ describe Y2Network::Widgets::InterfacesTable do
 
   include_examples "CWM::Table"
 
-  describe "#handle" do
+  describe "#items" do
+    context "when it includes a configured device" do
+      it "includes the connection device name" do
+        expect(subject.items).to include(a_collection_including(/eth0/))
+        subject.handle
+      end
 
+      context "and the device is named by user" do
+        let(:eth0_conn) do
+          Y2Network::ConnectionConfig::Ethernet.new.tap do |c|
+            c.name = "eth0"
+            c.description = "Custom description"
+          end
+        end
+
+        it "includes its custom device name" do
+          expect(subject.items).to include(a_collection_including(/Custom description/))
+        end
+      end
+    end
+
+    context "ant the device is not configured" do
+      let(:connections) { Y2Network::ConnectionConfigsCollection.new([]) }
+
+      it "shows the hwinfo interface description if present or the interface name if not" do
+        expect(subject.items).to include(a_collection_including(/Cool device/, /eth0/),
+          a_collection_including(/br0/))
+        subject.items
+      end
+    end
+
+  end
+
+  describe "#handle" do
     it "updates the description" do
       expect(description).to receive(:value=)
       subject.handle
@@ -122,19 +155,6 @@ describe Y2Network::Widgets::InterfacesTable do
       it "includes its device name in the description" do
         expect(description).to receive(:value=).with(/Device Name: eth0/)
         subject.handle
-      end
-
-      context "and when the device is named by user" do
-        let(:eth0_conn) do
-          Y2Network::ConnectionConfig::Ethernet.new.tap do |c|
-            c.name = "eth0"
-            c.description = "Custom description"
-          end
-        end
-
-        it "uses custom device name" do
-          expect(subject.items).to include(a_collection_including(/Custom description/))
-        end
       end
     end
 
