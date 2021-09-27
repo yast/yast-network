@@ -110,7 +110,7 @@ module Y2Network
           # first is (item) ID in table
           interface.name,
           # if user named the connection explicitly, it will have precendence
-          conn&.description || friendly_name(interface),
+          conn&.description.to_s.empty? ? friendly_name(conn, interface) : conn.description
           interface_protocol(conn),
           interface.name,
           note(interface, conn)

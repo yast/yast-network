@@ -62,7 +62,7 @@ module Y2Network
       attr_accessor :mtu
       # @return [Startmode]
       attr_accessor :startmode
-      # @return [String] Connection's description (e.g., "Ethernet Card 0")
+      # @return [String, nil] Connection's custom description (e.g., "Ethernet Card 0")
       attr_accessor :description
       # @return [String] Link layer address
       attr_accessor :lladdress
