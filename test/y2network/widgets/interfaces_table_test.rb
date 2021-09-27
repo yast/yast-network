@@ -83,7 +83,7 @@ describe Y2Network::Widgets::InterfacesTable do
       end
     end
 
-    context "ant the device is not configured" do
+    context "and the device is not configured" do
       let(:connections) { Y2Network::ConnectionConfigsCollection.new([]) }
 
       it "shows the hwinfo interface description if present or the interface name if not" do
