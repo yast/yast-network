@@ -110,8 +110,7 @@ module Y2Network
         [
           # first is (item) ID in table
           interface.name,
-          # if user named the connection explicitly, it will have precendence
-          conn.description || friendly_name(interface),
+          description_for(interface, conn),
           interface_protocol(conn),
           interface.name,
           note(interface, conn)
@@ -144,11 +143,15 @@ module Y2Network
         summary.new(value, config).text
       end
 
-      # Returns a friendly name for a given interface
+      # Returns the connection description if given or the interface friendly name if not
       #
       # @param interface [Interface] Network interface
-      # @return [String] Friendly name for the interface (description or name)
-      def friendly_name(interface)
+      # @param conn [ConnectionConfig::Base, nil] Connection configuration
+      # @return [String] Connection description if given or the friendly name for the interface (
+      #   description or name) if not
+      def description_for(interface, conn)
+        return conn.description unless conn&.description.to_s.empty?
+
         hwinfo = interface.hardware
         (hwinfo&.present?) ? hwinfo.description : interface.name
       end
