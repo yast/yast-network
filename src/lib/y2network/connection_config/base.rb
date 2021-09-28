@@ -65,7 +65,7 @@ module Y2Network
       attr_accessor :mtu
       # @return [Startmode]
       attr_accessor :startmode
-      # @return [String] Connection's description (e.g., "Ethernet Card 0")
+      # @return [String, nil] Connection's custom description (e.g., "Ethernet Card 0")
       attr_accessor :description
       # @return [String] Link layer address
       attr_accessor :lladdress
@@ -93,7 +93,6 @@ module Y2Network
         @bootproto = BootProtocol::STATIC
         @ip = IPConfig.new(IPAddress.from_string("0.0.0.0/32"))
         @startmode = Startmode.create("manual")
-        @description = ""
         @ethtool_options = ""
         @firewall_zone = ""
         @hostnames = []
