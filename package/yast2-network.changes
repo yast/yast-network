@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Oct  5 09:50:42 UTC 2021 - Michal Filka <mfilka@suse.com>
+
+- bnc#1185524, bsc#1187512
+  - do not crash at the end of installation when storing wifi
+    configuration for NetworkManager at the target
+- 4.3.77
+
+-------------------------------------------------------------------
 Mon Sep 27 09:12:23 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
 
 - Do not crash when the interfaces table contains a not configured
