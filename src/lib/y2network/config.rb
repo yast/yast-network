@@ -34,11 +34,11 @@ module Y2Network
   # routes, etc.
   #
   # @example Reading from wicked
-  #   config = Y2Network::Config.from(:wicked)
+  #   config = Y2Network::Config.from(:wicked).config
   #   config.interfaces.map(&:name) #=> ["lo", eth0", "wlan0"]
   #
   # @example Adding a default route to the first routing table
-  #   config = Y2Network::Config.from(:wicked)
+  #   config = Y2Network::Config.from(:wicked).config
   #   route = Y2Network::Route.new(to: :default)
   #   config.routing.tables.first << route
   #   config.write

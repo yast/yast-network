@@ -342,9 +342,13 @@ module Y2Network
       #
       # @return [Boolean]
       def read
-        system_config = Y2Network::Config.from(:wicked)
-        Yast::Lan.add_config(:system, system_config)
-        Yast::Lan.add_config(:yast, system_config.copy)
+        result = Y2Network::Config.from(:wicked)
+        if result.issues?
+          return false unless Y2Issues.report(result.issues)
+        end
+
+        Yast::Lan.add_config(:system, result.config)
+        Yast::Lan.add_config(:yast, result.config.copy)
 
         true
       end
