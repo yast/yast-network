@@ -2,7 +2,7 @@
 Wed Nov  3 22:19:45 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
 
 - Do not crash when checking if a virtual interface is connected
-  (bsc#1192270).
+  (bsc#1192183, bsc#1192270).
 - 4.2.106
 
 -------------------------------------------------------------------

@@ -75,7 +75,7 @@ module Y2Network
       @renaming_mechanism = :none
     end
 
-    # Whether the interface is connected or not based con hardware information
+    # Whether the interface is connected or not based on hardware information
     #
     # @see Hwinfo#connected?
     # @return [Boolean]
