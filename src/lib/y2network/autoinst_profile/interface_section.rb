@@ -45,6 +45,7 @@ module Y2Network
           { name: :broadcast },
           { name: :device },
           { name: :name }, # has precedence over device
+          { name: :description },
           { name: :ipaddr },
           { name: :remote_ipaddr },
           { name: :netmask },
@@ -260,9 +261,16 @@ module Y2Network
         hash = rename_key(hash, "bridge_forwarddelay", "bridge_forward_delay")
         super(hash)
 
-        if hash["aliases"]
-          self.aliases = hash["aliases"].values.map { |h| AliasSection.new_from_hashes(h) }
+        # When the name and the device attributes are given then the pre network-ng behavior will be
+        # adopted using the name as the description and the device as the name (bsc#1192270).
+        unless (hash.fetch("name", "").empty? || hash.fetch("device", "").empty?)
+          self.name = hash["device"]
+          self.description = hash["name"]
         end
+
+        return unless hash["aliases"].is_a?(Hash)
+
+        self.aliases = hash["aliases"].values.map { |h| AliasSection.new_from_hashes(h) }
       end
 
       # Method used by {.new_from_network} to populate the attributes when cloning a network

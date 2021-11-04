@@ -85,6 +85,17 @@ describe Y2Network::AutoinstProfile::InterfaceSection do
       end
     end
 
+    context "when the device and name are given" do
+      let(:descr) { "Virtual Interface Card 4" }
+
+      it "sets the device as the name and the name as the description" do
+        hash["name"] = descr
+        section = described_class.new_from_hashes(hash)
+        expect(section.name).to eq("eth0")
+        expect(section.description). to eq(descr)
+      end
+    end
+
     context "when bridge_forwarddelay and bridge_forward_delay are both set" do
       let(:hash) do
         {
