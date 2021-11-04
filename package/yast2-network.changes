@@ -2,10 +2,10 @@
 Thu Nov  4 15:02:24 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
 
 - AutoYaST
-  - When the interface section contains the deprecated device
-    element and also the name element, then use the last one as
-    the interface description. (bsc#1192270)
-  - Add the description element to the interface section
+  - When the interface section contains the "device" (deprecated)
+    and "name" elements then use the "device" as the "name" and the
+    "name" as the "description". (bsc#1192270)
+  - Add the "description" element to the interface section.
 - 4.2.107
 
 -------------------------------------------------------------------

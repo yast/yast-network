@@ -95,6 +95,8 @@ module Y2Network
         end
 
         config.interface = config.name # in autoyast name and interface is same
+        description = interface_section.description.to_s
+        config.description = interface_section.description if !description.empty?
 
         config.ip = load_ipaddr(interface_section)
 
