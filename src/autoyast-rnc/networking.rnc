@@ -42,6 +42,7 @@ interface =
   element (interface | listentry) {
     element device { text }? &	#overloaded
     element name { text }? &
+    element description { text }? &
 
     bootproto? &
     startmode? &
