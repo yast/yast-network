@@ -35,7 +35,6 @@ module Y2Network
   # @see Y2Network::PhysicalInterface
   # @see Y2Network::VirtualInterface
   class Interface
-    extend Forwardable
     include Yast::Logger
 
     # @return [String] Device name ('eth0', 'wlan0', etc.)
@@ -50,8 +49,6 @@ module Y2Network
     attr_accessor :renaming_mechanism
     # @return [String,nil]
     attr_reader :old_name
-
-    def_delegators :hardware, :drivers, :connected?
 
     class << self
       # Builds an interface based on a connection
@@ -76,6 +73,22 @@ module Y2Network
       @type = type
       # TODO: move renaming logic to physical interfaces only
       @renaming_mechanism = :none
+    end
+
+    # Whether the interface is connected or not based on hardware information
+    #
+    # @see Hwinfo#connected?
+    # @return [Boolean]
+    def connected?
+      !!hardware&.connected?
+    end
+
+    # Returns the list of kernel modules
+    #
+    # @return [Array<Driver>]
+    # @see Hwinfo#drivers
+    def drivers
+      hardware&.drivers || []
     end
 
     # Determines whether two interfaces are equal
