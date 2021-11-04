@@ -92,7 +92,7 @@ describe Y2Network::Interface do
     end
   end
 
-  describe "#modules_names" do
+  describe "#drivers" do
     let(:driver) { instance_double(Y2Network::Driver) }
     let(:hwinfo) { instance_double(Y2Network::Hwinfo, drivers: [driver]) }
 
@@ -102,6 +102,39 @@ describe Y2Network::Interface do
 
     it "returns modules names from hardware information" do
       expect(interface.drivers).to eq([driver])
+    end
+  end
+
+  describe "#connected?" do
+    let(:hwinfo) { instance_double(Y2Network::Hwinfo, connected?: connected) }
+    let(:connected) { true }
+
+    before do
+      allow(interface).to receive(:hardware).and_return(hwinfo)
+    end
+
+    context "when the interface has hardware information" do
+      context "and the interface is connected" do
+        it "returns true" do
+          expect(interface.connected?).to eq(true)
+        end
+      end
+
+      context "and the interface is not connected" do
+        let(:connected) { false }
+
+        it "returns false" do
+          expect(interface.connected?).to eq(false)
+        end
+      end
+    end
+
+    context "when the interface does not have hardware information" do
+      let(:hwinfo) { nil }
+
+      it "returns false" do
+        expect(interface.connected?).to eq(false)
+      end
     end
   end
 

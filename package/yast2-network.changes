@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Nov  3 22:19:45 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
+
+- Do not crash when checking if a virtual interface is connected
+  (bsc#1192183, bsc#1192270).
+- 4.2.106
+
+-------------------------------------------------------------------
 Mon Sep 27 09:12:23 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
 
 - Do not crash when the interfaces table contains a not configured
