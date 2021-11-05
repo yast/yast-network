@@ -47,6 +47,7 @@ module Y2Network
           { name: :device },
           { name: :name }, # has precedence over device
           { name: :lladdr },
+          { name: :description },
           { name: :ipaddr },
           { name: :remote_ipaddr },
           { name: :netmask },
@@ -265,6 +266,13 @@ module Y2Network
       def init_from_hashes(hash)
         hash = rename_key(hash, "bridge_forwarddelay", "bridge_forward_delay")
         super(hash)
+
+        # When the name and the device attributes are given then the pre network-ng behavior will be
+        # adopted using the name as the description and the device as the name (bsc#1192270).
+        unless hash.fetch("name", "").empty? || hash.fetch("device", "").empty?
+          self.name = hash["device"]
+          self.description = hash["name"]
+        end
 
         return unless hash["aliases"].is_a?(Hash)
 
