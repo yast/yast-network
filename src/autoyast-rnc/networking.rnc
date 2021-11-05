@@ -51,6 +51,7 @@ interface =
     (
       element device { STRING }? &	#overloaded
       element name { STRING }? &
+      element description { STRING }? &
 
       lladdr? &
       bootproto? &

@@ -1,4 +1,14 @@
 -------------------------------------------------------------------
+Thu Nov  4 15:02:24 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
+
+- AutoYaST
+  - When the interface section contains the "device" (deprecated)
+    and "name" elements then use the "device" as the "name" and the
+    "name" as the "description". (bsc#1192270)
+  - Add the "description" element to the interface section.
+- 4.3.79
+
+-------------------------------------------------------------------
 Wed Nov  3 22:19:45 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
 
 - Do not crash when checking if a virtual interface is connected
