@@ -1,4 +1,4 @@
-# Copyright (c) [2019] SUSE LLC
+# Copyright (c) [2019-2021] SUSE LLC
 #
 # All Rights Reserved.
 #
@@ -101,7 +101,7 @@ module Y2Network
 
       # Constructs device description for inactive s390 devices
       def device_item(device)
-        [device.id, friendly_name(device), _("Not activated"), device.id, ""]
+        [device.id, description_for(device.interface), _("Not activated"), device.id, ""]
       end
 
       # Generic device description handler
