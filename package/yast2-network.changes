@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Nov 10 16:45:32 UTC 2021 - José Iván López González <jlopez@suse.com>
+
+- Replace calls to dropped method InterfacesTable#friendly_name
+  (bsc#1192560).
+- 4.4.30
+
+-------------------------------------------------------------------
 Thu Nov  4 15:02:24 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
 
 - AutoYaST
