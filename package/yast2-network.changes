@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Nov 10 21:41:54 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
+
+- Fixed interfaces table description for s390 Group devices
+  (bsc#1192560).
+- 4.2.109
+
+-------------------------------------------------------------------
 Wed Nov 10 16:45:32 UTC 2021 - José Iván López González <jlopez@suse.com>
 
 - Replace calls to dropped method InterfacesTable#friendly_name

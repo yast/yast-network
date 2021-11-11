@@ -41,6 +41,7 @@ describe Y2Network::Widgets::InterfacesTable do
     instance_double(Y2Network::Hwinfo, link: link, mac: mac, busid: busid,
       exists?: exists?, present?: true, description: "Cool device", name: "Cool device")
   end
+
   let(:mac) { "01:23:45:67:89:ab" }
   let(:busid) { "0000:04:00.0" }
   let(:link) { false }
@@ -53,9 +54,24 @@ describe Y2Network::Widgets::InterfacesTable do
     Y2Network::ConnectionConfig::Bridge.new.tap { |c| c.name = "br0" }
   end
 
+  let(:qeth_0700) do
+    instance_double(Y2Network::S390GroupDevice, type: "qeth", hardware: hwinfo_0700,
+      id: "0.0.0700:0.0.0701:0.0.0702", online?: false)
+  end
+
+  let(:hwinfo_0700) do
+    instance_double(Y2Network::Hwinfo, present?:    true,
+                                       description: "OSA Express Network card (0.0.0700)")
+  end
+
+  let(:s390_devices) do
+    Y2Network::S390GroupDevicesCollection.new([qeth_0700])
+  end
+
   before do
     allow(Yast::Lan).to receive(:yast_config)
-      .and_return(double(interfaces: interfaces, connections: connections, s390_devices: []))
+      .and_return(double(interfaces: interfaces, connections: connections, s390_devices:
+                  s390_devices))
     allow(Yast::UI).to receive(:QueryWidget).and_return([])
     allow(subject).to receive(:value).and_return("eth0")
   end
@@ -87,10 +103,9 @@ describe Y2Network::Widgets::InterfacesTable do
 
       it "shows the hwinfo interface description if present or the interface name if not" do
         expect(subject.items).to include(a_collection_including(/Cool device/, /eth0/),
-          a_collection_including(/br0/))
+          a_collection_including(/br0/), a_collection_including(/OSA Express Network card/))
       end
     end
-
   end
 
   describe "#handle" do
