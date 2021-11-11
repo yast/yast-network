@@ -101,7 +101,7 @@ module Y2Network
 
       # Constructs device description for inactive s390 devices
       def device_item(device)
-        [device.id, description_for(device.interface), _("Not activated"), device.id, ""]
+        [device.id, description_for(device), _("Not activated"), device.id, ""]
       end
 
       # Generic device description handler
@@ -143,17 +143,17 @@ module Y2Network
         summary.new(value, config).text
       end
 
-      # Returns the connection description if given or the interface friendly name if not
+      # Returns the connection description if given or the device friendly name if not
       #
-      # @param interface [Interface] Network interface
+      # @param device [Interface, S390GroupDevice] Network device
       # @param conn [ConnectionConfig::Base, nil] Connection configuration
       # @return [String] Connection description if given or the friendly name for the interface (
       #   description or name) if not
-      def description_for(interface, conn)
+      def description_for(device, conn = nil)
         return conn.description unless conn&.description.to_s.empty?
 
-        hwinfo = interface.hardware
-        (hwinfo&.present?) ? hwinfo.description : interface.name
+        hwinfo = device.hardware
+        (hwinfo&.present?) ? hwinfo.description : device.name
       end
 
       def summary_class_name
