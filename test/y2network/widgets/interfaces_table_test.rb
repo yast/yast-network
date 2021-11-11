@@ -56,7 +56,7 @@ describe Y2Network::Widgets::InterfacesTable do
 
   let(:qeth_0700) do
     instance_double(Y2Network::S390GroupDevice, type: "qeth", hardware: hwinfo_0700,
-      id: "0.0.0700:0.0.0701:0.0.0702", online?: false)
+      id: "0.0.0700:0.0.0701:0.0.0702", offline?: true)
   end
 
   let(:hwinfo_0700) do
