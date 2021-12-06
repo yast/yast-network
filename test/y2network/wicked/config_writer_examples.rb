@@ -54,7 +54,7 @@ RSpec.shared_examples "WickedConfigWriter" do
         cfg.routing = routing
       end
     end
-    let(:ip) { Y2Network::ConnectionConfig::IPConfig.new(address: IPAddr.new("192.168.122.2")) }
+    let(:ip) { Y2Network::ConnectionConfig::IPConfig.new(IPAddr.new("192.168.122.2")) }
     let(:eth0) { Y2Network::Interface.new("eth0") }
     let(:old_eth0_conn) { eth0_conn.clone }
 

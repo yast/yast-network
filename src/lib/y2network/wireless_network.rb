@@ -45,7 +45,7 @@ module Y2Network
 
           attrs = preferred_cell.to_h
           attrs.delete(:address)
-          Y2Network::WirelessNetwork.new(attrs)
+          Y2Network::WirelessNetwork.new(**attrs)
         end
       end
     end
