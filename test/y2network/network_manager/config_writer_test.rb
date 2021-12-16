@@ -70,7 +70,7 @@ describe Y2Network::NetworkManager::ConfigWriter do
       )
     end
 
-    let(:ip) { Y2Network::ConnectionConfig::IPConfig.new(address: IPAddr.new("192.168.122.2")) }
+    let(:ip) { Y2Network::ConnectionConfig::IPConfig.new(IPAddr.new("192.168.122.2")) }
     let(:eth0) { Y2Network::Interface.new("eth0") }
 
     let(:conn_config_writer) do
