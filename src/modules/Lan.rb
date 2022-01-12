@@ -91,12 +91,6 @@ module Yast
       # return boolean return true if abort
       @AbortFunction = nil
 
-      # list of interface names which were recently assigned as a slave to a bond device
-      @bond_autoconf_slaves = []
-
-      # list of interface names which were recently enslaved in a bridge or bond device
-      @autoconf_slaves = []
-
       # Lan::Read (`cache) will do nothing if initialized already.
       @initialized = false
 
@@ -793,8 +787,6 @@ module Yast
 
     publish variable: :ipv6, type: "boolean"
     publish variable: :AbortFunction, type: "block <boolean>"
-    publish variable: :bond_autoconf_slaves, type: "list <string>"
-    publish variable: :autoconf_slaves, type: "list <string>"
     publish function: :Modified, type: "boolean ()"
     publish function: :isAnyInterfaceDown, type: "boolean ()"
     publish function: :Read, type: "boolean (symbol)"

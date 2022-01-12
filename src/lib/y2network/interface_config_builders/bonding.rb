@@ -87,12 +87,12 @@ module Y2Network
         yast_config.interfaces
       end
 
-      # Checks whether an interface can be enslaved in particular bond interface
+      # Checks whether an interface can be included in particular bond interface
       #
       # @param iface [Interface] an interface to be validated as bond_iface slave
       # TODO: Check for valid configurations. E.g. bond device over vlan
       # is nonsense and is not supported by netconfig.
-      # Also devices enslaved in a bridge should be excluded too.
+      # Also devices included in a bridge should be excluded too.
       def bondable?(iface)
         Yast.import "Arch"
         Yast.include self, "network/lan/s390.rb"
@@ -101,7 +101,7 @@ module Y2Network
         if Yast::Arch.s390 && !iface.type.ethernet?
           s390_config = s390_ReadQethConfig(iface.name)
 
-          # only devices with L2 support can be enslaved in bond. See bnc#719881
+          # only devices with L2 support can be included in bond. See bnc#719881
           return false unless s390_config["QETH_LAYER2"] == "yes"
         end
 
@@ -114,14 +114,14 @@ module Y2Network
           return false
         end
 
-        # cannot enslave itself
+        # cannot report itself
         return false if iface.name == @name
 
         true
       end
 
-      # Convenience method to check whether the config of an enslaved interface
-      # is valid or not
+      # Convenience method to check whether the config of an interface is valid
+      # for including into a bond device
       #
       # @param iface [String] slave name to be validated
       def valid_slave_config?(iface)

@@ -169,7 +169,7 @@ module Y2Network
       # find master from given collection of configs
       # @param configs [ConnectionConfigsCollection]
       # @return [ConnectionConfig::Bonding, ConnectionConfig::Bridge, nil] gets bridge, bonding or
-      # nil in which this device in enslaved
+      # nil in which this device in included
       def find_master(configs)
         configs.find do |config|
           # TODO: what about VLAN?

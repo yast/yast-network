@@ -32,12 +32,13 @@ module Y2Network
       # bond slaves)
       #
       # @param [Array<String>] slaves             list of device names
-      # @param [Array<String>] enslaved_ifaces    list of device names of already enslaved devices
+      # @param [Array<String>] included_ifaces    list of device names already included in
+      #                                           a main device (bond, bridge, ...)
       # @param [ConnectionConfig] config where slaves lives
-      def slave_items_from(slaves, enslaved_ifaces, config)
+      def slave_items_from(slaves, included_ifaces, config)
         raise ArgumentError, "slaves cannot be nil" if slaves.nil?
-        raise ArgumentError, "enslaved interfaces cannot be nil" if enslaved_ifaces.nil?
-        raise ArgumentError, "slaves cannot be empty" if slaves.empty? && !enslaved_ifaces.empty?
+        raise ArgumentError, "some interfaces must be selected" if included_ifaces.nil?
+        raise ArgumentError, "slaves cannot be empty" if slaves.empty? && !included_ifaces.empty?
 
         textdomain "network"
 
@@ -55,14 +56,14 @@ module Y2Network
             description = interface.name.dup
 
             # this conditions origin from bridge configuration
-            # if enslaving a configured device then its configuration is rewritten
+            # if including a configured device then its configuration is rewritten
             # to "0.0.0.0/32"
             #
             # translators: a note that listed device is already configured
             description += " " + _("configured") if config.connections.by_name(interface.name)
           end
 
-          selected = enslaved_ifaces.include?(interface.name)
+          selected = included_ifaces.include?(interface.name)
           if physical_port_id?(interface.name)
             description += " (Port ID: #{physical_port_id(interface.name)})"
           end

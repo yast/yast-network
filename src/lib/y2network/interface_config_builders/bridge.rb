@@ -97,7 +97,7 @@ module Y2Network
       #
       # @param iface [Interface] an interface to be validated as the bridge slave
       def bridgeable?(iface)
-        # cannot enslave itself
+        # cannot report itself
         return false if iface.name == @name
         return true unless yast_config.configured_interface?(iface.name)
 
