@@ -91,8 +91,8 @@ module Y2Network
 
         return "" unless conn
 
-        master = conn.find_master(config.connections)
-        return format(_("included in %s"), master.name) if master
+        parent = conn.find_parent(config.connections)
+        return format(_("included in %s"), parent.name) if parent
 
         return format(_("parent: %s"), conn.parent_device) if conn.type.vlan?
 

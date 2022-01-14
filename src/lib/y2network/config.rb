@@ -237,7 +237,7 @@ module Y2Network
     #   to be modified or deleted if `connection_config` is deleted or renamed
     def connections_to_modify(connection_config)
       result = []
-      bond_bridge = connection_config.find_master(connections)
+      bond_bridge = connection_config.find_parent(connections)
       result << bond_bridge if bond_bridge
       vlans = connections.to_a.select do |c|
         c.type.vlan? && c.parent_device == connection_config.name

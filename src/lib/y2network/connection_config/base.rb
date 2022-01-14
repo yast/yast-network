@@ -166,11 +166,11 @@ module Y2Network
         ([ip] + ip_aliases).compact
       end
 
-      # find master from given collection of configs
+      # find parent from given collection of configs
       # @param configs [ConnectionConfigsCollection]
       # @return [ConnectionConfig::Bonding, ConnectionConfig::Bridge, nil] gets bridge, bonding or
       # nil in which this device in included
-      def find_master(configs)
+      def find_parent(configs)
         configs.find do |config|
           # TODO: what about VLAN?
           if config.type.bonding?

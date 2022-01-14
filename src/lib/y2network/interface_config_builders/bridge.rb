@@ -102,9 +102,9 @@ module Y2Network
         return true unless yast_config.configured_interface?(iface.name)
 
         config = yast_config.connections.by_name(iface.name)
-        master = config.find_master(yast_config.connections)
-        if master && master.name != name
-          log.debug("Excluding (#{iface.name}) - already has master #{master.inspect}")
+        parent = config.find_parent(yast_config.connections)
+        if parent && parent.name != name
+          log.debug("Excluding (#{iface.name}) - already included in #{parent.inspect}")
           return false
         end
 

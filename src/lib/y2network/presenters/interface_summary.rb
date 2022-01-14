@@ -73,16 +73,16 @@ module Y2Network
             bullets << "#{label}: #{connection.ports.join(" ")}"
           end
 
-          master = connection.find_master(@config.connections)
-          if master
-            master_desc = if master.type.bonding?
-              # TRANSLATORS: text label before device which is master for this device
-              _("Bonding master")
+          parent = connection.find_parent(@config.connections)
+          if parent
+            parent_desc = if parent.type.bonding?
+              # TRANSLATORS: text label before device which is parent for this device
+              _("Bonding parent")
             else
               # TRANSLATORS: text label before device which is bridge for this device
               _("Bridge")
             end
-            bullets << format("%s: %s", master_desc, master.name)
+            bullets << format("%s: %s", parent_desc, parent.name)
           end
         end
 

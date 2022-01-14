@@ -315,6 +315,8 @@ module CFA
     ## BONDING
 
     # @!attribute [r] bonding_master
+    #   TODO: this name doesn't correspond to inclusive naming, however as log as the
+    #   name is used in syscfg file, the name is kept even here to avoid confusion
     #   @return [String] whether the interface is a bond device or not
     define_variable(:bonding_master)
 
