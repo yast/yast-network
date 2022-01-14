@@ -293,7 +293,7 @@ module Y2Network
         when InterfaceType::BRIDGE
           dependency.ports.delete(name)
         when InterfaceType::BONDING
-          dependency.slaves.delete(name)
+          dependency.ports.delete(name)
         when InterfaceType::VLAN
           delete_interface(dependency.interface)
         else
@@ -309,7 +309,7 @@ module Y2Network
         when InterfaceType::BRIDGE
           dependency.ports.map! { |e| (e == old_name) ? new_name : e }
         when InterfaceType::BONDING
-          dependency.slaves.map! { |e| (e == old_name) ? new_name : e }
+          dependency.ports.map! { |e| (e == old_name) ? new_name : e }
         when InterfaceType::VLAN
           dependency.parent_device = new_name
         else

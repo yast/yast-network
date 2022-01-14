@@ -174,7 +174,7 @@ module Y2Network
         configs.find do |config|
           # TODO: what about VLAN?
           if config.type.bonding?
-            config.slaves.include?(name)
+            config.ports.include?(name)
           elsif config.type.bridge?
             config.ports.include?(name)
           end

@@ -37,7 +37,7 @@ module Y2Network
       end
 
       def_delegators :connection_config,
-        :slaves, :slaves=
+        :ports, :ports=
 
       # @param value [String] options for bonding
       def bond_options=(value)
@@ -66,11 +66,11 @@ module Y2Network
 
       # additionally it adapt slaves if needed
       def save
-        slaves.each do |slave|
-          interface = yast_config.interfaces.by_name(slave)
-          next if valid_slave_config?(slave)
+        ports.each do |port|
+          interface = yast_config.interfaces.by_name(port)
+          next if valid_slave_config?(port)
 
-          connection = yast_config.connections.by_name(slave)
+          connection = yast_config.connections.by_name(port)
           builder = InterfaceConfigBuilder.for(interface.type, config: connection)
           builder.name = interface.name
           builder.configure_as_slave

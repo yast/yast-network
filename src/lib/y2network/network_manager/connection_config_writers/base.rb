@@ -44,7 +44,7 @@ module Y2Network
         #   connection config
         # @option opts [<Array<Y2Network::Route>] :routes associated with the connection
         # @option opts [Y2Network::ConnectionConfig::Base] :parent device in
-        #   case that the connection to be written is an slave one.
+        #   case that the connection to be written is a port one.
         def write(conn, opts = {})
           file.connection["id"] = conn.name
           file.connection["autoconnect"] = "false" if ["manual", "off"].include? conn.startmode.name
@@ -106,11 +106,11 @@ module Y2Network
         #
         # @param parent [Y2Network::ConnectionConfig::Base] Connection to take settings from
         def configure_as_child(parent)
-          slave_type = "bridge" if parent.type.br?
-          slave_type = "bond" if parent.type.bonding?
-          return unless slave_type
+          port_type = "bridge" if parent.type.br?
+          port_type = "bond" if parent.type.bonding?
+          return unless port_type
 
-          file.connection["slave-type"] = slave_type
+          file.connection["slave-type"] = port_type
           file.connection["master"] = parent.name
         end
 
