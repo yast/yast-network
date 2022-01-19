@@ -148,19 +148,19 @@ describe Y2Network::InterfaceConfigBuilders::Bonding do
 
   describe "require_adaptation?" do
     before do
-      connection_config.slaves = ["iface1", "iface2"]
+      connection_config.ports = ["iface1", "iface2"]
     end
 
-    context "when there is no slave configured" do
+    context "when there is no port configured" do
       it "returns false" do
-        expect(subject.require_adaptation?(connection_config.slaves)).to eql(false)
+        expect(subject.require_adaptation?(connection_config.ports)).to eql(false)
       end
     end
 
-    context "when all the slaves are properly configure do" do
+    context "when all the ports are properly configure do" do
       it "returns false" do
         subject.save
-        expect(subject.require_adaptation?(connection_config.slaves)).to eql(false)
+        expect(subject.require_adaptation?(connection_config.ports)).to eql(false)
       end
     end
 
@@ -169,7 +169,7 @@ describe Y2Network::InterfaceConfigBuilders::Bonding do
         subject.save
         iface1_conn = connection_configs_collection.by_name("iface1")
         iface1_conn.bootproto = dhcp
-        expect(subject.require_adaptation?(connection_config.slaves)).to eql(true)
+        expect(subject.require_adaptation?(connection_config.ports)).to eql(true)
       end
     end
   end
@@ -177,8 +177,8 @@ describe Y2Network::InterfaceConfigBuilders::Bonding do
   describe "#save" do
     let(:connection_name) { "bond0" }
 
-    it "adapts the selected slaves configuration when needed" do
-      connection_config.slaves = ["iface1", "iface2"]
+    it "adapts the selected ports configuration when needed" do
+      connection_config.ports = ["iface1", "iface2"]
 
       expect(Y2Network::InterfaceConfigBuilder)
         .to receive(:for).with(anything, config: nil).twice.and_call_original
@@ -194,7 +194,7 @@ describe Y2Network::InterfaceConfigBuilders::Bonding do
     end
 
     it "sets the BOOTPROTO to 'none' and STARTMODE to 'hotplug' in the adapted configs" do
-      connection_config.slaves = ["iface1", "iface2"]
+      connection_config.ports = ["iface1", "iface2"]
       subject.save
       iface2_conn = connection_configs_collection.by_name("iface2")
       iface2_conn.bootproto = dhcp

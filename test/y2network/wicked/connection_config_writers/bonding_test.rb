@@ -34,7 +34,7 @@ describe Y2Network::Wicked::ConnectionConfigWriters::Bonding do
       c.description = ""
       c.startmode = Y2Network::Startmode.create("auto")
       c.bootproto = Y2Network::BootProtocol::DHCP
-      c.slaves = ["eth0", "eth1"]
+      c.ports = ["eth0", "eth1"]
       c.options = "mode=active-backup miimon=100"
       c.mtu     = 9000
     end
