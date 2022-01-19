@@ -64,9 +64,9 @@ module Y2Network
           bullets += aliases_info(connection)
 
           if connection.type.bonding?
-            # TRANSLATORS: text label before list of slaves
-            label = _("Bonding Slaves")
-            bullets << "#{label}: #{connection.slaves.join(" ")}"
+            # TRANSLATORS: text label before list of included devices
+            label = _("Bond Ports")
+            bullets << "#{label}: #{connection.ports.join(" ")}"
           elsif connection.type.bridge?
             # TRANSLATORS: text label before list of ports
             label = _("Bridge Ports")

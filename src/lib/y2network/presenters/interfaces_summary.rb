@@ -144,10 +144,10 @@ module Y2Network
       #
       # @return [String] bonding configured interfaces summary
       def bonding_summary
-        # TRANSLATORS: %s is the list of bonding interface names and their
-        # slaves like 'bond0 (br0, eth2)'
+        # TRANSLATORS: %s is the list of bonding interface names and included
+        # devices like 'bond0 (br0, eth2)'
         _("Bonds: %s") % bonding_connections.map do |connection|
-          "#{connection.name} (#{connection.slaves.sort.join(", ")})"
+          "#{connection.name} (#{connection.ports.sort.join(", ")})"
         end
       end
 
