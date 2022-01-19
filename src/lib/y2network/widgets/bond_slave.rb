@@ -220,8 +220,8 @@ module Y2Network
       # mapping to an array of device names
       # @return [Boolean] true if continue with duplicates, otherwise false
       def continue_with_duplicates?(physical_ports)
-        message = physical_ports.map do |port, slaves|
-          wrap_text("PhysicalPortID (#{port}): #{slaves.join(", ")}")
+        message = physical_ports.map do |port, port_names|
+          wrap_text("PhysicalPortID (#{port}): #{port_names.join(", ")}")
         end.join("\n")
 
         Yast::Popup.YesNoHeadline(

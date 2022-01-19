@@ -31,21 +31,21 @@ module Y2Network
       # Builds content for port configuration dialog (used e.g. when configuring
       # devices included in a bond)
       #
-      # @param [Array<String>] slaves             list of device names
+      # @param [Array<String>] add_ifaces         list of device names
       # @param [Array<String>] included_ifaces    list of device names already included in
       #                                           a main device (bond, bridge, ...)
       # @param [ConnectionConfig] config where port devices live
-      def slave_items_from(slaves, included_ifaces, config)
-        raise ArgumentError, "slaves cannot be nil" if slaves.nil?
+      def slave_items_from(add_ifaces, included_ifaces, config)
+        raise ArgumentError, "list of devices for adding cannot be nil" if add_ifaces.nil?
         raise ArgumentError, "some interfaces must be selected" if included_ifaces.nil?
-        raise ArgumentError, "slaves cannot be empty" if slaves.empty? && !included_ifaces.empty?
+        raise ArgumentError, "list of devices cannot be empty" if add_ifaces.empty? && !included_ifaces.empty?
 
         textdomain "network"
 
-        log.debug "creating list of slaves from #{slaves.inspect}"
+        log.debug "creating list of devices to be added from #{add_ifaces.inspect}"
 
-        slaves.each_with_object([]) do |slave, result|
-          interface = config.interfaces.by_name(slave)
+        add_ifaces.each_with_object([]) do |add_iface, result|
+          interface = config.interfaces.by_name(add_iface)
 
           next unless interface
 
