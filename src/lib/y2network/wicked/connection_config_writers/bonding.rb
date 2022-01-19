@@ -33,10 +33,10 @@ module Y2Network
           file.bonding_master = "yes"
         end
 
-        # Convenience method to obtain the map of bonding slaves in the file
+        # Convenience method to obtain the map of devices in the bonding in the file
         # format
         #
-        # @return [Hash<Integer, String>] indexed bonding slaves
+        # @return [Hash<Integer, String>] indexed devices in the bonding
         def file_slaves(conn)
           conn.ports.each_with_index.with_object({}) { |(name, i), h| h[i] = name }
         end

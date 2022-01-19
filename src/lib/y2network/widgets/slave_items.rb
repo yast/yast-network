@@ -23,18 +23,18 @@ Yast.import "NetworkInterfaces"
 
 module Y2Network
   module Widgets
-    # Mixin to help create slave (of any kind) list
+    # Mixin to help create a port device (of any kind) list
     module SlaveItems
       include Yast::Logger
       include Yast::I18n
 
-      # Builds content for slave configuration dialog (used e.g. when configuring
-      # bond slaves)
+      # Builds content for port configuration dialog (used e.g. when configuring
+      # devices included in a bond)
       #
       # @param [Array<String>] slaves             list of device names
       # @param [Array<String>] included_ifaces    list of device names already included in
       #                                           a main device (bond, bridge, ...)
-      # @param [ConnectionConfig] config where slaves lives
+      # @param [ConnectionConfig] config where port devices live
       def slave_items_from(slaves, included_ifaces, config)
         raise ArgumentError, "slaves cannot be nil" if slaves.nil?
         raise ArgumentError, "some interfaces must be selected" if included_ifaces.nil?

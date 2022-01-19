@@ -196,7 +196,7 @@ module Y2Network
       # device names if at least two devices shared the same physical port id
       # TODO: backend method
       #
-      # @param slaves [Array<String>] bonding slaves
+      # @param slaves [Array<String>] devices included in the bonding
       # @return [Hash{String => Array<String>}] of duplicated physical port ids
       def repeated_physical_port_ids(slaves)
         physical_port_ids = {}

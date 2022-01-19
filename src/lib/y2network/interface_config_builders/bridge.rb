@@ -51,7 +51,7 @@ module Y2Network
         interfaces.select { |i| bridgeable?(i) }
       end
 
-      # additionally it adapt slaves if needed
+      # additionally it adapts ports if needed
       def save
         ports.each do |port|
           interface = yast_config.interfaces.by_name(port)

@@ -355,7 +355,7 @@ module Y2Network
         keys
       end
 
-      # Helper to get bonding slaves as array
+      # Helper to get devices in the bonding as array
       # @return [Array<String>]
       def bonding_slaves
         slaves = []

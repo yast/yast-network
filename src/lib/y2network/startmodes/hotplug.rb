@@ -24,7 +24,7 @@ module Y2Network
     # hotplug startmode
     #
     # Interface will be activated when it is available. Use instead of auto for devices which
-    # may be missed, such as bonding slaves, usb or other plugable hardware.
+    # may be missed, such as devices included in a bonding, usb or other plugable hardware.
     class Hotplug < Startmode
       include Yast::I18n
 
