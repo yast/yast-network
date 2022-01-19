@@ -21,7 +21,7 @@ require "yast"
 require "cwm/tabs"
 
 # used widgets
-require "y2network/widgets/bond_slave"
+require "y2network/widgets/bond_port"
 require "y2network/widgets/bond_options"
 
 module Y2Network

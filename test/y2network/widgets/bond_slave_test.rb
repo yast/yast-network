@@ -20,7 +20,7 @@
 require_relative "../../test_helper"
 require "cwm/rspec"
 
-require "y2network/widgets/bond_slave"
+require "y2network/widgets/bond_port"
 require "y2network/interface_config_builders/bonding"
 
 describe Y2Network::Widgets::BondSlave do

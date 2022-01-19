@@ -20,7 +20,7 @@
 require_relative "../../test_helper"
 require "cwm/rspec"
 
-require "y2network/widgets/bridge_slaves_tab"
+require "y2network/widgets/bridge_ports_tab"
 require "y2network/interface_config_builder"
 
 describe Y2Network::Widgets::BridgeSlavesTab do
