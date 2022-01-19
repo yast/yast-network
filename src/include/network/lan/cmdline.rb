@@ -206,7 +206,7 @@ module Yast
       case builder.type.short_name
       when "bond"
         # change only if user specify it
-        builder.slaves = options["slaves"].split(" ") if options["slaves"]
+        builder.ports = options["slaves"].split(" ") if options["slaves"]
       when "vlan"
         # change only if user specify it
         builder.etherdevice = options["ethdevice"] if options["ethdevice"]
