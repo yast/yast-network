@@ -51,7 +51,7 @@ module Y2Network
       end
 
       # Returns whether any configuration of the given devices needs to be
-      # adapted in order to be added as a bonding slave
+      # adapted in order to be added into a bonding
 
       # @param devices [Array<String>] devices to check
       # return [Boolean] true if there is a device config that needs
@@ -60,15 +60,15 @@ module Y2Network
         devices.any? do |device|
           next false unless yast_config.configured_interface?(device)
 
-          !valid_slave_config?(device)
+          !valid_port_config?(device)
         end
       end
 
-      # additionally it adapt slaves if needed
+      # additionally it adapts configuration of devices to be included in a bonding if needed
       def save
         ports.each do |port|
           interface = yast_config.interfaces.by_name(port)
-          next if valid_slave_config?(port)
+          next if valid_port_config?(port)
 
           connection = yast_config.connections.by_name(port)
           builder = InterfaceConfigBuilder.for(interface.type, config: connection)
@@ -124,7 +124,7 @@ module Y2Network
       # for including into a bond device
       #
       # @param iface [String] slave name to be validated
-      def valid_slave_config?(iface)
+      def valid_port_config?(iface)
         conn = yast_config.connections.by_name(iface)
 
         conn&.bootproto&.name == "none" && conn&.startmode&.name == "hotplug"
