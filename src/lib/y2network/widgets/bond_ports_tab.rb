@@ -34,7 +34,7 @@ module Y2Network
       end
 
       def label
-        _("&Bond Slaves")
+        _("&Bond Ports")
       end
 
       def contents

@@ -42,10 +42,10 @@ module Y2Network
         Frame(
           _("Bond Slaves and Order"),
           VBox(
-            MultiSelectionBox(Id(:bond_slaves_items), Opt(:notify), "", []),
+            MultiSelectionBox(Id(:bond_ports_items), Opt(:notify), "", []),
             HBox(
-              PushButton(Id(:bond_slaves_up), Opt(:disabled), _("Up")),
-              PushButton(Id(:bond_slaves_down), Opt(:disabled), _("Down"))
+              PushButton(Id(:bond_ports_up), Opt(:disabled), _("Up")),
+              PushButton(Id(:bond_ports_down), Opt(:disabled), _("Down"))
             )
           )
         )
@@ -59,16 +59,16 @@ module Y2Network
           current = value.to_s
           index = value_index
           case event["ID"]
-          when :bond_slaves_up
+          when :bond_ports_up
             items[index], items[index - 1] = items[index - 1], items[index]
-          when :bond_slaves_down
+          when :bond_ports_down
             items[index], items[index + 1] = items[index + 1], items[index]
           else
             log.warn("unknown action #{event["ID"]}")
             return nil
           end
-          Yast::UI.ChangeWidget(:bond_slaves_items, :Items, items)
-          Yast::UI.ChangeWidget(:bond_slaves_items, :CurrentItem, current)
+          Yast::UI.ChangeWidget(:bond_ports_items, :Items, items)
+          Yast::UI.ChangeWidget(:bond_ports_items, :CurrentItem, current)
           enable_slave_buttons
         else
           log.debug("event:#{event}")
@@ -86,27 +86,27 @@ module Y2Network
         )
       end
 
-      # Default function to init the value of slave devices box for bonding.
+      # Default function to init the value of port devices box for bonding.
       def init
-        slaves = @settings.slaves
+        ports = @settings.ports
         # TODO: use def items, but problem now is that slave_items returns term and not array
         items = slave_items_from(
           @settings.bondable_interfaces.map(&:name),
-          slaves,
+          ports,
           Yast::Lan.yast_config # ideally get it from builder?
         )
 
         # reorder the items
-        l1, l2 = items.partition { |t| slaves.include? t[0][0] }
+        l1, l2 = items.partition { |t| ports.include? t[0][0] }
 
         items = l1 + l2.sort_by { |t| justify_dev_name(t[0][0]) }
 
-        Yast::UI.ChangeWidget(:bond_slaves_items, :Items, items)
+        Yast::UI.ChangeWidget(:bond_ports_items, :Items, items)
 
         Yast::UI.ChangeWidget(
-          :bond_slaves_items,
+          :bond_ports_items,
           :SelectedItems,
-          slaves
+          ports
         )
 
         enable_slave_buttons
@@ -116,7 +116,7 @@ module Y2Network
 
       # Default function to store the value of slave devices box.
       def store
-        @settings.slaves = selected_items
+        @settings.ports = selected_items
       end
 
       # Validates created bonding. Currently just prevent the user to create a
@@ -144,15 +144,15 @@ module Y2Network
 
       def value
         # TODO: it is multiselection, so does it make sense?
-        Yast::UI.QueryWidget(:bond_slaves_items, :CurrentItem)
+        Yast::UI.QueryWidget(:bond_ports_items, :CurrentItem)
       end
 
       def selected_items
-        Yast::UI.QueryWidget(:bond_slaves_items, :SelectedItems) || []
+        Yast::UI.QueryWidget(:bond_ports_items, :SelectedItems) || []
       end
 
       def ui_items
-        Yast::UI.QueryWidget(:bond_slaves_items, :Items) || []
+        Yast::UI.QueryWidget(:bond_ports_items, :Items) || []
       end
 
       def value_index
@@ -161,11 +161,11 @@ module Y2Network
 
       def enable_slave_buttons
         if value_index
-          Yast::UI.ChangeWidget(:bond_slaves_up, :Enabled, value_index > 0)
-          Yast::UI.ChangeWidget(:bond_slaves_down, :Enabled, value_index < ui_items.size - 1)
+          Yast::UI.ChangeWidget(:bond_ports_up, :Enabled, value_index > 0)
+          Yast::UI.ChangeWidget(:bond_ports_down, :Enabled, value_index < ui_items.size - 1)
         else
-          Yast::UI.ChangeWidget(:bond_slaves_up, :Enabled, false)
-          Yast::UI.ChangeWidget(:bond_slaves_down, :Enabled, false)
+          Yast::UI.ChangeWidget(:bond_ports_up, :Enabled, false)
+          Yast::UI.ChangeWidget(:bond_ports_down, :Enabled, false)
         end
       end
 
@@ -196,15 +196,15 @@ module Y2Network
       # device names if at least two devices shared the same physical port id
       # TODO: backend method
       #
-      # @param slaves [Array<String>] devices included in the bonding
+      # @param ports [Array<String>] devices included in the bonding
       # @return [Hash{String => Array<String>}] of duplicated physical port ids
-      def repeated_physical_port_ids(slaves)
+      def repeated_physical_port_ids(ports)
         physical_port_ids = {}
 
-        slaves.each do |slave|
-          if physical_port_id?(slave)
-            p = physical_port_ids[physical_port_id(slave)] ||= []
-            p << slave
+        ports.each do |port|
+          if physical_port_id?(port)
+            p = physical_port_ids[physical_port_id(port)] ||= []
+            p << port
           end
         end
 
