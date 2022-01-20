@@ -23,7 +23,7 @@ require "cwm/rspec"
 require "y2network/widgets/bridge_ports_tab"
 require "y2network/interface_config_builder"
 
-describe Y2Network::Widgets::BridgeSlavesTab do
+describe Y2Network::Widgets::BridgePortsTab do
   subject { described_class.new(Y2Network::InterfaceConfigBuilder.for("br")) }
 
   include_examples "CWM::Tab"

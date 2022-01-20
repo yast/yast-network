@@ -23,7 +23,7 @@ require "cwm/rspec"
 require "y2network/widgets/bond_ports_tab"
 require "y2network/interface_config_builder"
 
-describe Y2Network::Widgets::BondSlavesTab do
+describe Y2Network::Widgets::BondPortsTab do
   subject { described_class.new(Y2Network::InterfaceConfigBuilder.for("bond")) }
 
   include_examples "CWM::Tab"
