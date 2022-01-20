@@ -40,7 +40,7 @@ module Y2Network
 
       def contents
         Frame(
-          _("Bond Slaves and Order"),
+          _("Bond Ports and Order"),
           VBox(
             MultiSelectionBox(Id(:bond_ports_items), Opt(:notify), "", []),
             HBox(

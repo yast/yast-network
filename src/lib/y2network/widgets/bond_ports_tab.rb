@@ -26,7 +26,7 @@ require "y2network/widgets/bond_options"
 
 module Y2Network
   module Widgets
-    class BondSlavesTab < CWM::Tab
+    class BondPortsTab < CWM::Tab
       def initialize(settings)
         textdomain "network"
 

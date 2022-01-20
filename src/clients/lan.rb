@@ -157,7 +157,7 @@ module Yast
           },
           "slaves"       => {
             # Commandline option help
-            "help" => _("Bond Slaves"),
+            "help" => _("Bond Ports"),
             "type" => "string"
           },
           "ethdevice"    => {

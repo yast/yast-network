@@ -59,7 +59,7 @@ module Y2Network
         when "br"
           [Widgets::GeneralTab.new(@settings), addr_tab, Widgets::BridgePorts.new(@settings)]
         when "bond"
-          [Widgets::GeneralTab.new(@settings), addr_tab, Widgets::BondSlavesTab.new(@settings)]
+          [Widgets::GeneralTab.new(@settings), addr_tab, Widgets::BondPortsTab.new(@settings)]
         when "wlan"
           wireless = Widgets::WirelessTab.new(@settings)
           wireless.initial = true
