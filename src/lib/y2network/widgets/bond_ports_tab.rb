@@ -38,7 +38,7 @@ module Y2Network
       end
 
       def contents
-        VBox(BondSlave.new(@settings), BondOptions.new(@settings))
+        VBox(BondPort.new(@settings), BondOptions.new(@settings))
       end
     end
   end

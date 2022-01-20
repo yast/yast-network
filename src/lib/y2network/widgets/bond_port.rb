@@ -29,7 +29,7 @@ Yast.import "UI"
 
 module Y2Network
   module Widgets
-    class BondSlave < CWM::CustomWidget
+    class BondPort < CWM::CustomWidget
       include PortItems
       include ::UI::TextHelpers
 
