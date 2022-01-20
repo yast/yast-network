@@ -38,7 +38,10 @@ module Y2Network
       def slave_items_from(add_ifaces, included_ifaces, config)
         raise ArgumentError, "list of devices for adding cannot be nil" if add_ifaces.nil?
         raise ArgumentError, "some interfaces must be selected" if included_ifaces.nil?
-        raise ArgumentError, "list of devices cannot be empty" if add_ifaces.empty? && !included_ifaces.empty?
+
+        if add_ifaces.empty? && !included_ifaces.empty?
+          raise ArgumentError, "list of devices cannot be empty"
+        end
 
         textdomain "network"
 
