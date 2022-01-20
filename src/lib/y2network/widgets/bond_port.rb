@@ -20,7 +20,7 @@
 require "ui/text_helpers"
 require "yast"
 require "cwm/custom_widget"
-require "y2network/widgets/slave_items"
+require "y2network/widgets/port_items"
 
 Yast.import "Label"
 Yast.import "Lan"
@@ -30,7 +30,7 @@ Yast.import "UI"
 module Y2Network
   module Widgets
     class BondSlave < CWM::CustomWidget
-      include SlaveItems
+      include PortItems
       include ::UI::TextHelpers
 
       def initialize(settings)

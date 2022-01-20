@@ -24,7 +24,7 @@ Yast.import "NetworkInterfaces"
 module Y2Network
   module Widgets
     # Mixin to help create a port device (of any kind) list
-    module SlaveItems
+    module PortItems
       include Yast::Logger
       include Yast::I18n
 

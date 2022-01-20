@@ -19,7 +19,7 @@
 
 require "yast"
 require "cwm/common_widgets"
-require "y2network/widgets/slave_items"
+require "y2network/widgets/port_items"
 
 Yast.import "Label"
 Yast.import "Lan"
@@ -29,7 +29,7 @@ Yast.import "UI"
 module Y2Network
   module Widgets
     class BridgePorts < CWM::MultiSelectionBox
-      include SlaveItems
+      include PortItems
 
       # @param [Y2Network::InterfaceConfigBuilders::Bridge] settings
       def initialize(settings)
