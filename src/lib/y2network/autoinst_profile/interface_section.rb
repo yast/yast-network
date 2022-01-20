@@ -163,7 +163,7 @@ module Y2Network
       #  @return [String] ???
 
       # @!attribute bonding_slaveX
-      #  @return [String] bonding slave on position X
+      #  @return [String] bonding port on position X
 
       # @!attribute bonding_module_opts
       #  @return [String] bonding options

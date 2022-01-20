@@ -57,7 +57,7 @@ module Y2Network
         bridge_builder = bridge_builder_for(interface)
 
         connection = config.connections.by_name(interface.name)
-        # The configuration of the connection being slaved is copied to the
+        # The configuration of the connection being included is copied to the
         # bridge when exist
         bridge_builder.configure_from(connection) if connection
 

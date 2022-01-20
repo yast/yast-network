@@ -80,7 +80,7 @@ module Y2Network
       def help
         # TODO: write it
         _(
-          "<p>Select the slave devices for the bond device.\n" \
+          "<p>Select a devices for including into the bond device.\n" \
             "Only devices with the device activation set to <b>Never</b> " \
             "and with <b>No Address Setup</b> are available.</p>"
         )
@@ -89,7 +89,7 @@ module Y2Network
       # Default function to init the value of port devices box for bonding.
       def init
         ports = @settings.ports
-        # TODO: use def items, but problem now is that slave_items returns term and not array
+        # TODO: use def items, but problem now is that port_items returns term and not array
         items = slave_items_from(
           @settings.bondable_interfaces.map(&:name),
           ports,
@@ -114,7 +114,7 @@ module Y2Network
         nil
       end
 
-      # Default function to store the value of slave devices box.
+      # Default function to store the value of port devices box.
       def store
         @settings.ports = selected_items
       end

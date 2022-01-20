@@ -89,7 +89,7 @@ module Y2Network
 
       # Checks whether an interface can be included in particular bond interface
       #
-      # @param iface [Interface] an interface to be validated as bond_iface slave
+      # @param iface [Interface] an interface to be validated as bond port
       # TODO: Check for valid configurations. E.g. bond device over vlan
       # is nonsense and is not supported by netconfig.
       # Also devices included in a bridge should be excluded too.
@@ -123,7 +123,7 @@ module Y2Network
       # Convenience method to check whether the config of an interface is valid
       # for including into a bond device
       #
-      # @param iface [String] slave name to be validated
+      # @param iface [String] name of port to be validated
       def valid_port_config?(iface)
         conn = yast_config.connections.by_name(iface)
 

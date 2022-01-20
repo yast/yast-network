@@ -95,7 +95,7 @@ module Y2Network
 
       # Checks whether an interface can be bridged in particular bridge
       #
-      # @param iface [Interface] an interface to be validated as the bridge slave
+      # @param iface [Interface] an interface to be validated as the bridge port
       def bridgeable?(iface)
         # cannot report itself
         return false if iface.name == @name

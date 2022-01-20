@@ -46,7 +46,7 @@ module Y2Network
         ""
       end
 
-      # Default function to init the value of slave devices box for bridging.
+      # Default function to init the value of port devices box for bridging.
       def init
         br_ports = @settings.ports
         items = slave_items_from(
@@ -59,7 +59,7 @@ module Y2Network
         Yast::UI.ChangeWidget(Id(widget_id), :Items, items)
       end
 
-      # Default function to store the value of slave devices box.
+      # Default function to store the value of port devices box.
       def store
         @settings.ports = value
       end
