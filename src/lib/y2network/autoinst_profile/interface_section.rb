@@ -321,8 +321,8 @@ module Y2Network
           @bridge_forward_delay = config.forward_delay.to_s
         when ConnectionConfig::Bonding
           @bonding_module_opts = config.options
-          config.ports.each_with_index do |slave, index|
-            public_send(:"bonding_slave#{index}=", slave)
+          config.ports.each_with_index do |port, index|
+            public_send(:"bonding_slave#{index}=", port)
           end
         when ConnectionConfig::Wireless
           init_from_wireless(config)

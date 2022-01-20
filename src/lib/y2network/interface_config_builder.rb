@@ -373,7 +373,7 @@ module Y2Network
       @connection_config.mtu = value.to_i
     end
 
-    def configure_as_slave
+    def configure_as_port
       self.boot_protocol = "none"
       self.aliases = []
       self.ip_address = nil

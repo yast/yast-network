@@ -49,7 +49,7 @@ module Y2Network
       # Default function to init the value of port devices box for bridging.
       def init
         br_ports = @settings.ports
-        items = slave_items_from(
+        items = port_items_from(
           @settings.bridgeable_interfaces.map(&:name),
           br_ports,
           Yast::Lan.yast_config # ideally get it from builder?

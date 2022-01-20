@@ -35,7 +35,7 @@ module Y2Network
       # @param [Array<String>] included_ifaces    list of device names already included in
       #                                           a main device (bond, bridge, ...)
       # @param [ConnectionConfig] config where port devices live
-      def slave_items_from(add_ifaces, included_ifaces, config)
+      def port_items_from(add_ifaces, included_ifaces, config)
         raise ArgumentError, "list of devices for adding cannot be nil" if add_ifaces.nil?
         raise ArgumentError, "some interfaces must be selected" if included_ifaces.nil?
 

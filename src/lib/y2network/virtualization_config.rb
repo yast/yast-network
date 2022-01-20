@@ -63,7 +63,7 @@ module Y2Network
 
         builder = Y2Network::InterfaceConfigBuilder.for(interface.type, config: connection)
         builder.name = interface.name
-        builder.configure_as_slave
+        builder.configure_as_port
         builder.save
 
         # It adds the connection and the virtual interface

@@ -90,7 +90,7 @@ module Y2Network
       def init
         ports = @settings.ports
         # TODO: use def items, but problem now is that port_items returns term and not array
-        items = slave_items_from(
+        items = port_items_from(
           @settings.bondable_interfaces.map(&:name),
           ports,
           Yast::Lan.yast_config # ideally get it from builder?

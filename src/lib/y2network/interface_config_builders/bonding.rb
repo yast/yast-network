@@ -73,7 +73,7 @@ module Y2Network
           connection = yast_config.connections.by_name(port)
           builder = InterfaceConfigBuilder.for(interface.type, config: connection)
           builder.name = interface.name
-          builder.configure_as_slave
+          builder.configure_as_port
           builder.startmode = "hotplug"
           builder.save
         end
