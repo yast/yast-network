@@ -53,7 +53,7 @@ module Y2Network
 
       def handle(event)
         if event["EventReason"] == "SelectionChanged"
-          enable_slave_buttons
+          enable_position_buttons
         elsif event["EventReason"] == "Activated" && event["WidgetClass"] == :PushButton
           items = ui_items || []
           current = value.to_s
@@ -69,7 +69,7 @@ module Y2Network
           end
           Yast::UI.ChangeWidget(:bond_ports_items, :Items, items)
           Yast::UI.ChangeWidget(:bond_ports_items, :CurrentItem, current)
-          enable_slave_buttons
+          enable_position_buttons
         else
           log.debug("event:#{event}")
         end
@@ -109,7 +109,7 @@ module Y2Network
           ports
         )
 
-        enable_slave_buttons
+        enable_position_buttons
 
         nil
       end
@@ -159,7 +159,7 @@ module Y2Network
         ui_items.index { |i| i[0] == Id(value) }
       end
 
-      def enable_slave_buttons
+      def enable_position_buttons
         if value_index
           Yast::UI.ChangeWidget(:bond_ports_up, :Enabled, value_index > 0)
           Yast::UI.ChangeWidget(:bond_ports_down, :Enabled, value_index < ui_items.size - 1)
