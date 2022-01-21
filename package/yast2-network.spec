@@ -17,7 +17,7 @@
 
 
 Name:           yast2-network
-Version:        4.4.32
+Version:        4.4.33
 Release:        0
 Summary:        YaST2 - Network Configuration
 License:        GPL-2.0-only
@@ -43,6 +43,8 @@ BuildRequires:  yast2-xml
 BuildRequires:  rubygem(%rb_default_ruby_abi:cfa) >= 0.6.4
 # lenses are needed to use cfa
 BuildRequires:  augeas-lenses
+# yast/rspec/helpers.rb
+BuildRequires:  yast2-ruby-bindings >= 4.4.7
 
 PreReq:         /bin/rm
 #netconfig (FaTE #303618)
