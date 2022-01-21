@@ -24,8 +24,6 @@ require_relative "test_helper"
 require "yast"
 require "network/install_inf_convertor"
 
-stub_module "Proxy"
-
 describe "InstallInfConvertor" do
   context "in case of no network config in /etc/install.inf" do
     before(:each) do

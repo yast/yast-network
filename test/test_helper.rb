@@ -82,25 +82,11 @@ end
 
 DATA_PATH = File.join(__dir__, "data")
 
-# stub module to prevent its Import
-# Useful for modules from different yast packages, to avoid build dependencies
-def stub_module(name)
-  stubbed_class = Class.new do
-    # fake respond_to? to avoid failure of partial doubles
-    singleton_class.define_method(:respond_to?) do |_mname, _include_all = nil|
-      true
-    end
-
-    # needed to fake at least one class method to avoid Yast.import
-    singleton_class.define_method(:fake_method) do
-    end
-  end
-  Yast.const_set(name.to_sym, stubbed_class)
-end
-
-# stub classes from other modules to speed up a build
-stub_module("AutoInstall")
-stub_module("Profile")
+# stub classes from other modules to avoid build dependencies
+Yast::RSpec::Helpers.define_yast_module("AutoInstall",
+  methods: [:issues_list, :valid_imported_values])
+Yast::RSpec::Helpers.define_yast_module("Profile", methods: [:current])
+Yast::RSpec::Helpers.define_yast_module("Proxy", methods: [:Export, :Import, :Read, :Write])
 
 # A two level section/key => value store
 # to remember values of /etc/sysconfig/network/ifcfg-*
