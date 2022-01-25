@@ -166,9 +166,9 @@ describe Yast::NetworkAutoconfiguration do
 
     before do
       allow(Yast::Arch).to receive(:s390).and_return(is_s390)
-      allow(Yast::PackageSystem).to receive(:Installed).and_return(false)
+      allow(Yast::Package).to receive(:Installed).and_return(false)
       installed.map do |package|
-        allow(Yast::PackageSystem).to receive(:Installed).with(package).and_return(true)
+        allow(Yast::Package).to receive(:Installed).with(package).and_return(true)
       end
     end
 
@@ -286,7 +286,7 @@ describe Yast::NetworkAutoconfiguration do
       allow(Yast::Lan).to receive(:write_config)
       allow_any_instance_of(Y2Network::VirtualizationConfig)
         .to receive(:connected_and_bridgeable?).and_return(true)
-      allow(Yast::PackageSystem).to receive(:Installed).and_return(true)
+      allow(Yast::Package).to receive(:Installed).and_return(true)
       Yast::Lan.Import(
         "routing" => { "routes" => routes_profile }
       )
