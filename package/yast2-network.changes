@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Wed Jan 26 08:59:57 UTC 2022 - Michal Filka <mfilka@suse.com>
+
+- jsc#SLE-22015
+  - make the code to confirm to inclusive naming, most masters and
+    slaves are gone. Kept only where makes sense - interface to
+    sysconfig
+- 4.4.35
+
+-------------------------------------------------------------------
 Tue Jan 25 15:38:09 UTC 2022 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
 
 - Use Package module instead of PackageSystem (bsc#1194886).
