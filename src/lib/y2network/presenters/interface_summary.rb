@@ -77,7 +77,7 @@ module Y2Network
           if parent
             parent_desc = if parent.type.bonding?
               # TRANSLATORS: text label before device which is parent for this device
-              _("Bonding parent")
+              _("Bond device")
             else
               # TRANSLATORS: text label before device which is bridge for this device
               _("Bridge")
