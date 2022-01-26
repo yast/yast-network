@@ -47,7 +47,7 @@ describe Yast::SaveNetworkClient do
     before do
       stub_const("Yast::SaveNetworkClient::ROOT_PATH", scr_root)
       allow(Yast::Installation).to receive(:destdir).and_return(destdir)
-      allow(Yast::PackageSystem).to receive(:Installed).and_return(false)
+      allow(Yast::Package).to receive(:Installed).and_return(false)
 
       FileUtils.mkdir_p(destdir_sysconfig)
       ["dhcp", "config"].each do |file|

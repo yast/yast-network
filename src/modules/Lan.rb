@@ -67,7 +67,7 @@ module Yast
       Yast.import "Progress"
       Yast.import "String"
       Yast.import "FileUtils"
-      Yast.import "PackageSystem"
+      Yast.import "Package"
       Yast.import "ModuleLoading"
       Yast.import "Linuxrc"
 
@@ -217,7 +217,7 @@ module Yast
 
       ProgressNextStage(_("Detecting ndiswrapper...")) if @gui
       # modprobe ndiswrapper before hwinfo when needed (#343893)
-      if !Mode.autoinst && PackageSystem.Installed("ndiswrapper")
+      if !Mode.autoinst && Package.Installed("ndiswrapper")
         Builtins.y2milestone("ndiswrapper: installed")
         if Ops.greater_than(
           Builtins.size(
@@ -655,8 +655,8 @@ module Yast
       pkgs = []
 
       if yast_config&.backend?(:network_manager)
-        pkgs << "NetworkManager" if !PackageSystem.Installed("NetworkManager")
-      elsif !PackageSystem.Installed("wpa_supplicant")
+        pkgs << "NetworkManager" if !Package.Installed("NetworkManager")
+      elsif !Package.Installed("wpa_supplicant")
         # we have to add wpa_supplicant when wlan is in game, wicked relies on it
         wlan_present = yast_config.interfaces.any? do |iface|
           iface.type == Y2Network::InterfaceType::WIRELESS

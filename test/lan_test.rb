@@ -52,7 +52,7 @@ describe "LanClass" do
       let(:config) { double(interfaces: interfaces, backend: backend) }
 
       before(:each) do
-        allow(Yast::PackageSystem)
+        allow(Yast::Package)
           .to receive(:Installed)
           .with("wpa_supplicant")
           .at_least(:once)
@@ -71,7 +71,7 @@ describe "LanClass" do
       end
 
       it "always proposes wpa_supplicant" do
-        allow(Yast::PackageSystem)
+        allow(Yast::Package)
           .to receive(:Installed)
           .with("wpa_supplicant")
           .and_return(false)
@@ -85,7 +85,7 @@ describe "LanClass" do
 
       it "lists NetworkManager package" do
         expect(yast_config).to receive(:backend?).with(:network_manager).and_call_original
-        expect(Yast::PackageSystem)
+        expect(Yast::Package)
           .to receive(:Installed)
           .with("NetworkManager")
           .at_least(:once)
