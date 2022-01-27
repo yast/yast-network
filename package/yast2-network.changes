@@ -5,6 +5,11 @@ Wed Jan 26 08:59:57 UTC 2022 - Michal Filka <mfilka@suse.com>
   - make the code to confirm to inclusive naming, most masters and
     slaves are gone. Kept only where makes sense - interface to
     sysconfig
+  - term slave(s) was replaced by port(s) as this naming is already
+    used by kernel code. Master was replaced by directly mentioning
+    bond (device) or parent in areas where the code is somehow
+    shared with e.g., bridge. Devices are not enslaved anymore, but
+    mostly included.
 - 4.4.35
 
 -------------------------------------------------------------------
