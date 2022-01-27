@@ -196,6 +196,12 @@ module Y2Network
       # device names if at least two devices shared the same physical port id
       # TODO: backend method
       #
+      # NOTE: term port is slightly overloaded here. Name of method refers to
+      # physical ports of a NIC card (one card can have multiple "plugs" - ports).
+      # On the other hand param name refers to pure virtual bonding ports (network
+      # devices provided by the system which are virtualy tighted together into a
+      # virtual bond device)
+      #
       # @param ports [Array<String>] devices included in the bonding
       # @return [Hash{String => Array<String>}] of duplicated physical port ids
       def repeated_physical_port_ids(ports)

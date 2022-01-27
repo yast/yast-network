@@ -110,6 +110,7 @@ module Y2Network
           port_type = "bond" if parent.type.bonding?
           return unless port_type
 
+          # slave-type is NetworkManager API
           file.connection["slave-type"] = port_type
           file.connection["master"] = parent.name
         end
