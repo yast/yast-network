@@ -204,16 +204,18 @@ module Y2Network
       # devices provided by the system which are virtualy tighted together into a
       # virtual bond device)
       #
-      # @param ports [Array<String>] devices included in the bonding
-      # @return [Hash{String => Array<String>}] of duplicated physical port ids
-      def repeated_physical_port_ids(ports)
+      # @param b_ports [Array<String>] bond ports = devices included in the bond
+      # @return [Hash{String => Array<String>}]
+      #   maps physical ports to non-singleton arrays of bond ports
+      def repeated_physical_port_ids(b_ports)
         physical_port_ids = {}
 
-        ports.each do |port|
-          if physical_port_id?(port)
-            p = physical_port_ids[physical_port_id(port)] ||= []
-            p << port
-          end
+        b_ports.each do |b_port|
+          next unless physical_port_id?(b_port)
+
+          p_port = physical_port_id(b_port)
+          ps = physical_port_ids[p_port] ||= []
+          ps << b_port
         end
 
         physical_port_ids.select! { |_k, v| v.size > 1 }
@@ -228,8 +230,8 @@ module Y2Network
       # mapping to an array of device names
       # @return [Boolean] true if continue with duplicates, otherwise false
       def continue_with_duplicates?(physical_ports)
-        message = physical_ports.map do |port, port_names|
-          wrap_text("PhysicalPortID (#{port}): #{port_names.join(", ")}")
+        message = physical_ports.map do |p_port, b_ports|
+          wrap_text("PhysicalPortID (#{p_port}): #{b_ports.join(", ")}")
         end.join("\n")
 
         Yast::Popup.YesNoHeadline(
