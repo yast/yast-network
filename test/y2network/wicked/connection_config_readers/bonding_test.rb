@@ -41,7 +41,7 @@ describe Y2Network::Wicked::ConnectionConfigReaders::Bonding do
     it "returns a bonding connection config object" do
       bonding_conn = handler.connection_config
       expect(bonding_conn.interface).to eq("bond0")
-      expect(bonding_conn.slaves).to eq(["eth0", "eth1"])
+      expect(bonding_conn.ports).to eq(["eth0", "eth1"])
       expect(bonding_conn.options).to eq("mode=active-backup miimon=100")
     end
   end

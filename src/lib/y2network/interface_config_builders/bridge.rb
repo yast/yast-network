@@ -51,7 +51,7 @@ module Y2Network
         interfaces.select { |i| bridgeable?(i) }
       end
 
-      # additionally it adapt slaves if needed
+      # additionally it adapts ports if needed
       def save
         ports.each do |port|
           interface = yast_config.interfaces.by_name(port)
@@ -61,7 +61,7 @@ module Y2Network
 
           builder = InterfaceConfigBuilder.for(interface.type, config: connection)
           builder.name = interface.name
-          builder.configure_as_slave
+          builder.configure_as_port
           builder.save
         end
 
@@ -95,16 +95,16 @@ module Y2Network
 
       # Checks whether an interface can be bridged in particular bridge
       #
-      # @param iface [Interface] an interface to be validated as the bridge slave
+      # @param iface [Interface] an interface to be validated as the bridge port
       def bridgeable?(iface)
-        # cannot enslave itself
+        # cannot report itself
         return false if iface.name == @name
         return true unless yast_config.configured_interface?(iface.name)
 
         config = yast_config.connections.by_name(iface.name)
-        master = config.find_master(yast_config.connections)
-        if master && master.name != name
-          log.debug("Excluding (#{iface.name}) - already has master #{master.inspect}")
+        parent = config.find_parent(yast_config.connections)
+        if parent && parent.name != name
+          log.debug("Excluding (#{iface.name}) - already included in #{parent.inspect}")
           return false
         end
 

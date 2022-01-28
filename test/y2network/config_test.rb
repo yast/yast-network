@@ -183,7 +183,7 @@ describe Y2Network::Config do
       Y2Network::ConnectionConfig::Bonding.new.tap do |conn|
         conn.interface = "bond0"
         conn.name = "bond0"
-        conn.slaves = ["eth0"]
+        conn.ports = ["eth0"]
       end
     end
 
@@ -312,14 +312,14 @@ describe Y2Network::Config do
         Y2Network::ConnectionConfig::Bonding.new.tap do |conn|
           conn.interface = "bond0"
           conn.name = "bond0"
-          conn.slaves = ["eth0"]
+          conn.ports = ["eth0"]
         end
       end
       let(:interfaces) { Y2Network::InterfacesCollection.new([eth0, bond0]) }
       let(:connections) { Y2Network::ConnectionConfigsCollection.new([eth0_conn, bond0_conn]) }
 
-      it "updates interface name in its slaves" do
-        expect { config.rename_interface("eth0", "eth1", :mac) }.to change { bond0_conn.slaves }
+      it "updates interface name in its ports" do
+        expect { config.rename_interface("eth0", "eth1", :mac) }.to change { bond0_conn.ports }
           .from(["eth0"]).to(["eth1"])
       end
     end
@@ -445,14 +445,14 @@ describe Y2Network::Config do
         Y2Network::ConnectionConfig::Bonding.new.tap do |conn|
           conn.interface = "bond0"
           conn.name = "bond0"
-          conn.slaves = ["eth0"]
+          conn.ports = ["eth0"]
         end
       end
       let(:interfaces) { Y2Network::InterfacesCollection.new([eth0, bond0]) }
       let(:connections) { Y2Network::ConnectionConfigsCollection.new([eth0_conn, bond0_conn]) }
 
-      it "removes interface from its slaves" do
-        expect { config.delete_interface(eth0.name) }.to change { bond0_conn.slaves }
+      it "removes interface from its ports" do
+        expect { config.delete_interface(eth0.name) }.to change { bond0_conn.ports }
           .from(["eth0"]).to([])
       end
     end

@@ -28,17 +28,17 @@ module Y2Network
         # @see Y2Network::ConnectionConfigWriters::Base#update_file
         # @param conn [Y2Network::ConnectionConfig::Bonding] Configuration to write
         def update_file(conn)
-          file.bonding_slaves = file_slaves(conn)
+          file.bonding_slaves = file_ports(conn)
           file.bonding_module_opts = conn.options
           file.bonding_master = "yes"
         end
 
-        # Convenience method to obtain the map of bonding slaves in the file
+        # Convenience method to obtain the map of devices in the bonding in the file
         # format
         #
-        # @return [Hash<Integer, String>] indexed bonding slaves
-        def file_slaves(conn)
-          conn.slaves.each_with_index.with_object({}) { |(name, i), h| h[i] = name }
+        # @return [Hash<Integer, String>] indexed devices in the bonding
+        def file_ports(conn)
+          conn.ports.each_with_index.with_object({}) { |(name, i), h| h[i] = name }
         end
       end
     end

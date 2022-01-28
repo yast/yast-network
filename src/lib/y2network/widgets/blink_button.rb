@@ -19,7 +19,6 @@
 
 require "yast"
 require "cwm/custom_widget"
-require "y2network/widgets/slave_items"
 require "shellwords"
 
 Yast.import "UI"

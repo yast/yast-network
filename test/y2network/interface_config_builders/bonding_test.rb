@@ -35,7 +35,7 @@ describe Y2Network::InterfaceConfigBuilders::Bonding do
     allow(config).to receive(:interfaces).and_return(interfaces_collection)
     allow(config).to receive(:connections).and_return(connection_configs_collection)
     allow(connection_config).to receive(:name).and_return(connection_name)
-    allow(connection_config).to receive(:find_master).and_return(connection_master)
+    allow(connection_config).to receive(:find_parent).and_return(connection_parent)
     allow(Yast::Arch).to receive(:s390).and_return(s390)
   end
 
@@ -53,7 +53,7 @@ describe Y2Network::InterfaceConfigBuilders::Bonding do
   let(:interface2) { Y2Network::Interface.new("iface2") }
   let(:connection_config) { Y2Network::ConnectionConfig::Bonding.new }
   let(:connection_name) { "" }
-  let(:connection_master) { nil }
+  let(:connection_parent) { nil }
 
   before do
     allow(Y2Network::Config)
@@ -87,8 +87,8 @@ describe Y2Network::InterfaceConfigBuilders::Bonding do
       context "and the interface has a connection config" do
         let(:connection_name) { "iface1" }
 
-        context "and there already is a master connection" do
-          let(:connection_master) do
+        context "and there already is a parent connection" do
+          let(:connection_parent) do
             instance_double(Y2Network::ConnectionConfig::Bonding, name: "bond1")
           end
 
@@ -97,8 +97,8 @@ describe Y2Network::InterfaceConfigBuilders::Bonding do
           end
         end
 
-        context "and there is no master connection yet" do
-          let(:connection_master) { nil }
+        context "and there is no parent connection yet" do
+          let(:connection_parent) { nil }
 
           it "includes the interface" do
             expect(subject.bondable_interfaces).to include(interface1)
@@ -148,19 +148,19 @@ describe Y2Network::InterfaceConfigBuilders::Bonding do
 
   describe "require_adaptation?" do
     before do
-      connection_config.slaves = ["iface1", "iface2"]
+      connection_config.ports = ["iface1", "iface2"]
     end
 
-    context "when there is no slave configured" do
+    context "when there is no port configured" do
       it "returns false" do
-        expect(subject.require_adaptation?(connection_config.slaves)).to eql(false)
+        expect(subject.require_adaptation?(connection_config.ports)).to eql(false)
       end
     end
 
-    context "when all the slaves are properly configure do" do
+    context "when all the ports are properly configure do" do
       it "returns false" do
         subject.save
-        expect(subject.require_adaptation?(connection_config.slaves)).to eql(false)
+        expect(subject.require_adaptation?(connection_config.ports)).to eql(false)
       end
     end
 
@@ -169,7 +169,7 @@ describe Y2Network::InterfaceConfigBuilders::Bonding do
         subject.save
         iface1_conn = connection_configs_collection.by_name("iface1")
         iface1_conn.bootproto = dhcp
-        expect(subject.require_adaptation?(connection_config.slaves)).to eql(true)
+        expect(subject.require_adaptation?(connection_config.ports)).to eql(true)
       end
     end
   end
@@ -177,8 +177,8 @@ describe Y2Network::InterfaceConfigBuilders::Bonding do
   describe "#save" do
     let(:connection_name) { "bond0" }
 
-    it "adapts the selected slaves configuration when needed" do
-      connection_config.slaves = ["iface1", "iface2"]
+    it "adapts the selected ports configuration when needed" do
+      connection_config.ports = ["iface1", "iface2"]
 
       expect(Y2Network::InterfaceConfigBuilder)
         .to receive(:for).with(anything, config: nil).twice.and_call_original
@@ -194,7 +194,7 @@ describe Y2Network::InterfaceConfigBuilders::Bonding do
     end
 
     it "sets the BOOTPROTO to 'none' and STARTMODE to 'hotplug' in the adapted configs" do
-      connection_config.slaves = ["iface1", "iface2"]
+      connection_config.ports = ["iface1", "iface2"]
       subject.save
       iface2_conn = connection_configs_collection.by_name("iface2")
       iface2_conn.bootproto = dhcp

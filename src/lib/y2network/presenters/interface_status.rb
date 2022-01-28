@@ -51,7 +51,7 @@ module Y2Network
             format(_("Configured with address %s"), addr)
           end
         when BootProtocol::NONE
-          _("Do not assign (e.g. bond or bridge slaves)")
+          _("Do not assign (e.g. if included in a bond or bridge)")
         else
           # TODO: maybe human name for boot protocols?
           format(_("Configured with %s"), config.bootproto.name)

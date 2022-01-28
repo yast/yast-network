@@ -27,16 +27,16 @@ module Y2Network
       class Bonding < Base
         # @see Y2Network::Wicked::ConnectionConfigReaders::Base#update_connection_config
         def update_connection_config(conn)
-          conn.slaves = slaves
+          conn.ports = ports
           conn.options = file.bonding_module_opts
         end
 
       private
 
-        # Convenience method to obtain the bonding slaves defined in the file
+        # Convenience method to obtain the bonding ports defined in the file
         #
-        # @return [Array<String>] bonding slaves defined in the file
-        def slaves
+        # @return [Array<String>] bonding ports defined in the file
+        def ports
           (file.bonding_slaves || {}).sort_by { |k, _v| k.to_i }.to_h.values
         end
       end

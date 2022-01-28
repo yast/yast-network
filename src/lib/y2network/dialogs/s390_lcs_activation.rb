@@ -64,10 +64,6 @@ module Y2Network
       def write_channel_widget
         Y2Network::Widgets::S390WriteChannel.new(builder)
       end
-
-      def timeout_widget
-        Y2network::Widgets::S390LanCmdTimeout.new(builder)
-      end
     end
   end
 end

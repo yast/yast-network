@@ -21,12 +21,11 @@ require "yast"
 require "cwm/tabs"
 
 # used widgets
-require "y2network/widgets/bond_slave"
-require "y2network/widgets/bond_options"
+require "y2network/widgets/bridge_ports"
 
 module Y2Network
   module Widgets
-    class BondSlavesTab < CWM::Tab
+    class BridgePortsTab < CWM::Tab
       def initialize(settings)
         textdomain "network"
 
@@ -34,11 +33,11 @@ module Y2Network
       end
 
       def label
-        _("&Bond Slaves")
+        _("Bridged Devices")
       end
 
       def contents
-        VBox(BondSlave.new(@settings), BondOptions.new(@settings))
+        VBox(BridgePorts.new(@settings))
       end
     end
   end

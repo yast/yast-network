@@ -315,10 +315,14 @@ module CFA
     ## BONDING
 
     # @!attribute [r] bonding_master
+    #   TODO: this name doesn't correspond to inclusive naming, however as long as the
+    #   name is used in syscfg file, the name is kept even here to avoid confusion
     #   @return [String] whether the interface is a bond device or not
     define_variable(:bonding_master)
 
     # @!attribute [r] bonding_slaves
+    #   TODO: this name doesn't correspond to inclusive naming, however as long as the
+    #   name is used in syscfg file, the name is kept even here to avoid confusion
     #   @return [Hash] Bonding slaves
     define_collection_variable(:bonding_slave)
 

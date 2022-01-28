@@ -20,11 +20,11 @@
 require_relative "../../test_helper"
 require "cwm/rspec"
 
-require "y2network/widgets/bridge_slaves_tab"
+require "y2network/widgets/bond_ports_tab"
 require "y2network/interface_config_builder"
 
-describe Y2Network::Widgets::BridgeSlavesTab do
-  subject { described_class.new(Y2Network::InterfaceConfigBuilder.for("br")) }
+describe Y2Network::Widgets::BondPortsTab do
+  subject { described_class.new(Y2Network::InterfaceConfigBuilder.for("bond")) }
 
   include_examples "CWM::Tab"
 end

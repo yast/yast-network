@@ -85,7 +85,7 @@ module Y2Network
     DHCP_AUTOIP = new("dhcp+autoip")
     # zeroconf for ipv4
     AUTOIP = new("autoip")
-    # do not assign properties. Usefull for bond slave or bridge port
+    # do not assign properties. Usefull for bond port or bridge port
     NONE = new("none")
   end
 end

@@ -37,7 +37,7 @@ module Y2Network
         config.connections.each do |conn|
           opts = {
             routes: routes_for(conn, config.routing.routes),
-            parent: conn.find_master(config.connections)
+            parent: conn.find_parent(config.connections)
           }
           writer.write(conn, nil, opts)
         end

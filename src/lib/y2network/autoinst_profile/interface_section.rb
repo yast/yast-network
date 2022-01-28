@@ -163,7 +163,7 @@ module Y2Network
       #  @return [String] ???
 
       # @!attribute bonding_slaveX
-      #  @return [String] bonding slave on position X
+      #  @return [String] bonding port on position X
 
       # @!attribute bonding_module_opts
       #  @return [String] bonding options
@@ -321,8 +321,8 @@ module Y2Network
           @bridge_forward_delay = config.forward_delay.to_s
         when ConnectionConfig::Bonding
           @bonding_module_opts = config.options
-          config.slaves.each_with_index do |slave, index|
-            public_send(:"bonding_slave#{index}=", slave)
+          config.ports.each_with_index do |port, index|
+            public_send(:"bonding_slave#{index}=", port)
           end
         when ConnectionConfig::Wireless
           init_from_wireless(config)
@@ -355,17 +355,17 @@ module Y2Network
         keys
       end
 
-      # Helper to get bonding slaves as array
+      # Helper to get devices in the bonding as array
       # @return [Array<String>]
       def bonding_slaves
-        slaves = []
+        ports = []
 
         (0..9).each do |i|
-          slave = public_send(:"bonding_slave#{i}")
-          slaves << slave unless slave.empty?
+          port = public_send(:"bonding_slave#{i}")
+          ports << port unless port.empty?
         end
 
-        slaves
+        ports
       end
 
       # Returns the collection name

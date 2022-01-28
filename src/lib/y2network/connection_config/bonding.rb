@@ -25,16 +25,17 @@ module Y2Network
     #
     # @see https://www.kernel.org/doc/Documentation/networking/bonding.txt
     class Bonding < Base
+      # Bonding doesn't have children but can have many ports
       # @return [Array<String>]
-      attr_accessor :slaves
+      attr_accessor :ports
       # @return [String] bond driver options
       attr_accessor :options
 
-      eql_attr :slaves, :options
+      eql_attr :ports, :options
 
       def initialize
         super()
-        @slaves = []
+        @ports = []
         @options = "mode=active-backup miimon=100"
       end
 

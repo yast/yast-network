@@ -299,10 +299,10 @@ module Y2Network
         if !interface_section.bonding_module_opts.empty?
           config.options = interface_section.bonding_module_opts
         end
-        config.slaves = []
+        config.ports = []
         (0..9).each do |i|
-          slave = interface_section.public_send(:"bonding_slave#{i}")
-          config.slaves << slave if slave && !slave.empty?
+          port = interface_section.public_send(:"bonding_slave#{i}")
+          config.ports << port if port && !port.empty?
         end
       end
     end

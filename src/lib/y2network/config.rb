@@ -237,7 +237,7 @@ module Y2Network
     #   to be modified or deleted if `connection_config` is deleted or renamed
     def connections_to_modify(connection_config)
       result = []
-      bond_bridge = connection_config.find_master(connections)
+      bond_bridge = connection_config.find_parent(connections)
       result << bond_bridge if bond_bridge
       vlans = connections.to_a.select do |c|
         c.type.vlan? && c.parent_device == connection_config.name
@@ -293,7 +293,7 @@ module Y2Network
         when InterfaceType::BRIDGE
           dependency.ports.delete(name)
         when InterfaceType::BONDING
-          dependency.slaves.delete(name)
+          dependency.ports.delete(name)
         when InterfaceType::VLAN
           delete_interface(dependency.interface)
         else
@@ -309,7 +309,7 @@ module Y2Network
         when InterfaceType::BRIDGE
           dependency.ports.map! { |e| (e == old_name) ? new_name : e }
         when InterfaceType::BONDING
-          dependency.slaves.map! { |e| (e == old_name) ? new_name : e }
+          dependency.ports.map! { |e| (e == old_name) ? new_name : e }
         when InterfaceType::VLAN
           dependency.parent_device = new_name
         else

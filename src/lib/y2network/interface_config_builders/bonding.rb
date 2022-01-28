@@ -37,7 +37,7 @@ module Y2Network
       end
 
       def_delegators :connection_config,
-        :slaves, :slaves=
+        :ports, :ports=
 
       # @param value [String] options for bonding
       def bond_options=(value)
@@ -51,7 +51,7 @@ module Y2Network
       end
 
       # Returns whether any configuration of the given devices needs to be
-      # adapted in order to be added as a bonding slave
+      # adapted in order to be added into a bonding
 
       # @param devices [Array<String>] devices to check
       # return [Boolean] true if there is a device config that needs
@@ -60,20 +60,20 @@ module Y2Network
         devices.any? do |device|
           next false unless yast_config.configured_interface?(device)
 
-          !valid_slave_config?(device)
+          !valid_port_config?(device)
         end
       end
 
-      # additionally it adapt slaves if needed
+      # additionally it adapts configuration of devices to be included in a bonding if needed
       def save
-        slaves.each do |slave|
-          interface = yast_config.interfaces.by_name(slave)
-          next if valid_slave_config?(slave)
+        ports.each do |port|
+          interface = yast_config.interfaces.by_name(port)
+          next if valid_port_config?(port)
 
-          connection = yast_config.connections.by_name(slave)
+          connection = yast_config.connections.by_name(port)
           builder = InterfaceConfigBuilder.for(interface.type, config: connection)
           builder.name = interface.name
-          builder.configure_as_slave
+          builder.configure_as_port
           builder.startmode = "hotplug"
           builder.save
         end
@@ -87,12 +87,12 @@ module Y2Network
         yast_config.interfaces
       end
 
-      # Checks whether an interface can be enslaved in particular bond interface
+      # Checks whether an interface can be included in particular bond interface
       #
-      # @param iface [Interface] an interface to be validated as bond_iface slave
+      # @param iface [Interface] an interface to be validated as bond port
       # TODO: Check for valid configurations. E.g. bond device over vlan
       # is nonsense and is not supported by netconfig.
-      # Also devices enslaved in a bridge should be excluded too.
+      # Also devices included in a bridge should be excluded too.
       def bondable?(iface)
         Yast.import "Arch"
         Yast.include self, "network/lan/s390.rb"
@@ -101,30 +101,30 @@ module Y2Network
         if Yast::Arch.s390 && !iface.type.ethernet?
           s390_config = s390_ReadQethConfig(iface.name)
 
-          # only devices with L2 support can be enslaved in bond. See bnc#719881
+          # only devices with L2 support can be included in bond. See bnc#719881
           return false unless s390_config["QETH_LAYER2"] == "yes"
         end
 
         config = yast_config.connections.by_name(iface.name)
         return true unless config # unconfigured device is always bondable
 
-        master = config.find_master(yast_config.connections)
-        if master && master.name != name
-          log.debug("Excluding (#{iface.name}) - already has master #{master.inspect}")
+        parent = config.find_parent(yast_config.connections)
+        if parent && parent.name != name
+          log.debug("Excluding (#{iface.name}) - already included in #{parent.inspect}")
           return false
         end
 
-        # cannot enslave itself
+        # cannot report itself
         return false if iface.name == @name
 
         true
       end
 
-      # Convenience method to check whether the config of an enslaved interface
-      # is valid or not
+      # Convenience method to check whether the config of an interface is valid
+      # for including into a bond device
       #
-      # @param iface [String] slave name to be validated
-      def valid_slave_config?(iface)
+      # @param iface [String] name of port to be validated
+      def valid_port_config?(iface)
         conn = yast_config.connections.by_name(iface)
 
         conn&.bootproto&.name == "none" && conn&.startmode&.name == "hotplug"

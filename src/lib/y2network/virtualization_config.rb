@@ -57,13 +57,13 @@ module Y2Network
         bridge_builder = bridge_builder_for(interface)
 
         connection = config.connections.by_name(interface.name)
-        # The configuration of the connection being slaved is copied to the
+        # The configuration of the connection being included is copied to the
         # bridge when exist
         bridge_builder.configure_from(connection) if connection
 
         builder = Y2Network::InterfaceConfigBuilder.for(interface.type, config: connection)
         builder.name = interface.name
-        builder.configure_as_slave
+        builder.configure_as_port
         builder.save
 
         # It adds the connection and the virtual interface

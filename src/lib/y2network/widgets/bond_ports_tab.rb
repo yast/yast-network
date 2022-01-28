@@ -17,14 +17,29 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require_relative "../../test_helper"
-require "cwm/rspec"
+require "yast"
+require "cwm/tabs"
 
-require "y2network/widgets/bond_slaves_tab"
-require "y2network/interface_config_builder"
+# used widgets
+require "y2network/widgets/bond_port"
+require "y2network/widgets/bond_options"
 
-describe Y2Network::Widgets::BondSlavesTab do
-  subject { described_class.new(Y2Network::InterfaceConfigBuilder.for("bond")) }
+module Y2Network
+  module Widgets
+    class BondPortsTab < CWM::Tab
+      def initialize(settings)
+        textdomain "network"
 
-  include_examples "CWM::Tab"
+        @settings = settings
+      end
+
+      def label
+        _("&Bond Ports")
+      end
+
+      def contents
+        VBox(BondPort.new(@settings), BondOptions.new(@settings))
+      end
+    end
+  end
 end

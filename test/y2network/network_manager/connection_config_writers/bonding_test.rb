@@ -35,7 +35,7 @@ describe Y2Network::NetworkManager::ConnectionConfigWriters::Bonding do
       c.startmode = Y2Network::Startmode.create("auto")
       c.bootproto = Y2Network::BootProtocol::DHCP
       c.options = "mode=active-backup miimon=100"
-      c.slaves = ["eth0"]
+      c.ports = ["eth0"]
     end
   end
 

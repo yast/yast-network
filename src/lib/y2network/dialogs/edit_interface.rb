@@ -20,8 +20,8 @@
 require "cwm/dialog"
 
 require "y2network/widgets/address_tab.rb"
-require "y2network/widgets/bond_slaves_tab.rb"
-require "y2network/widgets/bridge_slaves_tab.rb"
+require "y2network/widgets/bond_ports_tab.rb"
+require "y2network/widgets/bridge_ports_tab.rb"
 require "y2network/widgets/general_tab.rb"
 require "y2network/widgets/hardware_tab.rb"
 require "y2network/widgets/wireless_tab.rb"
@@ -59,7 +59,7 @@ module Y2Network
         when "br"
           [Widgets::GeneralTab.new(@settings), addr_tab, Widgets::BridgePorts.new(@settings)]
         when "bond"
-          [Widgets::GeneralTab.new(@settings), addr_tab, Widgets::BondSlavesTab.new(@settings)]
+          [Widgets::GeneralTab.new(@settings), addr_tab, Widgets::BondPortsTab.new(@settings)]
         when "wlan"
           wireless = Widgets::WirelessTab.new(@settings)
           wireless.initial = true

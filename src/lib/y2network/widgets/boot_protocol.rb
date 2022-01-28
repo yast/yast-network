@@ -49,7 +49,7 @@ module Y2Network
                 RadioButton(
                   Id(:bootproto_none),
                   Opt(:notify),
-                  _("No Link and IP Setup (Bonding Slaves)")
+                  _("No Link and IP Setup (Bond Ports)")
                 ),
                 HSpacing(1),
                 ReplacePoint(

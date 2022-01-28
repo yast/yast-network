@@ -17,28 +17,14 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "yast"
-require "cwm/tabs"
+require_relative "../../test_helper"
+require "cwm/rspec"
 
-# used widgets
-require "y2network/widgets/bridge_ports"
+require "y2network/widgets/bridge_ports_tab"
+require "y2network/interface_config_builder"
 
-module Y2Network
-  module Widgets
-    class BridgeSlavesTab < CWM::Tab
-      def initialize(settings)
-        textdomain "network"
+describe Y2Network::Widgets::BridgePortsTab do
+  subject { described_class.new(Y2Network::InterfaceConfigBuilder.for("br")) }
 
-        @settings = settings
-      end
-
-      def label
-        _("Bridged Devices")
-      end
-
-      def contents
-        VBox(BridgePorts.new(@settings))
-      end
-    end
-  end
+  include_examples "CWM::Tab"
 end

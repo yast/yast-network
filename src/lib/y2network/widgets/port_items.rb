@@ -23,28 +23,32 @@ Yast.import "NetworkInterfaces"
 
 module Y2Network
   module Widgets
-    # Mixin to help create slave (of any kind) list
-    module SlaveItems
+    # Mixin to help create a port device (of any kind) list
+    module PortItems
       include Yast::Logger
       include Yast::I18n
 
-      # Builds content for slave configuration dialog (used e.g. when configuring
-      # bond slaves)
+      # Builds content for port configuration dialog (used e.g. when configuring
+      # devices included in a bond)
       #
-      # @param [Array<String>] slaves             list of device names
-      # @param [Array<String>] enslaved_ifaces    list of device names of already enslaved devices
-      # @param [ConnectionConfig] config where slaves lives
-      def slave_items_from(slaves, enslaved_ifaces, config)
-        raise ArgumentError, "slaves cannot be nil" if slaves.nil?
-        raise ArgumentError, "enslaved interfaces cannot be nil" if enslaved_ifaces.nil?
-        raise ArgumentError, "slaves cannot be empty" if slaves.empty? && !enslaved_ifaces.empty?
+      # @param [Array<String>] add_ifaces         list of device names
+      # @param [Array<String>] included_ifaces    list of device names already included in
+      #                                           a main device (bond, bridge, ...)
+      # @param [ConnectionConfig] config where port devices live
+      def port_items_from(add_ifaces, included_ifaces, config)
+        raise ArgumentError, "list of devices for adding cannot be nil" if add_ifaces.nil?
+        raise ArgumentError, "some interfaces must be selected" if included_ifaces.nil?
+
+        if add_ifaces.empty? && !included_ifaces.empty?
+          raise ArgumentError, "list of devices cannot be empty"
+        end
 
         textdomain "network"
 
-        log.debug "creating list of slaves from #{slaves.inspect}"
+        log.debug "creating list of devices to be added from #{add_ifaces.inspect}"
 
-        slaves.each_with_object([]) do |slave, result|
-          interface = config.interfaces.by_name(slave)
+        add_ifaces.each_with_object([]) do |add_iface, result|
+          interface = config.interfaces.by_name(add_iface)
 
           next unless interface
 
@@ -55,14 +59,14 @@ module Y2Network
             description = interface.name.dup
 
             # this conditions origin from bridge configuration
-            # if enslaving a configured device then its configuration is rewritten
+            # if including a configured device then its configuration is rewritten
             # to "0.0.0.0/32"
             #
             # translators: a note that listed device is already configured
             description += " " + _("configured") if config.connections.by_name(interface.name)
           end
 
-          selected = enslaved_ifaces.include?(interface.name)
+          selected = included_ifaces.include?(interface.name)
           if physical_port_id?(interface.name)
             description += " (Port ID: #{physical_port_id(interface.name)})"
           end
