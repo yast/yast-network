@@ -44,7 +44,9 @@ module Y2Network
           VBox(
             MultiSelectionBox(Id(:bond_ports_items), Opt(:notify), "", []),
             HBox(
+              # TRANSLATORS: this means "move this line upwards"
               PushButton(Id(:bond_ports_up), Opt(:disabled), _("Up")),
+              # TRANSLATORS: this means "move this line downwards"
               PushButton(Id(:bond_ports_down), Opt(:disabled), _("Down"))
             )
           )
@@ -80,7 +82,7 @@ module Y2Network
       def help
         # TODO: write it
         _(
-          "<p>Select a devices for including into the bond device.\n" \
+          "<p>Select a devices for including into the bond.\n" \
             "Only devices with the device activation set to <b>Never</b> " \
             "and with <b>No Address Setup</b> are available.</p>"
         )

@@ -92,6 +92,8 @@ module Y2Network
         return "" unless conn
 
         parent = conn.find_parent(config.connections)
+
+        # TRANSLATORS: %s is a name of a bond/bridge device
         return format(_("included in %s"), parent.name) if parent
 
         return format(_("parent: %s"), conn.parent_device) if conn.type.vlan?
