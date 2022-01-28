@@ -2,7 +2,7 @@
 Wed Jan 26 08:59:57 UTC 2022 - Michal Filka <mfilka@suse.com>
 
 - jsc#SLE-22015
-  - make the code to confirm to inclusive naming, most masters and
+  - make the code conform to inclusive naming, most masters and
     slaves are gone. Kept only where makes sense - interface to
     sysconfig
   - "slave" was replaced by "port" as this naming is already used
