@@ -316,7 +316,7 @@ describe Yast::NetworkAutoconfiguration do
       end
 
       context "and the routing config was modified" do
-        it "moves the routes from the enslaved interface to the bridge" do
+        it "moves the routes from the bridge port to the bridge" do
           expect { instance.configure_virtuals }.to change { route.interface }.from(eth5).to(br0)
         end
 

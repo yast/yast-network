@@ -41,7 +41,7 @@ describe Y2Network::Widgets::BridgePorts do
       end
     end
 
-    context "when some of the enslaved interfaces are configured" do
+    context "when some of the bridged interfaces are configured" do
       it "warns the user and request confirmation to continue" do
         allow(builder).to receive(:require_adaptation?).and_return(true)
 
