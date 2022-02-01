@@ -90,7 +90,7 @@ module Yast
             "example" => [
               "yast lan add name=vlan50 ethdevice=eth0 bootproto=dhcp",
               "yast lan add name=br0 bridge_ports=eth0 eth1 bootproot=dhcp",
-              "yast lan add name=bond0 slaves=eth0 eth1 bootproto=dhcp",
+              "yast lan add name=bond0 bond_ports=eth0 eth1 bootproto=dhcp",
               "yast lan add name=dummy0 type=dummy ip=10.0.0.100"
             ]
           },
@@ -155,7 +155,7 @@ module Yast
             "help" => _("Prefix length"),
             "type" => "string"
           },
-          "slaves"       => {
+          "bond_ports"   => {
             # Commandline option help
             "help" => _("Bond Ports"),
             "type" => "string"
@@ -185,7 +185,7 @@ module Yast
             "ip",
             "netmask",
             "prefix",
-            "slaves",
+            "bond_ports",
             "type",
             "ethdevice",
             "bridge_ports"

@@ -172,7 +172,7 @@ module Yast
     # @param options [Hash{String => String}] action options
     # @return [String] infered device type; an empty string if not infered
     def infered_type(options)
-      return "bond" if options.include? "slaves"
+      return "bond" if options.include? "bond_ports"
       return "vlan" if options.include? "ethdevice"
       return "br"   if options.include? "bridge_ports"
 
@@ -206,7 +206,7 @@ module Yast
       case builder.type.short_name
       when "bond"
         # change only if user specify it
-        builder.ports = options["slaves"].split(" ") if options["slaves"]
+        builder.ports = options["bond_ports"].split(" ") if options["bond_ports"]
       when "vlan"
         # change only if user specify it
         builder.etherdevice = options["ethdevice"] if options["ethdevice"]
