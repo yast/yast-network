@@ -2,7 +2,8 @@
 Tue Feb  1 06:28:14 UTC 2022 - Michal Filka <mfilka@suse.com>
 
 - jsc#SLE-22015
-  - renamed CLI options to conform inclusive naming
+  - renamed slaves CLI option to conform to inclusive naming:
+    yast lan add name=bond0 bond_ports=eth0 eth1 bootproto=dhcp
   - the change is backward incompatible
 - 4.4.36
 
