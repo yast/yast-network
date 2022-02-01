@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Feb  1 06:28:14 UTC 2022 - Michal Filka <mfilka@suse.com>
+
+- jsc#SLE-22015
+  - renamed CLI options to conform inclusive naming
+  - the change is backward incompatible
+- 4.4.36
+
+-------------------------------------------------------------------
 Wed Jan 26 08:59:57 UTC 2022 - Michal Filka <mfilka@suse.com>
 
 - jsc#SLE-22015
