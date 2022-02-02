@@ -162,6 +162,9 @@ module Yast
           },
           "slaves"       => {
             # Commandline option help
+            # TRANSLATORS: slaves is old option for configuring bond ports. User
+            # should be notified that the option is obsolete and bond_ports should
+            # be used instead
             "help" => _("Bond Ports (obsolete, use bond_ports instead)"),
             "type" => "string"
           },
