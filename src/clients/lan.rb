@@ -90,7 +90,7 @@ module Yast
             "example" => [
               "yast lan add name=vlan50 ethdevice=eth0 bootproto=dhcp",
               "yast lan add name=br0 bridge_ports=eth0 eth1 bootproot=dhcp",
-              "yast lan add name=bond0 slaves=eth0 eth1 bootproto=dhcp",
+              "yast lan add name=bond0 bond_ports=eth0 eth1 bootproto=dhcp",
               "yast lan add name=dummy0 type=dummy ip=10.0.0.100"
             ]
           },
@@ -155,9 +155,17 @@ module Yast
             "help" => _("Prefix length"),
             "type" => "string"
           },
-          "slaves"       => {
+          "bond_ports"   => {
             # Commandline option help
             "help" => _("Bond Ports"),
+            "type" => "string"
+          },
+          "slaves"       => {
+            # Commandline option help
+            # TRANSLATORS: slaves is old option for configuring bond ports. User
+            # should be notified that the option is obsolete and bond_ports should
+            # be used instead
+            "help" => _("Bond Ports (obsolete, use bond_ports instead)"),
             "type" => "string"
           },
           "ethdevice"    => {
@@ -185,6 +193,7 @@ module Yast
             "ip",
             "netmask",
             "prefix",
+            "bond_ports",
             "slaves",
             "type",
             "ethdevice",

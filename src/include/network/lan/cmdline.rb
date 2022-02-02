@@ -107,6 +107,12 @@ module Yast
     # Handler for action "add"
     # @param [Hash{String => String}] options action options
     def AddHandler(options)
+      # slaves option is marked as obsolete, bond_ports should be used instead.
+      # If both options are present, new one (bond_ports) wins.
+      if !options.key?("bond_ports") && options.key?("slaves")
+        options["bond_ports"] = options.delete("slaves")
+      end
+
       type = options.fetch("type", infered_type(options))
       if type.empty?
         Report.Error(_("The device type is mandatory."))
@@ -172,7 +178,7 @@ module Yast
     # @param options [Hash{String => String}] action options
     # @return [String] infered device type; an empty string if not infered
     def infered_type(options)
-      return "bond" if options.include? "slaves"
+      return "bond" if options.include? "bond_ports"
       return "vlan" if options.include? "ethdevice"
       return "br"   if options.include? "bridge_ports"
 
@@ -206,7 +212,7 @@ module Yast
       case builder.type.short_name
       when "bond"
         # change only if user specify it
-        builder.ports = options["slaves"].split(" ") if options["slaves"]
+        builder.ports = options["bond_ports"].split(" ") if options["bond_ports"]
       when "vlan"
         # change only if user specify it
         builder.etherdevice = options["ethdevice"] if options["ethdevice"]
