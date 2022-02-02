@@ -160,7 +160,7 @@ module Yast
             "help" => _("Bond Ports"),
             "type" => "string"
           },
-          "slaves"   => {
+          "slaves"       => {
             # Commandline option help
             "help" => _("Bond Ports (obsolete, use bond_ports instead)"),
             "type" => "string"
