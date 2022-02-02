@@ -107,6 +107,12 @@ module Yast
     # Handler for action "add"
     # @param [Hash{String => String}] options action options
     def AddHandler(options)
+      # slaves option is marked as obsolete, bond_ports should be used instead.
+      # If both options are present, new one (bond_ports) wins.
+      if !options.key?("bond_ports") && options.key?("slaves")
+        options["bond_ports"] = options.delete("slaves")
+      end
+
       type = options.fetch("type", infered_type(options))
       if type.empty?
         Report.Error(_("The device type is mandatory."))

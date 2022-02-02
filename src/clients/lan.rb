@@ -160,6 +160,11 @@ module Yast
             "help" => _("Bond Ports"),
             "type" => "string"
           },
+          "slaves"   => {
+            # Commandline option help
+            "help" => _("Bond Ports (obsolete, use bond_ports instead)"),
+            "type" => "string"
+          },
           "ethdevice"    => {
             # Commandline option help
             "help" => _("Ethernet Device for VLAN"),
@@ -186,6 +191,7 @@ module Yast
             "netmask",
             "prefix",
             "bond_ports",
+            "slaves",
             "type",
             "ethdevice",
             "bridge_ports"
