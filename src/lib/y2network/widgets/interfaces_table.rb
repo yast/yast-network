@@ -82,6 +82,14 @@ module Y2Network
         handle
       end
 
+      def help
+        _(
+          "<p><b><big>Network Card Overview</big></b><br>\n" \
+           "Obtain an overview of installed network cards. Additionally,\n" \
+           "edit their configuration.<br></p>\n"
+        )
+      end
+
     private
 
       def note(interface, conn)

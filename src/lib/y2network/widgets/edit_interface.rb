@@ -66,6 +66,14 @@ module Y2Network
       def selected_interface(config)
         config.interfaces.by_name(@table.value) || config.s390_devices.by_id(@table.value)
       end
+
+      def help
+        _(
+          "<p><b><big>Configuring:</big></b><br>\n" \
+          "Choose a network card to remove.\n" \
+         "Then press <b>Edit</b>.</p>\n"
+        )
+      end
     end
   end
 end

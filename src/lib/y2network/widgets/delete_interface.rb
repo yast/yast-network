@@ -76,6 +76,14 @@ module Y2Network
         :redraw
       end
 
+      def help
+        _(
+          "<p><b><big>Deletingg:</big></b><br>\n" \
+          "Choose a network card to change.\n" \
+         "Then press <b>Delete</b>.</p>\n"
+        )
+      end
+
     private
 
       # @return [Array]
