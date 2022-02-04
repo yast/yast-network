@@ -84,9 +84,8 @@ module Y2Network
 
       def help
         _(
-          "<p><b><big>Network Card Overview</big></b><br>\n" \
-           "Obtain an overview of installed network cards. Additionally,\n" \
-           "edit their configuration.<br></p>\n"
+          "<p><b><big>Overview</big></b><br>\n" \
+           "Obtain an overview of the network interfaces configuration.</p>\n"
         )
       end
 

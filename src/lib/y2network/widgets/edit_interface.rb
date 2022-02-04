@@ -68,9 +68,10 @@ module Y2Network
       end
 
       def help
+        # TRANSLATORS: Help for 'Edit' interface configuration button
         _(
           "<p><b><big>Configuring:</big></b><br>\n" \
-          "Choose a network card to remove.\n" \
+          "Choose a network card to change.\n" \
          "Then press <b>Edit</b>.</p>\n"
         )
       end

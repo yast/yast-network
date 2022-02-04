@@ -77,9 +77,10 @@ module Y2Network
       end
 
       def help
+        # TRANSLATORS: Help for 'Delete' interface configuration button.
         _(
-          "<p><b><big>Deletingg:</big></b><br>\n" \
-          "Choose a network card to change.\n" \
+          "<p><b><big>Deleting:</big></b><br>\n" \
+          "Choose a network card to remove.\n" \
          "Then press <b>Delete</b>.</p>\n"
         )
       end
