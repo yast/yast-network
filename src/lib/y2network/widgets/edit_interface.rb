@@ -66,6 +66,15 @@ module Y2Network
       def selected_interface(config)
         config.interfaces.by_name(@table.value) || config.s390_devices.by_id(@table.value)
       end
+
+      def help
+        # TRANSLATORS: Help for 'Edit' interface configuration button
+        _(
+          "<p><b><big>Configuring:</big></b><br>\n" \
+          "Choose a network card to change.\n" \
+         "Then press <b>Edit</b>.</p>\n"
+        )
+      end
     end
   end
 end

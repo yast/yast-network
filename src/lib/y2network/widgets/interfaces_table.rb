@@ -82,6 +82,13 @@ module Y2Network
         handle
       end
 
+      def help
+        _(
+          "<p><b><big>Overview</big></b><br>\n" \
+           "Obtain an overview of the network interfaces configuration.</p>\n"
+        )
+      end
+
     private
 
       def note(interface, conn)

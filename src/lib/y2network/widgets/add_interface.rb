@@ -38,6 +38,14 @@ module Y2Network
         Y2Network::Sequences::Interface.new.add
         :redraw
       end
+
+      def help
+        # TRANSLATORS: Help for 'Add' interface configuration button
+        _(
+          "<p><b><big>Adding a Network Card:</big></b><br>\nPress " \
+          "<b>Add</b> to configure a new network card manually.</p>\n"
+        )
+      end
     end
   end
 end

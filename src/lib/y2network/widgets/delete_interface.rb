@@ -76,6 +76,15 @@ module Y2Network
         :redraw
       end
 
+      def help
+        # TRANSLATORS: Help for 'Delete' interface configuration button.
+        _(
+          "<p><b><big>Deleting:</big></b><br>\n" \
+          "Choose a network card to remove.\n" \
+         "Then press <b>Delete</b>.</p>\n"
+        )
+      end
+
     private
 
       # @return [Array]
