@@ -124,6 +124,49 @@ describe Yast::NetworkAutoconfiguration do
     end
   end
 
+  describe "#dhcp_candidate?" do
+    let(:ibft_interfaces) { [] }
+    let(:connected) { true }
+    let(:connections) { Y2Network::ConnectionConfigsCollection.new([]) }
+
+    before do
+      allow(instance).to receive(:ibft_interfaces).and_return(ibft_interfaces)
+      allow(instance).to receive(:phy_connected?).with(eth0.name).and_return(connected)
+    end
+
+    context "when the given interface has a config file" do
+      let(:connections) { Y2Network::ConnectionConfigsCollection.new([eth0_conn]) }
+
+      it "returns false" do
+        expect(instance.dhcp_candidate?(eth0)).to eql(false)
+      end
+    end
+
+    context "when the given interface is configured by iBFT" do
+      let(:ibft_interfaces) { [eth0.name] }
+
+      it "returns false" do
+        expect(instance.dhcp_candidate?(eth0)).to eql(false)
+      end
+    end
+
+    context "when the interface is not configured" do
+      context "and it is not connected" do
+        let(:connected) { false }
+
+        it "returns false" do
+          expect(instance.dhcp_candidate?(eth0)).to eql(false)
+        end
+      end
+
+      context "and it is connected" do
+        it "returns true" do
+          expect(instance.dhcp_candidate?(eth0)).to eql(true)
+        end
+      end
+    end
+  end
+
   describe "#configure_dhcp" do
     before do
       allow(instance).to receive(:dhcp_candidate?).and_return(false)

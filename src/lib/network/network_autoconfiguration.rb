@@ -39,6 +39,8 @@ module Yast
       Yast.import "DNS"
       Yast.import "Arch"
       Yast.import "Host"
+
+      Yast.include self, "network/routines.rb" # TODO: needed only for phy_connected
     end
 
     # Checks if any of available interfaces is configured and active
@@ -60,8 +62,6 @@ module Yast
     # @param interface [Y2Network::Interface]
     # @return [Boolean]
     def dhcp_candidate?(interface)
-      Yast.include self, "network/routines.rb" # TODO: needed only for phy_connected
-
       return false if config.connections.by_name(interface.name)
       return false if ibft_interfaces.include?(interface.name)
 
