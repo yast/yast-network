@@ -70,11 +70,11 @@ describe Yast::Wicked do
 
     before do
       allow(Yast::Execute).to receive(:stdout).and_return(stdout)
-      allow(stdout).to receive(:locally!).and_return("eth0.42 eth0\neth0.42 eth0\neth1.10 eth1")
+      allow(stdout).to receive(:locally!).and_return("eth0.42 eth0\neth0.42 eth0\neth1")
     end
 
     it "returns an array of the interfaces configured by iBFT using the wicked iBFT extension" do
-      expect(subject.ibft_interfaces).to eql(["eth0.42", "eth0", "eth1.10", "eth1"])
+      expect(subject.ibft_interfaces).to eql(["eth0.42", "eth0", "eth1"])
     end
   end
 end
