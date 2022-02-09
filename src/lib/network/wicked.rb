@@ -24,6 +24,7 @@ module Yast
   module Wicked
     BASH_PATH = Path.new(".target.bash")
     BASH_OUTPUT_PATH = Path.new(".target.bash_output")
+    IBFT_CMD = "/etc/wicked/extensions/ibft".freeze
 
     # Reloads configuration for each device named in devs
     #
@@ -75,6 +76,13 @@ module Yast
 
         stack + result.fetch("stdout", "").split("\n")
       end
+    end
+
+    # Returns an array of interface names which are configured using iBFT
+    #
+    # @return [Array <String>] array of interface names
+    def ibft_interfaces
+      Yast::Execute.stdout.locally!(IBFT_CMD, "-l").gsub("\n", " ").split(" ").uniq
     end
   end
 end

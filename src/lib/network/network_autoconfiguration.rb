@@ -18,6 +18,7 @@
 # find current contact information at www.suse.com.
 
 require "yast"
+require "yast2/execute"
 require "network/wicked"
 require "y2network/interface_config_builder"
 
@@ -46,24 +47,35 @@ module Yast
     # returns [Boolean] true when at least one interface is active
     def any_iface_active?
       Yast::Lan.Read(:cache)
-      config.interfaces.any? { |c| config.connections.by_name(c.name) && active_config?(c.name) }
+      config.interfaces.any? do |interface|
+        return false unless active_config?(interface.name)
+
+        config.connections.by_name(interface.name) || ibft_interfaces.include?(interface.name)
+      end
+    end
+
+    # Return true if the given interface is connected but it is not configured by iBFT or via an
+    # ifcfg file.
+    #
+    # Note: (it speeds up the initialization phase of installer - bnc#872319)
+    # @param interface [Y2Network::Interface]
+    # @return [Boolean]
+    def dhcp_candidate?(interface)
+      Yast.include self, "network/routines.rb" # TODO: needed only for phy_connected
+
+      return false if config.connections.by_name(interface.name)
+      return false if ibft_interfaces.include?(interface.name)
+
+      phy_connected?(interface.name)
     end
 
     def configure_dhcp
       Yast::Lan.Read(:cache)
-      Yast.include self, "network/routines.rb" # TODO: needed only for phy_connected
 
-      # find out network devices suitable for dhcp autoconfiguration.
-      # Such device has to:
-      # - be unconfigured
-      # - physically connected to a network
-      #   (it speeds up the initialization phase of installer - bnc#872319)
-      dhcp_cards = config.interfaces.select do |c|
-        next false if config.connections.by_name(c.name)
+      dhcp_cards = config.interfaces.select { |i| dhcp_candidate?(i) }
 
-        phy_connected?(c.name)
-      end
       log.info "Candidates for enabling DHCP: #{dhcp_cards.inspect}"
+      return if dhcp_cards.empty?
 
       # TODO: time consuming, some progress would be nice
       dhcp_cards.each { |d| setup_dhcp(d) }

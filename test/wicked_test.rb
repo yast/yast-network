@@ -64,4 +64,17 @@ describe Yast::Wicked do
       expect(subject.parse_ntp_servers("eth0")).to eq(["10.100.2.10", "10.100.2.11", "10.100.2.12"])
     end
   end
+
+  describe "#ibft_interfaces" do
+    let(:stdout) { instance_double("Yast::Execute") }
+
+    before do
+      allow(Yast::Execute).to receive(:stdout).and_return(stdout)
+      allow(stdout).to receive(:locally!).and_return("eth0.42 eth0\neth0.42 eth0\neth1.10 eth1")
+    end
+
+    it "returns an array of the interfaces configured by iBFT using the wicked iBFT extension" do
+      expect(subject.ibft_interfaces).to eql(["eth0.42", "eth0", "eth1.10", "eth1"])
+    end
+  end
 end
