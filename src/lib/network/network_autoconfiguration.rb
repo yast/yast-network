@@ -18,7 +18,6 @@
 # find current contact information at www.suse.com.
 
 require "yast"
-require "yast2/execute"
 require "network/wicked"
 require "y2network/interface_config_builder"
 

@@ -18,6 +18,7 @@
 # find current contact information at www.suse.com.
 
 require "yast"
+require "yast2/execute"
 require "shellwords"
 
 module Yast
