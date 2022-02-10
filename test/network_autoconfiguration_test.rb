@@ -23,11 +23,10 @@ require_relative "test_helper"
 
 require "yast"
 require "network/network_autoconfiguration"
+require "y2network/virtual_interface"
 require "y2network/routing"
 require "y2network/routing_table"
 require "y2network/route"
-
-Yast.import "NetworkInterfaces"
 
 # @return one item for a .probe.netcard list
 def probe_netcard_factory(num)
@@ -66,7 +65,14 @@ def probe_netcard_factory(num)
 end
 
 describe Yast::NetworkAutoconfiguration do
-  let(:yast_config) { Y2Network::Config.new(source: :wicked) }
+  let(:yast_config) do
+    Y2Network::Config.new(interfaces: interfaces, connections: connections, source: :source)
+  end
+  let(:eth0) { Y2Network::Interface.new("eth0") }
+  let(:interfaces) { Y2Network::InterfacesCollection.new([eth0]) }
+  let(:connections) { Y2Network::ConnectionConfigsCollection.new([eth0_conn]) }
+  let(:eth0_conn) { Y2Network::ConnectionConfig::Ethernet.new.tap { |c| c.name = eth0.name } }
+  let(:source) { :wicked }
   let(:system_config) { yast_config.copy }
   let(:instance) { Yast::NetworkAutoconfiguration.instance }
 
@@ -74,89 +80,148 @@ describe Yast::NetworkAutoconfiguration do
     Y2Network::Config.add(:yast, yast_config)
     Y2Network::Config.add(:system, system_config)
     allow(Yast::Lan).to receive(:Read)
+    allow(Yast::Lan).to receive(:read_config)
     allow(Yast::Lan).to receive(:write_config)
   end
 
-  describe "it sets DHCLIENT_SET_DEFAULT_ROUTE properly" do
-    let(:network_interfaces) { double("NetworkInterfaces") }
+  describe "#any_iface_active?" do
+    let(:active) { false }
+    let(:ibft_interfaces) { [] }
 
-    before(:each) do
-      # stub NetworkInterfaces, apart from the ifcfgs
-      allow(Yast::NetworkInterfaces)
-        .to receive(:CleanHotplugSymlink)
-      allow(Yast::NetworkInterfaces)
-        .to receive(:adapt_old_config!)
-      allow(Yast::NetworkInterfaces)
-        .to receive(:GetTypeFromSysfs).  with(/eth\d+/).      and_return "eth"
-      allow(Yast::NetworkInterfaces)
-        .to receive(:GetType).           with(/eth\d+/).      and_return "eth"
-      allow(Yast::NetworkInterfaces)
-        .to receive(:GetType).           with("").            and_return nil
-      Yast::NetworkInterfaces.instance_variable_set(:@initialized, false)
-
-      # stub program execution
-      # - interfaces are up
-      allow(Yast::SCR)
-        .to receive(:Execute)
-        .with(path(".target.bash"), /^\/usr\/sbin\/wicked ifstatus/)
-        .and_return 0
-      # - reload works
-      allow(Yast::SCR)
-        .to receive(:Execute)
-        .with(path(".target.bash"), /^\/usr\/sbin\/wicked ifreload/)
-        .and_return 0
-      # - ping works
-      allow(Yast::SCR)
-        .to receive(:Execute)
-        .with(path(".target.bash"), /^\/usr\/bin\/ping/)
-        .and_return 0
-
-      # These "expect" should be "allow", but then it does not work out,
-      # because SCR multiplexes too much and the matchers get confused.
-
-      # Hardware detection
-      allow(Yast::SCR)
-        .to receive(:Read)
-        .with(path(".probe.netcard"))
-        .and_return([probe_netcard_factory(0), probe_netcard_factory(1)])
-
-      # link status
-      allow(Yast::SCR)
-        .to receive(:Read)
-        .with(path(".target.string"), %r{/sys/class/net/.*/carrier})
-        .twice
-        .and_return "1"
-
-      # miscellaneous uninteresting but hard to avoid stuff
-
-      allow(Yast::Arch).to receive(:architecture).and_return "x86_64"
-      allow(Yast::Confirm).to receive(:Detection).and_return true
-      allow(Yast::NetworkInterfaces).to receive(:Write).and_call_original
+    before do
+      allow(instance).to receive(:active_config?).with("eth0").and_return(active)
+      allow(instance).to receive(:ibft_interfaces).and_return(ibft_interfaces)
     end
 
-    it "configures just one NIC to have a default route" do
-      expect { instance.configure_dhcp }.to_not raise_error
-      # TODO: write it when we can set up dhcp default route
+    it "returns false if the interface state is not UP" do
+      expect(instance.any_iface_active?).to be false
+    end
+
+    context "when the interface state is UP" do
+      let(:active) { true }
+
+      context "and the interface is configured through iBFT" do
+        let(:ibft_interfaces) { [eth0.name] }
+
+        it "returns true" do
+          expect(instance.any_iface_active?).to be true
+        end
+      end
+
+      context "and the interface has a configuration file" do
+        it "returns true" do
+          expect(instance.any_iface_active?).to be true
+        end
+      end
+
+      context "but the interface is not configured" do
+        let(:connections) { Y2Network::ConnectionConfigsCollection.new([]) }
+
+        it "returns false" do
+          expect(instance.any_iface_active?).to be false
+        end
+      end
     end
   end
 
-  describe "#any_iface_active?" do
-    IFACE = "eth0".freeze
+  describe "#dhcp_candidate?" do
+    let(:ibft_interfaces) { [] }
+    let(:connected) { true }
+    let(:connections) { Y2Network::ConnectionConfigsCollection.new([]) }
 
-    it "returns true if any of available interfaces has configuration and is up" do
-      allow(Yast::Lan).to receive(:yast_config)
-        .and_return(
-          Y2Network::Config.new(
-            interfaces:  Y2Network::InterfacesCollection.new([double(name: IFACE)]),
-            connections: Y2Network::ConnectionConfigsCollection.new([double(name: IFACE)]),
-            source:      :testing
-          )
-        )
-      allow(Yast::SCR)
-        .to receive(:Execute)
-        .and_return(0)
+    before do
+      allow(instance).to receive(:ibft_interfaces).and_return(ibft_interfaces)
+      allow(instance).to receive(:phy_connected?).with(eth0.name).and_return(connected)
+    end
 
-      expect(instance.any_iface_active?).to be true
+    context "when the given interface has a config file" do
+      let(:connections) { Y2Network::ConnectionConfigsCollection.new([eth0_conn]) }
+
+      it "returns false" do
+        expect(instance.dhcp_candidate?(eth0)).to eql(false)
+      end
+    end
+
+    context "when the given interface is configured by iBFT" do
+      let(:ibft_interfaces) { [eth0.name] }
+
+      it "returns false" do
+        expect(instance.dhcp_candidate?(eth0)).to eql(false)
+      end
+    end
+
+    context "when the interface is not configured" do
+      context "and it is not connected" do
+        let(:connected) { false }
+
+        it "returns false" do
+          expect(instance.dhcp_candidate?(eth0)).to eql(false)
+        end
+      end
+
+      context "and it is connected" do
+        it "returns true" do
+          expect(instance.dhcp_candidate?(eth0)).to eql(true)
+        end
+      end
+    end
+  end
+
+  describe "#configure_dhcp" do
+    before do
+      allow(instance).to receive(:dhcp_candidate?).and_return(false)
+      allow(instance).to receive(:setup_dhcp)
+      allow(instance).to receive(:activate_changes)
+      allow(instance).to receive(:set_default_route_flag)
+      allow(instance).to receive(:set_default_route_flag_if_wan_dev?)
+    end
+
+    it "reads the network configuration in case it was not cached" do
+      expect(Yast::Lan).to receive(:Read).with(:cache)
+      expect(instance.configure_dhcp)
+    end
+
+    it "obtains a list of interfaces which are candidates to be configured by dhcp" do
+      expect(instance).to receive(:dhcp_candidate?).with(eth0).and_return(true)
+      expect(instance.configure_dhcp)
+    end
+
+    context "when there is no candidate to setup" do
+      it "returns whitout doing changes to the config" do
+        expect(instance).to_not receive(:activate_changes)
+        expect(instance.configure_dhcp)
+      end
+    end
+
+    context "when there is some candidate to setup" do
+      before do
+        allow(instance).to receive(:dhcp_candidate?).with(eth0).and_return(true)
+      end
+
+      it "creates a DHCP configuration for the candidate interfaces" do
+        expect(instance).to receive(:setup_dhcp).with(eth0)
+        instance.configure_dhcp
+      end
+
+      it "applies the new configuration changes" do
+        expect(instance).to receive(:activate_changes).with([eth0.name])
+        instance.configure_dhcp
+      end
+
+      context "if some of the new configured interfaces do not get a DHCP lease" do
+        it "deletes the configuration of the inactive devices" do
+          expect(instance).to receive(:activate_changes).with([eth0.name])
+          expect(instance).to receive(:active_config?).with(eth0.name).and_return(false)
+          expect(instance).to receive(:delete_config).with(eth0)
+          instance.configure_dhcp
+        end
+      end
+
+      it "configures just one NIC to have a default route" do
+        expect(instance).to receive(:active_config?).with(eth0.name).and_return(true)
+        expect(instance).to receive(:set_default_route_flag).with(eth0, "yes")
+        instance.configure_dhcp
+      end
     end
   end
 
@@ -218,7 +283,6 @@ describe Yast::NetworkAutoconfiguration do
           expect(instance.virtual_proposal_required?).to eql(true)
         end
       end
-
     end
   end
 
