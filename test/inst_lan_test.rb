@@ -32,7 +32,13 @@ describe Yast::InstLanClient do
     let(:going_back) { false }
     let(:using_nm) { false }
     let(:connections) { Y2Network::ConnectionConfigsCollection.new([]) }
-    let(:fake_conn) { instance_double("Y2Network::ConnectionConfig") }
+    let(:interfaces) { Y2Network::InterfacesCollection.new([eth0]) }
+    let(:connections) { Y2Network::ConnectionConfigsCollection.new([]) }
+    let(:eth0) { Y2Network::Interface.new("eth0") }
+    let(:eth0_conn) { Y2Network::ConnectionConfig::Ethernet.new.tap { |c| c.name = "eth0" } }
+    let(:config) do
+      Y2Network::Config.new(connections: connections, interfaces: interfaces, source: :testing)
+    end
 
     before do
       allow(Yast::GetInstArgs).to receive(:argmap).and_return(argmap)
@@ -87,19 +93,22 @@ describe Yast::InstLanClient do
         subject.main
       end
 
-      context "and there is some connection config already present in yast" do
-        let(:connections) { Y2Network::ConnectionConfigsCollection.new([fake_conn]) }
-        let(:config) { instance_double("Y2Network::Config", connections: connections) }
-
+      context "and there is some active network configuration" do
         it "does not run the network configuration sequence" do
+          expect(Yast::NetworkAutoconfiguration.instance)
+            .to receive(:any_iface_active?).and_return(true)
           expect(subject).to_not receive(:LanSequence)
 
           subject.main
         end
+
       end
 
       context "and the network is unconfigured" do
         it "runs the network configuration sequence" do
+          expect(Yast::NetworkAutoconfiguration.instance)
+            .to receive(:any_iface_active?).and_return(false)
+
           expect(subject).to receive(:LanSequence)
           subject.main
         end
