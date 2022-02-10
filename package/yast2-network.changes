@@ -2,8 +2,8 @@
 Thu Feb 10 18:01:05 UTC 2022 - Knut Anderssen <kanderssen@suse.com>
 
 - Related to (bsc#1194911)
-- During installation, skip to run the network configuration dialog
-  also when the network configuration is done through iBFT.
+  - During installation skip the network configuration dialog when
+    network is configured with iBFT.
 4.4.39
 
 -------------------------------------------------------------------
