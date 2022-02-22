@@ -49,7 +49,7 @@ module Yast
     def any_iface_active?
       Yast::Lan.Read(:cache)
       config.interfaces.any? do |interface|
-        return false unless active_config?(interface.name)
+        next false unless active_config?(interface.name)
 
         config.connections.by_name(interface.name) || ibft_interfaces.include?(interface.name)
       end

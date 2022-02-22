@@ -87,17 +87,20 @@ describe Yast::NetworkAutoconfiguration do
   describe "#any_iface_active?" do
     let(:active) { false }
     let(:ibft_interfaces) { [] }
+    let(:eth1) { Y2Network::Interface.new("eth1") }
+    let(:interfaces) { Y2Network::InterfacesCollection.new([eth1, eth0]) }
 
     before do
+      allow(instance).to receive(:active_config?).with("eth1").and_return(false)
       allow(instance).to receive(:active_config?).with("eth0").and_return(active)
       allow(instance).to receive(:ibft_interfaces).and_return(ibft_interfaces)
     end
 
-    it "returns false if the interface state is not UP" do
+    it "returns false if there is no interface UP" do
       expect(instance.any_iface_active?).to be false
     end
 
-    context "when the interface state is UP" do
+    context "when at least one interface is UP" do
       let(:active) { true }
 
       context "and the interface is configured through iBFT" do
