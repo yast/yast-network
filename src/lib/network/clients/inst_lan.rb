@@ -100,7 +100,7 @@ module Yast
     # @return [Boolean] true when there is some interface configured by iBFT or there is some
     #   connection present in yast config; false otherwise
     def connections_configured?
-      NetworkAutoconfiguration.instance.network_configured?
+      NetworkAutoconfiguration.instance.any_iface_active?(ibft_included: true)
     end
 
     # It returns whether the network has been configured or not. It returns

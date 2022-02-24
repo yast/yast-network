@@ -47,25 +47,14 @@ module Yast
     # system
     #
     # returns [Boolean] true when at least one interface is active
-    def any_iface_active?
-      Yast::Lan.Read(:cache)
+    def any_iface_active?(ibft_included: false)
+      Lan::Read(:cache)
+
       config.interfaces.any? do |interface|
         next false unless active_config?(interface.name)
+        return true if ibft_included && ibft_interfaces.include?(interface.name)
 
         config.connections.by_name(interface.name)
-      end
-    end
-
-    # Checks if any of available interfaces is active and configured by iBFT or with a connection
-    # file present in the system
-    #
-    # returns [Boolean] true when at least one interface is active and configured
-    def network_configured?
-      Yast::Lan.Read(:cache)
-      config.interfaces.any? do |interface|
-        next false unless active_config?(interface.name)
-
-        config.connections.by_name(interface.name) || ibft_interfaces.include?(interface.name)
       end
     end
 
