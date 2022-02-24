@@ -94,13 +94,13 @@ module Yast
       ret
     end
 
-    # Convenience method that checks whether there is some connection
-    # configuration present in the system
+    # Convenience method that checks whether there is some interface active and configured by iBFT
+    # or by a ifcfg file.
     #
-    # @return [Boolean] true when there is some connection present in yast
-    #   config; false otherwise
+    # @return [Boolean] true when there is some interface configured by iBFT or there is some
+    #   connection present in yast config; false otherwise
     def connections_configured?
-      NetworkAutoconfiguration.instance.any_iface_active?
+      NetworkAutoconfiguration.instance.any_iface_active?(ibft_included: true)
     end
 
     # It returns whether the network has been configured or not. It returns

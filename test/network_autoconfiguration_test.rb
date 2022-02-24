@@ -103,17 +103,19 @@ describe Yast::NetworkAutoconfiguration do
     context "when at least one interface is UP" do
       let(:active) { true }
 
-      context "and the interface is configured through iBFT" do
-        let(:ibft_interfaces) { [eth0.name] }
-
+      context "and the interface has a configuration file" do
         it "returns true" do
           expect(instance.any_iface_active?).to be true
         end
       end
 
-      context "and the interface has a configuration file" do
-        it "returns true" do
-          expect(instance.any_iface_active?).to be true
+      context "when ibft_included param is true" do
+        context "and the interface is configured through iBFT" do
+          let(:ibft_interfaces) { [eth0.name] }
+
+          it "returns true" do
+            expect(instance.any_iface_active?(ibft_included: true)).to be true
+          end
         end
       end
 

@@ -87,6 +87,7 @@ describe Yast::InstLanClient do
     end
 
     context "when the NetworkService is wicked" do
+
       it "reads the current network config" do
         expect(Yast::Lan).to receive(:Read).with(:cache)
 
@@ -96,7 +97,7 @@ describe Yast::InstLanClient do
       context "and there is some active network configuration" do
         it "does not run the network configuration sequence" do
           expect(Yast::NetworkAutoconfiguration.instance)
-            .to receive(:any_iface_active?).and_return(true)
+            .to receive(:any_iface_active?).with(ibft_included: true).and_return(true)
           expect(subject).to_not receive(:LanSequence)
 
           subject.main
@@ -107,7 +108,7 @@ describe Yast::InstLanClient do
       context "and the network is unconfigured" do
         it "runs the network configuration sequence" do
           expect(Yast::NetworkAutoconfiguration.instance)
-            .to receive(:any_iface_active?).and_return(false)
+            .to receive(:any_iface_active?).with(ibft_included: true).and_return(false)
 
           expect(subject).to receive(:LanSequence)
           subject.main
