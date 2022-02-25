@@ -109,13 +109,46 @@ describe Yast::NetworkAutoconfiguration do
         end
       end
 
-      context "when ibft_included param is true" do
-        context "and the interface is configured through iBFT" do
-          let(:ibft_interfaces) { [eth0.name] }
+      context "but the interface is not configured" do
+        let(:connections) { Y2Network::ConnectionConfigsCollection.new([]) }
 
-          it "returns true" do
-            expect(instance.any_iface_active?(ibft_included: true)).to be true
-          end
+        it "returns false" do
+          expect(instance.any_iface_active?).to be false
+        end
+      end
+    end
+  end
+
+  describe "#network_configured?" do
+    let(:active) { false }
+    let(:ibft_interfaces) { [] }
+    let(:eth1) { Y2Network::Interface.new("eth1") }
+    let(:interfaces) { Y2Network::InterfacesCollection.new([eth1, eth0]) }
+
+    before do
+      allow(instance).to receive(:active_config?).with("eth1").and_return(false)
+      allow(instance).to receive(:active_config?).with("eth0").and_return(active)
+      allow(instance).to receive(:ibft_interfaces).and_return(ibft_interfaces)
+    end
+
+    it "returns false if there is no interface UP" do
+      expect(instance.network_configured?).to be false
+    end
+
+    context "when at least one interface is UP" do
+      let(:active) { true }
+
+      context "and the interface is configured through iBFT" do
+        let(:ibft_interfaces) { [eth0.name] }
+
+        it "returns true" do
+          expect(instance.network_configured?).to be true
+        end
+      end
+
+      context "and the interface has a configuration file" do
+        it "returns true" do
+          expect(instance.network_configured?).to be true
         end
       end
 
@@ -123,7 +156,7 @@ describe Yast::NetworkAutoconfiguration do
         let(:connections) { Y2Network::ConnectionConfigsCollection.new([]) }
 
         it "returns false" do
-          expect(instance.any_iface_active?).to be false
+          expect(instance.network_configured?).to be false
         end
       end
     end
