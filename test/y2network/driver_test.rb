@@ -26,6 +26,9 @@ describe Y2Network::Driver do
 
   describe ".from_system" do
     before do
+      allow(Yast::SCR).to receive(:Read).with(Yast::Path.new(".modules")).and_return(["options"])
+      allow(Yast::SCR).to receive(:Read).with(Yast::Path.new(".modules.options"))
+        .and_return(["virtio_net"])
       allow(Yast::SCR).to receive(:Read).with(Yast::Path.new(".modules.options.virtio_net"))
         .and_return("csum" => "1")
     end

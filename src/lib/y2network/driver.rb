@@ -34,6 +34,12 @@ module Y2Network
       #
       # @param name [String] Driver's name
       def from_system(name)
+        # Avoid to log errors when there are no /etc/modprobe.d/50-yast.conf file or no options
+        # entries in the file (bsc#1196714)
+        entries = Yast::SCR.Read(Yast::Path.new(".modules")).include?("options")
+        options = entries ? Yast::SCR.Read(Yast::Path.new(".modules.options")) : []
+        return new(name) unless options.include?(name)
+
         params = Yast::SCR.Read(Yast::Path.new(".modules.options.#{name}"))
         params_string = params.map { |k, v| "#{k}=#{v}" }.join(" ")
         new(name, params_string)
