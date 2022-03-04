@@ -1,7 +1,7 @@
 #
 # spec file for package yast2-network
 #
-# Copyright (c) 2020 SUSE LLC
+# Copyright (c) 2022 SUSE LLC
 #
 # All modifications and additions to the file contributed by third parties
 # remain the property of their copyright owners, unless otherwise agreed
@@ -55,13 +55,13 @@ Requires:       yast2-storage-ng
 Requires:       yast2 >= 4.4.38
 # Packages::vnc_packages
 Requires:       yast2-packager >= 4.0.18
-Requires:       rubygem(%rb_default_ruby_abi:cfa) >= 0.6.4
 Requires:       augeas-lenses
+Requires:       rubygem(%rb_default_ruby_abi:cfa) >= 0.6.4
 # BusID of all the cards with the same one (bsc#1007172)
 Requires:       hwinfo         >= 21.35
+Requires:       hostname
 Requires:       yast2-ruby-bindings >= 1.0.0
 Requires:       yast2-xml
-Requires:       hostname
 
 # testsuite
 BuildRequires:  rubygem(%rb_default_ruby_abi:rspec)
