@@ -33,7 +33,8 @@ module CFA
   #   puts file.connection["id"]
   class NmConnection < BaseModel
     KNOWN_SECTIONS = [
-      "bond", "bridge", "connection", "ethernet", "ipv4", "ipv6", "vlan", "wifi", "wifi_security"
+      "bond", "bridge", "connection", "ethernet", "ethernet_s390_options", "ipv4", "ipv6", "vlan",
+      "wifi", "wifi_security"
     ].freeze
 
     # @return [String] File path

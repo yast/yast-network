@@ -29,18 +29,10 @@ module Y2Network
         # @param conn [Y2Network::ConnectionConfig::Qeth] Configuration to write
         def update_file(conn)
           super
-          file.connection["s390-nettype"] = "qeth"
-          file.connection["s390-options"] = options_for(conn)
-          file.connection["s390-subchannels"] = conn.device_id.gsub(":", ",") if conn.device_id
-        end
-
-      private
-
-        # Convenience method to obtain QETH specific options
-        #
-        # @param conn [Y2Network::ConnectionConfig::Qeth] Configuration to write
-        def options_for(conn)
-          "layer2=#{conn.layer2 ? 1 : 0},portno=#{conn.port_number.to_i}"
+          file.ethernet["s390-nettype"] = "qeth"
+          file.ethernet["s390-subchannels"] = conn.device_id.gsub(":", ";") if conn.device_id
+          file.ethernet_s390_options["layer2"] = conn.layer2 ? "1" : "0"
+          file.ethernet_s390_options["portno"] = conn.port_number.to_i.to_s
         end
       end
     end
