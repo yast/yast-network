@@ -44,9 +44,9 @@ describe Y2Network::NetworkManager::ConnectionConfigWriters::Hsi do
     it "sets device and IP relevant attributes" do
       handler.write(conn)
       expect(file.connection["type"]).to eql("ethernet")
-      expect(file.connection["s390-nettype"]).to eql("qeth")
-      expect(file.connection["s390-options"]).to eql("layer2=1,portno=0")
-      expect(file.connection["s390-subchannels"]).to eql("0.0.0800,0.0.0801,0.0.0802")
+      expect(file.ethernet["s390-subchannels"]).to eql("0.0.0800;0.0.0801;0.0.0802")
+      expect(file.ethernet_s390_options["layer2"]).to eql("1")
+      expect(file.ethernet_s390_options["portno"]).to eql("0")
     end
   end
 end
