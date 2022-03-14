@@ -45,6 +45,9 @@ require "y2issues"
 
 require "shellwords"
 
+Yast.import "HTML"
+Yast.import "Summary"
+
 module Yast
   class LanClass < Module
     include ::UI::TextHelpers
@@ -629,9 +632,11 @@ module Yast
     #   "proposal": for proposal also with resolver an routing summary
     # @return summary of the current configuration
     def Summary(mode)
+      return no_config_message if yast_config.nil?
+
       case mode
       when "summary", "proposal"
-        Y2Network::Presenters::Summary.text_for(yast_config, mode)
+        Y2Network::Presenters::Summary.text_for(yast_config, "proposal")
       else
         Y2Network::Presenters::Summary.text_for(yast_config, "interfaces")
       end
@@ -921,6 +926,10 @@ module Yast
         hash[tmp_mac] ||= addr if tmp_mac
         log.debug("link_status #{hash.inspect}")
       end
+    end
+
+    def no_config_message
+      HTML.Heading(_("Network Configuration")) + Summary.NotConfigured
     end
   end
 
