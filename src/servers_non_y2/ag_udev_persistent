@@ -20,6 +20,11 @@
 # find current contact information at www.suse.com.
 
 package ag_udev_persistent;
+
+# None of the bindings are needed here.
+# And dlopening Ruby would make jemalloc complain about a failed TLS allocation
+BEGIN { $ENV{Y2DISABLELANGUAGEPLUGINS} = "1"; }
+
 BEGIN { push( @INC, '/usr/share/YaST2/modules/' ); }
 use ycp;
 use YaST::SCRAgent;
