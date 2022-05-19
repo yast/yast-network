@@ -53,15 +53,17 @@ module CFA
 
       SYSTEM_CONNECTIONS_PATH = Pathname.new("/etc/NetworkManager/system-connections").freeze
       FILE_EXT = ".nmconnection".freeze
+      ESCAPE_CHAR = "_".freeze
 
       # Returns the file base name for the given connection
       #
       # @param conn [ConnectionConfig::Base]
       # @return [String]
       def file_basename_for(conn)
-        return conn.essid.to_s if conn.is_a?(Y2Network::ConnectionConfig::Wireless) && conn.essid
+        return conn.name unless conn.is_a?(Y2Network::ConnectionConfig::Wireless) && conn.essid
 
-        conn.name
+        # Convert special characters that could be problematic (bsc#1199451)
+        conn.essid.to_s.gsub(/^\.|\/|~$/, ESCAPE_CHAR)
       end
     end
 

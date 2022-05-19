@@ -54,9 +54,39 @@ describe CFA::NmConnection do
         end
       end
 
-      it "uses the ESSID as path basename" do
-        file = described_class.for(conn)
-        expect(file.file_path.basename.to_s).to eq("MY_WIRELESS.nmconnection")
+      context "and the ESSID is set" do
+        it "uses the ESSID as path basename" do
+          file = described_class.for(conn)
+          expect(file.file_path.basename.to_s).to eq("MY_WIRELESS.nmconnection")
+        end
+
+        context "and the ESSID contains some '/' character" do
+          let(:essid) { "MY/WIRELESS" }
+
+          it "replaces '/' characters with '_'" do
+            file = described_class.for(conn)
+            expect(file.file_path.basename.to_s).to eq("MY_WIRELESS.nmconnection")
+          end
+        end
+
+        context "and the ESSID starts with a dot" do
+          let(:essid) { ".MY_WIRELESS" }
+
+          it "replaces the '.' character with '_'" do
+            file = described_class.for(conn)
+            expect(file.file_path.basename.to_s).to eq("_MY_WIRELESS.nmconnection")
+          end
+        end
+
+        context "and the ESSID ends with '~'" do
+          let(:essid) { ".MY/WIRELESS~" }
+
+          it "replaces the '~' character with '_'" do
+            file = described_class.for(conn)
+            expect(file.file_path.basename.to_s).to eq("_MY_WIRELESS_.nmconnection")
+          end
+        end
+
       end
 
       context "and the ESSID is not set" do
