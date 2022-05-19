@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed May 18 19:49:34 UTC 2022 - Knut Anderssen <kanderssen@suse.com>
+
+- CFA NM: replace problematic characters when getting the filename
+  for the given wireless configuration (bsc#1199451).
+- 4.4.46
+
+-------------------------------------------------------------------
 Fri Mar 11 12:36:29 UTC 2022 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
 
 - Display the network configuration in the AutoYaST user interface
