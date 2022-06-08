@@ -498,31 +498,13 @@ module Yast
       sl = NonEmpty(Builtins.splitstring(value, " ,\n\t"))
       error = ""
 
-      if Ops.greater_than(Builtins.size(sl), 6)
-        # Popup::Error text
-        error = Builtins.sformat(
-          _("The search list can have at most %1 domains."),
-          6
-        )
-      elsif Ops.greater_than(Builtins.size(Builtins.mergestring(sl, " ")), 256)
-        # Popup::Error text
-        error = Builtins.sformat(
-          _("The search list can have at most %1 characters."),
-          256
-        )
-      end
-      Builtins.foreach(sl) do |s|
-        if !Hostname.CheckDomain(s)
-          # Popup::Error text
-          error = Ops.add(
-            Ops.add(
-              Builtins.sformat(_("The search domain '%1' is invalid."), s),
-              "\n"
-            ),
-            Hostname.ValidDomain
-          )
-          break
-        end
+      sl.each do |s|
+        next if Hostname.CheckDomain(s)
+
+        # TRANSLATORS: Popup::Error text
+        error = Builtins.sformat(_("The search domain '%1' is invalid."), s) +
+          "\n" + Hostname.ValidDomain
+        break
       end
 
       if error != ""
