@@ -84,6 +84,54 @@ describe "NetworkServicesDnsInclude" do
     end
   end
 
+  describe "#ValidateSearchList" do
+    let(:widget_id) { "something" }
+    let(:ui_event) { {} }
+
+    it "allows empty value" do
+      expect(Yast::UI).to receive(:QueryWidget).with(Id(widget_id), :Value).and_return("")
+
+      expect(Yast::UI).to_not receive(:SetFocus)
+      expect(Yast::Popup).to_not receive(:Error)
+
+      expect(subject.ValidateSearchList(widget_id, ui_event)).to be true
+    end
+
+    it "allows valid values" do
+      sl = "foo.example.com, example.org \n example.net \t example.not"
+      expect(Yast::UI).to receive(:QueryWidget).with(Id(widget_id), :Value).and_return(sl)
+      expect(Yast::Hostname).to receive(:CheckDomain).exactly(4).times.and_call_original
+
+      expect(Yast::UI).to_not receive(:SetFocus)
+      expect(Yast::Popup).to_not receive(:Error)
+
+      expect(subject.ValidateSearchList(widget_id, ui_event)).to be true
+    end
+
+    it "allows a long list (256+) with many (6+) values" do
+      ooo = "o" * 60
+      long = "l#{ooo}ng.com"
+      sl = "a.#{long} b.#{long} c.#{long} d.#{long} e.#{long} f.#{long} g.#{long}"
+      expect(Yast::UI).to receive(:QueryWidget).with(Id(widget_id), :Value).and_return(sl)
+
+      expect(Yast::UI).to_not receive(:SetFocus)
+      expect(Yast::Popup).to_not receive(:Error)
+
+      expect(subject.ValidateSearchList(widget_id, ui_event)).to be true
+    end
+
+    it "reports the first invalid value" do
+      sl = "/.example.com /.example.org \n example.net \t example.not"
+      expect(Yast::UI).to receive(:QueryWidget).with(Id(widget_id), :Value).and_return(sl)
+
+      expect(Yast::UI).to receive(:SetFocus)
+      err = /The search domain '\/.example.com' is invalid.\nA valid domain name.*/
+      expect(Yast::Popup).to receive(:Error).with(err)
+
+      expect(subject.ValidateSearchList(widget_id, ui_event)).to be false
+    end
+  end
+
   xdescribe "#propose_hostname_for" do
 
   end
