@@ -22,6 +22,7 @@ require "network/install_inf_convertor"
 require "network/network_autoconfiguration"
 require "network/network_autoyast"
 require "y2network/proposal_settings"
+require "y2network/startmode"
 
 require "cfa/generic_sysconfig"
 
@@ -72,11 +73,19 @@ module Yast
 
       log.info("Root filesystem is on a network based device")
 
+      conn = connection_for(File.basename(file))
+      conn.startmode = Y2Network::Startmode.create("nfsroot") if conn
+
       # tune ifcfg file for remote filesystem
       SCR.Execute(
         path(".target.bash"),
         "/usr/bin/sed -i s/^[[:space:]]*STARTMODE=.*/STARTMODE='nfsroot'/ #{file.shellescape}"
       )
+    end
+
+    def connection_for(file)
+      return unless Yast::Lan.yast_config&.connections
+      Yast::Lan.yast_config.connections.by_interface(file.gsub(/^ifcfg-/,""))
     end
 
     ETC = "/etc".freeze
