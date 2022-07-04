@@ -272,11 +272,12 @@ route =
     destination &
     element netmask { text }? &	#overloaded
     element device { text }? &	#overloaded
-    gateway ?
+    gateway ? &
+    extrapara ?
   }
 destination = element destination { text }
 gateway = element gateway { text }
-
+extrapara = element extrapara { text }
 
 #
 # DNS (fqdn + resolver)
