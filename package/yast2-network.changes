@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Jul  4 11:54:34 UTC 2022 - Knut Anderssen <kanderssen@suse.com>
+
+- AY: Added missing route extrapara element to the networking
+  section (bsc#1201129)
+- 4.2.110
+
+-------------------------------------------------------------------
 Wed Nov 10 21:41:54 UTC 2021 - Knut Anderssen <kanderssen@suse.com>
 
 - Fixed interfaces table description for s390 Group devices
