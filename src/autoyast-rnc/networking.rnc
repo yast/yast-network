@@ -302,12 +302,13 @@ route =
       destination &
       element netmask { STRING }? &	#overloaded
       element device { STRING }? &	#overloaded
-      gateway ?
+      gateway ? &
+      extrapara ?
     )
   }
 destination = element destination { STRING }
 gateway = element gateway { STRING }
-
+extrapara = element extrapara { STRING }
 
 #
 # DNS (fqdn + resolver)
