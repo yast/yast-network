@@ -66,7 +66,7 @@ module Y2Network
     attr_writer :newly_added
 
     def_delegators :@connection_config,
-      :startmode, :ethtool_options, :ethtool_options=
+      :startmode, :ethtool_options, :ethtool_options=, :description, :description=
 
     # Constructor
     #
