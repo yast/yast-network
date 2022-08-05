@@ -57,7 +57,15 @@ module Yast
       }
     end
 
+    def check_security_policy
+      require "y2security/security_policy"
+      Y2Security::SecurityPolicy.enabled.each { |p| p.validate(:network) }
+    rescue LoadError => e
+      log.error "Security policies are not available: #{e.inspect}"
+    end
+
     def make_proposal(_)
+      check_security_policy
       {
         "preformatted_proposal" => preformatted_proposal,
         "label_proposal"        => [proposal_summary.one_line_text],
