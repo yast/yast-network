@@ -355,6 +355,10 @@ module Yast
       # at all specially in a live installation where NM is the backend by
       # default. For detecting changes we should reset the cache first.
       NetworkService.reset!
+      # Ensure not selected backend is disabled in order to not end with two network backends
+      # running at the same time. (bsc#1202479)
+      NetworkService.send(:disable_service, :wicked)
+      NetworkService.send(:disable_service, :network_manager)
       case backend
       when :network_manager
         log.info("- using NetworkManager")
@@ -363,12 +367,12 @@ module Yast
         log.info("- using wicked")
         NetworkService.use_wicked
       when :none
-        NetworkService.send(:disable_service, :wicked)
-        NetworkService.send(:disable_service, :network_manager)
         return
       end
 
-      NetworkService.EnableDisableNow
+      # Force the enablement of the selected backend just in case no modifications was detected but
+      # the backend was not enabled at all. (bsc#1202479)
+      NetworkService.EnableDisableNow(force: true)
     end
 
     # this replaces bash script create_interface

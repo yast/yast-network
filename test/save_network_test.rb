@@ -67,6 +67,7 @@ describe Yast::SaveNetworkClient do
       allow(Yast::Lan).to receive(:Write)
       allow(Yast::Arch).to receive(:s390).and_return(s390)
       allow(Yast::NetworkService).to receive(:EnableDisableNow)
+      allow(Yast::NetworkService).to receive(:disable_service)
       allow(Yast::NetworkAutoYast.instance).to receive(:configure_hosts).and_return(nil)
     end
 
@@ -198,6 +199,12 @@ describe Yast::SaveNetworkClient do
         subject.main
       end
 
+      it "disables wicked" do
+        expect(Yast::NetworkService).to receive(:disable_service).with(:wicked)
+
+        subject.main
+      end
+
       context "when running on network manager (e.g., live installation)" do
         let(:system_backend) { Y2Network::Backends::NetworkManager.new }
 
@@ -223,6 +230,12 @@ describe Yast::SaveNetworkClient do
 
     context "when the backend selected is wicked" do
       let(:selected_backend) { :wicked }
+
+      it "disables NetworkManager" do
+        expect(Yast::NetworkService).to receive(:disable_service).with(:network_manager)
+
+        subject.main
+      end
 
       it "selects wicked as the service to be used after installation" do
         expect(Yast::NetworkService).to receive(:use_wicked)
