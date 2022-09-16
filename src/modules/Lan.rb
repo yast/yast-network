@@ -590,15 +590,15 @@ module Yast
     # @return true on success
     def Import(settings)
       settings = {} if settings.nil?
+      if Arch.s390
+        NetworkAutoYast.instance.activate_s390_devices(settings.fetch("s390-devices", {}))
+      end
 
       Read(:cache)
       profile = Y2Network::AutoinstProfile::NetworkingSection.new_from_hashes(settings)
       result = Y2Network::Config.from(:autoinst, profile, system_config)
       add_config(:yast, result.config)
       @autoinst = autoinst_config(profile)
-      if Arch.s390
-        NetworkAutoYast.instance.activate_s390_devices(settings.fetch("s390-devices", {}))
-      end
 
       NetworkConfig.Import(settings["config"] || {})
       # Ensure that the /etc/hosts has been read to no blank out it in case of
