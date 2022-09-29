@@ -23,6 +23,8 @@ module Y2Network
   module Backends
     # This class represents the NetworkManager backend
     class NetworkManager < Backend
+      PACKAGES = ["NetworkManager"].freeze
+
       def initialize
         textdomain "network"
         super(:network_manager)

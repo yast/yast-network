@@ -27,6 +27,8 @@ module Y2Network
     include Yast::I18n
     include Yast2::Equatable
 
+    PACKAGES = [].freeze
+
     # @return [Symbol] backend id
     attr_reader :id
 
@@ -86,6 +88,10 @@ module Y2Network
     # @return [Boolean]
     def available?
       Yast::NetworkService.is_backend_available(id)
+    end
+
+    def packages
+      self.class.const_get(:PACKAGES)
     end
   end
 end

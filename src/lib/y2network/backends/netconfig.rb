@@ -23,6 +23,8 @@ module Y2Network
   module Backends
     # This class represents the Netconfig backend
     class Netconfig < Backend
+      PACKAGES = ["sysconfig-netconfig"].freeze
+
       def initialize
         textdomain "network"
         super(:netconfig)
