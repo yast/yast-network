@@ -25,6 +25,9 @@ require "y2network/connection_configs_collection"
 require "y2network/interface"
 require "y2network/interfaces_collection"
 require "y2network/boot_protocol"
+require "y2network/route"
+require "y2network/routing"
+require "y2network/routing_table"
 require "cfa/nm_connection"
 
 describe Y2Network::NetworkManager::ConfigWriter do
@@ -45,6 +48,7 @@ describe Y2Network::NetworkManager::ConfigWriter do
       old_config.copy.tap do |cfg|
         cfg.add_or_update_connection_config(eth0_conn)
         cfg.dns = dns
+        cfg.routing = routing
       end
     end
 
@@ -55,6 +59,22 @@ describe Y2Network::NetworkManager::ConfigWriter do
         conn.bootproto = Y2Network::BootProtocol::DHCP
         conn.ip = ip
       end
+    end
+
+    let(:routes) { [] }
+
+    let(:route) do
+      Y2Network::Route.new(
+        to:        :default,
+        interface: eth0,
+        gateway:   IPAddr.new("192.168.122.1")
+      )
+    end
+
+    let(:routing) do
+      Y2Network::Routing.new(
+        tables: [Y2Network::RoutingTable.new(routes)]
+      )
     end
 
     let(:nameserver1) { IPAddr.new("192.168.1.1") }
@@ -73,8 +93,15 @@ describe Y2Network::NetworkManager::ConfigWriter do
     let(:ip) { Y2Network::ConnectionConfig::IPConfig.new(IPAddr.new("192.168.122.2")) }
     let(:eth0) { Y2Network::Interface.new("eth0") }
 
-    let(:conn_config_writer) do
-      instance_double(Y2Network::NetworkManager::ConnectionConfigWriter, write: nil)
+    let(:conn_config_writer) { Y2Network::NetworkManager::ConnectionConfigWriter.new }
+
+    let(:file) do
+      CFA::NmConnection.new(File.join(DATA_PATH, "some_wifi.nmconnection"))
+    end
+
+    before do
+      allow(CFA::NmConnection).to receive(:for).and_return(file)
+      allow(file).to receive(:save)
     end
 
     before do
@@ -82,12 +109,36 @@ describe Y2Network::NetworkManager::ConfigWriter do
         .and_return(conn_config_writer)
       allow(writer).to receive(:write_drivers)
       allow(writer).to receive(:write_hostname)
-      allow(writer).to receive(:write_routing)
     end
 
     it "writes connections configuration" do
       expect(conn_config_writer).to receive(:write).with(eth0_conn, nil, routes: [], parent: nil)
       writer.write(config)
+    end
+
+    context "when there is some route to be configured" do
+      let(:routes) { [route] }
+
+      context "and it contains a gateway" do
+        it "writes the connection gateway" do
+          writer.write(config)
+          expect(file.ipv4["gateway"]).to eq("192.168.122.1")
+        end
+      end
+
+      context "and it does not contain a gateway" do
+        let(:route) do
+          Y2Network::Route.new(
+            to:        :default,
+            interface: eth0
+          )
+        end
+
+        it "does not write any gateway" do
+          writer.write(config)
+          expect(file.ipv4["gateway"]).to be_nil
+        end
+      end
     end
 
     context "writes DNS configuration" do
@@ -101,15 +152,6 @@ describe Y2Network::NetworkManager::ConfigWriter do
           end
         end
 
-        let(:file) do
-          CFA::NmConnection.new(File.join(DATA_PATH, "some_wifi.nmconnection"))
-        end
-
-        before do
-          allow(CFA::NmConnection).to receive(:for).and_return(file)
-          allow(file).to receive(:save)
-        end
-
         it "includes DNS configuration in the configuration file" do
           writer.write(config)
           expect(file.ipv4["dns"]).to eq("#{nameserver1};#{nameserver2}")
@@ -117,6 +159,5 @@ describe Y2Network::NetworkManager::ConfigWriter do
         end
       end
     end
-
   end
 end

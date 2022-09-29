@@ -64,7 +64,7 @@ module Y2Network
         #
         # @param routes [<Array<Y2Network::Route>] routes associated with the connection
         def configure_routes(routes)
-          routes.select(&:default?).each { |r| configure_gateway(r) if r.gateway }
+          routes.select { |r| r.default? && r.gateway }.each { |r| configure_gateway(r) }
         end
 
         # @param route [Y2Network::Route] route to be written
