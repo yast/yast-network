@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Sep 29 09:15:47 UTC 2022 - Knut Anderssen <kanderssen@suse.com>
+
+- Fixed issue when writing the NetworkManager config without a
+  gateway (bsc#1203866)
+- 4.3.86
+
+-------------------------------------------------------------------
 Thu Jul 21 08:38:40 UTC 2022 - Knut Anderssen <kanderssen@suse.com>
 
 - Added a class to generate the configuration needed for a FCoE
