@@ -23,8 +23,6 @@ module Y2Network
   module Backends
     # This class represents the wicked backend
     class Wicked < Backend
-      PACKAGES = ["wicked"].freeze
-
       def initialize
         textdomain "network"
         super(:wicked)
@@ -32,6 +30,10 @@ module Y2Network
 
       def label
         _("Wicked Service")
+      end
+
+      def packages
+        ["wicked"]
       end
     end
   end
