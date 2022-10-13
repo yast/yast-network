@@ -22,6 +22,8 @@
 require_relative "test_helper"
 
 require "yast"
+require "y2network/backend"
+require "y2network/config"
 require "y2network/config"
 require "y2network/routing"
 require "y2network/interface_config_builder"
@@ -33,64 +35,63 @@ describe "LanClass" do
   subject { Yast::Lan }
 
   let(:system_config) { Y2Network::Config.new(interfaces: [], source: :wicked) }
-  let(:backend) { :wicked }
+  let(:backend_id) { :wicked }
+  let(:backend) { Y2Network::Backend.by_id(backend_id) }
 
   describe "#Packages" do
+    let(:backend_installed) { false }
+
     let(:yast_config) do
       Y2Network::Config.new(source: :autoinst).tap do |config|
-        config.backend = backend
+        config.backend = backend_id
       end
     end
 
     before(:each) do
       Yast::Lan.add_config(:yast, yast_config)
+      allow(Yast::Package).to receive(:Installed).and_return(backend_installed)
     end
 
-    context "When NetworkManager is not going to be installed" do
+    context "When wicked is going to be installed" do
       let(:wlan0) { Y2Network::Interface.new("wlan0", type: Y2Network::InterfaceType::WIRELESS) }
       let(:interfaces) { Y2Network::InterfacesCollection.new([wlan0]) }
-      let(:config) { double(interfaces: interfaces, backend: backend) }
+      let(:yast_config) { double(interfaces: interfaces, backend: backend) }
 
-      before(:each) do
-        allow(Yast::Package)
-          .to receive(:Installed)
-          .with("wpa_supplicant")
-          .at_least(:once)
-          .and_return(false)
+      context "and a wlan0 interface is present but wpa_supplicant is not installed" do
+        before do
+          allow(Yast::Package)
+            .to receive(:Installed)
+            .with("wpa_supplicant")
+            .at_least(:once)
+            .and_return(false)
 
-        allow(config)
-          .to receive(:backend?)
-          .and_return(false)
-        allow(config)
-          .to receive(:backend?)
-          .with(backend)
-          .and_return(true)
-        allow(Yast::Lan)
-          .to receive(:yast_config)
-          .and_return(config)
-      end
+          allow(yast_config)
+            .to receive(:backend?)
+            .and_return(false)
+          allow(yast_config)
+            .to receive(:backend?)
+            .with(backend_id)
+            .and_return(true)
+        end
 
-      it "always proposes wpa_supplicant" do
-        allow(Yast::Package)
-          .to receive(:Installed)
-          .with("wpa_supplicant")
-          .and_return(false)
+        it "proposes wpa_supplicant to be installed" do
+          allow(Yast::Package)
+            .to receive(:Installed)
+            .with("wpa_supplicant")
+            .and_return(false)
 
-        expect(Yast::Lan.Packages).to include "wpa_supplicant"
+          expect(Yast::Lan.Packages).to include "wpa_supplicant"
+        end
       end
     end
 
     context "When NetworkManager is selected for the target" do
-      let(:backend) { :network_manager }
+      let(:backend_id) { :network_manager }
 
-      it "lists NetworkManager package" do
-        expect(yast_config).to receive(:backend?).with(:network_manager).and_call_original
-        expect(Yast::Package)
-          .to receive(:Installed)
-          .with("NetworkManager")
-          .at_least(:once)
-          .and_return(false)
-        expect(Yast::Lan.Packages).to include "NetworkManager"
+      context "and the NetworkManager package is not installed" do
+        it "lists NetworkManager package" do
+          expect(Yast::Lan.Packages).to include "NetworkManager"
+        end
       end
     end
   end
@@ -486,12 +487,12 @@ describe "LanClass" do
   end
 
   describe "#Export" do
-    let(:backend) { :wicked }
+    let(:backend_id) { :wicked }
     let(:yast_config) do
       Y2Network::Config.new(source: :autoinst).tap do |config|
         config.hostname.static = "yasties"
         config.hostname.dhcp_hostname = :any
-        config.backend = backend
+        config.backend = backend_id
       end
     end
 
@@ -509,7 +510,7 @@ describe "LanClass" do
     end
 
     context "when NetworkManager is the network service" do
-      let(:backend) { :network_manager }
+      let(:backend_id) { :network_manager }
 
       it "exports the managed attribute as true" do
         expect(subject.Export).to include("managed" => true)
