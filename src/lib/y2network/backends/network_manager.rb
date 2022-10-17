@@ -31,6 +31,10 @@ module Y2Network
       def label
         _("Network Manager")
       end
+
+      def packages
+        ["NetworkManager"]
+      end
     end
   end
 end

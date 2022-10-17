@@ -87,5 +87,12 @@ module Y2Network
     def available?
       Yast::NetworkService.is_backend_available(id)
     end
+
+    # Return a list of the required packages for this backend
+    #
+    # @return [Array<String>] list of packages required by the backend
+    def packages
+      []
+    end
   end
 end
