@@ -652,10 +652,13 @@ module Yast
     # @return [Array] of packages needed when writing the config
     def Packages
       pkgs = []
+      backend = yast_config&.backend
 
-      if yast_config&.backend?(:network_manager)
-        pkgs << "NetworkManager" if !Package.Installed("NetworkManager")
-      elsif !Package.Installed("wpa_supplicant")
+      return pkgs unless backend
+
+      backend.packages.each { |p| pkgs << p if !Package.Installed(p) }
+
+      if (backend.id == :wicked) && !Package.Installed("wpa_supplicant")
         # we have to add wpa_supplicant when wlan is in game, wicked relies on it
         wlan_present = yast_config.interfaces.any? do |iface|
           iface.type == Y2Network::InterfaceType::WIRELESS

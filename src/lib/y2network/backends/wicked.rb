@@ -31,6 +31,10 @@ module Y2Network
       def label
         _("Wicked Service")
       end
+
+      def packages
+        ["wicked"]
+      end
     end
   end
 end
