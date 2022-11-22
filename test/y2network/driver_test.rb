@@ -47,8 +47,9 @@ describe Y2Network::Driver do
 
   describe "#write_options" do
     it "writes options to the underlying system" do
+      options = { "debug" => "16" }
       expect(Yast::SCR).to receive(:Write)
-        .with(Yast::Path.new(".modules.options.virtio_net"), "debug" => "16")
+        .with(Yast::Path.new(".modules.options.virtio_net"), options)
       driver.write_options
     end
   end
