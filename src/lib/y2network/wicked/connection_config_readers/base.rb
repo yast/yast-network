@@ -164,9 +164,20 @@ module Y2Network
           ipaddr = ip.clone
           return ipaddr if ip.prefix?
 
+          assign_ip_netmask(ipaddr, id)
+          assign_ip_prefix(ipaddr, id)
+
+          ipaddr
+        end
+
+        # @param ip      [Y2Network::IPAddress] IP address
+        # @param id      [String] Hash key for the IP Address
+        def assign_ip_netmask(ip, id)
+          netmask = file.netmasks[id]
+          return ip unless netmask
+
           begin
-            netmask = file.netmasks[id]
-            ipaddr.netmask = netmask if netmask
+            ip.netmask = netmask
           rescue StandardError
             issue_location = "file:#{file.path}:NETMASK#{id}"
             issue = Y2Issues::InvalidValue.new(
@@ -174,14 +185,18 @@ module Y2Network
             )
             issues_list << issue
           end
+        end
 
+        # @param ip      [Y2Network::IPAddress] IP address
+        # @param id      [String] Hash key for the IP Address
+        def assign_ip_prefix(ip, id)
           prefix = file.prefixlens[id]
-          return ipaddr unless prefix
+          return ip unless prefix
 
           begin
-            address = ipaddr.address.clone
+            address = ip.address.clone
             address.prefix = prefix
-            ipaddr.prefix = prefix
+            ip.prefix = prefix
           rescue StandardError
             issue_location = "file:#{file.path}:PREFIXLEN#{id}"
             issue = Y2Issues::InvalidValue.new(
@@ -189,8 +204,6 @@ module Y2Network
             )
             issues_list << issue
           end
-
-          ipaddr
         end
 
         # Returns the hostnames for the given connection
