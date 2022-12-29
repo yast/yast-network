@@ -193,8 +193,10 @@ module Y2Network
           prefix = file.prefixlens[id]
           return ip unless prefix
 
+          address = ip.address.clone
           begin
-            address = ip.address.clone
+            # Take advantage of the IPAddress address validations when the prefix is assigned not
+            # allowing an invalid one (bsc#1206551)
             address.prefix = prefix
             ip.prefix = prefix
           rescue StandardError
