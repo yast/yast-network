@@ -145,5 +145,40 @@ describe Y2Network::Wicked::ConnectionConfigReaders::Ethernet do
         expect(issue.message).to include("Invalid value 'automatic'")
       end
     end
+
+    context "when the NETMASK is not valid" do
+      let(:interface_name) { "eth1" }
+
+      before do
+        allow(file).to receive(:netmasks).and_return("_1" => "255.255.252.298")
+      end
+
+      it "registers an issue" do
+        handler.connection_config
+        issue = issues_list.first
+        expect(issue.location.to_s).to eq(
+          "file:/etc/sysconfig/network/ifcfg-eth1:NETMASK_1"
+        )
+        expect(issue.message).to include("Invalid value '255.255.252.298'")
+      end
+    end
+
+    context "when the PREFIXLEN is not valid" do
+      let(:interface_name) { "eth2" }
+
+      before do
+        allow(file).to receive(:prefixlens).and_return("" => 244)
+      end
+
+      it "registers an issue" do
+        handler.connection_config
+        issue = issues_list.first
+        expect(issue.location.to_s).to eq(
+          "file:/etc/sysconfig/network/ifcfg-eth2:PREFIXLEN"
+        )
+        expect(issue.message).to include("Invalid value '244'")
+      end
+    end
+
   end
 end

@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Dec 29 06:44:50 UTC 2022 - Knut Anderssen <kanderssen@suse.com>
+
+- Do not crash when the NETMASK or PREFIXLEN are invalid
+  (bsc#1206551).
+- 4.4.54
+
+-------------------------------------------------------------------
 Mon Oct  3 08:31:33 UTC 2022 - Knut Anderssen <kanderssen@suse.com>
 
 - Do not assume wicked will be installed by default anymore and

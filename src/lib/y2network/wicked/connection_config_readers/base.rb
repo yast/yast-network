@@ -142,7 +142,8 @@ module Y2Network
           @all_ips ||= file.ipaddrs.each_with_object([]) do |(id, ip), all|
             next unless ip.is_a?(Y2Network::IPAddress)
 
-            ip_address = build_ip(ip, file.prefixlens[id], file.netmasks[id])
+            ip_address = build_ip(ip, id)
+
             all << Y2Network::ConnectionConfig::IPConfig.new(
               ip_address,
               id:             id,
@@ -158,15 +159,53 @@ module Y2Network
         # It takes an IP address and, optionally, a prefix or a netmask.
         #
         # @param ip      [Y2Network::IPAddress] IP address
-        # @param prefix  [Integer,nil] Address prefix
-        # @param netmask [String,nil] Netmask
-        def build_ip(ip, prefix, netmask)
+        # @param id      [String] Hash key for the IP Address
+        def build_ip(ip, id)
           ipaddr = ip.clone
           return ipaddr if ip.prefix?
 
-          ipaddr.netmask = netmask if netmask
-          ipaddr.prefix = prefix if prefix
+          assign_ip_netmask(ipaddr, id)
+          assign_ip_prefix(ipaddr, id)
+
           ipaddr
+        end
+
+        # @param ip      [Y2Network::IPAddress] IP address
+        # @param id      [String] Hash key for the IP Address
+        def assign_ip_netmask(ip, id)
+          netmask = file.netmasks[id]
+          return ip unless netmask
+
+          begin
+            ip.netmask = netmask
+          rescue StandardError
+            issue_location = "file:#{file.path}:NETMASK#{id}"
+            issue = Y2Issues::InvalidValue.new(
+              netmask, fallback: nil, location: issue_location
+            )
+            issues_list << issue
+          end
+        end
+
+        # @param ip      [Y2Network::IPAddress] IP address
+        # @param id      [String] Hash key for the IP Address
+        def assign_ip_prefix(ip, id)
+          prefix = file.prefixlens[id]
+          return ip unless prefix
+
+          address = ip.address.clone
+          begin
+            # Take advantage of the IPAddress address validations when the prefix is assigned not
+            # allowing an invalid one (bsc#1206551)
+            address.prefix = prefix
+            ip.prefix = prefix
+          rescue StandardError
+            issue_location = "file:#{file.path}:PREFIXLEN#{id}"
+            issue = Y2Issues::InvalidValue.new(
+              prefix, fallback: nil, location: issue_location
+            )
+            issues_list << issue
+          end
         end
 
         # Returns the hostnames for the given connection
