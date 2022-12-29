@@ -146,7 +146,7 @@ describe Y2Network::Wicked::ConnectionConfigReaders::Ethernet do
       end
     end
 
-    context "when the NETWASK is not valid" do
+    context "when the NETMASK is not valid" do
       let(:interface_name) { "eth1" }
 
       before do
