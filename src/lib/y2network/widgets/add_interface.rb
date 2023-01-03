@@ -30,6 +30,10 @@ module Y2Network
         textdomain "network"
       end
 
+      def init
+        disable if Yast::Lan.yast_config&.backend?(:network_manager)
+      end
+
       def label
         Yast::Label.AddButton
       end

@@ -56,6 +56,7 @@ module Y2Network
 
       def items
         items_list = []
+        return items_list if config.backend?(:network_manager)
         config.interfaces.each { |i| items_list << interface_item(i) }
         config.s390_devices.select(&:offline?).each do |device|
           items_list << device_item(device)
@@ -80,6 +81,7 @@ module Y2Network
 
         change_items(items)
         handle
+        disable if config.backend?(:network_manager)
       end
 
       def help

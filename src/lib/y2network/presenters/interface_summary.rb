@@ -87,7 +87,11 @@ module Y2Network
         end
 
         if hardware.nil? || !hardware.exists?
-          rich << "<b>(" << _("No hardware information") << ")</b><br>"
+          if @config.backend?(:network_manager)
+            rich << "<b>" << _("Network interfaces are managed by Network Manager.") << "</b><br>"
+          else
+            rich << "<b>(" << _("No hardware information") << ")</b><br>"
+          end
         else
           rich << "<b>(" << _("Not connected") << ")</b><br>" if !hardware.link
           rich << "<b>MAC : </b>" << hardware.mac << "<br>" if hardware.mac
@@ -104,9 +108,11 @@ module Y2Network
             rich << Yast::HTML.Bold(dev_name) << "<br>"
           end
 
-          rich << "<p>"
-          rich << _("The device is not configured. Press <b>Edit</b>\nto configure.\n")
-          rich << "</p>"
+          if !@config.backend?(:network_manager)
+            rich << "<p>"
+            rich << _("The device is not configured. Press <b>Edit</b>\nto configure.\n")
+            rich << "</p>"
+          end
         end
         rich
       end
