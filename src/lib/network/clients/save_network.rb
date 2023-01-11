@@ -17,189 +17,81 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2storage"
-require "network/install_inf_convertor"
 require "network/network_autoconfiguration"
 require "network/network_autoyast"
 require "y2network/proposal_settings"
+require "y2network/config_copier"
 
-require "cfa/generic_sysconfig"
-
-require "shellwords"
+Yast.import "Installation"
+Yast.import "DNS"
+Yast.import "Mode"
+Yast.import "Arch"
 
 module Yast
   class SaveNetworkClient < Client
     include Logger
 
-    def main
+    def initialize
       textdomain "network"
+    end
 
-      Yast.import "DNS"
-      Yast.import "FileUtils"
-      Yast.import "Installation"
-      Yast.import "String"
-      Yast.import "Mode"
-      Yast.import "Arch"
-
-      Yast.include self, "network/routines.rb"
-      Yast.include self, "network/complex.rb"
-
+    def main
       # for update system don't copy network from inst_sys (#325738)
-      if !Mode.update
-        save_network
-      else
-        Builtins.y2milestone("update - skip save_network")
-      end
+      return save_network if !Mode.update
+
+      log.info("update - skip save_network")
 
       nil
     end
 
   private
 
-    # Updates ifcfg file as needed when the "/" filesystem is accessed over network
-    #
-    # @param file [String] ifcfg name
-    def adjust_for_network_disks(file)
-      # storage-ng
-      # Check if installation is targeted to a remote destination.
-      devicegraph = Y2Storage::StorageManager.instance.staging
-      is_disk_in_network = devicegraph.filesystem_in_network?("/")
-
-      if !is_disk_in_network
-        log.info("Root filesystem is not on a network based device")
-        return
-      end
-
-      log.info("Root filesystem is on a network based device")
-
-      # tune ifcfg file for remote filesystem
-      SCR.Execute(
-        path(".target.bash"),
-        "/usr/bin/sed -i s/^[[:space:]]*STARTMODE=.*/STARTMODE='nfsroot'/ #{file.shellescape}"
-      )
-    end
-
     ETC = "/etc".freeze
-    SYSCONFIG = "/etc/sysconfig/network".freeze
     NETWORK_MANAGER = "/etc/NetworkManager".freeze
-    # Make unit testing possible
-    ROOT_PATH = "/".freeze
 
-    def CopyConfiguredNetworkFiles
+    COMMON_FILES = [
+      { dir: ETC, file: DNSClass::HOSTNAME_FILE },
+      { dir: ETC, file: "hosts" },
+      # Copy sysctl file as network writes there ip forwarding (bsc#1159295)
+      { dir: ::File.join(ETC, "sysctl.d"), file: "70-yast.conf" }
+    ].freeze
+
+    def copy_common_config
+      copy_udev_rules
       return if Mode.autoinst && !Lan.autoinst.copy_network?
 
-      log.info(
-        "Copy network configuration files from 1st stage into installed system"
-      )
-
-      inst_dir = Installation.destdir
-
-      copy_recipes = [
-        { dir: SYSCONFIG, file: "ifcfg-*" },
-        { dir: SYSCONFIG, file: "ifroute-*" },
-        { dir: SYSCONFIG, file: "routes" },
-        { dir: ::File.join(ETC, "wicked"), file: "common.xml" },
-        { dir: ETC, file: DNSClass::HOSTNAME_FILE },
-        { dir: ETC, file: "hosts" },
-        # Copy sysctl file as network writes there ip forwarding (bsc#1159295)
-        { dir: ::File.join(ETC, "sysctl.d"), file: "70-yast.conf" }
-      ]
-
-      # just copy files
-      copy_recipes.each do |recipe|
-        # can be shell pattern like ifcfg-*
-        file_pattern = ::File.join(ROOT_PATH, recipe[:dir], recipe[:file])
-        copy_to = ::File.join(inst_dir, recipe[:dir])
-        log.info("Processing copy recipe #{file_pattern.inspect}")
-
-        Dir.glob(file_pattern).each do |file|
-          adjust_for_network_disks(file) if file.include?("ifcfg-")
-
-          copy_from = file
-
-          log.info("Copying #{copy_from} to #{copy_to}")
-
-          cmd = "cp #{copy_from.shellescape} #{copy_to.shellescape}"
-          ret = SCR.Execute(path(".target.bash_output"), cmd)
-
-          log.warn("cmd: '#{cmd}' failed: #{ret}") if ret["exit"] != 0
-        end
-      end
-
-      copy_to = String.Quote(::File.join(inst_dir, SYSCONFIG))
-
-      # merge files with default installed by sysconfig
-      ["dhcp", "config"].each do |file|
-        modified_file = ::File.join(ROOT_PATH, SYSCONFIG, file)
-        dest_file = ::File.join(copy_to, file)
-        CFA::GenericSysconfig.merge_files(dest_file, modified_file)
-      end
-      # FIXME: proxy
+      log.info("Copy network configuration files from 1st stage into installed system")
+      copy_dhcp_info
+      COMMON_FILES.each { |e| copy_files_to_target([e[:file]], e[:dir]) }
 
       nil
     end
 
     # Directory containing udev rules
     UDEV_RULES_DIR = "/etc/udev/rules.d".freeze
+    PERSISTENT_RULES = "70-persistent-net.rules".freeze
 
     def copy_udev_rules
-      dest_root = String.Quote(Installation.destdir)
+      if Arch.s390
+        # chzdev creates the rules starting with "41-"
+        log.info("Copy S390 specific udev rule files (/etc/udev/rules/41*)")
+        copy_files_to_target(["41-*"], UDEV_RULES_DIR)
+      end
+
+      if Mode.update
+        log.info("Not copying file #{PERSISTENT_RULES} - update mode")
+      else
+        copy_files_to_target([PERSISTENT_RULES], UDEV_RULES_DIR)
+      end
 
       # Deleting lockfiles and re-triggering udev events for *net is not needed any more
       # (#292375 c#18)
 
-      udev_rules_srcdir = File.join(ROOT_PATH, UDEV_RULES_DIR)
-      net_srcfile = "70-persistent-net.rules"
-
-      udev_rules_destdir = dest_root + UDEV_RULES_DIR
-      net_destfile = dest_root + UDEV_RULES_DIR + "/" + net_srcfile
-
-      log.info("udev_rules_destdir #{udev_rules_destdir}")
-      log.info("net_destfile #{net_destfile}")
-
-      # Do not create udev_rules_destdir if it already exists (in case of update)
-      # (bug #293366, c#7)
-
-      if !FileUtils.Exists(udev_rules_destdir)
-        log.info("#{udev_rules_destdir} does not exist yet, creating it")
-        WFM.Execute(
-          path(".local.bash"),
-          "/usr/bin/mkdir -p #{udev_rules_destdir.shellescape}"
-        )
-      else
-        log.info("File #{udev_rules_destdir} exists")
-      end
-
-      if Arch.s390
-        # chzdev creates the rules starting with "41-"
-        log.info("Copy S390 specific udev rule files (/etc/udev/rules/41*)")
-
-        WFM.Execute(
-          path(".local.bash"),
-          Builtins.sformat(
-            "/bin/cp -p %1/41-* '%2%3'",
-            File.join(ROOT_PATH, UDEV_RULES_DIR),
-            dest_root.shellescape,
-            UDEV_RULES_DIR
-          )
-        )
-      end
-
-      if !Mode.update
-        log.info("Copying #{net_srcfile} to the installed system ")
-        WFM.Execute(
-          path(".local.bash"),
-          "/bin/cp -p #{udev_rules_srcdir.shellescape}/#{net_srcfile.shellescape} " \
-            "#{net_destfile.shellescape}"
-        )
-      else
-        log.info("Not copying file #{net_destfile} - update mode")
-      end
-
       nil
     end
 
-    # Copies parts configuration created during installation.
+    # Copies the configuration created during installation to the target system only when it is
+    # needed
     #
     # Copies several config files which should be preserved when installation
     # is done. E.g. ifcfg-* files, custom udev rules and so on.
@@ -213,14 +105,12 @@ module Yast
       # 1) udev agent doesn't support SetRoot
       # 2) original ifcfg file is copied otherwise too. It doesn't break things itself
       # but definitely not looking well ;-)
-      # TODO: implement support for create udev rules if needed
 
       # The s390 devices activation was part of the rules handling.
       NetworkAutoYast.instance.activate_s390_devices if Mode.autoinst && Arch.s390
 
-      copy_dhcp_info
-      copy_udev_rules
-      CopyConfiguredNetworkFiles()
+      copy_common_config
+      copy_backend_config
 
       # close and chroot back
       WFM.SCRSetDefault(old_SCR)
@@ -229,9 +119,6 @@ module Yast
       nil
     end
 
-    # For copying wicked dhcp files (bsc#1082832)
-    WICKED_DHCP_PATH = "/var/lib/wicked/".freeze
-    WICKED_DHCP_FILES = ["duid.xml", "iaid.xml", "lease*.xml"].freeze
     # For copying dhcp-client leases
     # FIXME: We probably could omit the copy of these leases as we are using
     # wicked during the installation instead of dhclient.
@@ -241,14 +128,19 @@ module Yast
 
     # Convenience method for copying dhcp files
     def copy_dhcp_info
-      entries_to_copy = [
-        { dir: WICKED_DHCP_PATH, files: WICKED_DHCP_FILES },
-        { dir: DHCPV4_PATH, files: DHCP_FILES },
-        { dir: DHCPV6_PATH, files: DHCP_FILES }
-      ]
-
-      entries_to_copy.each { |e| copy_files_to_target(e[:files], e[:dir]) }
+      copy_files_to_target(DHCP_FILES, DHCPV4_PATH)
+      copy_files_to_target(DHCP_FILES, DHCPV6_PATH)
     end
+
+    def copy_backend_config
+      return unless proposal_backend
+
+      log.info("Copying #{proposal_backend} specific config to the target system.")
+      Y2Network::ConfigCopier.for(proposal_backend)&.copy
+    end
+
+    # Make unit testing possible
+    ROOT_PATH = "/".freeze
 
     # Convenvenience method for copying a list of files into the target system.
     # It takes care of creating the target directory but only if some file
@@ -304,16 +196,20 @@ module Yast
       configure_hosts
     end
 
+    def proposal_backend
+      Y2Network::ProposalSettings.instance.network_service
+    end
+
     # Configures NetworkManager
     #
     # When running the live installation, it is just a matter of copying
     # system-connections to the installed system. In a regular installation,
     # write the settings in the Yast::Lan.yast_config object.
     def configure_network_manager
-      return unless Y2Network::ProposalSettings.instance.network_service == :network_manager
+      return unless proposal_backend == :network_manager
 
       if Yast::Lan.system_config.backend&.id == :network_manager
-        copy_files_to_target(["*"], File.join(NETWORK_MANAGER, "system-connections"))
+        copy_backend_config
       else
         Yast::Lan.yast_config.backend = :network_manager
         Yast::Lan.write_config
@@ -336,7 +232,8 @@ module Yast
       # set proper network service
       set_network_service
 
-      # if portmap running - start it after reboot
+      # TODO: Still needed? Why the service is not enabled?
+      # if rpcbind running - start it after reboot (bsc#423026)
       WFM.Execute(
         path(".local.bash"),
         "/sbin/pidofproc rpcbind && /usr/bin/touch /var/lib/YaST2/network_install_rpcbind"
@@ -348,7 +245,6 @@ module Yast
     # Sets default network service
     def set_network_service
       log.info("Setting target system network service")
-      backend = Y2Network::ProposalSettings.instance.network_service
 
       # NetworkServices caches the selected backend. That is, it assumes the
       # state in the inst-sys and the chroot is the same but that is not true
@@ -359,7 +255,7 @@ module Yast
       # running at the same time. (bsc#1202479)
       NetworkService.send(:disable_service, :wicked)
       NetworkService.send(:disable_service, :network_manager)
-      case backend
+      case proposal_backend
       when :network_manager
         log.info("- using NetworkManager")
         NetworkService.use_network_manager
