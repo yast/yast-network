@@ -75,7 +75,10 @@ module Y2Network
       def help
         _(
           "<p><b><big>Overview</big></b><br>\n" \
-           "Obtain an overview of the network interfaces configuration.</p>\n"
+           "Obtain an overview of the network interfaces configuration.<br><br>\n" \
+           "YaST cannot be used to configure network interfaces if <b>Network Manager</b><br>\n" \
+           "is selected as network setup method. Choose <b>Wicked</b> if you prefer to<br>\n" \
+           "configure them with YaST.</p>\n"
         )
       end
 
