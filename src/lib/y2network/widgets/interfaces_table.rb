@@ -67,18 +67,6 @@ module Y2Network
 
       # Workaround for usage in old CWM which also cache content of cwm items
       def init
-        if config.backend?(:network_manager)
-          Yast::Popup.Warning(
-            _(
-              "Network is currently handled by NetworkManager\n" \
-              "or completely disabled. YaST is unable to configure some options."
-            )
-          )
-          # switch to global tab
-          Yast::UI.FakeUserInput("ID" => "global")
-          return
-        end
-
         change_items(items)
         handle
         disable if config.backend?(:network_manager)
