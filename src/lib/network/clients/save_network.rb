@@ -56,38 +56,36 @@ module Yast
       { dir: ::File.join(ETC, "sysctl.d"), file: "70-yast.conf" }
     ].freeze
 
-    def copy_common_config
-      copy_udev_rules
-      return if Mode.autoinst && !Lan.autoinst.copy_network?
-
-      log.info("Copy network configuration files from 1st stage into installed system")
-      copy_dhcp_info
-      COMMON_FILES.each { |e| copy_files_to_target([e[:file]], e[:dir]) }
-
-      nil
-    end
-
     # Directory containing udev rules
     UDEV_RULES_DIR = "/etc/udev/rules.d".freeze
     PERSISTENT_RULES = "70-persistent-net.rules".freeze
 
     def copy_udev_rules
-      if Arch.s390
-        # chzdev creates the rules starting with "41-"
-        log.info("Copy S390 specific udev rule files (/etc/udev/rules/41*)")
-        copy_files_to_target(["41-*"], UDEV_RULES_DIR)
-      end
+      copy_files_to_target([PERSISTENT_RULES], UDEV_RULES_DIR)
 
-      if Mode.update
-        log.info("Not copying file #{PERSISTENT_RULES} - update mode")
-      else
-        copy_files_to_target([PERSISTENT_RULES], UDEV_RULES_DIR)
-      end
+      return unless Arch.s390
 
-      # Deleting lockfiles and re-triggering udev events for *net is not needed any more
-      # (#292375 c#18)
+      # chzdev creates the rules starting with "41-"
+      log.info("Copy S390 specific udev rule files (/etc/udev/rules/41*)")
+      copy_files_to_target(["41-*"], UDEV_RULES_DIR)
 
       nil
+    end
+
+    # Run a block in the instsys
+    #
+    # @param block [Proc] Block to run in instsys
+    def on_local(&block)
+      # skip from chroot
+      old_SCR = WFM.SCRGetDefault
+      new_SCR = WFM.SCROpen("chroot=/:scr", false)
+      WFM.SCRSetDefault(new_SCR)
+
+      block.call
+
+      # close and chroot back
+      WFM.SCRSetDefault(old_SCR)
+      WFM.SCRClose(new_SCR)
     end
 
     # Copies the configuration created during installation to the target system only when it is
@@ -96,25 +94,24 @@ module Yast
     # Copies several config files which should be preserved when installation
     # is done. E.g. ifcfg-* files, custom udev rules and so on.
     def copy_from_instsys
-      # skip from chroot
-      old_SCR = WFM.SCRGetDefault
-      new_SCR = WFM.SCROpen("chroot=/:scr", false)
-      WFM.SCRSetDefault(new_SCR)
+      on_local do
+        # The s390 devices activation was part of the rules handling.
+        NetworkAutoYast.instance.activate_s390_devices if Mode.autoinst && Arch.s390
 
-      # this has to be done here (out of chroot) bcs:
-      # 1) udev agent doesn't support SetRoot
-      # 2) original ifcfg file is copied otherwise too. It doesn't break things itself
-      # but definitely not looking well ;-)
+        # this has to be done here (out of chroot) bcs:
+        # 1) udev agent doesn't support SetRoot
+        # 2) original ifcfg file is copied otherwise too. It doesn't break things itself
+        # but definitely not looking well ;-)
+        copy_udev_rules
+        return if Mode.autoinst && !Lan.autoinst.copy_network?
 
-      # The s390 devices activation was part of the rules handling.
-      NetworkAutoYast.instance.activate_s390_devices if Mode.autoinst && Arch.s390
+        log.info("Copy network configuration files from 1st stage into installed system")
+        copy_dhcp_info
+        COMMON_FILES.each { |e| copy_files_to_target([e[:file]], e[:dir]) }
+      end
 
-      copy_common_config
+      # The backend need to be evaluated inside the chroot due to package installation checking
       copy_backend_config
-
-      # close and chroot back
-      WFM.SCRSetDefault(old_SCR)
-      WFM.SCRClose(new_SCR)
 
       nil
     end
