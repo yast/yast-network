@@ -94,6 +94,8 @@ module Yast
     # Copies several config files which should be preserved when installation
     # is done. E.g. ifcfg-* files, custom udev rules and so on.
     def copy_from_instsys
+      # The backend need to be evaluated inside the chroot due to package installation checking
+      backend = proposal_backend
       on_local do
         # The s390 devices activation was part of the rules handling.
         NetworkAutoYast.instance.activate_s390_devices if Mode.autoinst && Arch.s390
@@ -108,10 +110,8 @@ module Yast
         log.info("Copy network configuration files from 1st stage into installed system")
         copy_dhcp_info
         COMMON_FILES.each { |e| copy_files_to_target([e[:file]], e[:dir]) }
+        copy_config_for(backend)
       end
-
-      # The backend need to be evaluated inside the chroot due to package installation checking
-      copy_backend_config
 
       nil
     end
@@ -129,11 +129,14 @@ module Yast
       copy_files_to_target(DHCP_FILES, DHCPV6_PATH)
     end
 
-    def copy_backend_config
-      return unless proposal_backend
+    # Copy the network configuration of the given backend
+    #
+    # @param backend [Symbol]
+    def copy_config_for(backend)
+      return unless backend
 
-      log.info("Copying #{proposal_backend} specific config to the target system.")
-      Y2Network::ConfigCopier.for(proposal_backend)&.copy
+      log.info("Copying #{backend} specific config to the target system.")
+      Y2Network::ConfigCopier.for(backend)&.copy
     end
 
     # Make unit testing possible
@@ -193,6 +196,9 @@ module Yast
       configure_hosts
     end
 
+    # Convenience method to check the proposal backend
+    #
+    # @see Y2Network::ProposalSettings.instance.network_service
     def proposal_backend
       Y2Network::ProposalSettings.instance.network_service
     end
@@ -206,7 +212,7 @@ module Yast
       return unless proposal_backend == :network_manager
 
       if Yast::Lan.system_config.backend&.id == :network_manager
-        copy_backend_config
+        copy_config_for(:network_manager)
       else
         Yast::Lan.yast_config.backend = :network_manager
         Yast::Lan.write_config

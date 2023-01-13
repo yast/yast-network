@@ -30,11 +30,16 @@ module Y2Network
     include Yast::Logger
     include Yast::I18n
 
-    # @return [Boolean] network service to be used after the installation
+    # @return [Symbol] network service to be used after the installation (:wicked, :network_manager
+    #   or:none)
     attr_accessor :selected_backend
+    # @return [Boolean]
     attr_accessor :virt_bridge_proposal
+    # @return [Boolean]
     attr_accessor :ipv4_forward
+    # @return [Boolean]
     attr_accessor :ipv6_forward
+    # @return [Boolean]
     attr_accessor :defaults_applied
 
     DEFAULTS = [:ipv4_forward, :ipv6_forward].freeze
@@ -159,6 +164,8 @@ module Y2Network
     # Propose the network service to be use at the end of the installation
     # depending on the backend selected during the proposal and the packages
     # installed
+    #
+    # @return [Symbol] :network_manager, :wicked or :none
     def network_service
       case current_backend
       when :network_manager
