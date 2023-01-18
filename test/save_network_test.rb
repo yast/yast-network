@@ -45,8 +45,7 @@ describe Yast::SaveNetworkClient do
     let(:selected_backend) { :wicked }
 
     before do
-      stub_const("Yast::SaveNetworkClient::ROOT_PATH", scr_root)
-      stub_const("Y2Network::ConfigCopier::ROOT_PATH", scr_root)
+      stub_const("Y2Network::Helpers::ROOT_PATH", scr_root)
       allow(Yast::Installation).to receive(:destdir).and_return(destdir)
       allow(Yast::Package).to receive(:Installed).and_return(false)
 

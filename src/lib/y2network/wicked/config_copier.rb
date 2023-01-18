@@ -1,4 +1,4 @@
-# Copyright (c) [2019] SUSE LLC
+# Copyright (c) [2023] SUSE LLC
 #
 # All Rights Reserved.
 #
@@ -19,25 +19,29 @@
 
 require "yast"
 require "y2storage"
-require "y2network/config_copier"
 require "cfa/generic_sysconfig"
+require "y2network/helpers"
 require "shellwords"
 
 module Y2Network
   module Wicked
     # This class copies Wicked specific configuration to the target system
-    class ConfigCopier < Y2Network::ConfigCopier
+    class ConfigCopier
+      include Yast::Logger
+      include Y2Network::Helpers
+
       SYSCONFIG = "/etc/sysconfig/network".freeze
+      WICKED_PATH = "/etc/wicked".freeze
       WICKED_DHCP_PATH = "/var/lib/wicked/".freeze
       WICKED_ENTRIES = [
         { dir: SYSCONFIG, files: ["ifcfg-*", "ifroute-*", "routes"] },
         { dir: WICKED_DHCP_PATH, files: ["duid.xml", "iaid.xml", "lease*.xml"] },
-        { dir: ::File.join(ETC, "wicked"), files: ["common.xml"] }
+        { dir: WICKED_PATH, files: ["common.xml"] }
       ].freeze
 
       def copy
         adjust_files_for_network_disks!
-        WICKED_ENTRIES.each { |e| copy_files_to_target(e[:files], e[:dir]) }
+        WICKED_ENTRIES.each { |e| copy_to_target(e[:dir], include: e[:files]) }
         merge_sysconfig_files
       end
 
@@ -86,7 +90,12 @@ module Y2Network
         ["dhcp", "config"].each do |file|
           modified_file = ::File.join(ROOT_PATH, SYSCONFIG, file)
           dest_file = ::File.join(copy_to, file)
-          CFA::GenericSysconfig.merge_files(dest_file, modified_file)
+          if ::File.exist?(dest_file)
+            CFA::GenericSysconfig.merge_files(dest_file, modified_file)
+          else
+            puts modified_file
+            copy_to_target(modified_file)
+          end
         end
       end
     end

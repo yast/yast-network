@@ -1,4 +1,4 @@
-# Copyright (c) [2019] SUSE LLC
+# Copyright (c) [2023] SUSE LLC
 #
 # All Rights Reserved.
 #
@@ -18,16 +18,17 @@
 # find current contact information at www.suse.com.
 
 require "yast"
-require "y2network/config_copier"
+require "y2network/helpers"
 
 module Y2Network
   module NetworkManager
-    # This class copies Wicked specific configuration to the target system
-    class ConfigCopier < Y2Network::ConfigCopier
-      NETWORK_MANAGER = "/etc/NetworkManager".freeze
+    # This class copies NetworkManager specific configuration to the target system
+    class ConfigCopier
+      include Helpers
+      NETWORK_MANAGER_PATH = "/etc/NetworkManager".freeze
 
       def copy
-        copy_files_to_target(["*"], File.join(NETWORK_MANAGER, "system-connections"))
+        copy_to_target(File.join(NETWORK_MANAGER_PATH, "system-connections"), include: ["*"])
       end
     end
   end

@@ -26,7 +26,7 @@ describe Y2Network::Wicked::ConfigCopier do
   let(:scr_root) { File.join(DATA_PATH, "instsys") }
 
   before do
-    stub_const("Y2Network::ConfigCopier::ROOT_PATH", scr_root)
+    stub_const("Y2Network::Helpers::ROOT_PATH", scr_root)
     allow(Yast::Installation).to receive(:destdir).and_return(destdir)
   end
 
@@ -35,7 +35,24 @@ describe Y2Network::Wicked::ConfigCopier do
   end
 
   describe "#copy" do
+    let(:template_file) { File.join(SCRStub::DATA_PATH, "ifcfg-eth0.template") }
+    let(:file) { File.join(scr_root, sysconfig, "ifcfg-eth0") }
 
+    around do |example|
+      ::FileUtils.cp(template_file, file)
+      example.run
+      ::FileUtils.rm(file)
+    end
+
+    it "copies wicked DHCP files under /var/lib/wicked" do
+      subject.copy
+      expect(File).to exist(File.join(destdir, "var", "lib", "wicked", "lease.xml"))
+    end
+
+    it "copies sysconfig network files under /etc/sysconfig/network dir" do
+      subject.copy
+      expect(File).to exist(File.join(destdir, sysconfig, "ifcfg-eth0"))
+    end
   end
 
   describe "#adjust_files_for_network_disks!" do

@@ -20,7 +20,7 @@
 require "network/network_autoconfiguration"
 require "network/network_autoyast"
 require "y2network/proposal_settings"
-require "y2network/config_copier"
+require "y2network/helpers"
 
 Yast.import "Installation"
 Yast.import "DNS"
@@ -29,6 +29,7 @@ Yast.import "Arch"
 
 module Yast
   class SaveNetworkClient < Client
+    include Y2Network::Helpers
     include Logger
 
     def initialize
@@ -46,28 +47,17 @@ module Yast
 
   private
 
-    ETC = "/etc".freeze
-    NETWORK_MANAGER = "/etc/NetworkManager".freeze
-
-    COMMON_FILES = [
-      { dir: ETC, file: DNSClass::HOSTNAME_FILE },
-      { dir: ETC, file: "hosts" },
-      # Copy sysctl file as network writes there ip forwarding (bsc#1159295)
-      { dir: ::File.join(ETC, "sysctl.d"), file: "70-yast.conf" }
-    ].freeze
-
+    SYSCTL_PATH = "/etc/sysctl.d/70-yast.conf".freeze
     # Directory containing udev rules
     UDEV_RULES_DIR = "/etc/udev/rules.d".freeze
     PERSISTENT_RULES = "70-persistent-net.rules".freeze
 
     def copy_udev_rules
-      copy_files_to_target([PERSISTENT_RULES], UDEV_RULES_DIR)
-
-      return unless Arch.s390
-
+      files = [PERSISTENT_RULES]
       # chzdev creates the rules starting with "41-"
-      log.info("Copy S390 specific udev rule files (/etc/udev/rules/41*)")
-      copy_files_to_target(["41-*"], UDEV_RULES_DIR)
+      files << "41-*" if Arch.s390
+
+      copy_to_target(UDEV_RULES_DIR, include: files)
 
       nil
     end
@@ -109,10 +99,23 @@ module Yast
 
         log.info("Copy network configuration files from 1st stage into installed system")
         copy_dhcp_info
-        COMMON_FILES.each { |e| copy_files_to_target([e[:file]], e[:dir]) }
-        copy_config_for(backend)
+        config_copier_for(backend)&.copy
       end
 
+      nil
+    end
+
+    # Convenience method to obtain a config copier for the given backend
+    #
+    # @param source [Symbol, String]
+    def config_copier_for(source)
+      require "y2network/#{source}/config_copier"
+
+      modname = source.to_s.split("_").map(&:capitalize).join
+      klass = Y2Network.const_get("#{modname}::ConfigCopier")
+      klass.new
+    rescue LoadError, NameError => e
+      log.info("There is no config copier for #{source}. #{e.inspect}")
       nil
     end
 
@@ -123,41 +126,15 @@ module Yast
     DHCPV6_PATH = "/var/lib/dhcp6/".freeze
     DHCP_FILES = ["*.leases"].freeze
 
+    def copy_common_files
+      copy_to_target("/etc", include: ["hosts", DNSClass::HOSTNAME_FILE])
+      copy_to_target(SYSCTL_PATH)
+    end
+
     # Convenience method for copying dhcp files
     def copy_dhcp_info
-      copy_files_to_target(DHCP_FILES, DHCPV4_PATH)
-      copy_files_to_target(DHCP_FILES, DHCPV6_PATH)
-    end
-
-    # Copy the network configuration of the given backend
-    #
-    # @param backend [Symbol]
-    def copy_config_for(backend)
-      return unless backend
-
-      log.info("Copying #{backend} specific config to the target system.")
-      Y2Network::ConfigCopier.for(backend)&.copy
-    end
-
-    # Make unit testing possible
-    ROOT_PATH = "/".freeze
-
-    # Convenvenience method for copying a list of files into the target system.
-    # It takes care of creating the target directory but only if some file
-    # needs to be copied
-    #
-    # @param files [Array<String>] list of short filenames to be copied
-    # @param path [String] path where the files resides and where will be
-    # copied in the target system
-    # @return [Boolean] whether some file was copied
-    def copy_files_to_target(files, path)
-      dest_dir = ::File.join(Installation.destdir, path)
-      glob_files = ::Dir.glob(files.map { |f| File.join(ROOT_PATH, path, f) })
-      return false if glob_files.empty?
-
-      ::FileUtils.mkdir_p(dest_dir)
-      ::FileUtils.cp(glob_files, dest_dir, preserve: true)
-      true
+      copy_to_target(DHCPV4_PATH, include: DHCP_FILES)
+      copy_to_target(DHCPV6_PATH, include: DHCP_FILES)
     end
 
     # Creates target's /etc/hosts configuration
@@ -212,7 +189,7 @@ module Yast
       return unless proposal_backend == :network_manager
 
       if Yast::Lan.system_config.backend&.id == :network_manager
-        copy_config_for(:network_manager)
+        config_copier_for(:network_manager)&.copy
       else
         Yast::Lan.yast_config.backend = :network_manager
         Yast::Lan.write_config
