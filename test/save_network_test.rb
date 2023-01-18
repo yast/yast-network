@@ -75,6 +75,13 @@ describe Yast::SaveNetworkClient do
       FileUtils.remove_entry(destdir) if Dir.exist?(destdir)
     end
 
+    it "copies /etc/hostname and /etc/hosts when exist" do
+      subject.main
+      expect(File).to_not exist(File.join(destdir, "etc", "hosts"))
+      content = File.read(File.join(destdir, "etc", "hostname"))
+      expect(content).to match(/test/)
+    end
+
     it "copies wicked and DHCP files under /var/lib" do
       subject.main
       expect(File).to exist(File.join(destdir, "var", "lib", "dhcp", "dhclient.leases"))

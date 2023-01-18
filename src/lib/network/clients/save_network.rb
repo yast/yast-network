@@ -99,6 +99,7 @@ module Yast
 
         log.info("Copy network configuration files from 1st stage into installed system")
         copy_dhcp_info
+        copy_common_files
         config_copier_for(backend)&.copy
       end
 
