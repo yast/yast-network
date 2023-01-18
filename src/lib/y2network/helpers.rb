@@ -47,7 +47,6 @@ module Y2Network
       return false if glob_files.empty?
 
       log.info("Copying '#{glob_files.join(",")}' to '#{dest_path}'.")
-      puts("Copying '#{glob_files.join(",")}' to '#{dest_path}'.")
 
       ::FileUtils.mkdir_p(include ? dest_path : dest_path.dirname)
       ::FileUtils.cp(glob_files, dest_path, preserve: true)

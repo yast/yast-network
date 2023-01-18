@@ -93,7 +93,6 @@ module Y2Network
           if ::File.exist?(dest_file)
             CFA::GenericSysconfig.merge_files(dest_file, modified_file)
           else
-            puts modified_file
             copy_to_target(modified_file)
           end
         end
