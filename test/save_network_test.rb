@@ -20,7 +20,6 @@
 # find current contact information at www.suse.com.
 
 require_relative "test_helper"
-require "y2storage"
 
 require "yast"
 require "y2network/config"
@@ -29,6 +28,7 @@ require "network/clients/save_network"
 require "tmpdir"
 
 Yast.import "Installation"
+Yast.import "DNS"
 
 describe Yast::SaveNetworkClient do
   describe "#main" do
@@ -45,7 +45,7 @@ describe Yast::SaveNetworkClient do
     let(:selected_backend) { :wicked }
 
     before do
-      stub_const("Yast::SaveNetworkClient::ROOT_PATH", scr_root)
+      stub_const("Y2Network::Helpers::ROOT_PATH", scr_root)
       allow(Yast::Installation).to receive(:destdir).and_return(destdir)
       allow(Yast::Package).to receive(:Installed).and_return(false)
 
@@ -73,6 +73,13 @@ describe Yast::SaveNetworkClient do
 
     after do
       FileUtils.remove_entry(destdir) if Dir.exist?(destdir)
+    end
+
+    it "copies /etc/hostname and /etc/hosts when exist" do
+      subject.main
+      expect(File).to_not exist(File.join(destdir, "etc", "hosts"))
+      content = File.read(File.join(destdir, "etc", "hostname"))
+      expect(content).to match(/test/)
     end
 
     it "copies wicked and DHCP files under /var/lib" do
@@ -267,47 +274,6 @@ describe Yast::SaveNetworkClient do
       it "does not modify the network" do
         expect(subject).to_not receive(:save_network)
         subject.main
-      end
-    end
-  end
-
-  describe "#adjust_for_network_disks" do
-    let(:template_file) { File.join(SCRStub::DATA_PATH, "ifcfg-eth0.template") }
-    let(:file) { File.join(SCRStub::DATA_PATH, "ifcfg-eth0") }
-
-    around do |example|
-      ::FileUtils.cp(template_file, file)
-      example.run
-      ::FileUtils.rm(file)
-    end
-
-    before do
-      Y2Storage::StorageManager.create_test_instance
-
-      staging = Y2Storage::StorageManager.instance.staging
-      allow(staging).to receive(:filesystem_in_network?).with("/").and_return(in_network)
-      allow(subject).to receive(:save_network)
-      # Mainly for import
-      subject.main
-    end
-
-    context "when the root filesystem of the target system is in a network device" do
-      let(:in_network) { true }
-
-      it "tunes ifcfg file for remote filesystem" do
-        expect(Yast::SCR).to receive(:Execute).with(anything, /nfsroot/).once
-        subject.send(:adjust_for_network_disks, file)
-        expect(::File.read(file)).to include("STARTMODE=nfsroot")
-      end
-    end
-
-    context "when the root filesystem of the target system is in a local device" do
-      let(:in_network) { false }
-
-      it "does not touch any configuration file" do
-        expect(Yast::SCR).to_not receive(:Execute).with(anything, /nfsroot/)
-        subject.send(:adjust_for_network_disks, file)
-        expect(::File.read(file)).to eq(::File.read(template_file))
       end
     end
   end
