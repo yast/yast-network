@@ -86,14 +86,14 @@ describe Yast::NetworkAutoconfiguration do
 
   describe "#any_iface_active?" do
     let(:active) { false }
-    let(:ibft_interfaces) { [] }
+    let(:firmware_interfaces) { [] }
     let(:eth1) { Y2Network::Interface.new("eth1") }
     let(:interfaces) { Y2Network::InterfacesCollection.new([eth1, eth0]) }
 
     before do
       allow(instance).to receive(:active_config?).with("eth1").and_return(false)
       allow(instance).to receive(:active_config?).with("eth0").and_return(active)
-      allow(instance).to receive(:ibft_interfaces).and_return(ibft_interfaces)
+      allow(instance).to receive(:firmware_interfaces).and_return(firmware_interfaces)
     end
 
     it "returns false if there is no interface UP" do
@@ -103,8 +103,8 @@ describe Yast::NetworkAutoconfiguration do
     context "when at least one interface is UP" do
       let(:active) { true }
 
-      context "and the interface is configured through iBFT" do
-        let(:ibft_interfaces) { [eth0.name] }
+      context "and the interface is configured through firmware" do
+        let(:firmware_interfaces) { [eth0.name] }
 
         it "returns true" do
           expect(instance.any_iface_active?).to be true
@@ -128,12 +128,12 @@ describe Yast::NetworkAutoconfiguration do
   end
 
   describe "#dhcp_candidate?" do
-    let(:ibft_interfaces) { [] }
+    let(:firmware_interfaces) { [] }
     let(:connected) { true }
     let(:connections) { Y2Network::ConnectionConfigsCollection.new([]) }
 
     before do
-      allow(instance).to receive(:ibft_interfaces).and_return(ibft_interfaces)
+      allow(instance).to receive(:firmware_interfaces).and_return(firmware_interfaces)
       allow(instance).to receive(:phy_connected?).with(eth0.name).and_return(connected)
     end
 
@@ -145,8 +145,8 @@ describe Yast::NetworkAutoconfiguration do
       end
     end
 
-    context "when the given interface is configured by iBFT" do
-      let(:ibft_interfaces) { [eth0.name] }
+    context "when the given interface is configured by firmware" do
+      let(:firmware_interfaces) { [eth0.name] }
 
       it "returns false" do
         expect(instance.dhcp_candidate?(eth0)).to eql(false)

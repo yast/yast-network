@@ -26,6 +26,7 @@ module Yast
     BASH_PATH = Path.new(".target.bash")
     BASH_OUTPUT_PATH = Path.new(".target.bash_output")
     IBFT_CMD = "/etc/wicked/extensions/ibft".freeze
+    WICKED_PATH = "/usr/sbin/wicked".freeze
 
     # Reloads configuration for each device named in devs
     #
@@ -84,6 +85,14 @@ module Yast
     # @return [Array <String>] array of interface names
     def ibft_interfaces
       Yast::Execute.stdout.locally!(IBFT_CMD, "-l").gsub("\n", " ").split(" ").uniq
+    end
+
+    # Returns an array of interface names which are configured via firmware
+    #
+    # @return [Array <String>] array of interface names
+    def firmware_interfaces
+      output = Yast::Execute.stdout.locally!(WICKED_PATH, "firmware", "interfaces")
+      output.gsub(/^(ibft|nbft|redfish)/, "").gsub("\n", " ").split(" ").uniq
     end
   end
 end

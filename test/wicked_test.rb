@@ -77,4 +77,21 @@ describe Yast::Wicked do
       expect(subject.ibft_interfaces).to eql(["eth0.42", "eth0", "eth1"])
     end
   end
+
+  describe "#firmware_interfaces" do
+    let(:stdout) { instance_double("Yast::Execute") }
+
+    before do
+      allow(Yast::Execute).to receive(:stdout).and_return(stdout)
+      allow(stdout).to receive(:locally!).and_return(
+        "ibft    eth1 eth1.10\nibft    eth2 ibft\n" \
+        "nbft    eth3\nredfish usb0 usb0.42"
+      )
+    end
+
+    it "returns an array of the interfaces configured by firmware" do
+      expect(subject.firmware_interfaces)
+        .to eql(["eth1", "eth1.10", "eth2", "ibft", "eth3", "usb0", "usb0.42"])
+    end
+  end
 end

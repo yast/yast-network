@@ -51,11 +51,11 @@ module Yast
       config.interfaces.any? do |interface|
         next false unless active_config?(interface.name)
 
-        config.connections.by_name(interface.name) || ibft_interfaces.include?(interface.name)
+        config.connections.by_name(interface.name) || firmware_interfaces.include?(interface.name)
       end
     end
 
-    # Return true if the given interface is connected but it is not configured by iBFT or via an
+    # Return true if the given interface is connected but it is not configured by firmware or via an
     # ifcfg file.
     #
     # Note: (it speeds up the initialization phase of installer - bnc#872319)
@@ -63,7 +63,7 @@ module Yast
     # @return [Boolean]
     def dhcp_candidate?(interface)
       return false if config.connections.by_name(interface.name)
-      return false if ibft_interfaces.include?(interface.name)
+      return false if firmware_interfaces.include?(interface.name)
 
       phy_connected?(interface.name)
     end
