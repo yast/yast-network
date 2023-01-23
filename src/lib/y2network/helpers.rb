@@ -46,10 +46,11 @@ module Y2Network
       glob_files = ::Dir.glob(files)
       return false if glob_files.empty?
 
-      log.info("Copying '#{glob_files.join(",")}' to '#{dest_path}'.")
+      dest_dir = include ? dest_path : ::File.dirname(dest_path)
+      log.info("Copying '#{glob_files.join(",")}' to '#{dest_dir}'.")
 
-      ::FileUtils.mkdir_p(include ? dest_path : dest_path.dirname)
-      ::FileUtils.cp(glob_files, dest_path, preserve: true)
+      ::FileUtils.mkdir_p(dest_dir)
+      ::FileUtils.cp(glob_files, dest_dir, preserve: true)
       true
     end
   end
