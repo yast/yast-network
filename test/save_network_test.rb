@@ -75,7 +75,7 @@ describe Yast::SaveNetworkClient do
       FileUtils.remove_entry(destdir) if Dir.exist?(destdir)
     end
 
-    it "copies /etc/sysctl.d/70-yast.conf config when exist" do
+    it "copies /etc/sysctl.d/70-yast.conf config when it exists" do
       subject.main
       expect(File).to exist(File.join(destdir, "etc", "sysctl.d", "70-yast.conf"))
     end
