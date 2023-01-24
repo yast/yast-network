@@ -106,7 +106,7 @@ describe "LanClass" do
         Y2Network::ProposalSettings.create_instance
       end
 
-      it "checks the AutoYAST selected backend" do
+      it "checks the AutoYaST selected backend" do
         expect(Yast::Package).to receive(:Installed).with("NetworkManager", target: :autoinst)
         Yast::Lan.Packages
       end
