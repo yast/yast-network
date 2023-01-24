@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Jan 24 09:37:43 UTC 2023 - Knut Anderssen <kanderssen@suse.com>
+
+- Fix the return of packages needed by the selected backend when
+  running an autoinstallation (bsc#1207221)
+- 4.5.14
+
+-------------------------------------------------------------------
 Mon Jan 23 13:13:36 UTC 2023 - Knut Anderssen <kanderssen@suse.com>
 
 - Fixed dirname evaluation when creating the directory for the
