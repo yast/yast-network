@@ -72,15 +72,8 @@ module Y2Network
 
       # Explicitly selected backend according to the AY options given
       #
-      # @return [Y2Network::Backend, nil]
-      def selected_backend
-        Y2Network::Backend.all.find { |b| b.id == selected_backend_id }
-      end
-
-      # Explicitly selected backend id according to the AY options given
-      #
       # @return [Symbol, nil]
-      def selected_backend_id
+      def selected_backend
         return backend.to_sym unless [nil, ""].include?(backend)
         return if managed.nil?
 

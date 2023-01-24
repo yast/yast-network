@@ -230,7 +230,7 @@ module Y2Network
     end
 
     def autoinst_backend
-      Yast::Lan.autoinst.selected_backend_id
+      Yast::Lan.autoinst.selected_backend
     end
 
     # Convenience method to check whether the bridge configuration proposal for

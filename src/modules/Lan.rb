@@ -41,6 +41,7 @@ require "y2network/virtualization_config"
 require "y2network/interface_config_builder"
 require "y2network/presenters/summary"
 require "y2network/interface_type"
+require "y2network/proposal_settings"
 require "y2issues"
 
 require "shellwords"
@@ -651,7 +652,12 @@ module Yast
     #
     # @return [Array] of packages needed when writing the config
     def Packages
-      backend = Mode.autoinst ? autoinst.selected_backend : yast_config&.backend
+      backend = if Mode.autoinst
+        Y2Network::Backend.all.find { |b| b.id == Y2Network::ProposalSettings.instance.current_backend }
+      else
+        yast_config&.backend
+      end
+
       return [] unless backend
 
       pkgs = []
