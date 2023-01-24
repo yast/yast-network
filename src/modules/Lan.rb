@@ -651,12 +651,11 @@ module Yast
     #
     # @return [Array] of packages needed when writing the config
     def Packages
-      pkgs = []
       backend = Mode.autoinst ? autoinst.selected_backend : yast_config&.backend
+      return [] unless backend
 
-      return pkgs unless backend
+      pkgs = []
       target = Mode.autoinst ? :autoinst : :system
-
       backend.packages.each { |p| pkgs << p if !Package.Installed(p, target: target) }
 
       if (backend.id == :wicked) && !Package.Installed("wpa_supplicant")

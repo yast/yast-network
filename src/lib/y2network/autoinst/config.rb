@@ -49,8 +49,8 @@ module Y2Network
       # @option opts [Boolean] :keep_install_network
       # @option opts [Integer] :ip_check_timetout
       # @option opts [Boolean] :virt_bridge_proposal
-      # @options opts [Boolean] :managed
-      # @options opts [String, Symbol] :backend
+      # @option opts [Boolean] :managed
+      # @option opts [String, Symbol] :backend
       def initialize(opts = {})
         ay_options = opts.reject { |_k, v| v.nil? }
 
@@ -72,8 +72,15 @@ module Y2Network
 
       # Explicitly selected backend according to the AY options given
       #
-      # @return [Symbol, nil]
+      # @return [Y2Network::Backend, nil]
       def selected_backend
+        Y2Network::Backend.all.find { |b| b.id == selected_backend_id }
+      end
+
+      # Explicitly selected backend id according to the AY options given
+      #
+      # @return [Symbol, nil]
+      def selected_backend_id
         return backend.to_sym unless [nil, ""].include?(backend)
         return if managed.nil?
 

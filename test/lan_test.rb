@@ -37,6 +37,7 @@ describe "LanClass" do
   let(:system_config) { Y2Network::Config.new(interfaces: [], source: :wicked) }
   let(:backend_id) { :wicked }
   let(:backend) { Y2Network::Backend.by_id(backend_id) }
+  let(:autoinst) { false }
 
   describe "#Packages" do
     let(:backend_installed) { false }
@@ -49,6 +50,8 @@ describe "LanClass" do
 
     before(:each) do
       Yast::Lan.add_config(:yast, yast_config)
+      Yast::Lan.autoinst.backend = backend_id
+      allow(Yast::Mode).to receive(:autoinst).and_return(autoinst)
       allow(Yast::Package).to receive(:Installed).and_return(backend_installed)
     end
 
@@ -92,6 +95,23 @@ describe "LanClass" do
         it "lists NetworkManager package" do
           expect(Yast::Lan.Packages).to include "NetworkManager"
         end
+      end
+    end
+
+    context "when running in autoinstallation" do
+      let(:autoinst) { true }
+
+      before do
+        Yast::Lan.autoinst.backend = :network_manager
+      end
+
+      it "checks the AutoYAST selected backend" do
+        expect(Yast::Package).to receive(:Installed).with("NetworkManager", target: :autoinst)
+        Yast::Lan.Packages
+      end
+
+      it "lists the package needed by the installation if not in the Resolvables" do
+        expect(Yast::Lan.Packages).to include "NetworkManager"
       end
     end
   end
