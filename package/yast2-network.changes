@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Jan 23 13:13:36 UTC 2023 - Knut Anderssen <kanderssen@suse.com>
+
+- Fixed dirname evaluation when creating the directory for the
+  configuration files to be copied to the target system
+  (bsc#1206723, bsc#1207382)
+- 4.5.13
+
+-------------------------------------------------------------------
 Thu Jan 12 11:45:25 UTC 2023 - Knut Anderssen <kanderssen@suse.com>
 
 - Copy only the specific backend configuration to the target system
