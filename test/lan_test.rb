@@ -80,7 +80,7 @@ describe "LanClass" do
         it "proposes wpa_supplicant to be installed" do
           allow(Yast::Package)
             .to receive(:Installed)
-            .with("wpa_supplicant")
+            .with("wpa_supplicant", target: :system)
             .and_return(false)
 
           expect(Yast::Lan.Packages).to include "wpa_supplicant"
@@ -103,6 +103,7 @@ describe "LanClass" do
 
       before do
         Yast::Lan.autoinst.backend = :network_manager
+        Y2Network::ProposalSettings.create_instance
       end
 
       it "checks the AutoYAST selected backend" do
