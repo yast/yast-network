@@ -49,6 +49,8 @@ module Y2Network
       # @option opts [Boolean] :keep_install_network
       # @option opts [Integer] :ip_check_timetout
       # @option opts [Boolean] :virt_bridge_proposal
+      # @option opts [Boolean] :managed
+      # @option opts [String, Symbol] :backend
       def initialize(opts = {})
         ay_options = opts.reject { |_k, v| v.nil? }
 
@@ -58,7 +60,7 @@ module Y2Network
         @ip_check_timeout = ay_options.fetch(:ip_check_timeout, -1)
         @virt_bridge_proposal = ay_options.fetch(:virt_bridge_proposal, true)
         @managed              = ay_options[:managed]
-        @backend              = ay_options[:backend]
+        @backend              = ay_options[:backend]&.to_sym
       end
 
       # Return whether the network should be copied at the end
@@ -66,6 +68,16 @@ module Y2Network
       # @return [Boolean]
       def copy_network?
         keep_install_network || before_proposal
+      end
+
+      # Explicitly selected backend according to the AY options given
+      #
+      # @return [Symbol, nil]
+      def selected_backend
+        return backend.to_sym unless [nil, ""].include?(backend)
+        return if managed.nil?
+
+        managed ? :network_manager : :wicked
       end
     end
   end

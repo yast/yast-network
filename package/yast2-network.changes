@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Jan 24 09:37:43 UTC 2023 - Knut Anderssen <kanderssen@suse.com>
+
+- Fix the return of packages needed by the selected backend when
+  running an autoinstallation (bsc#1207221)
+- 4.4.55
+
+-------------------------------------------------------------------
 Thu Dec 29 06:44:50 UTC 2022 - Knut Anderssen <kanderssen@suse.com>
 
 - Do not crash when the NETMASK or PREFIXLEN are invalid

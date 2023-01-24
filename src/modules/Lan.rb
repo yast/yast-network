@@ -41,6 +41,7 @@ require "y2network/virtualization_config"
 require "y2network/interface_config_builder"
 require "y2network/presenters/summary"
 require "y2network/interface_type"
+require "y2network/proposal_settings"
 require "y2issues"
 
 require "shellwords"
@@ -651,27 +652,32 @@ module Yast
     #
     # @return [Array] of packages needed when writing the config
     def Packages
-      pkgs = []
-      backend = yast_config&.backend
+      backend = if Mode.autoinst
+        Y2Network::Backend.all.find { |b| b.id == proposal_settings.current_backend }
+      else
+        yast_config&.backend
+      end
+      return [] unless backend
 
-      return pkgs unless backend
+      target = Mode.autoinst ? :autoinst : :system
+      needed_packages = backend.packages.reject { |p| Package.Installed(p, target: target) }
 
-      backend.packages.each { |p| pkgs << p if !Package.Installed(p) }
-
-      if (backend.id == :wicked) && !Package.Installed("wpa_supplicant")
+      if (backend.id == :wicked) && !Package.Installed("wpa_supplicant", target: target)
         # we have to add wpa_supplicant when wlan is in game, wicked relies on it
         wlan_present = yast_config.interfaces.any? do |iface|
           iface.type == Y2Network::InterfaceType::WIRELESS
         end
 
-        pkgs << "wpa_supplicant" if wlan_present
+        needed_packages << "wpa_supplicant" if wlan_present
       end
 
-      pkgs.uniq!
+      needed_packages.uniq!
 
-      log.info("Additional packages requested by yast2-network: #{pkgs.inspect}") if !pkgs.empty?
+      unless needed_packages.empty?
+        log.info("Additional packages requested by yast2-network: #{needed_packages.inspect}")
+      end
 
-      pkgs
+      needed_packages
     end
 
     # @return [Array] of packages needed when writing the config in autoinst
@@ -841,6 +847,10 @@ module Yast
       return if ay_settings.empty?
 
       Y2Network::Autoinst::Config.new(ay_settings)
+    end
+
+    def proposal_settings
+      Y2Network::ProposalSettings.instance
     end
 
     def autoinst_settings(section)
