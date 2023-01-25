@@ -84,7 +84,7 @@ module Yast
     #
     # @return [Array <String>] array of interface names
     def ibft_interfaces
-      Yast::Execute.stdout.locally!(IBFT_CMD, "-l").gsub("\n", " ").split(" ").uniq
+      Yast::Execute.stdout.locally!(IBFT_CMD, "-l").gsub("\n", " ").split(/\s+/).uniq
     end
 
     # Returns an array of interface names which are configured via firmware
@@ -92,7 +92,7 @@ module Yast
     # @return [Array <String>] array of interface names
     def firmware_interfaces
       output = Yast::Execute.stdout.locally!(WICKED_PATH, "firmware", "interfaces")
-      interfaces = output.gsub(/^(ibft|nbft|redfish)/, "").gsub("\n", " ").split(" ")
+      interfaces = output.gsub(/^(ibft|nbft|redfish)\s+/, "").gsub("\n", " ").split(/\s+/)
       (ibft_interfaces + interfaces).uniq
     end
   end
