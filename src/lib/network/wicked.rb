@@ -92,7 +92,8 @@ module Yast
     # @return [Array <String>] array of interface names
     def firmware_interfaces
       output = Yast::Execute.stdout.locally!(WICKED_PATH, "firmware", "interfaces")
-      output.gsub(/^(ibft|nbft|redfish)/, "").gsub("\n", " ").split(" ").uniq
+      interfaces = output.gsub(/^(ibft|nbft|redfish)/, "").gsub("\n", " ").split(" ")
+      (ibft_interfaces + interfaces).uniq
     end
   end
 end
