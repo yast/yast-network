@@ -72,7 +72,6 @@ module Yast
       WFM.SCRSetDefault(new_SCR)
 
       block.call
-
     ensure
       # close and chroot back
       WFM.SCRSetDefault(old_SCR)
