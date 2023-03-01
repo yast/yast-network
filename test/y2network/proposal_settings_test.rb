@@ -28,6 +28,7 @@ describe Y2Network::ProposalSettings do
   let(:feature) { { "network" => { "network_manager" => "always" } } }
 
   before do
+    Yast::Lan.autoinst = nil
     allow_any_instance_of(Y2Network::ProposalSettings)
       .to receive(:network_manager_available?).and_return(nm_available)
     stub_features(feature)
