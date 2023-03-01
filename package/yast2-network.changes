@@ -2,7 +2,7 @@
 Wed Mar  1 14:52:46 UTC 2023 - Knut Anderssen <kanderssen@suse.com>
 
 - Fixed a random build failure (introduced by the previous fix for
-  bsc#1207221)
+  bsc#1207221) (bsc#1208796).
 - 4.4.56
 
 -------------------------------------------------------------------
