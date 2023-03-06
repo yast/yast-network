@@ -56,6 +56,7 @@ module Y2Network
 
       def items
         items_list = []
+        return items_list if config.backend?(:network_manager)
         config.interfaces.each { |i| items_list << interface_item(i) }
         config.s390_devices.select(&:offline?).each do |device|
           items_list << device_item(device)
@@ -66,26 +67,18 @@ module Y2Network
 
       # Workaround for usage in old CWM which also cache content of cwm items
       def init
-        if config.backend?(:network_manager)
-          Yast::Popup.Warning(
-            _(
-              "Network is currently handled by NetworkManager\n" \
-              "or completely disabled. YaST is unable to configure some options."
-            )
-          )
-          # switch to global tab
-          Yast::UI.FakeUserInput("ID" => "global")
-          return
-        end
-
         change_items(items)
         handle
+        disable if config.backend?(:network_manager)
       end
 
       def help
         _(
           "<p><b><big>Overview</big></b><br>\n" \
-           "Obtain an overview of the network interfaces configuration.</p>\n"
+           "Obtain an overview of the network interfaces configuration.<br><br>\n" \
+           "YaST cannot be used to configure network interfaces if <b>Network Manager</b><br>\n" \
+           "is selected as network setup method. Choose <b>Wicked</b> if you prefer to<br>\n" \
+           "configure them with YaST.</p>\n"
         )
       end
 

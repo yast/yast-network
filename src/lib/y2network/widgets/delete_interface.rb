@@ -41,6 +41,7 @@ module Y2Network
       # @see CWM::AbstractWidget#init
       def init
         disable unless @table.value
+        disable if Yast::Lan.yast_config&.backend?(:network_manager)
       end
 
       def handle
