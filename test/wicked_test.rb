@@ -107,6 +107,11 @@ describe Yast::Wicked do
     let(:stdout) { instance_double("Yast::Execute") }
     let(:output) { "ibft    eth1 eth1.10\nibft\teth2 ibft0\nnbft    nbft0\nredfish usb0 usb0.42" }
     let(:ibft_interfaces) { ["eth1", "eth1.10"] }
+    let(:interfaces_by_extension) do
+      { "ibft"    => ["eth1", "eth1.10", "eth2", "ibft0"],
+        "nbft"    => ["nbft0"],
+        "redfish" => ["usb0", "usb0.42"] }
+    end
 
     before do
       allow(Yast::Execute).to receive(:stdout).and_return(stdout)
@@ -115,11 +120,7 @@ describe Yast::Wicked do
     end
 
     it "returns an array of the interfaces configured by firmware" do
-      expect(subject.firmware_interfaces_by_extension).to eql(
-        { "ibft" => ["eth1", "eth1.10", "eth2", "ibft0"],
-          "nbft" => ["nbft0"],
-          "redfish" => ["usb0", "usb0.42"]}
-      )
+      expect(subject.firmware_interfaces_by_extension).to eql(interfaces_by_extension)
     end
 
     context "when `wicked firmware interfaces` is not present" do

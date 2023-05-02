@@ -50,7 +50,7 @@ module Y2Network
                   Id(:bootproto_none),
                   Opt(:notify),
                   _("No Link and IP Setup (Bond Ports)")
-                ),
+                )
               )
             ),
             Left(

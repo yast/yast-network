@@ -101,7 +101,7 @@ module Y2Network
     private
 
       def refresh_handlers
-        @handlers.each { |h| h.init }
+        @handlers.each(&:init)
       end
 
       def note(interface, conn)

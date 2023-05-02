@@ -112,7 +112,7 @@ module Yast
     #
     # @return [String, nil] Firmware extension used for configuring the interface or nil
     def firmware_configured_by?(interface)
-      firmware_interfaces_by_extension.find { |k, v| v.include?(interface)}&.first
+      firmware_interfaces_by_extension.find { |_, v| v.include?(interface) }&.first
     end
   end
 end
