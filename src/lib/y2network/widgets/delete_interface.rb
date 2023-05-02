@@ -25,6 +25,14 @@ Yast.import "Popup"
 module Y2Network
   module Widgets
     class DeleteInterface < InterfaceButton
+      # Constructor
+      #
+      # @param table [InterfacesTable]
+      def initialize(table)
+        textdomain "network"
+        super(table)
+      end
+
       def label
         Yast::Label.DeleteButton
       end

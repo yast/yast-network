@@ -22,6 +22,14 @@ require "y2network/widgets/interface_button"
 module Y2Network
   module Widgets
     class EditInterface < InterfaceButton
+      # Constructor
+      #
+      # @param table [InterfacesTable]
+      def initialize(table)
+        textdomain "network"
+        super(table)
+      end
+
       def label
         Yast::Label.EditButton
       end
