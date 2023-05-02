@@ -91,9 +91,28 @@ module Yast
     #
     # @return [Array <String>] array of interface names
     def firmware_interfaces
-      output = Yast::Execute.stdout.locally!(WICKED_PATH, "firmware", "interfaces")
-      interfaces = output.gsub(/^\w+\s+/, "").split(/\s+/)
+      interfaces = firmware_interfaces_by_extension.values.flatten
       (ibft_interfaces + interfaces).uniq
+    end
+
+    # Returns a hash with each firmware extension as the key and the specific extension
+    # configured interfaces as the value
+    #
+    # @return [Hash] configured by firmware interfaces indexed by the firmware extension
+    def firmware_interfaces_by_extension
+      output = Yast::Execute.stdout.locally!(WICKED_PATH, "firmware", "interfaces")
+      output.split("\n").each_with_object({}) do |line, result|
+        firmware, *interfaces = line.split(/\s+/)
+        result[firmware] = result.fetch(firmware, []) + interfaces if firmware
+      end
+    end
+
+    # Returns the firmware extension used for configuring the given interface or nil when it is not
+    # configured by firmware
+    #
+    # @return [String, nil] Firmware extension used for configuring the interface or nil
+    def firmware_configured_by?(interface)
+      firmware_interfaces_by_extension.find { |k, v| v.include?(interface)}&.first
     end
   end
 end
