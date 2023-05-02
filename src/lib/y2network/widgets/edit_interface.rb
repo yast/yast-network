@@ -17,39 +17,16 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "yast"
-require "cwm/common_widgets"
-require "y2network/sequences/interface"
-require "y2network/s390_group_device"
-require "y2network/dialogs/s390_device_activation"
-
-Yast.import "Label"
-Yast.import "Lan"
+require "y2network/widgets/interface_button"
 
 module Y2Network
   module Widgets
-    class EditInterface < CWM::PushButton
-      # @param table [InterfacesTable]
-      def initialize(table)
-        textdomain "network"
-
-        @table = table
-      end
-
-      # @see CWM::AbstractWidget#init
-      def init
-        disable unless @table.value
-      end
-
+    class EditInterface < InterfaceButton
       def label
         Yast::Label.EditButton
       end
 
       def handle
-        config = Yast::Lan.yast_config.copy
-        connection_config = config.connections.by_name(@table.value)
-        item = connection_config || selected_interface(config)
-
         builder = Y2Network::InterfaceConfigBuilder.for(item.type, config: connection_config)
         builder.name = item.name
 
@@ -63,8 +40,19 @@ module Y2Network
         :redraw
       end
 
-      def selected_interface(config)
-        config.interfaces.by_name(@table.value) || config.s390_devices.by_id(@table.value)
+      def disable?
+        return true unless @table.value
+
+        configured_by_firmware?
+      end
+
+      def configured_by_firmware?
+        return false if connection_config
+        return false unless config.backend?(:wicked)
+
+        require "network/wicked"
+        singleton_class.include Yast::Wicked
+        firmware_interfaces.include?(@table.value)
       end
 
       def help
