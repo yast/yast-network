@@ -17,35 +17,27 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "yast"
-require "cwm/common_widgets"
+require "y2network/widgets/interface_button"
 require "yast2/popup"
 
-Yast.import "Label"
-Yast.import "Lan"
 Yast.import "Popup"
 
 module Y2Network
   module Widgets
-    class DeleteInterface < CWM::PushButton
+    class DeleteInterface < InterfaceButton
+      # Constructor
+      #
       # @param table [InterfacesTable]
       def initialize(table)
         textdomain "network"
-        @table = table
+        super(table)
       end
 
       def label
         Yast::Label.DeleteButton
       end
 
-      # @see CWM::AbstractWidget#init
-      def init
-        disable unless @table.value
-      end
-
       def handle
-        config = Yast::Lan.yast_config
-        connection_config = config.connections.by_name(@table.value)
         return nil unless connection_config # unconfigured physical device. Delete do nothing
 
         if connection_config.startmode.name == "nfsroot"
@@ -74,6 +66,13 @@ module Y2Network
         config.delete_interface(@table.value)
 
         :redraw
+      end
+
+      def disable?
+        return true unless @table.value
+        return true unless connection_config
+
+        false
       end
 
       def help

@@ -34,7 +34,9 @@ describe Y2Network::Widgets::DeleteInterface do
   let(:eth0) { Y2Network::Interface.new("eth0") }
   let(:br0) { Y2Network::VirtualInterface.new("br0", type: Y2Network::InterfaceType::BRIDGE) }
   let(:interfaces) { Y2Network::InterfacesCollection.new([eth0, br0]) }
-  let(:connections) { Y2Network::ConnectionConfigsCollection.new([eth0_conn, br0_conn]) }
+  let(:conn_collection) { [eth0_conn, br0_conn] }
+  let(:connections) { Y2Network::ConnectionConfigsCollection.new(conn_collection) }
+
   let(:eth0_conn) do
     Y2Network::ConnectionConfig::Ethernet.new.tap do |c|
       c.name = "eth0"
@@ -64,6 +66,15 @@ describe Y2Network::Widgets::DeleteInterface do
       it "does not disable the widget" do
         expect(subject).to_not receive(:disable)
         subject.init
+      end
+
+      context "but it is not configured" do
+        let(:conn_collection) { [] }
+
+        it "disables the widget" do
+          expect(subject).to receive(:disable)
+          subject.init
+        end
       end
     end
 

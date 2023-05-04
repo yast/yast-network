@@ -18,6 +18,7 @@
 # find current contact information at www.suse.com.
 
 require "yast"
+require "network/wicked"
 require "y2network/interface"
 require "y2network/interface_type"
 require "y2network/virtual_interface"
@@ -40,6 +41,7 @@ module Y2Network
     #
     # @see Y2Network::InterfacesCollection
     class InterfacesReader
+      include Yast::Wicked
       # Returns the collection of s390 group devices
       #
       # @return [Array<Y2Network::ConnectionConfig::Base>] Array of connection
@@ -97,6 +99,7 @@ module Y2Network
           iface.custom_driver = custom_driver_for(iface)
           iface.type = InterfaceType.from_short_name(hwinfo.type) ||
             TypeDetector.type_of(iface.name) || InterfaceType::UNKNOWN
+          iface.firmware_configured_by = firmware_configured_by?(iface.name)
         end
       end
 

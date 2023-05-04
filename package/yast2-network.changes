@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu May  4 11:21:13 UTC 2023 - Knut Anderssen <kanderssen@suse.com>
+
+- Display information about firmware configured interfaces and
+  forbid editing them (bsc#1209589)
+- 4.5.18
+
+-------------------------------------------------------------------
 Wed Mar  1 14:52:46 UTC 2023 - Knut Anderssen <kanderssen@suse.com>
 
 - Fixed a random build failure (introduced by the previous fix for

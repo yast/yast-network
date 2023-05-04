@@ -31,10 +31,13 @@ describe Y2Network::Widgets::InterfacesTable do
   let(:description) { double(:value= => nil) }
 
   let(:eth0) do
-    instance_double(Y2Network::Interface, name: "eth0", hardware: hwinfo, old_name: "eth1")
+    instance_double(Y2Network::Interface, name: "eth0", hardware: hwinfo, old_name: "eth1",
+      firmware_configured_by: nil, firmware_configured?: false)
   end
+
   let(:br0) do
-    instance_double(Y2Network::VirtualInterface, name: "br0", hardware: nil, old_name: nil)
+    instance_double(Y2Network::VirtualInterface, name: "br0", hardware: nil, old_name: nil,
+      firmware_configured_by: nil, firmware_configured?: false)
   end
   let(:interfaces) { Y2Network::InterfacesCollection.new([eth0, br0]) }
   let(:hwinfo) do
@@ -176,6 +179,18 @@ describe Y2Network::Widgets::InterfacesTable do
 
       it "includes a warning in the description" do
         expect(description).to receive(:value=).with(/The device is not configured./)
+        subject.handle
+      end
+    end
+
+    context "when the device is configured by hardware" do
+      let(:eth0) do
+        instance_double(Y2Network::Interface, name: "eth0", hardware: hwinfo, old_name: "eth1",
+          firmware_configured_by: :redfish, firmware_configured?: true)
+      end
+
+      it "shows which firmware extension configured the device in the description" do
+        expect(description).to receive(:value=).with(/configured by: <\/b>redfish/)
         subject.handle
       end
     end

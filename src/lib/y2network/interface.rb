@@ -49,6 +49,8 @@ module Y2Network
     attr_accessor :renaming_mechanism
     # @return [String,nil]
     attr_reader :old_name
+    # @return [Symbol,nil]
+    attr_accessor :firmware_configured_by
 
     class << self
       # Builds an interface based on a connection
@@ -156,6 +158,11 @@ module Y2Network
       return false unless hardware
 
       ["usb", "pcmcia"].include?(hardware.hotplug)
+    end
+
+    # @return [Boolean] whether the interface is firmware configured or not
+    def firmware_configured?
+      !!firmware_configured_by
     end
   end
 end

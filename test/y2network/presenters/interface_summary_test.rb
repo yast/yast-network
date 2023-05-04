@@ -40,9 +40,11 @@ describe Y2Network::Presenters::InterfaceSummary do
   let(:interfaces) do
     Y2Network::InterfacesCollection.new(
       [
-        double(Y2Network::Interface, hardware: nil, name: "vlan1"),
-        double(Y2Network::Interface, hardware: double.as_null_object, name: "eth1"),
-        double(Y2Network::Interface, hardware: double.as_null_object, name: "eth0")
+        double(Y2Network::Interface, hardware: nil, name: "vlan1", firmware_configured?: false),
+        double(Y2Network::Interface, hardware: double.as_null_object, name: "eth1",
+          firmware_configured?: false),
+        double(Y2Network::Interface, hardware: double.as_null_object, name: "eth0",
+          firmware_configured?: false)
       ]
     )
   end
@@ -75,7 +77,7 @@ describe Y2Network::Presenters::InterfaceSummary do
   describe "#text" do
     it "returns a summary in text form" do
       text = presenter.text
-      expect(text).to be_a(::String)
+      expect(text).to be_a(String)
     end
 
     context "when a remote IP address is configured" do

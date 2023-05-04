@@ -40,16 +40,6 @@ describe Y2Network::Widgets::BootProtocol do
   end
 
   describe "#init" do
-    context "for other types then eth" do
-      let(:builder) { Y2Network::InterfaceConfigBuilder.for("br") }
-
-      it "hides iBFT checkbox" do
-        expect(Yast::UI).to receive(:ReplaceWidget).with(:bootproto_rp, Empty())
-
-        subject.init
-      end
-    end
-
     context "static configuration" do
       before do
         builder.boot_protocol = "static"
@@ -169,17 +159,7 @@ describe Y2Network::Widgets::BootProtocol do
     context "none configuration selected" do
       let(:value) { "none" }
 
-      it "sets bootproto to ibft if ibft is selected" do
-        allow(Yast::UI).to receive(:QueryWidget).with(Id(:bootproto_ibft), :Value).and_return(true)
-
-        subject.store
-
-        expect(builder.boot_protocol.name).to eq "ibft"
-      end
-
       it "sets bootproto to none if ibft is not selected" do
-        allow(Yast::UI).to receive(:QueryWidget).with(Id(:bootproto_ibft), :Value).and_return(false)
-
         subject.store
 
         expect(builder.boot_protocol.name).to eq "none"
