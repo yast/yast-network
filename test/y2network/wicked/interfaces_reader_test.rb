@@ -104,7 +104,7 @@ describe Y2Network::Wicked::InterfacesReader do
     it "reads interfaces configuration"
 
     context "when the interface is configured by hardware" do
-      let(:firmware_interfaces ) { { :ibft => ["eth0"] } }
+      let(:firmware_interfaces) { { ibft: ["eth0"] } }
 
       before do
         allow(reader).to receive(:firmware_interfaces_by_extension).and_return(firmware_interfaces)
