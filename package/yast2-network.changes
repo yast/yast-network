@@ -2,7 +2,7 @@
 Thu May  4 11:21:13 UTC 2023 - Knut Anderssen <kanderssen@suse.com>
 
 - Display information about firmware configured interfaces and
-  prevent the forbid to edit them (bsc#1209589)
+  forbid editing them (bsc#1209589)
 - 4.5.18
 
 -------------------------------------------------------------------
