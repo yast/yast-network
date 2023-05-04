@@ -96,7 +96,10 @@ module Yast
     end
 
     # Returns a hash with each firmware extension as the key and the specific extension
-    # configured interfaces as the value
+    # configured interfaces as an array value
+    #
+    # @example
+    #   Yast::Lan.firmware_interfaces_by_extension => { ibft: ["ibft0"], nbft: ["nbft0"] }
     #
     # @return [Hash] configured by firmware interfaces indexed by the firmware extension
     def firmware_interfaces_by_extension
