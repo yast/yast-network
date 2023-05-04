@@ -146,11 +146,19 @@ module Yast
     end
 
     def edit_interface
-      @edit_interface ||= Y2Network::Widgets::EditInterface.new(interfaces_table)
+      return @edit_interface if @edit_interface
+
+      @edit_interface = Y2Network::Widgets::EditInterface.new(interfaces_table)
+      interfaces_table.add_handler(@edit_interface)
+      @edit_interface
     end
 
     def delete_interface
-      @delete_interface ||= Y2Network::Widgets::DeleteInterface.new(interfaces_table)
+      return @delete_interface if @delete_interface
+
+      @delete_interface = Y2Network::Widgets::DeleteInterface.new(interfaces_table)
+      interfaces_table.add_handler(@delete_interface)
+      @delete_interface
     end
 
     # Commit changes to internal structures

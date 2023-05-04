@@ -17,28 +17,17 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "yast"
-require "cwm/common_widgets"
-require "y2network/sequences/interface"
-require "y2network/s390_group_device"
-require "y2network/dialogs/s390_device_activation"
-
-Yast.import "Label"
-Yast.import "Lan"
+require "y2network/widgets/interface_button"
 
 module Y2Network
   module Widgets
-    class EditInterface < CWM::PushButton
+    class EditInterface < InterfaceButton
+      # Constructor
+      #
       # @param table [InterfacesTable]
       def initialize(table)
         textdomain "network"
-
-        @table = table
-      end
-
-      # @see CWM::AbstractWidget#init
-      def init
-        disable unless @table.value
+        super(table)
       end
 
       def label
@@ -46,10 +35,6 @@ module Y2Network
       end
 
       def handle
-        config = Yast::Lan.yast_config.copy
-        connection_config = config.connections.by_name(@table.value)
-        item = connection_config || selected_interface(config)
-
         builder = Y2Network::InterfaceConfigBuilder.for(item.type, config: connection_config)
         builder.name = item.name
 
@@ -63,8 +48,11 @@ module Y2Network
         :redraw
       end
 
-      def selected_interface(config)
-        config.interfaces.by_name(@table.value) || config.s390_devices.by_id(@table.value)
+      def disable?
+        return true unless @table.value
+        return true if config.interfaces.by_name(@table.value)&.firmware_configured?
+
+        false
       end
 
       def help

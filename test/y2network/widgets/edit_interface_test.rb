@@ -32,7 +32,11 @@ describe Y2Network::Widgets::EditInterface do
     Y2Network::Config.new(interfaces: interfaces, connections: connections, source: :wicked)
   end
   let(:eth0) { Y2Network::PhysicalInterface.new("eth0") }
-  let(:eth1) { Y2Network::PhysicalInterface.new("eth1") }
+  let(:eth1) do
+    Y2Network::PhysicalInterface.new("eth1").tap do |i|
+      i.firmware_configured_by = :nbft
+    end
+  end
   let(:interfaces) { Y2Network::InterfacesCollection.new([eth0, eth1]) }
   let(:eth0_conn) do
     Y2Network::ConnectionConfig::Ethernet.new.tap do |conn|
@@ -51,14 +55,34 @@ describe Y2Network::Widgets::EditInterface do
 
   describe "#init" do
     context "when an element is selected" do
-      it "does not disable the widget" do
-        expect(subject).to_not receive(:disable)
-        subject.init
+      context "and the selected interface is configured by firmware" do
+        let(:selected) { "eth1" }
+
+        it "disables the widget" do
+          expect(subject).to receive(:disable)
+          subject.init
+        end
+      end
+
+      context "and the selected interface is not configured by firmware" do
+        it "does not disable the widget" do
+          expect(subject).to_not receive(:disable)
+          subject.init
+        end
       end
     end
 
     context "when no element is selected" do
       let(:selected) { nil }
+
+      it "disables the widget" do
+        expect(subject).to receive(:disable)
+        subject.init
+      end
+    end
+
+    context "when the selected interface is configured by firmware" do
+      let(:selected) { "eth1" }
 
       it "disables the widget" do
         expect(subject).to receive(:disable)
