@@ -103,6 +103,20 @@ describe Y2Network::Wicked::InterfacesReader do
     it "reads bonding interfaces"
     it "reads interfaces configuration"
 
+    context "when the interface is configured by hardware" do
+      let(:firmware_interfaces ) { { :ibft => ["eth0"] } }
+
+      before do
+        allow(reader).to receive(:firmware_interfaces_by_extension).and_return(firmware_interfaces)
+      end
+
+      it "sets the extensions used for the configuring it" do
+        eth0 = reader.interfaces.by_name("eth0")
+        expect(eth0.firmware_configured_by).to eql(:ibft)
+        expect(eth0.firmware_configured?).to eql(true)
+      end
+    end
+
     context "when a physical interface type is unknown" do
       before do
         allow(Yast::SCR).to receive(:Dir).with(Yast::Path.new(".network.section"))

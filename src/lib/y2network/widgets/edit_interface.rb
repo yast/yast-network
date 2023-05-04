@@ -50,17 +50,9 @@ module Y2Network
 
       def disable?
         return true unless @table.value
+        return true if config.interfaces.by_name(@table.value)&.firmware_configured?
 
-        configured_by_firmware?
-      end
-
-      def configured_by_firmware?
-        return false if connection_config
-        return false unless config.backend?(:wicked)
-
-        require "network/wicked"
-        singleton_class.include Yast::Wicked
-        firmware_interfaces.include?(@table.value)
+        false
       end
 
       def help

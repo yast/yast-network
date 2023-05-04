@@ -19,7 +19,6 @@
 
 require "yast"
 require "cwm/table"
-require "network/wicked"
 require "y2network/presenters/interface_summary"
 require "y2network/presenters/s390_group_device_summary"
 
@@ -30,8 +29,6 @@ Yast.import "UI"
 module Y2Network
   module Widgets
     class InterfacesTable < CWM::Table
-      include Yast::Wicked
-
       def initialize(description)
         textdomain "network"
 
@@ -140,7 +137,7 @@ module Y2Network
       end
 
       def interface_protocol(connection)
-        return _("Not Configured") if connection.nil?
+        return _("Not configured") if connection.nil?
 
         bootproto = connection.bootproto.name
 
@@ -155,7 +152,7 @@ module Y2Network
       def configuration_for(interface, connection)
         return interface_protocol(connection) unless connection.nil?
 
-        firmware_configured?(interface) ? _("Configured by firmware") : _("Not Configured")
+        interface.firmware_configured? ? _("Configured by firmware") : _("Not configured")
       end
 
       def selected_item

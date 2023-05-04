@@ -19,7 +19,6 @@
 
 require "yast"
 require "y2network/presenters/interface_status"
-require "network/wicked"
 
 Yast.import "Summary"
 Yast.import "HTML"
@@ -31,7 +30,6 @@ module Y2Network
     class InterfaceSummary
       include Yast::I18n
       include InterfaceStatus
-      include Yast::Wicked
 
       # @return [String]
       attr_reader :name
@@ -106,10 +104,10 @@ module Y2Network
             rich << Yast::HTML.Bold(dev_name) << "<br>"
 
           end
-          extension = firmware_configured_by?(hardware&.name)
 
-          if extension
-            rich << "<p><b>" << _("The device is configured by: ") << "</b>" << extension << "</p>"
+          if interface.firmware_configured?
+            rich << "<p><b>" << _("The device is configured by: ") << "</b>"
+            rich << interface.firmware_configured_by.to_s << "</p>"
           else
             rich << "<p>"
             rich << _("The device is not configured. Press <b>Edit</b>\nto configure.\n")

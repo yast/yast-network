@@ -68,6 +68,13 @@ module Y2Network
         :redraw
       end
 
+      def disable?
+        return true unless @table.value
+        return true unless connection_config
+
+        false
+      end
+
       def help
         # TRANSLATORS: Help for 'Delete' interface configuration button.
         _(

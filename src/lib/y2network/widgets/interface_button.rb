@@ -63,8 +63,7 @@ module Y2Network
       end
 
       def disable?
-        return true unless @table.value
-        return true unless connection_config
+        false
       end
     end
   end
