@@ -51,7 +51,7 @@ describe Yast::Wicked do
   describe "#parse_ntp_servers" do
     before do
       allow(Yast::NetworkService).to receive(:is_wicked).and_return(true)
-      allow(::File).to receive(:file?).and_return(true, false)
+      allow(File).to receive(:file?).and_return(true, false)
       allow(Yast::SCR).to receive("Execute").and_return("stdout" => <<~WICKED_OUTPUT
         10.100.2.10
         10.100.2.11
@@ -102,4 +102,61 @@ describe Yast::Wicked do
       end
     end
   end
+
+  describe "#firmware_interfaces_by_extension" do
+    let(:stdout) { instance_double("Yast::Execute") }
+    let(:output) { "ibft    eth1 eth1.10\nibft\teth2 ibft0\nnbft    nbft0\nredfish usb0 usb0.42" }
+    let(:ibft_interfaces) { ["eth1", "eth1.10"] }
+    let(:interfaces_by_extension) do
+      { ibft:    ["eth1", "eth1.10", "eth2", "ibft0"],
+        nbft:    ["nbft0"],
+        redfish: ["usb0", "usb0.42"] }
+    end
+
+    before do
+      allow(Yast::Execute).to receive(:stdout).and_return(stdout)
+      allow(stdout).to receive(:locally!).and_return(output)
+      allow(subject).to receive(:ibft_interfaces).and_return(ibft_interfaces)
+    end
+
+    it "returns an array of the interfaces configured by firmware" do
+      expect(subject.firmware_interfaces_by_extension).to eql(interfaces_by_extension)
+    end
+
+    context "when `wicked firmware interfaces` is not present" do
+      let(:output) { "" }
+
+      it "returns an empty hash" do
+        expect(subject.firmware_interfaces_by_extension).to eql({})
+      end
+    end
+  end
+
+  describe "#firmware_configured_by?" do
+    let(:stdout) { instance_double("Yast::Execute") }
+    let(:output) { "ibft    eth1 eth1.10\nibft\teth2 ibft0\nnbft    nbft0\nredfish usb0 usb0.42" }
+    let(:ibft_interfaces) { ["eth1", "eth1.10"] }
+
+    before do
+      allow(Yast::Execute).to receive(:stdout).and_return(stdout)
+      allow(stdout).to receive(:locally!).and_return(output)
+      allow(subject).to receive(:ibft_interfaces).and_return(ibft_interfaces)
+    end
+
+    it "returns an array of the interfaces configured by firmware" do
+      expect(subject.firmware_configured_by?("nbft0")).to eql(:nbft)
+      expect(subject.firmware_configured_by?("eth1.10")).to eql(:ibft)
+      expect(subject.firmware_configured_by?("usb0.42")).to eql(:redfish)
+      expect(subject.firmware_configured_by?("wlan0")).to be_nil
+    end
+
+    context "when `wicked firmware interfaces` is not present" do
+      let(:output) { "" }
+
+      it "returns an empty hash" do
+        expect(subject.firmware_interfaces_by_extension).to eql({})
+      end
+    end
+  end
+
 end

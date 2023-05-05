@@ -33,6 +33,7 @@ module Y2Network
         textdomain "network"
 
         @description = description
+        @handlers = []
       end
 
       def header
@@ -48,8 +49,13 @@ module Y2Network
         [:notify, :immediate]
       end
 
+      def add_handler(handler)
+        @handlers << handler
+      end
+
       def handle
         @description.value = create_description
+        refresh_handlers
 
         nil
       end
@@ -91,6 +97,10 @@ module Y2Network
 
     private
 
+      def refresh_handlers
+        @handlers.each(&:init)
+      end
+
       def note(interface, conn)
         if interface.name != interface.old_name && interface.old_name
           return format("%s -> %s", interface.old_name, interface.name)
@@ -120,7 +130,7 @@ module Y2Network
           # first is (item) ID in table
           interface.name,
           description_for(interface, conn),
-          interface_protocol(conn),
+          configuration_for(interface, conn),
           interface.name,
           note(interface, conn)
         ]
@@ -137,6 +147,12 @@ module Y2Network
         else
           bootproto.upcase
         end
+      end
+
+      def configuration_for(interface, connection)
+        return interface_protocol(connection) unless connection.nil?
+
+        interface.firmware_configured? ? _("Configured by firmware") : _("Not configured")
       end
 
       def selected_item
@@ -167,6 +183,10 @@ module Y2Network
 
       def summary_class_name
         (selected_item.class.to_s == "Y2Network::S390GroupDevice") ? "S390GroupDevice" : "Interface"
+      end
+
+      def firmware_configured?(interface)
+        firmware_interfaces.include?(interface.name)
       end
     end
   end

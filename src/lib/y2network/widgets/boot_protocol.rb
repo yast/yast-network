@@ -50,11 +50,6 @@ module Y2Network
                   Id(:bootproto_none),
                   Opt(:notify),
                   _("No Link and IP Setup (Bond Ports)")
-                ),
-                HSpacing(1),
-                ReplacePoint(
-                  Id(:bootproto_rp),
-                  CheckBox(Id(:bootproto_ibft), Opt(:notify), _("Use iBFT Values"))
                 )
               )
             ),
@@ -106,19 +101,7 @@ module Y2Network
         )
       end
 
-      def ibft_available?
-        # IBFT only for eth, is it correct?
-        @settings.type.ethernet?
-      end
-
       def init
-        if !ibft_available?
-          Yast::UI.ReplaceWidget(
-            :bootproto_rp,
-            Empty()
-          )
-        end
-
         case @settings.boot_protocol
         when Y2Network::BootProtocol::STATIC
           Yast::UI.ChangeWidget(Id(:bootproto), :CurrentButton, :bootproto_static)
@@ -159,7 +142,6 @@ module Y2Network
           Yast::UI.ChangeWidget(Id(:bootproto), :CurrentButton, :bootproto_none)
         when Y2Network::BootProtocol::IBFT
           Yast::UI.ChangeWidget(Id(:bootproto), :CurrentButton, :bootproto_none)
-          Yast::UI.ChangeWidget(Id(:bootproto_ibft), :Value, true)
         end
 
         handle
@@ -170,7 +152,6 @@ module Y2Network
         when :bootproto_static
           static_enabled(true)
           dynamic_enabled(false)
-          none_enabled(false)
           one_ip = Yast::UI.QueryWidget(Id(:bootproto_ipaddr), :Value)
           if one_ip.empty?
             current_hostname = Yast::Hostname.MergeFQ(Yast::DNS.hostname, Yast::DNS.domain)
@@ -182,11 +163,9 @@ module Y2Network
         when :bootproto_dynamic
           static_enabled(false)
           dynamic_enabled(true)
-          none_enabled(false)
         when :bootproto_none
           static_enabled(false)
           dynamic_enabled(false)
-          none_enabled(true)
         else
           raise "Unexpected value for boot protocol #{value.inspect}"
         end
@@ -201,9 +180,6 @@ module Y2Network
         case value
         when :bootproto_none
           bootproto = "none"
-          if ibft_available?
-            bootproto = Yast::UI.QueryWidget(Id(:bootproto_ibft), :Value) ? "ibft" : "none"
-          end
           @settings.boot_protocol = bootproto
         when :bootproto_static
           @settings.boot_protocol = "static"
@@ -297,13 +273,6 @@ module Y2Network
             "to assign an IP address to this device.\n" \
             "This is particularly useful for bonding ethernet devices.</p>\n"
         ) +
-          # FIXME: old CWM does not allow this, but for future this should be dynamic and
-          # printed only if iBFT is available
-          # and future means when type cannot be changed and when cwm object tabs are used,
-          # as it has limited lifetime of cwm definition
-          _(
-            "<p>Check <b>iBFT</b> if you want to keep the network configured in your BIOS.</p>\n"
-          ) +
           # Address dialog help 2/8
           _(
             "<p>Select <b>Dynamic Address</b> if you do not have a static IP address \n" \
@@ -345,10 +314,6 @@ module Y2Network
         else
           Yast::UI.ChangeWidget(Id(:bootproto_dhcp_mode), :Enabled, value)
         end
-      end
-
-      def none_enabled(value)
-        Yast::UI.ChangeWidget(Id(:bootproto_ibft), :Enabled, value) if ibft_available?
       end
 
       def static_enabled(value)
