@@ -104,14 +104,14 @@ module Y2Network
             rich << Yast::HTML.Bold(dev_name) << "<br>"
           end
 
-          unless interface.firmware_configured?
+          unless interface&.firmware_configured?
             rich << "<p>"
             rich << _("The device is not configured. Press <b>Edit</b>\nto configure.\n")
             rich << "</p>"
           end
         end
 
-        if interface.firmware_configured?
+        if interface&.firmware_configured?
           rich << "<p><b>" << _("The device is configured by: ") << "</b>"
           rich << interface.firmware_configured_by.to_s << "</p>"
         end
