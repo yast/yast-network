@@ -76,8 +76,15 @@ describe Y2Network::Presenters::InterfaceSummary do
 
   describe "#text" do
     it "returns a summary in text form" do
-      text = presenter.text
-      expect(text).to be_a(String)
+      expect(presenter.text).to be_a(String)
+    end
+
+    context "when an empty name is given" do
+      let(:name) { "" }
+
+      it "returns an empty text" do
+        expect(presenter.text).to eql("")
+      end
     end
 
     context "when a remote IP address is configured" do
