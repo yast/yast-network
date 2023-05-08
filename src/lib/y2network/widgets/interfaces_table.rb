@@ -165,6 +165,8 @@ module Y2Network
 
       def create_description
         summary = Presenters.const_get("#{summary_class_name}Summary")
+        return "" if value.to_s.empty?
+
         summary.new(value, config).text
       end
 

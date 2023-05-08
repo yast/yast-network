@@ -45,6 +45,8 @@ module Y2Network
       end
 
       def text
+        return "" if @name.to_s.empty?
+
         interface = @config.interfaces.by_name(@name)
         hardware = interface ? interface.hardware : nil
         descr = hardware ? hardware.description : ""
@@ -104,7 +106,7 @@ module Y2Network
             rich << Yast::HTML.Bold(dev_name) << "<br>"
           end
 
-          unless interface&.firmware_configured?
+          if interface && !interface.firmware_configured?
             rich << "<p>"
             rich << _("The device is not configured. Press <b>Edit</b>\nto configure.\n")
             rich << "</p>"
