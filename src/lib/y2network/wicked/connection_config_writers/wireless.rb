@@ -67,6 +67,7 @@ module Y2Network
           file.wireless_wpa_anonid = conn.wpa_anonymous_identity if conn.eap_mode == "TTLS"
           return unless conn.eap_mode == "TLS"
 
+          file.wireless_eap_auth = ""
           file.wireless_client_cert = conn.client_cert
           file.wireless_client_key = conn.client_key
           file.wireless_client_key_password = conn.client_key_password
