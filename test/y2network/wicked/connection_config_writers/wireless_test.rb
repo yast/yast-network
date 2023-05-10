@@ -124,6 +124,18 @@ describe Y2Network::Wicked::ConnectionConfigWriters::Wireless do
         wireless_wpa_password: "example_passwd"
       )
     end
+
+    context "when the EAP mode is set to TLS" do
+      it "does not set the EAP auth" do
+        conn.eap_mode = "TLS"
+        handler.write(conn)
+        expect(file).to have_attributes(
+          wireless_auth_mode: "eap",
+          wireless_eap_mode:  "TLS",
+          wireless_eap_auth:  nil
+        )
+      end
+    end
   end
 
   context "WPA-PSK network configuration" do
