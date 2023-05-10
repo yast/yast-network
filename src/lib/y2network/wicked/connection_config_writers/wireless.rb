@@ -60,14 +60,13 @@ module Y2Network
         # @param conn [Y2Network::ConnectionConfig::Base] Configuration to write
         def write_eap_auth_settings(conn)
           file.wireless_eap_mode = conn.eap_mode
-          file.wireless_eap_auth = conn.eap_auth
+          file.wireless_eap_auth = conn.eap_auth unless conn.eap_mode == "TLS"
           file.wireless_wpa_password = conn.wpa_password
           file.wireless_wpa_identity = conn.wpa_identity
           file.wireless_ca_cert = conn.ca_cert
           file.wireless_wpa_anonid = conn.wpa_anonymous_identity if conn.eap_mode == "TTLS"
           return unless conn.eap_mode == "TLS"
 
-          file.wireless_eap_auth = ""
           file.wireless_client_cert = conn.client_cert
           file.wireless_client_key = conn.client_key
           file.wireless_client_key_password = conn.client_key_password

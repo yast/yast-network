@@ -132,7 +132,7 @@ describe Y2Network::Wicked::ConnectionConfigWriters::Wireless do
         expect(file).to have_attributes(
           wireless_auth_mode: "eap",
           wireless_eap_mode:  "TLS",
-          wireless_eap_auth:  ""
+          wireless_eap_auth:  nil
         )
       end
     end
