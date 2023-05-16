@@ -218,7 +218,6 @@ set to `false`.
         <bonding_module_opts>mode=active-backup miimon=100</bonding_module_opts>
         <bonding_slave0>eth0</bonding_slave0>
         <bonding_slave0>eth1</bonding_slave0>
-        <bondoption>mode=balance-rr miimon=100</bondoption>
         <bootproto>static</bootproto>
         <device>bond0</device>
         <ipaddr>192.168.122.61</ipaddr>
