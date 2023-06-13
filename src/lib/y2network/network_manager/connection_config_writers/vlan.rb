@@ -28,7 +28,7 @@ module Y2Network
         # @see Y2Network::ConnectionConfigWriters::Base#update_file
         # @param conn [Y2Network::ConnectionConfig::Vlan] Configuration to write
         def update_file(conn)
-          file.vlan["id"] = conn.vlan_id
+          file.vlan["id"] = conn.vlan_id.to_s
           file.vlan["parent"] = conn.parent_device
           file.vlan["type"] = "vlan"
         end
