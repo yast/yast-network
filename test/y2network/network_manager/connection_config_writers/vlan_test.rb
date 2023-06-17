@@ -17,22 +17,29 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "y2network/network_manager/connection_config_writers/base"
+require_relative "../../../test_helper"
+require "y2network/network_manager/connection_config_writers/vlan"
+require "cfa/nm_connection"
+require "y2network/boot_protocol"
+require "y2network/startmode"
+require "y2network/connection_config/vlan"
 
-module Y2Network
-  module NetworkManager
-    module ConnectionConfigWriters
-      # This class is responsible for writing the information from a ConnectionConfig::Vlan
-      # object to the underlying system.
-      class Vlan < Base
-        # @see Y2Network::ConnectionConfigWriters::Base#update_file
-        # @param conn [Y2Network::ConnectionConfig::Vlan] Configuration to write
-        def update_file(conn)
-          file.vlan["id"] = conn.vlan_id.to_s
-          file.vlan["parent"] = conn.parent_device
-          file.vlan["type"] = "vlan"
-        end
-      end
+describe Y2Network::NetworkManager::ConnectionConfigWriters::Vlan do
+  subject(:handler) { described_class.new(file) }
+  let(:file) { CFA::NmConnection.new("bond0.nm_connection") }
+
+  let(:conn) do
+    Y2Network::ConnectionConfig::Vlan.new.tap do |c|
+      c.interface = "eth0.1006"
+      c.vlan_id = 1006
+    end
+  end
+
+  describe "#write" do
+    it "sets device and IP relevant attributes" do
+      handler.write(conn)
+      expect(file.vlan["type"]).to eql("vlan")
+      expect(file.vlan["id"]).to eql("1006")
     end
   end
 end
