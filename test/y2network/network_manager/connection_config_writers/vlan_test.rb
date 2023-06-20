@@ -30,14 +30,16 @@ describe Y2Network::NetworkManager::ConnectionConfigWriters::Vlan do
     Y2Network::ConnectionConfig::Vlan.new.tap do |c|
       c.interface = "eth0.1006"
       c.vlan_id = 1006
+      c.parent_device = "eth0"
     end
   end
 
   describe "#write" do
     it "sets VLAN device attributes" do
       handler.write(conn)
-      expect(file.vlan["type"]).to eql("vlan")
       expect(file.vlan["id"]).to eql("1006")
+      expect(file.vlan["parent"]).to eql("eth0")
+      expect(file.vlan["type"]).to eql("vlan")
     end
   end
 end
