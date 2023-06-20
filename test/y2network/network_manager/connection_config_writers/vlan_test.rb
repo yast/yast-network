@@ -20,13 +20,11 @@
 require_relative "../../../test_helper"
 require "y2network/network_manager/connection_config_writers/vlan"
 require "cfa/nm_connection"
-require "y2network/boot_protocol"
-require "y2network/startmode"
 require "y2network/connection_config/vlan"
 
 describe Y2Network::NetworkManager::ConnectionConfigWriters::Vlan do
   subject(:handler) { described_class.new(file) }
-  let(:file) { CFA::NmConnection.new("bond0.nm_connection") }
+  let(:file) { CFA::NmConnection.new("vlan1006.nm_connection") }
 
   let(:conn) do
     Y2Network::ConnectionConfig::Vlan.new.tap do |c|
