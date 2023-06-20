@@ -36,7 +36,7 @@ describe Y2Network::NetworkManager::ConnectionConfigWriters::Vlan do
   end
 
   describe "#write" do
-    it "sets device and IP relevant attributes" do
+    it "sets VLAN device attributes" do
       handler.write(conn)
       expect(file.vlan["type"]).to eql("vlan")
       expect(file.vlan["id"]).to eql("1006")
