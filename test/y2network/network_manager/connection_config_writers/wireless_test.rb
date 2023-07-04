@@ -39,6 +39,7 @@ describe Y2Network::NetworkManager::ConnectionConfigWriters::Wireless do
       c.auth_mode = :open
       c.ap = "00:11:22:33:44:55"
       c.ap_scanmode = 1
+      c.channel = 5
     end
   end
 
@@ -47,6 +48,7 @@ describe Y2Network::NetworkManager::ConnectionConfigWriters::Wireless do
       handler.write(conn)
       expect(file.wifi["ssid"]).to eql(conn.essid)
       expect(file.wifi["mode"]).to eql("infrastructure")
+      expect(file.wifi["channel"]).to eql("5")
       expect(file.ipv4["method"]).to eql("auto")
       expect(file.ipv6["method"]).to eql("auto")
     end
