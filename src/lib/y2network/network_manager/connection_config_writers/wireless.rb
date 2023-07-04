@@ -33,7 +33,7 @@ module Y2Network
           file.connection["type"] = "wifi"
           file.wifi["ssid"] = conn.essid unless conn.essid.to_s.empty?
           file.wifi["mode"] = MODE[conn.mode] || DEFAULT_MODE
-          file.wifi["channel"] = con.channel if conn.channel
+          file.wifi["channel"] = conn.channel.to_s if conn.channel
 
           write_auth_settings(conn)
         end
