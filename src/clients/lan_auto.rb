@@ -97,22 +97,14 @@ module Yast
         Builtins.y2error("Writing lan config failed") if !result
         @ret &&= result
 
-        if Ops.get(LanItems.autoinstall_settings, "strict_IP_check_timeout")
-          if Lan.isAnyInterfaceDown
-            @timeout = Ops.get_integer(
-              LanItems.autoinstall_settings,
-              "strict_IP_check_timeout",
-              0
-            )
-            Builtins.y2debug("timeout %1", @timeout)
-            @error_text = _("Configuration Error: uninitialized interface.")
-            if @timeout == 0
-              Popup.Error(@error_text)
-            else
-              Popup.TimedError(@error_text, @timeout)
-            end
-          end
+        timeout = LanItems.autoinstall_settings.fetch("strict_IP_check_timeout", -1)
+
+        if (timeout >= 0) && Lan.isAnyInterfaceDown
+          Builtins.y2debug("timeout %1", timeout)
+          error_text = _("Configuration Error: uninitialized interface.")
+          timeout == 0 ? Popup.Error(error_text) : Popup.TimedError(error_text, timeout)
         end
+
         Progress.set(@progress_orig)
       else
         Builtins.y2error("unknown function: %1", @func)
