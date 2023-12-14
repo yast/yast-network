@@ -15,6 +15,11 @@
     modules:
     - - virtio_net
       - ''
+  - active: false
+    modprobe: true
+    modules:
+    - - virtio_net_test
+      - ''
   active: true
   module: virtio_net
   options: ''
