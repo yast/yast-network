@@ -93,7 +93,7 @@ networking section is the same as:
 
 ```xml
 <networking>
-  <keep_install_network config:type=boolean>true</keep_install_network>
+  <keep_install_network config:type="boolean">true</keep_install_network>
 </networking>
 ```
 
