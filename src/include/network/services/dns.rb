@@ -618,7 +618,7 @@ module Yast
     # @param _key [String] ignored
     # @param event [Hash] user generated event
     def storeHostnameGlobal(_key, event)
-      @hn_settings.keys.each do |key2|
+      @hn_settings.each_key do |key2|
         StoreHnWidget(key2, event) if UI.QueryWidget(Id(key2), :Enabled)
       end
 

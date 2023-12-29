@@ -50,7 +50,7 @@ module Yast
 
     # Remove all entries from the host table.
     def clear
-      @hosts.hosts.keys.each do |ip|
+      @hosts.hosts.each_key do |ip|
         @hosts.delete_by_ip(ip)
       end
       @configuration_imported = false
@@ -74,7 +74,7 @@ module Yast
     # Add another name to the list for address (which may be empty so far)
     # FIXME: used only in one place, which looks wrong
     def add_name(address, name)
-      canonical, *aliases = name.split(" ")
+      canonical, *aliases = name.split
       @hosts.add_entry(address, canonical, aliases)
     end
 
@@ -219,7 +219,7 @@ module Yast
       if hosts.empty?
         @hosts.add_entry(ip, newhn, nick)
       else
-        canonical, *aliases = hosts.last.split(" ")
+        canonical, *aliases = hosts.last.split
         aliases << newhn
         aliases.concat(nick)
         @hosts.set_entry(ip, canonical, aliases)
@@ -307,7 +307,7 @@ module Yast
     def set_names(address, names)
       @hosts.delete_by_ip(address)
       names.each do |name|
-        canonical, *aliases = name.split(" ")
+        canonical, *aliases = name.split
         @hosts.add_entry(address, canonical, aliases)
       end
     end

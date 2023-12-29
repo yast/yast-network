@@ -856,7 +856,7 @@ module Yast
         virt_bridge_proposal: section.virt_bridge_proposal,
         managed:              section.managed,
         backend:              section.backend
-      }.reject { |_k, v| v.nil? }
+      }.compact
     end
 
     def activate_network_service
@@ -915,7 +915,7 @@ module Yast
       addr = false
       tmp_mac = nil
       row.each do |column|
-        tmp_col = column.split(" ")
+        tmp_col = column.split
         next if tmp_col.size < 2
 
         tmp_mac = tmp_col[1] if tmp_col[0] == "link/ether"

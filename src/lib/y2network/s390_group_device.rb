@@ -82,7 +82,7 @@ module Y2Network
         cmd << "--offline" if offline
 
         Yast::Execute.stdout.locally!(*cmd).split("\n").map do |device|
-          id, online, iface_name = device.split(" ")
+          id, online, iface_name = device.split
           new(type, id, online == "yes", iface_name)
         end
       end

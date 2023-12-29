@@ -141,7 +141,7 @@ module Y2Network
           result["s390-devices"] = s390_devices&.to_hashes&.fetch("devices", []) || []
         end
 
-        result.keys.each { |k| result.delete(k) if result[k].empty? }
+        result.each_key { |k| result.delete(k) if result[k].empty? }
         result["managed"] = true if managed
         result["backend"] = backend if backend
         result

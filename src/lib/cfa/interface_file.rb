@@ -400,7 +400,7 @@ module CFA
     #
     # @note Writes only changed values, keeping the rest as they are.
     def save
-      self.class.variables.keys.each do |name|
+      self.class.variables.each_key do |name|
         value = @values[name]
         meth = value.is_a?(Hash) ? :write_collection : :write_scalar
         send(meth, name, value)

@@ -141,7 +141,7 @@ module Y2Network
     # @param hwinfo [Hash<String,Object>] Hardware information
     def initialize(hwinfo = {})
       # FIXME: store only what's needed.
-      @hwinfo = hwinfo.map { |k, v| [k.to_s, v] }.to_h
+      @hwinfo = hwinfo.transform_keys(&:to_s)
     end
 
     # Shortcuts for accessing hwinfo items. Each hwinfo item has own method for reading

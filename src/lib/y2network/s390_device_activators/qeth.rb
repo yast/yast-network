@@ -46,7 +46,7 @@ module Y2Network
       # @see [S390DeviceActivator#configure_attributes]
       def configure_attributes
         extra_attributes = []
-        extra_attributes.concat(attributes.split(" ")) if attributes
+        extra_attributes.concat(attributes.split) if attributes
         # Only set if enable
         extra_attributes << ipa_takeover_attribute if ipa_takeover
         # By default the activation command uses layer2 autodetection but as

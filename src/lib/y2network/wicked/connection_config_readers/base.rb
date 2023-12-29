@@ -216,7 +216,7 @@ module Y2Network
 
           Yast::Host.Read
           aliases = Yast::Host.names(conn.ip.address.address.to_s).first
-          aliases.to_s.split(" ")
+          aliases.to_s.split
         end
       end
     end
