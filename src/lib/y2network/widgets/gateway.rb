@@ -42,7 +42,7 @@ module Y2Network
       def help
         _(
           "<p><b>Gateway</b> defines the IP address of a host which routes the packets " \
-            "to a remote host or network. It can be blank for rejection or device routes. "
+          "to a remote host or network. It can be blank for rejection or device routes. "
         )
       end
 

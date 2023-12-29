@@ -163,9 +163,9 @@ module Y2Network
       # @return [String] zone description
       def zone_description(zone)
         "<li><b>#{zone.short}: </b>" \
-        "#{zone.description} " \
-        "(Masquerade: #{zone.masquerade? ? "yes" : "no"})" \
-        "</li>"
+          "#{zone.description} " \
+          "(Masquerade: #{zone.masquerade? ? "yes" : "no"})" \
+          "</li>"
       end
     end
   end

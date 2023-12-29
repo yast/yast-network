@@ -36,7 +36,7 @@ module Y2Network
       # @param available_devices[Array<Interface>] list of known interfaces
       def initialize(route, available_devices)
         log.info "route dialog with route: #{route.inspect} " \
-          "and devices #{available_devices.inspect}"
+                 "and devices #{available_devices.inspect}"
         @route = route
         @available_devices = available_devices
       end

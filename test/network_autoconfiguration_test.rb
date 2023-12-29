@@ -316,8 +316,8 @@ describe Yast::NetworkAutoconfiguration do
     let(:routes) { [route] }
     let(:route) do
       Y2Network::Route.new(to:        :default,
-                           gateway:   IPAddr.new("192.168.122.1"),
-                           interface: eth5)
+        gateway:   IPAddr.new("192.168.122.1"),
+        interface: eth5)
     end
     let(:eth5) { Y2Network::Interface.new("eth5") }
     let(:br0) { Y2Network::VirtualInterface.new("br0") }

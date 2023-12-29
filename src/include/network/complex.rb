@@ -60,12 +60,12 @@ module Yast
       if res_list.empty?
         Builtins.y2warning("HardwareName: no matching hardware for id=#{id}")
 
-        return ""
+        ""
       else
         hwname = res_list.first["name"] || ""
         Builtins.y2milestone("HardwareName: hwname=#{hwname} for id=#{id}")
 
-        return hwname
+        hwname
       end
     end
   end

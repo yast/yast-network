@@ -34,10 +34,10 @@ module Yast
       set_dhcp_hostname! if Stage.initial
 
       if Yast::NetworkService.wicked?
-        if !nac.any_iface_active?
-          nac.configure_dhcp
-        else
+        if nac.any_iface_active?
           log.info("Automatic DHCP configuration not started - an interface is already configured")
+        else
+          nac.configure_dhcp
         end
       else
         log.info("Network is not managed by wicked, skipping DHCP setup")

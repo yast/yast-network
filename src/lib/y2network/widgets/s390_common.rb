@@ -363,7 +363,7 @@ module Y2Network
       # @see CWM::AbstractWidget
       def help
         "<p>Select <b>Enable Layer 2 Support</b> if this card has been " \
-         "configured with layer 2 support.</p>"
+          "configured with layer 2 support.</p>"
       end
     end
 

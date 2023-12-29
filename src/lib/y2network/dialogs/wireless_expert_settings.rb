@@ -77,25 +77,25 @@ module Y2Network
           # Wireless expert dialog help 2/5
           _(
             "<p>To use your wireless LAN card in master or ad-hoc mode,\n" \
-              "set the <b>Channel</b> the card should use here. This is not needed\n" \
-              "for managed mode--the card will hop through the channels searching for access\n" \
-              "points in that case.</p>\n"
+            "set the <b>Channel</b> the card should use here. This is not needed\n" \
+            "for managed mode--the card will hop through the channels searching for access\n" \
+            "points in that case.</p>\n"
           ) +
           # Wireless expert dialog help 3/5
           _(
             "<p>In some rare cases, you may want to set a transmission\n" \
-              "<b>Bit Rate</b> explicitly. The default is to go as fast as possible.</p>"
+            "<b>Bit Rate</b> explicitly. The default is to go as fast as possible.</p>"
           ) +
           # Wireless expert dialog help 4/5
           _(
             "<p>In an environment with multiple <b>Access Points</b>, you may want to\n " \
-              "define the one to which to connect by entering its MAC address.</p>"
+            "define the one to which to connect by entering its MAC address.</p>"
           ) +
           # Wireless expert dialog help 5/5
           _(
             "<p><b>Use Power Management</b> enables power saving mechanisms.\n" \
-              "This is generally a good idea, especially if you are a laptop user and may\n" \
-              "be disconnected from AC power.</p>\n"
+            "This is generally a good idea, especially if you are a laptop user and may\n" \
+            "be disconnected from AC power.</p>\n"
           )
       end
 

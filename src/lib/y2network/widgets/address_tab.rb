@@ -86,7 +86,7 @@ module Y2Network
           type.vlan? ? VBox(HBox(VlanInterface.new(@settings), VlanID.new(@settings))) : Empty()
         )
 
-        address_contents = if type.tun? || type.tap?
+        if type.tun? || type.tap?
           # TODO: move it to own tab or general as it does not fit here
           VBox(Left(label), Tunnel.new(@settings))
         else
@@ -96,8 +96,6 @@ module Y2Network
             AdditionalAddresses.new(@settings)
           )
         end
-
-        address_contents
       end
 
       # For s390 hwinfo gives us a multitude of types but some are handled

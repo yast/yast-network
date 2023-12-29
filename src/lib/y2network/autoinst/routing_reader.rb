@@ -41,8 +41,8 @@ module Y2Network
       def config
         tables = section.routes ? [Y2Network::RoutingTable.new(build_routes)] : []
         Y2Network::Routing.new(tables:       tables,
-                               forward_ipv4: !!section.ipv4_forward,
-                               forward_ipv6: !!section.ipv6_forward)
+          forward_ipv4: !!section.ipv4_forward,
+          forward_ipv6: !!section.ipv6_forward)
       end
 
     private
@@ -53,9 +53,9 @@ module Y2Network
       def build_routes
         section.routes.map do |route_section|
           Y2Network::Route.new(to:        destination_from(route_section),
-                               gateway:   gateway_from(route_section),
-                               interface: interface_from(route_section),
-                               options:   route_section.extrapara)
+            gateway:   gateway_from(route_section),
+            interface: interface_from(route_section),
+            options:   route_section.extrapara)
         end
       end
 

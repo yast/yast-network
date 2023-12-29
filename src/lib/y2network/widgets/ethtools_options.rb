@@ -36,7 +36,7 @@ module Y2Network
       def help
         _(
           "<p>If you specify options via <b>Ethtool options</b>, ifup will call " \
-            "ethtool with these options.</p>\n"
+          "ethtool with these options.</p>\n"
         )
       end
 

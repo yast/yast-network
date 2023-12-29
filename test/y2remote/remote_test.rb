@@ -19,7 +19,7 @@
 # current contact information at www.suse.com.
 # ------------------------------------------------------------------------------
 
-require_relative "../test_helper.rb"
+require_relative "../test_helper"
 require "y2remote/remote"
 
 describe Y2Remote::Remote do

@@ -1,6 +1,6 @@
 # use the shared Yast defaults
 inherit_from:
-  /usr/share/YaST2/data/devtools/data/rubocop-0.71.0_yast_style.yml
+  /usr/share/YaST2/data/devtools/data/rubocop-1.24.1_yast_style.yml
 
 # Offense count: 221
 Metrics/AbcSize:
@@ -43,17 +43,16 @@ Metrics/ParameterLists:
 Metrics/PerceivedComplexity:
   Max: 59
 
-# Offense count: 436
-# Configuration parameters: EnforcedStyle, SupportedStyles.
+# To not break old API
 Naming/MethodName:
   Enabled: false
 
 # very inconsistent params in old API
-Naming/UncommunicativeMethodParamName:
+Naming/MethodParameterName:
   Enabled: false
 
 # very inconsistent params in old API
-Naming/UncommunicativeBlockParamName:
+Naming/BlockParameterName:
   Enabled: false
 
 

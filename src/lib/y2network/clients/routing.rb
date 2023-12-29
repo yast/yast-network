@@ -279,7 +279,7 @@ module Y2Network
           CommandLine.Error(
             _(
               "At least one of the following parameters (gateway, netmask, " \
-                "device, options) must be specified"
+              "device, options) must be specified"
             )
           )
           return false
@@ -343,9 +343,7 @@ module Y2Network
       # @return [Boolean]
       def read
         result = Y2Network::Config.from(:wicked)
-        if result.issues?
-          return false unless Y2Issues.report(result.issues)
-        end
+        return false if result.issues? && !Y2Issues.report(result.issues)
 
         Yast::Lan.add_config(:system, result.config)
         Yast::Lan.add_config(:yast, result.config.copy)

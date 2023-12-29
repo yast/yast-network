@@ -83,8 +83,8 @@ module Y2Network
         # TODO: write it
         _(
           "<p>Select a devices for including into the bond.\n" \
-            "Only devices with the device activation set to <b>Never</b> " \
-            "and with <b>No Address Setup</b> are available.</p>"
+          "Only devices with the device activation set to <b>Never</b> " \
+          "and with <b>No Address Setup</b> are available.</p>"
         )
       end
 
@@ -128,15 +128,13 @@ module Y2Network
       def validate
         physical_ports = repeated_physical_port_ids(selected_items)
 
-        if !physical_ports.empty?
-          return false unless continue_with_duplicates?(physical_ports)
-        end
+        return false if !physical_ports.empty? && !continue_with_duplicates?(physical_ports)
 
         if @settings.require_adaptation?(selected_items || [])
-          return Yast::Popup.ContinueCancel(
+          Yast::Popup.ContinueCancel(
             _(
               "At least one selected device is already configured.\n" \
-                "Adapt the configuration for bonding?\n"
+              "Adapt the configuration for bonding?\n"
             )
           )
         else

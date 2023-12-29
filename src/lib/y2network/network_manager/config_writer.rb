@@ -24,7 +24,7 @@ module Y2Network
   module NetworkManager
     # This class configures NetworkManager according to a given configuration
     class ConfigWriter < Y2Network::ConfigWriter
-    private # rubocop:disable Layout/IndentationWidth
+    private
 
       # Writes connections configuration
       #

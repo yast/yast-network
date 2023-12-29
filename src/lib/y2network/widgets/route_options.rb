@@ -39,7 +39,7 @@ module Y2Network
       def help
         _(
           "<p><b>Options</b> specifies additional options for route. It is directly passed " \
-            "to <i>ip route add</i> with exception of <i>to</i>,<i>via</i> and <i>dev</i>."
+          "to <i>ip route add</i> with exception of <i>to</i>,<i>via</i> and <i>dev</i>."
         )
       end
 

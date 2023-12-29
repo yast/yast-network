@@ -66,7 +66,7 @@ module Y2Network
 
       def replace_widget
         @replace_widget ||= CWM::ReplacePoint.new(id:     "wireless_eap_point",
-                                                  widget: CWM::Empty.new("wireless_eap_empty"))
+          widget: CWM::Empty.new("wireless_eap_empty"))
       end
 
       def refresh

@@ -25,6 +25,7 @@ module Y2Network
   module Widgets
     class InterfaceType < CWM::RadioButtons
       attr_reader :result
+
       def initialize(default: nil)
         textdomain "network"
         # eth as default
@@ -39,7 +40,7 @@ module Y2Network
         # FIXME: help is not helpful
         _(
           "<p><b>Device Type</b>. Various device types are available, select \n" \
-            "one according your needs.</p>"
+          "one according your needs.</p>"
         )
       end
 

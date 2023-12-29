@@ -198,7 +198,7 @@ module Y2Network
               @settings.boot_protocol = "dhcp6"
             else
               raise "Unexpected dhcp mode value " \
-                "#{Yast::UI.QueryWidget(:bootproto_dhcp_mode, :Value).inspect}"
+                    "#{Yast::UI.QueryWidget(:bootproto_dhcp_mode, :Value).inspect}"
             end
           when :bootproto_dhcp_auto
             @settings.boot_protocol = "dhcp+autoip"
@@ -206,7 +206,7 @@ module Y2Network
             @settings.boot_protocol = "autoip"
           else
             raise "Unexpected dynamic mode value " \
-              "#{Yast::UI.QueryWidget(:bootproto_dyn, :Value).inspect}"
+                  "#{Yast::UI.QueryWidget(:bootproto_dyn, :Value).inspect}"
           end
         else
           raise "Unexpected boot protocol value #{Yast::UI.QueryWidget(:bootproto, :Value).inspect}"
@@ -241,10 +241,10 @@ module Y2Network
         elsif !Yast::Popup.YesNo(
           _(
             "No hostname has been specified. We recommend to associate \n" \
-              "a hostname with a static IP, otherwise the machine name will \n" \
-              "not be resolvable without an active network connection.\n" \
-              "\n" \
-              "Really leave the hostname blank?\n"
+            "a hostname with a static IP, otherwise the machine name will \n" \
+            "not be resolvable without an active network connection.\n" \
+            "\n" \
+            "Really leave the hostname blank?\n"
           )
         )
           Yast::UI.SetFocus(:bootproto_hostname)
@@ -269,33 +269,33 @@ module Y2Network
       def help
         res = _(
           "<p><b><big>Address Setup</big></b></p>\n" \
-            "<p>Select <b>No Address Setup</b> if you do not want " \
-            "to assign an IP address to this device.\n" \
-            "This is particularly useful for bonding ethernet devices.</p>\n"
+          "<p>Select <b>No Address Setup</b> if you do not want " \
+          "to assign an IP address to this device.\n" \
+          "This is particularly useful for bonding ethernet devices.</p>\n"
         ) +
           # Address dialog help 2/8
           _(
             "<p>Select <b>Dynamic Address</b> if you do not have a static IP address \n" \
-              "assigned by the system administrator or your Internet provider.</p>\n"
+            "assigned by the system administrator or your Internet provider.</p>\n"
           ) +
           # Address dialog help 3/8
           _(
             "<p>Choose one of the dynamic address assignment methods. Select <b>DHCP</b>\n" \
-              "if you have a DHCP server running on your local network. Network addresses \n" \
-              "are then automatically obtained from the server.</p>\n"
+            "if you have a DHCP server running on your local network. Network addresses \n" \
+            "are then automatically obtained from the server.</p>\n"
           ) +
           # Address dialog help 4/8
           _(
             "<p>To search for an IP address and assign it statically, select \n" \
-              "<b>Zeroconf</b>. To use DHCP and fall back to zeroconf, " \
-              "select <b>DHCP + Zeroconf\n" \
-              "</b>. Otherwise, the network addresses must be assigned <b>Statically</b>.</p>\n"
+            "<b>Zeroconf</b>. To use DHCP and fall back to zeroconf, " \
+            "select <b>DHCP + Zeroconf\n" \
+            "</b>. Otherwise, the network addresses must be assigned <b>Statically</b>.</p>\n"
           )
 
         if Yast::ProductFeatures.GetBooleanFeature("network", "force_static_ip")
           res += _(
             "<p>DHCP configuration is not recommended for this product.\n" \
-              "Components of this product might not work with DHCP.</p>"
+            "Components of this product might not work with DHCP.</p>"
           )
         end
 

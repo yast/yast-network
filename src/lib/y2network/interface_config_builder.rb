@@ -43,6 +43,7 @@ module Y2Network
       if !type.is_a?(InterfaceType)
         type = InterfaceType.from_short_name(type) or raise "Unknown type #{type.inspect}"
       end
+
       require "y2network/interface_config_builders/#{type.file_name}"
       InterfaceConfigBuilders.const_get(type.class_name).new(config: config)
     rescue LoadError => e
@@ -113,11 +114,8 @@ module Y2Network
       @connection_config.firewall_zone = firewall_zone
       # create new instance as name can change
       firewall_interface = Y2Firewall::Firewalld::Interface.new(name)
-      if Y2Firewall::Firewalld.instance.installed?
-        # TODO: should change only if different, but maybe firewall_interface responsibility?
-        if !firewall_interface.zone || firewall_zone != firewall_interface.zone.name
-          firewall_interface.zone = firewall_zone
-        end
+      if Y2Firewall::Firewalld.instance.installed? && (!firewall_interface.zone || firewall_zone != firewall_interface.zone.name)
+        firewall_interface.zone = firewall_zone
       end
 
       yast_config.rename_interface(@old_name, name, renaming_mechanism) if renamed_interface?
@@ -199,7 +197,7 @@ module Y2Network
 
       # TODO: handle renaming
       firewall_interface = Y2Firewall::Firewalld::Interface.new(name)
-      @firewall_zone = (firewall_interface.zone&.name) || @connection_config.firewall_zone
+      @firewall_zone = firewall_interface.zone&.name || @connection_config.firewall_zone
     end
 
     # sets assigned firewall zone
@@ -275,7 +273,7 @@ module Y2Network
       {
         label:         data&.label.to_s,
         ip_address:    data&.address&.address.to_s,
-        subnet_prefix: (data&.address&.prefix) ? "/#{data.address.prefix}" : "",
+        subnet_prefix: data&.address&.prefix ? "/#{data.address.prefix}" : "",
         id:            data&.id.to_s
       }
     end

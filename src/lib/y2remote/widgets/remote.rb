@@ -106,16 +106,16 @@ module Y2Remote
         Yast::Builtins.sformat(
           _(
             "<p><b><big>Remote Administration Settings</big></b></p>\n" \
-              "<p>If this feature is enabled, you can\n" \
-              "administer this machine remotely from another machine. Use a VNC\n" \
-              "client, such as krdc (connect to <tt>&lt;hostname&gt;:%1</tt>), or\n" \
-              "a Java-capable Web browser (connect to " \
-              "<tt>https://&lt;hostname&gt;:%2/</tt>).</p>\n" \
-              "<p>Without Session Management, only one user can be connected\n"\
-              "at a time to a session, and that session is terminated when the VNC client\n" \
-              "disconnects.</p>" \
-              "<p>With Session Management, multiple users can interact with a single\n" \
-              "session, and the session may persist even if noone is connected.</p>"
+            "<p>If this feature is enabled, you can\n" \
+            "administer this machine remotely from another machine. Use a VNC\n" \
+            "client, such as krdc (connect to <tt>&lt;hostname&gt;:%1</tt>), or\n" \
+            "a Java-capable Web browser (connect to " \
+            "<tt>https://&lt;hostname&gt;:%2/</tt>).</p>\n" \
+            "<p>Without Session Management, only one user can be connected\n"\
+            "at a time to a session, and that session is terminated when the VNC client\n" \
+            "disconnects.</p>" \
+            "<p>With Session Management, multiple users can interact with a single\n" \
+            "session, and the session may persist even if noone is connected.</p>"
           ),
           5901,
           5801

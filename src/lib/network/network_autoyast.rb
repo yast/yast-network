@@ -107,7 +107,7 @@ module Yast
         activator = Y2Network::S390DeviceActivator.for(builder)
         if !activator.configured_interface.empty?
           log.info "Interface #{activator.configured_interface} is already active. " \
-            "Skipping the activation."
+                   "Skipping the activation."
           next
         end
 

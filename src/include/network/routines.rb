@@ -141,9 +141,9 @@ module Yast
         if !Popup.YesNo(
           _(
             "The required packages are not installed.\n" \
-              "The configuration will be aborted.\n" \
-              "\n" \
-              "Try again?\n"
+            "The configuration will be aborted.\n" \
+            "\n" \
+            "Try again?\n"
           ) + "\n"
         )
           break
@@ -251,9 +251,11 @@ module Yast
           # 15b3:1003  MT27500 Family [ConnectX-3]
           # 15b3:1004  MT27500/MT27520 Family [ConnectX-3/ConnectX-3 Pro Virtual Function]
           # 15b3:1007  MT27520 Family [ConnectX-3 Pro]
-          if hwdevice["vendor_id"] == 71_091
-            return "ib" if [69_635, 69_636, 69_639].include?(hwdevice["device_id"])
+          if hwdevice["vendor_id"] == 71_091 && [69_635, 69_636,
+                                                 69_639].include?(hwdevice["device_id"])
+            return "ib"
           end
+
           # Nothing was found
           Builtins.y2error("Unknown network controller type: %1", hwdevice)
           Builtins.y2error(
@@ -267,9 +269,7 @@ module Yast
         end
       end
       # exception for infiniband device
-      if Ops.get_integer(hwdevice, "class_id", -1) == 12
-        return "ib" if subclass_id == 6
-      end
+      return "ib" if Ops.get_integer(hwdevice, "class_id", -1) == 12 && (subclass_id == 6)
 
       # Communication controller
       if Ops.get_integer(hwdevice, "class_id", -1) == 7
@@ -690,10 +690,10 @@ module Yast
 
       # filter out device with chelsio Driver and no Device File or which cannot
       # networking (bnc#711432)
-      if driver == "cxgb4" &&
-          (device_info["dev_name"] || "") == "" ||
-          device_info["vendor_id"] == 70_693 &&
-              device_info["device_id"] == 82_178
+      if (driver == "cxgb4" &&
+          (device_info["dev_name"] || "") == "") ||
+          (device_info["vendor_id"] == 70_693 &&
+              device_info["device_id"] == 82_178)
         log.info("Filtering out Chelsio device without device file.")
         return true
       end

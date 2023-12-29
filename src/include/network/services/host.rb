@@ -79,7 +79,7 @@ module Yast
 
       encoded = ""
       encoded << encoded_canonical if !encoded_canonical.empty?
-      encoded << " " + encoded_aliases.join(" ") if !encoded_aliases.empty?
+      encoded << (" " + encoded_aliases.join(" ")) if !encoded_aliases.empty?
 
       encoded
     end
@@ -96,7 +96,7 @@ module Yast
         # Hosts dialog help 2/2
         _(
           "<p>Enter a host <b>IP Address</b>, a <b>Hostname</b>, and optional\n" \
-            "<b>Host Aliases</b>, separated by spaces.</p>\n"
+          "<b>Host Aliases</b>, separated by spaces.</p>\n"
         )
 
       table_items = []
@@ -256,11 +256,9 @@ module Yast
 
           table_items = Builtins.filter(table_items) do |e|
             ip = Ops.get_string(e, 1, "")
-            if cur == Ops.get(e, [0, 0])
-              if ip != "" && !ip.nil?
-                deleted_items = Builtins.add(deleted_items, ip)
-                next false
-              end
+            if cur == Ops.get(e, [0, 0]) && (ip != "" && !ip.nil?)
+              deleted_items = Builtins.add(deleted_items, ip)
+              next false
             end
             true
           end

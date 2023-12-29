@@ -79,12 +79,12 @@ module Y2Network
       def help
         _(
           "<p><b><big>Additional Addresses</big></b></p>\n" \
-            "<p>Configure additional addresses of an interface in this table.</p>\n"
+          "<p>Configure additional addresses of an interface in this table.</p>\n"
         ) +
           # Aliases dialog help 2/4
           _(
             "<p>Enter an <b>IPv4 Address Label</b>, an <b>IP Address</b>, and\n" \
-              "the <b>Netmask</b>.</p>"
+            "the <b>Netmask</b>.</p>"
           ) +
           # Aliases dialog help 3/4
           _(
@@ -97,7 +97,7 @@ module Y2Network
           # Aliases dialog help 3/4, #83766
           _(
             "<p>Do not include the interface name in the label. For example, " \
-              "enter <b>foo</b> instead of <b>eth0:foo</b>.</p>"
+            "enter <b>foo</b> instead of <b>eth0:foo</b>.</p>"
           )
       end
 

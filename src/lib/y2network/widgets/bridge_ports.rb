@@ -73,7 +73,7 @@ module Y2Network
           Yast::Popup.ContinueCancel(
             _(
               "At least one selected device is already configured.\n" \
-                "Adapt the configuration for bridge?\n"
+              "Adapt the configuration for bridge?\n"
             )
           )
         else

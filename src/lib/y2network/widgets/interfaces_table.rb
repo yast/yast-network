@@ -91,7 +91,7 @@ module Y2Network
       def help
         _(
           "<p><b><big>Overview</big></b><br>\n" \
-           "Obtain an overview of the network interfaces configuration.</p>\n"
+          "Obtain an overview of the network interfaces configuration.</p>\n"
         )
       end
 
@@ -180,7 +180,7 @@ module Y2Network
         return conn.description unless conn&.description.to_s.empty?
 
         hwinfo = device.hardware
-        (hwinfo&.present?) ? hwinfo.description : device.name
+        hwinfo&.present? ? hwinfo.description : device.name
       end
 
       def summary_class_name

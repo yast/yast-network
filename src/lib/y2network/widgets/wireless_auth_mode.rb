@@ -53,8 +53,8 @@ module Y2Network
       def help
         # TODO: improve help text, mention all options and security problems with WEP
         "<p>WPA-EAP uses a RADIUS server to authenticate users. There\n" \
-        "are different methods in EAP to connect to the server and\n" \
-        "perform the authentication, namely TLS, TTLS, and PEAP.</p>\n"
+          "are different methods in EAP to connect to the server and\n" \
+          "perform the authentication, namely TLS, TTLS, and PEAP.</p>\n"
       end
 
       def store

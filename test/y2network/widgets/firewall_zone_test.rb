@@ -19,7 +19,7 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require_relative "../../test_helper.rb"
+require_relative "../../test_helper"
 require "y2network/widgets/firewall_zone"
 require "y2network/interface_config_builder"
 

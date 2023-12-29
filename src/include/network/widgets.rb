@@ -80,17 +80,15 @@ module Yast
 
       Lan.yast_config.backend = new_backend.to_sym
 
-      if Lan.system_config.backend != Lan.yast_config.backend
-        if Stage.normal && Lan.yast_config&.backend?(:network_manager)
-          Popup.AnyMessage(
-            _("Applet needed"),
-            _(
-              "NetworkManager is controlled by desktop applet\n" \
-              "(KDE plasma widget and nm-applet for GNOME).\n" \
-              "Be sure it's running and if not, start it manually."
-            )
+      if Lan.system_config.backend != Lan.yast_config.backend && (Stage.normal && Lan.yast_config&.backend?(:network_manager))
+        Popup.AnyMessage(
+          _("Applet needed"),
+          _(
+            "NetworkManager is controlled by desktop applet\n" \
+            "(KDE plasma widget and nm-applet for GNOME).\n" \
+            "Be sure it's running and if not, start it manually."
           )
-        end
+        )
       end
 
       nil

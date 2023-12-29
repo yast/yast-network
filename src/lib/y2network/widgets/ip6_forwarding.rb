@@ -44,9 +44,9 @@ module Y2Network
       def help
         _(
           "<p>Enable <b>IPv6 Forwarding</b> (forwarding packets from external networks\n" \
-            "to the internal one) if this system is a router.\n" \
-            "<b>Warning:</b> IPv6 forwarding disables IPv6 stateless address\n" \
-            "autoconfiguration (SLAAC).</p>"
+          "to the internal one) if this system is a router.\n" \
+          "<b>Warning:</b> IPv6 forwarding disables IPv6 stateless address\n" \
+          "autoconfiguration (SLAAC).</p>"
         )
       end
     end

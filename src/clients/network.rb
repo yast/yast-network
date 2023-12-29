@@ -45,11 +45,10 @@ module Yast
       # is this proposal or not?
       @propose = false
       @args = WFM.Args
-      if Ops.greater_than(Builtins.size(@args), 0)
-        if Ops.is_path?(WFM.Args(0)) && WFM.Args(0) == path(".propose")
-          Builtins.y2milestone("Using PROPOSE mode")
-          @propose = true
-        end
+      if Ops.greater_than(Builtins.size(@args),
+        0) && (Ops.is_path?(WFM.Args(0)) && WFM.Args(0) == path(".propose"))
+        Builtins.y2milestone("Using PROPOSE mode")
+        @propose = true
       end
 
       @cmdline_description = {
@@ -57,10 +56,10 @@ module Yast
         # translators: command line help for network module
         "help"       => _(
           "Configuration of network.\n" \
-            "This is only a delegator to network sub-modules.\n" \
-            "You can run these network modules:\n" \
-            "\n" \
-            "lan\t"
+          "This is only a delegator to network sub-modules.\n" \
+          "You can run these network modules:\n" \
+          "\n" \
+          "lan\t"
         ) +
           _("Network Card"),
         "guihandler" => fun_ref(method(:startDialog), "any ()"),
