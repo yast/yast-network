@@ -27,6 +27,7 @@ Yast.import "Stage"
 
 class NetworkLanComplexIncludeClass < Yast::Module
   def initialize
+    super
     Yast.include self, "network/lan/complex.rb"
   end
 end

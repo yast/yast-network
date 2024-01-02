@@ -31,6 +31,7 @@ module Y2Network
       # @param settings [Y2network::InterfaceConfigBuilder]
       # @param select_callback [Proc] Proc to be called when a network is selected
       def initialize(settings, &select_callback)
+        super()
         textdomain "network"
 
         @settings = settings

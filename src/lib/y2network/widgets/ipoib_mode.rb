@@ -24,6 +24,7 @@ module Y2Network
   module Widgets
     class IPoIBMode < CWM::RadioButtons
       def initialize(config)
+        super()
         textdomain "network"
 
         @config = config

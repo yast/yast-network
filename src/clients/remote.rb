@@ -27,6 +27,7 @@ module Yast
     include I18n
 
     def initialize
+      super
       Yast.import "UI"
 
       textdomain "network"

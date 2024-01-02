@@ -59,6 +59,7 @@ module Yast
     end
 
     def initialize
+      super
       textdomain "network"
 
       Yast.include self, "network/lan/wizards.rb"

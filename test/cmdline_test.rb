@@ -24,6 +24,7 @@ require "y2network/interface_config_builder"
 
 class DummyClass < Yast::Module
   def initialize
+    super
     Yast.include self, "network/lan/cmdline.rb"
   end
 end

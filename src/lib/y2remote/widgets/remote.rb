@@ -28,6 +28,7 @@ module Y2Remote
   module Widgets
     class RemoteSettings < CWM::CustomWidget
       def initialize
+        super
         textdomain "network"
 
         @allow_web ||= AllowWeb.new
@@ -157,6 +158,7 @@ module Y2Remote
     # Checkbox widget for setting vnc web access as enabled when checked.
     class AllowWeb < CWM::CheckBox
       def initialize
+        super
         textdomain "network"
       end
 
@@ -179,6 +181,7 @@ module Y2Remote
 
       # Constructor
       def initialize
+        super
         textdomain "network"
         @cwm_interfaces = Yast::CWMFirewallInterfaces.CreateOpenFirewallWidget(
           "services"        => services,

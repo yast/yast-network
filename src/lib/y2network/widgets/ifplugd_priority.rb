@@ -23,6 +23,7 @@ module Y2Network
   module Widgets
     class IfplugdPriority < CWM::IntField
       def initialize(config)
+        super()
         textdomain "network"
 
         @config = config

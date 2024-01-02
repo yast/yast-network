@@ -23,6 +23,7 @@ module Y2Network
   module Widgets
     class MTU < CWM::ComboBox
       def initialize(settings)
+        super()
         textdomain "network"
         @settings = settings
       end

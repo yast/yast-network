@@ -31,6 +31,7 @@ module Y2Network
       # @param label [String] Button label
       # @param block [Proc] Action to run
       def initialize(label, &block)
+        super()
         @label = label
         @block = block
       end
@@ -60,6 +61,7 @@ module Y2Network
       #
       # @param builder [InterfaceConfigBuilder]
       def initialize(builder)
+        super()
         textdomain "network"
         @builder = builder
       end

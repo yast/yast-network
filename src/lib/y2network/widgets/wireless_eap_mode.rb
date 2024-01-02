@@ -25,6 +25,7 @@ module Y2Network
     class WirelessEapMode < CWM::ComboBox
       # @param settings [Y2network::InterfaceConfigBuilder]
       def initialize(settings)
+        super()
         textdomain "network"
         @settings = settings
       end

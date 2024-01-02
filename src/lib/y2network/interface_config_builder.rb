@@ -114,7 +114,8 @@ module Y2Network
       @connection_config.firewall_zone = firewall_zone
       # create new instance as name can change
       firewall_interface = Y2Firewall::Firewalld::Interface.new(name)
-      if Y2Firewall::Firewalld.instance.installed? && (!firewall_interface.zone || firewall_zone != firewall_interface.zone.name)
+      if Y2Firewall::Firewalld.instance.installed? &&
+          (!firewall_interface.zone || firewall_zone != firewall_interface.zone.name)
         firewall_interface.zone = firewall_zone
       end
 

@@ -25,6 +25,7 @@ module Y2Network
     class WirelessChannel < CWM::ComboBox
       # @param settings [Y2network::InterfaceConfigBuilder]
       def initialize(settings)
+        super()
         @settings = settings
 
         textdomain "network"
@@ -57,6 +58,7 @@ module Y2Network
     class WirelessBitRate < CWM::ComboBox
       # @param settings [Y2network::InterfaceConfigBuilder]
       def initialize(settings)
+        super()
         @settings = settings
 
         textdomain "network"
@@ -95,6 +97,7 @@ module Y2Network
     class WirelessAccessPoint < CWM::InputField
       # @param settings [Y2network::InterfaceConfigBuilder]
       def initialize(settings)
+        super()
         @settings = settings
         textdomain "network"
       end
@@ -123,6 +126,7 @@ module Y2Network
     class WirelessAPScanMode < CWM::IntField
       # @param settings [Y2network::InterfaceConfigBuilder]
       def initialize(settings)
+        super()
         @settings = settings
         textdomain "network"
       end

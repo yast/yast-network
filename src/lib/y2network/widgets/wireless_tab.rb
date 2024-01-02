@@ -32,6 +32,7 @@ module Y2Network
     class WirelessTab < CWM::Tab
       # @param builder [Y2network::InterfaceConfigBuilder]
       def initialize(builder)
+        super()
         textdomain "network"
 
         @builder = builder
@@ -86,6 +87,7 @@ module Y2Network
 
     class WirelessExpertSettings < CWM::PushButton
       def initialize(settings)
+        super()
         @settings = settings
 
         textdomain "network"

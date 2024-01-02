@@ -24,6 +24,7 @@ module Y2Network
     # Widget that represent EAP Client Key password
     class ClientKeyPassword < CWM::Password
       def initialize(builder)
+        super()
         @builder = builder
         textdomain "network"
       end
@@ -51,6 +52,7 @@ module Y2Network
 
     class ClientKeyPath < PathWidget
       def initialize(builder)
+        super()
         textdomain "network"
         @builder = builder
       end

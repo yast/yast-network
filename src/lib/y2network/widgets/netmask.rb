@@ -28,6 +28,7 @@ module Y2Network
   module Widgets
     class Netmask < CWM::InputField
       def initialize(settings)
+        super()
         textdomain "network"
 
         @settings = settings

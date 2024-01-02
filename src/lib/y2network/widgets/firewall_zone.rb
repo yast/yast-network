@@ -35,6 +35,7 @@ module Y2Network
       #
       # @param builder [Y2Network::InterfaceConfigBuilder]
       def initialize(builder)
+        super()
         textdomain "network"
         @builder = builder
         @interface = Y2Firewall::Firewalld::Interface.new(builder.name)

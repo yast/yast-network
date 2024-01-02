@@ -290,9 +290,7 @@ module Y2Network
       to_modify = connections_to_modify(connection)
       to_modify.each do |dependency|
         case dependency.type
-        when InterfaceType::BRIDGE
-          dependency.ports.delete(name)
-        when InterfaceType::BONDING
+        when InterfaceType::BRIDGE, InterfaceType::BONDING
           dependency.ports.delete(name)
         when InterfaceType::VLAN
           delete_interface(dependency.interface)
@@ -306,9 +304,7 @@ module Y2Network
       to_modify = connections_to_modify(connection)
       to_modify.each do |dependency|
         case dependency.type
-        when InterfaceType::BRIDGE
-          dependency.ports.map! { |e| (e == old_name) ? new_name : e }
-        when InterfaceType::BONDING
+        when InterfaceType::BRIDGE, InterfaceType::BONDING
           dependency.ports.map! { |e| (e == old_name) ? new_name : e }
         when InterfaceType::VLAN
           dependency.parent_device = new_name

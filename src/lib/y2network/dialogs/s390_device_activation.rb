@@ -63,6 +63,7 @@ module Y2Network
       #
       # @param activator [Y2Network::S390DeviceActivator]
       def initialize(activator)
+        super()
         textdomain "network"
 
         @activator = activator

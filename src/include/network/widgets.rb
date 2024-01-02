@@ -80,7 +80,8 @@ module Yast
 
       Lan.yast_config.backend = new_backend.to_sym
 
-      if Lan.system_config.backend != Lan.yast_config.backend && (Stage.normal && Lan.yast_config&.backend?(:network_manager))
+      if Lan.system_config.backend != Lan.yast_config.backend &&
+          (Stage.normal && Lan.yast_config&.backend?(:network_manager))
         Popup.AnyMessage(
           _("Applet needed"),
           _(

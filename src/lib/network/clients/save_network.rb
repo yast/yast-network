@@ -33,6 +33,7 @@ module Yast
     include Logger
 
     def initialize
+      super
       textdomain "network"
     end
 

@@ -29,6 +29,7 @@ module Y2Network
       #
       # @param settings [Y2Network::InterfaceConfigBuilder]
       def initialize(settings)
+        super()
         textdomain "network"
         @settings = settings
       end
@@ -56,6 +57,7 @@ module Y2Network
       #
       # @param settings [Y2Network::InterfaceConfigBuilder]
       def initialize(settings)
+        super()
         textdomain "network"
         @settings = settings
       end
@@ -88,6 +90,7 @@ module Y2Network
       #
       # @param settings [Y2Network::InterfaceConfigBuilder]
       def initialize(settings)
+        super()
         textdomain "network"
         @settings = settings
       end
@@ -120,6 +123,7 @@ module Y2Network
       #
       # @param settings [Y2Network::InterfaceConfigBuilder]
       def initialize(settings)
+        super()
         textdomain "network"
         @settings = settings
       end

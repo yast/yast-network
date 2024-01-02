@@ -31,6 +31,7 @@ module Y2Network
     class WirelessWepKeys < CWM::Dialog
       # @param builder [InterfaceConfigBuilder]
       def initialize(builder)
+        super()
         textdomain "network"
         @builder = builder
       end
@@ -97,6 +98,7 @@ module Y2Network
 
       class WEPKeyLength < CWM::ComboBox
         def initialize(builder)
+          super()
           textdomain "network"
 
           @builder = builder
@@ -137,6 +139,7 @@ module Y2Network
 
       class WEPKeys < CWM::CustomWidget
         def initialize(settings)
+          super()
           textdomain "network"
           @settings = settings
         end

@@ -24,6 +24,7 @@ module Y2Network
   module Widgets
     class Startmode < CWM::ComboBox
       def initialize(config, plug_priority_widget)
+        super()
         textdomain "network"
 
         @config = config

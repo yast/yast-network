@@ -32,6 +32,7 @@ module Y2Network
       # @param name [String]
       # @param settings [Object]
       def initialize(name, settings)
+        super()
         textdomain "network"
 
         @name     = name
@@ -107,6 +108,7 @@ module Y2Network
     # Widget to modify the label of an additional IP address configuration
     class IPAddressLabel < CWM::InputField
       def initialize(name, settings, focus: false)
+        super()
         textdomain "network"
 
         @name = name

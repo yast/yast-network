@@ -25,6 +25,7 @@ module Y2Network
     class WirelessPassword < CWM::Password
       # @param builder [Y2network::InterfaceConfigBuilder]
       def initialize(builder)
+        super()
         textdomain "network"
         @builder = builder
       end

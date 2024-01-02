@@ -27,6 +27,7 @@ module Y2Network
     class RouteOptions < CWM::InputField
       # @param route route object to get and store options
       def initialize(route)
+        super()
         textdomain "network"
 
         @route = route

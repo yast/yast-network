@@ -120,10 +120,7 @@ module Yast
         @progress_orig = Progress.set(false)
         @ret = Host.Write
         Progress.set(@progress_orig)
-      when "SetModified"
-        # SetModified always return(ed) true anyway
-        @ret = true
-      when "GetModified"
+      when "SetModified", "GetModified"
         # When cloning the sequence of this client callbacks invocation is
         # Read -> SetModified -> GetModified so it should return always true
         # (bcs of SetModified)

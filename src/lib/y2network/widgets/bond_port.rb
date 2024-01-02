@@ -34,6 +34,7 @@ module Y2Network
       include ::UI::TextHelpers
 
       def initialize(settings)
+        super()
         textdomain "network"
         @settings = settings
       end

@@ -27,6 +27,7 @@ module Y2Network
   module Widgets
     class InterfaceName < CWM::ComboBox
       def initialize(settings)
+        super()
         textdomain "network"
 
         @settings = settings

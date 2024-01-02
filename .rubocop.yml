@@ -75,12 +75,14 @@ Naming/FileName:
   Exclude:
     - "src/modules/*"
 
-# Offense count: 7
-# Cop supports --auto-correct.
-# Configuration parameters: ExactNameMatch, AllowPredicates, AllowDSLWriters, Whitelist.
+# to keep API compatible
 Style/TrivialAccessors:
   Enabled: false
 
 # this needs more testing if we can have frozen string literals
 Style/FrozenStringLiteralComment:
+  Enabled: false
+
+# to keep API compatible
+Style/OptionalBooleanParameter:
   Enabled: false

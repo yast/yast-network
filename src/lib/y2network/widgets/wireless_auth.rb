@@ -34,6 +34,7 @@ module Y2Network
 
       # @param settings [Y2network::InterfaceConfigBuilder]
       def initialize(settings)
+        super()
         @settings = settings
         self.handle_all_events = true
         textdomain "network"
@@ -114,6 +115,7 @@ module Y2Network
       # Button for showing WEP Keys dialog
       class WirelessWepKeys < CWM::PushButton
         def initialize(settings)
+          super()
           @settings = settings
           textdomain "network"
         end

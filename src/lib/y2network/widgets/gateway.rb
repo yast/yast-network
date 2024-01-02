@@ -30,6 +30,7 @@ module Y2Network
     class Gateway < CWM::InputField
       # @param route route object to get and store gateway value
       def initialize(route)
+        super()
         textdomain "network"
 
         @route = route

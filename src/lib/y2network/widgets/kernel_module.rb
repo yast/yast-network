@@ -29,6 +29,7 @@ module Y2Network
       # @param names    [Array<String>] Drivers names
       # @param selected [String,nil] Initially selected driver (nil if no driver is selected)
       def initialize(names, selected)
+        super()
         textdomain "network"
         @names = names
         @selected = selected

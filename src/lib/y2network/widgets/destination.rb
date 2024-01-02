@@ -30,6 +30,7 @@ module Y2Network
     class Destination < CWM::CustomWidget
       # @param route [Y2Network::Route] route to modify by widget
       def initialize(route)
+        super()
         textdomain "network"
 
         @route = route

@@ -27,6 +27,7 @@ module Y2Network
   module Widgets
     class UdevRules < CWM::CustomWidget
       def initialize(settings)
+        super()
         textdomain "network"
         @settings = settings
       end

@@ -31,6 +31,7 @@ module Y2Network
   module Widgets
     class AdditionalAddresses < CWM::CustomWidget
       def initialize(settings)
+        super()
         textdomain "network"
         @settings = settings
       end

@@ -29,6 +29,7 @@ module Y2Network
       include Yast::Logger
 
       def initialize(builder)
+        super()
         textdomain "network"
         @builder = builder
         self.handle_all_events = true

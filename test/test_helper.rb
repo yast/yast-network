@@ -118,6 +118,9 @@ module Installation
   module Console
     module Plugins
       class MenuPlugin
+        def inspect
+          "just fake method for testing"
+        end
       end
     end
   end

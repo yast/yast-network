@@ -36,6 +36,7 @@ module Y2Network
   module Widgets
     class BootProtocol < CWM::CustomWidget
       def initialize(settings)
+        super()
         textdomain "network"
         @settings = settings
       end
@@ -138,9 +139,7 @@ module Y2Network
         when Y2Network::BootProtocol::AUTOIP
           Yast::UI.ChangeWidget(Id(:bootproto), :CurrentButton, :bootproto_dynamic)
           Yast::UI.ChangeWidget(Id(:bootproto_dyn), :Value, :bootproto_auto)
-        when Y2Network::BootProtocol::NONE
-          Yast::UI.ChangeWidget(Id(:bootproto), :CurrentButton, :bootproto_none)
-        when Y2Network::BootProtocol::IBFT
+        when Y2Network::BootProtocol::NONE, Y2Network::BootProtocol::IBFT
           Yast::UI.ChangeWidget(Id(:bootproto), :CurrentButton, :bootproto_none)
         end
 
@@ -327,17 +326,16 @@ module Y2Network
       end
 
       def valid_netmask(ip, mask)
-        valid_mask = false
         mask = mask[1..-1] if mask.start_with?("/")
 
         if Yast::IP.Check4(ip) && (Yast::Netmask.Check4(mask) || Yast::Netmask.CheckPrefix4(mask))
-          valid_mask = true
-        elsif Yast::IP.Check6(ip) && Yast::Netmask.Check6(mask)
-          valid_mask = true
-        else
-          log.warn "IP address #{ip} is not valid"
+          return true
         end
-        valid_mask
+
+        return true if Yast::IP.Check6(ip) && Yast::Netmask.Check6(mask)
+
+        log.warn "IP address #{ip} is not valid"
+        false
       end
     end
   end

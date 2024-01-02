@@ -173,11 +173,7 @@ module Y2Network
       def find_parent(configs)
         configs.find do |config|
           # TODO: what about VLAN?
-          if config.type.bonding?
-            config.ports.include?(name)
-          elsif config.type.bridge?
-            config.ports.include?(name)
-          end
+          config.ports.include?(name) if config.type.bonding? || config.type.bridge?
         end
       end
 

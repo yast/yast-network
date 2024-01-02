@@ -30,6 +30,7 @@ module Y2Network
   module Widgets
     class InterfacesTable < CWM::Table
       def initialize(description)
+        super()
         textdomain "network"
 
         @description = description

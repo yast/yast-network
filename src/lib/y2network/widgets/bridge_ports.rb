@@ -33,6 +33,7 @@ module Y2Network
 
       # @param [Y2Network::InterfaceConfigBuilders::Bridge] settings
       def initialize(settings)
+        super()
         textdomain "network"
         @settings = settings
       end

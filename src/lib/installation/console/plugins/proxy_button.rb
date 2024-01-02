@@ -26,6 +26,7 @@ module Installation
       # define a CWM widget for starting network configuration
       class ProxyButton < CWM::PushButton
         def initialize
+          super
           textdomain "network"
         end
 

@@ -129,15 +129,12 @@ module Yast
 
         # abort?
         case ret
-        when :abort, :cancel
+        when :abort, :cancel, :back
           break
         # next
         when :next, :modules
           # check_*
           ret = :next
-          break
-        # back
-        when :back
           break
         else
           Builtins.y2error("unexpected retcode: %1", ret)

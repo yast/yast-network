@@ -25,6 +25,7 @@ module Y2Network
   module Widgets
     class AddRoute < CWM::PushButton
       def initialize(table, config)
+        super()
         @table = table
         @config = config
         textdomain "network"
@@ -49,6 +50,7 @@ module Y2Network
 
     class EditRoute < CWM::PushButton
       def initialize(table, config)
+        super()
         @table = table
         @config = config
         textdomain "network"
@@ -75,6 +77,7 @@ module Y2Network
 
     class DeleteRoute < CWM::PushButton
       def initialize(table)
+        super()
         @table = table
         textdomain "network"
       end

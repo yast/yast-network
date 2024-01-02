@@ -28,6 +28,7 @@ module Y2Network
     class WirelessEssid < CWM::InputField
       # @param settings [Y2network::InterfaceConfigBuilder]
       def initialize(settings)
+        super()
         @settings = settings
         textdomain "network"
       end

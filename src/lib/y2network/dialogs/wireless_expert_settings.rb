@@ -29,6 +29,7 @@ module Y2Network
       # @param settings [InterfaceConfigBuilder] object holding interface configuration
       #   modified by the dialog.
       def initialize(settings)
+        super()
         @settings = settings
 
         textdomain "network"

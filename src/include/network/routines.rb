@@ -217,9 +217,7 @@ module Yast
           return "atm"
         when 4
           return "isdn"
-        when 6 ## Should be PICMG?
-          return "ib"
-        when 7
+        when 6, 7 ## Should be PICMG?
           return "ib"
         when 129
           return "myri"

@@ -40,6 +40,7 @@ module Yast
     ].freeze
 
     def initialize
+      super
       Yast.import "UI"
       Yast.import "Lan"
 

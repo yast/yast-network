@@ -31,6 +31,7 @@ module Y2Network
       # @param networks [Array<WirelessNetwork>] List of available wifi networks
       # @param builder [InterfaceConfigBuilder]
       def initialize(builder, networks = [])
+        super()
         textdomain "network"
         @networks = networks
         @builder = builder

@@ -27,6 +27,7 @@ module Y2Network
       attr_reader :result
 
       def initialize(default: nil)
+        super()
         textdomain "network"
         # eth as default
         @default = default || "eth"

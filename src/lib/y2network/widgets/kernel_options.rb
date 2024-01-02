@@ -29,6 +29,7 @@ module Y2Network
       #
       # @param options [String] Driver options
       def initialize(options)
+        super()
         textdomain "network"
         @options = options
       end
