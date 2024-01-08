@@ -54,7 +54,7 @@ module Y2Network
       Yast.import "Lan"
 
       @selected_backend = autoinst_backend
-      @virt_bridge_proposal = autoinst_disabled_proposal? ? false : true
+      @virt_bridge_proposal = !autoinst_disabled_proposal?
       @defaults_applied = false
     end
 
@@ -212,7 +212,7 @@ module Y2Network
     def load_features(source = network_section)
       return unless source.is_a?(Hash)
 
-      source.keys.each { |k| load_feature(k, k, source: source) }
+      source.each_key { |k| load_feature(k, k, source: source) }
     end
 
     # Reads a feature from a given hash and assign it to the corresponding object attribute

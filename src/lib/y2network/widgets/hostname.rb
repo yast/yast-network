@@ -29,6 +29,7 @@ module Y2Network
       # @param empty_allowed [Boolean] whether an empty hostname should be
       #   valid or not
       def initialize(settings, empty_allowed: true)
+        super()
         textdomain "network"
 
         @settings = settings

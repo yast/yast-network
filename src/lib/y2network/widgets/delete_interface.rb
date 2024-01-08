@@ -40,22 +40,20 @@ module Y2Network
       def handle
         return nil unless connection_config # unconfigured physical device. Delete do nothing
 
-        if connection_config.startmode.name == "nfsroot"
-          if !Yast::Popup.YesNoHeadline(
-            Yast::Label.WarningMsg,
-            _("Device you select has STARTMODE=nfsroot. Really delete?")
-          )
-            return nil
-          end
+        if connection_config.startmode.name == "nfsroot" && !Yast::Popup.YesNoHeadline(
+          Yast::Label.WarningMsg,
+          _("Device you select has STARTMODE=nfsroot. Really delete?")
+        )
+          return nil
         end
 
         others = all_modify(config, connection_config)
         if !others.empty?
           delete, modify = others.partition { |c| c.type.vlan? }
           message = format(_("Device you select has been used in other devices.<br>" \
-            "When deleted these devices will be modified<ul>%s</ul><br>" \
-            "and these devices deleted: <ul>%s</ul><br>" \
-            "Really delete?"),
+                             "When deleted these devices will be modified<ul>%s</ul><br>" \
+                             "and these devices deleted: <ul>%s</ul><br>" \
+                             "Really delete?"),
             modify.map { |m| "<li>#{m.name}</li>" }.join("\n"),
             delete.map { |m| "<li>#{m.name}</li>" }.join("\n"))
           if Yast2::Popup.show(message, richtext: :yes, buttons: :yes_no, headline: :warning) == :no
@@ -80,7 +78,7 @@ module Y2Network
         _(
           "<p><b><big>Deleting:</big></b><br>\n" \
           "Choose a network card to remove.\n" \
-         "Then press <b>Delete</b>.</p>\n"
+          "Then press <b>Delete</b>.</p>\n"
         )
       end
 

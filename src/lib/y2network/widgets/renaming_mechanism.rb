@@ -33,6 +33,7 @@ module Y2Network
       #
       # @param builder [InterfaceConfigBuilder] Interface configuration builder object
       def initialize(builder)
+        super()
         textdomain "network"
         @builder = builder
 

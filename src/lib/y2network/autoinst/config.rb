@@ -52,7 +52,7 @@ module Y2Network
       # @option opts [Boolean] :managed
       # @option opts [String, Symbol] :backend
       def initialize(opts = {})
-        ay_options = opts.reject { |_k, v| v.nil? }
+        ay_options = opts.compact
 
         @before_proposal = ay_options.fetch(:before_proposal, false)
         @start_immediately = ay_options.fetch(:start_immediately, true)

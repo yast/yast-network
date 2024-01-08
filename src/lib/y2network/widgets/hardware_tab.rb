@@ -29,6 +29,7 @@ module Y2Network
   module Widgets
     class HardwareTab < CWM::Tab
       def initialize(settings)
+        super()
         textdomain "network"
 
         @settings = settings

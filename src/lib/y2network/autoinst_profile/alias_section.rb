@@ -83,7 +83,7 @@ module Y2Network
       # @param config [Hash]
       # @return [Boolean]
       def init_from_hashes(config)
-        normalized_config = config.each_with_object({}) { |(k, v), c| c[k.downcase] = v }
+        normalized_config = config.transform_keys(&:downcase)
         super(normalized_config)
       end
     end

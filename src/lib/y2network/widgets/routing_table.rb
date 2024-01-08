@@ -29,6 +29,7 @@ module Y2Network
   module Widgets
     class RoutingTable < CWM::Table
       def initialize(routing_table)
+        super()
         textdomain "network"
 
         @routing_table = routing_table

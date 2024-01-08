@@ -40,7 +40,7 @@ module Yast
         _("Confirm Network Restart"),
         _(
           "Because of the bridged network, YaST2 needs to " \
-            "restart the network to apply the settings."
+          "restart the network to apply the settings."
         ),
         Label.OKButton,
         Label.CancelButton,

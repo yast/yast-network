@@ -25,6 +25,7 @@ module Y2Network
     # TODO: add to CWM as generic widget
     class PathWidget < CWM::CustomWidget
       def initialize
+        super()
         textdomain "network"
       end
 

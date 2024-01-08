@@ -23,6 +23,7 @@ module Y2Network
   module Widgets
     class S390Button < CWM::PushButton
       def initialize
+        super
         textdomain "network"
       end
 

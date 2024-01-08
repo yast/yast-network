@@ -252,7 +252,7 @@ module Y2Network
 
       if auth_suites_line
         suites = auth_suites_line[/: (.+)\Z/, 1]
-        auth_suites = suites ? suites.split(" ") : []
+        auth_suites = suites ? suites.split : []
       end
 
       AuthMode.new(name, auth_suites)

@@ -234,17 +234,15 @@ module Yast
               Popup.YesNo(
                 _(
                   "Detected a ndiswrapper configuration,\n" \
-                    "but the kernel module was not modprobed.\n" \
-                    "Do you want to modprobe ndiswrapper?\n"
+                  "but the kernel module was not modprobed.\n" \
+                  "Do you want to modprobe ndiswrapper?\n"
                 )
+              ) && (ModuleLoading.Load("ndiswrapper", "", "", "", false, true) == :fail)
+            Popup.Error(
+              _(
+                "ndiswrapper kernel module has not been loaded.\nCheck configuration manually.\n"
               )
-            if ModuleLoading.Load("ndiswrapper", "", "", "", false, true) == :fail
-              Popup.Error(
-                _(
-                  "ndiswrapper kernel module has not been loaded.\nCheck configuration manually.\n"
-                )
-              )
-            end
+            )
           end
         end
       end
@@ -296,8 +294,8 @@ module Yast
         return false if Abort()
       rescue IOError, SystemCallError, RuntimeError => e
         msg = format(_("Network configuration is corrupted.\n"\
-                "If you continue resulting configuration can be malformed."\
-                "\n\n%s"), wrap_text(e.message))
+                       "If you continue resulting configuration can be malformed."\
+                       "\n\n%s"), wrap_text(e.message))
         return false if !@gui
         return false if !Popup.ContinueCancel(msg)
       end
@@ -772,9 +770,7 @@ module Yast
     # @return [Boolean] Returns whether the configuration was read.
     def read_config(report: true)
       result = Y2Network::Config.from(:wicked)
-      if result.issues? && report
-        return false unless Y2Issues.report(result.issues)
-      end
+      return false if result.issues? && report && !Y2Issues.report(result.issues)
 
       system_config = result.config
       system_config.backend = (NetworkService.cached_name || :none)
@@ -791,9 +787,7 @@ module Yast
     # @see Y2Network::ConfigWriter
     def write_config(only: nil, report: true)
       result = yast_config.write(original: system_config, only: only)
-      if result&.issues? && report
-        return false unless Y2Issues.report(result.issues)
-      end
+      return false if result&.issues? && report && !Y2Issues.report(result.issues)
 
       # Force a refresh of the system_config bsc#1162987
       add_config(:system, yast_config.copy)
@@ -862,7 +856,7 @@ module Yast
         virt_bridge_proposal: section.virt_bridge_proposal,
         managed:              section.managed,
         backend:              section.backend
-      }.reject { |_k, v| v.nil? }
+      }.compact
     end
 
     def activate_network_service
@@ -875,7 +869,7 @@ module Yast
       case action
       when :reload_restart
         log.info("Attempting to reload network service, normal stage #{Stage.normal}, " \
-          "ssh: #{Linuxrc.usessh}")
+                 "ssh: #{Linuxrc.usessh}")
 
         NetworkService.ReloadOrRestart if Stage.normal || !Linuxrc.usessh
       when :remote_installer
@@ -921,7 +915,7 @@ module Yast
       addr = false
       tmp_mac = nil
       row.each do |column|
-        tmp_col = column.split(" ")
+        tmp_col = column.split
         next if tmp_col.size < 2
 
         tmp_mac = tmp_col[1] if tmp_col[0] == "link/ether"

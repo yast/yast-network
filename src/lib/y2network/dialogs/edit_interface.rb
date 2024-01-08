@@ -19,12 +19,12 @@
 
 require "cwm/dialog"
 
-require "y2network/widgets/address_tab.rb"
-require "y2network/widgets/bond_ports_tab.rb"
-require "y2network/widgets/bridge_ports_tab.rb"
-require "y2network/widgets/general_tab.rb"
-require "y2network/widgets/hardware_tab.rb"
-require "y2network/widgets/wireless_tab.rb"
+require "y2network/widgets/address_tab"
+require "y2network/widgets/bond_ports_tab"
+require "y2network/widgets/bridge_ports_tab"
+require "y2network/widgets/general_tab"
+require "y2network/widgets/hardware_tab"
+require "y2network/widgets/wireless_tab"
 
 Yast.import "Label"
 
@@ -36,6 +36,7 @@ module Y2Network
       # @param settings [InterfaceBuilder] object holding interface configuration
       #   modified by the dialog.
       def initialize(settings)
+        super()
         @settings = settings
 
         textdomain "network"

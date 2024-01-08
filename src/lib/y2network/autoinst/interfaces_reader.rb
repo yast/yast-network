@@ -103,16 +103,16 @@ module Y2Network
       end
 
       def load_generic(config, interface_section)
-        if !interface_section.bootproto.to_s.empty?
+        if interface_section.bootproto.to_s.empty?
+          issues_list.add(::Installation::AutoinstIssues::MissingValue,
+            interface_section, :bootproto)
+        else
           bootproto = BootProtocol.from_name(interface_section.bootproto)
           if bootproto
             config.bootproto = bootproto
           else
             add_invalid_issue(interface_section, :bootproto, config.bootproto&.name)
           end
-        else
-          issues_list.add(::Installation::AutoinstIssues::MissingValue,
-            interface_section, :bootproto)
         end
 
         config.name = name_from_section(interface_section)

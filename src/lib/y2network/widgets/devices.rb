@@ -25,6 +25,7 @@ module Y2Network
     class Devices < CWM::ComboBox
       # @param route route object to get and store gateway value
       def initialize(route, available_devices)
+        super()
         textdomain "network"
 
         @devices = available_devices
@@ -38,7 +39,7 @@ module Y2Network
       def help
         _(
           "<p><b>Device</b> specifies the device through which the traffic" \
-            " to the defined network will be routed.</p>"
+          " to the defined network will be routed.</p>"
         )
       end
 

@@ -28,7 +28,7 @@ module Y2Network
   module Wicked
     # This class configures Wicked (through sysconfig) according to a given configuration
     class ConfigWriter < Y2Network::ConfigWriter
-    private # rubocop:disable Layout/IndentationWidth
+    private
 
       # Updates the ip forwarding config and the routing config which does not
       # belongs to a particular interface

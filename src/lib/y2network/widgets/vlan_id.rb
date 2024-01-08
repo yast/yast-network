@@ -26,6 +26,7 @@ module Y2Network
       #
       # @param config [Y2Network::InterfaceConfigBuilder] Interface configuration builder object
       def initialize(config)
+        super()
         textdomain "network"
 
         @config = config

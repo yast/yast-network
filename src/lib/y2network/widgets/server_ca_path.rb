@@ -23,6 +23,7 @@ module Y2Network
   module Widgets
     class ServerCAPath < PathWidget
       def initialize(builder)
+        super()
         textdomain "network"
         @builder = builder
       end

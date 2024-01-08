@@ -91,6 +91,7 @@ require "yast"
 
 class NetworkComplexIncludeClass < Yast::Module
   def initialize
+    super
     Yast.include self, "network/complex.rb"
   end
 end

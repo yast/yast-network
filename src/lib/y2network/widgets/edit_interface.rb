@@ -60,7 +60,7 @@ module Y2Network
         _(
           "<p><b><big>Configuring:</big></b><br>\n" \
           "Choose a network card to change.\n" \
-         "Then press <b>Edit</b>.</p>\n"
+          "Then press <b>Edit</b>.</p>\n"
         )
       end
     end

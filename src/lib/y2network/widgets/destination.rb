@@ -30,6 +30,7 @@ module Y2Network
     class Destination < CWM::CustomWidget
       # @param route [Y2Network::Route] route to modify by widget
       def initialize(route)
+        super()
         textdomain "network"
 
         @route = route
@@ -45,8 +46,8 @@ module Y2Network
       def help
         _(
           "<p><b>Default Route</b> matches all destination for a given IP " \
-            "address family as long as no specific route matches. <b>Destination</b>" \
-            " specifies the IP address (in CIDR format) for which the route applies.</p>"
+          "address family as long as no specific route matches. <b>Destination</b>" \
+          " specifies the IP address (in CIDR format) for which the route applies.</p>"
         )
       end
 

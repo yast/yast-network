@@ -29,6 +29,7 @@ module Y2Remote
       include Yast::Logger
 
       def initialize
+        super
         Yast.import "UI"
         Yast.import "Wizard"
 

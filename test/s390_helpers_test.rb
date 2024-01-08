@@ -31,6 +31,7 @@ class NetworkLanS390IncludeTestClient < Yast::Client
   include Singleton
 
   def initialize
+    super
     Yast.include self, "network/lan/s390.rb"
   end
 end

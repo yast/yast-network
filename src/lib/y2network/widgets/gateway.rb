@@ -30,6 +30,7 @@ module Y2Network
     class Gateway < CWM::InputField
       # @param route route object to get and store gateway value
       def initialize(route)
+        super()
         textdomain "network"
 
         @route = route
@@ -42,7 +43,7 @@ module Y2Network
       def help
         _(
           "<p><b>Gateway</b> defines the IP address of a host which routes the packets " \
-            "to a remote host or network. It can be blank for rejection or device routes. "
+          "to a remote host or network. It can be blank for rejection or device routes. "
         )
       end
 

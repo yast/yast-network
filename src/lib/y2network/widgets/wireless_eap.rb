@@ -33,6 +33,7 @@ module Y2Network
       attr_reader :settings
 
       def initialize(settings)
+        super()
         @settings = settings
         self.handle_all_events = true
       end
@@ -66,7 +67,7 @@ module Y2Network
 
       def replace_widget
         @replace_widget ||= CWM::ReplacePoint.new(id:     "wireless_eap_point",
-                                                  widget: CWM::Empty.new("wireless_eap_empty"))
+          widget: CWM::Empty.new("wireless_eap_empty"))
       end
 
       def refresh
@@ -96,6 +97,7 @@ module Y2Network
       attr_reader :settings
 
       def initialize(settings)
+        super()
         @settings = settings
       end
 
@@ -112,6 +114,7 @@ module Y2Network
       attr_reader :settings
 
       def initialize(settings)
+        super()
         @settings = settings
       end
 
@@ -129,6 +132,7 @@ module Y2Network
       attr_reader :settings
 
       def initialize(settings)
+        super()
         @settings = settings
       end
 
@@ -150,6 +154,7 @@ module Y2Network
     # Widget that represent EAP password
     class EapPassword < CWM::Password
       def initialize(builder)
+        super()
         @builder = builder
         textdomain "network"
       end
@@ -178,6 +183,7 @@ module Y2Network
     # Widget that represent EAP user
     class EapUser < CWM::InputField
       def initialize(builder)
+        super()
         @builder = builder
         textdomain "network"
       end
@@ -202,6 +208,7 @@ module Y2Network
     # Widget that represent EAP anonymous user that is used for initial connection
     class EapAnonymousUser < CWM::InputField
       def initialize(builder)
+        super()
         @builder = builder
         textdomain "network"
       end

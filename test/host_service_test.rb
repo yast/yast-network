@@ -25,6 +25,7 @@ Yast.import "UI"
 
 class DummyHostService < Yast::Module
   def initialize
+    super
     Yast.include self, "network/services/host.rb"
   end
 end

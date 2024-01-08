@@ -138,8 +138,8 @@ describe Y2Network::VirtualizationConfig do
     let(:routes) { [route] }
     let(:route) do
       Y2Network::Route.new(to:        :default,
-                           gateway:   IPAddr.new("192.168.122.1"),
-                           interface: eth0)
+        gateway:   IPAddr.new("192.168.122.1"),
+        interface: eth0)
     end
     let(:eth0) { Y2Network::Interface.new("eth0") }
     let(:br0) { Y2Network::Interface.new("br0") }

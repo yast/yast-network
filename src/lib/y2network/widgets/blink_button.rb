@@ -27,6 +27,7 @@ module Y2Network
   module Widgets
     class BlinkButton < CWM::CustomWidget
       def initialize(settings)
+        super()
         textdomain "network"
         @settings = settings
       end
@@ -65,10 +66,10 @@ module Y2Network
       def help
         _(
           "<p><b>Show visible port identification</b> allows you to physically " \
-            "identify now configured NIC. \n" \
-            "Set appropriate time, click <b>Blink</b> and LED diodes on you " \
-            "NIC will start blinking for selected time.\n" \
-            "</p>"
+          "identify now configured NIC. \n" \
+          "Set appropriate time, click <b>Blink</b> and LED diodes on you " \
+          "NIC will start blinking for selected time.\n" \
+          "</p>"
         )
       end
     end

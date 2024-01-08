@@ -33,6 +33,7 @@ module Y2Network
 
       # @param [Y2Network::InterfaceConfigBuilders::Bridge] settings
       def initialize(settings)
+        super()
         textdomain "network"
         @settings = settings
       end
@@ -73,7 +74,7 @@ module Y2Network
           Yast::Popup.ContinueCancel(
             _(
               "At least one selected device is already configured.\n" \
-                "Adapt the configuration for bridge?\n"
+              "Adapt the configuration for bridge?\n"
             )
           )
         else

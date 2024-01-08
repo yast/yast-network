@@ -29,6 +29,7 @@ module Y2Network
       # @param names    [Array<String>] Drivers names
       # @param selected [String,nil] Initially selected driver (nil if no driver is selected)
       def initialize(names, selected)
+        super()
         textdomain "network"
         @names = names
         @selected = selected
@@ -42,10 +43,10 @@ module Y2Network
       def help
         _(
           "<p><b>Kernel Module</b>. Enter the kernel module (driver) name \n" \
-            "for your network device here. If the device is already configured, " \
-            "see if there is more than one driver available for\n" \
-            "your device in the drop-down list. If necessary, choose a driver " \
-            "from the list, but usually the default value works.</p>\n"
+          "for your network device here. If the device is already configured, " \
+          "see if there is more than one driver available for\n" \
+          "your device in the drop-down list. If necessary, choose a driver " \
+          "from the list, but usually the default value works.</p>\n"
         )
       end
 

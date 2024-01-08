@@ -24,6 +24,7 @@ module Y2Network
   module Widgets
     class EthtoolsOptions < CWM::InputField
       def initialize(settings)
+        super()
         textdomain "network"
 
         @settings = settings
@@ -36,7 +37,7 @@ module Y2Network
       def help
         _(
           "<p>If you specify options via <b>Ethtool options</b>, ifup will call " \
-            "ethtool with these options.</p>\n"
+          "ethtool with these options.</p>\n"
         )
       end
 

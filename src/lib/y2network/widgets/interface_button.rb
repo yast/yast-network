@@ -36,6 +36,7 @@ module Y2Network
       abstract_method :help
       # @param table [InterfacesTable]
       def initialize(table)
+        super()
         textdomain "network"
 
         @table = table

@@ -27,6 +27,7 @@ module Y2Network
   module Widgets
     class UdevRules < CWM::CustomWidget
       def initialize(settings)
+        super()
         textdomain "network"
         @settings = settings
       end
@@ -69,8 +70,8 @@ module Y2Network
       def help
         _(
           "<p><b>Udev Rules</b> are rules for the kernel device manager that allow\n" \
-            "associating the MAC address or BusID of the network device with its name (for\n" \
-            "example, eth1, wlan0 ) and assures a persistent device name upon reboot.\n"
+          "associating the MAC address or BusID of the network device with its name (for\n" \
+          "example, eth1, wlan0 ) and assures a persistent device name upon reboot.\n"
         )
       end
     end

@@ -25,6 +25,7 @@ Yast.import "UI"
 
 class DummyDnsService < Yast::Module
   def initialize
+    super
     Yast.include self, "network/services/dns.rb"
   end
 end
@@ -133,7 +134,7 @@ describe "NetworkServicesDnsInclude" do
   end
 
   xdescribe "#propose_hostname_for" do
-
+    pending
   end
 
   describe "#update_hostname_hosts" do

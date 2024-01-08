@@ -45,11 +45,9 @@ module Yast
       # is this proposal or not?
       @propose = false
       @args = WFM.Args
-      if Ops.greater_than(Builtins.size(@args), 0)
-        if Ops.is_path?(WFM.Args(0)) && WFM.Args(0) == path(".propose")
-          Builtins.y2milestone("Using PROPOSE mode")
-          @propose = true
-        end
+      if !@args.empty? && (Ops.is_path?(@args[0]) && @args[0] == path(".propose"))
+        Builtins.y2milestone("Using PROPOSE mode")
+        @propose = true
       end
 
       @cmdline_description = {
@@ -57,10 +55,10 @@ module Yast
         # translators: command line help for network module
         "help"       => _(
           "Configuration of network.\n" \
-            "This is only a delegator to network sub-modules.\n" \
-            "You can run these network modules:\n" \
-            "\n" \
-            "lan\t"
+          "This is only a delegator to network sub-modules.\n" \
+          "You can run these network modules:\n" \
+          "\n" \
+          "lan\t"
         ) +
           _("Network Card"),
         "guihandler" => fun_ref(method(:startDialog), "any ()"),
@@ -130,15 +128,12 @@ module Yast
 
         # abort?
         case ret
-        when :abort, :cancel
+        when :abort, :cancel, :back
           break
         # next
         when :next, :modules
           # check_*
           ret = :next
-          break
-        # back
-        when :back
           break
         else
           Builtins.y2error("unexpected retcode: %1", ret)

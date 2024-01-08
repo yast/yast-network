@@ -176,22 +176,20 @@ module Yast
       Lan.AbortFunction = -> { PollAbort() }
       ret = Lan.Read(:cache)
 
-      if Lan.HaveXenBridge
-        if !Popup.ContinueCancel(
+      if Lan.HaveXenBridge && !Popup.ContinueCancel(
           Builtins.sformat(
             # continue-cancel popup, #178848
             # %1 is a (long) path to a README file
             _(
               "A Xen network bridge was detected.\n" \
-                "Due to the renaming of network interfaces by the bridge script,\n" \
-                "network interfaces should not be configured or restarted.\n" \
-                "See %1 for details."
+              "Due to the renaming of network interfaces by the bridge script,\n" \
+              "network interfaces should not be configured or restarted.\n" \
+              "See %1 for details."
             ),
             "/usr/share/doc/packages/xen/README.SuSE"
           )
         )
-          ret = false
-        end
+        ret = false
       end
 
       ret ? :next : :abort

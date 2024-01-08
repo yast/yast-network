@@ -60,8 +60,8 @@ describe Yast::Host do
       .and_return(Y2Network::InterfaceType::ETHERNET)
 
     # reset internal caches
-    Yast::Host.instance_variable_set(:"@modified", false)
-    Yast::Host.instance_variable_set(:"@initialized", false)
+    Yast::Host.instance_variable_set(:@modified, false)
+    Yast::Host.instance_variable_set(:@initialized, false)
 
     # do nothing on system
     allow(Yast::Execute).to receive(:on_target)
@@ -103,7 +103,7 @@ describe Yast::Host do
 
     # FIXME: better API
     it "returns single element array with string containing canonical name and " \
-      "aliases separated by space" do
+       "aliases separated by space" do
       Yast::Host.Read
 
       expect(Yast::Host.names("10.100.128.72")).to eq(["pepa.labs.suse.cz pepa pepa2"])

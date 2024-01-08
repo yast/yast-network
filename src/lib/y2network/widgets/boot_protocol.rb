@@ -36,6 +36,7 @@ module Y2Network
   module Widgets
     class BootProtocol < CWM::CustomWidget
       def initialize(settings)
+        super()
         textdomain "network"
         @settings = settings
       end
@@ -138,9 +139,7 @@ module Y2Network
         when Y2Network::BootProtocol::AUTOIP
           Yast::UI.ChangeWidget(Id(:bootproto), :CurrentButton, :bootproto_dynamic)
           Yast::UI.ChangeWidget(Id(:bootproto_dyn), :Value, :bootproto_auto)
-        when Y2Network::BootProtocol::NONE
-          Yast::UI.ChangeWidget(Id(:bootproto), :CurrentButton, :bootproto_none)
-        when Y2Network::BootProtocol::IBFT
+        when Y2Network::BootProtocol::NONE, Y2Network::BootProtocol::IBFT
           Yast::UI.ChangeWidget(Id(:bootproto), :CurrentButton, :bootproto_none)
         end
 
@@ -198,7 +197,7 @@ module Y2Network
               @settings.boot_protocol = "dhcp6"
             else
               raise "Unexpected dhcp mode value " \
-                "#{Yast::UI.QueryWidget(:bootproto_dhcp_mode, :Value).inspect}"
+                    "#{Yast::UI.QueryWidget(:bootproto_dhcp_mode, :Value).inspect}"
             end
           when :bootproto_dhcp_auto
             @settings.boot_protocol = "dhcp+autoip"
@@ -206,7 +205,7 @@ module Y2Network
             @settings.boot_protocol = "autoip"
           else
             raise "Unexpected dynamic mode value " \
-              "#{Yast::UI.QueryWidget(:bootproto_dyn, :Value).inspect}"
+                  "#{Yast::UI.QueryWidget(:bootproto_dyn, :Value).inspect}"
           end
         else
           raise "Unexpected boot protocol value #{Yast::UI.QueryWidget(:bootproto, :Value).inspect}"
@@ -241,10 +240,10 @@ module Y2Network
         elsif !Yast::Popup.YesNo(
           _(
             "No hostname has been specified. We recommend to associate \n" \
-              "a hostname with a static IP, otherwise the machine name will \n" \
-              "not be resolvable without an active network connection.\n" \
-              "\n" \
-              "Really leave the hostname blank?\n"
+            "a hostname with a static IP, otherwise the machine name will \n" \
+            "not be resolvable without an active network connection.\n" \
+            "\n" \
+            "Really leave the hostname blank?\n"
           )
         )
           Yast::UI.SetFocus(:bootproto_hostname)
@@ -269,33 +268,33 @@ module Y2Network
       def help
         res = _(
           "<p><b><big>Address Setup</big></b></p>\n" \
-            "<p>Select <b>No Address Setup</b> if you do not want " \
-            "to assign an IP address to this device.\n" \
-            "This is particularly useful for bonding ethernet devices.</p>\n"
+          "<p>Select <b>No Address Setup</b> if you do not want " \
+          "to assign an IP address to this device.\n" \
+          "This is particularly useful for bonding ethernet devices.</p>\n"
         ) +
           # Address dialog help 2/8
           _(
             "<p>Select <b>Dynamic Address</b> if you do not have a static IP address \n" \
-              "assigned by the system administrator or your Internet provider.</p>\n"
+            "assigned by the system administrator or your Internet provider.</p>\n"
           ) +
           # Address dialog help 3/8
           _(
             "<p>Choose one of the dynamic address assignment methods. Select <b>DHCP</b>\n" \
-              "if you have a DHCP server running on your local network. Network addresses \n" \
-              "are then automatically obtained from the server.</p>\n"
+            "if you have a DHCP server running on your local network. Network addresses \n" \
+            "are then automatically obtained from the server.</p>\n"
           ) +
           # Address dialog help 4/8
           _(
             "<p>To search for an IP address and assign it statically, select \n" \
-              "<b>Zeroconf</b>. To use DHCP and fall back to zeroconf, " \
-              "select <b>DHCP + Zeroconf\n" \
-              "</b>. Otherwise, the network addresses must be assigned <b>Statically</b>.</p>\n"
+            "<b>Zeroconf</b>. To use DHCP and fall back to zeroconf, " \
+            "select <b>DHCP + Zeroconf\n" \
+            "</b>. Otherwise, the network addresses must be assigned <b>Statically</b>.</p>\n"
           )
 
         if Yast::ProductFeatures.GetBooleanFeature("network", "force_static_ip")
           res += _(
             "<p>DHCP configuration is not recommended for this product.\n" \
-              "Components of this product might not work with DHCP.</p>"
+            "Components of this product might not work with DHCP.</p>"
           )
         end
 
@@ -327,17 +326,16 @@ module Y2Network
       end
 
       def valid_netmask(ip, mask)
-        valid_mask = false
         mask = mask[1..-1] if mask.start_with?("/")
 
         if Yast::IP.Check4(ip) && (Yast::Netmask.Check4(mask) || Yast::Netmask.CheckPrefix4(mask))
-          valid_mask = true
-        elsif Yast::IP.Check6(ip) && Yast::Netmask.Check6(mask)
-          valid_mask = true
-        else
-          log.warn "IP address #{ip} is not valid"
+          return true
         end
-        valid_mask
+
+        return true if Yast::IP.Check6(ip) && Yast::Netmask.Check6(mask)
+
+        log.warn "IP address #{ip} is not valid"
+        false
       end
     end
   end

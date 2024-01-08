@@ -120,7 +120,7 @@ describe Y2Network::Clients::Routing do
         let(:args) { ["show", "dest=default"] }
 
         it "prints the routes for the given destination" do
-          expect(Yast::CommandLine).to receive(:Print).with(/default[\s]+192.168.1.1[\s]+-[\s]+-/)
+          expect(Yast::CommandLine).to receive(:Print).with(/default\s+192.168.1.1\s+-\s+-/)
           subject.main
         end
       end

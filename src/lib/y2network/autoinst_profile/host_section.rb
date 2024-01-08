@@ -30,8 +30,7 @@ module Y2Network
       # @param _hash [Hash] Host section from an AutoYaST profile
       # @return [HostSection]
       def self.new_from_hashes(_hash)
-        result = new
-        result
+        new
       end
     end
   end

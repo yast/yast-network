@@ -92,9 +92,7 @@ module Y2Network
       def eth_type_by_sys(iface)
         sys_dir_path = "/sys/class/net/#{iface}"
 
-        if ::File.exist?("#{sys_dir_path}/wireless")
-          InterfaceType::WIRELESS
-        elsif ::File.exist?("#{sys_dir_path}/phy80211")
+        if ::File.exist?("#{sys_dir_path}/wireless") || ::File.exist?("#{sys_dir_path}/phy80211")
           InterfaceType::WIRELESS
         elsif ::File.exist?("#{sys_dir_path}/bridge")
           InterfaceType::BRIDGE

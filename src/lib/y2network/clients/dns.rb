@@ -39,6 +39,7 @@ module Y2Network
 
       # Constructor
       def initialize
+        super
         textdomain "network"
         Yast.include self, "network/services/dns.rb"
 

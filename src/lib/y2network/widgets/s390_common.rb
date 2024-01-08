@@ -29,6 +29,7 @@ module Y2Network
       #
       # @param settings [Y2Network::InterfaceConfigBuilder]
       def initialize(settings)
+        super()
         textdomain "network"
 
         @settings = settings
@@ -61,6 +62,7 @@ module Y2Network
       #
       # @param settings [Y2Network::InterfaceConfigBuilder]
       def initialize(settings)
+        super()
         textdomain "network"
 
         @settings = settings
@@ -107,6 +109,7 @@ module Y2Network
       #
       # @param settings [Y2Network::InterfaceConfigBuilder]
       def initialize(settings)
+        super()
         textdomain "network"
 
         @settings = settings
@@ -146,6 +149,7 @@ module Y2Network
       #
       # @param settings [Y2Network::InterfaceConfigBuilder]
       def initialize(settings)
+        super()
         textdomain "network"
         @settings = settings
       end
@@ -183,6 +187,7 @@ module Y2Network
       #
       # @param settings [Y2Network::InterfaceConfigBuilder]
       def initialize(settings)
+        super()
         textdomain "network"
         @settings = settings
       end
@@ -218,6 +223,7 @@ module Y2Network
       #
       # @param settings [Y2Network::InterfaceConfigBuilder]
       def initialize(settings)
+        super()
         textdomain "network"
         @settings = settings
         self.handle_all_events = true
@@ -340,6 +346,7 @@ module Y2Network
       #
       # @param settings [Y2Network::InterfaceConfigBuilder]
       def initialize(settings)
+        super()
         textdomain "network"
         @settings = settings
       end
@@ -363,7 +370,7 @@ module Y2Network
       # @see CWM::AbstractWidget
       def help
         "<p>Select <b>Enable Layer 2 Support</b> if this card has been " \
-         "configured with layer 2 support.</p>"
+          "configured with layer 2 support.</p>"
       end
     end
 
@@ -373,6 +380,7 @@ module Y2Network
       #
       # @param settings [Y2Network::InterfaceConfigBuilder]
       def initialize(settings)
+        super()
         textdomain "network"
         @settings = settings
       end

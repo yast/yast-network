@@ -67,21 +67,22 @@ module Yast
       Builtins.y2debug("param=%1", @param)
 
       # Create a summary
-      if @func == "Summary"
+      case @func
+      when "Summary"
         @ret = Host.Summary
       # Reset configuration
-      elsif @func == "Reset"
+      when "Reset"
         Host.Import({})
         @ret = {}
       # Change configuration (run AutoSequence)
-      elsif @func == "Change"
+      when "Change"
         Wizard.CreateDialog
         Wizard.SetDesktopTitleAndIcon("host")
         Wizard.SetNextButton(:next, Label.FinishButton)
         @ret = HostsMainDialog(false)
         Wizard.CloseDialog
       # Import configuration
-      elsif @func == "Import"
+      when "Import"
         @hosts = Ops.get_list(@param, "hosts", [])
         @hostlist = Builtins.listmap(@hosts) do |host|
           {
@@ -94,7 +95,7 @@ module Yast
         end
         @ret = Host.Import("hosts" => @hostlist)
       # Return actual state
-      elsif @func == "Export"
+      when "Export"
         @ret1 = Host.Export
         @hosts = Ops.get_map(@ret1, "hosts", {})
         @ret2 = Builtins.maplist(@hosts) do |hostaddress, names|
@@ -106,23 +107,20 @@ module Yast
           {}
         end
       # Read current state
-      elsif @func == "Read"
+      when "Read"
         Yast.import "Progress"
         @progress_orig = Progress.set(false)
         @ret = Host.Read
         Progress.set(@progress_orig)
-      elsif @func == "Packages"
+      when "Packages"
         @ret = {}
       # Write givven settings
-      elsif @func == "Write"
+      when "Write"
         Yast.import "Progress"
         @progress_orig = Progress.set(false)
         @ret = Host.Write
         Progress.set(@progress_orig)
-      elsif @func == "SetModified"
-        # SetModified always return(ed) true anyway
-        @ret = true
-      elsif @func == "GetModified"
+      when "SetModified", "GetModified"
         # When cloning the sequence of this client callbacks invocation is
         # Read -> SetModified -> GetModified so it should return always true
         # (bcs of SetModified)

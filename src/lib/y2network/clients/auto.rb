@@ -28,6 +28,7 @@ module Y2Network
     class Auto < ::Installation::AutoClient
       # Constructor
       def initialize
+        super
         textdomain "network"
 
         Yast.include self, "network/lan/wizards.rb"

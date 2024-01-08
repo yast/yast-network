@@ -28,8 +28,8 @@ describe Y2Network::ConfigWriters::HostnameWriter do
 
   let(:hostname_container) do
     Y2Network::Hostname.new(static:        static_hostname,
-                            transient:     transient_hostname,
-                            dhcp_hostname: dhcp_hostname)
+      transient:     transient_hostname,
+      dhcp_hostname: dhcp_hostname)
   end
 
   let(:new_hostname) { hostname_container.dup }

@@ -60,7 +60,7 @@ module Y2Network
 
           status = status_info(connection)
 
-          bullets << _("Device Name: %s") % connection.name
+          bullets << (_("Device Name: %s") % connection.name)
           bullets << status
           bullets << connection.startmode.long_description
           bullets += aliases_info(connection)

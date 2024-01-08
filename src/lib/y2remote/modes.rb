@@ -18,9 +18,9 @@
 # ------------------------------------------------------------------------------
 
 require "yast"
-require "y2remote/modes/vnc.rb"
-require "y2remote/modes/manager.rb"
-require "y2remote/modes/web.rb"
+require "y2remote/modes/vnc"
+require "y2remote/modes/manager"
+require "y2remote/modes/web"
 
 module Y2Remote
   module Modes

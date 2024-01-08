@@ -33,6 +33,7 @@ module Y2Network
       # @param focus [Boolean] whether the widget should get the focus when
       #   init; by default will not get it
       def initialize(settings, focus: false)
+        super()
         textdomain "network"
 
         @settings = settings

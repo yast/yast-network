@@ -96,8 +96,8 @@ describe Y2Network::ConfigWriters::InterfacesWriter do
           expect(Y2Network::UdevRule).to receive(:write_net_rules) do |rules|
             expect(rules.first.to_s).to eq(
               "SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", " \
-                "ATTR{type}==\"1\", ATTR{dev_id}==\"0x0\", " \
-                "ATTR{address}==\"01:23:45:67:89:ab\", NAME=\"eth1\""
+              "ATTR{type}==\"1\", ATTR{dev_id}==\"0x0\", " \
+              "ATTR{address}==\"01:23:45:67:89:ab\", NAME=\"eth1\""
             )
           end
           subject.write(interfaces)
@@ -115,8 +115,8 @@ describe Y2Network::ConfigWriters::InterfacesWriter do
             expect(Y2Network::UdevRule).to receive(:write_net_rules) do |rules|
               expect(rules.first.to_s).to eq(
                 "SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"e1000e\", " \
-                  "ATTR{type}==\"1\", ATTR{address}==\"01:23:45:67:89:ab\", " \
-                  "NAME=\"eth1\""
+                "ATTR{type}==\"1\", ATTR{address}==\"01:23:45:67:89:ab\", " \
+                "NAME=\"eth1\""
               )
             end
             subject.write(interfaces)
@@ -131,8 +131,8 @@ describe Y2Network::ConfigWriters::InterfacesWriter do
           expect(Y2Network::UdevRule).to receive(:write_net_rules) do |rules|
             expect(rules.first.to_s).to eq(
               "SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", " \
-                "ATTR{type}==\"1\", KERNELS==\"00:1c.0\", ATTR{dev_port}==\"1\", " \
-                "NAME=\"eth1\""
+              "ATTR{type}==\"1\", KERNELS==\"00:1c.0\", ATTR{dev_port}==\"1\", " \
+              "NAME=\"eth1\""
             )
           end
           subject.write(interfaces)
@@ -150,8 +150,8 @@ describe Y2Network::ConfigWriters::InterfacesWriter do
             expect(Y2Network::UdevRule).to receive(:write_net_rules) do |rules|
               expect(rules.first.to_s).to eq(
                 "SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"e1000e\", " \
-                  "ATTR{type}==\"1\", ATTR{dev_id}==\"0x0\", KERNELS==\"00:1c.0\", " \
-                  "ATTR{dev_port}==\"1\", NAME=\"eth1\""
+                "ATTR{type}==\"1\", ATTR{dev_id}==\"0x0\", KERNELS==\"00:1c.0\", " \
+                "ATTR{dev_port}==\"1\", NAME=\"eth1\""
               )
             end
 

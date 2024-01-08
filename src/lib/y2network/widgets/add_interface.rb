@@ -27,6 +27,7 @@ module Y2Network
   module Widgets
     class AddInterface < CWM::PushButton
       def initialize
+        super
         textdomain "network"
       end
 

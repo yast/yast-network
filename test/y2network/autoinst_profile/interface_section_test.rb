@@ -109,7 +109,7 @@ describe Y2Network::AutoinstProfile::InterfaceSection do
         hash["name"] = descr
         section = described_class.new_from_hashes(hash)
         expect(section.name).to eq("eth0")
-        expect(section.description). to eq(descr)
+        expect(section.description).to eq(descr)
       end
     end
 

@@ -35,7 +35,7 @@ module CFA
     # @return [Hash<String, String>] key with its value
     def attributes
       attrs = data.select(CFA::Matcher.new { |k, _v| k != "#comment[]" })
-      Hash[attrs.map { |v| [v[:key], v[:value]] }]
+      attrs.map { |v| [v[:key], v[:value]] }.to_h
     end
 
     # do merge of sysconfigs value in a sense that values not in new file is kept in

@@ -324,7 +324,7 @@ module Yast
       return false if !Popup.YesNo(
         wrap_text(
           format(_("The interface '%s' static IP address is mapped to the hostname '%s'.\n\n" \
-                "Would you like to adapt it to '%s'?"),
+                   "Would you like to adapt it to '%s'?"),
             conn.name, current_hostname, proposed_hostname)
         )
       )
@@ -618,7 +618,7 @@ module Yast
     # @param _key [String] ignored
     # @param event [Hash] user generated event
     def storeHostnameGlobal(_key, event)
-      @hn_settings.keys.each do |key2|
+      @hn_settings.each_key do |key2|
         StoreHnWidget(key2, event) if UI.QueryWidget(Id(key2), :Enabled)
       end
 
@@ -640,7 +640,7 @@ module Yast
 
       Wizard.HideBackButton
 
-      ret = CWM.ShowAndRun(
+      CWM.ShowAndRun(
         "widget_descr"       => @widget_descr_dns,
         "contents"           => @dns_contents,
         # dialog caption
@@ -649,8 +649,6 @@ module Yast
         "next_button"        => Label.FinishButton,
         "fallback_functions" => functions
       )
-
-      ret
     end
 
     def config

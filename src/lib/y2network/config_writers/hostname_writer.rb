@@ -72,8 +72,9 @@ module Y2Network
       def update_needed?(hostname, old_hostname)
         # If we disable the set of the hostname through dhcp, then we should
         # modify the current hostname to the static one
-        if old_hostname && old_hostname.dhcp_hostname != hostname.dhcp_hostname
-          return true if hostname.dhcp_hostname == :none
+        if old_hostname && old_hostname.dhcp_hostname != hostname.dhcp_hostname &&
+            (hostname.dhcp_hostname == :none)
+          return true
         end
 
         hostname.static_modified?

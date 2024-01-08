@@ -141,9 +141,9 @@ module Yast
         if !Popup.YesNo(
           _(
             "The required packages are not installed.\n" \
-              "The configuration will be aborted.\n" \
-              "\n" \
-              "Try again?\n"
+            "The configuration will be aborted.\n" \
+            "\n" \
+            "Try again?\n"
           ) + "\n"
         )
           break
@@ -217,9 +217,7 @@ module Yast
           return "atm"
         when 4
           return "isdn"
-        when 6 ## Should be PICMG?
-          return "ib"
-        when 7
+        when 6, 7 ## Should be PICMG?
           return "ib"
         when 129
           return "myri"
@@ -251,9 +249,11 @@ module Yast
           # 15b3:1003  MT27500 Family [ConnectX-3]
           # 15b3:1004  MT27500/MT27520 Family [ConnectX-3/ConnectX-3 Pro Virtual Function]
           # 15b3:1007  MT27520 Family [ConnectX-3 Pro]
-          if hwdevice["vendor_id"] == 71_091
-            return "ib" if [69_635, 69_636, 69_639].include?(hwdevice["device_id"])
+          if hwdevice["vendor_id"] == 71_091 && [69_635, 69_636,
+                                                 69_639].include?(hwdevice["device_id"])
+            return "ib"
           end
+
           # Nothing was found
           Builtins.y2error("Unknown network controller type: %1", hwdevice)
           Builtins.y2error(
@@ -267,12 +267,11 @@ module Yast
         end
       end
       # exception for infiniband device
-      if Ops.get_integer(hwdevice, "class_id", -1) == 12
-        return "ib" if subclass_id == 6
-      end
+      return "ib" if Ops.get_integer(hwdevice, "class_id", -1) == 12 && (subclass_id == 6)
 
       # Communication controller
-      if Ops.get_integer(hwdevice, "class_id", -1) == 7
+      case Ops.get_integer(hwdevice, "class_id", -1)
+      when 7
         case subclass_id
         when 3
           return "modem"
@@ -295,7 +294,7 @@ module Yast
       # but we are inteested in hwinfo --netcard
       # Just make sure that hwinfo or ag_probe
       # indeed does not pass this to us
-      elsif Ops.get_integer(hwdevice, "class_id", -1) == 263
+      when 263
         Builtins.y2milestone("CLASS 0x107") # this should happen rarely
         case subclass_id
         when 0
@@ -338,11 +337,11 @@ module Yast
           Builtins.y2error("Unknown network interface type: %1", hwdevice)
           return ""
         end
-      elsif Ops.get_integer(hwdevice, "class_id", -1) == 258
+      when 258
         return "modem"
-      elsif Ops.get_integer(hwdevice, "class_id", -1) == 259
+      when 259
         return "isdn"
-      elsif Ops.get_integer(hwdevice, "class_id", -1) == 276
+      when 276
         return "dsl"
       end
 
@@ -494,11 +493,12 @@ module Yast
           # store the BUS type
           bus = card["bus_hwcfg"] || card["bus"] || ""
 
-          if bus == "PCI"
+          case bus
+          when "PCI"
             bus = "pci"
-          elsif bus == "USB"
+          when "USB"
             bus = "usb"
-          elsif bus == "Virtual IO"
+          when "Virtual IO"
             bus = "vio"
           end
 
@@ -690,10 +690,10 @@ module Yast
 
       # filter out device with chelsio Driver and no Device File or which cannot
       # networking (bnc#711432)
-      if driver == "cxgb4" &&
-          (device_info["dev_name"] || "") == "" ||
-          device_info["vendor_id"] == 70_693 &&
-              device_info["device_id"] == 82_178
+      if (driver == "cxgb4" &&
+          device_info["dev_name"].to_s.empty?) ||
+          (device_info["vendor_id"] == 70_693 &&
+              device_info["device_id"] == 82_178)
         log.info("Filtering out Chelsio device without device file.")
         return true
       end
