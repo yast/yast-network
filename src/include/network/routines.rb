@@ -691,7 +691,7 @@ module Yast
       # filter out device with chelsio Driver and no Device File or which cannot
       # networking (bnc#711432)
       if (driver == "cxgb4" &&
-          (device_info["dev_name"] || "") == "") ||
+          device_info["dev_name"].to_s.empty?) ||
           (device_info["vendor_id"] == 70_693 &&
               device_info["device_id"] == 82_178)
         log.info("Filtering out Chelsio device without device file.")

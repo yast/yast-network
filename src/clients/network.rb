@@ -45,8 +45,7 @@ module Yast
       # is this proposal or not?
       @propose = false
       @args = WFM.Args
-      if Ops.greater_than(Builtins.size(@args),
-        0) && (Ops.is_path?(WFM.Args(0)) && WFM.Args(0) == path(".propose"))
+      if !@args.empty? && (Ops.is_path?(@args[0]) && @args[0] == path(".propose"))
         Builtins.y2milestone("Using PROPOSE mode")
         @propose = true
       end
