@@ -99,6 +99,8 @@ module Y2Network
       def bridgeable?(iface)
         # cannot report itself
         return false if iface.name == @name
+        # Do not add firmware configured interfaces (bsc#1218595)
+        return false if iface.firmware_configured?
         return true unless yast_config.configured_interface?(iface.name)
 
         config = yast_config.connections.by_name(iface.name)
