@@ -78,6 +78,7 @@ module Y2Network
       attr_accessor :client_key
       # @return [String] client private key password
       attr_accessor :client_key_password
+      alias_method :super_inspect, :inspect
 
       def initialize
         super
@@ -112,6 +113,28 @@ module Y2Network
       # @return [Boolean] return true if there is at least one not empty key
       def keys?
         !(keys || []).compact.all?(&:empty?)
+      end
+
+      # Return a clone of this object with all sensitive fields (passwords etc.) obscured.
+      # Use this for log output to avoid leaking passwords.
+      def sanitized
+        san = dup
+        san.wpa_psk = sanitized_field(san.wpa_psk)
+        san.wpa_password = sanitized_field(san.wpa_password)
+        san.client_key_password = sanitized_field(san.client_key_password)
+
+        san
+      end
+
+      # Sanitize one field if it is non-nil and non-empty.
+      def sanitized_field(orig)
+        return orig if orig.nil? || orig.empty?
+
+        "<sanitized>".freeze
+      end
+
+      def inspect
+        sanitized.super_inspect
       end
     end
   end

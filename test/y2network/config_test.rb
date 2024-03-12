@@ -604,4 +604,52 @@ describe Y2Network::Config do
       expect(new_config.connections).to eq(updated_connections)
     end
   end
+
+  describe "#sanitized" do
+    let(:conn) do
+      Y2Network::ConnectionConfig::Wireless.new.tap do |c|
+        c.wpa_psk = "s3cr3t"
+        c.wpa_password = "s3cr3t"
+        c.client_key_password = "s3cr3t"
+      end
+    end
+
+    it "obscures the wpa_psk" do
+      expect(conn.wpa_psk).to eql("s3cr3t")
+      expect(conn.sanitized.wpa_psk).to eql("<sanitized>")
+    end
+
+    it "obscures the wpa_password" do
+      expect(conn.wpa_password).to eql("s3cr3t")
+      expect(conn.sanitized.wpa_password).to eql("<sanitized>")
+    end
+
+    it "obscures the client_key_password" do
+      expect(conn.client_key_password).to eql("s3cr3t")
+      expect(conn.sanitized.client_key_password).to eql("<sanitized>")
+    end
+
+    it "leaves the original untouched" do
+      expect(conn.sanitized.wpa_psk).to eql("<sanitized>")
+      expect(conn.wpa_psk).to eql("s3cr3t")
+    end
+  end
+
+  describe "#inspect" do
+    let(:conn) do
+      Y2Network::ConnectionConfig::Wireless.new.tap do |c|
+        c.wpa_psk = "s3cr3t"
+        c.wpa_password = "s3cr3t"
+        c.client_key_password = "s3cr3t"
+      end
+    end
+
+    it "does not leak a password" do
+      expect(conn.inspect).to_not match(/s3cr3t/)
+    end
+
+    it "contains <sanitized> instead of passwords" do
+      expect(conn.inspect).to match(/<sanitized>/)
+    end
+  end
 end
