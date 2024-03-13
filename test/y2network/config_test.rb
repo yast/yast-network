@@ -545,4 +545,44 @@ describe Y2Network::Config do
       end
     end
   end
+
+  context "secret attributes (passwords, keys)" do
+    let(:conn) do
+      Y2Network::ConnectionConfig::Wireless.new.tap do |c|
+        c.wpa_psk = "s3cr3t"
+        c.wpa_password = "s3cr3t"
+      end
+    end
+
+    describe ".inspect" do
+      it "does not leak a password" do
+        expect(conn.inspect).to_not match(/s3cr3t/)
+      end
+
+      it "contains <secret> instead of passwords" do
+        expect(conn.inspect).to match(/<secret>/)
+      end
+    end
+
+    describe ".to_s" do
+      it "does not leak a password" do
+        # it's usually something like
+        # "#<Y2Network::ConnectionConfig::Wireless:0x000055b752576318>"
+        # so there shouldn't be any attributes - just making sure
+        expect(conn.to_s).to_not match(/s3cr3t/)
+      end
+    end
+
+    describe ".wpa_psk" do
+      it "returns the real password" do
+        expect(conn.wpa_psk).to eq("s3cr3t")
+      end
+    end
+
+    describe ".wpa_psk.to_s" do
+      it "returns the real password" do
+        expect(conn.wpa_psk.to_s).to eq("s3cr3t")
+      end
+    end
+  end
 end
