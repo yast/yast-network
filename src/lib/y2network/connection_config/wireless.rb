@@ -18,11 +18,14 @@
 # find current contact information at www.suse.com.
 
 require "y2network/connection_config/base"
+require "y2storage/secret_attributes"
 
 module Y2Network
   module ConnectionConfig
     # Configuration for wireless connections
     class Wireless < Base
+      include Y2Storage::SecretAttributes
+
       # wireless options
       #
       # FIXME: Consider an enum
@@ -34,13 +37,15 @@ module Y2Network
       attr_accessor :nwid
       # @return [Symbol] Authorization mode (:open, :shared, :psk, :eap)
       attr_accessor :auth_mode
+
       # FIXME: Consider moving keys to different classes.
       # @return [String] WPA preshared key
-      attr_accessor :wpa_psk
+      secret_attr :wpa_psk
       # @return [Integer]
       attr_accessor :key_length
+
       # @return [Array<String>] WEP keys
-      attr_accessor :keys
+      secret_attr :keys
       # @return [Integer] default WEP key
       attr_accessor :default_key
       # @return [String]
@@ -60,9 +65,10 @@ module Y2Network
       # FIXME: Consider an enum
       # @return [Integer] (0, 1, 2)
       attr_accessor :ap_scanmode
+
       # TODO: unify psk and password and write correct one depending on mode
       # @return [String]
-      attr_accessor :wpa_password
+      secret_attr :wpa_password
       # @return [String]
       attr_accessor :wpa_identity
       # @return [String] initial identity used for creating tunnel
@@ -73,8 +79,9 @@ module Y2Network
       attr_accessor :client_cert
       # @return [String] client private key used to encrypt for TLS
       attr_accessor :client_key
+
       # @return [String] client private key password
-      attr_accessor :client_key_password
+      secret_attr :client_key_password
 
       def initialize
         super
