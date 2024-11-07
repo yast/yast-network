@@ -91,14 +91,16 @@ module Y2Network
 
         explicit = routes.select { |r| r.interface&.name == conn.name }
 
-        return explicit if !conn.static_valid_ip?
+        return explicit unless conn.static_valid_ip?
+
+        conn_network = (IPAddr.new conn.ip.address.to_s).to_range
 
         # select the routes without an specific interface and which gateway belongs to the
         # same network
         global = routes.select do |r|
           next if r.interface || !r.default? || !r.gateway
 
-          (IPAddr.new conn.ip.address.to_s).to_range.include?(IPAddr.new(r.gateway.to_s))
+          conn_network.include?(IPAddr.new(r.gateway.to_s))
         end
 
         explicit + global
