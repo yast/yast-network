@@ -196,6 +196,17 @@ module Y2Network
         bootproto ? bootproto.static? : true
       end
 
+      # Convenience method to check whether a connection is configured using
+      # the static bootproto and a valid IP address.
+      #
+      # @return [Boolean] whether the connection is configured with a valid
+      #   static IP address or not
+      def static_valid_ip?
+        return false unless bootproto.static?
+
+        ip && ip.address.to_s != "0.0.0.0"
+      end
+
       # Return the first hostname associated with the primary IP address.
       #
       # @return [String, nil] returns the hostname associated with the primary
