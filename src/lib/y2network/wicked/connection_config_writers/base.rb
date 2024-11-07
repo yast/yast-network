@@ -81,7 +81,7 @@ module Y2Network
         def add_ips(conn)
           file.ipaddrs.clear
           ips_to_add = conn.ip_aliases.clone
-          ips_to_add << conn.ip if static_valid_ip?(conn)
+          ips_to_add << conn.ip if conn.static_valid_ip?
           ips_to_add.each { |i| add_ip(i) }
         end
 
@@ -103,18 +103,6 @@ module Y2Network
           return if conn.hostnames.empty?
 
           Yast::Host.Update("", conn.hostname, conn.ip.address.address.to_s)
-        end
-
-        # Convenience method to check whether a connection is configured using
-        # the static bootproto and a valid IP address.
-        #
-        # @param conn [Y2Network::ConnectionConfig::Base] Connection to take settings from
-        # @return [Boolean] whether the connection is configured with a valid
-        #   static IP address or not
-        def static_valid_ip?(conn)
-          return false unless conn.bootproto.static?
-
-          conn.ip && conn.ip.address.address.to_s != "0.0.0.0"
         end
 
         # Converts the value into a string (or nil if empty)

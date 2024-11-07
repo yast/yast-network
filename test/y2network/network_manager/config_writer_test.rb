@@ -24,6 +24,7 @@ require "y2network/config"
 require "y2network/connection_configs_collection"
 require "y2network/interface"
 require "y2network/interfaces_collection"
+require "y2network/ip_address"
 require "y2network/boot_protocol"
 require "y2network/route"
 require "y2network/routing"
@@ -62,12 +63,20 @@ describe Y2Network::NetworkManager::ConfigWriter do
     end
 
     let(:routes) { [] }
+    let(:gateway) { IPAddr.new("192.168.122.1") }
 
-    let(:route) do
+    let(:eth0_route) do
       Y2Network::Route.new(
         to:        :default,
         interface: eth0,
-        gateway:   IPAddr.new("192.168.122.1")
+        gateway:   gateway
+      )
+    end
+
+    let(:default_route) do
+      Y2Network::Route.new(
+        to:      :default,
+        gateway: gateway
       )
     end
 
@@ -90,26 +99,27 @@ describe Y2Network::NetworkManager::ConfigWriter do
       )
     end
 
-    let(:ip) { Y2Network::ConnectionConfig::IPConfig.new(IPAddr.new("192.168.122.2")) }
+    let(:ip) do
+      address = Y2Network::IPAddress.from_string("192.168.122.2/24")
+      Y2Network::ConnectionConfig::IPConfig.new(address)
+    end
     let(:eth0) { Y2Network::Interface.new("eth0") }
 
     let(:conn_config_writer) { Y2Network::NetworkManager::ConnectionConfigWriter.new }
 
-    let(:file) do
-      CFA::NmConnection.new(File.join(DATA_PATH, "some_wifi.nmconnection"))
-    end
+    let(:file_path) { File.join(DATA_PATH, "eth0_test.nmconnection") }
+
+    let(:file) { CFA::NmConnection.new(file_path) }
 
     before do
       allow(CFA::NmConnection).to receive(:for).and_return(file)
-      allow(file).to receive(:save)
-    end
-
-    before do
       allow(Y2Network::NetworkManager::ConnectionConfigWriter).to receive(:new)
         .and_return(conn_config_writer)
       allow(writer).to receive(:write_drivers)
       allow(writer).to receive(:write_hostname)
     end
+
+    after { FileUtils.rm_f(file_path) }
 
     it "writes connections configuration" do
       options = { routes: [], parent: nil }
@@ -117,8 +127,8 @@ describe Y2Network::NetworkManager::ConfigWriter do
       writer.write(config)
     end
 
-    context "when there is some route to be configured" do
-      let(:routes) { [route] }
+    context "when there is some device route to be configured" do
+      let(:routes) { [eth0_route] }
 
       context "and it contains a gateway" do
         it "writes the connection gateway" do
@@ -128,13 +138,60 @@ describe Y2Network::NetworkManager::ConfigWriter do
       end
 
       context "and it does not contain a gateway" do
-        let(:route) do
+        let(:eth0_route) do
           Y2Network::Route.new(
             to:        :default,
             interface: eth0
           )
         end
 
+        it "does not write any gateway" do
+          writer.write(config)
+          expect(file.ipv4["gateway"]).to be_nil
+        end
+      end
+    end
+
+    context "when there is some global route to be configured" do
+      let(:routes) { [default_route] }
+
+      context "and it contains a gateway" do
+        context "and the connections are configured by DHCP" do
+          it "does not write any gateway" do
+            writer.write(config)
+            expect(file.ipv4["gateway"]).to be_nil
+          end
+        end
+
+        context "and there is some connection configured with an static IP" do
+          let(:eth0_conn) do
+            Y2Network::ConnectionConfig::Ethernet.new.tap do |conn|
+              conn.interface = "eth0"
+              conn.name = "eth0"
+              conn.bootproto = Y2Network::BootProtocol::STATIC
+              conn.ip = ip
+            end
+          end
+
+          context "when the gateway does not belongs to the same network than the connection" do
+            let(:gateway) { IPAddr.new("192.168.1.1") }
+
+            it "does not write any gateway" do
+              writer.write(config)
+              expect(file.ipv4["gateway"]).to be_nil
+            end
+          end
+
+          context "when the gateway belongs to the same network than the connection" do
+            it "writes the connection gateway" do
+              writer.write(config)
+              expect(file.ipv4["gateway"]).to eq("192.168.122.1")
+            end
+          end
+        end
+      end
+
+      context "and it does not contain a gateway" do
         it "does not write any gateway" do
           writer.write(config)
           expect(file.ipv4["gateway"]).to be_nil

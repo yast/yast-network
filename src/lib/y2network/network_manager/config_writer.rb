@@ -19,6 +19,7 @@
 
 require "y2network/config_writer"
 require "y2network/network_manager/connection_config_writer"
+require "y2issues"
 
 module Y2Network
   module NetworkManager
@@ -26,15 +27,32 @@ module Y2Network
     class ConfigWriter < Y2Network::ConfigWriter
     private # rubocop:disable Layout/IndentationWidth
 
+      # Updates the ip forwarding as the routes are written when writing the connections
+      #
+      # @param config     [Y2Network::Config] Current config object
+      # @param _old_config [Y2Network::Config,nil] Config object with original configuration
+      # @param issues_list [Y2Issues::List] list of issues detected until the method is call
+      def write_routing(config, _old_config, issues_list)
+        write_ip_forwarding(config.routing, issues_list)
+
+        routes = routes_for(nil, config.routing.routes)
+        return if routes.empty?
+
+        log.error "There are some routes that could need to be written manually: #{routes}"
+      end
+
       # Writes connections configuration
       #
       # @todo Handle old connections (removing those that are not needed, etc.)
       #
       # @param config     [Y2Network::Config] Current config object
       # @param _old_config [Y2Network::Config,nil] Config object with original configuration
+      # @param _issues_list [Y2Issues::List] list of issues detected until the method is call
       def write_connections(config, _old_config, _issues_list)
         writer = Y2Network::NetworkManager::ConnectionConfigWriter.new
         config.connections.each do |conn|
+          routes_for(conn, config.routing.routes)
+
           opts = {
             routes: routes_for(conn, config.routing.routes),
             parent: conn.find_parent(config.connections)
@@ -49,8 +67,9 @@ module Y2Network
       # to the configuration file (see bsc#1181701).
       #
       # @param config     [Y2Network::Config] Current config object
-      # @param old_config [Y2Network::Config,nil] Config object with original configuration
-      def write_dns(config, old_config, _issues_list)
+      # @param _old_config [Y2Network::Config,nil] Config object with original configuration
+      # @param _issues_list [Y2Issues::List] list of issues detected until the method is call
+      def write_dns(config, _old_config, _issues_list)
         static = config.connections.by_bootproto(Y2Network::BootProtocol::STATIC)
         return super if static.empty? || config.dns.nameservers.empty?
 
@@ -68,7 +87,23 @@ module Y2Network
       # @param routes [Array<Route>] List of routes to search in
       # @return [Array<Route>] List of routes for the given connection
       def routes_for(conn, routes)
-        routes.select { |r| r.interface&.name == conn.name }
+        return routes.reject(&:interface) if conn.nil?
+
+        explicit = routes.select { |r| r.interface&.name == conn.name }
+
+        return explicit unless conn.static_valid_ip?
+
+        conn_network = (IPAddr.new conn.ip.address.to_s).to_range
+
+        # select the routes without an specific interface and which gateway belongs to the
+        # same network
+        global = routes.select do |r|
+          next if r.interface || !r.default? || !r.gateway
+
+          conn_network.include?(IPAddr.new(r.gateway.to_s))
+        end
+
+        explicit + global
       end
 
       # Add the DNS settings to the nmconnection file corresponding to the give conn

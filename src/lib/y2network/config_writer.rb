@@ -95,18 +95,21 @@ module Y2Network
     #
     # @param _config     [Y2Network::Config] configuration to write
     # @param _old_config [Y2Network::Config, nil] original configuration used for detecting changes
+    # @param _issues_list [Y2Issues::List] list of issues detected until the method is call
     def write_routing(_config, _old_config, _issues_list); end
 
     # Writes the connection configurations
     #
     # @param _config     [Y2Network::Config] configuration to write
     # @param _old_config [Y2Network::Config, nil] original configuration used for detecting changes
+    # @param _issues_list [Y2Issues::List] list of issues detected until the method is call
     def write_connections(_config, _old_config, _issues_list); end
 
     # Updates the DNS configuration
     #
     # @param config     [Y2Network::Config] Current config object
     # @param old_config [Y2Network::Config,nil] Config object with original configuration
+    # @param _issues_list [Y2Issues::List] list of issues detected until the method is call
     def write_dns(config, old_config, _issues_list)
       old_dns = old_config.dns if old_config
       writer = Y2Network::ConfigWriters::DNSWriter.new
@@ -117,6 +120,7 @@ module Y2Network
     #
     # @param config     [Y2Network::Config] Current config object
     # @param old_config [Y2Network::Config,nil] Config object with original configuration
+    # @param _issues_list [Y2Issues::List] list of issues detected until the method is call
     def write_hostname(config, old_config, _issues_list)
       old_hostname = old_config.hostname if old_config
       writer = Y2Network::ConfigWriters::HostnameWriter.new
@@ -128,6 +132,7 @@ module Y2Network
     #
     # @param config     [Y2Network::Config] Current config object
     # @param _old_config [Y2Network::Config,nil] Config object with original configuration
+    # @param _issues_list [Y2Issues::List] list of issues detected until the method is call
     def write_interfaces(config, _old_config, _issues_list)
       writer = Y2Network::ConfigWriters::InterfacesWriter.new(reload: !Yast::Lan.write_only)
       writer.write(config.interfaces)
@@ -137,6 +142,7 @@ module Y2Network
     #
     # @param config     [Y2Network::Config] Current config object
     # @param _old_config [Y2Network::Config,nil] Config object with original configuration
+    # @param _issues_list [Y2Issues::List] list of issues detected until the method is call
     def write_drivers(config, _old_config, _issues_list)
       Y2Network::Driver.write_options(config.drivers)
     end
@@ -146,6 +152,7 @@ module Y2Network
     # TODO: extract this behaviour to a separate class.
     #
     # @param routing [Y2Network::Routing] routing configuration
+    # @param issues_list [Y2Issues::List] list of issues detected until the method is call
     def write_ip_forwarding(routing, issues_list)
       sysctl_config = CFA::SysctlConfig.new
       sysctl_config.load
