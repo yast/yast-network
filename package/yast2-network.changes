@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Nov  7 10:10:01 UTC 2024 - Knut Anderssen <kanderssen@suse.com>
+
+- Try to assign default global routes to an specific connection 
+  when  possible (bsc#1232531).
+- 4.7.1
+
+-------------------------------------------------------------------
 Fri Sep 06 07:14:32 UTC 2024 - Ladislav Slezák <lslezak@suse.com>
 
 - Branch package for SP7 (bsc#1230201)
