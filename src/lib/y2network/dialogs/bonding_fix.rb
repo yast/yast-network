@@ -141,7 +141,7 @@ module Y2Network
         invalid_bonds.each do |bond|
           bond.ports.each do |port|
             interface = iface_for(port)
-            interface.rename(interface.name, :bus_id)
+            interface&.rename(interface.name, :bus_id) if interface&.renaming_mechanism == :mac
           end
         end
         Yast::Lan.SetModified
