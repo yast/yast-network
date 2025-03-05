@@ -40,11 +40,12 @@ describe Y2Network::Presenters::InterfaceSummary do
   let(:interfaces) do
     Y2Network::InterfacesCollection.new(
       [
-        double(Y2Network::Interface, hardware: nil, name: "vlan1", firmware_configured?: false),
+        double(Y2Network::Interface, hardware: nil, name: "vlan1", firmware_configured?: false,
+          renaming_mechanism: :none),
         double(Y2Network::Interface, hardware: double.as_null_object, name: "eth1",
-          firmware_configured?: false),
+          firmware_configured?: false, renaming_mechanism: :mac),
         double(Y2Network::Interface, hardware: double.as_null_object, name: "eth0",
-          firmware_configured?: false)
+          firmware_configured?: false, renaming_mechanism: :bus_id)
       ]
     )
   end
@@ -84,6 +85,13 @@ describe Y2Network::Presenters::InterfaceSummary do
 
       it "returns an empty text" do
         expect(presenter.text).to eql("")
+      end
+    end
+
+    context "when an interface is using some renaming mechanism" do
+      it "is shown in the summary" do
+        text = presenter.text
+        expect(text).to include("Renaming mechanism : </b>BusID")
       end
     end
 

@@ -32,12 +32,12 @@ describe Y2Network::Widgets::InterfacesTable do
 
   let(:eth0) do
     instance_double(Y2Network::Interface, name: "eth0", hardware: hwinfo, old_name: "eth1",
-      firmware_configured_by: nil, firmware_configured?: false)
+      firmware_configured_by: nil, firmware_configured?: false, renaming_mechanism: naming)
   end
 
   let(:br0) do
     instance_double(Y2Network::VirtualInterface, name: "br0", hardware: nil, old_name: nil,
-      firmware_configured_by: nil, firmware_configured?: false)
+      firmware_configured_by: nil, firmware_configured?: false, renaming_mechanism: :none)
   end
   let(:interfaces) { Y2Network::InterfacesCollection.new([eth0, br0]) }
   let(:hwinfo) do
@@ -47,6 +47,7 @@ describe Y2Network::Widgets::InterfacesTable do
 
   let(:mac) { "01:23:45:67:89:ab" }
   let(:busid) { "0000:04:00.0" }
+  let(:naming) { :mac }
   let(:link) { false }
   let(:exists?) { true }
   let(:connections) { Y2Network::ConnectionConfigsCollection.new([eth0_conn, br0_conn]) }
@@ -124,6 +125,7 @@ describe Y2Network::Widgets::InterfacesTable do
 
     context "when there is no MAC address" do
       let(:mac) { nil }
+      let(:naming) { :none }
 
       it "does not include the MAC in the description" do
         expect(description).to receive(:value=) do |text|
@@ -150,6 +152,8 @@ describe Y2Network::Widgets::InterfacesTable do
     end
 
     context "when there is no hardware information" do
+      let(:naming) { :none }
+
       let(:exists?) { false }
 
       it "sets the description with 'no hardware information' warning" do
@@ -186,7 +190,7 @@ describe Y2Network::Widgets::InterfacesTable do
     context "when the device is configured by hardware" do
       let(:eth0) do
         instance_double(Y2Network::Interface, name: "eth0", hardware: hwinfo, old_name: "eth1",
-          firmware_configured_by: :redfish, firmware_configured?: true)
+          firmware_configured_by: :redfish, firmware_configured?: true, renaming_mechanism: naming)
       end
 
       it "shows which firmware extension configured the device in the description" do
