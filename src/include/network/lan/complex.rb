@@ -192,7 +192,16 @@ module Yast
         ret = false
       end
 
+      if ret
+        bonding_fix.run if bonding_fix.needs_to_be_run?
+      end
+
       ret ? :next : :abort
+    end
+
+    def bonding_fix
+      require "y2network/dialogs/bonding_fix"
+      @bonding_fix ||= Y2Network::Dialogs::BondingFix.new(Lan.yast_config)
     end
 
     # Write settings dialog
