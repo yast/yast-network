@@ -94,6 +94,10 @@ module Y2Network
           rich << "<b>(" << _("Not connected") << ")</b><br>" if !hardware.link
           rich << "<b>MAC : </b>" << hardware.mac << "<br>" if hardware.mac
           rich << "<b>BusID : </b>" << hardware.busid << "<br>" if hardware.busid
+          if interface.renaming_mechanism != :none
+            mechanism = (interface.renaming_mechanism == :mac) ? "MAC" : "BusID"
+            rich << "<b>Renaming mechanism : </b>" << mechanism << "<br>"
+          end
           # TODO: physical port id. Probably in hardware?
         end
 

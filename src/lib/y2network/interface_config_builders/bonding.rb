@@ -64,10 +64,26 @@ module Y2Network
         end
       end
 
+      # Returns whether any configuration of the given devices needs to be
+      # adapted in order to be added into a bonding
+
+      # @param devices [Array<String>] devices to check
+      # return [Boolean] true if there is a device config that needs
+      #   to be adaptated; false otherwise
+      def invalid_naming_schema?(devices)
+        devices.any? do |device|
+          interface = yast_config.interfaces.by_name(device)
+          next false unless interface
+
+          interface.renaming_mechanism == :mac
+        end
+      end
+
       # additionally it adapts configuration of devices to be included in a bonding if needed
       def save
         ports.each do |port|
           interface = yast_config.interfaces.by_name(port)
+          interface.renaming_mechanism = :bus_id if interface.renaming_mechanism == :mac
           next if valid_port_config?(port)
 
           connection = yast_config.connections.by_name(port)
