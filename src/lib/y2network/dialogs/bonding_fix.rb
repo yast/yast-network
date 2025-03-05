@@ -31,6 +31,7 @@ module Y2Network
       attr_reader :bonds
 
       def initialize(config, bonds)
+        super
         textdomain "network"
 
         @config = config
@@ -73,8 +74,8 @@ module Y2Network
       end
 
       def bond_summary(conn)
-        rich = "<b>" + _("Bond Name: %s") % conn.name + "</b><br>"
-        rich << "<b>" + _("Bond Ports") + "</b><br>"
+        rich = "<b>" + (_("Bond Name: %s") % conn.name) + "</b><br>"
+        rich << ("<b>" + _("Bond Ports") + "</b><br>")
         rich << Yast::HTML.List(conn.ports.map { |p| port_summary(p) })
         rich
       end
@@ -90,6 +91,7 @@ module Y2Network
       #
       # @param config [Y2Network::Config]
       def initialize(config)
+        super
         require "y2network/presenters/interface_summary"
         textdomain "network"
 

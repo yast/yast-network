@@ -142,7 +142,7 @@ module Y2Network
           return Yast::Popup.ContinueCancel(
             _(
               "At least one selected device is using a MAC address for renaming the device.\n" \
-                "Would you like to change the renaming mechanism to BusID?\n"
+              "Would you like to change the renaming mechanism to BusID?\n"
             )
           )
         end
