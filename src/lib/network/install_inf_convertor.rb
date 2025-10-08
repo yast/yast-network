@@ -91,8 +91,10 @@ module Yast
 
       # save user name and password separately
       ex["proxy_user"] = proxy.user
-      proxy.user = nil
       ex["proxy_password"] = proxy.password
+      # reset user and password after it is read as it is reset after first write to user
+      # (bsc#1251273)
+      proxy.user = nil
       proxy.password = nil
       ex["#{proxyProto}_proxy"] = proxy.to_s
       # Use the proxy also for https and ftp
