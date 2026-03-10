@@ -17,7 +17,7 @@
 
 
 Name:           yast2-network
-Version:        5.0.6
+Version:        5.0.7
 Release:        0
 Summary:        YaST2 - Network Configuration
 License:        GPL-2.0-only
@@ -28,7 +28,6 @@ Source0:        %{name}-%{version}.tar.bz2
 
 # testsuite
 BuildRequires:  rubygem(%rb_default_ruby_abi:rspec)
-BuildRequires:  update-desktop-files
 BuildRequires:  yast2-devtools >= 3.1.15
 #for install task
 BuildRequires:  rubygem(%rb_default_ruby_abi:yast-rake)
